@@ -21,19 +21,15 @@ import com.hortonworks.streamline.common.FileEventHandler;
 import com.hortonworks.streamline.common.FileWatcher;
 import com.hortonworks.streamline.common.ModuleRegistration;
 import com.hortonworks.streamline.common.util.FileStorage;
-import com.hortonworks.streamline.common.util.ReflectionHelper;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
 import com.hortonworks.streamline.registries.tag.client.TagClient;
 import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.storage.StorageManagerAware;
-import com.hortonworks.streamline.streams.actions.TopologyActions;
 import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
-import com.hortonworks.streamline.streams.catalog.TopologyVersionInfo;
+import com.hortonworks.streamline.streams.catalog.TopologyVersion;
 import com.hortonworks.streamline.streams.catalog.service.CatalogService;
 import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
-import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
-import com.hortonworks.streamline.streams.layout.storm.StormTopologyLayoutConstants;
 import com.hortonworks.streamline.streams.metrics.topology.service.TopologyMetricsService;
 import com.hortonworks.streamline.streams.notification.service.NotificationServiceImpl;
 import com.hortonworks.streamline.streams.service.metadata.HBaseMetadataResource;
@@ -43,7 +39,6 @@ import com.hortonworks.streamline.streams.service.metadata.StormMetadataResource
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -191,15 +186,15 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
     }
 
     private void setupPlaceholderTopologyVersionInfo(StreamCatalogService catalogService) {
-        TopologyVersionInfo versionInfo = catalogService.getTopologyVersionInfo(StreamCatalogService.PLACEHOLDER_ID);
+        TopologyVersion versionInfo = catalogService.getTopologyVersionInfo(StreamCatalogService.PLACEHOLDER_ID);
         if (versionInfo == null) {
-            TopologyVersionInfo topologyVersionInfo = new TopologyVersionInfo();
-            topologyVersionInfo.setId(StreamCatalogService.PLACEHOLDER_ID);
-            topologyVersionInfo.setTopologyId(StreamCatalogService.PLACEHOLDER_ID);
-            topologyVersionInfo.setName("PLACEHOLDER_VERSIONINFO");
-            topologyVersionInfo.setDescription("PLACEHOLDER_VERSIONINFO");
-            topologyVersionInfo.setTimestamp(System.currentTimeMillis());
-            catalogService.addOrUpdateTopologyVersionInfo(StreamCatalogService.PLACEHOLDER_ID, topologyVersionInfo);
+            TopologyVersion topologyVersion = new TopologyVersion();
+            topologyVersion.setId(StreamCatalogService.PLACEHOLDER_ID);
+            topologyVersion.setTopologyId(StreamCatalogService.PLACEHOLDER_ID);
+            topologyVersion.setName("PLACEHOLDER_VERSIONINFO");
+            topologyVersion.setDescription("PLACEHOLDER_VERSIONINFO");
+            topologyVersion.setTimestamp(System.currentTimeMillis());
+            catalogService.addOrUpdateTopologyVersionInfo(StreamCatalogService.PLACEHOLDER_ID, topologyVersion);
         }
     }
 

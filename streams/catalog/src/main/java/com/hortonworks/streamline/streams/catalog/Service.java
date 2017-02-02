@@ -29,7 +29,7 @@ import java.util.Map;
  */
 @StorableEntity
 public class Service extends AbstractStorable {
-  private static final String NAMESPACE = "services";
+  private static final String NAMESPACE = "service";
 
   private Long id;
   private Long clusterId;

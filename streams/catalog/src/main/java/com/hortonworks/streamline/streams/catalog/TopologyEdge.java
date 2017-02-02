@@ -91,7 +91,7 @@ public class TopologyEdge extends AbstractStorable {
         }
     }
 
-    public static final String NAMESPACE = "topology_edges";
+    public static final String NAMESPACE = "topology_edge";
     public static final String ID = "id";
     public static final String VERSIONID = "versionId";
     public static final String TOPOLOGYID = "topologyId";

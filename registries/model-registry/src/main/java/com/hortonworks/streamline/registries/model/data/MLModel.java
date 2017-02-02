@@ -33,9 +33,9 @@ import java.util.Map;
  */
 @StorableEntity
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class MLModelInfo extends AbstractStorable {
+public final class MLModel extends AbstractStorable {
     public static final String NAME = "name";
-    private static final String NAME_SPACE = "ml_models";
+    private static final String NAME_SPACE = "ml_model";
     private static final String ID = "id";
     private Long id;
     private Long timestamp;
@@ -43,7 +43,7 @@ public final class MLModelInfo extends AbstractStorable {
     private String pmml;
     private String uploadedFileName;
 
-    public MLModelInfo() {
+    public MLModel() {
     }
 
     public void setPmml(String pmml) {

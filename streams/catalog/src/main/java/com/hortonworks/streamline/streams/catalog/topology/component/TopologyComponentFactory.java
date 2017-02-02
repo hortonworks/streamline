@@ -22,16 +22,16 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang.StringUtils;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
-import com.hortonworks.streamline.streams.catalog.RuleInfo;
-import com.hortonworks.streamline.streams.catalog.BranchRuleInfo;
-import com.hortonworks.streamline.streams.catalog.StreamInfo;
+import com.hortonworks.streamline.streams.catalog.TopologyRule;
+import com.hortonworks.streamline.streams.catalog.TopologyBranchRule;
+import com.hortonworks.streamline.streams.catalog.TopologyStream;
 import com.hortonworks.streamline.streams.catalog.TopologyComponent;
 import com.hortonworks.streamline.streams.catalog.TopologyEdge;
 import com.hortonworks.streamline.streams.catalog.TopologyOutputComponent;
 import com.hortonworks.streamline.streams.catalog.TopologyProcessor;
 import com.hortonworks.streamline.streams.catalog.TopologySink;
 import com.hortonworks.streamline.streams.catalog.TopologySource;
-import com.hortonworks.streamline.streams.catalog.WindowInfo;
+import com.hortonworks.streamline.streams.catalog.TopologyWindow;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.layout.component.Edge;
 import com.hortonworks.streamline.streams.layout.component.InputComponent;
@@ -189,8 +189,8 @@ public class TopologyComponentFactory {
         }
     }
 
-    public Stream getStream(StreamInfo streamInfo) {
-        return new Stream(streamInfo.getStreamId(), streamInfo.getFields());
+    public Stream getStream(TopologyStream topologyStream) {
+        return new Stream(topologyStream.getStreamId(), topologyStream.getFields());
     }
 
     /*
@@ -314,9 +314,9 @@ public class TopologyComponentFactory {
     private void updateWithSchemas(Long topologyId, Long versionId, Map<String, NormalizationConfig> normalizationConfigRead) {
         for (Map.Entry<String, NormalizationConfig> entry : normalizationConfigRead.entrySet()) {
             NormalizationConfig normalizationConfig = entry.getValue();
-            StreamInfo streamInfo = catalogService.getStreamInfoByName(topologyId, entry.getKey(), versionId);
-            if (streamInfo != null) {
-                normalizationConfig.setInputSchema(streamInfo.getSchema());
+            TopologyStream topologyStream = catalogService.getStreamInfoByName(topologyId, entry.getKey(), versionId);
+            if (topologyStream != null) {
+                normalizationConfig.setInputSchema(topologyStream.getSchema());
             }
         }
     }
@@ -399,11 +399,11 @@ public class TopologyComponentFactory {
         return createRulesProcessorProvider(new RuleExtractor() {
             @Override
             public Rule getRule(Long topologyId, Long ruleId, Long versionId) throws Exception {
-                RuleInfo ruleInfo = catalogService.getRule(topologyId, ruleId, versionId);
-                if (ruleInfo == null) {
+                TopologyRule topologyRule = catalogService.getRule(topologyId, ruleId, versionId);
+                if (topologyRule == null) {
                     throw new IllegalArgumentException("Cannot find rule with id " + ruleId);
                 }
-                return ruleInfo.getRule();
+                return topologyRule.getRule();
             }
         });
     }
@@ -413,7 +413,7 @@ public class TopologyComponentFactory {
         return new SimpleImmutableEntry<>(BRANCH, createRulesProcessorProvider(new RuleExtractor() {
             @Override
             public Rule getRule(Long topologyId, Long ruleId, Long versionId) throws Exception {
-                BranchRuleInfo brRuleInfo = catalogService.getBranchRule(topologyId, ruleId, versionId);
+                TopologyBranchRule brRuleInfo = catalogService.getBranchRule(topologyId, ruleId, versionId);
                 if (brRuleInfo == null) {
                     throw new IllegalArgumentException("Cannot find branch rule with id " + ruleId);
                 }
@@ -426,11 +426,11 @@ public class TopologyComponentFactory {
         return new SimpleImmutableEntry<>(WINDOW, createRulesProcessorProvider(new RuleExtractor() {
             @Override
             public Rule getRule(Long topologyId, Long ruleId, Long versionId) throws Exception {
-                WindowInfo windowInfo = catalogService.getWindow(topologyId, ruleId, versionId);
-                if (windowInfo == null) {
+                TopologyWindow topologyWindow = catalogService.getWindow(topologyId, ruleId, versionId);
+                if (topologyWindow == null) {
                     throw new IllegalArgumentException("Cannot find window rule with id " + ruleId);
                 }
-                return windowInfo.getRule();
+                return topologyWindow.getRule();
             }
         }));
     }

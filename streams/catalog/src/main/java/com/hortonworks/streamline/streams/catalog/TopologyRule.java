@@ -41,8 +41,8 @@ import java.util.stream.Collectors;
  */
 @StorableEntity
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class RuleInfo extends BaseRuleInfo {
-    public static final String NAMESPACE = "ruleinfos";
+public class TopologyRule extends BaseTopologyRule {
+    public static final String NAMESPACE = "topology_rule";
 
     public static final String ID = "id";
     public static final String VERSIONID = "versionId";
@@ -81,10 +81,10 @@ public class RuleInfo extends BaseRuleInfo {
     private List<String> outputStreams;
 
     // for jackson
-    public RuleInfo() {
+    public TopologyRule() {
     }
 
-    public RuleInfo(RuleInfo other) {
+    public TopologyRule(TopologyRule other) {
         setId(other.getId());
         setVersionId(other.getVersionId());
         setTopologyId(other.getTopologyId());
@@ -338,10 +338,10 @@ public class RuleInfo extends BaseRuleInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        RuleInfo ruleInfo = (RuleInfo) o;
+        TopologyRule topologyRule = (TopologyRule) o;
 
-        if (id != null ? !id.equals(ruleInfo.id) : ruleInfo.id != null) return false;
-        return versionId != null ? versionId.equals(ruleInfo.versionId) : ruleInfo.versionId == null;
+        if (id != null ? !id.equals(topologyRule.id) : topologyRule.id != null) return false;
+        return versionId != null ? versionId.equals(topologyRule.versionId) : topologyRule.versionId == null;
 
     }
 

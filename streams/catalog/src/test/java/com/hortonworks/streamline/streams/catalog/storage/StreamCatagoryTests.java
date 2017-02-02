@@ -19,8 +19,8 @@ import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.Schema;
 import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableTest;
-import com.hortonworks.streamline.streams.catalog.NotifierInfo;
-import com.hortonworks.streamline.streams.catalog.StreamInfo;
+import com.hortonworks.streamline.streams.catalog.Notifier;
+import com.hortonworks.streamline.streams.catalog.TopologyStream;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,16 +54,16 @@ public class StreamCatagoryTests {
             }};
         }
 
-        private StreamInfo createStreamInfo(long id, List<Schema.Field> fields) {
-            StreamInfo streamInfo = new StreamInfo();
-            streamInfo.setId(id);
-            streamInfo.setVersionId(1L);
-            streamInfo.setTopologyId(1L);
-            streamInfo.setStreamId("Stream-" + id);
-            streamInfo.setFields(fields);
-            streamInfo.setVersionTimestamp(System.currentTimeMillis());
+        private TopologyStream createStreamInfo(long id, List<Schema.Field> fields) {
+            TopologyStream topologyStream = new TopologyStream();
+            topologyStream.setId(id);
+            topologyStream.setVersionId(1L);
+            topologyStream.setTopologyId(1L);
+            topologyStream.setStreamId("Stream-" + id);
+            topologyStream.setFields(fields);
+            topologyStream.setVersionTimestamp(System.currentTimeMillis());
 
-            return streamInfo;
+            return topologyStream;
         }
     }
 
@@ -77,14 +77,14 @@ public class StreamCatagoryTests {
             }};
         }
 
-        protected NotifierInfo createNotifierInfo(Long id, String name) {
-            NotifierInfo notifierInfo = new NotifierInfo();
-            notifierInfo.setId(id);
-            notifierInfo.setName(name);
+        protected Notifier createNotifierInfo(Long id, String name) {
+            Notifier notifier = new Notifier();
+            notifier.setId(id);
+            notifier.setName(name);
             Map<String, String> props = new HashMap<String, String>(){{put("cur", new Random().nextInt()+"");}};
-            notifierInfo.setProperties(props);
-            notifierInfo.setTimestamp(System.currentTimeMillis());
-            return notifierInfo;
+            notifier.setProperties(props);
+            notifier.setTimestamp(System.currentTimeMillis());
+            return notifier;
         }
     }
 }

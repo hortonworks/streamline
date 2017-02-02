@@ -21,7 +21,7 @@ import com.hortonworks.streamline.storage.annotation.StorableEntity;
 
 @StorableEntity
 public class TopologySink extends TopologyComponent {
-    public static final String NAMESPACE = "topology_sinks";
+    public static final String NAMESPACE = "topology_sink";
 
     public TopologySink() {
     }

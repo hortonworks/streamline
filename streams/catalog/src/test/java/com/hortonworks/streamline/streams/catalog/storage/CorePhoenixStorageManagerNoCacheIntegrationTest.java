@@ -24,8 +24,7 @@ import com.hortonworks.streamline.storage.impl.jdbc.phoenix.PhoenixStorageManage
 import com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
 import com.hortonworks.streamline.storage.util.StorageUtils;
-import com.hortonworks.streamline.streams.catalog.RuleInfo;
-import com.hortonworks.streamline.streams.catalog.service.CatalogService;
+import com.hortonworks.streamline.streams.catalog.TopologyRule;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -46,7 +45,7 @@ public  class CorePhoenixStorageManagerNoCacheIntegrationTest extends PhoenixSto
     @Test
     public void testNextId_AutoincrementColumn_IdPlusOne() throws Exception {
         final PhoenixExecutor phoenixExecutor = new PhoenixExecutor(new ExecutionConfig(-1), connectionBuilder);
-        String[] nameSpaces = {RuleInfo.NAMESPACE};
+        String[] nameSpaces = {TopologyRule.NAMESPACE};
         for (String nameSpace : nameSpaces) {
             log.info("Generating sequence-ids for namespace: [{}]", nameSpace);
             for (int x = 0; x < 100; x++) {

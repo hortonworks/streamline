@@ -40,8 +40,8 @@ import java.util.stream.Collectors;
  * Catalog db entity for mapping output stream information
  */
 @StorableEntity
-public class StreamInfo extends AbstractStorable {
-    public static final String NAMESPACE = "streaminfo";
+public class TopologyStream extends AbstractStorable {
+    public static final String NAMESPACE = "topology_stream";
     public static final String ID = "id";
     public static final String VERSIONID = "versionId";
     public static final String STREAMID = "streamId";
@@ -70,11 +70,11 @@ public class StreamInfo extends AbstractStorable {
 
     private Long versionTimestamp;
 
-    public StreamInfo() {
+    public TopologyStream() {
     }
 
     // copy ctor
-    public StreamInfo(StreamInfo other) {
+    public TopologyStream(TopologyStream other) {
         setId(other.getId());
         setVersionId(other.getVersionId());
         setStreamId(other.getStreamId());
@@ -204,7 +204,7 @@ public class StreamInfo extends AbstractStorable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        StreamInfo that = (StreamInfo) o;
+        TopologyStream that = (TopologyStream) o;
 
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         return versionId != null ? versionId.equals(that.versionId) : that.versionId == null;

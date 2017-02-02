@@ -19,7 +19,7 @@ package com.hortonworks.streamline.streams.service;
 import com.codahale.metrics.annotation.Timed;
 import org.apache.commons.lang3.StringUtils;
 import com.hortonworks.streamline.common.util.WSUtils;
-import com.hortonworks.streamline.streams.catalog.FileInfo;
+import com.hortonworks.streamline.streams.catalog.File;
 import com.hortonworks.streamline.streams.catalog.service.CatalogService;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -50,7 +50,7 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 
 /**
- * Catalog resource for {@link FileInfo} resources.
+ * Catalog resource for {@link File} resources.
  */
 @Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
@@ -67,7 +67,7 @@ public class FileCatalogResource {
     @Path("/files")
     @Timed
     public Response listFiles(@Context UriInfo uriInfo) {
-        Collection<FileInfo> files = null;
+        Collection<File> files = null;
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
         if (params == null || params.isEmpty()) {
             files = catalogService.listFiles();
@@ -96,7 +96,7 @@ public class FileCatalogResource {
      *
      * @param inputStream actual file content as {@link InputStream}.
      * @param contentDispositionHeader {@link FormDataContentDisposition} instance of the received file
-     * @param fileInfo configuration of the file resource {@link FileInfo}
+     * @param file configuration of the file resource {@link File}
      * @return
      */
     @Timed
@@ -105,9 +105,9 @@ public class FileCatalogResource {
     @Path("/files")
     public Response addFile(@FormDataParam("file") final InputStream inputStream,
                             @FormDataParam("file") final FormDataContentDisposition contentDispositionHeader,
-                            @FormDataParam("fileInfo") final FileInfo fileInfo) throws IOException {
-        log.info("Received fileInfo: [{}]", fileInfo);
-        FileInfo updatedFile = addFile(inputStream, fileInfo);
+                            @FormDataParam("fileInfo") final File file) throws IOException {
+        log.info("Received fileInfo: [{}]", file);
+        File updatedFile = addFile(inputStream, file);
         return WSUtils.respondEntity(updatedFile, CREATED);
     }
 
@@ -119,7 +119,7 @@ public class FileCatalogResource {
      *
      * @param inputStream
      * @param contentDispositionHeader
-     * @param fileInfo
+     * @param file
      */
     @Timed
     @PUT
@@ -128,16 +128,16 @@ public class FileCatalogResource {
     public Response updateFile(@PathParam("id") Long fileId,
                                @FormDataParam("file") final InputStream inputStream,
                                @FormDataParam("file") final FormDataContentDisposition contentDispositionHeader,
-                               @FormDataParam("fileInfo") final FileInfo fileInfo)
+                               @FormDataParam("fileInfo") final File file)
         throws IOException {
-        log.info("Received fileInfo: [{}]", fileInfo);
+        log.info("Received fileInfo: [{}]", file);
         String oldFileStorageName = null;
-        final FileInfo existingFile = catalogService.getFile(fileId);
+        final File existingFile = catalogService.getFile(fileId);
         if(existingFile != null) {
             oldFileStorageName = existingFile.getStoredFileName();
         }
 
-        final FileInfo updatedFile = addOrUpdateFile(fileId, inputStream, fileInfo);
+        final File updatedFile = addOrUpdateFile(fileId, inputStream, file);
 
         if(oldFileStorageName != null) {
             final boolean deleted = catalogService.deleteFileFromStorage(oldFileStorageName);
@@ -147,24 +147,24 @@ public class FileCatalogResource {
         return WSUtils.respondEntity(updatedFile, CREATED);
     }
 
-    protected FileInfo addFile(InputStream inputStream, FileInfo fileInfo) {
-        uploadFile(inputStream, fileInfo);
-        return catalogService.addFile(fileInfo);
+    protected File addFile(InputStream inputStream, File file) {
+        uploadFile(inputStream, file);
+        return catalogService.addFile(file);
     }
 
-    protected FileInfo addOrUpdateFile(Long fileId, InputStream inputStream, FileInfo fileInfo) {
-        uploadFile(inputStream, fileInfo);
-        return catalogService.addOrUpdateFile(fileId, fileInfo);
+    protected File addOrUpdateFile(Long fileId, InputStream inputStream, File file) {
+        uploadFile(inputStream, file);
+        return catalogService.addOrUpdateFile(fileId, file);
     }
 
-    private void uploadFile(InputStream inputStream, FileInfo fileInfo) {
+    private void uploadFile(InputStream inputStream, File file) {
         try {
-            final String updatedFileStorageName = getFileStorageName(fileInfo.getName());
-            fileInfo.setStoredFileName(updatedFileStorageName);
-            log.info("Uploading File with fileInfo [{}]", fileInfo);
+            final String updatedFileStorageName = getFileStorageName(file.getName());
+            file.setStoredFileName(updatedFileStorageName);
+            log.info("Uploading File with fileInfo [{}]", file);
             final String uploadedFileStoragePath = catalogService.uploadFileToStorage(inputStream, updatedFileStorageName);
             log.info("Received File with fileInfo is uploaded to [{}]", uploadedFileStoragePath);
-            fileInfo.setTimestamp(System.currentTimeMillis());
+            file.setTimestamp(System.currentTimeMillis());
         } catch (IOException ex) {
             log.error("Got exception while uploading file");
             throw new RuntimeException("Got exception while uploading file", ex);
@@ -175,7 +175,7 @@ public class FileCatalogResource {
     @Path("/files/{id}")
     @Timed
     public Response getFile(@PathParam("id") Long fileId) {
-        FileInfo result = catalogService.getFile(fileId);
+        File result = catalogService.getFile(fileId);
         if (result != null) {
             return WSUtils.respondEntity(result, OK);
         }
@@ -193,7 +193,7 @@ public class FileCatalogResource {
     @Timed
     public Response removeFile(@PathParam("id") Long fileId) throws IOException {
         try {
-            FileInfo removedFile = catalogService.removeFile(fileId);
+            File removedFile = catalogService.removeFile(fileId);
             log.info("Removed File entry is [{}]", removedFile);
             if (removedFile != null) {
                 boolean removed = catalogService.deleteFileFromStorage(removedFile.getStoredFileName());
@@ -214,7 +214,7 @@ public class FileCatalogResource {
     }
 
     /**
-     * Downloads a given {@link FileInfo} resource for given {@code fileId}
+     * Downloads a given {@link File} resource for given {@code fileId}
      *
      * @param fileId
      */
@@ -223,7 +223,7 @@ public class FileCatalogResource {
     @Produces({"application/octet-stream", "application/json"})
     @Path("/files/download/{fileId}")
     public Response downloadFile(@PathParam("fileId") Long fileId) throws IOException {
-        FileInfo file = catalogService.getFile(fileId);
+        File file = catalogService.getFile(fileId);
         if (file != null) {
             StreamingOutput streamOutput = WSUtils.wrapWithStreamingOutput(catalogService.downloadFileFromStorage(file.getStoredFileName()));
             return Response.ok(streamOutput).build();

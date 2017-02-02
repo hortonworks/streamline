@@ -32,7 +32,7 @@ import java.util.Map;
  */
 @StorableEntity
 public class ServiceConfiguration extends AbstractStorable {
-  private static final String NAMESPACE = "service_configurations";
+  private static final String NAMESPACE = "service_configuration";
   private static final ObjectMapper objectMapper = new ObjectMapper();
 
   private Long id;

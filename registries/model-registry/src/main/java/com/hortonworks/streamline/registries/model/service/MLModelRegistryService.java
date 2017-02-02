@@ -19,7 +19,7 @@ package com.hortonworks.streamline.registries.model.service;
 import org.apache.commons.io.IOUtils;
 import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
-import com.hortonworks.streamline.registries.model.data.MLModelInfo;
+import com.hortonworks.streamline.registries.model.data.MLModel;
 import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.storage.util.StorageUtils;
@@ -49,22 +49,22 @@ import java.util.List;
 
 public final class MLModelRegistryService {
     private static final Logger LOG = LoggerFactory.getLogger(MLModelRegistryService.class);
-    private static final String ML_MODEL_NAME_SPACE = new MLModelInfo().getNameSpace();
+    private static final String ML_MODEL_NAME_SPACE = new MLModel().getNameSpace();
     private final StorageManager storageManager;
     public MLModelRegistryService(StorageManager storageManager) {
         this.storageManager = storageManager;
     }
 
-    public Collection<MLModelInfo> listModelInfos() {
+    public Collection<MLModel> listModelInfos() {
         return storageManager.list(ML_MODEL_NAME_SPACE);
     }
 
-    public Collection<MLModelInfo> listModelInfo(List<QueryParam> params) {
+    public Collection<MLModel> listModelInfo(List<QueryParam> params) {
         return storageManager.find(ML_MODEL_NAME_SPACE, params);
     }
 
-    public MLModelInfo addModelInfo(
-            MLModelInfo modelInfo, InputStream pmmlInputStream, String fileName) throws IOException, SAXException, JAXBException{
+    public MLModel addModelInfo(
+            MLModel modelInfo, InputStream pmmlInputStream, String fileName) throws IOException, SAXException, JAXBException{
         if (modelInfo.getId() == null) {
             modelInfo.setId(storageManager.nextId(ML_MODEL_NAME_SPACE));
         }
@@ -79,8 +79,8 @@ public final class MLModelRegistryService {
         return modelInfo;
     }
 
-    public MLModelInfo addOrUpdateModelInfo(
-            Long modelId, MLModelInfo modelInfo,
+    public MLModel addOrUpdateModelInfo(
+            Long modelId, MLModel modelInfo,
             InputStream pmmlInputStream,
             String fileName) throws IOException, SAXException, JAXBException {
         modelInfo.setId(modelId);
@@ -93,18 +93,18 @@ public final class MLModelRegistryService {
         return modelInfo;
     }
 
-    public MLModelInfo getModelInfo(String name) {
-        List<QueryParam> queryParams = Collections.singletonList(new QueryParam(MLModelInfo.NAME, name));
-        Collection<MLModelInfo> modelInfos = this.storageManager.find(ML_MODEL_NAME_SPACE, queryParams);
+    public MLModel getModelInfo(String name) {
+        List<QueryParam> queryParams = Collections.singletonList(new QueryParam(MLModel.NAME, name));
+        Collection<MLModel> modelInfos = this.storageManager.find(ML_MODEL_NAME_SPACE, queryParams);
         if (modelInfos.size() == 0) {
             throw EntityNotFoundException.byName(name);
         }
         return modelInfos.iterator().next();
     }
-    public MLModelInfo getModelInfo(Long modelId) {
-        MLModelInfo modelInfo = new MLModelInfo();
+    public MLModel getModelInfo(Long modelId) {
+        MLModel modelInfo = new MLModel();
         modelInfo.setId(modelId);
-        MLModelInfo storedModelInfo = this.storageManager.get(modelInfo.getStorableKey());
+        MLModel storedModelInfo = this.storageManager.get(modelInfo.getStorableKey());
         if (storedModelInfo == null) {
             throw EntityNotFoundException.byId(modelId.toString());
         }
@@ -112,10 +112,10 @@ public final class MLModelRegistryService {
         return storedModelInfo;
     }
 
-    public MLModelInfo removeModelInfo(Long modelId) {
-        MLModelInfo modelInfo = new MLModelInfo();
+    public MLModel removeModelInfo(Long modelId) {
+        MLModel modelInfo = new MLModel();
         modelInfo.setId(modelId);
-        MLModelInfo removedModelInfo = this.storageManager.remove(modelInfo.getStorableKey());
+        MLModel removedModelInfo = this.storageManager.remove(modelInfo.getStorableKey());
         if (removedModelInfo == null) {
             throw EntityNotFoundException.byId(modelId.toString());
         }
@@ -123,7 +123,7 @@ public final class MLModelRegistryService {
         return removedModelInfo;
     }
 
-    public List<MLModelField> getModelOutputFields(MLModelInfo modelInfo) throws IOException, SAXException, JAXBException {
+    public List<MLModelField> getModelOutputFields(MLModel modelInfo) throws IOException, SAXException, JAXBException {
         return doGetOutputFieldsForPMMLStream(modelInfo.getPmml());
     }
 
@@ -145,7 +145,7 @@ public final class MLModelRegistryService {
         return fieldNames;
     }
 
-    public List<MLModelField> getModelInputFields(MLModelInfo modelInfo) throws IOException, SAXException, JAXBException {
+    public List<MLModelField> getModelInputFields(MLModel modelInfo) throws IOException, SAXException, JAXBException {
         return doGetInputFieldsFromPMMLStream(modelInfo.getPmml());
     }
 
@@ -163,13 +163,13 @@ public final class MLModelRegistryService {
         return new MLModelField(dataField.getName().getValue(), dataField.getDataType().toString());
     }
 
-    private void validateModelInfo(MLModelInfo modelInfo) throws SAXException, JAXBException {
+    private void validateModelInfo(MLModel modelInfo) throws SAXException, JAXBException {
         List<MLModelField> outputFields = doGetOutputFieldsForPMMLStream(modelInfo.getPmml());
         if (outputFields.isEmpty()) {
             throw new RuntimeException(
                     String.format("PMML File %s does not support empty output", modelInfo.getUploadedFileName()));
         }
         StorageUtils.ensureUnique(modelInfo, this::listModelInfo, QueryParam.params(
-                MLModelInfo.NAME, modelInfo.getName()));
+                MLModel.NAME, modelInfo.getName()));
     }
 }

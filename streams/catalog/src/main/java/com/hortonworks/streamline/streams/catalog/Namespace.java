@@ -29,7 +29,7 @@ import java.util.Map;
  */
 @StorableEntity
 public class Namespace extends AbstractStorable {
-  private static final String NAMESPACE = "namespaces";
+  private static final String NAMESPACE = "namespace";
 
   private Long id;
   private String name;

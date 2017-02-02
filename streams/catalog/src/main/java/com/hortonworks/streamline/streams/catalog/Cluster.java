@@ -31,7 +31,7 @@ import java.util.Map;
  */
 @StorableEntity
 public class Cluster extends AbstractStorable {
-    private static final String NAMESPACE = "clusters";
+    private static final String NAMESPACE = "cluster";
 
     private Long id;
     private String name;

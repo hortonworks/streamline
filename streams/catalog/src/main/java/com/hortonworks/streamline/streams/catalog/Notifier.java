@@ -37,8 +37,8 @@ import java.util.Map;
  */
 @StorableEntity
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class NotifierInfo extends AbstractStorable {
-    public static final String NAMESPACE = "notifierinfos";
+public class Notifier extends AbstractStorable {
+    public static final String NAMESPACE = "notifier";
 
     public static final String ID = "id";
     public static final String NOTIFIER_NAME = "name";
@@ -242,7 +242,7 @@ public class NotifierInfo extends AbstractStorable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        NotifierInfo that = (NotifierInfo) o;
+        Notifier that = (Notifier) o;
 
         return !(id != null ? !id.equals(that.id) : that.id != null);
 

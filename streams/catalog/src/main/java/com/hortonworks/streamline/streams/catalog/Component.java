@@ -35,7 +35,7 @@ import java.util.Map;
  */
 @StorableEntity
 public class Component extends AbstractStorable {
-    private static final String NAMESPACE = "components";
+    private static final String NAMESPACE = "component";
 
     public static final String ID = "id";
     public static final String SERVICEID = "serviceId";

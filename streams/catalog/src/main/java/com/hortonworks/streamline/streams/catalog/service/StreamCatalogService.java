@@ -41,12 +41,12 @@ import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.storage.exception.StorageException;
 import com.hortonworks.streamline.storage.util.StorageUtils;
 import com.hortonworks.streamline.streams.StreamlineEvent;
-import com.hortonworks.streamline.streams.catalog.BranchRuleInfo;
-import com.hortonworks.streamline.streams.catalog.FileInfo;
-import com.hortonworks.streamline.streams.catalog.NotifierInfo;
+import com.hortonworks.streamline.streams.catalog.TopologyBranchRule;
+import com.hortonworks.streamline.streams.catalog.File;
+import com.hortonworks.streamline.streams.catalog.Notifier;
 import com.hortonworks.streamline.streams.catalog.Projection;
-import com.hortonworks.streamline.streams.catalog.RuleInfo;
-import com.hortonworks.streamline.streams.catalog.StreamInfo;
+import com.hortonworks.streamline.streams.catalog.TopologyRule;
+import com.hortonworks.streamline.streams.catalog.TopologyStream;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyComponent;
 import com.hortonworks.streamline.streams.catalog.TopologyEdge;
@@ -57,9 +57,9 @@ import com.hortonworks.streamline.streams.catalog.TopologyProcessorStreamMapping
 import com.hortonworks.streamline.streams.catalog.TopologySink;
 import com.hortonworks.streamline.streams.catalog.TopologySource;
 import com.hortonworks.streamline.streams.catalog.TopologySourceStreamMapping;
-import com.hortonworks.streamline.streams.catalog.TopologyVersionInfo;
-import com.hortonworks.streamline.streams.catalog.UDFInfo;
-import com.hortonworks.streamline.streams.catalog.WindowInfo;
+import com.hortonworks.streamline.streams.catalog.TopologyVersion;
+import com.hortonworks.streamline.streams.catalog.UDF;
+import com.hortonworks.streamline.streams.catalog.TopologyWindow;
 import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
 import com.hortonworks.streamline.streams.catalog.rule.RuleParser;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
@@ -76,7 +76,6 @@ import com.hortonworks.streamline.streams.layout.exception.ComponentConfigExcept
 import com.hortonworks.streamline.streams.layout.storm.FluxComponent;
 import com.hortonworks.streamline.streams.rule.UDAF;
 import com.hortonworks.streamline.streams.rule.UDAF2;
-import com.hortonworks.streamline.streams.rule.UDF;
 import com.hortonworks.streamline.streams.rule.UDF2;
 import com.hortonworks.streamline.streams.rule.UDF3;
 import com.hortonworks.streamline.streams.rule.UDF4;
@@ -88,7 +87,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -126,10 +124,10 @@ public class StreamCatalogService {
     private static final Logger LOG = LoggerFactory.getLogger(StreamCatalogService.class);
 
     // TODO: the namespace and Id generation logic should be moved inside DAO
-    private static final String NOTIFIER_INFO_NAMESPACE = new NotifierInfo().getNameSpace();
+    private static final String NOTIFIER_INFO_NAMESPACE = new Notifier().getNameSpace();
     private static final String TOPOLOGY_NAMESPACE = new Topology().getNameSpace();
-    private static final String TOPOLOGY_VERSIONINFO_NAMESPACE = new TopologyVersionInfo().getNameSpace();
-    private static final String STREAMINFO_NAMESPACE = new StreamInfo().getNameSpace();
+    private static final String TOPOLOGY_VERSIONINFO_NAMESPACE = new TopologyVersion().getNameSpace();
+    private static final String STREAMINFO_NAMESPACE = new TopologyStream().getNameSpace();
     private static final String TOPOLOGY_COMPONENT_NAMESPACE = new TopologyComponent().getNameSpace();
     private static final String TOPOLOGY_SOURCE_NAMESPACE = new TopologySource().getNameSpace();
     private static final String TOPOLOGY_SOURCE_STREAM_MAPPING_NAMESPACE = new TopologySourceStreamMapping().getNameSpace();
@@ -137,12 +135,12 @@ public class StreamCatalogService {
     private static final String TOPOLOGY_PROCESSOR_NAMESPACE = new TopologyProcessor().getNameSpace();
     private static final String TOPOLOGY_PROCESSOR_STREAM_MAPPING_NAMESPACE = new TopologyProcessorStreamMapping().getNameSpace();
     private static final String TOPOLOGY_EDGE_NAMESPACE = new TopologyEdge().getNameSpace();
-    private static final String TOPOLOGY_RULEINFO_NAMESPACE = new RuleInfo().getNameSpace();
-    private static final String TOPOLOGY_BRANCHRULEINFO_NAMESPACE = new BranchRuleInfo().getNameSpace();
-    private static final String TOPOLOGY_WINDOWINFO_NAMESPACE = new WindowInfo().getNameSpace();
-    private static final String UDF_NAMESPACE = new UDFInfo().getNameSpace();
+    private static final String TOPOLOGY_RULEINFO_NAMESPACE = new TopologyRule().getNameSpace();
+    private static final String TOPOLOGY_BRANCHRULEINFO_NAMESPACE = new TopologyBranchRule().getNameSpace();
+    private static final String TOPOLOGY_WINDOWINFO_NAMESPACE = new TopologyWindow().getNameSpace();
+    private static final String UDF_NAMESPACE = new UDF().getNameSpace();
 
-    private static final ArrayList<Class<?>> UDF_CLASSES = Lists.newArrayList(UDAF.class, UDAF2.class, UDF.class, UDF2.class,
+    private static final ArrayList<Class<?>> UDF_CLASSES = Lists.newArrayList(UDAF.class, UDAF2.class, com.hortonworks.streamline.streams.rule.UDF.class, UDF2.class,
                                                                               UDF3.class, UDF4.class, UDF5.class, UDF6.class, UDF7.class);
     public static final long PLACEHOLDER_ID = -1L;
     private static final String CLONE_SUFFIX = "-clone";
@@ -157,60 +155,60 @@ public class StreamCatalogService {
         this.topologyDagBuilder = new TopologyDagBuilder(this, modelRegistryClient);
     }
 
-    public NotifierInfo addNotifierInfo(NotifierInfo notifierInfo) {
-        if (notifierInfo.getId() == null) {
-            notifierInfo.setId(this.dao.nextId(NOTIFIER_INFO_NAMESPACE));
+    public Notifier addNotifierInfo(Notifier notifier) {
+        if (notifier.getId() == null) {
+            notifier.setId(this.dao.nextId(NOTIFIER_INFO_NAMESPACE));
         }
-        if (notifierInfo.getTimestamp() == null) {
-            notifierInfo.setTimestamp(System.currentTimeMillis());
+        if (notifier.getTimestamp() == null) {
+            notifier.setTimestamp(System.currentTimeMillis());
         }
-        if (StringUtils.isEmpty(notifierInfo.getName())) {
+        if (StringUtils.isEmpty(notifier.getName())) {
             throw new StorageException("Notifier name empty");
         }
-        this.dao.add(notifierInfo);
-        return notifierInfo;
+        this.dao.add(notifier);
+        return notifier;
     }
 
-    public NotifierInfo getNotifierInfo(Long id) {
-        NotifierInfo notifierInfo = new NotifierInfo();
-        notifierInfo.setId(id);
-        return this.dao.get(new StorableKey(NOTIFIER_INFO_NAMESPACE, notifierInfo.getPrimaryKey()));
+    public Notifier getNotifierInfo(Long id) {
+        Notifier notifier = new Notifier();
+        notifier.setId(id);
+        return this.dao.get(new StorableKey(NOTIFIER_INFO_NAMESPACE, notifier.getPrimaryKey()));
     }
 
-    public Collection<NotifierInfo> listNotifierInfos() {
+    public Collection<Notifier> listNotifierInfos() {
         return this.dao.list(NOTIFIER_INFO_NAMESPACE);
     }
 
-    public Collection<NotifierInfo> listNotifierInfos(List<QueryParam> params) {
+    public Collection<Notifier> listNotifierInfos(List<QueryParam> params) {
         return dao.find(NOTIFIER_INFO_NAMESPACE, params);
     }
 
 
-    public NotifierInfo removeNotifierInfo(Long notifierId) {
-        NotifierInfo notifierInfo = new NotifierInfo();
-        notifierInfo.setId(notifierId);
-        return dao.remove(new StorableKey(NOTIFIER_INFO_NAMESPACE, notifierInfo.getPrimaryKey()));
+    public Notifier removeNotifierInfo(Long notifierId) {
+        Notifier notifier = new Notifier();
+        notifier.setId(notifierId);
+        return dao.remove(new StorableKey(NOTIFIER_INFO_NAMESPACE, notifier.getPrimaryKey()));
     }
 
 
-    public NotifierInfo addOrUpdateNotifierInfo(Long id, NotifierInfo notifierInfo) {
-        notifierInfo.setId(id);
-        notifierInfo.setTimestamp(System.currentTimeMillis());
-        this.dao.addOrUpdate(notifierInfo);
-        return notifierInfo;
+    public Notifier addOrUpdateNotifierInfo(Long id, Notifier notifier) {
+        notifier.setId(id);
+        notifier.setTimestamp(System.currentTimeMillis());
+        this.dao.addOrUpdate(notifier);
+        return notifier;
     }
 
-    public Collection<TopologyVersionInfo> listCurrentTopologyVersionInfos() {
+    public Collection<TopologyVersion> listCurrentTopologyVersionInfos() {
         return listTopologyVersionInfos(currentVersionQueryParam());
     }
 
-    public Collection<TopologyVersionInfo> listTopologyVersionInfos(List<QueryParam> queryParams) {
+    public Collection<TopologyVersion> listTopologyVersionInfos(List<QueryParam> queryParams) {
         return dao.find(TOPOLOGY_VERSIONINFO_NAMESPACE, queryParams);
     }
 
 
-    public Optional<TopologyVersionInfo> getCurrentTopologyVersionInfo(Long topologyId) {
-        Collection<TopologyVersionInfo> versions = listTopologyVersionInfos(
+    public Optional<TopologyVersion> getCurrentTopologyVersionInfo(Long topologyId) {
+        Collection<TopologyVersion> versions = listTopologyVersionInfos(
                 WSUtils.currentTopologyVersionQueryParam(topologyId, null));
         if (versions.isEmpty()) {
             LOG.warn("No current version for topology " + topologyId);
@@ -222,8 +220,8 @@ public class StreamCatalogService {
     }
 
     // latest version before the CURRENT version
-    public Optional<TopologyVersionInfo> getLatestVersionInfo(Long topologyId) {
-        Collection<TopologyVersionInfo> versions =
+    public Optional<TopologyVersion> getLatestVersionInfo(Long topologyId) {
+        Collection<TopologyVersion> versions =
                 listTopologyVersionInfos(WSUtils.buildTopologyIdAwareQueryParams(topologyId, null));
         return  versions.stream()
                 .filter(v -> !v.getName().equals(CURRENT_VERSION))
@@ -232,56 +230,56 @@ public class StreamCatalogService {
                     return versionInfo1.getVersionNumber() - versionInfo2.getVersionNumber();
                 });
     }
-    public TopologyVersionInfo getTopologyVersionInfo(Long versionId) {
-        TopologyVersionInfo topologyVersionInfo = new TopologyVersionInfo();
-        topologyVersionInfo.setId(versionId);
-        return dao.get(topologyVersionInfo.getStorableKey());
+    public TopologyVersion getTopologyVersionInfo(Long versionId) {
+        TopologyVersion topologyVersion = new TopologyVersion();
+        topologyVersion.setId(versionId);
+        return dao.get(topologyVersion.getStorableKey());
     }
 
-    public TopologyVersionInfo addTopologyVersionInfo(TopologyVersionInfo topologyVersionInfo) {
-        if (topologyVersionInfo.getId() == null) {
-            topologyVersionInfo.setId(this.dao.nextId(TOPOLOGY_VERSIONINFO_NAMESPACE));
+    public TopologyVersion addTopologyVersionInfo(TopologyVersion topologyVersion) {
+        if (topologyVersion.getId() == null) {
+            topologyVersion.setId(this.dao.nextId(TOPOLOGY_VERSIONINFO_NAMESPACE));
         }
-        if (topologyVersionInfo.getTimestamp() == null) {
-            topologyVersionInfo.setTimestamp(System.currentTimeMillis());
+        if (topologyVersion.getTimestamp() == null) {
+            topologyVersion.setTimestamp(System.currentTimeMillis());
         }
-        dao.add(topologyVersionInfo);
-        return topologyVersionInfo;
+        dao.add(topologyVersion);
+        return topologyVersion;
     }
 
-    public TopologyVersionInfo addOrUpdateTopologyVersionInfo(Long versionId, TopologyVersionInfo topologyVersionInfo) {
-        topologyVersionInfo.setId(versionId);
-        topologyVersionInfo.setTimestamp(System.currentTimeMillis());
-        this.dao.addOrUpdate(topologyVersionInfo);
-        return topologyVersionInfo;
+    public TopologyVersion addOrUpdateTopologyVersionInfo(Long versionId, TopologyVersion topologyVersion) {
+        topologyVersion.setId(versionId);
+        topologyVersion.setTimestamp(System.currentTimeMillis());
+        this.dao.addOrUpdate(topologyVersion);
+        return topologyVersion;
     }
 
     public Long getVersionTimestamp(Long versionId) {
-        TopologyVersionInfo versionInfo = getTopologyVersionInfo(versionId);
+        TopologyVersion versionInfo = getTopologyVersionInfo(versionId);
         if (versionInfo == null) {
             throw new IllegalArgumentException("No version with versionId " + versionId);
         }
         return versionInfo.getTimestamp();
     }
 
-    public TopologyVersionInfo updateVersionTimestamp(Long versionId) {
+    public TopologyVersion updateVersionTimestamp(Long versionId) {
         return updateVersionTimestamp(versionId, System.currentTimeMillis());
     }
 
-    public TopologyVersionInfo updateVersionTimestamp(Long versionId, Long timestamp) {
-        TopologyVersionInfo topologyVersionInfo = getTopologyVersionInfo(versionId);
-        if (topologyVersionInfo == null) {
+    public TopologyVersion updateVersionTimestamp(Long versionId, Long timestamp) {
+        TopologyVersion topologyVersion = getTopologyVersionInfo(versionId);
+        if (topologyVersion == null) {
             throw new IllegalStateException("No version with version Id " + versionId);
         }
-        topologyVersionInfo.setTimestamp(timestamp);
-        dao.addOrUpdate(topologyVersionInfo);
-        return topologyVersionInfo;
+        topologyVersion.setTimestamp(timestamp);
+        dao.addOrUpdate(topologyVersion);
+        return topologyVersion;
     }
 
-    public TopologyVersionInfo removeTopologyVersionInfo(Long versionId) {
-        TopologyVersionInfo topologyVersionInfo = new TopologyVersionInfo();
-        topologyVersionInfo.setId(versionId);
-        return dao.remove(new StorableKey(TOPOLOGY_VERSIONINFO_NAMESPACE, topologyVersionInfo.getPrimaryKey()));
+    public TopologyVersion removeTopologyVersionInfo(Long versionId) {
+        TopologyVersion topologyVersion = new TopologyVersion();
+        topologyVersion.setId(versionId);
+        return dao.remove(new StorableKey(TOPOLOGY_VERSIONINFO_NAMESPACE, topologyVersion.getPrimaryKey()));
     }
 
     /**
@@ -289,7 +287,7 @@ public class StreamCatalogService {
      */
     public Collection<Topology> listTopologies() {
         List<Topology> topologies = new ArrayList<>();
-        for (TopologyVersionInfo version: listCurrentTopologyVersionInfos()) {
+        for (TopologyVersion version: listCurrentTopologyVersionInfos()) {
             topologies.addAll(listTopologies(version.getId()));
         }
         return topologies;
@@ -309,7 +307,7 @@ public class StreamCatalogService {
     }
 
     public Long getCurrentVersionId(Long topologyId) {
-        Optional<TopologyVersionInfo> versionInfo = getCurrentTopologyVersionInfo(topologyId);
+        Optional<TopologyVersion> versionInfo = getCurrentTopologyVersionInfo(topologyId);
         return versionInfo.isPresent() ? versionInfo.get().getId() : -1L;
     }
 
@@ -341,7 +339,7 @@ public class StreamCatalogService {
         LOG.debug("Added topology {}", topology);
         long timestamp = System.currentTimeMillis();
         topology.setVersionTimestamp(timestamp);
-        TopologyVersionInfo versionInfo = addCurrentTopologyVersionInfo(topology.getId(), timestamp);
+        TopologyVersion versionInfo = addCurrentTopologyVersionInfo(topology.getId(), timestamp);
         LOG.debug("Added version info {}", versionInfo);
 
         // remove topology with placeholder version first
@@ -363,8 +361,8 @@ public class StreamCatalogService {
     }
 
     // create a 'CURRENT' version for given topology id
-    private TopologyVersionInfo addCurrentTopologyVersionInfo(Long topologyId, Long timestamp) {
-        TopologyVersionInfo versionInfo = new TopologyVersionInfo();
+    private TopologyVersion addCurrentTopologyVersionInfo(Long topologyId, Long timestamp) {
+        TopologyVersion versionInfo = new TopologyVersion();
         versionInfo.setName(CURRENT_VERSION);
         versionInfo.setDescription("");
         versionInfo.setTimestamp(timestamp);
@@ -406,21 +404,21 @@ public class StreamCatalogService {
         }
 
         // remove rules
-        Collection<RuleInfo> ruleInfos = listRules(topologyIdVersionIdQueryParams);
-        for (RuleInfo ruleInfo: ruleInfos) {
-            removeRule(topologyId, ruleInfo.getId(), versionId);
+        Collection<TopologyRule> topologyRules = listRules(topologyIdVersionIdQueryParams);
+        for (TopologyRule topologyRule : topologyRules) {
+            removeRule(topologyId, topologyRule.getId(), versionId);
         }
 
         // remove windowed rules
-        Collection<WindowInfo> windowInfos = listWindows(topologyIdVersionIdQueryParams);
-        for (WindowInfo windowInfo: windowInfos) {
-            removeWindow(topologyId, windowInfo.getId(), versionId);
+        Collection<TopologyWindow> topologyWindows = listWindows(topologyIdVersionIdQueryParams);
+        for (TopologyWindow topologyWindow : topologyWindows) {
+            removeWindow(topologyId, topologyWindow.getId(), versionId);
         }
 
         // remove branch rules
-        Collection<BranchRuleInfo> branchRuleInfos = listBranchRules(topologyIdVersionIdQueryParams);
-        for (BranchRuleInfo branchRuleInfo: branchRuleInfos) {
-            removeBranchRule(topologyId, branchRuleInfo.getId(), versionId);
+        Collection<TopologyBranchRule> topologyBranchRules = listBranchRules(topologyIdVersionIdQueryParams);
+        for (TopologyBranchRule topologyBranchRule : topologyBranchRules) {
+            removeBranchRule(topologyId, topologyBranchRule.getId(), versionId);
         }
 
         // remove sinks
@@ -442,9 +440,9 @@ public class StreamCatalogService {
         }
 
         // remove output streams
-        Collection<StreamInfo> streamInfos = listStreamInfos(topologyIdVersionIdQueryParams);
-        for (StreamInfo streamInfo: streamInfos) {
-            removeStreamInfo(topologyId, streamInfo.getId(), versionId);
+        Collection<TopologyStream> topologyStreams = listStreamInfos(topologyIdVersionIdQueryParams);
+        for (TopologyStream topologyStream : topologyStreams) {
+            removeStreamInfo(topologyId, topologyStream.getId(), versionId);
         }
 
         // remove topology editor metadata
@@ -501,21 +499,21 @@ public class StreamCatalogService {
         }
 
         // branch rules
-        Collection<BranchRuleInfo> branchRuleInfos = listBranchRules(topologyIdVersionIdQueryParams);
-        for (BranchRuleInfo branchRuleInfo: branchRuleInfos) {
-            addBranchRule(topologyId, newVersionId, new BranchRuleInfo(branchRuleInfo));
+        Collection<TopologyBranchRule> topologyBranchRules = listBranchRules(topologyIdVersionIdQueryParams);
+        for (TopologyBranchRule topologyBranchRule : topologyBranchRules) {
+            addBranchRule(topologyId, newVersionId, new TopologyBranchRule(topologyBranchRule));
         }
 
         // windowed rules
-        Collection<WindowInfo> windowInfos = listWindows(topologyIdVersionIdQueryParams);
-        for (WindowInfo windowInfo: windowInfos) {
-            addWindow(topologyId, newVersionId, new WindowInfo(windowInfo));
+        Collection<TopologyWindow> topologyWindows = listWindows(topologyIdVersionIdQueryParams);
+        for (TopologyWindow topologyWindow : topologyWindows) {
+            addWindow(topologyId, newVersionId, new TopologyWindow(topologyWindow));
         }
 
         // rules
-        Collection<RuleInfo> ruleInfos = listRules(topologyIdVersionIdQueryParams);
-        for (RuleInfo ruleInfo: ruleInfos) {
-            addRule(topologyId, newVersionId, new RuleInfo(ruleInfo));
+        Collection<TopologyRule> topologyRules = listRules(topologyIdVersionIdQueryParams);
+        for (TopologyRule topologyRule : topologyRules) {
+            addRule(topologyId, newVersionId, new TopologyRule(topologyRule));
         }
 
         // add edges
@@ -573,15 +571,15 @@ public class StreamCatalogService {
         return topologyData;
     }
 
-    private List<Long> importOutputStreams(Long newTopologyId, Map<Long, Long> oldToNewStreamIds, List<StreamInfo> streams) {
+    private List<Long> importOutputStreams(Long newTopologyId, Map<Long, Long> oldToNewStreamIds, List<TopologyStream> streams) {
         List<Long> importedOutputStreamIds = new ArrayList<>();
-        for (StreamInfo stream : streams) {
+        for (TopologyStream stream : streams) {
             Long oldId = stream.getId();
             Long newId = oldToNewStreamIds.get(oldId);
             if (newId == null) {
                 stream.setId(null);
-                StreamInfo addedStreamInfo = addStreamInfo(newTopologyId, stream);
-                newId = addedStreamInfo.getId();
+                TopologyStream addedTopologyStream = addStreamInfo(newTopologyId, stream);
+                newId = addedTopologyStream.getId();
                 oldToNewStreamIds.put(oldId, newId);
             }
             importedOutputStreamIds.add(newId);
@@ -623,26 +621,26 @@ public class StreamCatalogService {
         }
 
         // import rules
-        for (RuleInfo rule : topologyData.getRules()) {
+        for (TopologyRule rule : topologyData.getRules()) {
             Long currentId = rule.getId();
             rule.setId(null);
-            RuleInfo addedRule = addRule(newTopology.getId(), rule);
+            TopologyRule addedRule = addRule(newTopology.getId(), rule);
             oldToNewRuleIds.put(currentId, addedRule.getId());
         }
 
         // import windowed rules
-        for (WindowInfo window : topologyData.getWindows()) {
+        for (TopologyWindow window : topologyData.getWindows()) {
             Long currentId = window.getId();
             window.setId(null);
-            WindowInfo addedWindow = addWindow(newTopology.getId(), window);
+            TopologyWindow addedWindow = addWindow(newTopology.getId(), window);
             oldToNewWindowIds.put(currentId, addedWindow.getId());
         }
 
         // import branch rules
-        for (BranchRuleInfo branchRule : topologyData.getBranchRules()) {
+        for (TopologyBranchRule branchRule : topologyData.getBranchRules()) {
             Long currentId = branchRule.getId();
             branchRule.setId(null);
-            BranchRuleInfo addedBranchRule = addBranchRule(newTopology.getId(), branchRule);
+            TopologyBranchRule addedBranchRule = addBranchRule(newTopology.getId(), branchRule);
             oldToNewBranchRuleIds.put(currentId, addedBranchRule.getId());
         }
 
@@ -980,8 +978,8 @@ public class StreamCatalogService {
 
     public Collection<TopologyEditorMetadata> listTopologyEditorMetadata() {
         List<TopologyEditorMetadata> metadatas = new ArrayList<>();
-        Collection<TopologyVersionInfo> currentVersions = listCurrentTopologyVersionInfos();
-        for (TopologyVersionInfo version : currentVersions) {
+        Collection<TopologyVersion> currentVersions = listCurrentTopologyVersionInfos();
+        for (TopologyVersion version : currentVersions) {
             List<QueryParam> queryParams = WSUtils.buildTopologyIdAndVersionIdAwareQueryParams(
                     version.getTopologyId(), version.getId(), null);
             metadatas.addAll(listTopologyEditorMetadata(queryParams));
@@ -1124,45 +1122,45 @@ public class StreamCatalogService {
         topologySource.setVersionId(versionId);
         topologySource.setTopologyId(topologyId);
         validateTopologySource(topologySource);
-        List<StreamInfo> streamInfos = addTopologyOutputComponent(topologySource);
+        List<TopologyStream> topologyStreams = addTopologyOutputComponent(topologySource);
         addSourceStreamMapping(topologySource, topologySource.getOutputStreamIds());
-        topologySource.setOutputStreams(streamInfos);
+        topologySource.setOutputStreams(topologyStreams);
         topologySource.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
         return topologySource;
     }
 
-    private List<StreamInfo> addTopologyOutputComponent(TopologyOutputComponent outputComponent) {
-        List<StreamInfo> streamInfos;
+    private List<TopologyStream> addTopologyOutputComponent(TopologyOutputComponent outputComponent) {
+        List<TopologyStream> topologyStreams;
         if (outputComponent.getOutputStreams() != null) {
-            streamInfos = addOutputStreams(outputComponent.getTopologyId(), outputComponent.getVersionId(),
+            topologyStreams = addOutputStreams(outputComponent.getTopologyId(), outputComponent.getVersionId(),
                     outputComponent.getOutputStreams());
-            outputComponent.setOutputStreamIds(new ArrayList<>(Collections2.transform(streamInfos, new Function<StreamInfo, Long>() {
+            outputComponent.setOutputStreamIds(new ArrayList<>(Collections2.transform(topologyStreams, new Function<TopologyStream, Long>() {
                 @Override
-                public Long apply(StreamInfo input) {
+                public Long apply(TopologyStream input) {
                     return input.getId();
                 }
             })));
         } else if (outputComponent.getOutputStreamIds() != null) {
-            streamInfos = getOutputStreams(outputComponent.getTopologyId(), outputComponent.getVersionId(),
+            topologyStreams = getOutputStreams(outputComponent.getTopologyId(), outputComponent.getVersionId(),
                     outputComponent.getOutputStreamIds());
         } else {
-            streamInfos = Collections.emptyList();
+            topologyStreams = Collections.emptyList();
             outputComponent.setOutputStreamIds(Collections.<Long>emptyList());
         }
         dao.add(outputComponent);
-        return streamInfos;
+        return topologyStreams;
     }
 
-    private List<StreamInfo> getOutputStreams(Long topologyId, Long versionId, List<Long> outputStreamIds) {
-        List<StreamInfo> streamInfos = new ArrayList<>();
+    private List<TopologyStream> getOutputStreams(Long topologyId, Long versionId, List<Long> outputStreamIds) {
+        List<TopologyStream> topologyStreams = new ArrayList<>();
         for (Long outputStreamId : outputStreamIds) {
-            StreamInfo streamInfo;
-            if ((streamInfo = getStreamInfo(topologyId, outputStreamId, versionId)) == null) {
+            TopologyStream topologyStream;
+            if ((topologyStream = getStreamInfo(topologyId, outputStreamId, versionId)) == null) {
                 throw new IllegalArgumentException("Output stream with id '" + outputStreamId + "' does not exist.");
             }
-            streamInfos.add(streamInfo);
+            topologyStreams.add(topologyStream);
         }
-        return streamInfos;
+        return topologyStreams;
     }
 
     public TopologySource addOrUpdateTopologySource(Long topologyId, Long sourceId, TopologySource topologySource) {
@@ -1190,12 +1188,12 @@ public class StreamCatalogService {
 
     private List<Long> updateOutputStreams(TopologyOutputComponent outputComponent) {
         List<Long> newStreamIds = new ArrayList<>();
-        for (StreamInfo streamInfo : outputComponent.getOutputStreams()) {
-            if (streamInfo.getId() != null && getStreamInfo(outputComponent.getTopologyId(), streamInfo.getId()) != null) {
-                addOrUpdateStreamInfo(outputComponent.getTopologyId(), streamInfo.getId(), streamInfo);
-                newStreamIds.add(streamInfo.getId());
+        for (TopologyStream topologyStream : outputComponent.getOutputStreams()) {
+            if (topologyStream.getId() != null && getStreamInfo(outputComponent.getTopologyId(), topologyStream.getId()) != null) {
+                addOrUpdateStreamInfo(outputComponent.getTopologyId(), topologyStream.getId(), topologyStream);
+                newStreamIds.add(topologyStream.getId());
             } else {
-                newStreamIds.add(addStreamInfo(outputComponent.getTopologyId(), streamInfo).getId());
+                newStreamIds.add(addStreamInfo(outputComponent.getTopologyId(), topologyStream).getId());
             }
         }
         return newStreamIds;
@@ -1244,12 +1242,12 @@ public class StreamCatalogService {
         return fillSourceStreams(dao.<TopologySource>find(TOPOLOGY_SOURCE_NAMESPACE, params));
     }
 
-    private List<StreamInfo> addOutputStreams(Long topologyId, Long versionId, List<StreamInfo> streams) {
-        List<StreamInfo> streamInfos = new ArrayList<>();
-        for (StreamInfo outputStream : streams) {
-            streamInfos.add(addStreamInfo(topologyId, versionId, outputStream));
+    private List<TopologyStream> addOutputStreams(Long topologyId, Long versionId, List<TopologyStream> streams) {
+        List<TopologyStream> topologyStreams = new ArrayList<>();
+        for (TopologyStream outputStream : streams) {
+            topologyStreams.add(addStreamInfo(topologyId, versionId, outputStream));
         }
-        return streamInfos;
+        return topologyStreams;
     }
 
     private void addSourceStreamMapping(TopologySource topologySource, List<Long> streamIds) {
@@ -1308,12 +1306,12 @@ public class StreamCatalogService {
     private Collection<TopologyProcessor> fillProcessorStreams(Collection<TopologyProcessor> processors) {
         if (processors != null) {
             for (TopologyProcessor processor : processors) {
-                List<StreamInfo> streamInfos = getOutputStreams(processor);
-                processor.setOutputStreams(streamInfos);
-                processor.setOutputStreamIds(new ArrayList<>(Collections2.transform(streamInfos, new Function<StreamInfo, Long>() {
+                List<TopologyStream> topologyStreams = getOutputStreams(processor);
+                processor.setOutputStreams(topologyStreams);
+                processor.setOutputStreamIds(new ArrayList<>(Collections2.transform(topologyStreams, new Function<TopologyStream, Long>() {
                     @Nullable
                     @Override
-                    public Long apply(@Nullable StreamInfo input) {
+                    public Long apply(@Nullable TopologyStream input) {
                         return input.getId();
                     }
                 })));
@@ -1322,17 +1320,17 @@ public class StreamCatalogService {
         return processors;
     }
 
-    private List<StreamInfo> getOutputStreams(TopologyProcessor topologyProcessor) {
-        List<StreamInfo> streams = new ArrayList<>();
+    private List<TopologyStream> getOutputStreams(TopologyProcessor topologyProcessor) {
+        List<TopologyStream> streams = new ArrayList<>();
         if (topologyProcessor != null) {
             QueryParam qp1 = new QueryParam(TopologyProcessorStreamMapping.FIELD_PROCESSOR_ID,
                     String.valueOf(topologyProcessor.getId()));
             QueryParam qp2 = new QueryParam(TopologyProcessorStreamMapping.FIELD_VERSION_ID,
                     String.valueOf(topologyProcessor.getVersionId()));
             for (TopologyProcessorStreamMapping mapping : listTopologyProcessorStreamMapping(ImmutableList.of(qp1, qp2))) {
-                StreamInfo streamInfo = getStreamInfo(topologyProcessor.getTopologyId(), mapping.getStreamId(), topologyProcessor.getVersionId());
-                if (streamInfo != null) {
-                    streams.add(streamInfo);
+                TopologyStream topologyStream = getStreamInfo(topologyProcessor.getTopologyId(), mapping.getStreamId(), topologyProcessor.getVersionId());
+                if (topologyStream != null) {
+                    streams.add(topologyStream);
                 }
             }
         }
@@ -1348,12 +1346,12 @@ public class StreamCatalogService {
     private Collection<TopologySource> fillSourceStreams(Collection<TopologySource> sources) {
         if (sources != null) {
             for (TopologySource source : sources) {
-                List<StreamInfo> streamInfos = getOutputStreams(source);
-                source.setOutputStreams(streamInfos);
-                source.setOutputStreamIds(new ArrayList<>(Collections2.transform(streamInfos, new Function<StreamInfo, Long>() {
+                List<TopologyStream> topologyStreams = getOutputStreams(source);
+                source.setOutputStreams(topologyStreams);
+                source.setOutputStreamIds(new ArrayList<>(Collections2.transform(topologyStreams, new Function<TopologyStream, Long>() {
                     @Nullable
                     @Override
-                    public Long apply(@Nullable StreamInfo input) {
+                    public Long apply(@Nullable TopologyStream input) {
                         return input.getId();
                     }
                 })));
@@ -1362,17 +1360,17 @@ public class StreamCatalogService {
         return sources;
     }
 
-    private List<StreamInfo> getOutputStreams(TopologySource topologySource) {
-        List<StreamInfo> streams = new ArrayList<>();
+    private List<TopologyStream> getOutputStreams(TopologySource topologySource) {
+        List<TopologyStream> streams = new ArrayList<>();
         if (topologySource != null) {
             QueryParam qp1 = new QueryParam(TopologySourceStreamMapping.FIELD_SOURCE_ID,
                     String.valueOf(topologySource.getId()));
             QueryParam qp2 = new QueryParam(TopologySourceStreamMapping.FIELD_VERSION_ID,
                     String.valueOf(topologySource.getVersionId()));
             for (TopologySourceStreamMapping mapping : listTopologySourceStreamMapping(ImmutableList.of(qp1, qp2))) {
-                StreamInfo streamInfo = getStreamInfo(topologySource.getTopologyId(), mapping.getStreamId(), topologySource.getVersionId());
-                if (streamInfo != null) {
-                    streams.add(streamInfo);
+                TopologyStream topologyStream = getStreamInfo(topologySource.getTopologyId(), mapping.getStreamId(), topologySource.getVersionId());
+                if (topologyStream != null) {
+                    streams.add(topologyStream);
                 }
             }
         }
@@ -1484,9 +1482,9 @@ public class StreamCatalogService {
         topologyProcessor.setVersionId(versionId);
         topologyProcessor.setTopologyId(topologyId);
         validateTopologyProcessor(topologyProcessor);
-        List<StreamInfo> streamInfos = addTopologyOutputComponent(topologyProcessor);
+        List<TopologyStream> topologyStreams = addTopologyOutputComponent(topologyProcessor);
         addProcessorStreamMapping(topologyProcessor, topologyProcessor.getOutputStreamIds());
-        topologyProcessor.setOutputStreams(streamInfos);
+        topologyProcessor.setOutputStreams(topologyStreams);
         topologyProcessor.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
         return topologyProcessor;
     }
@@ -1539,9 +1537,9 @@ public class StreamCatalogService {
         return fillProcessorStreams(dao.<TopologyProcessor>find(TOPOLOGY_PROCESSOR_NAMESPACE, params));
     }
 
-    private void createProcessorStreamMapping(TopologyProcessor topologyProcessor, List<StreamInfo> streams) {
-        for (StreamInfo outputStream : streams) {
-            StreamInfo addedStream = addStreamInfo(topologyProcessor.getTopologyId(), outputStream);
+    private void createProcessorStreamMapping(TopologyProcessor topologyProcessor, List<TopologyStream> streams) {
+        for (TopologyStream outputStream : streams) {
+            TopologyStream addedStream = addStreamInfo(topologyProcessor.getTopologyId(), outputStream);
             dao.<TopologyProcessorStreamMapping>add(new TopologyProcessorStreamMapping(topologyProcessor.getId(),
                     topologyProcessor.getVersionId(),
                     addedStream.getId()));
@@ -1650,9 +1648,9 @@ public class StreamCatalogService {
         if (outputComponent.getOutputStreamIds() != null) {
             outputStreamIds.addAll(outputComponent.getOutputStreamIds());
         } else if (outputComponent.getOutputStreams() != null) {
-            outputStreamIds.addAll(Collections2.transform(outputComponent.getOutputStreams(), new Function<StreamInfo, Long>() {
+            outputStreamIds.addAll(Collections2.transform(outputComponent.getOutputStreams(), new Function<TopologyStream, Long>() {
                 @Override
-                public Long apply(StreamInfo input) {
+                public Long apply(TopologyStream input) {
                     return input.getId();
                 }
             }));
@@ -1769,15 +1767,15 @@ public class StreamCatalogService {
         return dao.find(TOPOLOGY_EDGE_NAMESPACE, params);
     }
 
-    public StreamInfo getStreamInfo(Long topologyId, Long streamId) {
+    public TopologyStream getStreamInfo(Long topologyId, Long streamId) {
         return getStreamInfo(topologyId, streamId, getCurrentVersionId(topologyId));
     }
 
-    public StreamInfo getStreamInfo(Long topologyId, Long streamId, Long versionId) {
-        StreamInfo streamInfo = new StreamInfo();
-        streamInfo.setId(streamId);
-        streamInfo.setVersionId(versionId);
-        StreamInfo result = dao.get(new StorableKey(STREAMINFO_NAMESPACE, streamInfo.getPrimaryKey()));
+    public TopologyStream getStreamInfo(Long topologyId, Long streamId, Long versionId) {
+        TopologyStream topologyStream = new TopologyStream();
+        topologyStream.setId(streamId);
+        topologyStream.setVersionId(versionId);
+        TopologyStream result = dao.get(new StorableKey(STREAMINFO_NAMESPACE, topologyStream.getPrimaryKey()));
         if (result == null || !result.getTopologyId().equals(topologyId)) {
             return null;
         }
@@ -1785,17 +1783,17 @@ public class StreamCatalogService {
         return result;
     }
 
-    public StreamInfo getStreamInfoByName(Long topologyId, String streamId) {
+    public TopologyStream getStreamInfoByName(Long topologyId, String streamId) {
         return getStreamInfoByName(topologyId, streamId, getCurrentVersionId(topologyId));
     }
-    public StreamInfo getStreamInfoByName(Long topologyId,
-                                          String streamId,
-                                          Long versionId) {
+    public TopologyStream getStreamInfoByName(Long topologyId,
+                                              String streamId,
+                                              Long versionId) {
         List<QueryParam> queryParams = WSUtils.buildTopologyIdAndVersionIdAwareQueryParams(topologyId, versionId, null);
         try {
-            for (StreamInfo streamInfo : listStreamInfos(queryParams)) {
-                if (streamInfo.getStreamId().equals(streamId)) {
-                    return streamInfo;
+            for (TopologyStream topologyStream : listStreamInfos(queryParams)) {
+                if (topologyStream.getStreamId().equals(streamId)) {
+                    return topologyStream;
                 }
             }
         } catch (Exception ex) {
@@ -1805,37 +1803,37 @@ public class StreamCatalogService {
       return null;
     }
 
-    private void validateStreamInfo(StreamInfo streamInfo) {
-        if (streamInfo.getFields().isEmpty()) {
-            throw new IllegalArgumentException("Stream with empty fields: " + streamInfo);
+    private void validateStreamInfo(TopologyStream topologyStream) {
+        if (topologyStream.getFields().isEmpty()) {
+            throw new IllegalArgumentException("Stream with empty fields: " + topologyStream);
         }
-        StorageUtils.ensureUnique(streamInfo, this::listStreamInfos,
-                QueryParam.params(StreamInfo.TOPOLOGYID, streamInfo.getTopologyId().toString(),
-                        StreamInfo.VERSIONID, streamInfo.getVersionId().toString(),
-                        StreamInfo.STREAMID, streamInfo.getStreamId()));
+        StorageUtils.ensureUnique(topologyStream, this::listStreamInfos,
+                QueryParam.params(TopologyStream.TOPOLOGYID, topologyStream.getTopologyId().toString(),
+                        TopologyStream.VERSIONID, topologyStream.getVersionId().toString(),
+                        TopologyStream.STREAMID, topologyStream.getStreamId()));
     }
 
-    public StreamInfo addStreamInfo(Long topologyId, StreamInfo streamInfo) {
-        return addStreamInfo(topologyId, getCurrentVersionId(topologyId), streamInfo);
+    public TopologyStream addStreamInfo(Long topologyId, TopologyStream topologyStream) {
+        return addStreamInfo(topologyId, getCurrentVersionId(topologyId), topologyStream);
     }
 
-    public StreamInfo addStreamInfo(Long topologyId,
-                                    Long versionId,
-                                    StreamInfo streamInfo) {
-        if (streamInfo.getId() == null) {
-            streamInfo.setId(dao.nextId(STREAMINFO_NAMESPACE));
+    public TopologyStream addStreamInfo(Long topologyId,
+                                        Long versionId,
+                                        TopologyStream topologyStream) {
+        if (topologyStream.getId() == null) {
+            topologyStream.setId(dao.nextId(STREAMINFO_NAMESPACE));
         }
         long timestamp = System.currentTimeMillis();
-        streamInfo.setVersionTimestamp(timestamp);
-        streamInfo.setVersionId(versionId);
-        streamInfo.setTopologyId(topologyId);
-        validateStreamInfo(streamInfo);
-        dao.add(streamInfo);
+        topologyStream.setVersionTimestamp(timestamp);
+        topologyStream.setVersionId(versionId);
+        topologyStream.setTopologyId(topologyId);
+        validateStreamInfo(topologyStream);
+        dao.add(topologyStream);
         updateVersionTimestamp(versionId, timestamp);
-        return streamInfo;
+        return topologyStream;
     }
 
-    public StreamInfo addOrUpdateStreamInfo(Long topologyId, Long id, StreamInfo stream) {
+    public TopologyStream addOrUpdateStreamInfo(Long topologyId, Long id, TopologyStream stream) {
         stream.setId(id);
         Long currentVersionId = getCurrentVersionId(topologyId);
         stream.setVersionId(currentVersionId);
@@ -1848,64 +1846,64 @@ public class StreamCatalogService {
         return stream;
     }
 
-    public StreamInfo removeStreamInfo(Long topologyId, Long streamId) {
+    public TopologyStream removeStreamInfo(Long topologyId, Long streamId) {
         return removeStreamInfo(topologyId, streamId, getCurrentVersionId(topologyId));
     }
 
-    public StreamInfo removeStreamInfo(Long topologyId, Long streamId, Long versionId) {
-        StreamInfo streamInfo = getStreamInfo(topologyId, streamId, versionId);
-        if (streamInfo != null) {
-            streamInfo = dao.remove(new StorableKey(STREAMINFO_NAMESPACE, streamInfo.getPrimaryKey()));
-            streamInfo.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
+    public TopologyStream removeStreamInfo(Long topologyId, Long streamId, Long versionId) {
+        TopologyStream topologyStream = getStreamInfo(topologyId, streamId, versionId);
+        if (topologyStream != null) {
+            topologyStream = dao.remove(new StorableKey(STREAMINFO_NAMESPACE, topologyStream.getPrimaryKey()));
+            topologyStream.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
         }
-        return streamInfo;
+        return topologyStream;
     }
 
-    public Collection<StreamInfo> listStreamInfos() {
+    public Collection<TopologyStream> listStreamInfos() {
         return dao.list(STREAMINFO_NAMESPACE);
     }
 
-    public Collection<StreamInfo> listStreamInfos(List<QueryParam> params) {
+    public Collection<TopologyStream> listStreamInfos(List<QueryParam> params) {
         return dao.find(STREAMINFO_NAMESPACE, params);
     }
 
-    public Collection<RuleInfo> listRules() {
+    public Collection<TopologyRule> listRules() {
         return dao.list(TOPOLOGY_RULEINFO_NAMESPACE);
     }
 
-    public Collection<RuleInfo> listRules(List<QueryParam> params) throws Exception {
+    public Collection<TopologyRule> listRules(List<QueryParam> params) throws Exception {
         return dao.find(TOPOLOGY_RULEINFO_NAMESPACE, params);
     }
 
-    public RuleInfo addRule(Long topologyId, RuleInfo ruleInfo) throws Exception {
-        return addRule(topologyId, getCurrentVersionId(topologyId), ruleInfo);
+    public TopologyRule addRule(Long topologyId, TopologyRule topologyRule) throws Exception {
+        return addRule(topologyId, getCurrentVersionId(topologyId), topologyRule);
     }
 
-    public RuleInfo addRule(Long topologyId,
-                            Long versionId,
-                            RuleInfo ruleInfo) throws Exception {
-        if (ruleInfo.getId() == null) {
-            ruleInfo.setId(dao.nextId(TOPOLOGY_RULEINFO_NAMESPACE));
+    public TopologyRule addRule(Long topologyId,
+                                Long versionId,
+                                TopologyRule topologyRule) throws Exception {
+        if (topologyRule.getId() == null) {
+            topologyRule.setId(dao.nextId(TOPOLOGY_RULEINFO_NAMESPACE));
         }
-        ruleInfo.setVersionId(versionId);
-        ruleInfo.setTopologyId(topologyId);
-        String parsedRuleStr = parseAndSerialize(ruleInfo);
+        topologyRule.setVersionId(versionId);
+        topologyRule.setTopologyId(topologyId);
+        String parsedRuleStr = parseAndSerialize(topologyRule);
         LOG.debug("ParsedRuleStr {}", parsedRuleStr);
-        ruleInfo.setParsedRuleStr(parsedRuleStr);
-        dao.add(ruleInfo);
-        ruleInfo.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
-        return ruleInfo;
+        topologyRule.setParsedRuleStr(parsedRuleStr);
+        dao.add(topologyRule);
+        topologyRule.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
+        return topologyRule;
     }
 
-    public RuleInfo getRule(Long topologyId, Long ruleId) throws Exception {
+    public TopologyRule getRule(Long topologyId, Long ruleId) throws Exception {
         return getRule(topologyId, ruleId, getCurrentVersionId(topologyId));
     }
 
-    public RuleInfo getRule(Long topologyId, Long ruleId, Long versionId) throws Exception {
-        RuleInfo topologyRuleInfo = new RuleInfo();
-        topologyRuleInfo.setId(ruleId);
-        topologyRuleInfo.setVersionId(versionId);
-        RuleInfo ruleInfo = dao.get(new StorableKey(TOPOLOGY_RULEINFO_NAMESPACE, topologyRuleInfo.getPrimaryKey()));
+    public TopologyRule getRule(Long topologyId, Long ruleId, Long versionId) throws Exception {
+        TopologyRule topologyTopologyRule = new TopologyRule();
+        topologyTopologyRule.setId(ruleId);
+        topologyTopologyRule.setVersionId(versionId);
+        TopologyRule ruleInfo = dao.get(new StorableKey(TOPOLOGY_RULEINFO_NAMESPACE, topologyTopologyRule.getPrimaryKey()));
         if (ruleInfo == null || !ruleInfo.getTopologyId().equals(topologyId)) {
             return null;
         }
@@ -1914,138 +1912,138 @@ public class StreamCatalogService {
     }
 
 
-    public RuleInfo addOrUpdateRule(Long topologyId, Long ruleId, RuleInfo ruleInfo) throws Exception {
+    public TopologyRule addOrUpdateRule(Long topologyId, Long ruleId, TopologyRule topologyRule) throws Exception {
         Long currentTopologyVersionId = getCurrentVersionId(topologyId);
-        ruleInfo.setId(ruleId);
-        ruleInfo.setVersionId(currentTopologyVersionId);
-        ruleInfo.setTopologyId(topologyId);
-        String parsedRuleStr = parseAndSerialize(ruleInfo);
+        topologyRule.setId(ruleId);
+        topologyRule.setVersionId(currentTopologyVersionId);
+        topologyRule.setTopologyId(topologyId);
+        String parsedRuleStr = parseAndSerialize(topologyRule);
         LOG.debug("ParsedRuleStr {}", parsedRuleStr);
-        ruleInfo.setParsedRuleStr(parsedRuleStr);
-        dao.addOrUpdate(ruleInfo);
-        ruleInfo.setVersionTimestamp(updateVersionTimestamp(currentTopologyVersionId).getTimestamp());
-        return ruleInfo;
+        topologyRule.setParsedRuleStr(parsedRuleStr);
+        dao.addOrUpdate(topologyRule);
+        topologyRule.setVersionTimestamp(updateVersionTimestamp(currentTopologyVersionId).getTimestamp());
+        return topologyRule;
     }
 
-    public RuleInfo removeRule(Long topologyId, Long ruleId) throws Exception {
+    public TopologyRule removeRule(Long topologyId, Long ruleId) throws Exception {
         return removeRule(topologyId, ruleId, getCurrentVersionId(topologyId));
     }
 
-    public RuleInfo removeRule(Long topologyId, Long ruleId, Long versionId) throws Exception {
-        RuleInfo ruleInfo = getRule(topologyId, ruleId, versionId);
-        if (ruleInfo != null) {
-            ruleInfo = dao.remove(new StorableKey(TOPOLOGY_RULEINFO_NAMESPACE, ruleInfo.getPrimaryKey()));
-            ruleInfo.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
+    public TopologyRule removeRule(Long topologyId, Long ruleId, Long versionId) throws Exception {
+        TopologyRule topologyRule = getRule(topologyId, ruleId, versionId);
+        if (topologyRule != null) {
+            topologyRule = dao.remove(new StorableKey(TOPOLOGY_RULEINFO_NAMESPACE, topologyRule.getPrimaryKey()));
+            topologyRule.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
         }
-        return ruleInfo;
+        return topologyRule;
     }
 
-    public Collection<WindowInfo> listWindows() {
+    public Collection<TopologyWindow> listWindows() {
         return dao.list(TOPOLOGY_WINDOWINFO_NAMESPACE);
     }
 
-    public Collection<WindowInfo> listWindows(List<QueryParam> params) throws Exception {
+    public Collection<TopologyWindow> listWindows(List<QueryParam> params) throws Exception {
         return dao.find(TOPOLOGY_WINDOWINFO_NAMESPACE, params);
     }
 
-    public Collection<BranchRuleInfo> listBranchRules() {
+    public Collection<TopologyBranchRule> listBranchRules() {
         return dao.list(TOPOLOGY_BRANCHRULEINFO_NAMESPACE);
     }
 
-    public Collection<BranchRuleInfo> listBranchRules(List<QueryParam> params) throws Exception {
+    public Collection<TopologyBranchRule> listBranchRules(List<QueryParam> params) throws Exception {
         return dao.find(TOPOLOGY_BRANCHRULEINFO_NAMESPACE, params);
     }
 
-    public BranchRuleInfo addBranchRule(Long topologyId, BranchRuleInfo branchRuleInfo) throws Exception {
-        return addBranchRule(topologyId, getCurrentVersionId(topologyId), branchRuleInfo);
+    public TopologyBranchRule addBranchRule(Long topologyId, TopologyBranchRule topologyBranchRule) throws Exception {
+        return addBranchRule(topologyId, getCurrentVersionId(topologyId), topologyBranchRule);
     }
-    public BranchRuleInfo addBranchRule(Long topologyId,
-                                        Long versionId,
-                                        BranchRuleInfo branchRuleInfo) throws Exception {
-        if (branchRuleInfo.getId() == null) {
-            branchRuleInfo.setId(dao.nextId(TOPOLOGY_BRANCHRULEINFO_NAMESPACE));
+    public TopologyBranchRule addBranchRule(Long topologyId,
+                                            Long versionId,
+                                            TopologyBranchRule topologyBranchRule) throws Exception {
+        if (topologyBranchRule.getId() == null) {
+            topologyBranchRule.setId(dao.nextId(TOPOLOGY_BRANCHRULEINFO_NAMESPACE));
         }
-        branchRuleInfo.setTopologyId(topologyId);
-        branchRuleInfo.setVersionId(versionId);
-        String parsedRuleStr = parseAndSerialize(branchRuleInfo);
+        topologyBranchRule.setTopologyId(topologyId);
+        topologyBranchRule.setVersionId(versionId);
+        String parsedRuleStr = parseAndSerialize(topologyBranchRule);
         LOG.debug("ParsedRuleStr {}", parsedRuleStr);
-        branchRuleInfo.setParsedRuleStr(parsedRuleStr);
-        dao.add(branchRuleInfo);
-        branchRuleInfo.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
-        return branchRuleInfo;
+        topologyBranchRule.setParsedRuleStr(parsedRuleStr);
+        dao.add(topologyBranchRule);
+        topologyBranchRule.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
+        return topologyBranchRule;
     }
 
-    public BranchRuleInfo getBranchRule(Long topologyId, Long ruleId) throws Exception {
+    public TopologyBranchRule getBranchRule(Long topologyId, Long ruleId) throws Exception {
         return getBranchRule(topologyId, ruleId, getCurrentVersionId(topologyId));
     }
 
-    public BranchRuleInfo getBranchRule(Long topologyId, Long ruleId, Long versionId) throws Exception {
-        BranchRuleInfo branchRuleInfo = new BranchRuleInfo();
-        branchRuleInfo.setId(ruleId);
-        branchRuleInfo.setVersionId(versionId);
-        branchRuleInfo = dao.get(new StorableKey(TOPOLOGY_BRANCHRULEINFO_NAMESPACE, branchRuleInfo.getPrimaryKey()));
-        if (branchRuleInfo == null || !branchRuleInfo.getTopologyId().equals(topologyId)) {
+    public TopologyBranchRule getBranchRule(Long topologyId, Long ruleId, Long versionId) throws Exception {
+        TopologyBranchRule topologyBranchRule = new TopologyBranchRule();
+        topologyBranchRule.setId(ruleId);
+        topologyBranchRule.setVersionId(versionId);
+        topologyBranchRule = dao.get(new StorableKey(TOPOLOGY_BRANCHRULEINFO_NAMESPACE, topologyBranchRule.getPrimaryKey()));
+        if (topologyBranchRule == null || !topologyBranchRule.getTopologyId().equals(topologyId)) {
             return null;
         }
-        branchRuleInfo.setVersionTimestamp(getVersionTimestamp(versionId));
-        return branchRuleInfo;
+        topologyBranchRule.setVersionTimestamp(getVersionTimestamp(versionId));
+        return topologyBranchRule;
     }
 
-    public BranchRuleInfo addOrUpdateBranchRule(Long topologyId, Long ruleId, BranchRuleInfo branchRuleInfo) throws Exception {
+    public TopologyBranchRule addOrUpdateBranchRule(Long topologyId, Long ruleId, TopologyBranchRule topologyBranchRule) throws Exception {
         Long currentTopologyVersionId = getCurrentVersionId(topologyId);
-        branchRuleInfo.setId(ruleId);
-        branchRuleInfo.setVersionId(currentTopologyVersionId);
-        branchRuleInfo.setTopologyId(topologyId);
-        String parsedRuleStr = parseAndSerialize(branchRuleInfo);
+        topologyBranchRule.setId(ruleId);
+        topologyBranchRule.setVersionId(currentTopologyVersionId);
+        topologyBranchRule.setTopologyId(topologyId);
+        String parsedRuleStr = parseAndSerialize(topologyBranchRule);
         LOG.debug("ParsedRuleStr {}", parsedRuleStr);
-        branchRuleInfo.setParsedRuleStr(parsedRuleStr);
-        dao.addOrUpdate(branchRuleInfo);
-        branchRuleInfo.setVersionTimestamp(updateVersionTimestamp(currentTopologyVersionId).getTimestamp());
-        return branchRuleInfo;
+        topologyBranchRule.setParsedRuleStr(parsedRuleStr);
+        dao.addOrUpdate(topologyBranchRule);
+        topologyBranchRule.setVersionTimestamp(updateVersionTimestamp(currentTopologyVersionId).getTimestamp());
+        return topologyBranchRule;
     }
 
-    public BranchRuleInfo removeBranchRule(Long topologyId, Long id) throws Exception {
+    public TopologyBranchRule removeBranchRule(Long topologyId, Long id) throws Exception {
         return removeBranchRule(topologyId, id, getCurrentVersionId(topologyId));
     }
 
-    public BranchRuleInfo removeBranchRule(Long topologyId, Long id, Long versionId) throws Exception {
-        BranchRuleInfo branchRuleInfo = getBranchRule(topologyId, id, versionId);
-        if (branchRuleInfo != null) {
-            branchRuleInfo = dao.remove(new StorableKey(TOPOLOGY_BRANCHRULEINFO_NAMESPACE, branchRuleInfo.getPrimaryKey()));
-            branchRuleInfo.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
+    public TopologyBranchRule removeBranchRule(Long topologyId, Long id, Long versionId) throws Exception {
+        TopologyBranchRule topologyBranchRule = getBranchRule(topologyId, id, versionId);
+        if (topologyBranchRule != null) {
+            topologyBranchRule = dao.remove(new StorableKey(TOPOLOGY_BRANCHRULEINFO_NAMESPACE, topologyBranchRule.getPrimaryKey()));
+            topologyBranchRule.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
         }
-        return branchRuleInfo;
+        return topologyBranchRule;
     }
 
-    public WindowInfo addWindow(Long topologyId, WindowInfo windowInfo) throws Exception {
-        return addWindow(topologyId, getCurrentVersionId(topologyId), windowInfo);
+    public TopologyWindow addWindow(Long topologyId, TopologyWindow topologyWindow) throws Exception {
+        return addWindow(topologyId, getCurrentVersionId(topologyId), topologyWindow);
     }
 
-    public WindowInfo addWindow(Long topologyId,
-                                Long versionId,
-                                WindowInfo windowInfo) throws Exception {
-        if (windowInfo.getId() == null) {
-            windowInfo.setId(dao.nextId(TOPOLOGY_WINDOWINFO_NAMESPACE));
+    public TopologyWindow addWindow(Long topologyId,
+                                    Long versionId,
+                                    TopologyWindow topologyWindow) throws Exception {
+        if (topologyWindow.getId() == null) {
+            topologyWindow.setId(dao.nextId(TOPOLOGY_WINDOWINFO_NAMESPACE));
         }
-        windowInfo.setTopologyId(topologyId);
-        windowInfo.setVersionId(versionId);
-        String parsedRuleStr = parseAndSerialize(windowInfo);
+        topologyWindow.setTopologyId(topologyId);
+        topologyWindow.setVersionId(versionId);
+        String parsedRuleStr = parseAndSerialize(topologyWindow);
         LOG.debug("ParsedRuleStr {}", parsedRuleStr);
-        windowInfo.setParsedRuleStr(parsedRuleStr);
-        dao.add(windowInfo);
-        windowInfo.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
-        return windowInfo;
+        topologyWindow.setParsedRuleStr(parsedRuleStr);
+        dao.add(topologyWindow);
+        topologyWindow.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
+        return topologyWindow;
     }
 
-    public WindowInfo getWindow(Long topologyId, Long windowId) throws Exception {
+    public TopologyWindow getWindow(Long topologyId, Long windowId) throws Exception {
         return getWindow(topologyId, windowId, getCurrentVersionId(topologyId));
     }
 
-    public WindowInfo getWindow(Long topologyId, Long windowId, Long versionId) throws Exception {
-        WindowInfo topologyWindowInfo = new WindowInfo();
-        topologyWindowInfo.setId(windowId);
-        topologyWindowInfo.setVersionId(versionId);
-        WindowInfo windowInfo = dao.get(new StorableKey(TOPOLOGY_WINDOWINFO_NAMESPACE, topologyWindowInfo.getPrimaryKey()));
+    public TopologyWindow getWindow(Long topologyId, Long windowId, Long versionId) throws Exception {
+        TopologyWindow topologyTopologyWindow = new TopologyWindow();
+        topologyTopologyWindow.setId(windowId);
+        topologyTopologyWindow.setVersionId(versionId);
+        TopologyWindow windowInfo = dao.get(new StorableKey(TOPOLOGY_WINDOWINFO_NAMESPACE, topologyTopologyWindow.getPrimaryKey()));
         if (windowInfo == null || !windowInfo.getTopologyId().equals(topologyId)) {
             return null;
         }
@@ -2053,51 +2051,51 @@ public class StreamCatalogService {
         return windowInfo;
     }
 
-    public WindowInfo addOrUpdateWindow(Long topologyId, Long windowId, WindowInfo windowInfo) throws Exception {
+    public TopologyWindow addOrUpdateWindow(Long topologyId, Long windowId, TopologyWindow topologyWindow) throws Exception {
         Long currentTopologyVersionId = getCurrentVersionId(topologyId);
-        windowInfo.setId(windowId);
-        windowInfo.setVersionId(currentTopologyVersionId);
-        windowInfo.setTopologyId(topologyId);
-        String parsedRuleStr = parseAndSerialize(windowInfo);
+        topologyWindow.setId(windowId);
+        topologyWindow.setVersionId(currentTopologyVersionId);
+        topologyWindow.setTopologyId(topologyId);
+        String parsedRuleStr = parseAndSerialize(topologyWindow);
         LOG.debug("ParsedRuleStr {}", parsedRuleStr);
-        windowInfo.setParsedRuleStr(parsedRuleStr);
-        dao.addOrUpdate(windowInfo);
-        windowInfo.setVersionTimestamp(updateVersionTimestamp(currentTopologyVersionId).getTimestamp());
-        return windowInfo;
+        topologyWindow.setParsedRuleStr(parsedRuleStr);
+        dao.addOrUpdate(topologyWindow);
+        topologyWindow.setVersionTimestamp(updateVersionTimestamp(currentTopologyVersionId).getTimestamp());
+        return topologyWindow;
     }
 
-    public WindowInfo removeWindow(Long topologyId, Long windowId) throws Exception {
+    public TopologyWindow removeWindow(Long topologyId, Long windowId) throws Exception {
         return removeWindow(topologyId, windowId, getCurrentVersionId(topologyId));
     }
 
-    public WindowInfo removeWindow(Long topologyId, Long windowId, Long versionId) throws Exception {
-        WindowInfo windowInfo = getWindow(topologyId, windowId, versionId);
-        if (windowInfo != null) {
-            windowInfo = dao.remove(new StorableKey(TOPOLOGY_WINDOWINFO_NAMESPACE, windowInfo.getPrimaryKey()));
-            windowInfo.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
+    public TopologyWindow removeWindow(Long topologyId, Long windowId, Long versionId) throws Exception {
+        TopologyWindow topologyWindow = getWindow(topologyId, windowId, versionId);
+        if (topologyWindow != null) {
+            topologyWindow = dao.remove(new StorableKey(TOPOLOGY_WINDOWINFO_NAMESPACE, topologyWindow.getPrimaryKey()));
+            topologyWindow.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
         }
-        return windowInfo;
+        return topologyWindow;
     }
 
-    private String parseAndSerialize(RuleInfo ruleInfo) throws JsonProcessingException {
+    private String parseAndSerialize(TopologyRule topologyRule) throws JsonProcessingException {
         Rule rule = new Rule();
-        rule.setId(ruleInfo.getId());
-        rule.setName(ruleInfo.getName());
-        rule.setDescription(ruleInfo.getDescription());
-        rule.setWindow(ruleInfo.getWindow());
-        rule.setActions(ruleInfo.getActions());
+        rule.setId(topologyRule.getId());
+        rule.setName(topologyRule.getName());
+        rule.setDescription(topologyRule.getDescription());
+        rule.setWindow(topologyRule.getWindow());
+        rule.setActions(topologyRule.getActions());
 
-        if (ruleInfo.getStreams() != null && !ruleInfo.getStreams().isEmpty()) {
-            ruleInfo.setSql(getSqlString(ruleInfo.getStreams(), ruleInfo.getProjections(), ruleInfo.getCondition(), null));
-        } else if (StringUtils.isEmpty(ruleInfo.getSql())) {
+        if (topologyRule.getStreams() != null && !topologyRule.getStreams().isEmpty()) {
+            topologyRule.setSql(getSqlString(topologyRule.getStreams(), topologyRule.getProjections(), topologyRule.getCondition(), null));
+        } else if (StringUtils.isEmpty(topologyRule.getSql())) {
             throw new IllegalArgumentException("Either streams or sql string should be specified.");
         }
-        updateRuleWithSql(rule, ruleInfo.getSql(), ruleInfo.getTopologyId(), ruleInfo.getVersionId());
+        updateRuleWithSql(rule, topologyRule.getSql(), topologyRule.getTopologyId(), topologyRule.getVersionId());
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(rule);
     }
 
-    private String parseAndSerialize(BranchRuleInfo ruleInfo) throws JsonProcessingException {
+    private String parseAndSerialize(TopologyBranchRule ruleInfo) throws JsonProcessingException {
         Rule rule = new Rule();
         rule.setId(ruleInfo.getId());
         rule.setName(ruleInfo.getName());
@@ -2109,22 +2107,22 @@ public class StreamCatalogService {
         return mapper.writeValueAsString(rule);
     }
 
-    private String parseAndSerialize(WindowInfo windowInfo) throws JsonProcessingException {
-        if (windowInfo.getStreams() == null || windowInfo.getStreams().isEmpty()) {
+    private String parseAndSerialize(TopologyWindow topologyWindow) throws JsonProcessingException {
+        if (topologyWindow.getStreams() == null || topologyWindow.getStreams().isEmpty()) {
             LOG.error("Streams should be specified.");
             return StringUtils.EMPTY;
         }
         Rule rule = new Rule();
-        rule.setId(windowInfo.getId());
-        rule.setName(windowInfo.getName());
-        rule.setDescription(windowInfo.getDescription());
-        rule.setWindow(windowInfo.getWindow());
-        rule.setActions(windowInfo.getActions());
-        String sql = getSqlString(windowInfo.getStreams(),
-                windowInfo.getProjections(),
-                windowInfo.getCondition(),
-                windowInfo.getGroupbykeys());
-        updateRuleWithSql(rule, sql, windowInfo.getTopologyId(), windowInfo.getVersionId());
+        rule.setId(topologyWindow.getId());
+        rule.setName(topologyWindow.getName());
+        rule.setDescription(topologyWindow.getDescription());
+        rule.setWindow(topologyWindow.getWindow());
+        rule.setActions(topologyWindow.getActions());
+        String sql = getSqlString(topologyWindow.getStreams(),
+                topologyWindow.getProjections(),
+                topologyWindow.getCondition(),
+                topologyWindow.getGroupbykeys());
+        updateRuleWithSql(rule, sql, topologyWindow.getTopologyId(), topologyWindow.getVersionId());
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(rule);
     }
@@ -2244,30 +2242,30 @@ public class StreamCatalogService {
     }
 
 
-    public Collection<UDFInfo> listUDFs() {
+    public Collection<UDF> listUDFs() {
         return this.dao.list(UDF_NAMESPACE);
     }
 
-    public Collection<UDFInfo> listUDFs(List<QueryParam> queryParams) {
+    public Collection<UDF> listUDFs(List<QueryParam> queryParams) {
         return dao.find(UDF_NAMESPACE, queryParams);
     }
 
-    public UDFInfo getUDF(Long id) {
-        UDFInfo udfInfo = new UDFInfo();
-        udfInfo.setId(id);
-        return this.dao.get(new StorableKey(UDF_NAMESPACE, udfInfo.getPrimaryKey()));
+    public UDF getUDF(Long id) {
+        UDF udf = new UDF();
+        udf.setId(id);
+        return this.dao.get(new StorableKey(UDF_NAMESPACE, udf.getPrimaryKey()));
     }
 
-    public UDFInfo addUDF(UDFInfo udfInfo) {
-        if (udfInfo.getId() == null) {
-            udfInfo.setId(this.dao.nextId(UDF_NAMESPACE));
+    public UDF addUDF(UDF udf) {
+        if (udf.getId() == null) {
+            udf.setId(this.dao.nextId(UDF_NAMESPACE));
         }
-        udfInfo.setName(udfInfo.getName().toUpperCase());
-        this.dao.add(udfInfo);
-        return udfInfo;
+        udf.setName(udf.getName().toUpperCase());
+        this.dao.add(udf);
+        return udf;
     }
 
-    public Map<String, Class<?>> loadUdfsFromJar(File jarFile) throws IOException {
+    public Map<String, Class<?>> loadUdfsFromJar(java.io.File jarFile) throws IOException {
         Map<String, Class<?>> udafs = new HashMap<>();
 
         for (Class<?> udfClass : UDF_CLASSES) {
@@ -2279,17 +2277,17 @@ public class StreamCatalogService {
         return udafs;
     }
 
-    public UDFInfo removeUDF(Long id) {
-        UDFInfo udfInfo = new UDFInfo();
-        udfInfo.setId(id);
-        return dao.remove(new StorableKey(UDF_NAMESPACE, udfInfo.getPrimaryKey()));
+    public UDF removeUDF(Long id) {
+        UDF udf = new UDF();
+        udf.setId(id);
+        return dao.remove(new StorableKey(UDF_NAMESPACE, udf.getPrimaryKey()));
     }
 
-    public UDFInfo addOrUpdateUDF(Long udfId, UDFInfo udfInfo) {
-        udfInfo.setId(udfId);
-        udfInfo.setName(udfInfo.getName().toUpperCase());
-        this.dao.addOrUpdate(udfInfo);
-        return udfInfo;
+    public UDF addOrUpdateUDF(Long udfId, UDF udf) {
+        udf.setId(udfId);
+        udf.setName(udf.getName().toUpperCase());
+        this.dao.addOrUpdate(udf);
+        return udf;
     }
 
     private void loadTransformationClassForBundle (TopologyComponentBundle topologyComponentBundle, InputStream bundleJar) {
@@ -2311,7 +2309,7 @@ public class StreamCatalogService {
                 OutputStream os = null;
                 InputStream is = null;
                 try {
-                    File tmpFile = File.createTempFile(UUID.randomUUID().toString(), ".jar");
+                    java.io.File tmpFile = java.io.File.createTempFile(UUID.randomUUID().toString(), ".jar");
                     tmpFile.deleteOnExit();
                     os = new FileOutputStream(tmpFile);
                     ByteStreams.copy(bundleJar, os);
@@ -2340,7 +2338,7 @@ public class StreamCatalogService {
         return bundleJarFileName;
     }
 
-    private Collection<FileInfo> listFiles(List<QueryParam> queryParams) {
-        return dao.find(FileInfo.NAME_SPACE, queryParams);
+    private Collection<File> listFiles(List<QueryParam> queryParams) {
+        return dao.find(File.NAME_SPACE, queryParams);
     }
 }
