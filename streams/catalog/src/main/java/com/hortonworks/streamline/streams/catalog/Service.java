@@ -27,7 +27,7 @@ import java.util.Map;
  * Service represents a component of system. For example, STORM, KAFKA, etc.
  */
 public class Service extends AbstractStorable {
-  private static final String NAMESPACE = "services";
+  private static final String NAMESPACE = "service";
 
   private Long id;
   private Long clusterId;

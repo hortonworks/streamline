@@ -33,7 +33,7 @@ import java.util.Map;
  */
 public class Topology implements Storable {
 
-    public static final String NAME_SPACE = "topologies";
+    public static final String NAME_SPACE = "topology";
     public static final String ID = "id";
     public static final String VERSIONID = "versionId";
     public static final String NAME = "name";

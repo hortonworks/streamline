@@ -17,7 +17,7 @@ package com.hortonworks.streamline.streams.catalog.storage;
 
 import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableTest;
-import com.hortonworks.streamline.streams.catalog.FileInfo;
+import com.hortonworks.streamline.streams.catalog.File;
 
 import java.util.ArrayList;
 
@@ -46,8 +46,8 @@ public class CatalogTests {
             }};
         }
 
-        protected FileInfo createFiles(Long id, String name) {
-            FileInfo file = new FileInfo();
+        protected File createFiles(Long id, String name) {
+            File file = new File();
             file.setId(id);
             file.setName(name);
             file.setStoredFileName("/tmp/parser.jar");

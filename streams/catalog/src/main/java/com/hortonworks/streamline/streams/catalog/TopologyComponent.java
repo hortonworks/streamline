@@ -30,7 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TopologyComponent extends AbstractStorable {
-    public static final String NAMESPACE = "topology_components";
+    public static final String NAMESPACE = "topology_component";
 
     public static final String ID = "id";
     public static final String VERSIONID = "versionId";

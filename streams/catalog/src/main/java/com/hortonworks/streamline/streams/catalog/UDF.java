@@ -35,8 +35,8 @@ import java.util.Map;
 import static com.hortonworks.streamline.streams.layout.component.rule.expression.Udf.Type;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UDFInfo extends AbstractStorable {
-    private static final String NAMESPACE = "udfs";
+public class UDF extends AbstractStorable {
+    private static final String NAMESPACE = "udf";
 
     public static final String ID = "id";
     public static final String NAME = "name";
@@ -243,9 +243,9 @@ public class UDFInfo extends AbstractStorable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        UDFInfo udfInfo = (UDFInfo) o;
+        UDF udf = (UDF) o;
 
-        return id != null ? id.equals(udfInfo.id) : udfInfo.id == null;
+        return id != null ? id.equals(udf.id) : udf.id == null;
 
     }
 

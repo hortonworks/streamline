@@ -27,7 +27,7 @@ import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.common.util.FileUtil;
 import com.hortonworks.streamline.common.util.ProxyUtil;
 import com.hortonworks.streamline.common.util.WSUtils;
-import com.hortonworks.streamline.streams.catalog.UDFInfo;
+import com.hortonworks.streamline.streams.catalog.UDF;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import org.apache.commons.codec.binary.Hex;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
@@ -117,7 +117,7 @@ public class UDFCatalogResource {
     public Response listUDFs(@Context UriInfo uriInfo) {
         List<QueryParam> queryParams = new ArrayList<>();
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
-        Collection<UDFInfo> udfs;
+        Collection<UDF> udfs;
         if (params.isEmpty()) {
             udfs = catalogService.listUDFs();
         } else {
@@ -155,7 +155,7 @@ public class UDFCatalogResource {
     @Path("/udfs/{id}")
     @Timed
     public Response getUDFById(@PathParam("id") Long id) {
-        UDFInfo result = catalogService.getUDF(id);
+        UDF result = catalogService.getUDF(id);
         if (result != null) {
             return WSUtils.respondEntity(result, OK);
         }
@@ -183,10 +183,10 @@ public class UDFCatalogResource {
         if (!mediaType.equals(MediaType.APPLICATION_JSON_TYPE)) {
             throw new UnsupportedMediaTypeException(mediaType.toString());
         }
-        UDFInfo udfInfo = udfConfig.getValueAs(UDFInfo.class);
-        processUdf(inputStream, udfInfo, true, builtin);
-        UDFInfo createdUdfInfo = catalogService.addUDF(udfInfo);
-        return WSUtils.respondEntity(createdUdfInfo, CREATED);
+        UDF udf = udfConfig.getValueAs(UDF.class);
+        processUdf(inputStream, udf, true, builtin);
+        UDF createdUdf = catalogService.addUDF(udf);
+        return WSUtils.respondEntity(createdUdf, CREATED);
     }
 
     /**
@@ -213,7 +213,7 @@ public class UDFCatalogResource {
     @Path("/udfs/{id}")
     @Timed
     public Response removeUDF(@PathParam("id") Long id) {
-        UDFInfo removedUDF = catalogService.removeUDF(id);
+        UDF removedUDF = catalogService.removeUDF(id);
         if (removedUDF != null) {
             return WSUtils.respondEntity(removedUDF, OK);
         }
@@ -258,10 +258,10 @@ public class UDFCatalogResource {
         if (!mediaType.equals(MediaType.APPLICATION_JSON_TYPE)) {
             throw new UnsupportedMediaTypeException(mediaType.toString());
         }
-        UDFInfo udfInfo = udfConfig.getValueAs(UDFInfo.class);
-        processUdf(inputStream, udfInfo, false, builtin);
-        UDFInfo newUdfInfo = catalogService.addOrUpdateUDF(udfId, udfInfo);
-        return WSUtils.respondEntity(newUdfInfo, CREATED);
+        UDF udf = udfConfig.getValueAs(UDF.class);
+        processUdf(inputStream, udf, false, builtin);
+        UDF newUdf = catalogService.addOrUpdateUDF(udfId, udf);
+        return WSUtils.respondEntity(newUdf, CREATED);
     }
 
     /**
@@ -275,10 +275,10 @@ public class UDFCatalogResource {
     @Produces({"application/java-archive", "application/json"})
     @Path("/udfs/download/{udfId}")
     public Response downloadUdf(@PathParam("udfId") Long udfId) throws IOException {
-        UDFInfo udfInfo = catalogService.getUDF(udfId);
-        if (udfInfo != null) {
+        UDF udf = catalogService.getUDF(udfId);
+        if (udf != null) {
             StreamingOutput streamOutput = WSUtils.wrapWithStreamingOutput(
-                    catalogService.downloadFileFromStorage(udfInfo.getJarStoragePath()));
+                    catalogService.downloadFileFromStorage(udf.getJarStoragePath()));
             return Response.ok(streamOutput).build();
         }
 
@@ -286,13 +286,13 @@ public class UDFCatalogResource {
     }
 
     private void processUdf(InputStream inputStream,
-                            UDFInfo udfInfo,
+                            UDF udf,
                             boolean checkDuplicate,
                             boolean builtin) throws Exception {
         if (builtin) {
-            udfInfo.setDigest("builtin");
-            udfInfo.setJarStoragePath("builtin");
-            checkDuplicate(udfInfo);
+            udf.setDigest("builtin");
+            udf.setJarStoragePath("builtin");
+            checkDuplicate(udf);
         } else {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             File tmpFile;
@@ -300,23 +300,23 @@ public class UDFCatalogResource {
                 tmpFile = FileUtil.writeInputStreamToTempFile(dis, ".jar");
             }
             Map<String, Class<?>> udfs = catalogService.loadUdfsFromJar(tmpFile);
-            validateUDF(new HashSet<>(ProxyUtil.canonicalNames(udfs.values())), udfInfo, checkDuplicate);
-            updateTypeInfo(udfInfo, udfs.get(udfInfo.getClassName()));
+            validateUDF(new HashSet<>(ProxyUtil.canonicalNames(udfs.values())), udf, checkDuplicate);
+            updateTypeInfo(udf, udfs.get(udf.getClassName()));
             String digest = Hex.encodeHexString(md.digest());
             LOG.debug("Digest: {}", digest);
-            udfInfo.setDigest(digest);
-            String jarPath = getExistingJarPath(digest).or(uploadJar(new FileInputStream(tmpFile), udfInfo.getName()));
-            udfInfo.setJarStoragePath(jarPath);
+            udf.setDigest(digest);
+            String jarPath = getExistingJarPath(digest).or(uploadJar(new FileInputStream(tmpFile), udf.getName()));
+            udf.setJarStoragePath(jarPath);
         }
     }
 
-    private void updateTypeInfo(UDFInfo udfInfo, Class<?> clazz) {
-        if (udfInfo.isAggregate()) {
-            udfInfo.setReturnType(getReturnType(clazz, "result"));
-            udfInfo.setArgTypes(getArgTypes(clazz, "add"));
+    private void updateTypeInfo(UDF udf, Class<?> clazz) {
+        if (udf.isAggregate()) {
+            udf.setReturnType(getReturnType(clazz, "result"));
+            udf.setArgTypes(getArgTypes(clazz, "add"));
         } else {
-            udfInfo.setReturnType(getReturnType(clazz, "evaluate"));
-            udfInfo.setArgTypes(getArgTypes(clazz, "evaluate"));
+            udf.setReturnType(getReturnType(clazz, "evaluate"));
+            udf.setArgTypes(getArgTypes(clazz, "evaluate"));
         }
     }
 
@@ -383,19 +383,19 @@ public class UDFCatalogResource {
         return jarFileName;
     }
 
-    private void validateUDF(Set<String> udfs, UDFInfo udfInfo, boolean checkDuplicate) {
-        if (!udfs.contains(udfInfo.getClassName())) {
-            throw new RuntimeException("Cannot load class from uploaded Jar: " + udfInfo.getClassName());
+    private void validateUDF(Set<String> udfs, UDF udf, boolean checkDuplicate) {
+        if (!udfs.contains(udf.getClassName())) {
+            throw new RuntimeException("Cannot load class from uploaded Jar: " + udf.getClassName());
         }
-        LOG.debug("Validating UDF, Class {} is in the available classes {}", udfInfo.getClassName(), udfs);
+        LOG.debug("Validating UDF, Class {} is in the available classes {}", udf.getClassName(), udfs);
         if (checkDuplicate) {
-            checkDuplicate(udfInfo);
+            checkDuplicate(udf);
         }
     }
 
-    private void checkDuplicate(UDFInfo udfInfo) {
-        Collection<UDFInfo> existing = catalogService.listUDFs(
-                Collections.singletonList(new QueryParam(UDFInfo.NAME, udfInfo.getName())));
+    private void checkDuplicate(UDF udf) {
+        Collection<UDF> existing = catalogService.listUDFs(
+                Collections.singletonList(new QueryParam(UDF.NAME, udf.getName())));
         if (!existing.isEmpty()) {
             throw new RuntimeException("UDF with the same name already exists, use update (PUT) api instead");
         }
@@ -405,8 +405,8 @@ public class UDFCatalogResource {
      * See if there is already a jar with the same digest
      */
     private Optional<String> getExistingJarPath(String digest) {
-        Collection<UDFInfo> existing = catalogService.listUDFs(
-                Collections.singletonList(new QueryParam(UDFInfo.DIGEST, digest)));
+        Collection<UDF> existing = catalogService.listUDFs(
+                Collections.singletonList(new QueryParam(UDF.DIGEST, digest)));
         if (existing.size() >= 1) {
             return Optional.of(existing.iterator().next().getJarStoragePath());
         }

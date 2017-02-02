@@ -25,10 +25,10 @@ import com.hortonworks.streamline.common.test.IntegrationTest;
 import com.hortonworks.streamline.registries.tag.dto.TagDto;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Component;
-import com.hortonworks.streamline.streams.catalog.FileInfo;
+import com.hortonworks.streamline.streams.catalog.File;
 import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
-import com.hortonworks.streamline.streams.catalog.NotifierInfo;
+import com.hortonworks.streamline.streams.catalog.Notifier;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.catalog.Topology;
@@ -36,7 +36,6 @@ import com.hortonworks.streamline.streams.catalog.TopologyEditorMetadata;
 import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.streamline.examples.processors.ConsoleCustomProcessor;
-import com.hortonworks.streamline.streams.service.TopologyCatalogResource;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
@@ -65,7 +64,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -106,7 +104,7 @@ public class RestIntegrationTest {
         boolean multipart;
         String entityNameHeader;
         String fileNameHeader;
-        File fileToUpload;
+        java.io.File fileToUpload;
         List<String> fieldsToIgnore;
 
         List<ResourceTestElement> resourcesToPostFirst; // dependent entities
@@ -531,7 +529,7 @@ public class RestIntegrationTest {
         String url = rootUrl + "files";
 
         // POST
-        FileInfo file = new FileInfo();
+        File file = new File();
         file.setName("milkyway-jar");
         file.setVersion(System.currentTimeMillis());
 
@@ -543,9 +541,9 @@ public class RestIntegrationTest {
         multiPart.bodyPart(new StreamDataBodyPart("file", fileStream, "file"));
         multiPart.bodyPart(new FormDataBodyPart("fileInfo", file, MediaType.APPLICATION_JSON_TYPE));
 
-        FileInfo postedFile = client.target(url)
+        File postedFile = client.target(url)
                 .request(MediaType.MULTIPART_FORM_DATA_TYPE, MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_OCTET_STREAM_TYPE)
-                .post(Entity.entity(multiPart, multiPart.getMediaType()), FileInfo.class);
+                .post(Entity.entity(multiPart, multiPart.getMediaType()), File.class);
 
         //DOWNLOAD
         InputStream downloadInputStream = client.target(url+"/download/"+ postedFile.getId()).request().get(InputStream.class);
@@ -559,13 +557,13 @@ public class RestIntegrationTest {
 
         // GET all
         response = client.target(url).request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
-        List<FileInfo> files = getEntities(response, FileInfo.class);
+        List<File> files = getEntities(response, File.class);
 
         Assert.assertEquals(files.size(), 1);
         Assert.assertEquals(files.iterator().next().getName(), file.getName());
 
         // GET /files/1
-        FileInfo receivedFile = client.target(url+"/"+ postedFile.getId()).request(MediaType.APPLICATION_JSON_TYPE).get(FileInfo.class);
+        File receivedFile = client.target(url+"/"+ postedFile.getId()).request(MediaType.APPLICATION_JSON_TYPE).get(File.class);
 
         Assert.assertEquals(receivedFile.getName(), postedFile.getName());
         Assert.assertEquals(receivedFile.getId(), postedFile.getId());
@@ -578,21 +576,21 @@ public class RestIntegrationTest {
         InputStream updatedFileStream = new ByteArrayInputStream("andromeda-jar-contents".getBytes());
         multiPart.bodyPart(new StreamDataBodyPart("file", updatedFileStream, "file"));
         multiPart.bodyPart(new FormDataBodyPart("fileInfo", postedFile, MediaType.APPLICATION_JSON_TYPE));
-        FileInfo updatedFile = client.target(url)
+        File updatedFile = client.target(url)
                 .request(MediaType.MULTIPART_FORM_DATA_TYPE, MediaType.APPLICATION_JSON_TYPE)
-                .post(Entity.entity(multiPart, multiPart.getMediaType()), FileInfo.class);
+                .post(Entity.entity(multiPart, multiPart.getMediaType()), File.class);
 
         Assert.assertEquals(updatedFile.getId(), postedFile.getId());
         Assert.assertEquals(updatedFile.getName(), postedFile.getName());
 
         // DELETE
-        final FileInfo deletedFile = client.target(url+"/"+ updatedFile.getId()).request().delete(FileInfo.class);
+        final File deletedFile = client.target(url+"/"+ updatedFile.getId()).request().delete(File.class);
 
         Assert.assertEquals(deletedFile.getId(), updatedFile.getId());
 
         // GET
         response = client.target(url).request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
-        files = getEntities(response, FileInfo.class);
+        files = getEntities(response, File.class);
 
         Assert.assertTrue(files.isEmpty());
     }
@@ -888,13 +886,13 @@ public class RestIntegrationTest {
         return component;
     }
 
-    private NotifierInfo createNotifierInfo(Long id, String name) {
-        NotifierInfo notifierInfo = new NotifierInfo();
-        notifierInfo.setClassName("A.B.C");
-        notifierInfo.setId(id);
-        notifierInfo.setJarFileName(name);
-        notifierInfo.setName(name);
-        return notifierInfo;
+    private Notifier createNotifierInfo(Long id, String name) {
+        Notifier notifier = new Notifier();
+        notifier.setClassName("A.B.C");
+        notifier.setId(id);
+        notifier.setJarFileName(name);
+        notifier.setName(name);
+        return notifier;
     }
 
    private TopologyComponentBundle createTopologyComponent (Long id, String name, TopologyComponentBundle.TopologyComponentType topologyComponentType,

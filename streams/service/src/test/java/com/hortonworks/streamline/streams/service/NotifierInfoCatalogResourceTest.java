@@ -18,7 +18,7 @@ package com.hortonworks.streamline.streams.service;
 import com.hortonworks.streamline.common.CollectionResponse;
 import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.util.FileStorage;
-import com.hortonworks.streamline.streams.catalog.NotifierInfo;
+import com.hortonworks.streamline.streams.catalog.Notifier;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import mockit.Expectations;
 import mockit.Injectable;
@@ -74,7 +74,7 @@ public class NotifierInfoCatalogResourceTest {
 
     @Test
     public void testListNotifiers() {
-        final NotifierInfo notifierInfo = new NotifierInfo();
+        final Notifier notifier = new Notifier();
         final QueryParam expectedQp = new QueryParam("notifierName", "email_notifier_1");
         multiValuedMap.putSingle("notifierName", "email_notifier_1");
         new Expectations() {
@@ -83,7 +83,7 @@ public class NotifierInfoCatalogResourceTest {
                 result = multiValuedMap;
 
                 mockCatalogService.listNotifierInfos(Arrays.asList(expectedQp));times=1;
-                result = Arrays.asList(notifierInfo);
+                result = Arrays.asList(notifier);
 
             }
         };
@@ -91,47 +91,47 @@ public class NotifierInfoCatalogResourceTest {
         CollectionResponse collectionResponse = (CollectionResponse) resource.listNotifiers(mockUriInfo).getEntity();
 
         assertEquals(1, collectionResponse .getEntities().size());
-        assertEquals(notifierInfo, collectionResponse.getEntities().iterator().next());
+        assertEquals(notifier, collectionResponse.getEntities().iterator().next());
     }
 
     @Test
     public void testGetNotifierById() throws Exception {
-        final NotifierInfo notifierInfo = new NotifierInfo();
+        final Notifier notifier = new Notifier();
         new Expectations() {
             {
                 mockCatalogService.getNotifierInfo(anyLong);times=1;
-                result = notifierInfo;
+                result = notifier;
             }
         };
 
-        NotifierInfo result = (NotifierInfo) resource.getNotifierById(1L).getEntity();
-        assertEquals(notifierInfo, result);
+        Notifier result = (Notifier) resource.getNotifierById(1L).getEntity();
+        assertEquals(notifier, result);
     }
 
     @Test
     public void testAddNotifier() throws Exception {
-        final NotifierInfo notifierInfo = new NotifierInfo();
-        notifierInfo.setName("test");
+        final Notifier notifier = new Notifier();
+        notifier.setName("test");
         new Expectations() {
             {
-                mockCatalogService.addNotifierInfo(notifierInfo);times=1;
-                result = notifierInfo;
+                mockCatalogService.addNotifierInfo(notifier);times=1;
+                result = notifier;
                 mockFormDataBodyPart.getMediaType();
                 result = APPLICATION_JSON_TYPE;
-                mockFormDataBodyPart.getValueAs(NotifierInfo.class);
-                result = notifierInfo;
+                mockFormDataBodyPart.getValueAs(Notifier.class);
+                result = notifier;
                 mockFileStorage.uploadFile(mockInputStream, anyString);
                 result = "uploadedPath";
 
             }
         };
 
-        NotifierInfo result = (NotifierInfo) resource.addNotifier(
+        Notifier result = (Notifier) resource.addNotifier(
                 mockInputStream,
                 mockFormDataContentDisposition,
                 mockFormDataBodyPart).getEntity();
 
-        assertEquals(notifierInfo, result);
+        assertEquals(notifier, result);
     }
 
 }

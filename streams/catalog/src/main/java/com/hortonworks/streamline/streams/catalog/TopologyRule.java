@@ -13,6 +13,7 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
  **/
+
 package com.hortonworks.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -20,14 +21,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import com.hortonworks.streamline.common.Schema;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.Storable;
-import com.hortonworks.streamline.storage.catalog.AbstractStorable;
-import com.hortonworks.streamline.streams.layout.component.rule.Rule;
 import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.Window;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,9 +35,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * A rule as represented in the UI layout
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class WindowInfo extends BaseRuleInfo {
-    public static final String NAMESPACE = "windowinfos";
+public class TopologyRule extends BaseTopologyRule {
+    public static final String NAMESPACE = "topology_rule";
 
     public static final String ID = "id";
     public static final String VERSIONID = "versionId";
@@ -47,54 +49,56 @@ public class WindowInfo extends BaseRuleInfo {
     public static final String DESCRIPTION = "description";
     public static final String STREAMS = "streams";
     public static final String OUTPUT_STREAMS = "outputStreams";
+    public static final String PROJECTIONS = "projections";
     public static final String CONDITION = "condition";
+    public static final String SQL = "sql";
     public static final String PARSED_RULE_STR = "parsedRuleStr";
     public static final String WINDOW = "window";
     public static final String ACTIONS = "actions";
-    public static final String PROJECTIONS = "projections";
-    public static final String GROUPBYKEYS = "groupbykeys";
 
     private Long id;
     private Long versionId;
     private Long topologyId;
-    private String name = StringUtils.EMPTY;
-    private String description = StringUtils.EMPTY;
+    private String name;
+    private String description;
+    /*
+     * A rule info object can have either
+     * 1. the full sql string or
+     * 2. the streams and condition string, in which case
+     *    its translated into a select * from <stream> where <condition>
+     */
     private List<String> streams;
+    private List<Projection> projections;
     private String condition;
+    private String sql;
     private String parsedRuleStr;
     private Window window;
     private List<Action> actions;
-    private List<Projection> projections;
-    private List<String> groupbykeys;
     private Long versionTimestamp;
     // optional list of output streams that this rule emits to
     private List<String> outputStreams;
 
-    public WindowInfo() {
+    // for jackson
+    public TopologyRule() {
     }
 
-    public WindowInfo(WindowInfo other) {
+    public TopologyRule(TopologyRule other) {
         setId(other.getId());
         setVersionId(other.getVersionId());
         setTopologyId(other.getTopologyId());
         setName(other.getName());
         setDescription(other.getDescription());
-        if (other.getStreams() != null) {
-            setStreams(new ArrayList<>(other.getStreams()));
-        }
         setCondition(other.getCondition());
+        setSql(other.getSql());
         setParsedRuleStr(other.getParsedRuleStr());
         if (other.getWindow() != null) {
             setWindow(new Window(other.getWindow()));
         }
+        if (other.getStreams() != null) {
+            setStreams(new ArrayList<>(other.getStreams()));
+        }
         if (other.getActions() != null) {
             setActions(other.getActions().stream().map(Action::copy).collect(Collectors.toList()));
-        }
-        if (other.getProjections() != null) {
-            setProjections(other.getProjections().stream().map(Projection::new).collect(Collectors.toList()));
-        }
-        if (other.getGroupbykeys() != null) {
-            setGroupbykeys(new ArrayList<>(other.getGroupbykeys()));
         }
         if (other.getOutputStreams() != null) {
             setOutputStreams(new ArrayList<>(other.getOutputStreams()));
@@ -117,7 +121,7 @@ public class WindowInfo extends BaseRuleInfo {
     @JsonIgnore
     @Override
     public PrimaryKey getPrimaryKey() {
-        Map<Schema.Field, Object> fieldToObjectMap = new HashMap<Schema.Field, Object>();
+        Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
         fieldToObjectMap.put(new Schema.Field(ID, Schema.Type.LONG), this.id);
         fieldToObjectMap.put(new Schema.Field(VERSIONID, Schema.Type.LONG), this.versionId);
         return new PrimaryKey(fieldToObjectMap);
@@ -163,12 +167,28 @@ public class WindowInfo extends BaseRuleInfo {
         this.description = description;
     }
 
+    public String getSql() {
+        return sql;
+    }
+
+    public void setSql(String sql) {
+        this.sql = sql;
+    }
+
     public Long getTopologyId() {
         return topologyId;
     }
 
     public void setTopologyId(Long topologyId) {
         this.topologyId = topologyId;
+    }
+
+    public List<Projection> getProjections() {
+        return projections;
+    }
+
+    public void setProjections(List<Projection> projections) {
+        this.projections = projections;
     }
 
     public String getCondition() {
@@ -222,22 +242,6 @@ public class WindowInfo extends BaseRuleInfo {
         this.actions = actions;
     }
 
-    public List<Projection> getProjections() {
-        return projections;
-    }
-
-    public void setProjections(List<Projection> projections) {
-        this.projections = projections;
-    }
-
-    public List<String> getGroupbykeys() {
-        return groupbykeys;
-    }
-
-    public void setGroupbykeys(List<String> groupbykeys) {
-        this.groupbykeys = groupbykeys;
-    }
-
     @JsonIgnore
     @Override
     public Schema getSchema() {
@@ -249,12 +253,12 @@ public class WindowInfo extends BaseRuleInfo {
                 Schema.Field.of(DESCRIPTION, Schema.Type.STRING),
                 Schema.Field.of(STREAMS, Schema.Type.STRING),
                 Schema.Field.of(OUTPUT_STREAMS, Schema.Type.STRING),
+                Schema.Field.of(PROJECTIONS, Schema.Type.STRING),
                 Schema.Field.of(CONDITION, Schema.Type.STRING),
+                Schema.Field.of(SQL, Schema.Type.STRING),
                 Schema.Field.of(PARSED_RULE_STR, Schema.Type.STRING),
                 Schema.Field.of(WINDOW, Schema.Type.STRING),
-                Schema.Field.of(ACTIONS, Schema.Type.STRING),
-                Schema.Field.of(PROJECTIONS, Schema.Type.STRING),
-                Schema.Field.of(GROUPBYKEYS, Schema.Type.STRING)
+                Schema.Field.of(ACTIONS, Schema.Type.STRING)
         );
     }
 
@@ -266,10 +270,16 @@ public class WindowInfo extends BaseRuleInfo {
             map.put(STREAMS, streams != null ? mapper.writeValueAsString(streams) : "");
             map.put(OUTPUT_STREAMS, outputStreams != null ? mapper.writeValueAsString(outputStreams) : "");
             map.put(WINDOW, window != null ? mapper.writeValueAsString(window) : "");
-            map.put(ACTIONS, actions != null ? mapper.writerFor(new TypeReference<List<Action>>() {
-            }).writeValueAsString(actions) : "");
-            map.put(PROJECTIONS, projections != null ? mapper.writeValueAsString(projections) : "");
-            map.put(GROUPBYKEYS, groupbykeys != null ? mapper.writeValueAsString(groupbykeys) : "");
+
+            map.put(PROJECTIONS,
+                    projections != null
+                            ? mapper.writerFor(new TypeReference<List<Projection>>() {}).writeValueAsString(projections)
+                            : "");
+
+            map.put(ACTIONS,
+                    actions != null
+                            ? mapper.writerFor(new TypeReference<List<Action>>() {}).writeValueAsString(actions)
+                            : "");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -284,6 +294,7 @@ public class WindowInfo extends BaseRuleInfo {
         setName((String) map.get(NAME));
         setDescription((String) map.get(DESCRIPTION));
         setCondition((String) map.get(CONDITION));
+        setSql((String) map.get(SQL));
         setParsedRuleStr((String) map.get(PARSED_RULE_STR));
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -304,23 +315,15 @@ public class WindowInfo extends BaseRuleInfo {
                 Window window = mapper.readValue(windowStr, Window.class);
                 setWindow(window);
             }
-            String actionsStr = (String) map.get(ACTIONS);
-            if (!StringUtils.isEmpty(actionsStr)) {
-                List<Action> actions = mapper.readValue(actionsStr, new TypeReference<List<Action>>() {
-                });
-                setActions(actions);
-            }
+
             String projectionsStr = (String) map.get(PROJECTIONS);
             if (!StringUtils.isEmpty(projectionsStr)) {
-                List<Projection> projections = mapper.readValue(projectionsStr, new TypeReference<List<Projection>>() {
-                });
-                setProjections(projections);
+                setProjections(mapper.readValue(projectionsStr, new TypeReference<List<Projection>>() {}));
             }
-            String groupbykeysStr = (String) map.get(GROUPBYKEYS);
-            if (!StringUtils.isEmpty(groupbykeysStr)) {
-                List<String> groupbykeys = mapper.readValue(groupbykeysStr, new TypeReference<List<String>>() {
-                });
-                setGroupbykeys(groupbykeys);
+
+            String actionsStr = (String) map.get(ACTIONS);
+            if (!StringUtils.isEmpty(actionsStr)) {
+                setActions(mapper.readValue(actionsStr, new TypeReference<List<Action>>() {}));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -333,10 +336,10 @@ public class WindowInfo extends BaseRuleInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        WindowInfo that = (WindowInfo) o;
+        TopologyRule topologyRule = (TopologyRule) o;
 
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        return versionId != null ? versionId.equals(that.versionId) : that.versionId == null;
+        if (id != null ? !id.equals(topologyRule.id) : topologyRule.id != null) return false;
+        return versionId != null ? versionId.equals(topologyRule.versionId) : topologyRule.versionId == null;
 
     }
 
@@ -345,5 +348,25 @@ public class WindowInfo extends BaseRuleInfo {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (versionId != null ? versionId.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "RuleInfo{" +
+                "id=" + id +
+                ", versionId=" + versionId +
+                ", topologyId=" + topologyId +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", streams=" + streams +
+                ", projections=" + projections +
+                ", condition='" + condition + '\'' +
+                ", sql='" + sql + '\'' +
+                ", parsedRuleStr='" + parsedRuleStr + '\'' +
+                ", window=" + window +
+                ", actions=" + actions +
+                ", versionTimestamp=" + versionTimestamp +
+                ", outputStreams=" + outputStreams +
+                '}';
     }
 }

@@ -24,7 +24,7 @@ import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
 import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.streams.catalog.Topology;
-import com.hortonworks.streamline.streams.catalog.TopologyVersionInfo;
+import com.hortonworks.streamline.streams.catalog.TopologyVersion;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -63,7 +63,7 @@ public class StreamCatalogServiceTest {
         topologies.add(createTopology(2L));
         topologies.add(createTopology(3L));
 
-        List<TopologyVersionInfo> versions = topologies.stream()
+        List<TopologyVersion> versions = topologies.stream()
                 .map(x -> createTopologyVersionInfo(x.getId(), x.getId()))
                 .collect(Collectors.toList());
 
@@ -71,7 +71,7 @@ public class StreamCatalogServiceTest {
             dao.find(withEqual(new Topology().getNameSpace()), withAny(new ArrayList<>()));
             result = topologies;
 
-            dao.find(withEqual(new TopologyVersionInfo().getNameSpace()), withAny(new ArrayList<>()));
+            dao.find(withEqual(new TopologyVersion().getNameSpace()), withAny(new ArrayList<>()));
             result = versions;
 
             dao.get(withEqual(new StorableKey(versions.get(0).getNameSpace(), versions.get(0).getPrimaryKey())));
@@ -104,14 +104,14 @@ public class StreamCatalogServiceTest {
         return topology;
     }
 
-    private TopologyVersionInfo createTopologyVersionInfo(Long id, Long topologyId) {
-        TopologyVersionInfo topologyVersionInfo = new TopologyVersionInfo();
-        topologyVersionInfo.setId(id);
-        topologyVersionInfo.setName("name" + id);
-        topologyVersionInfo.setTopologyId(topologyId);
-        topologyVersionInfo.setDescription("description" + id);
-        topologyVersionInfo.setTimestamp(System.currentTimeMillis());
-        return topologyVersionInfo;
+    private TopologyVersion createTopologyVersionInfo(Long id, Long topologyId) {
+        TopologyVersion topologyVersion = new TopologyVersion();
+        topologyVersion.setId(id);
+        topologyVersion.setName("name" + id);
+        topologyVersion.setTopologyId(topologyId);
+        topologyVersion.setDescription("description" + id);
+        topologyVersion.setTimestamp(System.currentTimeMillis());
+        return topologyVersion;
     }
 
     @Test

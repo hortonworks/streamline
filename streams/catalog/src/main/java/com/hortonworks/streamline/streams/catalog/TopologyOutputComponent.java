@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 public abstract class TopologyOutputComponent extends TopologyComponent {
     private List<Long> outputStreamIds;
-    private List<StreamInfo> outputStreams;
+    private List<TopologyStream> outputStreams;
 
     public TopologyOutputComponent() {
     }
@@ -36,7 +36,7 @@ public abstract class TopologyOutputComponent extends TopologyComponent {
             setOutputStreamIds(new ArrayList<>(other.getOutputStreamIds()));
         }
         if (other.getOutputStreams() != null) {
-            setOutputStreams(other.getOutputStreams().stream().map(StreamInfo::new).collect(Collectors.toList()));
+            setOutputStreams(other.getOutputStreams().stream().map(TopologyStream::new).collect(Collectors.toList()));
         }
     }
 
@@ -50,11 +50,11 @@ public abstract class TopologyOutputComponent extends TopologyComponent {
         this.outputStreamIds = outputStreamIds;
     }
 
-    public List<StreamInfo> getOutputStreams() {
+    public List<TopologyStream> getOutputStreams() {
         return outputStreams;
     }
 
-    public void setOutputStreams(List<StreamInfo> outputStreams) {
+    public void setOutputStreams(List<TopologyStream> outputStreams) {
         this.outputStreams = outputStreams;
     }
 }

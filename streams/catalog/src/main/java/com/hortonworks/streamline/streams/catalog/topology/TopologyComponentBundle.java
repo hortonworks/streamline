@@ -30,7 +30,7 @@ import java.util.Map;
 
 public class TopologyComponentBundle implements Storable {
 
-    public static final String NAME_SPACE = "topology_component_bundles";
+    public static final String NAME_SPACE = "topology_component_bundle";
     public static final String ID = "id";
     public static final String NAME = "name";
     public static final String TYPE = "type";

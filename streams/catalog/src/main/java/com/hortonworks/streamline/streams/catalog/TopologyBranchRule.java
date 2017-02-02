@@ -25,8 +25,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.hortonworks.streamline.common.Schema;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.Storable;
-import com.hortonworks.streamline.storage.catalog.AbstractStorable;
-import com.hortonworks.streamline.streams.layout.component.rule.Rule;
 import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
 
 import java.io.IOException;
@@ -40,8 +38,8 @@ import java.util.stream.Collectors;
  * A branch rule as represented in the UI layout
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BranchRuleInfo extends BaseRuleInfo {
-    public static final String NAMESPACE = "branchruleinfos";
+public class TopologyBranchRule extends BaseTopologyRule {
+    public static final String NAMESPACE = "topology_branchrule";
 
     public static final String ID = "id";
     public static final String TOPOLOGY_ID = "topologyId";
@@ -74,10 +72,10 @@ public class BranchRuleInfo extends BaseRuleInfo {
     private List<String> outputStreams;
 
     // for jackson
-    public BranchRuleInfo() {
+    public TopologyBranchRule() {
     }
 
-    public BranchRuleInfo(BranchRuleInfo other) {
+    public TopologyBranchRule(TopologyBranchRule other) {
         setId(other.getId());
         setTopologyId(other.getTopologyId());
         setVersionId(other.getVersionId());
@@ -273,7 +271,7 @@ public class BranchRuleInfo extends BaseRuleInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        BranchRuleInfo that = (BranchRuleInfo) o;
+        TopologyBranchRule that = (TopologyBranchRule) o;
 
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         return versionId != null ? versionId.equals(that.versionId) : that.versionId == null;
