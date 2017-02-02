@@ -406,11 +406,11 @@ const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, in
         promiseArr.push(TopologyREST.putMetaInfo(topologyId, versionId, {body: JSON.stringify(metaData)}));
 
         //Delete Links
-        let edgeArr = this.getEdges(edges, currentNode);
-
-        edgeArr.map((o)=>{
-            promiseArr.push(TopologyREST.deleteNode(topologyId, 'edges', o.edgeId));
-        });
+        // let edgeArr = this.getEdges(edges, currentNode);
+        //
+        // edgeArr.map((o)=>{
+        //     promiseArr.push(TopologyREST.deleteNode(topologyId, 'edges', o.edgeId));
+        // });
 
         Promise.all(promiseArr)
         .then((edgeResults)=>{

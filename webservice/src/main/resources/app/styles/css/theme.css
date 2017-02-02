@@ -2147,3 +2147,6 @@ input[type="checkbox"]{
     stroke-dashoffset: 1000;
   }
 }
+.form-group span.Select-value-label{
+  padding-right: 11px !important;
+}

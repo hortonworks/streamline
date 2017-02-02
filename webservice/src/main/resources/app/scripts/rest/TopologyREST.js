@@ -235,7 +235,11 @@ const TopologyREST = {
 	deleteNode(topologyId, nodeType, nodeId, options) {
 		options = options || {};
 		options.method = options.method || 'DELETE';
-                let url = baseUrl+'topologies/'+topologyId+'/'+nodeType+'/'+nodeId;
+                const argStr = 'sources,processors,sinks';
+                let removeEdges = argStr.indexOf(nodeType) !== -1
+                                  ? '?removeEdges=true'
+                                  : '';
+                let url = baseUrl+'topologies/'+topologyId+'/'+nodeType+'/'+nodeId+removeEdges;
                 return fetch(url, options)
 			.then( (response) => {
 		  		return response.json();

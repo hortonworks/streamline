@@ -67,16 +67,16 @@ export default class EdgeConfigContainer extends Component {
         TopologyREST.getNode(this.topologyId, this.versionId, TopologyUtils.getNodeType(this.props.data.edge.source.parentType), this.props.data.edge.source.nodeId)
             .then((result)=>{
                 let node = result;
-                let streamsArr = [];
+                let streamsArr = [],streamName = '';
                 let fields = this.state.isEdit ? {} : node.outputStreams[0].fields;
                 let streamId = this.state.isEdit ? this.state.streamId : node.outputStreams[0].streamId;
                 if(nodeType === 'rule' || nodeType === 'branch' || nodeType === 'window'){
                     let targetType = this.props.data.edge.target.currentType.toLowerCase() === 'notification' ? 'notifier' : 'transform';
-                    let streamName = '';
-                    if(nodeType === 'window')
+                    if(nodeType === 'window'){
                         streamName = nodeType+'_'+targetType+'_stream_'+node.id;
-                    else
+                    }else{
                         streamName = nodeType+'_'+targetType+'_stream_'+node.config.properties.rules[0];
+                    }
                     streamId = this.state.isEdit ? this.state.streamId : streamName;
                 }
                 node.outputStreams.map((s)=>{
@@ -119,7 +119,7 @@ export default class EdgeConfigContainer extends Component {
                         });
                     });
                     if(nodeType === 'branch' || nodeType === 'rule') {
-                        let id = streamId.split('_')[3];
+                        let id = streamName.split('_')[3];
                         var ruleObject = _.find(rulesArr, {id: parseInt(id, 10)});
                     }
                     showRules =  true;
@@ -328,6 +328,7 @@ export default class EdgeConfigContainer extends Component {
                 } else {
                     let edgeObj = _.find(this.props.data.edges, {edgeId: this.props.data.edge.edgeId});
                     edgeObj.streamGrouping = edge.streamGroupings[0];
+                    FSReactToastr.success(<strong>Edge updated successfully</strong>);
                 }
             });
         } else {

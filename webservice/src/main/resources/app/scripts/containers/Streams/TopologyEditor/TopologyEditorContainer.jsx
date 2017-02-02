@@ -418,6 +418,7 @@ class TopologyEditorContainer extends Component {
         this.tempIntervalArr.splice(index,1);
       }
       this.setState({mapSlideInterval : this.tempIntervalArr},() => {
+        FSReactToastr.success(<strong>Component deleted successfully</strong>);
         this.fetchProcessors();
       })
     }

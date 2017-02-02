@@ -68,6 +68,7 @@ export default class JoinNodeForm extends Component {
             inputStreamsArr: []
 		};
 		this.state = obj;
+    this.fieldTempArr = [];
 	}
 
     fetchTopologyConfig(){
@@ -79,32 +80,34 @@ export default class JoinNodeForm extends Component {
         })
     }
 
-    getSchemaFields(fields, level, keyPath=[]){
-      this.fieldTempArr = []
-        fields.map((field)=>{
-            let obj = {
-                name: field.name,
-                optional: field.optional,
-                type: field.type,
-                level: level,
-                keyPath: ''
-            };
+    getSchemaFields(fields, level,initialFetch, keyPath=[]){
+        const getSchemaNestedFields = (fields, level,keyPath) => {
+          fields.map((field)=>{
+              let obj = {
+                  name: field.name,
+                  optional: field.optional,
+                  type: field.type,
+                  level: level,
+                  keyPath: ''
+              };
 
-            if(field.type === 'NESTED'){
-                obj.disabled = true;
-                let _keypath = keyPath.slice();
-                _keypath.push(field.name);
-                this.tempFieldsArr.push(obj);
-                this.getSchemaFields(field.fields, level + 1, _keypath);
-            } else {
-                obj.disabled = false;
-                obj.keyPath = keyPath.join('.');
-                this.tempFieldsArr.push(obj);
-            }
-
-        });
-        // To make a unique field array
-        this.fieldTempArr = _.uniqBy(this.tempFieldsArr,'name');
+              if(field.type === 'NESTED'){
+                  obj.disabled = true;
+                  let _keypath = keyPath.slice();
+                  _keypath.push(field.name);
+                  this.tempFieldsArr.push(obj);
+                  this.getSchemaNestedFields(field.fields, level + 1, _keypath);
+              } else {
+                  obj.disabled = false;
+                  obj.keyPath = keyPath.join('.');
+                  this.tempFieldsArr.push(obj);
+              }
+          });
+          // To make a unique field array
+          // initialFetch is use to populate fields only for once
+          initialFetch ? this.fieldTempArr = _.uniqBy(this.tempFieldsArr,'name') : '';
+        }
+        return getSchemaNestedFields(fields, level,keyPath);
     }
 
     renderFieldOption(node){
@@ -164,7 +167,7 @@ export default class JoinNodeForm extends Component {
                 });
 
                 this.tempFieldsArr = [];
-                this.getSchemaFields(fields, 0);
+                this.getSchemaFields(fields, 0,true);
 
                 let stateObj = {
                     fieldList: fields,
@@ -181,7 +184,7 @@ export default class JoinNodeForm extends Component {
                     let selectedStream = _.find(inputStreams, {streamId: fromObject.stream});
                     if(selectedStream){
                         this.tempFieldsArr = [];
-                        this.getSchemaFields(selectedStream.fields, 0);
+                        this.getSchemaFields(selectedStream.fields, 0,false);
                         stateObj.joinFromStreamKeys = this.tempFieldsArr;
                     }
                     if(fromObject.stream) {
@@ -191,7 +194,7 @@ export default class JoinNodeForm extends Component {
                             joinStreams[0].streamOptions = joinStreamOptions;
                             joinStreams[0].withOptions = [obj];
                             this.tempFieldsArr = [];
-                            this.getSchemaFields(selectedStream.fields, 0);
+                            this.getSchemaFields(selectedStream.fields, 0,false);
                             joinStreams[0].keyOptions = this.tempFieldsArr;
                         }
                     }
@@ -221,7 +224,7 @@ export default class JoinNodeForm extends Component {
                             nextStream.streamOptions = streamOptions;
                             nextStream.withOptions = withOptions;
                             this.tempFieldsArr = [];
-                            this.getSchemaFields(selectedStream.fields, 0);
+                            this.getSchemaFields(selectedStream.fields, 0,false);
                             nextStream.keyOptions = this.tempFieldsArr;
                         }
                     });
@@ -285,35 +288,21 @@ export default class JoinNodeForm extends Component {
             for(let k of arr){
                 keys.push(k.name);
             }
-            this.setState({outputKeys: keys, outputStreamFields: tempArr});
-        } else {
-            this.setState({outputKeys: [], outputStreamFields: tempArr});
         }
+        this.setState({outputKeys: keys, outputStreamFields: tempArr});
         this.context.ParentForm.setState({outputStreamObj:this.streamData})
     }
 
     handleIntervalChange(obj){
-		if(obj){
-            this.setState({intervalType: obj.value});
-		} else {
-            this.setState({intervalType: ""});
-		}
+      this.setState({intervalType: obj ? obj.value : ""});
 	}
 
     handleDurationChange(obj){
-        if(obj){
-            this.setState({durationType: obj.value, slidingDurationType: obj.value});
-        } else {
-            this.setState({durationType: "", slidingDurationType: ""});
-        }
+      this.setState({durationType: obj ? obj.value : "", slidingDurationType: obj ? obj.value : ""});
     }
 
     handleSlidingDurationChange(obj){
-        if(obj){
-            this.setState({slidingDurationType: obj.value});
-        } else {
-            this.setState({slidingDurationType: ""});
-        }
+      this.setState({slidingDurationType: obj ? obj.value : ""});
     }
 
     handleValueChange(e){
@@ -328,58 +317,47 @@ export default class JoinNodeForm extends Component {
 	}
 
     handleJoinFromStreamChange(obj) {
-            if(obj) {
-                    let {inputStreamsArr, joinStreams} = this.state;
-                    let joinStreamOptions = inputStreamsArr.filter((s)=>{return s.streamId !== obj.streamId});
-                    if(joinStreams.length) {
-                            joinStreams.map((s)=>{
-                                    s.stream = '';
-                                    s.key = '';
-                                    s.with = '';
-                                    s.streamOptions = [];
-                                    s.keyOptions = [];
-                                    s.withOptions = [];
-                            });
-                            joinStreams[0].streamOptions = joinStreamOptions;
-                            joinStreams[0].withOptions = [obj];
-                            if(joinStreams.length === 1) {
-                                joinStreams[0].stream = joinStreamOptions[0].streamId;
-                                joinStreams[0].with = obj.streamId;
-                                this.tempFieldsArr = [];
-                                this.getSchemaFields(joinStreamOptions[0].fields, 0);
-                                joinStreams[0].keyOptions = this.tempFieldsArr;
-                            }
-                    }
-                    this.tempFieldsArr = [];
-                    this.getSchemaFields(obj.fields, 0);
-                    this.setState({joinFromStreamName: obj.streamId, joinFromStreamKeys: this.tempFieldsArr, joinFromStreamKey: '', joinStreams: joinStreams});
-            } else {
-                    this.setState({joinFromStreamName: '', joinFromStreamKeys: [], joinFromStreamKey: ''});
-            }
+      let {inputStreamsArr, joinStreams} = this.state;
+        if(obj) {
+          let joinStreamOptions = inputStreamsArr.filter((s)=>{return s.streamId !== obj.streamId});
+          if(joinStreams.length) {
+                  joinStreams.map((s)=>{
+                          s.stream = '';
+                          s.key = '';
+                          s.with = '';
+                          s.streamOptions = [];
+                          s.keyOptions = [];
+                          s.withOptions = [];
+                  });
+                  joinStreams[0].streamOptions = joinStreamOptions;
+                  joinStreams[0].withOptions = [obj];
+                  if(joinStreams.length === 1) {
+                      joinStreams[0].stream = joinStreamOptions[0].streamId;
+                      joinStreams[0].with = obj.streamId;
+                      this.tempFieldsArr = [];
+                      this.getSchemaFields(joinStreamOptions[0].fields, 0,false);
+                      joinStreams[0].keyOptions = this.tempFieldsArr;
+                  }
+          }
+          this.tempFieldsArr = [];
+          this.getSchemaFields(obj.fields, 0,false);
+        }
+      this.setState({joinFromStreamName: obj ? obj.streamId : '', joinFromStreamKeys: obj ? this.tempFieldsArr : [], joinFromStreamKey: '', joinStreams: joinStreams});
     }
     handleJoinFromKeyChange(obj) {
-            if(obj) {
-                    this.setState({joinFromStreamKey: obj.name});
-            } else {
-                    this.setState({joinFromStreamKey: ''});
-            }
+      this.setState({joinFromStreamKey: obj ? obj.name : ""});
     }
     handleJoinTypeChange(key, obj){
-            let {joinStreams} = this.state;
-            if(obj) {
-                    joinStreams[key].type = obj.value;
-                    this.setState({joinStreams: joinStreams});
-            } else {
-                    joinStreams[key].type = '';
-                    this.setState({joinStreams: joinStreams});
-            }
+      let {joinStreams} = this.state;
+      joinStreams[key].type = obj ? obj.value : '';
+      this.setState({joinStreams: joinStreams});
     }
     handleJoinStreamChange(key, obj){
             let {inputStreamsArr, joinStreams, joinFromStreamName} = this.state;
             if(obj) {
                     joinStreams[key].stream = obj.streamId;
                     this.tempFieldsArr = [];
-                    this.getSchemaFields(obj.fields, 0);
+                    this.getSchemaFields(obj.fields, 0,false);
                     joinStreams[key].keyOptions = this.tempFieldsArr;
                     let streamOptions = [];
                     let withOptions = [];
@@ -407,46 +385,35 @@ export default class JoinNodeForm extends Component {
                             nextStream.key = '';
                             nextStream.keyOptions = [];
                     }
-                    this.setState({joinStreams: joinStreams});
             } else {
                     joinStreams[key].stream = '';
                     joinStreams[key].keyOptions = [];
-                    this.setState({joinStreams: joinStreams});
             }
+            this.setState({joinStreams: joinStreams});
     }
     handleJoinKeyChange(key, obj){
-            let {joinStreams} = this.state;
-            if(obj) {
-                    joinStreams[key].key = obj.name;
-                    this.setState({joinStreams: joinStreams});
-            } else {
-                    joinStreams[key].key = '';
-                    this.setState({joinStreams: joinStreams});
-            }
+      let {joinStreams} = this.state;
+      joinStreams[key].key = obj ? obj.name : '';
+      this.setState({joinStreams: joinStreams});
     }
     handleJoinWithChange(key, obj){
-            let {joinStreams} = this.state;
-            if(obj) {
-                    joinStreams[key].with = obj.streamId;
-                    this.setState({joinStreams: joinStreams});
-            } else {
-                    joinStreams[key].with = '';
-                    this.setState({joinStreams: joinStreams});
-            }
+      let {joinStreams} = this.state;
+      joinStreams[key].with = obj ? obj.streamId : '';
+      this.setState({joinStreams: joinStreams});
     }
 
 	validateData(){
-                let {outputKeys, windowNum, joinStreams} = this.state;
-                let validData = true;
-                if(outputKeys.length === 0 || windowNum === ''){
-                        validData = false;
-		}
-                joinStreams.map((s)=>{
-                        if(s.stream === '' || s.type === '' || s.key === '' || s.with === '') {
-                                validData = false;
-                        }
-                });
-                return validData;
+    let {outputKeys, windowNum, joinStreams} = this.state;
+    let validData = true;
+      if(outputKeys.length === 0 || windowNum === ''){
+        return false;
+      }
+      joinStreams.map((s)=>{
+        if(s.stream === '' || s.type === '' || s.key === '' || s.with === '') {
+                validData = false;
+        }
+      });
+    return validData;
 	}
 
     formatNestedField(obj){
