@@ -21,6 +21,7 @@ package com.hortonworks.streamline.streams.service;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.Schema;
 import com.hortonworks.streamline.common.util.FileUtil;
 import com.hortonworks.streamline.common.util.ProxyUtil;
 import com.hortonworks.streamline.common.util.WSUtils;
@@ -317,6 +318,10 @@ public class TopologyComponentBundleResource {
                 throw BadRequestException.missingParameter(missingParam);
             }
             CustomProcessorInfo customProcessorInfo = new ObjectMapper().readValue(customProcessorInfoStr, CustomProcessorInfo.class);
+            if (!isValidOutputSchema(customProcessorInfo.getOutputStreamToSchema())) {
+                LOG.debug("Output schema is missing while adding custom processor");
+                throw BadRequestException.missingParameter(CustomProcessorInfo.OUTPUT_STREAM_TO_SCHEMA);
+            }
             if (!verifyCustomProcessorImplFromJar(new ByteArrayInputStream(jarBytes), customProcessorInfo)) {
                 String message = "Custom Processor jar file is missing customProcessorImpl class " + customProcessorInfo.getCustomProcessorImpl();
                 LOG.debug(message);
@@ -356,6 +361,10 @@ public class TopologyComponentBundleResource {
                 throw BadRequestException.missingParameter(missingParam);
             }
             CustomProcessorInfo customProcessorInfo = new ObjectMapper().readValue(customProcessorInfoStr, CustomProcessorInfo.class);
+            if (!isValidOutputSchema(customProcessorInfo.getOutputStreamToSchema())) {
+                LOG.debug("Output schema is missing while updating custom processor");
+                throw BadRequestException.missingParameter(CustomProcessorInfo.OUTPUT_STREAM_TO_SCHEMA);
+            }
             if (!verifyCustomProcessorImplFromJar(new ByteArrayInputStream(jarBytes), customProcessorInfo)) {
                 String message = "Custom Processor jar file is missing customProcessorImpl class " + customProcessorInfo.getCustomProcessorImpl();
                 LOG.debug(message);
@@ -490,6 +499,18 @@ public class TopologyComponentBundleResource {
 
         }
         return result;
+    }
+
+    private boolean isValidOutputSchema (Map<String, Schema> outputSchema) {
+        if (outputSchema == null || outputSchema.isEmpty()) {
+            return false;
+        }
+        for (Schema schema: outputSchema.values()) {
+            if (schema.getFields() == null || schema.getFields().isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 }
 
