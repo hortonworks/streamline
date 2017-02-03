@@ -31,6 +31,7 @@ public class WindowInfo extends BaseRuleInfo {
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
     public static final String STREAMS = "streams";
+    public static final String OUTPUT_STREAMS = "outputStreams";
     public static final String CONDITION = "condition";
     public static final String PARSED_RULE_STR = "parsedRuleStr";
     public static final String WINDOW = "window";
@@ -51,6 +52,8 @@ public class WindowInfo extends BaseRuleInfo {
     private List<Projection> projections;
     private List<String> groupbykeys;
     private Long versionTimestamp;
+    // optional list of output streams that this rule emits to
+    private List<String> outputStreams;
 
     public WindowInfo() {
     }
@@ -77,6 +80,9 @@ public class WindowInfo extends BaseRuleInfo {
         }
         if (other.getGroupbykeys() != null) {
             setGroupbykeys(new ArrayList<>(other.getGroupbykeys()));
+        }
+        if (other.getOutputStreams() != null) {
+            setOutputStreams(new ArrayList<>(other.getOutputStreams()));
         }
         setVersionTimestamp(other.getVersionTimestamp());
     }
@@ -166,6 +172,14 @@ public class WindowInfo extends BaseRuleInfo {
         this.streams = streams;
     }
 
+    public List<String> getOutputStreams() {
+        return outputStreams;
+    }
+
+    public void setOutputStreams(List<String> outputStreams) {
+        this.outputStreams = outputStreams;
+    }
+
     @JsonIgnore
     @Override
     public String getParsedRuleStr() {
@@ -219,6 +233,7 @@ public class WindowInfo extends BaseRuleInfo {
                 Schema.Field.of(NAME, Schema.Type.STRING),
                 Schema.Field.of(DESCRIPTION, Schema.Type.STRING),
                 Schema.Field.of(STREAMS, Schema.Type.STRING),
+                Schema.Field.of(OUTPUT_STREAMS, Schema.Type.STRING),
                 Schema.Field.of(CONDITION, Schema.Type.STRING),
                 Schema.Field.of(PARSED_RULE_STR, Schema.Type.STRING),
                 Schema.Field.of(WINDOW, Schema.Type.STRING),
@@ -234,6 +249,7 @@ public class WindowInfo extends BaseRuleInfo {
         Map<String, Object> map = super.toMap();
         try {
             map.put(STREAMS, streams != null ? mapper.writeValueAsString(streams) : "");
+            map.put(OUTPUT_STREAMS, outputStreams != null ? mapper.writeValueAsString(outputStreams) : "");
             map.put(WINDOW, window != null ? mapper.writeValueAsString(window) : "");
             map.put(ACTIONS, actions != null ? mapper.writerFor(new TypeReference<List<Action>>() {
             }).writeValueAsString(actions) : "");
@@ -261,6 +277,12 @@ public class WindowInfo extends BaseRuleInfo {
                 List<String> streams = mapper.readValue(streamsStr, new TypeReference<List<String>>() {
                 });
                 setStreams(streams);
+            }
+            String outputStreamsStr = (String) map.get(OUTPUT_STREAMS);
+            if (!StringUtils.isEmpty(outputStreamsStr)) {
+                List<String> outputStreams = mapper.readValue(outputStreamsStr, new TypeReference<List<String>>() {
+                });
+                setOutputStreams(outputStreams);
             }
             String windowStr = (String) map.get(WINDOW);
             if (!StringUtils.isEmpty(windowStr)) {
