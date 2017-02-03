@@ -99,7 +99,7 @@ export default class CustomProcessorContainer extends Component {
 					confirmBox.cancel();
                                         if(processor.responseMessage !== undefined){
             FSReactToastr.error(
-                <CommonNotification flag="error" content={processors.responseMessage}/>, '', toastOpt)
+                <CommonNotification flag="error" content={processor.responseMessage}/>, '', toastOpt)
 					} else {
 						FSReactToastr.success(<strong>Processor deleted successfully</strong>)
 					}
