@@ -21,6 +21,10 @@
             <artifactId>streamline-common</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.hortonworks.streamline</groupId>
+            <artifactId>streamline-catalog</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-client</artifactId>
         </dependency>
@@ -37,6 +41,10 @@
         <dependency>
             <groupId>org.jmockit</groupId>
             <artifactId>jmockit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-test</artifactId>
         </dependency>
     </dependencies>
 
