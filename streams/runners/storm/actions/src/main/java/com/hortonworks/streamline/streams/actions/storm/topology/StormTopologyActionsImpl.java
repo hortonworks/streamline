@@ -76,7 +76,8 @@ public class StormTopologyActionsImpl implements TopologyActions {
                 }
                 stormCliPath = stormHomeDir + "bin" + File.separator + "storm";
             }
-            stormJarLocation = conf.get(StormTopologyLayoutConstants.STORM_JAR_LOCATION_KEY);
+            this.stormJarLocation = conf.get(StormTopologyLayoutConstants.STORM_JAR_LOCATION_KEY);
+
             catalogRootUrl = conf.get(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL);
 
             Map<String, String> env = System.getenv();
@@ -102,7 +103,6 @@ public class StormTopologyActionsImpl implements TopologyActions {
         File f = new File (stormArtifactsLocation);
         f.mkdirs();
     }
-
 
     @Override
     public void deploy(TopologyLayout topology, String mavenArtifacts) throws Exception {

@@ -10,6 +10,9 @@ import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 
+import java.io.File;
+import java.io.FilenameFilter;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +25,11 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
     private static final String NIMBUS_PORT = "nimbus.port";
     public static final String STREAMLINE_STORM_JAR = "streamlineStormJar";
     public static final String STORM_HOME_DIR = "stormHomeDir";
+
+    public static final String RESERVED_PATH_STREAMLINE_HOME = "${STREAMLINE_HOME}";
+    public static final String SYSTEM_PROPERTY_STREAMLINE_HOME = "streamline.home";
+    private static final String DEFAULT_STORM_JAR_LOCATION_DIR = "${STREAMLINE_HOME}/libs";
+    private static final String DEFAULT_STORM_JAR_FILE_PREFIX = "streamline-runtime-storm-";
 
     private final Map<String, String> streamlineConf;
 
@@ -82,7 +90,15 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
         Map<String, String> conf = new HashMap<>();
 
         // We need to have some local configurations anyway because topology submission can't be done with REST API.
-        conf.put(STREAMLINE_STORM_JAR, streamlineConf.get(STREAMLINE_STORM_JAR));
+        String stormJarLocation = streamlineConf.get(STREAMLINE_STORM_JAR);
+        if (stormJarLocation == null) {
+            String jarFindDir = applyReservedPaths(DEFAULT_STORM_JAR_LOCATION_DIR);
+            stormJarLocation = findFirstMatchingJarLocation(jarFindDir);
+        } else {
+            stormJarLocation = applyReservedPaths(stormJarLocation);
+        }
+
+        conf.put(STREAMLINE_STORM_JAR, stormJarLocation);
         conf.put(STORM_HOME_DIR, streamlineConf.get(STORM_HOME_DIR));
 
         // Since we're loading the class dynamically so we can't rely on any enums or constants from there
@@ -98,7 +114,30 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
         return conf;
     }
 
+    private String findFirstMatchingJarLocation(String jarFindDir) {
+        String[] jars = new File(jarFindDir).list((dir, name) -> {
+            if (name.startsWith(DEFAULT_STORM_JAR_FILE_PREFIX) && name.endsWith(".jar")) {
+                return true;
+            }
+            return false;
+        });
+
+        if (jars == null || jars.length == 0) {
+            return null;
+        } else {
+            return jarFindDir + File.separator + jars[0];
+        }
+    }
+
     private String buildStormRestApiRootUrl(String host, Integer port) {
         return "http://" + host + ":" + port + "/api/v1";
+    }
+
+    private String applyReservedPaths(String stormJarLocation) {
+        return stormJarLocation.replace(RESERVED_PATH_STREAMLINE_HOME, System.getProperty(SYSTEM_PROPERTY_STREAMLINE_HOME, getCWD()));
+    }
+
+    private String getCWD() {
+        return Paths.get(".").toAbsolutePath().normalize().toString();
     }
 }
