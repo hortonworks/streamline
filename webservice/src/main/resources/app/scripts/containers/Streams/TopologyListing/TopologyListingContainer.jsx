@@ -104,8 +104,14 @@ class TopologyItems extends Component {
         this.context.router.push('applications/'+id+'/edit');
       }
     }
+    checkRefId = (id) => {
+      const index = this.props.refIdArr.findIndex((x) => {
+        return x === id;
+      });
+      return index !== -1 ? true : false;
+    }
     render() {
-        const {topologyAction, topologyList, isLoading} = this.props;
+        const {topologyAction, topologyList} = this.props;
         const {topology, runtime = {},namespaceName} = topologyList;
         const {metric,latencyTopN} = runtime;
         const metricWrap = metric || {
@@ -128,7 +134,7 @@ class TopologyItems extends Component {
 
         return (
             <div className="col-sm-4">
-                <div className={`stream-box ${ (isLoading.loader && (isLoading.idCheck === topology.id))
+                <div className={`stream-box ${ (this.checkRefId(topology.id))
                                 ? ''
                                 : metricWrap.status || 'NOTRUNNING'}`}
               data-id={topology.id} ref={(ref) => this.streamRef = ref}
@@ -184,7 +190,7 @@ class TopologyItems extends Component {
                     </div>
                 </div>
                 {
-                  (isLoading.loader && (isLoading.idCheck === topology.id))
+                  (this.checkRefId(topology.id))
                     ? <div className="stream-body">
                         <div className="loading-img text-center">
                             <img src="styles/img/start-loader.gif" alt="loading" style={{width : "100px"}} />
@@ -302,10 +308,7 @@ class TopologyListingContainer extends Component {
               key : 'last_updated',
               text : 'Last Updated'
             },
-            isLoading: {
-                loader: false,
-                idCheck: ''
-            },
+            refIdArr: [],
             fetchLoader : true,
             pageIndex : 0,
             pageSize : 9,
@@ -364,23 +367,33 @@ class TopologyListingContainer extends Component {
     }
 
     fetchSingleTopology = (ID) => {
+      const {refIdArr} = this.state;
         const id = +ID;
-        let flagUpdate = {
-            loader: true,
-            idCheck: id
-        }
-        this.setState({isLoading: flagUpdate});
-        TopologyREST.getTopology(id).then((topology) => {
-            this.updateSingleTopology(topology, id)
-            flagUpdate = {
-                loader: false,
-                idCheck: id
-            }
-            this.setState({isLoading: flagUpdate})
-        }).catch((err) => {
-            FSReactToastr.error(
-                <CommonNotification flag="error" content={err.message}/>, '', toastOpt)
+        const tempArr = refIdArr;
+        tempArr.push(id);
+        this.setState({refIdArr : tempArr}, () => {
+          TopologyREST.getTopology(id).then((topology) => {
+              const entities = this.updateSingleTopology(topology, id)
+              const tempDataArray = this.spliceTempArr(id);
+              this.setState({refIdArr: tempDataArray,entities});
+          }).catch((err) => {
+              const tempDataArray = this.spliceTempArr(id);
+              this.setState({refIdArr: tempDataArray});
+              FSReactToastr.error(
+                  <CommonNotification flag="error" content={err.message}/>, '', toastOpt)
+          });
         });
+    }
+
+    spliceTempArr = (id) => {
+      const tempArr = this.state.refIdArr;
+      const index = tempArr.findIndex((x) => {
+        return x === id;
+      });
+      if(index !== -1){
+        tempArr.splice(index , 1);
+      }
+      return tempArr;
     }
 
     updateSingleTopology(newTopology, id) {
@@ -390,7 +403,7 @@ class TopologyListingContainer extends Component {
         }).indexOf(id)
         entitiesWrap = this.state.entities;
         entitiesWrap[elPosition] = newTopology;
-        this.setState({entities: entitiesWrap})
+      return entitiesWrap;
     }
 
     handleAddTopology() {
@@ -604,7 +617,7 @@ class TopologyListingContainer extends Component {
     }
 
     render() {
-        const {entities,filterValue,isLoading,fetchLoader,slideInput,pageSize,pageIndex,checkEnvironment,sourceCheck} = this.state;
+        const {entities,filterValue,fetchLoader,slideInput,pageSize,pageIndex,checkEnvironment,sourceCheck,refIdArr} = this.state;
         const filteredEntities = TopologyUtils.topologyFilter(entities, filterValue);
         const splitData = _.chunk(filteredEntities,pageSize) || [];
         const btnIcon = <i className="fa fa-plus"></i>;
@@ -693,7 +706,11 @@ class TopologyListingContainer extends Component {
                             searchVal={filterValue}
                         />
                         : splitData[pageIndex].map((list) => {
-                            return <TopologyItems key={list.topology.id} topologyList={list} topologyAction={this.actionHandler} isLoading={isLoading}/>
+                            return <TopologyItems key={list.topology.id}
+                                      topologyList={list}
+                                      topologyAction={this.actionHandler}
+                                      refIdArr={refIdArr}
+                                    />
                         })
 }
                 </div>
