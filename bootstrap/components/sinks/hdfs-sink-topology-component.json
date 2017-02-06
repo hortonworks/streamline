@@ -4,7 +4,7 @@
   "subType": "HDFS",
   "builtin": true,
   "streamingEngine": "STORM",
-  "fieldHintProviderClass": "com.hortonworks.streamline.streams.catalog.topology.component.bundle.impl.HDFSBundleHintProvider",
+  "fieldHintProviderClass": "com.hortonworks.streamline.streams.cluster.bundle.impl.HDFSBundleHintProvider",
   "transformationClass": "com.hortonworks.streamline.streams.layout.storm.HdfsBoltFluxComponent",
   "mavenDeps": "org.apache.storm:storm-hdfs:STORM_VERSION^org.slf4j:slf4j-log4j12",
   "topologyComponentUISpecification": {

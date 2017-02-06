@@ -28,10 +28,6 @@
         </dependency>
         <dependency>
             <groupId>com.hortonworks.streamline</groupId>
-            <artifactId>streamline-cluster</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.hortonworks.streamline</groupId>
             <artifactId>tag-registry</artifactId>
         </dependency>
         <dependency>
@@ -95,10 +91,6 @@
             <artifactId>streamline-layout-storm</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.curator</groupId>
-            <artifactId>curator-test</artifactId>
         </dependency>
     </dependencies>
 </project>
