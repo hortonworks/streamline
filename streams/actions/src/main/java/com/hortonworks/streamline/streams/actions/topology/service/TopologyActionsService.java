@@ -16,8 +16,6 @@ import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.configuration.ConfigFileType;
 import com.hortonworks.streamline.streams.catalog.configuration.ConfigFileWriter;
-import com.hortonworks.streamline.streams.catalog.container.ContainingNamespaceAwareContainer;
-import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyLayoutValidator;
@@ -26,8 +24,10 @@ import com.hortonworks.streamline.streams.layout.component.OutputComponent;
 import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
 import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
 import com.hortonworks.streamline.streams.layout.component.TopologyDag;
-import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
+import com.hortonworks.streamline.streams.cluster.container.ContainingNamespaceAwareContainer;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

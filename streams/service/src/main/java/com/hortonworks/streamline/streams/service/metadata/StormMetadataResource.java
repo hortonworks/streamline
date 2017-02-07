@@ -2,10 +2,9 @@ package com.hortonworks.streamline.streams.service.metadata;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.streamline.common.util.WSUtils;
-import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.exception.EntityNotFoundException;
-import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
-import com.hortonworks.streamline.streams.catalog.service.metadata.StormMetadataService;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+import com.hortonworks.streamline.streams.cluster.service.metadata.StormMetadataService;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
