@@ -238,7 +238,8 @@ export default class WindowingAggregateNodeForm extends Component {
 								projections:[],
 								streams: [],
 								actions: [],
-								groupbykeys:[]
+                                                                groupbykeys:[],
+                                outputStreams: []
 							}
                             TopologyREST.createNode(topologyId, versionId, 'windows', {body: JSON.stringify(dummyWindowObj)})
 								.then((windowResult)=>{
@@ -653,6 +654,9 @@ export default class WindowingAggregateNodeForm extends Component {
             .then((results)=>{
                 let data = results[0];
                 windowObj.actions = data.actions || [];
+                if(data.outputStreams.length > 0)
+                    windowObj.outputStreams = data.outputStreams;
+                else windowObj.outputStreams = [this.streamData.streamId, 'window_notifier_stream_'+ nodeData.nodeId];
                 return TopologyREST.updateNode(topologyId, versionId, 'windows', this.windowId, {body: JSON.stringify(windowObj)})
                 .then(windowResult=>{
                     return this.updateNode(windowResult, name, description);

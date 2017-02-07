@@ -761,13 +761,6 @@ class TopologyEditorContainer extends Component {
 
       if(node && nodeType === 'window'){
         let outputStreamObj = {};
-        if(newEdge.target.currentType.toLowerCase() === 'notification'){
-          outputStreamObj = _.find(node.outputStreams,{streamId: nodeType+'_notifier_stream_'+node.id});
-          edgeData.streamGroupings[0].streamId = outputStreamObj.id;
-        } else {
-          outputStreamObj = _.find(node.outputStreams,{streamId: nodeType+'_transform_stream_'+node.id});
-          edgeData.streamGroupings[0].streamId = outputStreamObj.id;
-        }
         if(node.config.properties.rules && node.config.properties.rules.length > 0){
           let rulesPromiseArr = [];
           let saveRulesPromiseArr = [];
@@ -776,6 +769,14 @@ class TopologyEditorContainer extends Component {
           })
           Promise.all(rulesPromiseArr)
             .then((results)=>{
+              let windowNodeData = results[0];
+              if(newEdge.target.currentType.toLowerCase() === 'notification'){
+                outputStreamObj = _.find(node.outputStreams,{streamId: windowNodeData.outputStreams[1]});
+                edgeData.streamGroupings[0].streamId = outputStreamObj.id;
+              } else {
+                outputStreamObj = _.find(node.outputStreams,{streamId: windowNodeData.outputStreams[0]});
+                edgeData.streamGroupings[0].streamId = outputStreamObj.id;
+              }
               results.map((result)=>{
                 let data = result;
                 let actionObj = {
@@ -803,10 +804,22 @@ class TopologyEditorContainer extends Component {
                 saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'windows', data.id, {body: JSON.stringify(data)}))
               })
               Promise.all(saveRulesPromiseArr)
+                .then((windowResult)=>{
+                  TopologyREST.createNode(topologyId, versionId, 'edges', {body: JSON.stringify(edgeData)})
+                    .then((edge)=>{
+                      newEdge.edgeId = edge.id;
+                      newEdge.streamGrouping = edge.streamGroupings[0];
+                      edges.push(newEdge);
+                      this.lastUpdatedTime = new Date(edge.timestamp);
+                      this.setState({altFlag: !this.state.altFlag});
+                      //call the callback to update the graph
+                      callback();
+                    });
+                });
             })
         }
-      }
-      TopologyREST.createNode(topologyId, versionId, 'edges', {body: JSON.stringify(edgeData)})
+      } else {
+        TopologyREST.createNode(topologyId, versionId, 'edges', {body: JSON.stringify(edgeData)})
         .then((edge)=>{
             newEdge.edgeId = edge.id;
             newEdge.streamGrouping = edge.streamGroupings[0];
@@ -816,6 +829,7 @@ class TopologyEditorContainer extends Component {
             //call the callback to update the graph
             callback();
           });
+      }
     } else{
       this.setState({altFlag: !this.state.altFlag},()=>{
         this.refs.EdgeConfigModal.show();

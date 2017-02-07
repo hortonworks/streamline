@@ -132,8 +132,13 @@ export default class BranchNodeForm extends Component {
 
     handleDeleteRule(id){
         let {topologyId, versionId, nodeType, nodeData} = this.props;
-        let transformStream = _.find(this.allStreams, {streamId: 'branch_transform_stream_'+id});
-        let notifierStream = _.find(this.allStreams, {streamId: 'branch_notifier_stream_'+id});
+        let ruleObj = _.find(this.state.rules, {id: id});
+        let transformStream = _.find(this.allStreams, (s)=>{
+            return ruleObj.outputStreams.indexOf(s.streamId) > -1 && s.streamId.indexOf('transform') > -1;
+        });
+        let notifierStream = _.find(this.allStreams, (s)=>{
+            return ruleObj.outputStreams.indexOf(s.streamId) > -1 && s.streamId.indexOf('notifier') > -1;
+        });
         let edges = _.filter(this.allEdges, function(e) { return e.streamGroupings[0].streamId ===  transformStream.id || e.streamGroupings[0].streamId ===  notifierStream.id});
         this.refs.Confirm.show({
             title: 'Are you sure you want to delete rule ?'
@@ -151,7 +156,10 @@ export default class BranchNodeForm extends Component {
                     FSReactToastr.error(<CommonNotification flag="error" content={edgeResult.responseMessage}/>, '', toastOpt);
                 } else if(edges.length > 0) {
                     edges.map((e)=>{
-                        this.props.graphEdges.splice(this.props.graphEdges.indexOf(e), 1);
+                        let i = this.props.graphEdges.findIndex((edgeObj)=>{
+                            return e.id === edgeObj.edgeId;
+                        });
+                        this.props.graphEdges.splice(i, 1);
                     });
                     this.props.updateGraphMethod();
                 }

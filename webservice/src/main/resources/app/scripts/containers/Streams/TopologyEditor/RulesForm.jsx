@@ -525,6 +525,7 @@ export default class RulesForm extends Component {
 		let promiseArr = [];
 		if(ruleObj.id){
 			//update rule
+                        ruleData.outputStreams = ruleObj.outputStreams;
             promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'rules', ruleObj.id, {body: JSON.stringify(ruleData)}));
 		} else {
 			//create rule
@@ -575,6 +576,8 @@ export default class RulesForm extends Component {
                                 ruleProcessorData.outputStreams.push(transformStreamObj);
                                 ruleProcessorData.outputStreams.push(notifierStreamObj);
 			}
+                        ruleData.outputStreams = [transformStreamObj.streamId, notifierStreamObj.streamId];
+                        promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'rules', ruleData.id, {body: JSON.stringify(ruleData)}));
             promiseArr.push(TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.id, {body: JSON.stringify(ruleProcessorData)}));
 		}
 		return Promise.all(promiseArr)
