@@ -15,6 +15,7 @@ import com.hortonworks.streamline.streams.layout.component.rule.Rule;
 import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ public class BranchRuleInfo extends BaseRuleInfo {
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
     public static final String STREAM = "stream";
+    public static final String OUTPUT_STREAMS = "outputStreams";
     public static final String CONDITION = "condition";
     public static final String PARSED_RULE_STR = "parsedRuleStr";
     public static final String ACTIONS = "actions";
@@ -53,6 +55,8 @@ public class BranchRuleInfo extends BaseRuleInfo {
     private String parsedRuleStr;
     private List<Action> actions;
     private Long versionTimestamp;
+    // optional list of output streams that this rule emits to
+    private List<String> outputStreams;
 
     // for jackson
     public BranchRuleInfo() {
@@ -69,6 +73,9 @@ public class BranchRuleInfo extends BaseRuleInfo {
         setParsedRuleStr(other.getParsedRuleStr());
         if (other.getActions() != null) {
             setActions(other.getActions().stream().map(Action::copy).collect(Collectors.toList()));
+        }
+        if (other.getOutputStreams() != null) {
+            setOutputStreams(new ArrayList<>(other.getOutputStreams()));
         }
         setVersionTimestamp(other.getVersionTimestamp());
     }
@@ -158,6 +165,14 @@ public class BranchRuleInfo extends BaseRuleInfo {
         this.stream = stream;
     }
 
+    public List<String> getOutputStreams() {
+        return outputStreams;
+    }
+
+    public void setOutputStreams(List<String> outputStreams) {
+        this.outputStreams = outputStreams;
+    }
+
     @JsonIgnore
     @Override
     public String getParsedRuleStr() {
@@ -187,6 +202,7 @@ public class BranchRuleInfo extends BaseRuleInfo {
                 Schema.Field.of(NAME, Schema.Type.STRING),
                 Schema.Field.of(DESCRIPTION, Schema.Type.STRING),
                 Schema.Field.of(STREAM, Schema.Type.STRING),
+                Schema.Field.of(OUTPUT_STREAMS, Schema.Type.STRING),
                 Schema.Field.of(CONDITION, Schema.Type.STRING),
                 Schema.Field.of(PARSED_RULE_STR, Schema.Type.STRING),
                 Schema.Field.of(ACTIONS, Schema.Type.STRING)
@@ -198,6 +214,7 @@ public class BranchRuleInfo extends BaseRuleInfo {
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> map = super.toMap();
         try {
+            map.put(OUTPUT_STREAMS, outputStreams != null ? mapper.writeValueAsString(outputStreams) : "");
             map.put(ACTIONS, actions != null ? mapper.writerFor(new TypeReference<List<Action>>() {
             }).writeValueAsString(actions) : "");
         } catch (Exception e) {
@@ -218,6 +235,12 @@ public class BranchRuleInfo extends BaseRuleInfo {
         setStream((String) map.get(STREAM));
         try {
             ObjectMapper mapper = new ObjectMapper();
+            String outputStreamsStr = (String) map.get(OUTPUT_STREAMS);
+            if (!StringUtils.isEmpty(outputStreamsStr)) {
+                List<String> outputStreams = mapper.readValue(outputStreamsStr, new TypeReference<List<String>>() {
+                });
+                setOutputStreams(outputStreams);
+            }
             String actionsStr = (String) map.get(ACTIONS);
             if (!StringUtils.isEmpty(actionsStr)) {
                 List<Action> actions = mapper.readValue(actionsStr, new TypeReference<List<Action>>() {
@@ -261,6 +284,7 @@ public class BranchRuleInfo extends BaseRuleInfo {
                 ", condition='" + condition + '\'' +
                 ", parsedRuleStr='" + parsedRuleStr + '\'' +
                 ", actions=" + actions +
+                ", outputStreams=" + outputStreams +
                 "} " + super.toString();
     }
 }
