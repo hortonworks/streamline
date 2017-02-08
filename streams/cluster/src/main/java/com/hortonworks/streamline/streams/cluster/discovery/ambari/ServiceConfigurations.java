@@ -21,8 +21,10 @@ package com.hortonworks.streamline.streams.cluster.discovery.ambari;
  */
 public enum ServiceConfigurations {
   ZOOKEEPER("zoo.cfg", "zookeeper-env"),
-  STORM("storm-site", "storm-env"),
-  KAFKA("kafka-broker", "kafka-env"),
+  // storm -> storm.yaml
+  STORM("storm", "storm-env"),
+  // server -> server.properties
+  KAFKA("server", "kafka-env"),
   // excluded ssl configurations for security reason
   HDFS("core-site", "hadoop-env", "hadoop-policy", "hdfs-site"),
   HBASE("hbase-env", "hbase-policy", "hbase-site"),

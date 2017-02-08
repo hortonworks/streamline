@@ -17,6 +17,7 @@ package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.streamline.streams.cluster.model.ServiceWithComponents;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import com.hortonworks.streamline.common.QueryParam;
@@ -267,8 +268,7 @@ public class ClusterCatalogResource {
             Collection<ServiceConfiguration> configurations = environmentService.listServiceConfigurations(service.getId());
             Collection<Component> components = environmentService.listComponents(service.getId());
 
-            ClusterServicesImportResult.ServiceWithComponents s =
-                new ClusterServicesImportResult.ServiceWithComponents(service);
+            ServiceWithComponents s = new ServiceWithComponents(service);
             s.setComponents(components);
             s.setConfigurations(configurations);
 
@@ -382,36 +382,6 @@ public class ClusterCatalogResource {
     private static class ClusterServicesImportResult {
         private Cluster cluster;
         private Collection<ServiceWithComponents> services = new ArrayList<>();
-
-        static class ServiceWithComponents {
-            private Service service;
-            private Collection<ServiceConfiguration> configurations;
-            private Collection<Component> components;
-
-            public ServiceWithComponents(Service service) {
-                this.service = service;
-            }
-
-            public Service getService() {
-                return service;
-            }
-
-            public Collection<Component> getComponents() {
-                return components;
-            }
-
-            public void setComponents(Collection<Component> components) {
-                this.components = components;
-            }
-
-            public Collection<ServiceConfiguration> getConfigurations() {
-                return configurations;
-            }
-
-            public void setConfigurations(Collection<ServiceConfiguration> configurations) {
-                this.configurations = configurations;
-            }
-        }
 
         public ClusterServicesImportResult(Cluster cluster) {
             this.cluster = cluster;

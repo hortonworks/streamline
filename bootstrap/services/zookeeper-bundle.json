@@ -1,0 +1,22 @@
+{
+  "name": "ZOOKEEPER",
+  "registerClass": "com.hortonworks.streamline.streams.cluster.register.impl.ZookeeperServiceRegisterer",
+  "serviceUISpecification": {
+    "fields": [
+      {
+        "uiName": "Zookeeper servers hostnames",
+        "fieldName": "zkServersHostnames",
+        "isOptional": false,
+        "tooltip": "Hostnames of Zookeeper servers",
+        "type": "array.string"
+      },
+      {
+        "uiName": "zoo.cfg",
+        "fieldName": "zoo.cfg",
+        "isOptional": false,
+        "tooltip": "Upload zoo.cfg file which Zookeeper cluster is using",
+        "type": "file"
+      }
+    ]
+  }
+}

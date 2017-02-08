@@ -1,0 +1,22 @@
+{
+  "name": "HDFS",
+  "registerClass": "com.hortonworks.streamline.streams.cluster.register.impl.HDFSServiceRegisterer",
+  "serviceUISpecification": {
+    "fields": [
+      {
+        "uiName": "core-site.xml",
+        "fieldName": "core-site.xml",
+        "isOptional": false,
+        "tooltip": "Upload core-site.xml file which Hadoop cluster is using",
+        "type": "file"
+      },
+      {
+        "uiName": "hdfs-site.xml",
+        "fieldName": "hdfs-site.xml",
+        "isOptional": false,
+        "tooltip": "Upload hdfs-site.xml file which Hadoop cluster is using",
+        "type": "file"
+      }
+    ]
+  }
+}
