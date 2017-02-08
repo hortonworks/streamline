@@ -30,6 +30,7 @@ import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.container.ContainingNamespaceAwareContainer;
 import com.hortonworks.streamline.streams.cluster.ClusterImporter;
 import com.hortonworks.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +39,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 public class EnvironmentService {
     private static final Logger LOG = LoggerFactory.getLogger(EnvironmentService.class);
@@ -87,7 +89,7 @@ public class EnvironmentService {
     }
 
     public ServiceConfiguration initializeServiceConfiguration(ObjectMapper objectMapper, Long serviceId,
-                                                               String confType, String actualFileName, Map<String, Object> configuration) throws JsonProcessingException {
+                                                               String confType, String actualFileName, Map<String, String> configuration) throws JsonProcessingException {
         ServiceConfiguration conf = new ServiceConfiguration();
         conf.setId(this.dao.nextId(SERVICE_CONFIGURATION_NAMESPACE));
         conf.setName(confType);
@@ -431,6 +433,45 @@ public class EnvironmentService {
         this.dao.addOrUpdate(newMapping);
         invalidateTopologyActionsMetricsInstances(newMapping.getNamespaceId());
         return newMapping;
+    }
+
+    public void injectProtocolAndPortToComponent(Map<String, String> configurations, Component component) {
+        try {
+            ComponentPropertyPattern confMap = ComponentPropertyPattern
+                    .valueOf(component.getName());
+            String value = configurations.get(confMap.getConnectionConfName());
+            if (value != null) {
+                Matcher matcher = confMap.getParsePattern().matcher(value);
+
+                if (matcher.matches()) {
+                    String protocol = matcher.group(1);
+                    String portStr = matcher.group(2);
+
+                    if (!protocol.isEmpty()) {
+                        component.setProtocol(protocol);
+                    }
+                    if (!portStr.isEmpty()) {
+                        try {
+                            component.setPort(Integer.parseInt(portStr));
+                        } catch (NumberFormatException e) {
+                            LOG.warn(
+                                    "Protocol/Port information [{}] for component {} doesn't seem to known format [{}]."
+                                            + "skip assigning...", value, component.getName(), confMap.getParsePattern());
+
+                            // reset protocol information
+                            component.setProtocol(null);
+                        }
+                    }
+                } else {
+                    LOG.warn("Protocol/Port information [{}] for component {} doesn't seem to known format [{}]. "
+                            + "skip assigning...", value, component.getName(), confMap.getParsePattern());
+                }
+            } else {
+                LOG.warn("Protocol/Port related configuration ({}) is not set", confMap.getConnectionConfName());
+            }
+        } catch (IllegalArgumentException e) {
+            // don't know port related configuration
+        }
     }
 
     private StorableKey getStorableKeyForNamespaceServiceClusterMapping(Long namespaceId, String serviceName,

@@ -63,7 +63,7 @@ public interface ServiceNodeDiscoverer {
    * @param serviceName service name. some examples are 'STORM', 'KAFKA', and so on.
    * @return all configurations for given service.
    */
-  Map<String, Map<String, Object>> getConfigurations(String serviceName);
+  Map<String, Map<String, String>> getConfigurations(String serviceName);
 
   /**
    * Get actual file name for given config type. This is for including configuration files to topology jar.
@@ -71,5 +71,5 @@ public interface ServiceNodeDiscoverer {
    * @param configType config type which is as same as discoverer provides
    * @return actual configuration file name
    */
-  String getActualFileName(String configType);
+  String getOriginFileName(String configType);
 }
