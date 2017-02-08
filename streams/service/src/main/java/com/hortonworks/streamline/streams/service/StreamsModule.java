@@ -134,6 +134,8 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         result.add(serviceConfigurationCatalogResource);
         final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(environmentService);
         result.add(componentCatalogResource);
+        final ServiceBundleResource serviceBundleResource = new ServiceBundleResource(environmentService);
+        result.add(serviceBundleResource);
         return result;
     }
 

@@ -30,7 +30,8 @@ CREATE TABLE IF NOT EXISTS widget ("id" BIGINT NOT NULL, "dashboardId" BIGINT NO
 CREATE TABLE IF NOT EXISTS datasource ("id" BIGINT NOT NULL, "dashboardId" BIGINT NOT NULL, "name" VARCHAR, "description" VARCHAR, "type" VARCHAR, "url" VARCHAR, "data" VARCHAR, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id", "dashboardId"))
 CREATE TABLE IF NOT EXISTS widget_datasource_mapping ("widgetId" BIGINT NOT NULL, "datasourceId" BIGINT NOT NULL, CONSTRAINT pk PRIMARY KEY ("widgetId", "datasourceId"))
 CREATE TABLE IF NOT EXISTS ml_models ("id" BIGINT NOT NULL, "name" VARCHAR(256) NOT NULL, "pmml" VARCHAR, "uploadedFileName" VARCHAR(256), "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id", "name"))
-CREATE TABLE IF NOT EXISTS sequence_table ("id" VARCHAR, "parser_info" BIGINT, "files" BIGINT, "topology_versioninfos" BIGINT, "topologies" BIGINT, "topology_component_bundles" BIGINT,"topology_components" BIGINT, "tag" BIGINT,  "streaminfo" BIGINT, "notifierinfos" BIGINT, "topology_sources" BIGINT, "topology_sinks" BIGINT, "topology_processors" BIGINT, "topology_edges" BIGINT,"ruleinfos" BIGINT, "windowinfos" BIGINT, "udfs" BIGINT, "clusters" BIGINT, "services" BIGINT, "service_configurations" BIGINT,"branchruleinfos" BIGINT, "components" BIGINT, "dashboard" BIGINT, "widget" BIGINT, "datasource" BIGINT, "namespaces" BIGINT CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS service_bundles ("id" BIGINT NOT NULL, "name" VARCHAR(256), "serviceUISpecification" VARCHAR, "registerClass" VARCHAR, "timestamp"  BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS sequence_table ("id" VARCHAR, "parser_info" BIGINT, "files" BIGINT, "topology_versioninfos" BIGINT, "topologies" BIGINT, "topology_component_bundles" BIGINT,"topology_components" BIGINT, "tag" BIGINT,  "streaminfo" BIGINT, "notifierinfos" BIGINT, "topology_sources" BIGINT, "topology_sinks" BIGINT, "topology_processors" BIGINT, "topology_edges" BIGINT,"ruleinfos" BIGINT, "windowinfos" BIGINT, "udfs" BIGINT, "clusters" BIGINT, "services" BIGINT, "service_configurations" BIGINT,"branchruleinfos" BIGINT, "components" BIGINT, "dashboard" BIGINT, "widget" BIGINT, "datasource" BIGINT, "namespaces" BIGINT, "service_bundles" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
 
 CREATE SEQUENCE IF NOT EXISTS parser_info_sequence
 CREATE SEQUENCE IF NOT EXISTS topology_versioninfos_sequence
@@ -58,3 +59,4 @@ CREATE SEQUENCE IF NOT EXISTS dashboard_sequence
 CREATE SEQUENCE IF NOT EXISTS widget_sequence
 CREATE SEQUENCE IF NOT EXISTS datasource_sequence
 CREATE SEQUENCE IF NOT EXISTS ml_models_sequence
+CREATE SEQUENCE IF NOT EXISTS service_bundles_sequence

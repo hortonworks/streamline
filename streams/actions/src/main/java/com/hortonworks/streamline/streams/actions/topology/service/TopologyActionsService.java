@@ -15,6 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.actions.topology.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -239,7 +240,8 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
             if (fileType != null) {
                 File destPath = Paths.get(artifactsDir.toString(), filename).toFile();
 
-                Map<String, Object> conf = objectMapper.readValue(configuration.getConfiguration(), Map.class);
+                Map<String, String> conf = objectMapper.readValue(configuration.getConfiguration(),
+                        new TypeReference<Map<String, String>>() {});
 
                 try {
                     configFileWriter.writeConfigToFile(fileType, conf, destPath);
