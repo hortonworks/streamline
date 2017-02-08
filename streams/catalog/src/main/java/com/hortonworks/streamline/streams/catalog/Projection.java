@@ -66,7 +66,9 @@ public class Projection {
     public Projection(String expr, String functionName, List<String> args, String outputFieldName) {
         this.expr = expr;
         this.functionName = functionName;
-        this.args = new ArrayList<>(args);
+        if (args != null) {
+            this.args = new ArrayList<>(args);
+        }
         this.outputFieldName = outputFieldName;
     }
 
