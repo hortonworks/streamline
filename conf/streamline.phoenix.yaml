@@ -34,17 +34,6 @@ storageProviderConfiguration:
      jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
      jdbcUrl: "jdbc:phoenix:localhost:2181:/hbase-unsecure"
 
-pivotConfiguration:
- port: "8083"
- config:
-  name: "druid"
-  type: "druid"
-  host: "http://localhost:8082" #Druid broker host & port.
- settingsLocation:
-  location: file
-  format: 'json'
-  uri: 'data.json'
-  writable: true
 
 enableCors: true
 corsUrlPatterns:

@@ -37,9 +37,6 @@ public class StreamlineConfiguration extends Configuration {
     @NotNull
     private StorageProviderConfiguration storageProviderConfiguration;
 
-    @NotNull
-    private PivotConfiguration pivotConfiguration;
-
 
     @JsonProperty
     public StorageProviderConfiguration getStorageProviderConfiguration() {
@@ -66,10 +63,6 @@ public class StreamlineConfiguration extends Configuration {
     public void setCatalogRootUrl (String catalogRootUrl) {
         this.catalogRootUrl = catalogRootUrl;
     }
-
-    public PivotConfiguration getPivotConfiguration () { return pivotConfiguration; }
-
-    public void setPivotUrl (PivotConfiguration pivotConfiguration) { this.pivotConfiguration = pivotConfiguration; }
 
     public FileStorageConfiguration getFileStorageConfiguration() {
         return this.fileStorageConfiguration;

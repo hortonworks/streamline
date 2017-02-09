@@ -92,8 +92,6 @@ public class StreamlineConfigurationResource {
             }
         }
         conf.put(CONFIG_REGISTRY, registryConf);
-        conf.put(CONFIG_PIVOT, streamlineConfiguration.getPivotConfiguration());
-
     }
 
 

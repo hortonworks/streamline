@@ -23,18 +23,6 @@ fileStorageConfiguration:
  properties:
    directory: "/tmp"
 
-pivotConfiguration:
- port: "8083"
- config:
-  name: "druid"
-  type: "druid"
-  host: "http://localhost:8082"
- settingsLocation:
-  location: file
-  format: 'json'
-  uri: 'data.json'
-  writable: true
-
 # storage provider configuration
 #
 # Example configuration for inmemory is:

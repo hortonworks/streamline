@@ -1,5 +1,0 @@
-settingsLocation:
-  location: file
-  format: 'json'
-  uri: 'data.json'
-  writable: true
