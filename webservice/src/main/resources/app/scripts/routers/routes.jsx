@@ -1,8 +1,6 @@
 import React from 'react'
 import { Router, Route, hashHistory, browserHistory, IndexRoute } from 'react-router'
 
-import DashboardContainer from '../containers/Dashboard/DashboardContainer'
-
 import MetricsContainer from '../containers/Streams/Metrics/MetricsContainer'
 import TopologyListContainer from '../containers/Streams/TopologyListing/TopologyListingContainer'
 import TopologyViewContainer from '../containers/Streams/TopologyEditor/TopologyViewContainer'
@@ -22,9 +20,6 @@ const onEnter = (nextState, replace, callback) => {
   if(sidebarRoute){
     if(sidebarRoute.name === 'My Applications'){
       state.sidebar_activeKey = 1;
-      state.sidebar_toggleFlag = false;
-    } else if(sidebarRoute.name === 'Dashboard'){
-      state.sidebar_activeKey = 4;
       state.sidebar_toggleFlag = false;
     } else if(sidebarRoute.name === 'Model Registry'){
       state.sidebar_activeKey = 5;
@@ -51,7 +46,6 @@ export default (
   <Route path="custom-processor" name="Custom Processor" component={CustomProcessorContainer} onEnter={onEnter}/>
   <Route path="tags" name="Tags" component={TagsContainer} onEnter={onEnter}/>
   <Route path="files" name="Files" component={FilesContainer} onEnter={onEnter}/>
-  <Route path="dashboard" name="Dashboard" component={DashboardContainer} onEnter={onEnter}/>
   <Route path="service-pool" name="Service Pool" component={ServicePoolContainer} onEnter={onEnter}/>
   <Route path="environments" name="Environments" component={EnvironmentContainer} onEnter={onEnter}/>
   <Route path="model-registry" name="Model Registry" component={ModelRegistryContainer} onEnter={onEnter}/>

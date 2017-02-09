@@ -42,7 +42,7 @@ class Paginate extends Component{
 
   render(){
     const {list,pagesize,index,fullList,oldData} = this.state;
-    const pastVal = pagesize*((list[index] === undefined) ? index - 1 : (fullList !== oldData ? 0 : index));
+    const pastVal = (pagesize*index) + 1;
 
 
     return(
