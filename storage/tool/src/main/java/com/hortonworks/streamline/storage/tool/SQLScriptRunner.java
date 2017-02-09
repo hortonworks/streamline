@@ -35,7 +35,10 @@ import java.util.Map;
 public class SQLScriptRunner {
     private static final String OPTION_SCRIPT_PATH = "file";
     private static final String OPTION_CONFIG_FILE_PATH = "config";
+    private static final String OPTION_MYSQL_JAR_URL_PATH = "mysql-jar-url";
     public static final String PLACEHOLDER_REPLACE_DBTYPE = "<dbtype>";
+    public static final String MYSQL_JAR_FILE_PATTERN = "mysql-connector-java-.*?-bin.jar";
+
 
     private final String url;
     private final String user;
@@ -73,13 +76,14 @@ public class SQLScriptRunner {
             }
         }
     }
+    
 
     public static void main(String[] args) throws Exception {
         Options options = new Options();
 
         options.addOption(option(1, "c", OPTION_CONFIG_FILE_PATH, "Config file path"));
         options.addOption(option(Option.UNLIMITED_VALUES, "f", OPTION_SCRIPT_PATH, "Script path to execute"));
-
+        options.addOption(option(Option.UNLIMITED_VALUES, "m", OPTION_MYSQL_JAR_URL_PATH, "Mysql client jar url to download"));
         CommandLineParser parser = new BasicParser();
         CommandLine commandLine = parser.parse(options, args);
 
@@ -92,12 +96,38 @@ public class SQLScriptRunner {
 
         String confFilePath = commandLine.getOptionValue(OPTION_CONFIG_FILE_PATH);
         String[] scripts = commandLine.getOptionValues(OPTION_SCRIPT_PATH);
+        String mysqlJarUrl = commandLine.getOptionValue(OPTION_MYSQL_JAR_URL_PATH);
 
         try {
             Map<String, Object> conf = Utils.readStreamlineConfig(confFilePath);
 
             StorageProviderConfigurationReader confReader = new StorageProviderConfigurationReader();
             StorageProviderConfiguration storageProperties = confReader.readStorageConfig(conf);
+
+            /* Due to license issues we will not be able to ship mysql driver.
+               If the dbtype is mysql we will prompt user to download the jar and place
+               it under bootstrap/lib and libs folder. This runs only one-time and for
+               next time onwards we will check if the mysql jar exists in the path.
+             */
+            File bootstrapDir = new File (System.getProperty("streamline.bootstrap.dir") + File.separator + "lib/");
+            File streamlineDir = new File (System.getProperty("streamline.bootstrap.dir") + File.separator +  "../libs/");
+    
+            if (storageProperties.getDbType().equals("mysql")
+                    && (!Utils.fileExists(streamlineDir, MYSQL_JAR_FILE_PATTERN)
+                    || !Utils.fileExists(bootstrapDir, MYSQL_JAR_FILE_PATTERN))) {
+                if (mysqlJarUrl == null || mysqlJarUrl == "")
+                    throw new IllegalArgumentException("Missing mysql client jar url. " +
+                            "Please pass mysql client jar url using -m option.");
+                try {
+                    String mysqlJarFileName = Utils.downloadMysqlJarAndCopyToLibDir(mysqlJarUrl, MYSQL_JAR_FILE_PATTERN);
+                    if (mysqlJarFileName != null) {
+                        File mysqlJarFile = new File(bootstrapDir+ File.separator + mysqlJarFileName);
+                        Utils.loadJarIntoClasspath(mysqlJarFile);
+                    }
+                } catch(Exception e) {
+                    System.exit(1);
+                }
+            }
 
             try {
                 Class.forName(storageProperties.getDriverClass());
