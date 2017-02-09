@@ -28,6 +28,7 @@ import java.io.Serializable;
  * @param <O> The type of output returned after the script is evaluated with {@link Script#evaluate(I)}.
  * @param <E> The Script Engine used to evaluate the scripts
  */
+
 public abstract class Script<I, O, E> implements Serializable {
     protected final String expression;
     protected final E scriptEngine;
