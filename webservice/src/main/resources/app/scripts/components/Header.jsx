@@ -2,18 +2,12 @@ import React, {Component} from 'react';
 import {Link} from 'react-router'
 import state from '../app_state';
 import {Nav,Navbar,NavItem,NavDropdown,MenuItem} from 'react-bootstrap';
-import {registryPort} from '../utils/Constants';
 
 export default class Header extends Component {
 
 	constructor(props){
 		super();
-    this.getRegistryBaseURL();
 	}
-
-  getRegistryBaseURL(){
-    this.registryURL = window.location.protocol + '//' + window.location.hostname + ':' + registryPort + '/#/';
-  }
 
   render(){
     const userIcon = <i className="fa fa-user"></i>;

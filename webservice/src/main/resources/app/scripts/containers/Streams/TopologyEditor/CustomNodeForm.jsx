@@ -6,6 +6,7 @@ import {Tabs, Tab, Radio} from 'react-bootstrap';
 import FSReactToastr from '../../../components/FSReactToastr';
 import TopologyREST from '../../../rest/TopologyREST';
 import CustomProcessorREST from '../../../rest/CustomProcessorREST';
+import { Scrollbars } from 'react-custom-scrollbars';
 
 export default class CustomNodeForm extends Component {
 	static propTypes = {
@@ -77,7 +78,7 @@ export default class CustomNodeForm extends Component {
 					if(i.type === "boolean")
 						stateObj[i.fieldName] = (properties[i.fieldName]) === true ? true : false;
 					else
-						stateObj[i.fieldName] = properties[i.fieldName] ? properties[i.fieldName] : '';
+                                                stateObj[i.fieldName] = properties[i.fieldName] ? properties[i.fieldName] : (i.defaultValue || '');
 				});
 
 				if(this.nodeData.outputStreams.length === 0)
@@ -181,54 +182,65 @@ export default class CustomNodeForm extends Component {
 		let {topologyId, editMode, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
 		let {showSchema, showError, showErrorLabel} = this.state;
 		return (
-            <form className="modal-form processor-modal-form form-overflow">
-                {
-                    this.state.userInputs.map((f, i)=>{
-                        return (
-                            <div className="form-group" key={i}>
-                                <label>{f.uiName}
-                                    {f.isOptional ? null : <span className="text-danger">*</span>}
-                                </label>
-                                <div>
-                                {
-                                    f.type === "boolean" ?
-                                        [<Radio
-                                            key="1"
-                                            inline={true}
-                                            data-label="true"
-                                            data-name={f.fieldName}
-                                            onChange={this.handleRadioBtn.bind(this)}
-                                            checked={this.state[f.fieldName] ? true: false}
-                                            disabled={!this.state.editMode}>true
-                                        </Radio>,
-                                        <Radio
-                                            key="2"
-                                            inline={true}
-                                            data-label="false"
-                                            data-name={f.name}
-                                            onChange={this.handleRadioBtn.bind(this)}
-                                            checked={this.state[f.fieldName] ? false : true}
-                                            disabled={!this.state.editMode}>false
-                                        </Radio>]
-                                    :
-                                    <input
-                                        name={f.fieldName}
-                                        value={this.state[f.fieldName]}
-                                        onChange={this.handleValueChange.bind(this, f)}
-                                        type={f.type}
-                                        className={!f.isOptional && showError && f.isInvalid ? "form-control invalidInput" : "form-control"}
-                                        required={f.isOptional ? false : true}
-                                        disabled={!this.state.editMode}
-                                        min={f.type === "number" ? "0" : null}
-                                        inputMode={f.type === "number" ? "numeric" : null}
-                                    />
-                                }
+            <div className="modal-form processor-modal-form">
+              <Scrollbars autoHide
+                renderThumbHorizontal={props => <div {...props} style={{display : "none"}}/>}
+                >
+                <form className="customFormClass">
+                    {
+                        this.state.userInputs.map((f, i)=>{
+                            return (
+                                <div className="form-group" key={i}>
+                                    { f.fieldName !== "parallelism"
+                                      ? <label>{f.uiName}
+                                            {f.isOptional ? null : <span className="text-danger">*</span>}
+                                        </label>
+                                      : ''
+                                    }
+                                    <div>
+                                    {
+                                        f.type === "boolean" ?
+                                            [<Radio
+                                                key="1"
+                                                inline={true}
+                                                data-label="true"
+                                                data-name={f.fieldName}
+                                                onChange={this.handleRadioBtn.bind(this)}
+                                                checked={this.state[f.fieldName] ? true: false}
+                                                disabled={!this.state.editMode}>true
+                                            </Radio>,
+                                            <Radio
+                                                key="2"
+                                                inline={true}
+                                                data-label="false"
+                                                data-name={f.name}
+                                                onChange={this.handleRadioBtn.bind(this)}
+                                                checked={this.state[f.fieldName] ? false : true}
+                                                disabled={!this.state.editMode}>false
+                                            </Radio>]
+                                        :
+                                          f.fieldName !== "parallelism"
+                                            ? <input
+                                                  name={f.fieldName}
+                                                  value={this.state[f.fieldName]}
+                                                  onChange={this.handleValueChange.bind(this, f)}
+                                                  type={f.type}
+                                                  className={!f.isOptional && showError && f.isInvalid ? "form-control invalidInput" : "form-control"}
+                                                  required={f.isOptional ? false : true}
+                                                  disabled={!this.state.editMode}
+                                                  min={(f.type === "number" && f.fieldName === "parallelism") ? 1 : f.type === "number" ? 0 : null}
+                                                  inputMode={f.type === "number" ? "numeric" : null}
+                                              />
+                                            : ''
+                                    }
+                                    </div>
                                 </div>
-                            </div>
-                        );
-                    })
-                }
-            </form>
+                            );
+                        })
+                    }
+                </form>
+              </Scrollbars>
+          </div>
         )
 	}
 }

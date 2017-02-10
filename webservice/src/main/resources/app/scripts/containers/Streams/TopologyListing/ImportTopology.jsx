@@ -71,7 +71,9 @@ class ImportTopology extends Component{
     if(!this.validate())
       return;
     const {jsonFile, namespaceId} = this.state;
+    const topologyName = this.refs.topologyName.value.trim();
     let formData = new FormData();
+    topologyName ? formData.append('topologyName', topologyName) : '';
     formData.append('file', jsonFile);
     formData.append('namespaceId', namespaceId);
 
@@ -104,6 +106,17 @@ class ImportTopology extends Component{
               name="files"
               title="Upload File"
               onChange={this.handleOnFileChange}
+            />
+          </div>
+        </div>
+        <div className="form-group">
+          <label>Topology Name </label>
+          <div>
+            <input type="text"
+              className="form-control"
+              name="name"
+              title="Topology Name"
+              ref="topologyName"
             />
           </div>
         </div>

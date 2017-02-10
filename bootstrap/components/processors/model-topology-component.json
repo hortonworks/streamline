@@ -1,0 +1,31 @@
+{
+	"type": "PROCESSOR",
+	"name": "PMML",
+	"subType": "PMML",
+	"builtin": true,
+	"streamingEngine": "STORM",
+	"transformationClass": "com.hortonworks.streamline.streams.layout.storm.MLModelEvaluationFluxComponent",
+    "mavenDeps": "org.apache.storm:storm-pmml:STORM_VERSION",
+	"topologyComponentUISpecification": {
+		"fields": [
+			{
+			"uiName": "ModelName",
+			"fieldName": "name",
+			"isOptional": false,
+			"tooltip": "Name of the model",
+			"type": "string",
+			"hint": "model"
+		},
+		{
+			"uiName": "Parallelism",
+			"fieldName": "parallelism",
+			"isOptional": true,
+			"tooltip": "Parallelism hint",
+			"type": "number",
+			"defaultValue": 1,
+			"min": 1,
+			"hint": "hidden"
+		}
+		]
+	}
+}

@@ -7,6 +7,10 @@ import TopologyREST from '../../../rest/TopologyREST';
 import Form from '../../../libs/form';
 import StreamsSidebar from '../../../components/StreamSidebar';
 import NotesForm from '../../../components/NotesForm';
+import FSReactToastr from '../../../components/FSReactToastr';
+import CommonNotification from '../../../utils/CommonNotification';
+import {toastOpt} from '../../../utils/Constants';
+import { Scrollbars } from 'react-custom-scrollbars';
 
 export default class SourceNodeForm extends Component {
     static propTypes = {
@@ -21,54 +25,181 @@ export default class SourceNodeForm extends Component {
     constructor(props) {
         super(props);
         this.fetchData();
-        this.configJSON = props.configData.topologyComponentUISpecification.fields;
         this.state = {
             formData: {},
             streamObj: {},
             description: '',
             showRequired: true,
-            activeTabKey: 1
+            activeTabKey: 1,
+            clusterArr : [],
+            configJSON : this.fetchFields(),
+            clusterName : '',
+            fetchLoader : true
         };
     }
 
     fetchData(){
-        let {topologyId, versionId, nodeType, nodeData} = this.props;
-        TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId)
-            .then(results=>{
-                this.nodeData = results;
-                let stateObj = {};
-                if(this.nodeData.outputStreams.length === 0){
-                    this.createStream();
-                } else {
-                    this.streamObj = this.nodeData.outputStreams[0];
-                    stateObj.streamObj = this.streamObj;
-                }
-                stateObj.formData = this.nodeData.config.properties
-                stateObj.description = this.nodeData.description;
-                this.setState(stateObj);
-            })
+        let {topologyId, versionId, nodeType, nodeData,namespaceId} = this.props;
+        const sourceParams = nodeData.parentType+'/'+nodeData.topologyComponentBundleId;
+        let promiseArr = [
+          TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId),
+          TopologyREST.getSourceComponentClusters(sourceParams,namespaceId)
+        ];
+
+        Promise.all(promiseArr)
+          .then((results) => {
+            let stateObj = {},tempArr = [];
+            if(results[0].responseMessage !== undefined){
+              FSReactToastr.error(<CommonNotification flag="error" content={results[0].responseMessage}/>, '', toastOpt);
+            }else{
+              this.nodeData = results[0];
+              if(this.nodeData.outputStreams.length === 0){
+                  this.streamObj = { streamId: this.props.configData.subType.toLowerCase()+'_stream_'+this.nodeData.id, fields: []};
+              } else {
+                  this.streamObj = this.nodeData.outputStreams[0];
+              }
+              stateObj.streamObj = this.streamObj;
+            }
+            if(results[1].responseMessage !== undefined){
+              this.setState({fetchLoader : false});
+              FSReactToastr.error(<CommonNotification flag="error" content={results[1].responseMessage}/>, '', toastOpt);
+            }else{
+              const clusters = results[1];
+              _.keys(clusters).map((x) => {
+                 _.keys(clusters[x]).map(k =>{
+                    if(k === "cluster"){
+                      const obj = {
+                                    fieldName : clusters[x][k].name+'@#$'+clusters[x][k].ambariImportUrl,
+                                    uiName : clusters[x][k].name
+                                  }
+                      tempArr.push(obj);
+                    }
+                  })
+              });
+              stateObj.clusterArr = clusters;
+            }
+            stateObj.configJSON = this.pushClusterFields(tempArr);
+            stateObj.formData = this.nodeData.config.properties;
+            stateObj.description = this.nodeData.description;
+            stateObj.fetchLoader = false;
+            this.setState(stateObj, () => {
+              if(stateObj.formData.cluster !== undefined){
+                this.updateClusterFields(stateObj.formData.cluster);
+                this.setState({streamObj : this.state.streamObj});
+              }
+              if(_.keys(stateObj.clusterArr).length === 1){
+                stateObj.formData.cluster = _.keys(stateObj.clusterArr)[0];
+                this.updateClusterFields(stateObj.formData.cluster);
+              }
+            });
+          })
+    }
+    fetchFields = () => {
+      let obj = this.props.configData.topologyComponentUISpecification.fields;
+      const clusterFlag = obj.findIndex(x => {
+        return x.fieldName === 'clusters'
+      });
+      if(clusterFlag === -1){
+        const data = {
+                      "uiName": "Cluster Name",
+                      "fieldName": "clusters",
+                      "isOptional": false,
+                      "tooltip": "Cluster name to read data from",
+                      "type": "CustomEnumstring",
+                      "options": []
+                    };
+          obj.unshift(data);
+      }
+      return obj;
+    }
+    pushClusterFields = (opt) => {
+      const {configJSON} = this.state;
+      const obj = configJSON.map(x => {
+          if(x.fieldName === 'clusters'){
+            x.options = opt;
+          }
+        return x
+      });
+      return obj;
     }
 
-    createStream(){
-        let {topologyId, versionId, nodeType} = this.props;
-        let streamData = { streamId: this.props.configData.subType.toLowerCase()+'_stream_'+this.nodeData.id, fields: []};
-        TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(streamData)})
-            .then(result=>{
-                this.nodeData.outputStreamIds = [result.id];
-                TopologyREST.updateNode(topologyId, versionId, nodeType, this.nodeData.id, {body: JSON.stringify(this.nodeData)})
-                    .then((node)=>{
-                        this.nodeData = node;
-                        this.streamObj = this.nodeData.outputStreams[0];
-                        this.setState({streamObj: this.streamObj});
+    populateClusterFields(val){
+      const tempObj = Object.assign({},this.state.formData,{topic:''});
+      // split the val by (-) to find the key by URL
+      const keyName = this.getClusterKey(val.split('@#$')[1])
+      this.setState({clusterName : keyName,streamObj:'',formData:tempObj}, () => {
+        this.updateClusterFields();
+      });
+    }
+
+    getClusterKey(url){
+      const {clusterArr} = this.state;
+      let key = '';
+      _.keys(clusterArr).map(x => {
+        _.keys(clusterArr[x]).map(k => {
+          if(clusterArr[x][k].ambariImportUrl === url){
+            key = x;
+          }
+        })
+      })
+      return key;
+    }
+
+    updateClusterFields(name){
+      const {clusterArr,clusterName,streamObj, formData} = this.state;
+      let data = {},obj=[];
+      let config = this.state.configJSON;
+      _.keys(clusterArr).map((x) => {
+        if(name || clusterName === x){
+        obj = config.map((list) => {
+            _.keys(clusterArr[x].hints).map(k => {
+                if(list.fieldName === k){
+                  if(_.isArray(clusterArr[x].hints[k]) && (name || clusterName) === x){
+                    list.options = clusterArr[x].hints[k].map(v => {
+                      return {
+                        fieldName : v,
+                        uiName : v
+                      }
                     })
+                    if(list.hint && list.hint.toLowerCase().indexOf("override") !== -1){
+                      if(formData[k]){
+                        if(list.options.findIndex((o)=>{return o.fieldName == formData[k]}) == -1){
+                          list.options.push({fieldName: formData[k], uiName: formData[k]});
+                        }
+                      }
+                    }
+                  }else{
+                    if(!_.isArray(clusterArr[x].hints[k])){
+                      // if (!formData[k]) this means it has come first time
+                      // OR
+                      // if (!name) this means user had change the cluster name
+                      if(!formData[k] || !name){
+                        data[k] = clusterArr[x].hints[k];
+                      }
+                    }
+                  }
+                }
             })
+            data.clusters = clusterArr[name || clusterName].cluster.name;
+            return list;
+          });
+        }
+      });
+      const tempData = Object.assign({},this.state.formData,data);
+      this.setState({configJSON : obj,formData : tempData});
     }
 
     validateData(){
-        let validDataFlag = true;
-        if(!this.refs.Form.validate()){
+        let validDataFlag = false;
+        if(!this.state.fetchLoader){
+          if(this.refs.Form.validate()){
+              validDataFlag = true;
+              this.setState({activeTabKey: 1, showRequired: true});
+          }
+          if(this.streamObj.fields.length === 0){
             validDataFlag = false;
-            this.setState({activeTabKey: 1, showRequired: true});
+            FSReactToastr.error(<CommonNotification flag="error" content={"Output stream fields cannot be blank."}/>, '', toastOpt);
+          }
         }
         return validDataFlag;
     }
@@ -79,28 +210,25 @@ export default class SourceNodeForm extends Component {
         let data = this.refs.Form.state.FormData;
         this.nodeData.config.properties = data;
         this.nodeData.name = name;
-        this.nodeData.outputStreams = [{
+        if(this.nodeData.outputStreams.length > 0){
+          this.nodeData.outputStreams[0].fields = this.streamObj.fields;
+        } else {
+          this.nodeData.outputStreams.push({
             fields: this.streamObj.fields,
             streamId: this.streamObj.streamId,
-            id: this.nodeData.outputStreams[0].id,
             topologyId: topologyId
-        }]
+          })
+        }
         this.nodeData.description = this.state.description;
-        let promiseArr = [
-            TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)}),
-            TopologyREST.updateNode(topologyId, versionId, 'streams', this.nodeData.outputStreams[0].id, {body: JSON.stringify(this.streamObj)})
-        ];
-        return Promise.all(promiseArr);
+        return TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)});
     }
 
     showOutputStream(resultArr){
         this.streamObj = {
             streamId: this.props.configData.subType.toLowerCase()+'_stream_'+this.nodeData.id,
-            fields: resultArr,
-            id: this.nodeData.outputStreams[0].id
+            fields: resultArr
         };
         this.setState({streamObj: this.streamObj});
-        // this.refs.StreamSidebar.update(this.streamObj);
     }
 
     onSelectTab = (eventKey) => {
@@ -118,18 +246,32 @@ export default class SourceNodeForm extends Component {
     }
 
     render() {
+        const {configJSON,fetchLoader} = this.state;
         let formData = this.state.formData;
-        let fields = Utils.genFields(this.configJSON, [], formData);
-        const form = <Form
-                        ref="Form"
-                        readOnly={!this.props.editMode}
-                        showRequired={this.state.showRequired}
-                        FormData={formData}
-                        className="source-modal-form form-overflow"
-                        callback={this.showOutputStream.bind(this)}
-                    >
-                        {fields}
-                    </Form>
+        let fields = Utils.genFields(configJSON, [], formData);
+        const form = fetchLoader
+                      ? <div className="col-sm-12">
+                            <div className="loading-img text-center" style={{marginTop : "100px"}}>
+                                <img src="styles/img/start-loader.gif" alt="loading" />
+                            </div>
+                        </div>
+                      : <div className="source-modal-form">
+                            <Scrollbars autoHide
+                              renderThumbHorizontal={props => <div {...props} style={{display : "none"}}/>}
+                              >
+                                  <Form
+                                      ref="Form"
+                                      readOnly={!this.props.editMode}
+                                      showRequired={this.state.showRequired}
+                                      className="customFormClass"
+                                      FormData={formData}
+                                      populateClusterFields={this.populateClusterFields.bind(this)}
+                                      callback={this.showOutputStream.bind(this)}
+                                  >
+                                      {fields}
+                                  </Form>
+                            </Scrollbars>
+                          </div>
         const outputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={this.state.streamObj} streamType="output" />
         return (
             <Tabs id="SinkForm" activeKey={this.state.activeTabKey} className="modal-tabs" onSelect={this.onSelectTab}>

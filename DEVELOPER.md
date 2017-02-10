@@ -192,14 +192,16 @@ If you wish to skip the unit tests you can do this by adding `-DskipTests` to th
 You can create a _distribution_ as follows.
 
     # First, build the code.
-    $ mvn clean install # you may skip tests with `-DskipTests=true` to save time
+    # Pivot module required for the dist package to be built , Its not run as part of default build.
+    # To build pivot along with all the other modules. 
+    $ mvn clean install -Pall 
 
     # Create the binary distribution.
     $ cd streamline-dist && mvn package
 
 You can also use the maven `dist` profile to build the code and create the distribution in one step.
 
-    $ mvn clean install -P dist
+    $ mvn clean install -P dist 
 
 The binaries will be created at:
 

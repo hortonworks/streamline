@@ -129,7 +129,7 @@ export default class SplitNodeForm extends Component {
 					splitConfigData = {
 						name: 'split-action',
 						outputStreams: [],
-						__type: 'org.apache.streamline.streams.layout.component.impl.splitjoin.SplitAction'
+						__type: 'com.hortonworks.streamline.streams.layout.component.impl.splitjoin.SplitAction'
 					};
 				}
 				splitConfigData.jarId = fileId;
@@ -178,7 +178,7 @@ export default class SplitNodeForm extends Component {
 									/>
 								</div>
 							</div>
-							<div className="form-group">
+                                                        {/*<div className="form-group">
 								<label className="col-sm-3 control-label">Parallelism</label>
 								<div className="col-sm-6">
 									<input
@@ -188,11 +188,11 @@ export default class SplitNodeForm extends Component {
 										type="number"
 										className="form-control"
 										disabled={!this.state.editMode}
-										min="0"
+                                                                                min="1"
 										inputMode="numeric"
 									/>
 								</div>
-							</div>
+                                                        </div>*/}
 						</form>
 					</Tab>
 					<Tab eventKey={2} title="Output Streams">

@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.apache.streamline</groupId>
+    <groupId>com.hortonworks.streamline</groupId>
     <artifactId>streamline</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -24,8 +24,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Compile Scope Dependencies -->
-        <calcite.version>1.11.0-SNAPSHOT</calcite.version>
-        <calcite-avatica.version>1.10.0-SNAPSHOT</calcite-avatica.version>
+        <calcite.version>1.11.0</calcite.version>
+        <calcite-avatica.version>1.9.0</calcite-avatica.version>
         <commons-cli.version>1.3.1</commons-cli.version>
         <commons-io.version>2.5</commons-io.version>
         <commons-lang.version>2.6</commons-lang.version>
@@ -44,8 +44,6 @@
         <javax.mail.version>1.5.3</javax.mail.version>
         <jersey.version>2.22.1</jersey.version>
         <json-schema-validator.version>2.2.6</json-schema-validator.version>
-        <kafka.version>0.8.1.1</kafka.version>
-        <kafkaArtifact>kafka_2.10</kafkaArtifact>
         <kryo.version>2.21</kryo.version>
         <mysql-connector-java.version>5.1.38</mysql-connector-java.version>
         <phoenix.version>4.7.0.2.5.0.0-1245</phoenix.version>
@@ -53,12 +51,10 @@
         <scala.version>2.10.5</scala.version>
         <schema-registry.version>0.1.0-SNAPSHOT</schema-registry.version>
         <slf4j.version>1.7.12</slf4j.version>
-        <storm.version>1.1.0-SNAPSHOT</storm.version>
+        <storm.version>1.1.0.2.6.0.0-SNAPSHOT</storm.version>
         <woodstox-core-asl.version>4.4.1</woodstox-core-asl.version>
         <druid.tranquility.version>0.8.2</druid.tranquility.version>
 
-        <!-- Provided Scope Dependencies -->
-        <aws-java-sdk.version>1.10.77</aws-java-sdk.version>
 
         <!-- Runtime Scope Dependencies -->
         <logback.version>1.1.7</logback.version>
@@ -282,56 +278,6 @@
                 <version>${curator.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-client</artifactId>
-                <version>${hadoop.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>log4j</groupId>
-                        <artifactId>log4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-log4j12</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.jersey</groupId>
-                        <artifactId>jersey-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.servlet</groupId>
-                        <artifactId>servlet-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.jersey</groupId>
-                        <artifactId>jersey-json</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-hdfs</artifactId>
-                <version>${hadoop.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>log4j</groupId>
-                        <artifactId>log4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-log4j12</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.jersey</groupId>
-                        <artifactId>jersey-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.jersey</groupId>
-                        <artifactId>jersey-json</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.hbase</groupId>
                 <artifactId>hbase-client</artifactId>
                 <version>${hbase.version}</version>
@@ -405,25 +351,6 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.kafka</groupId>
-                <artifactId>${kafkaArtifact}</artifactId>
-                <version>${kafka.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.zookeeper</groupId>
-                        <artifactId>zookeeper</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>log4j</groupId>
-                        <artifactId>log4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-log4j12</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.phoenix</groupId>
                 <artifactId>phoenix-core</artifactId>
                 <version>${phoenix.version}</version>
@@ -476,70 +403,6 @@
                         <artifactId>slf4j-log4j12</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.storm</groupId>
-                <artifactId>storm-cassandra</artifactId>
-                <version>${storm.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.storm</groupId>
-                <artifactId>storm-hbase</artifactId>
-                <version>${storm.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.hbase</groupId>
-                        <artifactId>hbase-server</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.hbase</groupId>
-                        <artifactId>hbase-client</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.hadoop</groupId>
-                        <artifactId>hadoop-hdfs</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-log4j12</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.storm</groupId>
-                <artifactId>storm-jdbc</artifactId>
-                <version>${storm.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.storm</groupId>
-                <artifactId>storm-hdfs</artifactId>
-                <version>${storm.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.hadoop</groupId>
-                        <artifactId>hadoop-common</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-log4j12</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.storm</groupId>
-                <artifactId>storm-kafka</artifactId>
-                <version>${storm.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-log4j12</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.storm</groupId>
-                <artifactId>storm-kinesis</artifactId>
-                <version>${storm.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.storm</groupId>
@@ -628,12 +491,12 @@
 
             <!-- Project Artifact Dependencies -->
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>cache</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>common</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -676,32 +539,32 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>registries</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>storage</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>storage-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-catalog</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-cluster</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-common</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -712,12 +575,12 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-layout</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-layout-storm</artifactId>
                 <version>${project.version}</version>
                 <!-- dropwizard and phoenix have conflicts in jersey related dependencies  -->
@@ -744,22 +607,32 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
+                <artifactId>streamline-actions</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hortonworks.streamline</groupId>
+                <artifactId>streamline-actions-storm</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-metrics</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-metrics-storm</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-common-storm</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-notification</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -770,7 +643,7 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-notifier</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -781,17 +654,17 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-runners</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-runners-storm</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-runtime</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -802,61 +675,41 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-runtime-storm</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-sdk</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streams</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>tag-registry</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>dashboard-registry</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>webservice</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- END Project Artifact Dependencies -->
-
-            <!-- Provided Scope Dependencies -->
-            <dependency>
-                <groupId>com.amazonaws</groupId>
-                <artifactId>aws-java-sdk</artifactId>
-                <version>${aws-java-sdk.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.storm</groupId>
-                <artifactId>storm-core</artifactId>
-                <version>${storm.version}</version>
-                <scope>provided</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-log4j12</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
 
             <!-- Runtime Scope Dependencies -->
             <dependency>
@@ -873,7 +726,7 @@
             </dependency>
             <!-- Test Scope Dependencies -->
             <dependency>
-                <groupId>org.apache.streamline</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-examples-processors</artifactId>
                 <version>${project.version}</version>
                 <scope>test</scope>
@@ -951,7 +804,7 @@
                 <enabled>true</enabled>
             </releases>
             <snapshots>
-                <enabled>false</enabled>
+                <enabled>true</enabled>
             </snapshots>
         </repository>
     </repositories>
@@ -988,7 +841,7 @@
                                             implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                     <transformer
                                             implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                        <mainClass>org.apache.streamline.webservice.StreamlineApplication</mainClass>
+                                        <mainClass>com.hortonworks.streamline.webservice.StreamlineApplication</mainClass>
                                     </transformer>
                                 </transformers>
                             </configuration>
@@ -1064,51 +917,90 @@
     </reporting>
 
     <profiles>
-        <profile>
-            <id>dist</id>
-            <properties>
-                <exclude.unit.test.groups>
-                    org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest
-                </exclude.unit.test.groups>
-                <include.unit.test.groups></include.unit.test.groups>
-                <exclude.integration.test.groups>org.apache.streamline.common.test.HBaseIntegrationTest
-                </exclude.integration.test.groups>
-                <include.integration.test.groups>org.apache.streamline.common.test.IntegrationTest
-                </include.integration.test.groups>
-            </properties>
-            <modules>
-                <module>streamline-dist</module>
-            </modules>
+      <profile>
+         <id>all</id>
+         <modules>
+           <module>common</module>
+           <module>cache</module>
+           <module>storage</module>
+           <module>streams</module>
+           <module>registries</module>
+           <module>webservice</module>
+           <module>examples/processors</module>
+         </modules>
+         <properties>
+           <exclude.unit.test.groups>
+             com.hortonworks.streamline.common.test.IntegrationTest,com.hortonworks.streamline.common.test.HBaseIntegrationTest
+           </exclude.unit.test.groups>
+           <include.unit.test.groups></include.unit.test.groups>
+           <exclude.integration.test.groups>com.hortonworks.streamline.common.test.HBaseIntegrationTest
+           </exclude.integration.test.groups>
+           <include.integration.test.groups>com.hortonworks.streamline.common.test.IntegrationTest
+           </include.integration.test.groups>
+         </properties>
+      </profile>
+      <profile>
+        <id>dist</id>
+         <properties>
+           <exclude.unit.test.groups>
+             com.hortonworks.streamline.common.test.IntegrationTest,com.hortonworks.streamline.common.test.HBaseIntegrationTest
+           </exclude.unit.test.groups>
+           <include.unit.test.groups></include.unit.test.groups>
+           <exclude.integration.test.groups>com.hortonworks.streamline.common.test.HBaseIntegrationTest
+           </exclude.integration.test.groups>
+           <include.integration.test.groups>com.hortonworks.streamline.common.test.IntegrationTest
+           </include.integration.test.groups>
+         </properties>
+         <modules>
+           <module>common</module>
+           <module>cache</module>
+           <module>storage</module>
+           <module>streams</module>
+           <module>registries</module>
+           <module>webservice</module>
+           <module>examples/processors</module>
+           <module>streamline-dist</module>
+         </modules>
         </profile>
-        <profile>
-            <id>dev-tests-basic</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <exclude.unit.test.groups>
-                    org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest
-                </exclude.unit.test.groups>
-                <include.unit.test.groups></include.unit.test.groups>
-                <exclude.integration.test.groups>org.apache.streamline.common.test.HBaseIntegrationTest
-                </exclude.integration.test.groups>
-                <include.integration.test.groups>org.apache.streamline.common.test.IntegrationTest
-                </include.integration.test.groups>
-            </properties>
-        </profile>
-
         <profile>
             <id>dev-tests-including-external-env</id>
             <properties>
                 <exclude.unit.test.groups>
-                    org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest
+                    com.hortonworks.streamline.common.test.IntegrationTest,com.hortonworks.streamline.common.test.HBaseIntegrationTest
                 </exclude.unit.test.groups>
                 <include.unit.test.groups></include.unit.test.groups>
                 <exclude.integration.test.groups></exclude.integration.test.groups>
                 <include.integration.test.groups>
-                    org.apache.streamline.common.test.IntegrationTest,org.apache.streamline.common.test.HBaseIntegrationTest
+                    com.hortonworks.streamline.common.test.IntegrationTest,com.hortonworks.streamline.common.test.HBaseIntegrationTest
                 </include.integration.test.groups>
             </properties>
         </profile>
+        <profile>
+          <id>default</id>
+          <activation>
+            <activeByDefault>true</activeByDefault>
+          </activation>
+          <modules>
+            <module>common</module>
+            <module>cache</module>
+            <module>storage</module>
+            <module>streams</module>
+            <module>registries</module>
+            <module>webservice</module>
+            <!--examples-->
+            <module>examples/processors</module>
+          </modules>
+          <properties>
+            <exclude.unit.test.groups>
+              com.hortonworks.streamline.common.test.IntegrationTest,com.hortonworks.streamline.common.test.HBaseIntegrationTest
+            </exclude.unit.test.groups>
+            <include.unit.test.groups></include.unit.test.groups>
+            <exclude.integration.test.groups>com.hortonworks.streamline.common.test.HBaseIntegrationTest
+            </exclude.integration.test.groups>
+            <include.integration.test.groups>com.hortonworks.streamline.common.test.IntegrationTest
+            </include.integration.test.groups>
+          </properties>
+      </profile>
+
     </profiles>
 </project>

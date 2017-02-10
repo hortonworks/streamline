@@ -9,6 +9,7 @@ import {
     Button
 } from 'react-bootstrap';
 import Modal from '../../components/FSModal';
+import { Scrollbars } from 'react-custom-scrollbars';
 
 /* import common utils*/
 import ClusterREST from '../../rest/ClusterREST';
@@ -22,6 +23,7 @@ import NoData from '../../components/NoData';
 import CommonNotification from '../../utils/CommonNotification';
 import {toastOpt} from '../../utils/Constants';
 import Paginate from '../../components/Paginate';
+import CommonLoaderSign  from '../../components/CommonLoaderSign';
 
 const ServiceItems = (props) =>{
   const {item} = props;
@@ -71,7 +73,7 @@ class PoolItemsCard extends Component{
       <div className="col-md-4">
             <div className="service-box" data-id={cluster.id} ref={(ref) => this.clusterRef = ref}>
                 <div className="service-head clearfix">
-                    <h4 className="pull-left no-margin">{cluster.name}</h4>
+                    <h4 className="pull-left no-margin">{cluster.name}<br /><span>{cluster.ambariImportUrl}</span></h4>
                     <div className="pull-right">
                       <DropdownButton noCaret title={ellipseIcon} id="dropdown" bsStyle="link" className="dropdown-toggle">
                           <MenuItem onClick={this.onActionClick.bind(this ,"refresh/")}>
@@ -85,28 +87,32 @@ class PoolItemsCard extends Component{
                       </DropdownButton>
                     </div>
                 </div>
-                <div className="service-body clearfix common-overflow">
-                  {
-                    (this.checkRefId(cluster.id))
-                    ? <div className="service-components">
-                        <div className="loading-img text-center">
-                            <img src="styles/img/start-loader.gif" alt="loading" />
+                  <div className="service-body clearfix">
+                    {
+                      (this.checkRefId(cluster.id))
+                      ? <div className="service-components">
+                          <div className="loading-img text-center">
+                              <img src="styles/img/start-loader.gif" alt="loading" />
+                          </div>
                         </div>
-                      </div>
-                    :  <ul className="service-components">
-                          {
-                            serviceWrap.length !== 0
-                            ? serviceWrap.map((items, i) => {
-                                return <ServiceItems key={i} item={items.service}/>
-                              })
-                            : <div className="col-sm-12 text-center">
-                                No Service
-                              </div>
-                          }
-                      </ul>
-                  }
-
-                </div>
+                      : <Scrollbars style={{height: "185px" }}
+                          autoHide
+                          renderThumbHorizontal={props => <div {...props} style={{display : "none"}}/>}
+                          >
+                          <ul className="service-components ">
+                              {
+                                serviceWrap.length !== 0
+                                ? serviceWrap.map((items, i) => {
+                                    return <ServiceItems key={i} item={items.service}/>
+                                  })
+                                : <div className="col-sm-12 text-center">
+                                    No Service
+                                  </div>
+                              }
+                          </ul>
+                          </Scrollbars>
+                    }
+                  </div>
             </div>
         </div>
     )
@@ -196,8 +202,20 @@ class ServicePoolContainer extends Component{
   }
 
   handleUpdateCluster = (ID) => {
-    this.setState({showFields : true,idCheck : +ID});
-    this.adminFormModel.show();
+    ClusterREST.getCluster(ID)
+    .then((entity) => {
+      if (entity.responseMessage !== undefined) {
+          FSReactToastr.error(
+              <CommonNotification flag="error" content={entity.responseMessage}/>, '', toastOpt)
+      } else {
+          const url = entity.cluster.ambariImportUrl;
+          const tempObj = Object.assign(this.state.clusterData,{ambariUrl : url});
+          this.setState({showFields : true,idCheck : +ID,clusterData : tempObj}, () => {
+            this.adminFormModel.show();
+          });
+      }
+    });
+
   }
 
   handleDeleteCluster = (id) => {
@@ -208,7 +226,7 @@ class ServicePoolContainer extends Component{
         if (cluster.responseMessage !== undefined) {
           if(cluster.responseMessage.indexOf('Namespace refers the cluster') !== 1){
             FSReactToastr.info(
-              <CommonNotification flag="info" content={"This cluster has been shared with some NameSpace. So it can't be deleted."}/>, '', toastOpt)
+              <CommonNotification flag="info" content={"This cluster is shared with some environment. So it can't be deleted."}/>, '', toastOpt)
           }else{
             FSReactToastr.error(
               <CommonNotification flag="error" content={cluster.responseMessage}/>, '', toastOpt);
@@ -279,10 +297,11 @@ class ServicePoolContainer extends Component{
 
   fetchClusterDetail = () => {
     const { clusterData,refIdArr} = this.state;
-    const {clusterName} = clusterData;
+    const {clusterName,ambariUrl} = clusterData;
     let data = {
       name : clusterName,
-      description : "This is an auto generated description"
+      description : "This is an auto generated description",
+      ambariImportUrl : ambariUrl
     };
     ClusterREST.postCluster({body : JSON.stringify(data)})
       .then((cluster) => {
@@ -304,10 +323,35 @@ class ServicePoolContainer extends Component{
 
   adminSaveClicked = () => {
     if(this.validateForm()){
-      const {idCheck,showFields} = this.state;
-      (showFields) ? this.importAmbariCluster() : this.fetchClusterDetail();
-      this.adminFormModel.hide();
-      this.setState({showFields : false});
+      const {idCheck,showFields,clusterData} = this.state;
+      const {ambariUrl,username, password} = clusterData;
+      const urlVerificationData = {
+        ambariRestApiRootUrl : ambariUrl,
+        username : username,
+        password : password
+      };
+
+      ClusterREST.postAmbariClusterVerifyURL({body : JSON.stringify(urlVerificationData)})
+      .then(urlVerify => {
+        if(urlVerify.verified){
+          (showFields) ? this.importAmbariCluster() : this.fetchClusterDetail();
+          this.adminFormModel.hide();
+          this.setState({showFields : false});
+        }else{
+          let response = urlVerify.responseMessage
+          if(response !== undefined){
+              let errorMsg = response;
+              errorMsg = response.indexOf('Cluster not found') !== -1
+                          ? "Ambari cluster not found"
+                          : response.indexOf('Unable to sign in') !== -1
+                            ? "You have entered wrong username or password"
+                            : response.indexOf('Bad input') !== -1
+                              ? "Not valid Ambari API URL"
+                              : response;
+              FSReactToastr.error(<CommonNotification flag="error" content={errorMsg}/>, '', toastOpt);
+            }
+        }
+      });
     }
   }
 
@@ -329,20 +373,13 @@ class ServicePoolContainer extends Component{
       .then((ambarClusters) => {
         let obj = {};
         if (ambarClusters.responseMessage !== undefined) {
-            const tempDataArray = this.spliceTempArr(clusterID || idCheck);
-            const errorMsg = ambarClusters.responseMessage.indexOf('Bad request') !== -1
-                              ? "You have entered a wrong cluster name"
-                              : ambarClusters.responseMessage;
-            ClusterREST.deleteCluster(clusterID || idCheck)
-            .then((deletedCluster) => {
-              this.setState({loader : false,idCheck : '',refIdArr : tempDataArray}, () => {
-                this.fetchData();
-                clearTimeout(clearTimer);
-                const clearTimer = setTimeout(() => {
-                  FSReactToastr.error(<CommonNotification flag="error" content={errorMsg}/>, '', toastOpt);
-                },500);
-              });
-            });
+          this.setState({loader : false,idCheck : ''}, () => {
+            this.fetchData();
+            clearTimeout(clearTimer);
+            const clearTimer = setTimeout(() => {
+              FSReactToastr.error(<CommonNotification flag="error" content={errorMsg}/>, '', toastOpt);
+            },500);
+          });
         }else{
           const result = ambarClusters;
           let entitiesWrap = [],sucessMsg='';
@@ -353,14 +390,14 @@ class ServicePoolContainer extends Component{
             }).indexOf(idCheck);
             entitiesWrap = this.state.entities;
             entitiesWrap[elPosition] = result;
-            sucessMsg = "Process has been completed successfully";
+            sucessMsg = "Process completed successfully";
           } else {
-            sucessMsg = "Cluster has been added successfully";
+            sucessMsg = "Cluster added successfully";
           }
           const tempDataArray = this.spliceTempArr(clusterID || idCheck);
 
-          this.setState({fetchLoader : true, loader : false,idCheck : '', entities: entitiesWrap, refIdArr : tempDataArray}, () => {
-            this.fetchData();
+          this.setState({fetchLoader : (idCheck) ? false : true, loader : false,idCheck : '', entities: entitiesWrap, refIdArr : tempDataArray}, () => {
+            sucessMsg.indexOf("added") !== - 1 ? this.fetchData() : ''
             clearTimeout(clearTimer);
             const clearTimer = setTimeout(() => {
               FSReactToastr.success(
@@ -403,7 +440,7 @@ class ServicePoolContainer extends Component{
 
   handleKeyPress = (event) => {
     if(event.key === "Enter"){
-      if(event.target.placeholder.indexOf('URL') !== -1){
+      if(event.target.placeholder.indexOf('http://ambari_host') !== -1){
           event.target.focus = false;
           this.addBtnClicked();
       }
@@ -413,7 +450,8 @@ class ServicePoolContainer extends Component{
 
   render(){
     const {routes} = this.props;
-    const {showInputErr,entities,showFields,fetchLoader,pageSize,pageIndex,refIdArr,loader} = this.state;
+    const {showInputErr,entities,showFields,fetchLoader,pageSize,pageIndex,refIdArr,loader,clusterData} = this.state;
+    const {ambariUrl} = clusterData;
     const splitData = _.chunk(entities,pageSize) || [];
     const adminFormFields = () =>{
       return <form className="modal-form config-modal-form" ref="modelForm">
@@ -423,9 +461,11 @@ class ServicePoolContainer extends Component{
                 <label>Url<span className="text-danger">*</span></label>
                   <input type="text"
                     className="form-control"
-                    placeholder="Enter your Url"
+                    placeholder="http://ambari_host:port/api/v1/clusters/CLUSTER_NAME"
                     ref="userUrl"
                     autoFocus="true"
+                    disabled={true}
+                    value={ambariUrl}
                   />
                   <p className="text-danger"></p>
               </div>
@@ -455,44 +495,50 @@ class ServicePoolContainer extends Component{
 
     return(
       <BaseContainer ref="BaseContainer" routes={routes} headerContent={this.getHeaderContent()}>
-        <div className="row row-margin-bottom">
-            <div className="col-md-8 col-md-offset-2">
-                <div className="input-group">
-                    <input type="text"
-                      ref="addURLInput"
-                      onKeyPress={this.handleKeyPress}
-                      className={`form-control ${showInputErr ? '' : 'invalidInput'}`}
-                      placeholder="Enter Ambari URL"
-                    />
-                    <span className="input-group-btn">
-                        <button className="btn btn-success"
-                          type="button"
-                          onClick={this.addBtnClicked}>
-                          Add
-                        </button>
-                    </span>
-                </div>
-                <lable className={`text-danger ${showInputErr ? 'hidden' : ''}`}>This is not a valid Url</lable>
+        {
+          fetchLoader
+          ? <CommonLoaderSign
+              imgName={"services"}
+            />
+          : <div>
+              <div className="row row-margin-bottom">
+                  <div className="col-md-8 col-md-offset-2">
+                      <div className="input-group">
+                          <input type="text"
+                            ref="addURLInput"
+                            onKeyPress={this.handleKeyPress}
+                            className={`form-control ${showInputErr ? '' : 'invalidInput'}`}
+                            placeholder="http://ambari_host:port/api/v1/clusters/CLUSTER_NAME"
+                          />
+                          <span className="input-group-btn">
+                              <button className="btn btn-success"
+                                type="button"
+                                onClick={this.addBtnClicked}>
+                                Add
+                              </button>
+                          </span>
+                      </div>
+                      <lable className={`text-danger ${showInputErr ? 'hidden' : ''}`}>This is not a valid Url</lable>
+                  </div>
+              </div>
+              <div className="row">
+                  {
+                    (splitData.length === 0)
+                      ?  <NoData
+                            imgName={"services"}
+                        />
+                    : splitData[pageIndex].map((list) => {
+                          return <PoolItemsCard key={list.cluster.id}
+                                  clusterList={list}
+                                  poolActionClicked={this.poolActionClicked}
+                                  refIdArr={refIdArr}
+                                  loader = {loader}
+                                  />
+                      })
+                  }
+              </div>
             </div>
-        </div>
-        <div className="row">
-            {
-              (fetchLoader)
-              ? <div className="fullPageLoader">
-                  <img src="styles/img/start-loader.gif" alt="loading" />
-                </div>
-              : (splitData.length === 0)
-                ? <NoData/>
-              : splitData[pageIndex].map((list) => {
-                    return <PoolItemsCard key={list.cluster.id}
-                            clusterList={list}
-                            poolActionClicked={this.poolActionClicked}
-                            refIdArr={refIdArr}
-                            loader = {loader}
-                            />
-                })
-            }
-        </div>
+        }
         {
           (entities.length > pageSize)
             ? <Paginate

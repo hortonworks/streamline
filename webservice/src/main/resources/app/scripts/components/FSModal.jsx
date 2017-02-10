@@ -5,7 +5,7 @@ const defaultState = {
     show: false,
     title: '',
     btnOkText: '',
-    btnCancelText: '',
+    btnCancelText: ''
 }
 
 export default class FSModal extends Component {
@@ -63,9 +63,9 @@ export default class FSModal extends Component {
     render() {
         return (
             <Modal aria-labelledby='contained-modal-title' backdrop="static" keyboard={false} onHide={this.cancel.bind(this)} show={this.state.show} {...this.props}>
-                {this.header()}
+                {this.props.hideHeader ? '' : this.header()}
                 {this.body()}
-                {this.footer()}
+                {this.props.hideFooter ? '' : this.footer()}
             </Modal>
         );
     }

@@ -13,6 +13,8 @@ import Utils from '../../utils/Utils';
 import BaseContainer from '../../containers/BaseContainer';
 import CommonNotification from '../../utils/CommonNotification';
 import {toastOpt} from '../../utils/Constants'
+import NoData from '../../components/NoData';
+import CommonLoaderSign  from '../../components/CommonLoaderSign';
 
 export default class CustomProcessorContainer extends Component {
 
@@ -24,19 +26,21 @@ export default class CustomProcessorContainer extends Component {
       showListing: true,
       filterValue:'',
       slideInput : false,
-      childPopUpFlag : false
+      childPopUpFlag : false,
+      fetchLoader : true
 		};
 	}
 
 	fetchData() {
 		CustomProcessorREST.getAllProcessors()
-			.then((processors)=>{
+                        .then((processors)=>{
                                 if(processors.responseMessage !== undefined){
           FSReactToastr.error(
-              <CommonNotification flag="error" content={processors.responseMessage}/>, '', toastOpt)
-				} else {
-					let data = processors.entities;
-					this.setState({entities: data})
+              <CommonNotification flag="error" content={processors.responseMessage}/>, '', toastOpt);
+              this.setState({fetchLoader:false});
+                                } else {
+                                        let data = processors.entities;
+                                        this.setState({entities: data,fetchLoader:false})
 				}
 			})
 	}
@@ -49,6 +53,7 @@ export default class CustomProcessorContainer extends Component {
 	}
 
 	handleCancel() {
+    window.removeEventListener('keyup',this.handleKeyPress.bind(this),false);
 		this.fetchData();
 		this.setState({
 			showListing: true
@@ -59,9 +64,12 @@ export default class CustomProcessorContainer extends Component {
     if(this.refs.CustomProcessorForm.getWrappedInstance().validateData()){
       this.refs.CustomProcessorForm.getWrappedInstance().handleSave().then((processor)=>{
         if(processor.responseMessage !== undefined){
-          let errorMsg = processor.responseMessage.indexOf('[cache-0.1.0-SNAPSHOT.jar] already exists') !== -1
+          let errorMsg = processor.responseMessage.indexOf('already exists') !== -1
                           ? "The jar file is already exists"
-                          : processor.responseMessage;
+                          : processor.responseMessage.indexOf('missing customProcessorImpl class') !== -1
+                            ? "Class name doesn't exists in a jar file"
+                            : processor.responseMessage;
+          window.removeEventListener('keyup',this.handleKeyPress.bind(this),false);
           FSReactToastr.error(
               <CommonNotification flag="error" content={errorMsg}/>, '', toastOpt)
         } else {
@@ -121,16 +129,16 @@ export default class CustomProcessorContainer extends Component {
     );
   }
   componentDidUpdate(){
-    window.removeEventListener(this.handleKeyPress.bind(this),false);
-    if(!this.state.childPopUpFlag && this.state.showListing){
+    window.removeEventListener('keyup',this.handleKeyPress.bind(this),false);
+    if(this.state.childPopUpFlag && !this.state.showListing){
       window.addEventListener('keyup',this.handleKeyPress.bind(this),false);
     }
   }
   componentWillUnmount(){
-    window.removeEventListener(this.handleKeyPress.bind(this),false);
+    window.removeEventListener('keyup',this.handleKeyPress.bind(this),false);
   }
   handleKeyPress(event){
-      if(!this.state.childPopUpFlag){
+      if(!this.state.childPopUpFlag && this.refs.CustomProcessorForm){
         if(event.key === "Enter"){
           this.handleSave();
         }
@@ -141,7 +149,7 @@ export default class CustomProcessorContainer extends Component {
   }
 
 	render() {
-    let {entities,filterValue,slideInput} = this.state;
+    let {entities,filterValue,slideInput,fetchLoader} = this.state;
     const filteredEntities = Utils.filterByName(entities , filterValue);
 
 		return (
@@ -150,88 +158,109 @@ export default class CustomProcessorContainer extends Component {
         routes={this.props.routes}
         headerContent={this.getHeaderContent()}
       >
-				{this.state.showListing ?
-					<div>
-                  <div className="row">
-                    <div className="page-title-box clearfix">
-                        <div className="col-md-4 col-md-offset-6 text-right">
-                          <FormGroup>
-                              <InputGroup>
-                                  <FormControl type="text"
-                                    placeholder="Search by name"
-                                    onKeyUp={this.onFilterChange}
-                                    className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
-                                    onBlur={this.slideInputOut}
-                                  />
-                                  <InputGroup.Addon>
-                                      <Button type="button"
-                                        className="searchBtn"
-                                        onClick={this.slideInput}
-                                      >
-                                        <i className="fa fa-search"></i>
-                                      </Button>
-                                  </InputGroup.Addon>
-                              </InputGroup>
-                          </FormGroup>
+      {
+        fetchLoader
+        ? <CommonLoaderSign
+              imgName={"default"}
+          />
+        : <div>
+              {this.state.showListing ?
+                <div>
+                        <div className="row">
+                          <div className="page-title-box clearfix">
+                              <div className="col-md-4 col-md-offset-6 text-right">
+                                {
+                                  ((filterValue && filteredEntities.length === 0) || filteredEntities.length !== 0)
+                                  ?
+                                    <FormGroup>
+                                        <InputGroup>
+                                            <FormControl type="text"
+                                              placeholder="Search by name"
+                                              onKeyUp={this.onFilterChange}
+                                              className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
+                                              onBlur={this.slideInputOut}
+                                            />
+                                            <InputGroup.Addon>
+                                                <Button type="button"
+                                                  className="searchBtn"
+                                                  onClick={this.slideInput}
+                                                >
+                                                  <i className="fa fa-search"></i>
+                                                </Button>
+                                            </InputGroup.Addon>
+                                        </InputGroup>
+                                    </FormGroup>
+                                  : ''
+                                }
+                              </div>
+                              <div id="add-environment">
+                                <a href="javascript:void(0);"
+                                  className="hb lg success actionDropdown"
+                                  data-target="#addEnvironment"
+                                    onClick={this.handleAdd.bind(this)}>
+                                    <i className="fa fa-plus"></i>
+                                </a>
+                              </div>
+                          </div>
                         </div>
-                        <div id="add-environment">
-                          <a href="javascript:void(0);"
-                            className="hb lg success actionDropdown"
-                            data-target="#addEnvironment"
-                              onClick={this.handleAdd.bind(this)}>
-                              <i className="fa fa-plus"></i>
-                          </a>
-                        </div>
-                    </div>
-                  </div>
-                  <div className="row">
-                        <div className="col-sm-12">
-                            <div className="box">
-                                <div className="box-body">
-                                  <Table
-                                    className="table table-hover table-bordered"
-                                    noDataText="No records found."
-                                    currentPage={0}
-                                    itemsPerPage={filteredEntities.length > pageSize ? pageSize : 0} pageButtonLimit={5}>
-                                      <Thead>
-                                        <Th column="name">Name</Th>
-                                        <Th column="description">Description</Th>
-                                        <Th column="jarFileName">Jar File Name</Th>
-                                        <Th column="action">Actions</Th>
-                                      </Thead>
-                                    {
-                                      filteredEntities.map((obj,i) => {
-                                          return (
-                                            <Tr key={`${obj.name}${i}`}>
-                                              <Td column="name">{obj.name}</Td>
-                                              <Td column="description">{obj.description}</Td>
-                                              <Td column="jarFileName">{obj.jarFileName}</Td>
-                                              <Td column="action">
-                                                <div className="btn-action">
-                                                  <BtnEdit callback={this.handleEdit.bind(this, obj.name)}/>
-                                                  <BtnDelete callback={this.handleDelete.bind(this, obj.name)}/>
-                                                </div>
-                                              </Td>
-                                            </Tr>
-                                          )
-                                        })
-                                    }
-                                  </Table>
+                        {
+                          filteredEntities.length === 0
+                          ? <NoData
+                              imgName={"default"}
+                              searchVal={filterValue}
+                            />
+                          : <div className="row">
+                                <div className="col-sm-12">
+                                    <div className="box">
+                                        <div className="box-body">
+                                          <Table
+                                            className="table table-hover table-bordered"
+                                            noDataText="No records found."
+                                            currentPage={0}
+                                            itemsPerPage={filteredEntities.length > pageSize ? pageSize : 0} pageButtonLimit={5}>
+                                              <Thead>
+                                                <Th column="name">Name</Th>
+                                                <Th column="description">Description</Th>
+                                                <Th column="jarFileName">Jar File Name</Th>
+                                                <Th column="action">Actions</Th>
+                                              </Thead>
+                                            {
+                                              filteredEntities.map((obj,i) => {
+                                                  return (
+                                                    <Tr key={`${obj.name}${i}`}>
+                                                      <Td column="name">{obj.name}</Td>
+                                                      <Td column="description">{obj.description}</Td>
+                                                      <Td column="jarFileName">{obj.jarFileName}</Td>
+                                                      <Td column="action">
+                                                        <div className="btn-action">
+                                                          <BtnEdit callback={this.handleEdit.bind(this, obj.name)}/>
+                                                          <BtnDelete callback={this.handleDelete.bind(this, obj.name)}/>
+                                                        </div>
+                                                      </Td>
+                                                    </Tr>
+                                                  )
+                                                })
+                                            }
+                                          </Table>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-					</div>
-                : <CustomProcessorForm
-                    ref="CustomProcessorForm"
-                    onCancel={this.handleCancel.bind(this)}
-                    onSave={this.handleSave.bind(this)}
-                    id={this.state.processorId}
-                    route = {this.props.route}
-                    processors= {this.state.entities}
-                    popUpFlag={this.childPopUpFlag}
-                />
-				}
+                        }
+                </div>
+                      : <CustomProcessorForm
+                          ref="CustomProcessorForm"
+                          onCancel={this.handleCancel.bind(this)}
+                          onSave={this.handleSave.bind(this)}
+                          id={this.state.processorId}
+                          route = {this.props.route}
+                          processors= {this.state.entities}
+                          popUpFlag={this.childPopUpFlag}
+                      />
+              }
+              </div>
+      }
+
 				</BaseContainer>
 		)
 	}

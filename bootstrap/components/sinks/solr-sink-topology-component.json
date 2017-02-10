@@ -1,0 +1,53 @@
+{
+  "type": "SINK",
+  "name": "Solr",
+  "subType": "SOLR",
+  "builtin": true,
+  "streamingEngine": "STORM",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.SolrUpdateBoltFluxComponent",
+  "mavenDeps": "org.apache.storm:storm-solr:STORM_VERSION",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "Apache Solr Zookeeper Host String",
+        "fieldName": "solrZkHostString",
+        "isOptional": false,
+        "tooltip": "Apache Solr Zookeeper Host String, e.g. 127.0.0.1:9983",
+        "type": "string"
+      },
+      {
+        "uiName": "Apache Solr Collection Name",
+        "fieldName": "solrCollectionName",
+        "isOptional": false,
+        "tooltip": "Apache Solr Collection Name, e.g. gettingstarted",
+        "type": "string"
+      },
+      {
+        "uiName": "Commit Batch Size",
+        "fieldName": "commitBatchSize",
+        "isOptional": false,
+        "tooltip": "Number of entries that should be captured before committing to solr",
+        "type": "number",
+        "defaultValue": 10000
+      },
+      {
+        "uiName": "Apache Solr JSON URL Endpoint",
+        "fieldName": "solrJsonUpdateUrl",
+        "isOptional": true,
+        "tooltip": "URL endpoint for Solr requests to index JSON documents",
+        "type": "string",
+        "defaultValue": "/update/json/docs"
+      },
+      {
+        "uiName": "Parallelism",
+        "fieldName": "parallelism",
+        "isOptional": true,
+        "tooltip": "Parallelism hint",
+        "type": "number",
+        "defaultValue": 1,
+        "min": 1,
+        "hint": "hidden"
+      }
+    ]
+  }
+}

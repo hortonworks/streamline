@@ -1,0 +1,56 @@
+{
+  "type": "PROCESSOR",
+  "name": "Join",
+  "subType": "JOIN",
+  "builtin": true,
+  "streamingEngine": "STORM",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.RuleBoltFluxComponent",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "Jar id",
+        "fieldName": "jarId",
+        "isOptional": false,
+        "tooltip": "Jar file id",
+        "type": "string"
+      },
+      {
+        "uiName": "Joiner classname",
+        "fieldName": "joinerClasssName",
+        "isOptional": false,
+        "tooltip": "FQCN for joiner",
+        "type": "string"
+      },
+      {
+        "uiName": "Joiner type",
+        "fieldName": "__type",
+        "isOptional": false,
+        "tooltip": "Type of joiner",
+        "type": "string",
+        "defaultValue": "com.hortonworks.streamline.streams.layout.component.impl.splitjoin.JoinAction"
+      },
+      {
+        "uiName": "Group expiry interval",
+        "fieldName": "groupExpiryInterval",
+        "isOptional": true,
+        "tooltip": "Group expiry interval",
+        "type": "number"
+      },
+      {
+        "uiName": "Event expiry interval",
+        "fieldName": "eventExpiryInterval",
+        "isOptional": true,
+        "tooltip": "Event expiry interval",
+        "type": "number"
+      },
+      {
+        "uiName": "Parallelism",
+        "fieldName": "parallelism",
+        "isOptional": true,
+        "tooltip": "Parallelism hint for join bolt",
+        "type": "number",
+        "defaultValue": 1
+      }
+    ]    
+  }
+}

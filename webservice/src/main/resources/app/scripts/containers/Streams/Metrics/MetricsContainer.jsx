@@ -171,6 +171,7 @@ export default class MetricsContainer extends Component {
         getGraph(name, data){
                 const self = this;
                 return <TimeSeriesChart
+                        color={d3.scale.category20c().range(['orange', 'red'])}
                         ref={name}
                         data={data}
                         height={this.state.graphHeight}

@@ -7,6 +7,7 @@ import NodeContainer from './NodeContainer';
 import state from '../../../app_state';
 import _ from 'lodash';
 import Utils from '../../../utils/Utils';
+import { Scrollbars } from 'react-custom-scrollbars';
 
 const nodeSource = {
     beginDrag(props, monitor, component) {
@@ -43,17 +44,17 @@ export default class ComponentNodeContainer extends Component {
             }
         }
         this.state = {
-            datasources: Utils.sortArray(bundleArr.sourceBundle, 'subType', true),
-            processors: Utils.sortArray(bundleArr.processorsBundle, 'subType', true),
-            sinks: Utils.sortArray(bundleArr.sinksBundle, 'subType', true)
+            datasources: Utils.sortArray(bundleArr.sourceBundle, 'name', true),
+            processors: Utils.sortArray(bundleArr.processorsBundle, 'name', true),
+            sinks: Utils.sortArray(bundleArr.sinksBundle, 'name', true)
         };
     }
     componentWillReceiveProps(nextProps, oldProps){
         if(nextProps.bundleArr != this.props.bundleArr){
             this.setState({
-                datasources: Utils.sortArray(nextProps.bundleArr.sourceBundle, 'subType', true),
-                processors: Utils.sortArray(nextProps.bundleArr.processorsBundle, 'subType', true),
-                sinks: Utils.sortArray(nextProps.bundleArr.sinksBundle, 'subType', true)
+                datasources: Utils.sortArray(nextProps.bundleArr.sourceBundle, 'name', true),
+                processors: Utils.sortArray(nextProps.bundleArr.processorsBundle, 'name', true),
+                sinks: Utils.sortArray(nextProps.bundleArr.sinksBundle, 'name', true)
             });
         }
     }
@@ -65,78 +66,94 @@ export default class ComponentNodeContainer extends Component {
         }
         return (
             <div className="component-panel right" style={{height : window.innerHeight - 60}}>
-              <button className="btn-draggable"></button>
+              <div className="btnDrag-wrapper">
+                <button className="btn-draggable"></button>
+              </div>
               <div className="panel-wrapper" style={{height : window.innerHeight - 90}}>
-                <h6 className="component-title">Source</h6>
-                <ul className="component-list">
-                    {this.state.datasources.map((source, i)=>{
+                <Scrollbars
+                    autoHide
+                    autoHeightMin={452}
+                    renderThumbHorizontal={props => <div style={{display : "none"}}/>}
+                    >
+                  <div className="inner-panel">
+                    <h6 className="component-title">Source</h6>
+                    <ul className="component-list">
+                        {this.state.datasources.map((source, i)=>{
+                            return (
+                                <NodeContainer
+                                    key={i}
+                                    imgPath={"styles/img/icon-"+source.subType.toLowerCase()+".png"}
+                                    name={source.name.toUpperCase()}
+                                    type={source.type}
+                                    nodeLable = {source.name.toUpperCase()}
+                                    nodeType={source.subType}
+                                    hideSourceOnDrag={false}
+                                    topologyComponentBundleId={source.id}
+                                    defaultImagePath='styles/img/icon-source.png'
+                                />
+                            )
+                        })}
+                    </ul>
+                    <h6 className="component-title">Processor</h6>
+                    <ul className="component-list">
+                    {this.state.processors.map((processor, i)=>{
+                        if(processor.subType === 'CUSTOM') {
+                            let config = processor.topologyComponentUISpecification.fields,
+                            name = _.find(config, {fieldName: "name"});
+                            return (
+                                <NodeContainer
+                                    key={i}
+                                    imgPath="styles/img/icon-custom.png"
+                                    name={name ? name.defaultValue : 'Custom'}
+                                    nodeLable = {name ? name.defaultValue : 'Custom'}
+                                    type={processor.type}
+                                    nodeType="Custom"
+                                    hideSourceOnDrag={false}
+                                    topologyComponentBundleId={processor.id}
+                                    defaultImagePath='styles/img/icon-processor.png'
+                                />
+                            )
+                        } else {
+                            return (
+                                <NodeContainer
+                                    key={i}
+                                    imgPath={"styles/img/icon-"+processor.subType.toLowerCase()+".png"}
+                                    name={processor.name.toUpperCase()}
+                                    nodeLable = {processor.name.toUpperCase()}
+                                    type={processor.type}
+                                    nodeType={processor.subType}
+                                    hideSourceOnDrag={false}
+                                    topologyComponentBundleId={processor.id}
+                                    defaultImagePath='styles/img/icon-processor.png'
+                                />
+                            )
+                        }
+                    })}
+                    </ul>
+                    <h6 className="component-title">Sink</h6>
+                    <ul className="component-list">
+                    {this.state.sinks.map((sink, i)=>{
                         return (
                             <NodeContainer
                                 key={i}
-                                imgPath={"styles/img/icon-"+source.subType.toLowerCase()+".png"}
-                                name={source.subType}
-                                type={source.type}
-                                nodeType={source.subType}
+                                imgPath={"styles/img/icon-"+sink.subType.toLowerCase()+".png"}
+                                name={sink.name.toUpperCase()}
+                                nodeLable = {sink.name.toUpperCase()}
+                                type={sink.type}
+                                nodeType={sink.subType}
                                 hideSourceOnDrag={false}
-                                topologyComponentBundleId={source.id}
-                                defaultImagePath='styles/img/icon-source.png'
+                                topologyComponentBundleId={sink.id}
+                                defaultImagePath='styles/img/icon-sink.png'
                             />
                         )
                     })}
-                </ul>
-                <h6 className="component-title">Processor</h6>
-                <ul className="component-list">
-                {this.state.processors.map((processor, i)=>{
-                    if(processor.subType === 'CUSTOM') {
-                        let config = processor.topologyComponentUISpecification.fields,
-                        name = _.find(config, {fieldName: "name"});
-                        return (
-                            <NodeContainer
-                                key={i}
-                                imgPath="styles/img/icon-custom.png"
-                                name={name ? name.defaultValue : 'Custom'}
-                                type={processor.type}
-                                nodeType="Custom"
-                                hideSourceOnDrag={false}
-                                topologyComponentBundleId={processor.id}
-                                defaultImagePath='styles/img/icon-processor.png'
-                            />
-                        )
-                    } else {
-                        return (
-                            <NodeContainer
-                                key={i}
-                                imgPath={"styles/img/icon-"+processor.subType.toLowerCase()+".png"}
-                                name={processor.subType}
-                                type={processor.type}
-                                nodeType={processor.subType}
-                                hideSourceOnDrag={false}
-                                topologyComponentBundleId={processor.id}
-                                defaultImagePath='styles/img/icon-processor.png'
-                            />
-                        )
-                    }
-                })}
-                </ul>
-                <h6 className="component-title">Sink</h6>
-                <ul className="component-list">
-                {this.state.sinks.map((sink, i)=>{
-                    return (
-                        <NodeContainer
-                            key={i}
-                            imgPath={"styles/img/icon-"+sink.subType.toLowerCase()+".png"}
-                            name={sink.subType}
-                            type={sink.type}
-                            nodeType={sink.subType}
-                            hideSourceOnDrag={false}
-                            topologyComponentBundleId={sink.id}
-                            defaultImagePath='styles/img/icon-sink.png'
-                        />
-                    )
-                })}
-                </ul>
+                    </ul>
+                  </div>
+                </Scrollbars>
               </div>
-              <button className="btn-draggable"></button>
+              <div className="btnDrag-wrapper">
+                <button className="btn-draggable"></button>
+              </div>
             </div>
         )
     }

@@ -1,0 +1,12 @@
+{
+  "name":"console_notifier",
+  "jarFileName": "notifiers.jar",
+  "className": "com.hortonworks.streamline.streams.notifiers.ConsoleNotifier",
+  "properties": {
+      "console": "vt100"
+  },
+  "fieldValues": {
+      "title": "test",
+      "subject": "alert"
+  }
+}

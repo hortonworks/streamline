@@ -1,0 +1,34 @@
+{
+  "type": "PROCESSOR",
+  "name": "Multilang Processor",
+  "subType": "MULTILANG",
+  "streamingEngine": "STORM",
+  "builtin": true,
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.StreamsShellBoltFluxComponent",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "Command",
+        "fieldName": "command",
+        "isOptional": false,
+        "tooltip": "Shell command to execute the script (ex: python splitsentence.py)",
+        "type": "string"
+      },
+      {
+        "uiName": "Script Name",
+        "fieldName": "scriptName",
+        "isOptional": false,
+        "tooltip": "Uploaded script name",
+        "type": "string"
+      },
+      {
+        "uiName": "Process wait Timeout (ms)",
+        "fieldName": "processTimeout",
+        "isOptional": true,
+        "tooltip": "Timeout to wait for a hanging/zombie subprocess",
+        "type": "number",
+        "defaultValue": 60000
+      }
+    ]
+  }
+}

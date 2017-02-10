@@ -1,12 +1,26 @@
 #!/usr/bin/env bash
+#
+# Copyright 2017 Hortonworks.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#   http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 dir=$(dirname $0)/..
-host="${1:-localhost}"
-port="${2:-8080}"
+bootstrap_dir=$(dirname $0)
+CATALOG_ROOT_URL="${1:-http://localhost:8080/api/v1/catalog}"
 
 # Load Notifiers
 echo "Adding Email notifier"
-jarFile=./notifier-jars/streamline-notifier-0.1.0-SNAPSHOT.jar
+jarFile=${bootstrap_dir}/notifier-jars/streamline-notifier-0.1.0-SNAPSHOT.jar
 if [[ ! -f ${jarFile} ]]
 then
   # try local build path
@@ -17,10 +31,10 @@ then
     exit 1
   fi
 fi
-curl -X POST "http://${host}:${port}/api/v1/catalog/notifiers" -F notifierJarFile=@${jarFile} -F notifierConfig='{
-  "name": "email_notifier",
+curl -X POST "${CATALOG_ROOT_URL}/notifiers" -F notifierJarFile=@${jarFile} -F notifierConfig='{
+  "name": "email_notifier.json",
   "description": "testing",
-  "className": "org.apache.streamline.streams.notifiers.EmailNotifier",
+  "className": "com.hortonworks.streamline.streams.notifiers.EmailNotifier",
   "properties": {
     "username": "hwemailtest@gmail.com",
     "password": "testing12",
@@ -41,10 +55,10 @@ curl -X POST "http://${host}:${port}/api/v1/catalog/notifiers" -F notifierJarFil
 echo
 
 echo "Adding Console notifier"
-curl -X POST "http://${host}:${port}/api/v1/catalog/notifiers" -F notifierJarFile=@${jarFile} -F notifierConfig='{
+curl -X POST "${CATALOG_ROOT_URL}/notifiers" -F notifierJarFile=@${jarFile} -F notifierConfig='{
   "name": "console_notifier",
   "description": "testing",
-  "className": "org.apache.streamline.streams.notifiers.ConsoleNotifier"
+  "className": "com.hortonworks.streamline.streams.notifiers.ConsoleNotifier"
 };type=application/json'
 
 echo

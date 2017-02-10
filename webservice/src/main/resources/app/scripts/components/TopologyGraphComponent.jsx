@@ -1,6 +1,6 @@
 import React, {Component, PropTypes}from 'react';
 import ReactDOM, { findDOMNode } from 'react-dom';
-import { ItemTypes, Components } from '../utils/Constants';
+import { ItemTypes, Components, deleteNodeIdArr } from '../utils/Constants';
 import { DragDropContext, DropTarget } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import d3 from 'd3';
@@ -112,9 +112,10 @@ export default class TopologyGraphComponent extends Component {
             .attr("class", "edge-stream")
             .attr('width', 200)
             .attr('height', 200)
+            .attr('x', 0)
+            .style('display','none')
             .append("xhtml:body")
             .attr('class', 'edge-details')
-            .style('display','none')
             .html('<p><strong>ID:</strong> </p>'+
                     '<p><strong>Grouping:</strong> </p>'+
                     '<p><button class="btn btn-xs btn-warning editEdge">Edit</button>'+
@@ -127,7 +128,7 @@ export default class TopologyGraphComponent extends Component {
             .html('');
         svgG.call(this.toolTip);
         $('.container.wrapper').append($('body > .d3-tip'));
-
+    this.main_edgestream = d3.select('.edge-stream');
 		this.drag = d3.behavior.drag()
 			.origin(function(d) {
 				return {
@@ -187,6 +188,7 @@ export default class TopologyGraphComponent extends Component {
             d3.select("." + thisGraph.constants.graphClass)
                 .attr("transform", "translate(" + thisGraph.dragSvg.translate() + ")" + "scale(" + thisGraph.dragSvg.scale() + ")");
         }).on("zoomend", function() {
+            let sourceEvent = d3.event.sourceEvent;
             let gTranslate = thisGraph.dragSvg.translate(),
                 gScaled = thisGraph.dragSvg.scale();
 
@@ -197,12 +199,12 @@ export default class TopologyGraphComponent extends Component {
             clearTimeout(this.saveMetaInfoTimer);
             this.saveMetaInfoTimer = setTimeout(()=>{
                 let {topologyId, versionId, versionsArr, metaInfo, editMode} = thisGraph;
-		if(versionId && versionsArr){
-			let versionName = versionsArr.find((o)=>{return o.id == versionId}).name;
-                        if(versionName.toLowerCase() == 'current' && editMode){
-				TopologyUtils.saveMetaInfo(topologyId, versionId, null, metaInfo, null);
-			}
-		}
+                if(versionId && versionsArr && sourceEvent !== null && sourceEvent.target.nodeName !== 'text'){
+					let versionName = versionsArr.find((o)=>{return o.id == versionId}).name;
+	                if(versionName.toLowerCase() == 'current' && editMode){
+						TopologyUtils.saveMetaInfo(topologyId, versionId, null, metaInfo, null);
+					}
+				}
             },500)
         });
 
@@ -302,12 +304,14 @@ export default class TopologyGraphComponent extends Component {
 		let prevEdge = internalFlags.selectedEdge;
 		if (!prevEdge || prevEdge !== d) {
 			TopologyUtils.replaceSelectEdge(d3, d3path, d, constants, internalFlags, paths);
+            this.main_edgestream.style('display', 'block');
             d3.select('.edge-stream').attr('x', this.getBoundingBoxCenter(d3path)[0]-100);
             d3.select('.edge-stream').attr('y', this.getBoundingBoxCenter(d3path)[1]);
             TopologyUtils.getEdgeData(d, this.topologyId, this.versionId, this.setEdgeData.bind(this));
 		} else {
 			TopologyUtils.removeSelectFromEdge(d3, paths, constants, internalFlags);
                         this.edgeStream.style('display', 'none');
+                        this.main_edgestream.style('display', 'none');
 		}
 	}
 
@@ -323,21 +327,25 @@ export default class TopologyGraphComponent extends Component {
                 '<p><button class="btn btn-xs btn-success editEdge"><i class="fa fa-pencil"></i> Edit</button> '+
                 '<button class="btn btn-xs btn-danger deleteEdge"><i class="fa fa-trash"></i> Delete</button></p>'+
                 '</div>');
+            this.main_edgestream.style('display', 'block');
             this.edgeStream.style('display', 'block');
             d3.select('.editEdge')
                 .on("click", function() {
                     this.getEdgeConfigModal(this.topologyId, this.versionId, obj.edgeData, this.edges, this.updateGraph, null, obj.streamName, obj.grouping, obj.groupingFields);
                     this.edgeStream.style('display', 'none');
+                    this.main_edgestream.style('display', 'none');
                 }.bind(this));
             d3.select('.deleteEdge')
                 .on("click", function() {
                     this.deleteEdge(this.internalFlags.selectedEdge);
                     this.edgeStream.style('display', 'none');
+                    this.main_edgestream.style('display', 'none');
                 }.bind(this));
         } else {
                         this.edgeStream.html('<div><p><strong>Stream:</strong> '+name+'</p>'+
                 '<strong>Grouping:</strong> '+obj.grouping+
                 '</div>');
+                this.main_edgestream.style('display', 'block');
             this.edgeStream.style('display', 'block');
         }
     }
@@ -373,7 +381,8 @@ export default class TopologyGraphComponent extends Component {
 		let {internalFlags} = this;
 		d3.event.stopPropagation();
 		internalFlags.mouseDownNode = d;
-                this.edgeStream.style('display', 'none');
+    this.edgeStream.style('display', 'none');
+    this.main_edgestream.style('display', 'none');
 	}
 
 	//mousedown on circle
@@ -381,7 +390,8 @@ export default class TopologyGraphComponent extends Component {
                 let {internalFlags, constants, paths} = this;
 		d3.event.stopPropagation();
 		internalFlags.mouseDownNode = d;
-                this.edgeStream.style('display', 'none');
+    this.edgeStream.style('display', 'none');
+    this.main_edgestream.style('display', 'none');
                 if(internalFlags.selectedEdge) {
                         TopologyUtils.removeSelectFromEdge(d3, paths, constants, internalFlags);
                 }
@@ -421,9 +431,10 @@ export default class TopologyGraphComponent extends Component {
 	svgMouseDown() {
 		this.internalFlags.graphMouseDown = true;
         let {paths, constants, internalFlags} = this;
-        if(!event.target.closest('.edge-details') && internalFlags.selectedEdge) {
+        if(!d3.event.target.closest('.edge-details') && internalFlags.selectedEdge) {
             TopologyUtils.removeSelectFromEdge(d3, paths, constants, internalFlags);
             this.edgeStream.style('display', 'none');
+            this.main_edgestream.style('display', 'none');
         }
 	}
 
@@ -445,7 +456,7 @@ export default class TopologyGraphComponent extends Component {
                 let {internalFlags, constants, nodes, topologyId, versionId, metaInfo, paths, edges, uinamesList, setLastChange} = this;
         let {imgUrl, parentType, name, currentType, topologyComponentBundleId} = itemObj;
 		internalFlags.graphMouseDown = true;
-        d3.event = event;
+        d3.event = dropevent;
         var xycoords = d3.mouse(this.svgG.node());
         d3.event = null;
 		let d = {
@@ -453,45 +464,17 @@ export default class TopologyGraphComponent extends Component {
             y: xycoords[1] - (constants.rectangleHeight / 2) - 5.5,
             parentType: itemObj.type,
             currentType: itemObj.nodeType,
-            uiname: itemObj.name,
+            uiname: itemObj.nodeLable,
             imageURL: itemObj.imgPath,
 			isConfigured: false,
             parallelismCount: 1,
-            nodeLabel: itemObj.name,
+            nodeLabel: itemObj.nodeLable,
             topologyComponentBundleId: itemObj.topologyComponentBundleId
 		};
 		nodes.push(d);
 		let createNodeArr = [d];
-        if (d.currentType.toLowerCase() === 'split'){ // Split => Stage => Join
-			let stageJoinArr = this.createStageJoinNode(d);
-			createNodeArr.push(...stageJoinArr);
-		}
-                TopologyUtils.createNode(topologyId, versionId, createNodeArr, this.updateGraph.bind(this), metaInfo, paths, edges, internalFlags, uinamesList, setLastChange);
+        TopologyUtils.createNode(topologyId, versionId, createNodeArr, this.updateGraph.bind(this), metaInfo, paths, edges, internalFlags, uinamesList, setLastChange);
 		internalFlags.graphMouseDown = false;
-	}
-
-	createStageJoinNode(d){
-		let arr = [];
-
-		let stageObj = JSON.parse(JSON.stringify(d));
-        stageObj.x += 220;
-        stageObj.uiname = 'STAGE';
-        stageObj.parentType = 'PROCESSOR';
-        stageObj.currentType = 'STAGE';
-        stageObj.imageURL = 'styles/img/icon-stage.png';
-		this.nodes.push(stageObj);
-		arr.push(stageObj);
-
-		let joinObj = JSON.parse(JSON.stringify(d));
-        joinObj.x += 440;
-        joinObj.uiname = 'JOIN';
-        joinObj.parentType = 'PROCESSOR';
-        joinObj.currentType = 'JOIN';
-        joinObj.imageURL = 'styles/img/icon-join.png';
-		this.nodes.push(joinObj);
-		arr.push(joinObj);
-
-		return arr;
 	}
 
 	// keydown on main svg
@@ -518,14 +501,15 @@ export default class TopologyGraphComponent extends Component {
 	}
 
 	deleteNode(selectedNode){
-        let {topologyId, versionId, nodes, edges, internalFlags, updateGraph, metaInfo, uinamesList, setLastChange} = this;
-        TopologyUtils.deleteNode(topologyId, versionId, selectedNode, nodes, edges, internalFlags, updateGraph.bind(this), metaInfo, uinamesList, setLastChange);
+        let {topologyId, versionId, nodes, edges, internalFlags, updateGraph, metaInfo, uinamesList, setLastChange,topologyConfigMessageCB} = this;
+        TopologyUtils.deleteNode(topologyId, versionId, selectedNode, nodes, edges, internalFlags, updateGraph.bind(this), metaInfo, uinamesList, setLastChange,topologyConfigMessageCB);
 	}
 
 	deleteEdge(selectedEdge){
-        let {topologyId, versionId, internalFlags, edges, updateGraph, setLastChange} = this;
-        TopologyUtils.deleteEdge(selectedEdge, topologyId, versionId, internalFlags, edges, updateGraph.bind(this), setLastChange);
+        let {topologyId, versionId, internalFlags, edges, nodes, updateGraph, setLastChange} = this;
+        TopologyUtils.deleteEdge(selectedEdge, topologyId, versionId, internalFlags, edges, nodes, updateGraph.bind(this), setLastChange);
         this.edgeStream.style('display', 'none');
+        this.main_edgestream.style('display', 'none');
 	}
 
 	svgKeyUp() {
@@ -550,7 +534,12 @@ export default class TopologyGraphComponent extends Component {
                 bbox = element.getBBox();
             return [bbox.x + bbox.width/2, bbox.y + bbox.height/2];
         }
-
+  deleteNodePool(id){
+    const flag = deleteNodeIdArr.findIndex((x) => {
+      return Number(x) === id;
+    })
+    return flag !== -1 ? true : false;
+  }
 	updateGraph() {
     let that = this;
 		var duplicateLinks = document.getElementsByClassName('visible-link')
@@ -565,11 +554,11 @@ export default class TopologyGraphComponent extends Component {
     if(that.props.viewMode){
       let flag  = true;
       thisGraph.nodes.map(x => {
-          return x.y > 400 ? flag = true :  flag = false
+          return x.y > 300 ? flag = true :  flag = false
       });
       if(flag){
         thisGraph.nodes.map(x => {
-          return x.y = (x.y/4);
+          return x.y = (x.y/3);
         });
       }
     }
@@ -606,6 +595,7 @@ export default class TopologyGraphComponent extends Component {
             .on("mouseout", function(d) {
                 if(!thisGraph.editMode) {
                     thisGraph.edgeStream.style('display', 'none');
+                    this.main_edgestream.style('display', 'none');
                 }
             })
 			.on("mousedown", function(d){
@@ -638,7 +628,10 @@ export default class TopologyGraphComponent extends Component {
             .attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; })
             .attr("filter", function(d){ return "url(#dropshadow)"; });
 		thisGraph.rectangles.selectAll('image')
-            .attr("filter", function(d){ return "url(#grayscale)"; });
+            .attr("filter", function(d){ return "url(#grayscale)"; })
+            .attr("xlink:href", function(d){
+              return that.deleteNodePool(d.nodeId) ? "styles/img/start-loader.gif" : d.nodeId ? d.imageURL : "styles/img/start-loader.gif";
+            });
 		thisGraph.rectangles.selectAll('circle')
 			.attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; });
 		thisGraph.rectangles.selectAll('text.node-title')
@@ -686,20 +679,22 @@ export default class TopologyGraphComponent extends Component {
             })
             .call(thisGraph.drag);
         //Image
-        newGs.append("image").attr("xlink:href", function(d){return d.imageURL;})
+        newGs.append("image").attr("xlink:href", function(d){
+          return d.nodeId ? d.imageURL : "styles/img/start-loader.gif";
+        })
             .attr("width", constants.rectangleHeight - 15).attr("height", constants.rectangleHeight - 15).attr("x", 8).attr("y", 7)
             .attr("filter", function(d){ return "url(#grayscale)"; })
             .on("mouseover", function(d){
-		if(thisGraph.editMode) {
-			d3.select(this.parentElement).select('text.fa.fa-times').style('display','block');
-		} else {
-			TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, d3.select(this.parentElement).select('rect')));
-		}
+				if(thisGraph.editMode) {
+					d3.select(this.parentElement).select('text.fa.fa-times').style('display','block');
+				} else {
+					TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, d3.select(this.parentElement).select('rect')));
+				}
             })
             .on("mouseout", function(d){
-		if(thisGraph.editMode) {
-		 d3.select(this.parentElement).select('text.fa.fa-times').style('display','none');
-		}
+				if(thisGraph.editMode) {
+				 d3.select(this.parentElement).select('text.fa.fa-times').style('display','none');
+				}
             })
             .on('mousedown', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);})
             .on('mouseup', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);})
@@ -709,33 +704,33 @@ export default class TopologyGraphComponent extends Component {
             })
             .call(thisGraph.drag);
         //Parallelism Icons
-        newGs.append("text").attr("class","fa fa-caret-up").attr("x","165px").attr("y","13px")
-            .text(function(d){return '\uf0d8';})
+        newGs.append("text").attr("class","fa fa-caret-right").attr("x","173px").attr("y","26px")
+            .text(function(d){return '\uf0da';})
             .on("click", function(d){
                 if(thisGraph.editMode){
                     let value = parseInt(d.parallelismCount, 10) + 1;
-                    d.parallelismCount = value <= 0 ? 0 : value;
+                    d.parallelismCount = value <= 1 ? 1 : value;
                     clearTimeout(thisGraph.clickTimeout);
                     thisGraph.clickTimeout = setTimeout(function(){
-                        TopologyUtils.updateParallelismCount(thisGraph.topologyId, this.versionId, d, this.setLastChange);
+                        TopologyUtils.updateParallelismCount(thisGraph.topologyId, this.versionId, d, thisGraph.setLastChange);
                     },500)
                     thisGraph.updateGraph();
                 }
             });
-        newGs.append("text").attr("class","fa fa-caret-down").attr("x","165px").attr("y","35px")
-            .text(function(d){return '\uf0d7';})
+        newGs.append("text").attr("class","fa fa-caret-left").attr("x","143px").attr("y","26px")
+            .text(function(d){return '\uf0d9';})
             .on("click", function(d){
                 if(thisGraph.editMode){
                     let value = parseInt(d.parallelismCount, 10) - 1;
-                    d.parallelismCount = value <= 0 ? 0 : value;
+                    d.parallelismCount = value <= 1 ? 1 : value;
                     clearTimeout(thisGraph.clickTimeout);
                     thisGraph.clickTimeout = setTimeout(function(){
-                        TopologyUtils.updateParallelismCount(thisGraph.topologyId, this.versionId, d, this.setLastChange);
+                        TopologyUtils.updateParallelismCount(thisGraph.topologyId, this.versionId, d, thisGraph.setLastChange);
                     },500)
                     thisGraph.updateGraph();
                 }
             });
-        newGs.append("text").attr("class","parallelism-count").attr("x","163px").attr("y","24px")
+        newGs.append("text").attr("class","parallelism-count").attr("x","162px").attr("y","24px").attr("text-anchor", "middle")
             .text(function(d){return d.parallelismCount.toString().length < 2 ? "0"+d.parallelismCount : d.parallelismCount;});
         //RHS Circle
         newGs.append("circle")
@@ -779,33 +774,33 @@ export default class TopologyGraphComponent extends Component {
 
         //Label Text
         newGs.each(function(d) {
-                let gEl = d3.select(this),
-                    title = d.uiname,
-                    words = title.split(/\s+/g),
-                    nwords = words.length,
-                    nodeTitle = '';
-                let el = gEl.append("text")
-                    .attr("class", function(d){ return 'node-title '+TopologyUtils.getNodeRectClass(d);})
-                    .attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; })
-                    .attr("dx", function(d){ return (constants.rectangleHeight); })
-                    .attr("dy", function(d){ return ((constants.rectangleHeight / 2) - 2); })
-                                .on("mouseover", function(d){
+            let gEl = d3.select(this),
+                title = d.uiname,
+                words = title.split(/\s+/g),
+                nwords = words.length,
+                nodeTitle = '';
+            let el = gEl.append("text")
+                .attr("class", function(d){ return 'node-title '+TopologyUtils.getNodeRectClass(d);})
+                .attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; })
+                .attr("dx", function(d){ return (constants.rectangleHeight); })
+                .attr("dy", function(d){ return ((constants.rectangleHeight / 2) - 2); })
+                .on("mouseover", function(d){
 					if(thisGraph.editMode) {
-					 d3.select(this.parentElement).select('text.fa.fa-times').style('display','block');
+						 d3.select(this.parentElement).select('text.fa.fa-times').style('display','block');
 					} else {
-				TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, d3.select(this.parentElement).select('rect')));
-			}
-                                })
-                                .on("mouseout", function(d){
-                                        if(thisGraph.editMode) {
-                                                d3.select(this.parentElement).select('text.fa.fa-times').style('display','none');
-                                        }
-                                })
+						TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, d3.select(this.parentElement).select('rect')));
+					}
+                })
+     	       .on("mouseout", function(d){
+                    if(thisGraph.editMode) {
+						d3.select(this.parentElement).select('text.fa.fa-times').style('display','none');
+                    }
+                })
                 .on('mousedown', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);})
 				.on('mouseup', function(d){ if(thisGraph.editMode) thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);})
-                    .on('dblclick', function(d){
+                .on('dblclick', function(d){
 					thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);
-                        thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
+                    thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
 				})
 				.call(thisGraph.drag);
             for (var i = 0; i < words.length; i++) {
@@ -820,7 +815,7 @@ export default class TopologyGraphComponent extends Component {
         //label text for node type
         newGs.each(function(d) {
             let gEl = d3.select(this),
-                title = d.nodeLabel;
+                title = d.nodeLabel.length > 15 ? d.nodeLabel.slice(0, 10) + '...' : d.nodeLabel ;
             let el = gEl.append("text")
                 .attr("class", function(d){ return 'node-type-label';})
                 .attr("filter", function(d){ if(!d.isConfigured){ return "url(#grayscale)"; } else return ""; })
@@ -879,6 +874,7 @@ export default class TopologyGraphComponent extends Component {
 		this.setModalContent = this.props.setModalContent;
         this.getEdgeConfigModal = this.props.getEdgeConfigModal;
         this.setLastChange = this.props.setLastChange;
+        this.topologyConfigMessageCB= this.props.topologyConfigMessageCB;
 		if(this.renderFlag){
             d3.select("." + this.constants.graphClass)
                 .attr("transform", "translate(" + this.graphTransforms.dragCoords + ")" + "scale(" + this.graphTransforms.zoomScale + ")");
@@ -889,7 +885,8 @@ export default class TopologyGraphComponent extends Component {
 			this.updateGraph();
 		}
 		return connectDropTarget(
-			<svg className="topology-graph"></svg>
+                        <svg className="topology-graph" onDragOver={(event) => {
+          return window.dropevent = event.nativeEvent}}></svg>
 		)
 	}
 }

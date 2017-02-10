@@ -1,0 +1,174 @@
+{
+  "type": "SOURCE",
+  "name": "Kafka",
+  "subType": "KAFKA",
+  "streamingEngine": "STORM",
+  "builtin": true,
+  "fieldHintProviderClass": "com.hortonworks.streamline.streams.catalog.topology.component.bundle.impl.KafkaBundleHintProvider",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.KafkaSpoutFluxComponent",
+  "mavenDeps": "org.apache.storm:storm-kafka:STORM_VERSION^org.slf4j:slf4j-log4j12,org.apache.kafka:kafka_2.11:0.10.0.2.5.3.0-37^org.apache.zookeeper:zookeeper^log4j:log4j^org.slf4j:slf4j-log4j12",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "Zookeeper connection URL",
+        "fieldName": "zkUrl",
+        "isOptional": false,
+        "tooltip": "A comma separated string of host:port for zookeeper servers used by kafka brokers",
+        "type": "string"
+      },
+      {
+        "uiName": "Brokers zookeeper node",
+        "fieldName": "zkPath",
+        "isOptional": true,
+        "tooltip": "Zookeeper node configured as root for kafka brokers",
+        "type": "string",
+        "defaultValue": "/brokers"
+      },
+      {
+        "uiName": "Refresh interval(s)",
+        "fieldName": "refreshFreqSecs",
+        "isOptional": true,
+        "tooltip": "Interval in seconds at which topic partition information is refreshed from zookeeper",
+        "type": "number",
+        "defaultValue": 60
+      },
+      {
+        "uiName": "Kafka topic",
+        "fieldName": "topic",
+        "isOptional": false,
+        "tooltip": "Kafka topic to read data from",
+        "type": "enumstring",
+        "options": [],
+        "hint": "schema,override"
+      },
+      {
+        "uiName": "Consumer Group Id",
+        "fieldName": "consumerGroupId",
+        "isOptional": false,
+        "tooltip": "A unique string that identifies the consumer group this source belongs to. It is used to keep track of consumer offset",
+        "type": "string"
+      },
+      {
+        "uiName": "Kafka fetch size",
+        "fieldName": "fetchSizeBytes",
+        "isOptional": true,
+        "tooltip": "Fetch size in bytes for kafka consumer request sent by the spout",
+        "type": "number",
+        "defaultValue": 1048576
+      },
+      {
+        "uiName": "Kafka socket timeout(ms)",
+        "fieldName": "socketTimeoutMs",
+        "isOptional": true,
+        "tooltip": "Kafka consumer socket timeout interval in milliseconds",
+        "type": "number",
+        "defaultValue": 10000
+      },
+      {
+        "uiName": "Kafka fetch max wait(ms)",
+        "fieldName": "fetchMaxWait",
+        "isOptional": true,
+        "tooltip": "Maximum time in milliseconds to wait for in kafka consumer request",
+        "type": "number",
+        "defaultValue": 10000
+      },
+      {
+        "uiName": "Kafka buffer size",
+        "fieldName": "bufferSizeBytes",
+        "isOptional": true,
+        "tooltip": "Buffer size in bytes for kafka consumer request sent by the spout",
+        "type": "number",
+        "defaultValue": 1048576
+      },
+      {
+        "uiName": "Ignore zookeeper offsets?",
+        "fieldName": "ignoreZkOffsets",
+        "isOptional": true,
+        "tooltip": "Flag representing if kafka spout should ignore offsets committed to zookeeper on restart",
+        "type": "boolean",
+        "defaultValue": false
+      },
+      {
+        "uiName": "Maximum offset behind",
+        "fieldName": "maxOffsetBehind",
+        "isOptional": true,
+        "tooltip": "Maximum offset lag allowed",
+        "type": "number",
+        "defaultValue": 9007199254740991
+      },
+      {
+        "uiName": "Use start offset?",
+        "fieldName": "useStartOffsetTimeIfOffsetOutOfRange",
+        "isOptional": true,
+        "tooltip": "Use start offset time if offset is out of range",
+        "type": "boolean",
+        "defaultValue": true
+      },
+      {
+        "uiName": "Metrics time bucket(s)",
+        "fieldName": "metricsTimeBucketSizeInSecs",
+        "isOptional": true,
+        "tooltip": "Metric time bucket size in seconds",
+        "type": "number",
+        "defaultValue": 60
+      },
+      {
+        "uiName": "Zookeeper servers",
+        "fieldName": "zkServers",
+        "isOptional": true,
+        "tooltip": "Zookeeper server hosts for spout to store committed offsets",
+        "type": "array.string"
+      },
+      {
+        "uiName": "Zookeeper server port",
+        "fieldName": "zkPort",
+        "isOptional": true,
+        "tooltip": "Zookeeper server port",
+        "type": "number",
+        "defaultValue": 2181
+      },
+      {
+        "uiName": "State update interval(ms)",
+        "fieldName": "stateUpdateIntervalMs",
+        "isOptional": true,
+        "tooltip": "Interval in milliseconds at which spout updated the committed offsets in zookeeper",
+        "type": "number",
+        "defaultValue": 2000
+      },
+      {
+        "uiName": "First retry delay(ms)",
+        "fieldName": "retryInitialDelayMs",
+        "isOptional": true,
+        "tooltip": "Interval delay in milliseconds for first retry for a failed kafka spout message",
+        "type": "number",
+        "defaultValue": 0
+      },
+      {
+        "uiName": "Retry delay multiplier",
+        "fieldName": "retryDelayMultiplier",
+        "isOptional": true,
+        "tooltip": "Retry delay multiplier for second and subsequent retries for a failed kafka spout message",
+        "type": "number",
+        "defaultValue": 1
+      },
+      {
+        "uiName": "Max retry delay(ms)",
+        "fieldName": "retryDelayMaxMs",
+        "isOptional": true,
+        "tooltip": "Maximum interval in milliseconds to wait before sucessive retries for a failed kafka spout message",
+        "type": "number",
+        "defaultValue": 60000
+      },
+      {
+        "uiName": "Parallelism",
+        "fieldName": "parallelism",
+        "isOptional": true,
+        "tooltip": "Parallelism hint for kafka spout",
+        "type": "number",
+        "defaultValue": 1,
+        "min": 1,
+        "hint": "hidden"
+      }
+    ]
+  }
+}

@@ -6,7 +6,7 @@ const AggregateUdfREST = {
         getAllUdfs(options) {
                 options = options || {};
                 options.method = options.method || 'GET';
-                return CustomFetch(baseUrl+'streams/udfs', options)
+                return fetch(baseUrl+'streams/udfs', options)
                         .then( (response) => {
 				return response.json();
 			})

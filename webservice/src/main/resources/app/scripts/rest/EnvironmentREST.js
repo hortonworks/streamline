@@ -9,7 +9,7 @@ const EnvironmentREST = {
   getAllNameSpaces(options) {
     options = options || {};
     options.method = options.method || 'GET';
-                return CustomFetch(baseUrl+nameSpaceBaseURL+"?detail=true", options)
+                return fetch(baseUrl+nameSpaceBaseURL+"?detail=true", options)
       .then( (response) => {
           return response.json();
     })

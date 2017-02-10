@@ -19,6 +19,7 @@ import Modal from '../../../components/FSModal';
 import CommonNotification from '../../../utils/CommonNotification';
 import TopologyViewMode from './TopologyViewMode';
 import MetricsContainer from '../Metrics/MetricsContainer';
+import CommonLoaderSign  from '../../../components/CommonLoaderSign';
 
 function collect(connect, monitor) {
   return {
@@ -61,7 +62,7 @@ class EditorGraph extends Component{
 }
 
 @observer
-class TopologyEditorContainer extends Component {
+class TopologyViewContainer extends Component {
   constructor(props){
     super(props);
     this.topologyId = this.props.params.id;
@@ -87,7 +88,8 @@ class TopologyEditorContainer extends Component {
     topologyStatus: '',
     unknown: '',
     bundleArr:null,
-    availableTimeSeriesDb: false
+    availableTimeSeriesDb: false,
+    fetchLoader : true
   }
 
   fetchData(versionId){
@@ -100,6 +102,7 @@ class TopologyEditorContainer extends Component {
         } else {
           var data = result;
           this.nameSpace = data.namespaceName;
+          this.namespaceId = data.topology.namespaceId;
           if(!versionId){
             versionId = data.topology.versionId;
           }
@@ -187,6 +190,7 @@ class TopologyEditorContainer extends Component {
                   processorsBundle: this.processorConfigArr,
                   sinksBundle: this.sinkConfigArr
                 },
+                fetchLoader : false,
                 unknown
               });
               this.customProcessors = this.getCustomProcessors();
@@ -217,7 +221,8 @@ class TopologyEditorContainer extends Component {
     let obj = {
       editMode: !this.viewMode,
       topologyId: this.topologyId,
-      versionId: this.versionId
+      versionId: this.versionId,
+      namespaceId : this.namespaceId
     }, config = [];
     switch(node.parentType){
       case 'SOURCE':
@@ -303,7 +308,7 @@ class TopologyEditorContainer extends Component {
   getTopologyHeader() {
     return (
       <span>
-        <Link to="/">All Streams</Link> <span className="title-separator">/</span> View: {this.state.topologyName}
+        <Link to="/">My Applications</Link> <span className="title-separator">/</span> View: {this.state.topologyName}
       </span>
     );
   }
@@ -315,9 +320,9 @@ class TopologyEditorContainer extends Component {
         .then(result=>{
           if(result.responseMessage !== undefined){
             FSReactToastr.error(
-              <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
+              <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt)
           } else {
-            FSReactToastr.success(<strong>Activated to current version successfully</strong>);
+            FSReactToastr.success(<strong>Version switched successfully</strong>);
             this.fetchData();
           }
         })
@@ -338,31 +343,41 @@ class TopologyEditorContainer extends Component {
     }
   }
   render() {
+    const {fetchLoader} = this.state;
     let nodeType = this.node ? this.node.currentType : '';
     return (
       <BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" breadcrumbData={this.breadcrumbData} headerContent={this.getTopologyHeader()}>
         <div>
-          <TopologyViewMode
-            {...this.state}
-            topologyId={this.topologyId}
-            killTopology = {this.killTopology.bind(this)}
-            handleVersionChange = {this.handleVersionChange.bind(this)}
-            setCurrentVersion = {this.setCurrentVersion.bind(this)}
-            stormClusterId={this.state.stormClusterId}
-            nameSpaceName = {this.nameSpace}
-          />
-          <div id="viewMode" className="graph-bg">
-            <EditorGraph
-              ref="EditorGraph"
-              graphData={this.graphData}
-              viewMode={this.viewMode}
-              topologyId={this.topologyId}
-              versionId={this.versionId}
-              versionsArr={this.state.versionsArr}
-              getModalScope={this.getModalScope.bind(this)}
-              setModalContent={this.setModalContent.bind(this)}
-            />
-          </div>
+          {
+            fetchLoader
+            ? <CommonLoaderSign
+                  imgName={"viewMode"}
+              />
+            :  <div>
+                <TopologyViewMode
+                    {...this.state}
+                    topologyId={this.topologyId}
+                    killTopology = {this.killTopology.bind(this)}
+                    handleVersionChange = {this.handleVersionChange.bind(this)}
+                    setCurrentVersion = {this.setCurrentVersion.bind(this)}
+                    stormClusterId={this.state.stormClusterId}
+                    nameSpaceName = {this.nameSpace}
+                    namespaceId={this.namespaceId}
+                  />
+                  <div id="viewMode" className="graph-bg">
+                    <EditorGraph
+                      ref="EditorGraph"
+                      graphData={this.graphData}
+                      viewMode={this.viewMode}
+                      topologyId={this.topologyId}
+                      versionId={this.versionId}
+                      versionsArr={this.state.versionsArr}
+                      getModalScope={this.getModalScope.bind(this)}
+                      setModalContent={this.setModalContent.bind(this)}
+                    />
+                  </div>
+                </div>
+          }
         </div>
         <Modal ref="NodeModal"
           bsSize={this.processorNode ? "large" : null}
@@ -384,4 +399,4 @@ class TopologyEditorContainer extends Component {
   }
 }
 
-export default withRouter(TopologyEditorContainer)
+export default withRouter(TopologyViewContainer)

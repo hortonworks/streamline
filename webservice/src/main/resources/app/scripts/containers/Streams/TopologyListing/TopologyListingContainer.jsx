@@ -17,6 +17,7 @@ import TopologyREST from '../../../rest/TopologyREST';
 import Utils from '../../../utils/Utils';
 import TopologyUtils from '../../../utils/TopologyUtils';
 import FSReactToastr from '../../../components/FSReactToastr';
+import EnvironmentREST from '../../../rest/EnvironmentREST';
 
 /* component import */
 import BaseContainer from '../../BaseContainer';
@@ -29,6 +30,7 @@ import Modal from '../../../components/FSModal';
 import AddTopology from './AddTopology';
 import ImportTopology from './ImportTopology';
 import CloneTopology from './CloneTopology';
+import CommonLoaderSign  from '../../../components/CommonLoaderSign';
 
 class CustPieChart extends PieChart{
   drawPie(){
@@ -95,12 +97,21 @@ class TopologyItems extends Component {
         this.props.topologyAction(eventKey, this.streamRef.dataset.id)
     }
     streamBoxClick = (id,event) => {
-      if(event.target.nodeName !== 'I'){
+      // check whether the element of streamBox is click..
+      if((event.target.nodeName !== 'BUTTON' && event.target.nodeName !== 'I' && event.target.nodeName !== 'A')){
         this.context.router.push('applications/'+id+'/view');
+      }else if(event.target.title === "Edit"){
+        this.context.router.push('applications/'+id+'/edit');
       }
     }
+    checkRefId = (id) => {
+      const index = this.props.refIdArr.findIndex((x) => {
+        return x === id;
+      });
+      return index !== -1 ? true : false;
+    }
     render() {
-        const {topologyAction, topologyList, isLoading} = this.props;
+        const {topologyAction, topologyList} = this.props;
         const {topology, runtime = {},namespaceName} = topologyList;
         const {metric,latencyTopN} = runtime;
         const metricWrap = metric || {
@@ -118,11 +129,12 @@ class TopologyItems extends Component {
             graphVal += d[Object.keys(d)[0]];
         })
         const unitLeft = _.slice(latencyWrap, 0, latencyWrap.length/2);
-        const unitRight = _.slice(latencyWrap, latencyWrap.length/2 , latencyWrap.length)
+        const unitRight = _.slice(latencyWrap, latencyWrap.length/2 , latencyWrap.length);
+        const ellipseIcon = <i className="fa fa-ellipsis-v"></i>;
 
         return (
             <div className="col-sm-4">
-                <div className={`stream-box ${ (isLoading.loader && (isLoading.idCheck === topology.id))
+                <div className={`stream-box ${ (this.checkRefId(topology.id))
                                 ? ''
                                 : metricWrap.status || 'NOTRUNNING'}`}
               data-id={topology.id} ref={(ref) => this.streamRef = ref}
@@ -148,29 +160,40 @@ class TopologyItems extends Component {
                     </div>
                     <div className="pull-right">
                         <div className="stream-actions">
-                          <a href="javascript:void(0)" title="Refresh" onClick={this.onActionClick.bind(this ,"refresh/"+topology.id)}>
-                            <i className="fa fa-refresh" aria-hidden="true"></i>
-                          </a>
-                          <Link to={`applications/${topology.id}/edit`} title="Edit">
-                            <i className="fa fa-pencil" aria-hidden="true"></i>
-                          </Link>
-                          <a href="javascript:void(0)" title="Clone" onClick={this.onActionClick.bind(this ,"clone/"+topology.id)}>
-                            <i className="fa fa-clone" aria-hidden="true"></i>
-                          </a>
-                          <a href="javascript:void(0)" title="Export" onClick={this.onActionClick.bind(this ,"export/"+topology.id)}>
-                            <i className="fa fa-share-square-o" aria-hidden="true"></i>
-                          </a>
-                          <a href="javascript:void(0)" title="Delete" className="close" onClick={this.onActionClick.bind(this ,"delete/"+topology.id)}>
-                            <i className="fa fa-times-circle" aria-hidden="true"></i>
-                          </a>
+                          <DropdownButton title={ellipseIcon}
+                              id="actionDropdown"
+                              className="dropdown-toggle"
+                              noCaret
+                              bsStyle="link"
+                            >
+                                <MenuItem title="Refresh" onClick={this.onActionClick.bind(this ,"refresh/"+topology.id)}>
+                                    <i className="fa fa-refresh"></i>
+                                    &nbsp;Refresh
+                                </MenuItem>
+                                <MenuItem title="Edit" onClick={this.onActionClick.bind(this ,"edit/"+topology.id)}>
+                                    <i className="fa fa-pencil"></i>
+                                    &nbsp;Edit
+                                </MenuItem>
+                                <MenuItem title="Clone" onClick={this.onActionClick.bind(this ,"clone/"+topology.id)}>
+                                    <i className="fa fa-clone"></i>
+                                    &nbsp;Clone
+                                </MenuItem>
+                                <MenuItem title="Export" onClick={this.onActionClick.bind(this ,"export/"+topology.id)}>
+                                    <i className="fa fa-share-square-o"></i>
+                                    &nbsp;Export
+                                </MenuItem>
+                            </DropdownButton>
+                            <a href="javascript:void(0)" title="Delete" className="close" onClick={this.onActionClick.bind(this ,"delete/"+topology.id)}>
+                              <i className="fa fa-times-circle"></i>
+                            </a>
                         </div>
                     </div>
                 </div>
                 {
-                  (isLoading.loader && (isLoading.idCheck === topology.id))
+                  (this.checkRefId(topology.id))
                     ? <div className="stream-body">
                         <div className="loading-img text-center">
-                            <img src="styles/img/start-loader.gif" alt="loading" />
+                            <img src="styles/img/start-loader.gif" alt="loading" style={{width : "100px"}} />
                         </div>
                       </div>
                     : <div className="stream-body">
@@ -185,7 +208,7 @@ class TopologyItems extends Component {
                                             <i className="fa fa-square boxGap" style={{color : PieChartColor[v]}}></i>
                                             {Utils.secToMinConverter(d[Object.keys(d)[0]],"list")}
                                             <span>&nbsp;</span>
-                                            {Utils.ellipses(Object.keys(d)[0],9)}</h5>
+                                            {Utils.ellipses(Object.keys(d)[0],8)}</h5>
                                   })
                                 }
                             </div>
@@ -285,14 +308,13 @@ class TopologyListingContainer extends Component {
               key : 'last_updated',
               text : 'Last Updated'
             },
-            isLoading: {
-                loader: false,
-                idCheck: ''
-            },
+            refIdArr: [],
             fetchLoader : true,
             pageIndex : 0,
             pageSize : 9,
-            cloneFromId: null
+            cloneFromId: null,
+            checkEnvironment : false,
+            sourceCheck : false
         }
 
         this.fetchData();
@@ -300,19 +322,43 @@ class TopologyListingContainer extends Component {
 
     fetchData() {
       const sortKey = this.state.sorted.key;
-        TopologyREST.getAllTopology(sortKey).then((topology) => {
-            if (topology.responseMessage !== undefined) {
-              this.setState({fetchLoader : false});
-                FSReactToastr.error(
-                    <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
-            } else {
-                let result = Utils.sortArray(topology.entities.slice(), 'timestamp', false);
-                this.setState({fetchLoader : false,entities: result,pageIndex:0});
+      let promiseArr = [
+        EnvironmentREST.getAllNameSpaces(),
+        TopologyREST.getSourceComponent(),
+        TopologyREST.getAllTopology(sortKey),
+      ];
+      Promise.all(promiseArr)
+        .then((results) => {
+          let environmentLen = 0 , environmentFlag = false,sourceLen = 0,sourceFlag = false;
+          if(results[0].responseMessage !== undefined){
+            this.setState({fetchLoader : false,checkEnvironment:false,sourceCheck:false});
+              FSReactToastr.error(
+                  <CommonNotification flag="error" content={results[0].responseMessage}/>, '', toastOpt)
+          }else{
+            environmentLen = results[0].entities.length;
+          }
+          if(results[1].responseMessage !== undefined){
+            this.setState({fetchLoader : false,checkEnvironment:false,sourceCheck:false});
+              FSReactToastr.error(
+                  <CommonNotification flag="error" content={results[0].responseMessage}/>, '', toastOpt)
+          }else{
+             sourceLen = results[1].entities.length;
+          }
+          if(results[2].responseMessage !== undefined){
+            this.setState({fetchLoader : false,checkEnvironment:false,sourceCheck:false});
+              FSReactToastr.error(
+                  <CommonNotification flag="error" content={results[2].responseMessage}/>, '', toastOpt)
+          }else{
+            let result = Utils.sortArray(results[2].entities.slice(), 'timestamp', false);
+            if(sourceLen !== 0){
+              if(result.length === 0 && environmentLen !== 0){
+                  environmentFlag = true;
+              }
+            }else{
+              sourceFlag = true;
             }
-        }).catch((err) => {
-            this.setState({fetchLoader : false});
-            FSReactToastr.error(
-                <CommonNotification flag="error" content={err.message}/>, '', toastOpt)
+            this.setState({fetchLoader : false,entities: result,pageIndex:0,checkEnvironment : environmentFlag,sourceCheck : sourceFlag});
+          }
         });
     }
 
@@ -321,23 +367,33 @@ class TopologyListingContainer extends Component {
     }
 
     fetchSingleTopology = (ID) => {
+      const {refIdArr} = this.state;
         const id = +ID;
-        let flagUpdate = {
-            loader: true,
-            idCheck: id
-        }
-        this.setState({isLoading: flagUpdate});
-        TopologyREST.getTopology(id).then((topology) => {
-            this.updateSingleTopology(topology, id)
-            flagUpdate = {
-                loader: false,
-                idCheck: id
-            }
-            this.setState({isLoading: flagUpdate})
-        }).catch((err) => {
-            FSReactToastr.error(
-                <CommonNotification flag="error" content={err.message}/>, '', toastOpt)
+        const tempArr = refIdArr;
+        tempArr.push(id);
+        this.setState({refIdArr : tempArr}, () => {
+          TopologyREST.getTopology(id).then((topology) => {
+              const entities = this.updateSingleTopology(topology, id)
+              const tempDataArray = this.spliceTempArr(id);
+              this.setState({refIdArr: tempDataArray,entities});
+          }).catch((err) => {
+              const tempDataArray = this.spliceTempArr(id);
+              this.setState({refIdArr: tempDataArray});
+              FSReactToastr.error(
+                  <CommonNotification flag="error" content={err.message}/>, '', toastOpt)
+          });
         });
+    }
+
+    spliceTempArr = (id) => {
+      const tempArr = this.state.refIdArr;
+      const index = tempArr.findIndex((x) => {
+        return x === id;
+      });
+      if(index !== -1){
+        tempArr.splice(index , 1);
+      }
+      return tempArr;
     }
 
     updateSingleTopology(newTopology, id) {
@@ -347,7 +403,7 @@ class TopologyListingContainer extends Component {
         }).indexOf(id)
         entitiesWrap = this.state.entities;
         entitiesWrap[elPosition] = newTopology;
-        this.setState({entities: entitiesWrap})
+      return entitiesWrap;
     }
 
     handleAddTopology() {
@@ -360,11 +416,13 @@ class TopologyListingContainer extends Component {
 
     deleteSingleTopology = (id) => {
       this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete ?'}).then((confirmBox) => {
+        this.setState({fetchLoader : true});
         TopologyREST.deleteTopology(id).then((topology) => {
           // TopologyREST.deleteMetaInfo(id);
           this.fetchData();
           confirmBox.cancel();
           if (topology.responseMessage !== undefined) {
+            this.setState({fetchLoader : false});
             FSReactToastr.error(
               <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
           } else {
@@ -373,6 +431,7 @@ class TopologyListingContainer extends Component {
             )
           }
         }).catch((err) => {
+          this.setState({fetchLoader : false});
           FSReactToastr.error(
             <CommonNotification flag="error" content={err.message}/>, '', toastOpt)
         })
@@ -387,10 +446,25 @@ class TopologyListingContainer extends Component {
 
     exportTopologyAction = (id) => {
       this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to export the topology ?'}).then((confirmBox) => {
-        this.refs.ExportTopology.href = TopologyREST.getExportTopologyURL(id);
-        this.refs.ExportTopology.click();
-        confirmBox.cancel();
+        TopologyREST.getExportTopology(id)
+          .then((exportTopology) => {
+            if (exportTopology.responseMessage !== undefined) {
+              let errorMag = exportTopology.responseMessage.indexOf('NoSuchElementException') !== -1
+                              ? "There might be some unconfigure Nodes. so please configure it first."
+                              : exportTopology.responseMessage;
+              FSReactToastr.error(
+                  <CommonNotification flag="error" content={errorMag}/>, '', toastOpt)
+            } else {
+                this.exportTopologyDownload(id)
+            }
+          });
       })
+    }
+
+    exportTopologyDownload = (id) => {
+      this.refs.ExportTopology.href = TopologyREST.getExportTopologyURL(id);
+      this.refs.ExportTopology.click();
+      this.refs.BaseContainer.refs.Confirm.cancel();
     }
 
     actionHandler = (eventKey, id) => {
@@ -430,6 +504,7 @@ class TopologyListingContainer extends Component {
       }
       el.target.parentElement.setAttribute("class","active");
       const sortKey = (eventKey.toString() === "name") ? "name&ascending=true" : eventKey;
+      this.setState({fetchLoader: true});
       TopologyREST.getAllTopology(sortKey).then((topology) => {
         if (topology.responseMessage !== undefined) {
             FSReactToastr.error(
@@ -462,12 +537,16 @@ class TopologyListingContainer extends Component {
       this.btnClassChange();
     }
     btnClassChange = () => {
-      const actionMenu = document.querySelector('.actionDropdown');
-      actionMenu.setAttribute("class","actionDropdown hb lg success ");
-      actionMenu.parentElement.setAttribute("class","dropdown");
-      const sortDropdown = document.querySelector('.sortDropdown');
-      sortDropdown.setAttribute("class","sortDropdown");
-      sortDropdown.parentElement.setAttribute("class","dropdown")
+      if(!this.state.fetchLoader){
+        const actionMenu = document.querySelector('.actionDropdown');
+        actionMenu.setAttribute("class","actionDropdown hb lg success ");
+        if(this.state.entities.length !== 0){
+          actionMenu.parentElement.setAttribute("class","dropdown");
+          const sortDropdown = document.querySelector('.sortDropdown');
+          sortDropdown.setAttribute("class","sortDropdown");
+          sortDropdown.parentElement.setAttribute("class","dropdown")
+        }
+      }
     }
     pagePosition = (index) => {
       this.setState({pageIndex : index || 0})
@@ -476,8 +555,11 @@ class TopologyListingContainer extends Component {
       if(this.addTopologyRef.validate()){
           this.addTopologyRef.handleSave().then((topology)=>{
             if (topology.responseMessage !== undefined) {
+              let errorMag = topology.responseMessage.indexOf('already exists') !== -1
+                              ? "Application with same name already exists. Please choose a unique Application Name"
+                              : topology.responseMessage;
               FSReactToastr.error(
-                  <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
+                  <CommonNotification flag="error" content={errorMag}/>, '', toastOpt);
             } else {
                 this.addTopologyRef.saveMetadata(topology.id).then(() => {
                   FSReactToastr.success(
@@ -494,8 +576,11 @@ class TopologyListingContainer extends Component {
       if(this.importTopologyRef.validate()){
           this.importTopologyRef.handleSave().then((topology)=>{
             if (topology.responseMessage !== undefined) {
+              let errorMag = topology.responseMessage.indexOf('already exists') !== -1
+                              ? "Application with same name already exists. Please choose a unique Application Name"
+                              : topology.responseMessage;
               FSReactToastr.error(
-                  <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
+                  <CommonNotification flag="error" content={errorMag}/>, '', toastOpt);
             } else {
                 FSReactToastr.success(<strong>Topology imported successfully</strong>)
                 this.context.router.push('applications/' + topology.id + '/edit');
@@ -508,8 +593,13 @@ class TopologyListingContainer extends Component {
       if(this.cloneTopologyRef.validate()){
           this.cloneTopologyRef.handleSave().then((topology)=>{
             if (topology.responseMessage !== undefined) {
+              let errorMag = topology.responseMessage.indexOf('NoSuchElementException') !== -1
+                              ? "There might be some unconfigure Nodes. so please configure it first."
+                              : topology.responseMessage.indexOf('already exists') !== -1
+                                ? "Application with same name already exists. Please choose a unique Application Name"
+                                : topology.responseMessage;
               FSReactToastr.error(
-                  <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt)
+                  <CommonNotification flag="error" content={errorMag}/>, '', toastOpt)
             } else {
                 FSReactToastr.success(<strong>Topology cloned successfully</strong>)
                 this.context.router.push('applications/' + topology.id + '/edit');
@@ -527,7 +617,7 @@ class TopologyListingContainer extends Component {
     }
 
     render() {
-        const {entities,filterValue,isLoading,fetchLoader,slideInput,pageSize,pageIndex} = this.state;
+        const {entities,filterValue,fetchLoader,slideInput,pageSize,pageIndex,checkEnvironment,sourceCheck,refIdArr} = this.state;
         const filteredEntities = TopologyUtils.topologyFilter(entities, filterValue);
         const splitData = _.chunk(filteredEntities,pageSize) || [];
         const btnIcon = <i className="fa fa-plus"></i>;
@@ -535,73 +625,92 @@ class TopologyListingContainer extends Component {
 
         return (
             <BaseContainer ref="BaseContainer" routes={this.props.routes} headerContent={this.props.routes[this.props.routes.length - 1].name}>
-                <div id="add-environment">
-                  <DropdownButton title={btnIcon}
-                      id="actionDropdown"
-                      className="actionDropdown hb lg success"
-                      noCaret
-                    >
-                        <MenuItem onClick={this.onActionMenuClicked.bind(this,"create")}>
-                            &nbsp;New Application
-                        </MenuItem>
-                        <MenuItem onClick={this.onActionMenuClicked.bind(this,"import")}>
-                            &nbsp;Import Application
-                        </MenuItem>
-                    </DropdownButton>
-                </div>
-                <div className="row">
-                    <div className="page-title-box clearfix">
-                        <div className="col-md-4 col-md-offset-5 text-right">
-                            <FormGroup>
-                                <InputGroup>
-                                    <FormControl type="text"
-                                      placeholder="Search by name"
-                                      onKeyUp={this.onFilterChange}
-                                      className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
-                                      onBlur={this.slideInputOut}
-                                    />
-                                    <InputGroup.Addon className="page-search">
-                                        <Button type="button"
-                                          className="searchBtn"
-                                          onClick={this.slideInput}
-                                        >
-                                          <i className="fa fa-search"></i>
-                                        </Button>
-                                    </InputGroup.Addon>
-                                </InputGroup>
-                            </FormGroup>
+                {
+                  !fetchLoader
+                  ? <div>
+                        <div id="add-environment">
+                          <DropdownButton title={btnIcon}
+                              id="actionDropdown"
+                              className="actionDropdown hb lg success"
+                              noCaret
+                            >
+                                <MenuItem onClick={this.onActionMenuClicked.bind(this,"create")}>
+                                    &nbsp;New Application
+                                </MenuItem>
+                                <MenuItem onClick={this.onActionMenuClicked.bind(this,"import")}>
+                                    &nbsp;Import Application
+                                </MenuItem>
+                            </DropdownButton>
                         </div>
+                        {
+                          ((filterValue && splitData.length === 0) || splitData.length !== 0)
+                          ? <div className="row">
+                              <div className="page-title-box clearfix">
+                                  <div className="col-md-4 col-md-offset-5 text-right">
+                                      <FormGroup>
+                                          <InputGroup>
+                                              <FormControl type="text"
+                                                placeholder="Search by name"
+                                                onKeyUp={this.onFilterChange}
+                                                className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
+                                                onBlur={this.slideInputOut}
+                                              />
+                                              <InputGroup.Addon className="page-search">
+                                                  <Button type="button"
+                                                    className="searchBtn"
+                                                    onClick={this.slideInput}
+                                                  >
+                                                    <i className="fa fa-search"></i>
+                                                  </Button>
+                                              </InputGroup.Addon>
+                                          </InputGroup>
+                                      </FormGroup>
+                                  </div>
 
-                        <div className="col-md-2 text-center">
-                          <DropdownButton title={sortTitle}
-                            id="sortDropdown"
-                            className="sortDropdown "
-                          >
-                              <MenuItem onClick={this.onSortByClicked.bind(this,"name")}>
-                                  &nbsp;Name
-                              </MenuItem>
-                              <MenuItem active onClick={this.onSortByClicked.bind(this,"last_updated")}>
-                                  &nbsp;Last Update
-                              </MenuItem>
-                              <MenuItem onClick={this.onSortByClicked.bind(this,"status")}>
-                                  &nbsp;Status
-                              </MenuItem>
-                          </DropdownButton>
-                        </div>
-                        <div className="col-md-1 col-sm-3 text-left">
-                        </div>
+                                  <div className="col-md-2 text-center">
+                                    <DropdownButton title={sortTitle}
+                                      id="sortDropdown"
+                                      className="sortDropdown "
+                                    >
+                                        <MenuItem onClick={this.onSortByClicked.bind(this,"name")}>
+                                            &nbsp;Name
+                                        </MenuItem>
+                                        <MenuItem active onClick={this.onSortByClicked.bind(this,"last_updated")}>
+                                            &nbsp;Last Update
+                                        </MenuItem>
+                                        <MenuItem onClick={this.onSortByClicked.bind(this,"status")}>
+                                            &nbsp;Status
+                                        </MenuItem>
+                                    </DropdownButton>
+                                  </div>
+                                  <div className="col-md-1 col-sm-3 text-left">
+                                  </div>
+                              </div>
+                          </div>
+                          :''
+                        }
                     </div>
-                </div>
+                  : ''
+                }
                 <div className="row">
                     {
                       (fetchLoader)
-                      ? <div className="fullPageLoader">
-                          <img src="styles/img/start-loader.gif" alt="loading" />
-                        </div>
+                      ? <CommonLoaderSign
+                            imgName={"applications"}
+                        />
                       : (splitData.length === 0)
-                        ? <NoData/>
+                        ? <NoData
+                            environmentFlag={checkEnvironment}
+                            imgName={"applications"}
+                            sourceCheck = {sourceCheck}
+                            searchVal={filterValue}
+                        />
                         : splitData[pageIndex].map((list) => {
-                            return <TopologyItems key={list.topology.id} topologyList={list} topologyAction={this.actionHandler} isLoading={isLoading}/>
+                            return <TopologyItems key={list.topology.id}
+                                      topologyList={list}
+                                      topologyAction={this.actionHandler}
+                                      refIdArr={refIdArr}
+                                    />
                         })
 }
                 </div>

@@ -1,0 +1,31 @@
+{
+  "type": "PROCESSOR",
+  "name": "Normalization bolt",
+  "subType": "NORMALIZATION",
+  "builtin": true,
+  "streamingEngine": "STORM",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.NormalizationBoltFluxComponent",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "Types",
+        "fieldName": "types",
+        "isOptional": false,
+        "tooltip": "Type of Normalization",
+        "type": "enumstring",
+        "options": [
+          "bulk",
+          "fineGrained"
+        ]
+      },
+      {
+        "uiName": "Parallelism",
+        "fieldName": "parallelism",
+        "isOptional": true,
+        "tooltip": "Parallelism hint for normalization bolt",
+        "type": "number",
+        "defaultValue": 1
+      }
+    ]
+  }
+}

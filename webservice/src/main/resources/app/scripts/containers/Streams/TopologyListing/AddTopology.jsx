@@ -67,7 +67,13 @@ class AddTopology extends Component{
   validateName(){
     const {topologyName} = this.state;
     let validDataFlag = true;
-    if(topologyName.length < 1){
+    if(topologyName.trim().length < 1){
+      validDataFlag = false;
+      this.setState({validInput : false})
+    } else if(/[^A-Za-z0-9_-\s]/g.test(topologyName)) {
+      validDataFlag = false;
+      this.setState({validInput : false})
+    } else if(!/[A-Za-z0-9]/g.test(topologyName)) {
       validDataFlag = false;
       this.setState({validInput : false})
     } else{
@@ -79,7 +85,7 @@ class AddTopology extends Component{
   validate() {
     const {topologyName, namespaceId} = this.state;
     let validDataFlag = true;
-    if(topologyName.length < 1){
+    if(!this.validateName()){
       validDataFlag = false;
       this.setState({validInput : false})
     } else if(namespaceId === ''){

@@ -30,6 +30,7 @@ DROP TABLE IF EXISTS dashboard
 DROP TABLE IF EXISTS widget
 DROP TABLE IF EXISTS datasource
 DROP TABLE IF EXISTS widget_datasource_mapping
+DROP TABLE IF EXISTS ml_models
 DROP SEQUENCE IF EXISTS parser_info_sequence
 DROP SEQUENCE IF EXISTS topology_versioninfos_sequence
 DROP SEQUENCE IF EXISTS topologies_sequence
@@ -54,3 +55,4 @@ DROP SEQUENCE IF EXISTS namespaces_sequence
 DROP SEQUENCE IF EXISTS dashboard_sequence
 DROP SEQUENCE IF EXISTS widget_sequence
 DROP SEQUENCE IF EXISTS datasource_sequence
+DROP SEQUENCE IF EXISTS ml_models_sequence

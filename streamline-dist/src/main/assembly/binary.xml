@@ -91,7 +91,7 @@
             <directory>${project.basedir}./bootstrap</directory>
             <outputDirectory>/bootstrap</outputDirectory>
             <includes>
-                <include>*</include>
+                <include>**/*</include>
             </includes>
         </fileSet>
         <fileSet>

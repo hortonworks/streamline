@@ -70,7 +70,7 @@ TimeSeriesChart.defaultProps = {
     bars: [],
     xAttr: 'date',
     data: [{date: new Date('11/02/2016'), value: 10, value2: 15}, {date: new Date('11/03/2016'), value: 16, value2: 14}, {date: new Date('11/04/2016'), value: 8, value2: 7}],
-    color: d3.scale.category20c().range(['orange', 'red']),
+    color: d3.scale.category20c(),
     getXScale() {
         return d3.time.scale().range([0, this.width]);
     },
@@ -333,7 +333,7 @@ TimeSeriesChart.defaultProps = {
         var html = '<span><i class="fa fa-calendar" aria-hidden="true"></i> '+d[this.props.xAttr].toLocaleDateString() + '</span><br><span><i class="fa fa-clock-o" aria-hidden="true"></i> '+d[this.props.xAttr].toLocaleTimeString() + '</span><table class="tooltipTable" width="100%"><tbody>';
         _.each(d, (val, key) => {
             if (key != this.props.xAttr)
-                html += '<tr><td><i class="fa fa-minus" style="color:'+this.props.color(key)+'"></i>' + key + ' </td><td> ' + val + '</td></tr>';
+                html += '<tr><td><i class="fa fa-minus" style="color:'+this.props.color(key)+'"></i>' + key + ' </td><td> ' + parseFloat(val.toFixed(2)) + '</td></tr>';
         });
         html += '</tbody></table>';
         this.tooltip.html(html);
