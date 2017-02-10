@@ -26,13 +26,6 @@ fileStorageConfiguration:
   properties:
     directory: "/tmp"
 
-pivotConfiguration:
- port: "8083"
- config:
-  name: "druid"
-  type: "druid"
-  host: "http://localhost:8082"
-  
 # HDFS based Jar storage
 #fileStorageConfiguration:
 #  className: "com.hortonworks.streamline.common.util.HdfsFileStorage"
