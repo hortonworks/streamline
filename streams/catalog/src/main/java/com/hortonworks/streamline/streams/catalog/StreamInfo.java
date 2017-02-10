@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import org.apache.commons.lang3.StringUtils;
 import com.hortonworks.streamline.common.Schema;
 import com.hortonworks.streamline.common.Schema.Field;
@@ -30,7 +31,6 @@ import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 /**
  * Catalog db entity for mapping output stream information
  */
+@StorableEntity
 public class StreamInfo extends AbstractStorable {
     public static final String NAMESPACE = "streaminfo";
     public static final String ID = "id";

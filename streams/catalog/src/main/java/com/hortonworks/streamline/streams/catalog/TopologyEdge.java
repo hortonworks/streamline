@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 
 import static com.hortonworks.streamline.streams.layout.component.Stream.Grouping;
 
+@StorableEntity
 public class TopologyEdge extends AbstractStorable {
 
     public static class StreamGrouping {

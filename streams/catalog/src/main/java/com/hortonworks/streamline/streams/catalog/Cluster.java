@@ -17,6 +17,7 @@ package com.hortonworks.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
 import org.apache.commons.lang3.StringUtils;
@@ -28,6 +29,7 @@ import java.util.Map;
  * Logical cluster which contains services.
  * @see Service
  */
+@StorableEntity
 public class Cluster extends AbstractStorable {
     private static final String NAMESPACE = "clusters";
 

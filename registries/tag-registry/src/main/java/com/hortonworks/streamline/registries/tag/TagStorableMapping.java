@@ -16,6 +16,7 @@
 package com.hortonworks.streamline.registries.tag;
 
 import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
 
@@ -28,6 +29,7 @@ import java.util.Map;
  * could have done this automatically but since we dont have it
  * this has to be maintained manually.
  */
+@StorableEntity
 public class TagStorableMapping extends AbstractStorable {
     public static final String NAMESPACE = "tag_storable_mapping";
     public static final String FIELD_TAG_ID = "tagId";

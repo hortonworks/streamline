@@ -21,6 +21,7 @@ import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.streamline.storage.impl.jdbc.phoenix.PhoenixStorageManagerNoCacheIntegrationTest;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
+import com.hortonworks.streamline.storage.util.StorageUtils;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
@@ -56,7 +57,7 @@ public  class StreamsPhoenixStorageManagerNoCacheIntegrationTest extends Phoenix
 
     public JdbcStorageManager createJdbcStorageManager(QueryExecutor queryExecutor) {
         JdbcStorageManager jdbcStorageManager = new JdbcStorageManager(queryExecutor);
-        jdbcStorageManager.registerStorables(StreamCatalogService.getStorableClasses());
+        jdbcStorageManager.registerStorables(StorageUtils.getStreamlineEntities());
         return jdbcStorageManager;
     }
 

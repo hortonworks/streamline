@@ -21,6 +21,7 @@ import com.hortonworks.streamline.common.test.IntegrationTest;
 import com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager;
 import com.hortonworks.streamline.storage.impl.jdbc.mysql.MySqlStorageManagerNoCacheIntegrationTest;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
+import com.hortonworks.streamline.storage.util.StorageUtils;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import org.junit.experimental.categories.Category;
 
@@ -34,7 +35,7 @@ public class StreamsMySqlStorageManagerNoCacheIntegrationTest extends MySqlStora
 
     public JdbcStorageManager createJdbcStorageManager(QueryExecutor queryExecutor) {
         JdbcStorageManager jdbcStorageManager = new JdbcStorageManager(queryExecutor);
-        jdbcStorageManager.registerStorables(StreamCatalogService.getStorableClasses());
+        jdbcStorageManager.registerStorables(StorageUtils.getStreamlineEntities());
         return jdbcStorageManager;
     }
 }

@@ -28,17 +28,14 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
-import com.hortonworks.streamline.common.util.Utils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import com.hortonworks.streamline.common.ComponentTypes;
 import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.Schema;
 import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.common.util.ProxyUtil;
+import com.hortonworks.streamline.common.util.Utils;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
-import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.storage.exception.StorageException;
@@ -86,6 +83,7 @@ import com.hortonworks.streamline.streams.rule.UDF4;
 import com.hortonworks.streamline.streams.rule.UDF5;
 import com.hortonworks.streamline.streams.rule.UDF6;
 import com.hortonworks.streamline.streams.rule.UDF7;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,8 +107,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.hortonworks.streamline.common.util.WSUtils.CURRENT_VERSION;
-import static com.hortonworks.streamline.common.util.WSUtils.TOPOLOGY_ID;
-import static com.hortonworks.streamline.common.util.WSUtils.VERSION_ID;
 import static com.hortonworks.streamline.common.util.WSUtils.buildEdgesFromQueryParam;
 import static com.hortonworks.streamline.common.util.WSUtils.buildEdgesToQueryParam;
 import static com.hortonworks.streamline.common.util.WSUtils.currentVersionQueryParam;
@@ -155,24 +151,8 @@ public class StreamCatalogService {
 
     public StreamCatalogService(StorageManager dao, FileStorage fileStorage, MLModelRegistryClient modelRegistryClient) {
         this.dao = dao;
-        dao.registerStorables(getStorableClasses());
         this.fileStorage = fileStorage;
         this.topologyDagBuilder = new TopologyDagBuilder(this, modelRegistryClient);
-    }
-
-    public static Collection<Class<? extends Storable>> getStorableClasses() {
-        InputStream resourceAsStream = StreamCatalogService.class.getClassLoader().getResourceAsStream("streamcatalogstorables.props");
-        HashSet<Class<? extends Storable>> classes = new HashSet<>();
-        try {
-            List<String> classNames = IOUtils.readLines(resourceAsStream);
-            for (String className : classNames) {
-                classes.add((Class<? extends Storable>) Class.forName(className));
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-
-        return classes;
     }
 
     public NotifierInfo addNotifierInfo(NotifierInfo notifierInfo) {
