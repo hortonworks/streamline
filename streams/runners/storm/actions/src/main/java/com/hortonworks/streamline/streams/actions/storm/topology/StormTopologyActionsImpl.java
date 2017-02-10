@@ -16,6 +16,8 @@
 package com.hortonworks.streamline.streams.actions.storm.topology;
 
 import com.google.common.base.Joiner;
+import com.hortonworks.streamline.common.exception.DuplicateEntityException;
+import com.hortonworks.streamline.common.exception.service.exception.request.TopologyAlreadyExistsOnCluster;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -51,6 +53,10 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -137,8 +143,17 @@ public class StormTopologyActionsImpl implements TopologyActions {
         int exitValue = shellProcessResult.exitValue;
         if (exitValue != 0) {
             LOG.error("Topology deploy command failed - exit code: {} / output: {}", exitValue, shellProcessResult.stdout);
-            throw new Exception("Topology could not be deployed " +
-                    "successfully: storm deploy command failed");
+            String[] lines = shellProcessResult.stdout.split("\\n");
+            String errors = Arrays.stream(lines)
+                    .filter(line -> line.startsWith("Exception"))
+                    .collect(Collectors.joining(", "));
+            Pattern pattern = Pattern.compile("Topology with name `(.*)` already exists on cluster");
+            Matcher matcher = pattern.matcher(errors);
+            if (matcher.find()) {
+                throw new TopologyAlreadyExistsOnCluster(matcher.group(1));
+            } else {
+                throw new Exception("Topology could not be deployed successfully: storm deploy command failed with " + errors);
+            }
         }
     }
 
