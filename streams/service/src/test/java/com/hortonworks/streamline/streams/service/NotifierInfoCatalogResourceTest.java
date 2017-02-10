@@ -73,7 +73,7 @@ public class NotifierInfoCatalogResourceTest {
     }
 
     @Test
-    public void testListNotifiers() throws Exception {
+    public void testListNotifiers() {
         final NotifierInfo notifierInfo = new NotifierInfo();
         final QueryParam expectedQp = new QueryParam("notifierName", "email_notifier_1");
         multiValuedMap.putSingle("notifierName", "email_notifier_1");

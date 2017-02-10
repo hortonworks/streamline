@@ -47,9 +47,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -76,7 +78,7 @@ public class NotifierInfoCatalogResource {
     @GET
     @Path("/notifiers")
     @Timed
-    public Response listNotifiers(@Context UriInfo uriInfo) throws Exception {
+    public Response listNotifiers(@Context UriInfo uriInfo) {
         List<QueryParam> queryParams = new ArrayList<>();
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
         Collection<NotifierInfo> notifierInfos;
@@ -145,6 +147,12 @@ public class NotifierInfoCatalogResource {
             throw new UnsupportedMediaTypeException(mediaType.toString());
         }
         NotifierInfo notifierInfo = notifierConfig.getValueAs(NotifierInfo.class);
+        Collection<NotifierInfo> existing = null;
+        existing = catalogService.listNotifierInfos(Collections.singletonList(new QueryParam(NotifierInfo.NOTIFIER_NAME, notifierInfo.getName())));
+        if (existing != null && !existing.isEmpty()) {
+            LOG.warn("Received a post request for an already registered notifier. Not creating entity for " + notifierInfo);
+            return WSUtils.respondEntity(notifierInfo, CONFLICT);
+        }
         String jarFileName = uploadJar(inputStream, notifierInfo.getName());
         notifierInfo.setJarFileName(jarFileName);
         NotifierInfo createdNotifierInfo = catalogService.addNotifierInfo(notifierInfo);
