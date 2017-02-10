@@ -709,11 +709,6 @@
                 <artifactId>webservice</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>com.hortonworks.streamline</groupId>
-                <artifactId>pivot</artifactId>
-                <version>${project.version}</version>
-            </dependency>
             <!-- END Project Artifact Dependencies -->
 
             <!-- Runtime Scope Dependencies -->
@@ -922,12 +917,6 @@
     </reporting>
 
     <profiles>
-       <profile>
-          <id>pivot</id>
-          <modules>
-            <module>pivot</module>
-          </modules>
-       </profile>
       <profile>
          <id>all</id>
          <modules>
@@ -937,7 +926,6 @@
            <module>streams</module>
            <module>registries</module>
            <module>webservice</module>
-           <module>pivot</module>
            <module>examples/processors</module>
          </modules>
          <properties>
@@ -970,7 +958,6 @@
            <module>streams</module>
            <module>registries</module>
            <module>webservice</module>
-           <module>pivot</module>
            <module>examples/processors</module>
            <module>streamline-dist</module>
          </modules>

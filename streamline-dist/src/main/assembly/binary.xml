@@ -108,34 +108,6 @@
                 <include>**/*.sql</include>
             </includes>
         </fileSet>
-        <fileSet>
-            <directory>${project.basedir}./pivot/build</directory>
-            <outputDirectory>/pivot/build</outputDirectory>
-            <includes>
-                <include>**/*</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>${project.basedir}./pivot/assets</directory>
-            <outputDirectory>/pivot/assets</outputDirectory>
-            <includes>
-                <include>**/*</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>${project.basedir}./pivot/node_modules</directory>
-            <outputDirectory>/pivot/node_modules</outputDirectory>
-            <includes>
-                <include>**/*</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>${project.basedir}./pivot/target/node</directory>
-            <outputDirectory>/pivot/node</outputDirectory>
-            <includes>
-                <include>**/*</include>
-            </includes>
-        </fileSet>
     </fileSets>
 
     <files>
@@ -156,10 +128,6 @@
             <source>${project.basedir}./conf/streamline-env.sh</source>
             <outputDirectory>/conf</outputDirectory>
             <destName>streamline-env.sh</destName>
-        </file>
-        <file>
-            <source>${project.basedir}./pivot/package.json</source>
-            <outputDirectory>/pivot/</outputDirectory>
         </file>
         <file>
             <source>${project.basedir}/LICENSE</source>
