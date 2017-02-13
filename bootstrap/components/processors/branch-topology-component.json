@@ -1,0 +1,50 @@
+{
+  "type": "PROCESSOR",
+  "name": "Branch",
+  "subType": "BRANCH",
+  "builtin": true,
+  "streamingEngine": "STORM",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.RuleBoltFluxComponent",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "Operations",
+        "fieldName": "operations",
+        "isOptional": false,
+        "tooltip": "Rule operations",
+        "isUserInput": false,
+        "type": "enumstring",
+        "options": [
+          "EQUALS",
+          "NOT_EQUAL",
+          "GREATER_THAN",
+          "LESS_THAN",
+          "GREATER_THAN_EQUALS_TO",
+          "LESS_THAN_EQUALS_TO"
+        ]
+      },
+      {
+        "uiName": "Logical operators",
+        "fieldName": "logicalOperators",
+        "isOptional": false,
+        "tooltip": "Rule logical operators",
+        "isUserInput": false,
+        "type": "enumstring",
+        "options": [
+          "AND",
+          "OR"
+        ]
+      },
+      {
+        "uiName": "Parallelism",
+        "fieldName": "parallelism",
+        "isOptional": true,
+        "tooltip": "Parallelism hint for rule bolt",
+        "type": "number",
+        "defaultValue": 1,
+        "min": 1,
+        "hint": "hidden"
+      }
+    ]
+  }
+}

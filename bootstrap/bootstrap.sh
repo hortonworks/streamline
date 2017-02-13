@@ -1,10 +1,32 @@
-#!/usr/bin/env bash 
+#!/usr/bin/env bash
+
+#
+# Copyright 2017 Hortonworks.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#   http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 
 # defaults
 verbose=false
 bootstrap_dir=$(dirname $0)
-host="localhost"
-port="8080"
+CONFIG_FILE_PATH=${bootstrap_dir}/../conf/streamline.yaml
+
+# Which java to use
+if [ -z "${JAVA_HOME}" ]; then
+  JAVA="java"
+else
+  JAVA="${JAVA_HOME}/bin/java"
+fi
 
 function run_cmd {
   cmd=$*
@@ -25,21 +47,21 @@ function run_cmd {
 function post {
   uri=$1
   data=$2
-  cmd="curl -sS -X POST http://${host}:${port}/api/v1/catalog$uri --data @$data -H 'Content-Type: application/json'"
+  cmd="curl -sS -X POST ${CATALOG_ROOT_URL}$uri --data @$data -H 'Content-Type: application/json'"
   echo "POST $data"
   run_cmd $cmd
 }
 
 function add_sample_bundle {
   echo "POST sample_bundle"
-  cmd="curl -sS -X POST -i -F topologyComponentBundle=@$bootstrap_dir/kafka-topology-bundle http://${host}:${port}/api/v1/catalog/streams/componentbundles/SOURCE/"
+  cmd="curl -sS -X POST -i -F topologyComponentBundle=@$bootstrap_dir/kafka-topology-bundle ${CATALOG_ROOT_URL}/streams/componentbundles/SOURCE/"
   run_cmd $cmd
 }
 
 function add_bundle {
   uri=$1
   data=$2
-  cmd="curl -sS -X POST -i -F topologyComponentBundle=@$data http://${host}:${port}/api/v1/catalog$uri"
+  cmd="curl -sS -X POST -i -F topologyComponentBundle=@$data ${CATALOG_ROOT_URL}$uri"
   echo "POST $data"
   run_cmd $cmd
 }
@@ -72,45 +94,76 @@ done
 update_storm_version_command="$bootstrap_dir/update-storm-version.sh 1.0.2.2.1.0.0-165"
 run_cmd $update_storm_version_command
 
-# === Source ===
-add_bundle /streams/componentbundles/SOURCE $bootstrap_dir/kafka-source-topology-component.json
-add_bundle /streams/componentbundles/SOURCE $bootstrap_dir/hdfs-source-topology-component.json
-# === Processor ===
-add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/rule-topology-component.json
-add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/window-topology-component.json
-add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/branch-topology-component.json
-add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/join-bolt-topology-component.json
-add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/model-topology-component.json
-# === Sink ===
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/hdfs-sink-topology-component.json
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/hbase-sink-topology-component.json
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/notification-topology-component.json
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/opentsdb-sink-topology-component.json
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/jdbc-sink-topology-component.json
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/cassandra-sink-topology-component.json
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/druid-sink-topology-component.json
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/solr-sink-topology-component.json
-add_bundle /streams/componentbundles/SINK $bootstrap_dir/kafka-sink-topology-component.json
-# === Topology ===
-add_bundle /streams/componentbundles/TOPOLOGY $bootstrap_dir/storm-topology-component.json
+#---------------------------------------------
+# Get catalogRootUrl from configuration file
+#---------------------------------------------
 
-#add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/split-topology-component
-#add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/normalization-processor-topology-component.json
-#add_bundle /streams/componentbundles/PROCESSOR $bootstrap_dir/multilang-topology-component.json
-#post /streams/componentbundles/PROCESSOR $bootstrap_dir/stage-topology-component
-#post /streams/componentbundles/ACTION $bootstrap_dir/transform-action-topology-component
-#post /streams/componentbundles/TRANSFORM $bootstrap_dir/projection-transform-topology-component
-#post /streams/componentbundles/TRANSFORM $bootstrap_dir/enrichment-transform-topology-component
-#note that the below is just a sample for ui to work with. Once UI is ready, all above will be replaced with new bundle components
-#add_sample_bundle
+CONF_READER_MAIN_CLASS=com.hortonworks.streamline.storage.tool.StreamlinePropertiesReader
+CLASSPATH=${bootstrap_dir}/lib/storage-tool-0.1.0-SNAPSHOT.jar:
+CATALOG_ROOT_URL_PROPERTY_KEY=catalogRootUrl
+component_dir=${bootstrap_dir}/components
 
-#----------------------------------
-# Execute other bootstrap scripts
-#----------------------------------
-script_dir=$(dirname $0)
-echo "Executing ${script_dir}/bootstrap-udf.sh ${host} ${port}"
-${script_dir}/bootstrap-udf.sh ${host} ${port}
+echo "Configuration file: ${CONFIG_FILE_PATH}"
 
-echo "Executing ${script_dir}/bootstrap-notifiers.sh ${host} ${port}"
-${script_dir}/bootstrap-notifiers.sh ${host} ${port}
+CATALOG_ROOT_URL=`exec ${JAVA} -cp ${CLASSPATH} ${CONF_READER_MAIN_CLASS} ${CONFIG_FILE_PATH} ${CATALOG_ROOT_URL_PROPERTY_KEY}`
 
+# if it doesn't exit with code 0, just give up
+if [ $? -ne 0 ]; then
+  exit 1
+fi
+
+echo "Catalog Root URL: ${CATALOG_ROOT_URL}"
+echo $component_dir
+
+function add_all_bundles {
+    # === Source ===
+    add_bundle /streams/componentbundles/SOURCE $component_dir/sources/kafka-source-topology-component.json
+    add_bundle /streams/componentbundles/SOURCE $component_dir/sources/hdfs-source-topology-component.json
+    # === Processor ===
+    add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/rule-topology-component.json
+    add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/window-topology-component.json
+    add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/branch-topology-component.json
+    add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/join-bolt-topology-component.json
+    add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/model-topology-component.json
+    # === Sink ===
+    add_bundle /streams/componentbundles/SINK $component_dir/sinks/hdfs-sink-topology-component.json
+    add_bundle /streams/componentbundles/SINK $component_dir/sinks/hbase-sink-topology-component.json
+    add_bundle /streams/componentbundles/SINK $component_dir/sinks/notification-sink-topology-component.json
+    add_bundle /streams/componentbundles/SINK $component_dir/sinks/opentsdb-sink-topology-component.json
+    add_bundle /streams/componentbundles/SINK $component_dir/sinks/jdbc-sink-topology-component.json
+    add_bundle /streams/componentbundles/SINK $component_dir/sinks/cassandra-sink-topology-component.json
+    add_bundle /streams/componentbundles/SINK $component_dir/sinks/druid-sink-topology-component.json
+    add_bundle /streams/componentbundles/SINK $component_dir/sinks/solr-sink-topology-component.json
+    add_bundle /streams/componentbundles/SINK $component_dir/sinks/kafka-sink-topology-component.json
+    # === Topology ===
+    add_bundle /streams/componentbundles/TOPOLOGY $component_dir/topology/storm-topology-component.json
+
+    #add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/split-topology-component
+    #add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/normalization-processor-topology-component.json
+    #add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/multilang-topology-component.json
+    #post /streams/componentbundles/PROCESSOR $component_dir/sinks/stage-topology-component
+    #post /streams/componentbundles/ACTION $component_dir/sinks/transform-action-topology-component
+    #post /streams/componentbundles/TRANSFORM $component_dir/sinks/projection-transform-topology-component
+    #post /streams/componentbundles/TRANSFORM $component_dir/sinks/enrichment-transform-topology-component
+    #note that the below is just a sample for ui to work with. Once UI is ready, all above will be replaced with new bundle components
+    #add_sample_bundle
+
+    #----------------------------------
+    # Execute other bootstrap scripts
+    #----------------------------------
+    script_dir=$(dirname $0)
+    echo "Executing ${script_dir}/bootstrap-udf.sh ${CATALOG_ROOT_URL}"
+    ${script_dir}/bootstrap-udf.sh ${CATALOG_ROOT_URL}
+
+    echo "Executing ${script_dir}/bootstrap-notifiers.sh ${CATALOG_ROOT_URL}"
+    ${script_dir}/bootstrap-notifiers.sh ${CATALOG_ROOT_URL}
+}
+
+function main {
+    echo ""
+    echo "===================================================================================="
+    echo "Running bootstrap.sh will create streamline default components, notifiers and udfs."
+    add_all_bundles
+}
+
+main

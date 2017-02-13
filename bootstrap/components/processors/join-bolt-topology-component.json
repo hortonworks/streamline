@@ -1,0 +1,41 @@
+{
+  "type": "PROCESSOR",
+  "name": "Join",
+  "subType": "JOIN",
+  "builtin": true,
+  "streamingEngine": "STORM",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.JoinBoltFluxComponent",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "JoinTypes",
+        "fieldName": "jointype",
+        "isOptional": false,
+        "tooltip": "Type of join",
+        "isUserInput": false,
+        "type": "enumstring",
+        "options": [
+          "INNER",
+          "LEFT"
+        ]
+      },
+      {
+        "uiName": "Output Stream",
+        "fieldName": "outputStream",
+        "isOptional": false,
+        "tooltip": "Name of output stream",
+        "type": "string"
+      },
+      {
+        "uiName": "Parallelism",
+        "fieldName": "parallelism",
+        "isOptional": true,
+        "tooltip": "Parallelism hint for rule bolt",
+        "type": "number",
+        "defaultValue": 1,
+        "min": 1,
+        "hint": "hidden"
+      }
+    ]
+  }
+}

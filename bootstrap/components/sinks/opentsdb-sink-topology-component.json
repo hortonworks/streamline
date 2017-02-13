@@ -1,0 +1,130 @@
+{
+  "type": "SINK",
+  "name": "OpenTSDB",
+  "subType": "OPENTSDB",
+  "builtin": true,
+  "streamingEngine": "STORM",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.OpenTsdbBoltFluxComponent",
+  "mavenDeps": "org.apache.storm:storm-opentsdb:STORM_VERSION",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "REST API URL",
+        "fieldName": "url",
+        "isOptional": false,
+        "tooltip": "The URL of the REST API (ex: http://localhost:4242)",
+        "type": "string"
+      },
+      {
+        "uiName": "Metric Field Name",
+        "fieldName": "metricField",
+        "isOptional": false,
+        "tooltip": "Metric Field Name",
+        "type": "enumstring",
+        "options": [],
+        "hint": "inputFields"
+      },
+      {
+        "uiName": "Timestamp Field Name",
+        "fieldName": "timestampField",
+        "isOptional": false,
+        "tooltip": "Timestamp Field Name",
+        "type": "enumstring",
+        "options": [],
+        "hint": "inputFields"
+      },
+      {
+        "uiName": "Tags Field Name",
+        "fieldName": "tagsField",
+        "isOptional": false,
+        "tooltip": "Tags Field Name",
+        "type": "enumstring",
+        "options": [],
+        "hint": "inputFields"
+      },
+      {
+        "uiName": "Value Field Name",
+        "fieldName": "valueField",
+        "isOptional": false,
+        "tooltip": "Value Field Name",
+        "type": "enumstring",
+        "options": [],
+        "hint": "inputFields"
+      },
+      {
+        "uiName": "Batch size",
+        "fieldName": "withBatchSize",
+        "isOptional": true,
+        "tooltip": "Batch size",
+        "type": "number",
+        "defaultValue": 1
+      },
+      {
+        "uiName": "Flush interval",
+        "fieldName": "withFlushInterval",
+        "isOptional": true,
+        "tooltip": "Flush interval",
+        "type": "number",
+        "defaultValue": 1
+      },
+      {
+        "uiName": "Fail tuple for failed metrics?",
+        "fieldName": "failTupleForFailedMetrics",
+        "isOptional": false,
+        "tooltip": "Fail tuple for failed metrics?",
+        "type": "boolean",
+        "defaultValue": true
+      },
+      {
+        "uiName": "Sync?",
+        "fieldName": "sync",
+        "isOptional": false,
+        "tooltip": "Flag to indicate whether to sync",
+        "type": "boolean",
+        "defaultValue": true
+      },
+      {
+        "uiName": "Sync timeout (milliseconds)",
+        "fieldName": "syncTimeout",
+        "isOptional": false,
+        "tooltip": "Sync timeout in milliseconds, only effective when sync is true",
+        "type": "number",
+        "defaultValue": 500
+      },
+      {
+        "uiName": "Return summary?",
+        "fieldName": "returnSummary",
+        "isOptional": false,
+        "tooltip": "Flag to indicate whether to return summary",
+        "type": "boolean",
+        "defaultValue": true
+      },
+      {
+        "uiName": "Return details?",
+        "fieldName": "returnDetails",
+        "isOptional": false,
+        "tooltip": "Flag to indicate whether to return details",
+        "type": "boolean",
+        "defaultValue": true
+      },
+      {
+        "uiName": "Enable chunked encoding?",
+        "fieldName": "enableChunkedEncoding",
+        "isOptional": false,
+        "tooltip": "Flag to indicate whether to enable chuncked encoding",
+        "type": "boolean",
+        "defaultValue": true
+      },
+      {
+        "uiName": "Parallelism",
+        "fieldName": "parallelism",
+        "isOptional": true,
+        "tooltip": "Parallelism hint",
+        "type": "number",
+        "defaultValue": 1,
+        "min": 1,
+        "hint": "hidden"
+      }
+    ]
+  }
+}

@@ -35,7 +35,7 @@
       "projection": {
         "expressions": [
           {
-            "class": "org.apache.streamline.streams.layout.component.rule.expression.FieldExpression",
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
             "value": {
               "name": "foo",
               "type": "INTEGER",
@@ -43,7 +43,7 @@
             }
           },
           {
-            "class": "org.apache.streamline.streams.layout.component.rule.expression.FieldExpression",
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
             "value": {
               "name": "bar",
               "type": "INTEGER",
@@ -57,7 +57,7 @@
       "window": null,
       "actions": [
         {
-          "__type": "org.apache.streamline.streams.layout.component.rule.action.TransformAction",
+          "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction",
           "name": "HBase",
           "outputStreams": [
             "outputstream"

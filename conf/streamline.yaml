@@ -1,12 +1,12 @@
 modules:
   - name: tag-registry
-    className: org.apache.streamline.registries.tag.service.TagRegistryModule
+    className: com.hortonworks.streamline.registries.tag.service.TagRegistryModule
   - name: dashboard-registry
-    className: org.apache.streamline.registries.dashboard.service.DashboardRegistryModule
+    className: com.hortonworks.streamline.registries.dashboard.service.DashboardRegistryModule
   - name: model-registry
-    className: org.apache.streamline.registries.model.service.MLModelRegistryModule
+    className: com.hortonworks.streamline.registries.model.service.MLModelRegistryModule
   - name: streams
-    className: org.apache.streamline.streams.service.StreamsModule
+    className: com.hortonworks.streamline.streams.service.StreamsModule
     config:
       #change the below to the path on your local machine
       streamlineStormJar: /tmp/streamline-runtime-storm-0.1.0-SNAPSHOT.jar
@@ -20,70 +20,34 @@ modules:
       mavenRepoUrl: "hwx-public^http://repo.hortonworks.com/content/groups/public/,hwx-private^http://nexus-private.hortonworks.com/nexus/content/groups/public/"
 
 catalogRootUrl: "http://localhost:8080/api/v1/catalog"
-# Filesystem based jar storage
-#fileStorageConfiguration:
-#  className: "org.apache.streamline.common.util.LocalFileSystemStorage"
-#  properties:
-#    directory: "/tmp"
 
-# HDFS based Jar storage
 # Filesystem based jar storage
+# Make sure you configure this directory other than /tmp
+
 fileStorageConfiguration:
- className: "org.apache.streamline.common.util.LocalFileSystemStorage"
+ className: "com.hortonworks.streamline.common.util.LocalFileSystemStorage"
  properties:
    directory: "/tmp"
 
-# storage provider configuration
-# providerClass can be inmemory and jdbc.
-#
-# Example configuration for inmemory is:
-#storageProviderConfiguration:
-# providerClass: "org.apache.streamline.storage.impl.memory.InMemoryStorageManager"
-#
-# Example configuration for phoenix based JDBC driver
-#storageProviderConfiguration:
-# providerClass: "org.apache.streamline.storage.impl.jdbc.JdbcStorageManager"
-# properties:
-#   db.type: "phoenix"
-#   queryTimeoutInSecs: 30
-#   db.properties:
-#     jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
-#     jdbcUrl: "jdbc:phoenix:localhost:2181"
-#
 # MySQL based jdbc provider configuration is:
 # to add user and password please follow below convention
-#storageProviderConfiguration:
-# providerClass: "org.apache.streamline.storage.impl.jdbc.JdbcStorageManager"
-# properties:
-#   db.type: "mysql"
-#   queryTimeoutInSecs: 30
-#   db.properties:
-#     dataSourceClassName: "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
-#     dataSource.url: "jdbc:mysql://localhost/test"
-#     dataSource.user: "streamline_user"
-#     dataSource.password: "streamline_password"
-#
 
 storageProviderConfiguration:
- providerClass: "org.apache.streamline.storage.impl.jdbc.JdbcStorageManager"
+ providerClass: "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager"
  properties:
-   db.type: "phoenix"
-   queryTimeoutInSecs: 30
-   db.properties:
-     jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
-     jdbcUrl: "jdbc:phoenix:localhost:2181"
+  db.type: "mysql"
+  queryTimeoutInSecs: 30
+  db.properties:
+    dataSourceClassName: "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
+    dataSource.url: "jdbc:mysql://localhost/streamline_db"
+    dataSource.user: "streamline_user"
+    dataSource.password: "streamline_password"
 
-
-pivotConfiguration:
- port: "8083"
- config:
-  name: "druid"
-  type: "druid"
-  host: "http://localhost:8082"
 
 enableCors: true
 corsUrlPatterns:
   - "/api/v1/dashboards/*"
+
 server:
   rootPath: '/api/*'
   applicationConnectors:
@@ -92,6 +56,7 @@ server:
   adminConnectors:
     - type: http
       port: 8081
+
 # Logging settings.
 logging:
   # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
@@ -99,14 +64,13 @@ logging:
   # Logger-specific levels.
   loggers:
     # Sets the level for 'com.example.app' to DEBUG.
-    org.apache.streamline: DEBUG
+    com.hortonworks.streamline: INFO
   appenders:
-    - type: console
-#    - type: file
-#      threshold: DEBUG
-#      logFormat: "%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n"
-#      currentLogFilename: /tmp/application.log
-#      archivedLogFilenamePattern: /tmp/application-%d{yyyy-MM-dd}-%i.log.gz
-#      archivedFileCount: 7
-#      timeZone: UTC
-#      maxFileSize: 10MB
+    - type: file
+      threshold: DEBUG
+      logFormat: "%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n"
+      currentLogFilename: ./logs/streamline.log
+      archivedLogFilenamePattern: ./logs/streamline-%d{yyyy-MM-dd}-%i.log.gz
+      archivedFileCount: 7
+      timeZone: UTC
+      maxFileSize: 50MB

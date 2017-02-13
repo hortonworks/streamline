@@ -1,0 +1,1 @@
+{"type":"record","name":"root","fields":[{"name":"xid","type":"long"},{"name":"name","type":"string"},{"name":"version","type":"int"},{"name":"timestamp","type":"long"},{"name":"address","type":{"type":"record","name":"address","fields":[{"name":"streetaddress","type":"string"},{"name":"city","type":"string"},{"name":"state","type":"string"},{"name":"zip","type":"string"}]}}]}

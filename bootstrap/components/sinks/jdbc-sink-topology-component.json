@@ -1,0 +1,68 @@
+{
+  "type": "SINK",
+  "name": "JDBC",
+  "subType": "JDBC",
+  "builtin": true,
+  "streamingEngine": "STORM",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.JDBCBoltFluxComponent",
+  "mavenDeps": "org.apache.storm:storm-jdbc:STORM_VERSION",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "Driver class name",
+        "fieldName": "dataSourceClassName",
+        "isOptional": false,
+        "tooltip": "The driver class name. E.g. com.mysql.jdbc.jdbc2.optional.MysqlDataSource",
+        "type": "string"
+      },
+      {
+        "uiName": "JDBC Url",
+        "fieldName": "dataSource.url",
+        "isOptional": false,
+        "tooltip": "JDBC Url, E.g. jdbc:mysql://localhost:3306/test",
+        "type": "string"
+      },
+      {
+        "uiName": "Username",
+        "fieldName": "dataSource.user",
+        "isOptional": false,
+        "tooltip": "Database username",
+        "type": "string"
+      },
+      {
+        "uiName": "Password",
+        "fieldName": "dataSource.password",
+        "isOptional": false,
+        "tooltip": "Database password",
+        "type": "string",
+        "hint": "password"
+      },
+      {
+        "uiName": "Table name",
+        "fieldName": "tableName",
+        "isOptional": false,
+        "tooltip": "The table name",
+        "type": "string"
+      },
+      {
+        "uiName":"Column names",
+        "fieldName": "columns",
+        "tooltip": "The names of the database columns",
+        "isOptional": false,
+        "type": "array.enumstring",
+        "options": [],
+        "hint": "inputFields"
+      },
+      {
+        "uiName": "Parallelism",
+        "fieldName": "parallelism",
+        "isOptional": true,
+        "tooltip": "Parallelism hint",
+        "type": "number",
+        "defaultValue": 1,
+        "min": 1,
+        "hint": "hidden"
+      }
+    ]
+  }
+}

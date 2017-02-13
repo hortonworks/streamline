@@ -184,7 +184,7 @@ export default class StageFormNode extends Component{
 			validateDataFlag = false;
 		if(transformFields.length == 0)
 			validateDataFlag = false;
-		
+
 		this.setState({showError: true, showErrorLabel: true, changedFields: changedFields});
 		return validateDataFlag;
 	}
@@ -200,7 +200,7 @@ export default class StageFormNode extends Component{
 					stageConfigData = {
 						name: "stage-action",
 						outputStreams: [],
-						__type: "org.apache.streamline.streams.layout.component.impl.splitjoin.StageAction"
+						__type: "com.hortonworks.streamline.streams.layout.component.impl.splitjoin.StageAction"
 					}
 				}
 				stageConfigData.transforms = [];
@@ -208,13 +208,13 @@ export default class StageFormNode extends Component{
 				if(transform === 'projection'){
 					transformObj = {
 						name: "projection-transform",
-						__type: "org.apache.streamline.streams.layout.component.rule.action.transform.ProjectionTransform",
+						__type: "com.hortonworks.streamline.streams.layout.component.rule.action.transform.ProjectionTransform",
 						projectionFields: transformFields
 					};
 				} else {
 					transformObj = {
 						name: "enrichment-transform",
-						__type: "org.apache.streamline.streams.layout.component.rule.action.transform.EnrichmentTransform",
+						__type: "com.hortonworks.streamline.streams.layout.component.rule.action.transform.EnrichmentTransform",
 						fieldsToBeEnriched: transformFields,
 						entryExpirationInterval: entryExpirationInterval,
 						entryRefreshInterval: entryRefreshInterval,
@@ -316,7 +316,7 @@ export default class StageFormNode extends Component{
 									</div>
 								</div>]
 							: null}
-							<div className="form-group">
+                                                        {/*<div className="form-group">
 								<label className="col-sm-3 control-label">Parallelism</label>
 								<div className="col-sm-6">
 									<input
@@ -326,11 +326,11 @@ export default class StageFormNode extends Component{
 										type="number"
 										className="form-control"
 									    disabled={!editMode}
-									    min="0"
+                                                                            min="1"
 										inputMode="numeric"
 									/>
 								</div>
-							</div>
+                                                        </div>*/}
 						</form>
 					</Tab>
 					<Tab eventKey={2} title="Output Streams">

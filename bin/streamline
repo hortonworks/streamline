@@ -1,21 +1,18 @@
 #!/bin/bash
+#
+# Copyright 2017 Hortonworks.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 
-#
-#  Licensed to the Apache Software Foundation (ASF) under one or more
-#  contributor license agreements.  See the NOTICE file distributed with
-#  this work for additional information regarding copyright ownership.
-#  The ASF licenses this file to You under the Apache License, Version 2.0
-#  (the "License"); you may not use this file except in compliance with
-#  the License.  You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
-#
+#   http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 # Home Dir
 base_dir=$(dirname $0)/..
@@ -50,6 +47,8 @@ STREAMLINE_LAUNCH_COMMAND=$1
 APP_NAME=streamline
 
 STREAMLINE_START_CMD="$STREAMLINE_HOME/bin/streamline-server-start.sh $STREAMLINE_HOME/conf/streamline.yaml"
+STREAMLINE_SETUP_CMD="$STREAMLINE_HOME/bootstrap/bootstrap-storage.sh"
+STREAMLINE_BOOTSTRAP_CMD="$STREAMLINE_HOME/bootstrap/bootstrap.sh"
 
 #Name of PID file
 [ -z $PID_DIR ] && PID_DIR="/var/run/$APP_NAME"
@@ -57,8 +56,7 @@ STREAMLINE_START_CMD="$STREAMLINE_HOME/bin/streamline-server-start.sh $STREAMLIN
 
 #Name of PID file
 PID_FILE="$PID_DIR/$APP_NAME.pid"
-#Name of LOG/OUT/ERR file
-OUT_FILE="$LOG_DIR/$APP_NAME.out"
+#Name of ERR file
 ERR_FILE="$LOG_DIR/$APP_NAME.err"
 
 
@@ -75,9 +73,16 @@ function main {
          ;;
       clean)
          streamlineClean
+         ;;
+      setup)
+          streamlineSetup
           ;;
+      bootstrap)
+          streamlineBootstrap
+          ;;
+
       *)
-         printf "Usage: $0 {start|stop|status|clean}\n"
+         printf "Usage: $0 {start|stop|status|clean|setup|bootstrap}\n"
          ;;
    esac
 }
@@ -93,7 +98,7 @@ function streamlineStart {
    printf "Starting Streamline "
 
    rm -f $PID_FILE
-   su $STREAMLINE_USER -c "nohup $STREAMLINE_START_CMD >>$OUT_FILE 2>>$ERR_FILE & echo \$! > $PID_FILE"
+   su $STREAMLINE_USER -c "nohup $STREAMLINE_START_CMD >>/dev/null 2>>$ERR_FILE & echo \$! > $PID_FILE"
 
    getPID
    streamlineIsRunning $PID
@@ -116,7 +121,7 @@ function streamlineStop {
    fi
 
    printf "Stopping Streamline [$PID] "
-   streamlineKill $PID >>$OUT_FILE 2>>$ERR_FILE
+   streamlineKill $PID >>/dev/null 2>>$ERR_FILE
 
    if [ $? -ne 0 ]; then
      printf "failed. \n"
@@ -157,6 +162,22 @@ function streamlineClean {
      printf "Can't clean files.  Streamline is running with PID=$PID.\n"
      exit 1
    fi
+}
+
+function streamlineSetup {
+    printf "Running Streamline Setup.\n"
+    su $STREAMLINE_USER -c "$STREAMLINE_SETUP_CMD"
+}
+
+function streamlineBootstrap {
+    printf "Streamline "
+    getPID
+    if [ $? -eq 1 ]; then
+        printf "is not running. No pid file found.\n"
+        printf "Please start streamline server before running bootstrap.\n"
+        return 0
+    fi
+    su $STREAMLINE_USER -c "$STREAMLINE_BOOTSTRAP_CMD"
 }
 
 # Returns 0 if the Knox is running and sets the $PID variable.

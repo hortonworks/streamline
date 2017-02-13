@@ -14,6 +14,7 @@ import AddModelRegistry from './AddModelRegistry';
 import NoData from '../../components/NoData';
 import ModelRegistryREST from '../../rest/ModelRegistryREST';
 import {BtnDelete, BtnEdit} from '../../components/ActionButtons';
+import CommonLoaderSign  from '../../components/CommonLoaderSign';
 
 class ModelRegistryContainer extends Component{
   constructor(props){
@@ -70,7 +71,9 @@ class ModelRegistryContainer extends Component{
             this.setState({fetchLoader : false});
             let errorMag = model.responseMessage.indexOf('already exists') !== -1
                             ? "Model with the same name is already existing"
-                            : model.responseMessage;
+                            : model.responseMessage.indexOf('http') !== -1
+                              ? "This is not a valid xml file for PMML."
+                              : model.responseMessage
             FSReactToastr.error(
                 <CommonNotification flag="error" content={errorMag}/>, '', toastOpt);
           } else {
@@ -140,24 +143,28 @@ class ModelRegistryContainer extends Component{
         <div className="row">
           <div className="page-title-box clearfix">
             <div className="col-md-4 col-md-offset-6 text-right">
-              <FormGroup>
-                <InputGroup>
-                  <FormControl type="text"
-                    placeholder="Search by name"
-                    onKeyUp={this.onFilterChange}
-                    className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
-                    onBlur={this.slideInputOut}
-                  />
-                  <InputGroup.Addon>
-                    <Button type="button"
-                      className="searchBtn"
-                      onClick={this.slideInput}
-                    >
-                      <i className="fa fa-search"></i>
-                    </Button>
-                  </InputGroup.Addon>
-                </InputGroup>
-              </FormGroup>
+              {
+                ((filterValue && filteredEntities.length === 0) || filteredEntities.length !== 0)
+                ? <FormGroup>
+                  <InputGroup>
+                    <FormControl type="text"
+                      placeholder="Search by name"
+                      onKeyUp={this.onFilterChange}
+                      className={`inputAnimateIn ${(slideInput) ? "inputAnimateOut" : ''}`}
+                      onBlur={this.slideInputOut}
+                    />
+                    <InputGroup.Addon>
+                      <Button type="button"
+                        className="searchBtn"
+                        onClick={this.slideInput}
+                      >
+                        <i className="fa fa-search"></i>
+                      </Button>
+                    </InputGroup.Addon>
+                  </InputGroup>
+                </FormGroup>
+                : ''
+              }
             </div>
             <div id="add-environment">
               <a href="javascript:void(0);"
@@ -173,43 +180,43 @@ class ModelRegistryContainer extends Component{
           <div className="col-sm-12">
             {
               fetchLoader
-              ? <div className="fullPageLoader">
-                  <img src="styles/img/start-loader.gif" alt="loading" />
-                </div>
-              :
-              <div className="box">
-                <div className="box-body">
-                  {filteredEntities.length == 0 ?
-                    <NoData/>
-                    :
-                    <Table
-                      className="table table-hover table-bordered"
-                      noDataText="No records found."
-                      currentPage={0}
-                      itemsPerPage={filteredEntities.length > pageSize ? pageSize : 0} pageButtonLimit={5}>
-                        <Thead>
-                          <Th column="modelName">Model Name</Th>
-                          <Th column="pmmlFile">PMML File Name</Th>
-                          <Th column="action">Actions</Th>
-                        </Thead>
-                        {filteredEntities.map((obj, i) => {
-                          return (
-                            <Tr key={`${obj.name}${i}`}>
-                              <Td column="modelName">{obj.name}</Td>
-                              <Td column="pmmlFile">{obj.uploadedFileName}</Td>
-                              <Td column="action">
-                                <div className="btn-action">
-                                  {/*<BtnEdit callback={this.handleEdit.bind(this, obj.id)}/>*/}
-                                  <BtnDelete callback={this.handleDelete.bind(this, obj.id)}/>
-                                </div>
-                              </Td>
-                            </Tr>
-                          )
-                        })}
-                    </Table>
-                  }
-                </div>
-              </div>
+              ? <CommonLoaderSign
+                    imgName={"default"}
+                />
+              : filteredEntities.length == 0
+                ? <NoData
+                    imgName={"default"}
+                    searchVal={filterValue}
+                  />
+                :  <div className="box">
+                    <div className="box-body">
+                        <Table
+                          className="table table-hover table-bordered"
+                          noDataText="No records found."
+                          currentPage={0}
+                          itemsPerPage={filteredEntities.length > pageSize ? pageSize : 0} pageButtonLimit={5}>
+                            <Thead>
+                              <Th column="modelName">Model Name</Th>
+                              <Th column="pmmlFile">PMML File Name</Th>
+                              <Th column="action">Actions</Th>
+                            </Thead>
+                            {filteredEntities.map((obj, i) => {
+                              return (
+                                <Tr key={`${obj.name}${i}`}>
+                                  <Td column="modelName">{obj.name}</Td>
+                                  <Td column="pmmlFile">{obj.uploadedFileName}</Td>
+                                  <Td column="action">
+                                    <div className="btn-action">
+                                      {/*<BtnEdit callback={this.handleEdit.bind(this, obj.id)}/>*/}
+                                      <BtnDelete callback={this.handleDelete.bind(this, obj.id)}/>
+                                    </div>
+                                  </Td>
+                                </Tr>
+                              )
+                            })}
+                        </Table>
+                      </div>
+                    </div>
             }
           </div>
         </div>

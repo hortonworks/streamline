@@ -112,7 +112,7 @@ export class string extends BaseField {
           ? ''
           : <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
                 {this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase().indexOf("textarea") !== -1
-                ? 
+                ?
                     <textarea
                         className={this.context.Form.state.Errors[this.props.valuePath] ? "form-control invalidInput" : "form-control"}
                         ref="input"
@@ -156,6 +156,9 @@ export class number extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
+      const numberHint = this.props.fieldJson.hint || null;
+      const min = this.props.fieldJson.min !== undefined ? this.props.fieldJson.min : 0;
+      const max = this.props.fieldJson.max !== undefined ? this.props.fieldJson.max : Number.MAX_SAFE_INTEGER;
       const popoverContent = (
         <Popover id="popover-trigger-hover-focus">
           {this.props.fieldJson.tooltip}
@@ -165,16 +168,22 @@ export class number extends BaseField {
       if(this.props.fieldJson.isUserInput !== undefined){
         disabledField = disabledField || !this.props.fieldJson.isUserInput;
       }
-      return <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
-              <input
-                type="number"
-                className={this.context.Form.state.Errors[this.props.valuePath] ? "form-control invalidInput" : "form-control"} 
-                ref="input"
-                value={this.props.data[this.props.value]}
-                disabled={disabledField}
-                {...this.props.attrs}
-                onChange={this.handleChange}/>
-             </OverlayTrigger>
+      return (
+                numberHint !== null && numberHint.toLowerCase().indexOf("hidden") !== -1
+                ? ''
+                : <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
+                        <input
+                          type="number"
+                          className={this.context.Form.state.Errors[this.props.valuePath] ? "form-control invalidInput" : "form-control"}
+                          ref="input"
+                          value={this.props.data[this.props.value]}
+                          disabled={disabledField}
+                          {...this.props.attrs}
+                          min={min}
+                          max={max}
+                          onChange={this.handleChange}/>
+                       </OverlayTrigger>
+      )
     }
 }
 
@@ -190,6 +199,7 @@ export class boolean extends BaseField {
         return true;
     }
     render(){
+        const booleanHint = this.props.fieldJson.hint || null;
         const {className} = this.props;
         const popoverContent = (
           <Popover id="popover-trigger-hover-focus">
@@ -200,23 +210,27 @@ export class boolean extends BaseField {
         if(this.props.fieldJson.isUserInput !== undefined){
             disabledField = disabledField || !this.props.fieldJson.isUserInput;
         }
-        return <FormGroup className={className}>
-            <label>
-              <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
-                <input
-                    type="checkbox"
-                    ref="input"
-                    checked={this.props.data[this.props.value]}
-                    disabled={disabledField}
-                    {...this.props.attrs}
-                    onChange={this.handleChange}
-                    style={{marginRight: '10px'}}
-                    className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidInput" : ""}
-                />
-              </OverlayTrigger>
-                {this.props.label} {this.props.validation && this.props.validation.indexOf('required') !== -1 ? <span className="text-danger">*</span> : null}
-            </label>
-        </FormGroup>
+        return (
+          booleanHint !== null && booleanHint.toLowerCase().indexOf("hidden") !== -1
+          ? null
+          : <FormGroup className={className}>
+                <label>
+                  <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
+                    <input
+                        type="checkbox"
+                        ref="input"
+                        checked={this.props.data[this.props.value]}
+                        disabled={disabledField}
+                        {...this.props.attrs}
+                        onChange={this.handleChange}
+                        style={{marginRight: '10px'}}
+                        className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidInput" : ""}
+                    />
+                  </OverlayTrigger>
+                    {this.props.label} {this.props.validation && this.props.validation.indexOf('required') !== -1 ? <span className="text-danger">*</span> : null}
+                </label>
+            </FormGroup>
+        )
     }
 }
 
@@ -267,19 +281,26 @@ export class enumstring extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
+        const enumStringHint = this.props.fieldJson.hint || null;
+        const fieldsShown =  _.filter(this.context.Form.props.children, (x) => {return x.props.fieldJson.isOptional == false})
+        const lastChild = _.last(fieldsShown);
         let disabledField = this.context.Form.props.readOnly;
         if(this.props.fieldJson.isUserInput !== undefined){
             disabledField = disabledField || !this.props.fieldJson.isUserInput;
         }
-        return <Select
-                ref="select2"
-                clearable={false}
-                onChange={this.handleChange}
-                {...this.props.fieldAttr}
-                disabled={disabledField}
-                value={this.props.data[this.props.value]}
-                className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
-            />
+        return(
+          enumStringHint !== null && enumStringHint.toLowerCase().indexOf("hidden") !== -1
+          ? ''
+          : <Select
+                  ref="select2"
+                  clearable={false}
+                  onChange={this.handleChange}
+                  {...this.props.fieldAttr}
+                  disabled={disabledField}
+                  value={this.props.data[this.props.value]}
+                  className={`${lastChild.props.label === this.props.fieldJson.uiName && fieldsShown.length > 4 ? "menu-outer-top" : ''}${this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}`}
+              />
+        )
     }
 }
 
@@ -294,19 +315,38 @@ export class CustomEnumstring extends BaseField {
     validate () {
         return super.validate(this.props.data[this.props.value])
     }
+    renderFieldOption(node){
+        const name = this.splitFields(node);
+        let styleObj = {fontWeight:"bold"};
+        let styleObj2 = {paddingLeft: (10 * name[0]) + "px",fontSize:12,fontWeight:"normal"};
+        return (<span style={styleObj}>{node.label}<br/><span style={styleObj2}>{node.value.split('@#$')[1]}</span></span>);
+    }
+    splitFields(text){
+      const nameObj  = _.isObject(text) ? text.label.split('@#$') : text ? text.split('@#$')[0] : '';
+      return nameObj
+    }
     getField = () => {
+        const customEnumHint = this.props.fieldJson.hint || null;
         let disabledField = this.context.Form.props.readOnly;
         if(this.props.fieldJson.isUserInput !== undefined){
             disabledField = disabledField || !this.props.fieldJson.isUserInput;
         }
-        return <Select
-                clearable={false}
-                onChange={this.handleChange}
-                {...this.props.fieldAttr}
-                disabled={disabledField}
-                value={this.props.data[this.props.value]}
-                className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
-            />
+        const selectedValue = this.props.fieldAttr.options.find((d)=>{
+          return d.label == this.props.data[this.props.value];
+        })
+        return(
+          customEnumHint !== null && customEnumHint.toLowerCase().indexOf("hidden") !== -1
+          ? ''
+          : <Select
+                  clearable={false}
+                  onChange={this.handleChange}
+                  {...this.props.fieldAttr}
+                  disabled={disabledField}
+                  value={selectedValue}
+                  className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
+                  optionRenderer={this.renderFieldOption.bind(this)}
+              />
+        )
     }
 }
 
@@ -324,6 +364,9 @@ export class arraystring extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
+        const arraystringHint = this.props.fieldJson.hint || null;
+        const fieldsShown =  _.filter(this.context.Form.props.children, (x) => {return x.props.fieldJson.isOptional == false})
+        const lastChild = _.last(fieldsShown);
         const arr = [];
         let dataArr = this.props.data[this.props.value];
         if(dataArr && dataArr instanceof Array){
@@ -335,16 +378,20 @@ export class arraystring extends BaseField {
         if(this.props.fieldJson.isUserInput !== undefined){
             disabledField = disabledField || !this.props.fieldJson.isUserInput;
         }
-        return <Creatable
-            onChange={this.handleChange}
-            multi={true}
-            disabled={disabledField}
-            {...this.props.fieldAttr}
-            className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
-            valueKey="value"
-            labelKey="value"
-            value={arr}
-        />
+        return (
+          arraystringHint !== null && arraystringHint.toLowerCase().indexOf("hidden") !== -1
+          ? ''
+          : <Creatable
+              onChange={this.handleChange}
+              multi={true}
+              disabled={disabledField}
+              {...this.props.fieldAttr}
+              className={`${lastChild.props.label === this.props.fieldJson.uiName && fieldsShown.length > 4 ? "menu-outer-top" : ''}${this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}`}
+              valueKey="value"
+              labelKey="value"
+              value={arr}
+          />
+        )
     }
 }
 
@@ -352,8 +399,9 @@ export class creatableField extends BaseField {
     handleChange = (val) => {
         this.props.data[this.props.value] = val.value;
         const {Form} = this.context;
+        const nodeType = this.props.data.nodeType !== undefined ? this.props.data.nodeType : '';
         Form.setState(Form.state,()=>{
-          if(this.validate() && (this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase().indexOf("schema") !== -1)){
+          if(this.validate() && (this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase().indexOf("schema") !== -1 && nodeType.toLowerCase() !== "sink")){
             this.getSchema(this.props.data[this.props.value]);
           }
         });
@@ -393,23 +441,30 @@ export class creatableField extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
+        const creatableHint = this.props.fieldJson.hint || null;
+        const fieldsShown =  _.filter(this.context.Form.props.children, (x) => {return x.props.fieldJson.isOptional == false})
+        const lastChild = _.last(fieldsShown);
         const val = {value: this.props.data[this.props.value]};
         let disabledField = this.context.Form.props.readOnly;
         if(this.props.fieldJson.isUserInput !== undefined){
             disabledField = disabledField || !this.props.fieldJson.isUserInput;
         }
-        return <Creatable
-            ref="CustomCreatable"
-            clearable={false}
-            onChange={this.handleChange}
-            multi={false}
-            disabled={disabledField}
-            {...this.props.fieldAttr}
-            className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
-            valueKey="value"
-            labelKey="value"
-            value={val}
-        />
+        return (
+          creatableHint !== null && creatableHint.toLowerCase().indexOf("hidden") !== -1
+          ? ''
+          : <Creatable
+              ref="CustomCreatable"
+              clearable={false}
+              onChange={this.handleChange}
+              multi={false}
+              disabled={disabledField}
+              {...this.props.fieldAttr}
+              className={`${lastChild.props.label === this.props.fieldJson.uiName && fieldsShown.length > 4 ? "menu-outer-top" : ''}${this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}`}
+              valueKey="value"
+              labelKey="value"
+              value={val}
+          />
+        )
     }
 }
 
@@ -427,18 +482,25 @@ export class arrayenumstring extends BaseField {
         return super.validate(this.props.data[this.props.value])
     }
     getField = () => {
+        const arrayEnumHint = this.props.fieldJson.hint || null;
+        const fieldsShown =  _.filter(this.context.Form.props.children, (x) => {return x.props.fieldJson.isOptional == false})
+        const lastChild = _.last(fieldsShown);
         let disabledField = this.context.Form.props.readOnly;
         if(this.props.fieldJson.isUserInput !== undefined){
             disabledField = disabledField || !this.props.fieldJson.isUserInput;
         }
-        return <Select
-                onChange={this.handleChange}
-                multi={true}
-                disabled={disabledField}
-                {...this.props.fieldAttr}
-                value={this.props.data[this.props.value]}
-                className={this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}
-            />
+        return(
+          arrayEnumHint !== null && arrayEnumHint.toLowerCase().indexOf("hidden") !== -1
+          ? ''
+          :  <Select
+                  onChange={this.handleChange}
+                  multi={true}
+                  disabled={disabledField}
+                  {...this.props.fieldAttr}
+                  value={this.props.data[this.props.value]}
+                  className={`${lastChild.props.label === this.props.fieldJson.uiName && fieldsShown.length > 4 ? "menu-outer-top" : ''}${this.context.Form.state.Errors[this.props.valuePath] ? "invalidSelect" : ""}`}
+              />
+        )
     }
 }
 
@@ -548,8 +610,13 @@ export class enumobject extends BaseField {
         return Form.validate.call(this);
     }
     getField = () => {
+        const enumObjectHint = this.props.fieldJson.hint || null;
         const value = Object.keys(this.data)[0];
-        return <Select clearable={false} onChange={this.handleChange} {...this.props.fieldAttr} value={value}/>
+        return (
+          enumObjectHint !== null && enumObjectHint.toLowerCase().indexOf("hidden") !== -1
+          ? ''
+          : <Select clearable={false} onChange={this.handleChange} {...this.props.fieldAttr} value={value}/>
+        )
     }
     render() {
         const value = Object.keys(this.data)[0];

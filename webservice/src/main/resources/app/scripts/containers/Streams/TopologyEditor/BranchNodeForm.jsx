@@ -9,6 +9,8 @@ import {BtnDelete, BtnEdit} from '../../../components/ActionButtons';
 import BranchRulesForm from './BranchRulesForm';
 import {pageSize} from '../../../utils/Constants';
 import { Scrollbars } from 'react-custom-scrollbars';
+import {toastOpt} from '../../../utils/Constants';
+import CommonNotification from '../../../utils/CommonNotification';
 
 export default class BranchNodeForm extends Component {
     static propTypes = {
@@ -130,37 +132,82 @@ export default class BranchNodeForm extends Component {
 
     handleDeleteRule(id){
         let {topologyId, versionId, nodeType, nodeData} = this.props;
-        let stream = _.find(this.allStreams, {streamId: 'branch_processor_stream_'+id});
-        let edge = _.find(this.allEdges, function(e) { return e.streamGroupings[0].streamId ===  stream.id});
+        let ruleObj = _.find(this.state.rules, {id: id});
+        let transformStream = _.find(this.allStreams, (s)=>{
+            return ruleObj.outputStreams.indexOf(s.streamId) > -1 && s.streamId.indexOf('transform') > -1;
+        });
+        let notifierStream = _.find(this.allStreams, (s)=>{
+            return ruleObj.outputStreams.indexOf(s.streamId) > -1 && s.streamId.indexOf('notifier') > -1;
+        });
+        let edges = _.filter(this.allEdges, function(e) { return e.streamGroupings[0].streamId ===  transformStream.id || e.streamGroupings[0].streamId ===  notifierStream.id});
         this.refs.Confirm.show({
             title: 'Are you sure you want to delete rule ?'
         }).then((confirmBox)=>{
-            let promiseArr = [
-                TopologyREST.deleteNode(topologyId, 'branchrules', id),
-                TopologyREST.deleteNode(topologyId, 'streams', stream.id)
-            ];
-            if(edge) {
-                promiseArr.push(TopologyREST.deleteNode(topologyId, 'edges', edge.id));
+            let promiseArr = [];
+            if(edges.length > 0) {
+                edges.map((e)=>{
+                    promiseArr.push(TopologyREST.deleteNode(topologyId, 'edges', e.id));
+                });
             }
-            let rules = this.nodeData.config.properties.rules;
-            rules.splice(rules.indexOf(id), 1);
-            this.nodeData.outputStreamIds = [];
-            this.nodeData.outputStreams.map((s)=>{
-                this.nodeData.outputStreamIds.push(s.id);
-            });
-            this.nodeData.outputStreamIds.splice(this.nodeData.outputStreamIds.indexOf(stream.id), 1);
-            delete this.nodeData.outputStreams;
-
-            promiseArr.push(TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)}));
-
             Promise.all(promiseArr)
-                .then(result=>{
-                    FSReactToastr.success(<strong>Rule deleted successfully</strong>);
-                    this.fetchData();
-                    if(edge)
-                        this.props.graphEdges.splice(this.props.graphEdges.indexOf(edge), 1);
+            .then((edgeResult)=>{
+                let edgeSuccess = true;
+                if(edgeResult.responseMessage !== undefined){
+                    FSReactToastr.error(<CommonNotification flag="error" content={edgeResult.responseMessage}/>, '', toastOpt);
+                } else if(edges.length > 0) {
+                    edges.map((e)=>{
+                        let i = this.props.graphEdges.findIndex((edgeObj)=>{
+                            return e.id === edgeObj.edgeId;
+                        });
+                        this.props.graphEdges.splice(i, 1);
+                    });
                     this.props.updateGraphMethod();
-                })
+                }
+                if(edgeSuccess){
+                    TopologyREST.deleteNode(topologyId, 'branchrules', id)
+                    .then((ruleResult)=>{
+                        let ruleAPISuccess = true;
+                        if(ruleResult.responseMessage !== undefined){
+                            ruleAPISuccess = false;
+                            FSReactToastr.error(<CommonNotification flag="error" content={ruleResult.responseMessage}/>, '', toastOpt);
+                        }
+                        if(ruleAPISuccess){
+                            let rules = this.nodeData.config.properties.rules;
+                            rules.splice(rules.indexOf(id), 1);
+                            this.nodeData.outputStreams = this.nodeData.outputStreams.filter((s)=>{
+                                return s.id !== transformStream.id && s.id !== notifierStream.id;
+                            });
+                            TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {body: JSON.stringify(this.nodeData)})
+                            .then((nodeResult)=>{
+                                let nodeAPISuccess = true;
+                                if(nodeAPISuccess.responseMessage !== undefined) {
+                                nodeAPISuccess = false;
+                                FSReactToastr.error(<CommonNotification flag="error" content={nodeResult.responseMessage}/>, '', toastOpt);
+                                }
+                                if(nodeAPISuccess) {
+                                    var streamsPromiseArr = [TopologyREST.deleteNode(topologyId, 'streams', transformStream.id),
+                                            TopologyREST.deleteNode(topologyId, 'streams', notifierStream.id)
+                                        ];
+                                    Promise.all(streamsPromiseArr)
+                                    .then((streamResults)=>{
+                                        let streamAPISuccess= true;
+                                        streamResults.map((streamResult)=>{
+                                            if(streamResult.responseMessage !== undefined){
+                                                streamAPISuccess = false;
+                                                FSReactToastr.error(<CommonNotification flag="error" content={streamResult.responseMessage}/>, '', toastOpt);
+                                            }
+                                        });
+                                        if(streamAPISuccess ){
+                                            FSReactToastr.success(<strong>Rule deleted successfully</strong>);
+                                            this.fetchData();
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
             confirmBox.cancel();
         },()=>{})
     }

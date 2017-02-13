@@ -1,2 +1,2 @@
-org.apache.streamline.registries.tag.Tag
-org.apache.streamline.registries.tag.TagStorableMapping
+com.hortonworks.streamline.registries.tag.Tag
+com.hortonworks.streamline.registries.tag.TagStorableMapping

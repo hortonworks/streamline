@@ -91,7 +91,7 @@
             <directory>${project.basedir}./bootstrap</directory>
             <outputDirectory>/bootstrap</outputDirectory>
             <includes>
-                <include>*</include>
+                <include>**/*</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -106,13 +106,6 @@
             <outputDirectory>/bootstrap/sql/phoenix</outputDirectory>
             <includes>
                 <include>**/*.sql</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>${project.basedir}./pivot/build</directory>
-            <outputDirectory>/pivot</outputDirectory>
-            <includes>
-                <include>*/*</include>
             </includes>
         </fileSet>
     </fileSets>

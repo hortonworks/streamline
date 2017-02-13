@@ -23,6 +23,7 @@ import NoData from '../../components/NoData';
 import CommonNotification from '../../utils/CommonNotification';
 import {toastOpt} from '../../utils/Constants';
 import Paginate from '../../components/Paginate';
+import CommonLoaderSign  from '../../components/CommonLoaderSign';
 
 const ServiceItems = (props) =>{
   const {item} = props;
@@ -72,7 +73,7 @@ class PoolItemsCard extends Component{
       <div className="col-md-4">
             <div className="service-box" data-id={cluster.id} ref={(ref) => this.clusterRef = ref}>
                 <div className="service-head clearfix">
-                    <h4 className="pull-left no-margin">{cluster.name}</h4>
+                    <h4 className="pull-left no-margin">{cluster.name}<br /><span>{cluster.ambariImportUrl}</span></h4>
                     <div className="pull-right">
                       <DropdownButton noCaret title={ellipseIcon} id="dropdown" bsStyle="link" className="dropdown-toggle">
                           <MenuItem onClick={this.onActionClick.bind(this ,"refresh/")}>
@@ -395,8 +396,8 @@ class ServicePoolContainer extends Component{
           }
           const tempDataArray = this.spliceTempArr(clusterID || idCheck);
 
-          this.setState({fetchLoader : true, loader : false,idCheck : '', entities: entitiesWrap, refIdArr : tempDataArray}, () => {
-            this.fetchData();
+          this.setState({fetchLoader : (idCheck) ? false : true, loader : false,idCheck : '', entities: entitiesWrap, refIdArr : tempDataArray}, () => {
+            sucessMsg.indexOf("added") !== - 1 ? this.fetchData() : ''
             clearTimeout(clearTimer);
             const clearTimer = setTimeout(() => {
               FSReactToastr.success(
@@ -460,7 +461,7 @@ class ServicePoolContainer extends Component{
                 <label>Url<span className="text-danger">*</span></label>
                   <input type="text"
                     className="form-control"
-                    placeholder="http://ambari_host:port/api/v1/cluster/CLUSTER_NAME"
+                    placeholder="http://ambari_host:port/api/v1/clusters/CLUSTER_NAME"
                     ref="userUrl"
                     autoFocus="true"
                     disabled={true}
@@ -494,44 +495,50 @@ class ServicePoolContainer extends Component{
 
     return(
       <BaseContainer ref="BaseContainer" routes={routes} headerContent={this.getHeaderContent()}>
-        <div className="row row-margin-bottom">
-            <div className="col-md-8 col-md-offset-2">
-                <div className="input-group">
-                    <input type="text"
-                      ref="addURLInput"
-                      onKeyPress={this.handleKeyPress}
-                      className={`form-control ${showInputErr ? '' : 'invalidInput'}`}
-                      placeholder="http://ambari_host:port/api/v1/cluster/CLUSTER_NAME"
-                    />
-                    <span className="input-group-btn">
-                        <button className="btn btn-success"
-                          type="button"
-                          onClick={this.addBtnClicked}>
-                          Add
-                        </button>
-                    </span>
-                </div>
-                <lable className={`text-danger ${showInputErr ? 'hidden' : ''}`}>This is not a valid Url</lable>
+        {
+          fetchLoader
+          ? <CommonLoaderSign
+              imgName={"services"}
+            />
+          : <div>
+              <div className="row row-margin-bottom">
+                  <div className="col-md-8 col-md-offset-2">
+                      <div className="input-group">
+                          <input type="text"
+                            ref="addURLInput"
+                            onKeyPress={this.handleKeyPress}
+                            className={`form-control ${showInputErr ? '' : 'invalidInput'}`}
+                            placeholder="http://ambari_host:port/api/v1/clusters/CLUSTER_NAME"
+                          />
+                          <span className="input-group-btn">
+                              <button className="btn btn-success"
+                                type="button"
+                                onClick={this.addBtnClicked}>
+                                Add
+                              </button>
+                          </span>
+                      </div>
+                      <lable className={`text-danger ${showInputErr ? 'hidden' : ''}`}>This is not a valid Url</lable>
+                  </div>
+              </div>
+              <div className="row">
+                  {
+                    (splitData.length === 0)
+                      ?  <NoData
+                            imgName={"services"}
+                        />
+                    : splitData[pageIndex].map((list) => {
+                          return <PoolItemsCard key={list.cluster.id}
+                                  clusterList={list}
+                                  poolActionClicked={this.poolActionClicked}
+                                  refIdArr={refIdArr}
+                                  loader = {loader}
+                                  />
+                      })
+                  }
+              </div>
             </div>
-        </div>
-        <div className="row">
-            {
-              (fetchLoader)
-              ? <div className="fullPageLoader">
-                  <img src="styles/img/start-loader.gif" alt="loading" />
-                </div>
-              : (splitData.length === 0)
-                ? <NoData/>
-              : splitData[pageIndex].map((list) => {
-                    return <PoolItemsCard key={list.cluster.id}
-                            clusterList={list}
-                            poolActionClicked={this.poolActionClicked}
-                            refIdArr={refIdArr}
-                            loader = {loader}
-                            />
-                })
-            }
-        </div>
+        }
         {
           (entities.length > pageSize)
             ? <Paginate

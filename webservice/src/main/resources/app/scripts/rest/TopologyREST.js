@@ -7,7 +7,7 @@ const TopologyREST = {
         getAllTopology(sort,options) {
 		options = options || {};
 		options.method = options.method || 'GET';
-        return CustomFetch(baseUrl+'topologies?detail=true&sort='+sort+'&latencyTopN=3',options)
+        return fetch(baseUrl+'topologies?detail=true&sort='+sort+'&latencyTopN=3',options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
@@ -67,7 +67,7 @@ const TopologyREST = {
                 if(versionId){
                         url = baseUrl+'topologies/'+id+"/versions/"+versionId+'/actions/deploy';
                 }
-                return CustomFetch(url, options)
+                return fetch(url, options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
@@ -79,7 +79,7 @@ const TopologyREST = {
                 if(versionId){
                         url = baseUrl+'topologies/'+id+"/versions/"+versionId+'/actions/kill';
                 }
-                return CustomFetch(url, options)
+                return fetch(url, options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
@@ -96,6 +96,18 @@ const TopologyREST = {
 		  		return response.json();
 		  	})
 	},
+  getTopologyWithoutMetrics(id, versionId, options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+              let url = baseUrl+'topologies/'+id;
+              if(versionId){
+                      url = baseUrl+'topologies/'+id+"/versions/"+versionId;
+              }
+      return fetch(url, options)
+    .then( (response) => {
+        return response.json();
+          })
+    },
 	getSourceComponent(options) {
 		options = options || {};
 		options.method = options.method || 'GET';
@@ -223,7 +235,11 @@ const TopologyREST = {
 	deleteNode(topologyId, nodeType, nodeId, options) {
 		options = options || {};
 		options.method = options.method || 'DELETE';
-                let url = baseUrl+'topologies/'+topologyId+'/'+nodeType+'/'+nodeId;
+                const argStr = 'sources,processors,sinks';
+                let removeEdges = argStr.indexOf(nodeType) !== -1
+                                  ? '?removeEdges=true'
+                                  : '';
+                let url = baseUrl+'topologies/'+topologyId+'/'+nodeType+'/'+nodeId+removeEdges;
                 return fetch(url, options)
 			.then( (response) => {
 		  		return response.json();
@@ -335,7 +351,19 @@ const TopologyREST = {
         .then( (response) => {
             return response.json();
           })
-    }
+    },
+createSchema(options) {
+        options = options || {};
+        options.method = options.method || 'POST';
+        options.headers = options.headers || {
+          'Content-Type' : 'application/json',
+          'Accept' : 'application/json'
+        };
+        return fetch('/api/v1/schemas', options)
+        .then( (response) => {
+          return response.json();
+        })
+  }
 }
 
 export default TopologyREST

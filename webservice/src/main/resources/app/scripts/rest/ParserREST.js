@@ -6,7 +6,7 @@ const ParserREST = {
 	getAllParsersForRegistry(options) {
 		options = options || {};
 		options.method = options.method || 'GET';
-		return CustomFetch(baseUrl+'parsers', options)
+                return fetch(baseUrl+'parsers', options)
 			.then( (response) => {
 		  		return response.json();
 		  	})
@@ -25,7 +25,7 @@ const ParserREST = {
 		return fetch(baseUrl+'parsers/'+id, options)
 			.then( (response) => {
 		  		return response.json();
-		  	})	
+			})
 	},
 	postParser(options) {
 		options = options || {};

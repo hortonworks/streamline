@@ -23,7 +23,12 @@ class TopologyViewMode extends Component{
       minSelected : 10,
       stormViewUrl: ''
     }
-
+    this.stormClusterChkID(props.stormClusterId);
+  }
+  stormClusterChkID = (id) => {
+    if(id){
+      this.fetchData(id);
+    }
   }
   componentWillReceiveProps(props) {
     if(props.stormClusterId)

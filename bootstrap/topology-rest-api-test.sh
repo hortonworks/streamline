@@ -1,4 +1,20 @@
 #!/usr/bin/env bash
+#
+# Copyright 2017 Hortonworks.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#   http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 # --
 # Creates and deploys a test topology using the topology REST APIs.
 # --
@@ -183,12 +199,12 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
       {
         "name": "hbasesink",
         "outputStreams": ["sink-stream"],
-        "__type": "org.apache.streamline.streams.layout.component.rule.action.TransformAction"
+        "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction"
       },
       {
         "name": "hdfssink",
         "outputStreams": ["sink-stream"],
-        "__type": "org.apache.streamline.streams.layout.component.rule.action.TransformAction"
+        "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction"
       },
       {
         "name": "notificationsink",
@@ -197,7 +213,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
          },
         "outputStreams": ["sink-stream"],
          "notifierName": "email_notifier.json",
-          "__type": "org.apache.streamline.streams.layout.component.rule.action.NotifierAction"
+          "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction"
        }
     ]
 }' "${catalogurl}/topologies/$topologyid/rules")
@@ -229,12 +245,12 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
       {
         "name": "hbasesink",
         "outputStreams": ["sink-stream"],
-        "__type": "org.apache.streamline.streams.layout.component.rule.action.TransformAction"
+        "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction"
       },
       {
         "name": "hdfssink",
         "outputStreams": ["sink-stream"],
-        "__type": "org.apache.streamline.streams.layout.component.rule.action.TransformAction"
+        "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction"
       }
     ]
 }' "${catalogurl}/topologies/$topologyid/rules")
@@ -255,12 +271,12 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
       {
         "name": "hbasesink",
         "outputStreams": ["sink-stream"],
-        "__type": "org.apache.streamline.streams.layout.component.rule.action.TransformAction"
+        "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction"
       },
       {
         "name": "hdfssink",
         "outputStreams": ["sink-stream"],
-        "__type": "org.apache.streamline.streams.layout.component.rule.action.TransformAction"
+        "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction"
       },
       {
         "name": "notificationsink",
@@ -269,7 +285,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
          },
         "outputStreams": ["sink-stream"],
          "notifierName": "email_notifier.json",
-          "__type": "org.apache.streamline.streams.layout.component.rule.action.NotifierAction"
+          "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction"
        }
     ]
 }' "${catalogurl}/topologies/$topologyid/rules")
@@ -307,12 +323,12 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
       {
         "name": "hbasesink",
         "outputStreams": ["sink-stream"],
-        "__type": "org.apache.streamline.streams.layout.component.rule.action.TransformAction"
+        "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction"
       },
       {
         "name": "hdfssink",
         "outputStreams": ["sink-stream"],
-        "__type": "org.apache.streamline.streams.layout.component.rule.action.TransformAction"
+        "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction"
       }
     ]
 }' "${catalogurl}/topologies/$topologyid/windows")
@@ -377,7 +393,7 @@ out=$(curl -s  -X POST -H "Content-Type: application/json" -H "Cache-Control: no
             "properties" : {
           "notifierName": "email_notifier.json",
           "jarFileName": "'$notifierJar'",
-          "className": "org.apache.streamline.streams.notifiers.EmailNotifier",
+          "className": "com.hortonworks.streamline.streams.notifiers.EmailNotifier",
           "properties": {
             "username": "hwemailtest@gmail.com",
             "password": "testing12",
@@ -418,7 +434,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
           "type": "fineGrained",
           "normalizationConfig": {
           "'$parserStream'": {
-          "__type": "org.apache.streamline.streams.layout.component.impl.normalization.FieldBasedNormalizationConfig",
+          "__type": "com.hortonworks.streamline.streams.layout.component.impl.normalization.FieldBasedNormalizationConfig",
             "transformers": [
               {
                 "inputField": {
@@ -469,7 +485,7 @@ out=$(curl -s -X POST -H "Content-Type: application/json" -H "Cache-Control: no-
           "type": "bulk",
           "normalizationConfig": {
             "'$parserStream'": {
-            "__type": "org.apache.streamline.streams.layout.component.impl.normalization.BulkNormalizationConfig",
+            "__type": "com.hortonworks.streamline.streams.layout.component.impl.normalization.BulkNormalizationConfig",
               "normalizationScript": "Map<String, Object> result = new HashMap<>();return result;"
             }
           }

@@ -1,0 +1,22 @@
+{
+  "type": "PROCESSOR",
+  "name": "Aggregate",
+  "subType": "WINDOW",
+  "builtin": true,
+  "streamingEngine": "STORM",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.WindowRuleBoltFluxComponent",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "Parallelism",
+        "fieldName": "parallelism",
+        "isOptional": true,
+        "tooltip": "Parallelism hint for aggregate processor",
+        "type": "number",
+        "defaultValue": 1,
+        "min": 1,
+        "hint": "hidden"
+      }
+    ]
+  }
+}

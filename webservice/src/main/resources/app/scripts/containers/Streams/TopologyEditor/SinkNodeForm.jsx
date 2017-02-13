@@ -31,7 +31,6 @@ export default class SinkNodeForm extends Component {
         props.sourceNodes.map((node)=>{
             this.sourceNodesId.push(node.nodeId);
         })
-        this.fetchData();
         this.state = {
             formData: {},
             streamObj: {},
@@ -43,7 +42,10 @@ export default class SinkNodeForm extends Component {
             clusterName: '',
             fetchLoader : true
         };
-        this.fetchNotifier();
+        this.fetchNotifier()
+          .then(() => {
+            this.fetchData();
+          })
     }
 
     fetchData(){
@@ -79,30 +81,35 @@ export default class SinkNodeForm extends Component {
                   FSReactToastr.error(<CommonNotification flag="error" content={results[0].responseMessage}/>, '', toastOpt);
                 }else{
                   const clusters = results[2];
-                  tempArr = _.keys(clusters).map((x, i) => {
-                      return {
-                        fieldName : x,
-                        uiName : x
-                      }
+                  _.keys(clusters).map((x) => {
+                     _.keys(clusters[x]).map(k =>{
+                        if(k === "cluster"){
+                          const obj = {
+                                        fieldName : clusters[x][k].name+'@#$'+clusters[x][k].ambariImportUrl,
+                                        uiName : clusters[x][k].name
+                                      }
+                          tempArr.push(obj);
+                        }
+                      })
                   });
                   stateObj.clusterArr = clusters;
                 }
                 if(!_.isEmpty(stateObj.clusterArr) && _.keys(stateObj.clusterArr).length > 1){
-                  this.fetchFields();
                   stateObj.uiSpecification = this.pushClusterFields(tempArr);
                 }
                 stateObj.formData = this.nodeData.config.properties;
                 stateObj.description = this.nodeData.description;
+                stateObj.formData.nodeType = this.props.nodeData.parentType;
                 stateObj.fetchLoader = false;
                 this.setState(stateObj, () => {
-                  if(stateObj.formData.clusters !== undefined){
-                    this.updateClusterFields(stateObj.formData.clusters);
+                  if(stateObj.formData.cluster !== undefined){
+                    const keyName = this.getClusterKey(stateObj.formData.cluster)
+                    this.updateClusterFields(keyName);
                   }
                   if(_.keys(stateObj.clusterArr).length === 1){
-                    this.fetchFields();
                     stateObj.uiSpecification = this.pushClusterFields(tempArr);
-                    stateObj.formData.clusters = _.keys(stateObj.clusterArr)[0];
-                    this.updateClusterFields(stateObj.formData.clusters);
+                    stateObj.formData.cluster = _.keys(stateObj.clusterArr)[0];
+                    this.updateClusterFields(stateObj.formData.cluster);
                   }
                 });
                 if(sourceNodes.length > 0){
@@ -145,7 +152,7 @@ export default class SinkNodeForm extends Component {
     }
 
     pushClusterFields = (opt) => {
-      const {uiSpecification} = this.state;
+      const uiSpecification = this.fetchFields();
       const obj = uiSpecification.map(x => {
           if(x.fieldName === 'clusters'){
             x.options = opt;
@@ -156,7 +163,7 @@ export default class SinkNodeForm extends Component {
     }
 
     fetchNotifier = () => {
-      ClusterREST.getAllNotifier()
+      return ClusterREST.getAllNotifier()
         .then(notifier => {
           if(notifier.responseMessage !== undefined){
             FSReactToastr.error(
@@ -189,38 +196,67 @@ export default class SinkNodeForm extends Component {
     }
 
     validateData(){
-        let validDataFlag = true;
-        if(!this.refs.Form.validate()){
-            validDataFlag = false;
-            this.setState({activeTabKey: 1, showRequired: true});
+        let validDataFlag = false;
+        if(!this.state.fetchLoader){
+          if(this.refs.Form.validate()){
+              validDataFlag = true;
+              this.setState({activeTabKey: 1, showRequired: true});
+          }
         }
         return validDataFlag;
     }
 
     handleSave(name){
         let {topologyId, versionId, nodeType, nodeData} = this.props;
+        const {uiSpecification} = this.state;
         let nodeId = this.nodeData.id;
         let data = this.refs.Form.state.FormData;
+        delete data.nodeType;
         this.nodeData.config.properties = data;
         let oldName = this.nodeData.name;
         this.nodeData.name = name;
         this.nodeData.description = this.state.description;
-        let promiseArr = [TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)})];
+        let promiseArr = [
+          TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)})
+        ];
+        // Check hint schema is present in the uiSpecification fields
+        // let schemaName ='';
+        // uiSpecification.map((x) => {
+        //   if(x.hint !== undefined && x.hint.indexOf('schema') !== -1){
+        //     _.keys(data).map((k) => {
+        //       if(x.fieldName === k && !_.isEmpty(data[k])){
+        //         schemaName = data[k];
+        //       }
+        //     })
+        //   }
+        // });
+        // if the hint schema is present then create the schema by POST request
+        // if(schemaName){
+        //   const schemaData = {
+        //     schemaMetadata: {
+        //       type: "avro",
+        //       schemaGroup: 'Kafka',
+        //       name: schemaName.indexOf(":v") === -1 ? schemaName+":v" : schemaName,
+        //       description: "auto_description",
+        //       compatibility: "BACKWARD"
+        //     },
+        //     schemaVersion: {
+        //       description : 'auto_description',
+        //       schemaText : JSON.stringify(this.state.streamObj.fields)
+        //     }
+        //   }
+        //   promiseArr.push(TopologyREST.createSchema({body : JSON.stringify(schemaData)}));
+        // }
         if(this.allSourceChildNodeData && this.allSourceChildNodeData.length > 0){
             this.allSourceChildNodeData.map((childData)=>{
                 let child = childData;
-                let obj = child.actions.find((o)=>{return o.name == oldName});
+                let obj = child.actions.find((o)=>{return o.outputStreams[0] == this.state.streamObj.streamId && o.name === 'notifierAction'});
                 if(obj){
-                    obj.name = name;
                     if(nodeData.currentType.toLowerCase() == 'notification'){
                         obj.outputFieldsAndDefaults = this.nodeData.config.properties.fieldValues || {};
                         obj.notifierName = this.nodeData.config.properties.notifierName || '';
                     }
                     promiseArr.push(TopologyREST.updateNode(topologyId, versionId, this.sourceChildNodeType, child.id, {body: JSON.stringify(child)}));
-                } else {
-                    if(this.sourceChildNodeType !== 'branchrules'){
-                        console.error("Missing actions object for "+name);
-                    }
                 }
             })
         }
@@ -243,9 +279,23 @@ export default class SinkNodeForm extends Component {
 
     populateClusterFields(val){
       const tempObj = Object.assign({},this.state.formData,{topic:''});
-      this.setState({clusterName : val, formData: tempObj}, () => {
+      const keyName = this.getClusterKey(val.split('@#$')[1])
+      this.setState({clusterName : keyName, formData: tempObj}, () => {
         this.updateClusterFields();
       });
+    }
+
+    getClusterKey(url){
+      const {clusterArr} = this.state;
+      let key = '';
+      _.keys(clusterArr).map(x => {
+        _.keys(clusterArr[x]).map(k => {
+          if(clusterArr[x][k].ambariImportUrl === url){
+            key = x;
+          }
+        })
+      })
+      return key;
     }
 
     updateClusterFields(name){
@@ -255,30 +305,35 @@ export default class SinkNodeForm extends Component {
       _.keys(clusterArr).map((x) => {
         if(name || clusterName === x){
         obj = config.map((list) => {
-            _.keys(clusterArr[x]).map(k => {
+            _.keys(clusterArr[x].hints).map(k => {
                 if(list.fieldName === k){
-                  if(_.isArray(clusterArr[x][k])  && (name || clusterName) === x){
-                    list.options = clusterArr[x][k].map(v => {
+                  if(_.isArray(clusterArr[x].hints[k])  && (name || clusterName) === x){
+                    list.options = clusterArr[x].hints[k].map(v => {
                       return {
                         fieldName : v,
                         uiName : v
                       }
                     })
                     if(list.hint && list.hint.toLowerCase().indexOf("override") !== -1){
-                      if(formData[k] != ''){
+                      if(formData[k]){
                         if(list.options.findIndex((o)=>{return o.fieldName == formData[k]}) == -1){
                           list.options.push({fieldName: formData[k], uiName: formData[k]});
                         }
                       }
                     }
                   }else{
-                    if(!_.isArray(clusterArr[x][k])){
-                      data[k] = clusterArr[x][k];
+                    if(!_.isArray(clusterArr[x].hints[k])){
+                      // if (!formData[k]) this means it has come first time
+                      // OR
+                      // if (!name) this means user had change the cluster name
+                      if(!formData[k] || !name){
+                        data[k] = clusterArr[x].hints[k];
+                      }
                     }
                   }
                 }
             })
-            data.clusters = clusterName ? clusterName : name;
+            data.clusters = clusterArr[name || clusterName].cluster.name;
             return list;
           });
         }
@@ -289,7 +344,6 @@ export default class SinkNodeForm extends Component {
 
     render() {
         let {formData, streamObj = {},uiSpecification,fetchLoader} = this.state;
-
         let fields = Utils.genFields(uiSpecification, [], formData,streamObj.fields);
         const form = fetchLoader
                       ? <div className="col-sm-12">

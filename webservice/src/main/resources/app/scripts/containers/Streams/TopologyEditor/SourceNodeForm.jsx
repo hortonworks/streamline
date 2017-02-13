@@ -65,11 +65,16 @@ export default class SourceNodeForm extends Component {
               FSReactToastr.error(<CommonNotification flag="error" content={results[1].responseMessage}/>, '', toastOpt);
             }else{
               const clusters = results[1];
-              tempArr = _.keys(clusters).map((x, i) => {
-                  return {
-                    fieldName : x,
-                    uiName : x
-                  }
+              _.keys(clusters).map((x) => {
+                 _.keys(clusters[x]).map(k =>{
+                    if(k === "cluster"){
+                      const obj = {
+                                    fieldName : clusters[x][k].name+'@#$'+clusters[x][k].ambariImportUrl,
+                                    uiName : clusters[x][k].name
+                                  }
+                      tempArr.push(obj);
+                    }
+                  })
               });
               stateObj.clusterArr = clusters;
             }
@@ -78,13 +83,13 @@ export default class SourceNodeForm extends Component {
             stateObj.description = this.nodeData.description;
             stateObj.fetchLoader = false;
             this.setState(stateObj, () => {
-              if(stateObj.formData.clusters !== undefined){
-                this.updateClusterFields(stateObj.formData.clusters);
+              if(stateObj.formData.cluster !== undefined){
+                this.updateClusterFields(stateObj.formData.cluster);
                 this.setState({streamObj : this.state.streamObj});
               }
               if(_.keys(stateObj.clusterArr).length === 1){
-                stateObj.formData.clusters = _.keys(stateObj.clusterArr)[0];
-                this.updateClusterFields(stateObj.formData.clusters);
+                stateObj.formData.cluster = _.keys(stateObj.clusterArr)[0];
+                this.updateClusterFields(stateObj.formData.cluster);
               }
             });
           })
@@ -120,9 +125,24 @@ export default class SourceNodeForm extends Component {
 
     populateClusterFields(val){
       const tempObj = Object.assign({},this.state.formData,{topic:''});
-      this.setState({clusterName : val,streamObj:'',formData:tempObj}, () => {
+      // split the val by (-) to find the key by URL
+      const keyName = this.getClusterKey(val.split('@#$')[1])
+      this.setState({clusterName : keyName,streamObj:'',formData:tempObj}, () => {
         this.updateClusterFields();
       });
+    }
+
+    getClusterKey(url){
+      const {clusterArr} = this.state;
+      let key = '';
+      _.keys(clusterArr).map(x => {
+        _.keys(clusterArr[x]).map(k => {
+          if(clusterArr[x][k].ambariImportUrl === url){
+            key = x;
+          }
+        })
+      })
+      return key;
     }
 
     updateClusterFields(name){
@@ -132,30 +152,35 @@ export default class SourceNodeForm extends Component {
       _.keys(clusterArr).map((x) => {
         if(name || clusterName === x){
         obj = config.map((list) => {
-            _.keys(clusterArr[x]).map(k => {
+            _.keys(clusterArr[x].hints).map(k => {
                 if(list.fieldName === k){
-                  if(_.isArray(clusterArr[x][k]) && (name || clusterName) === x){
-                    list.options = clusterArr[x][k].map(v => {
+                  if(_.isArray(clusterArr[x].hints[k]) && (name || clusterName) === x){
+                    list.options = clusterArr[x].hints[k].map(v => {
                       return {
                         fieldName : v,
                         uiName : v
                       }
                     })
                     if(list.hint && list.hint.toLowerCase().indexOf("override") !== -1){
-                      if(formData[k] != ''){
+                      if(formData[k]){
                         if(list.options.findIndex((o)=>{return o.fieldName == formData[k]}) == -1){
                           list.options.push({fieldName: formData[k], uiName: formData[k]});
                         }
                       }
                     }
                   }else{
-                    if(!_.isArray(clusterArr[x][k])){
-                      data[k] = clusterArr[x][k];
+                    if(!_.isArray(clusterArr[x].hints[k])){
+                      // if (!formData[k]) this means it has come first time
+                      // OR
+                      // if (!name) this means user had change the cluster name
+                      if(!formData[k] || !name){
+                        data[k] = clusterArr[x].hints[k];
+                      }
                     }
                   }
                 }
             })
-            data.clusters = clusterName ? clusterName : name;
+            data.clusters = clusterArr[name || clusterName].cluster.name;
             return list;
           });
         }
@@ -165,14 +190,16 @@ export default class SourceNodeForm extends Component {
     }
 
     validateData(){
-        let validDataFlag = true;
-        if(!this.refs.Form.validate()){
+        let validDataFlag = false;
+        if(!this.state.fetchLoader){
+          if(this.refs.Form.validate()){
+              validDataFlag = true;
+              this.setState({activeTabKey: 1, showRequired: true});
+          }
+          if(this.streamObj.fields.length === 0){
             validDataFlag = false;
-            this.setState({activeTabKey: 1, showRequired: true});
-        }
-        if(this.streamObj.fields.length === 0){
-          validDataFlag = false;
-          FSReactToastr.error(<CommonNotification flag="error" content={"Output stream fields cannot be blank."}/>, '', toastOpt);
+            FSReactToastr.error(<CommonNotification flag="error" content={"Output stream fields cannot be blank."}/>, '', toastOpt);
+          }
         }
         return validDataFlag;
     }

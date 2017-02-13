@@ -34,14 +34,14 @@
           },
           "outputStreams": ["outputstream"],
           "notifierName": "email_notifier",
-          "__type": "org.apache.streamline.streams.layout.component.rule.action.NotifierAction"
+          "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction"
         }
       ],
       "description": "rule_1_desc",
       "projection": {
         "expressions": [
           {
-            "class": "org.apache.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
             "function": {
               "name": "MIN",
               "className": null,
@@ -49,7 +49,7 @@
             },
             "operands": [
               {
-                "class": "org.apache.streamline.streams.layout.component.rule.expression.FieldExpression",
+                "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
                 "value": {
                   "name": "salary",
                   "type": "INTEGER",
@@ -59,7 +59,7 @@
             ]
           },
           {
-            "class": "org.apache.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
             "function": {
               "name": "MAX",
               "className": null,
@@ -67,7 +67,7 @@
             },
             "operands": [
               {
-                "class": "org.apache.streamline.streams.layout.component.rule.expression.FieldExpression",
+                "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
                 "value": {
                   "name": "salary",
                   "type": "INTEGER",
@@ -80,10 +80,10 @@
       },
       "condition": {
         "expression": {
-          "class": "org.apache.streamline.streams.layout.component.rule.expression.BinaryExpression",
+          "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.BinaryExpression",
           "operator": "GREATER_THAN",
           "first": {
-            "class": "org.apache.streamline.streams.layout.component.rule.expression.FieldExpression",
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
             "value": {
               "name": "empid",
               "type": "INTEGER",
@@ -91,17 +91,17 @@
             }
           },
           "second": {
-            "class": "org.apache.streamline.streams.layout.component.rule.expression.Literal",
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.Literal",
             "value": "2"
           }
         }
       },
       "having": {
         "expression": {
-          "class": "org.apache.streamline.streams.layout.component.rule.expression.BinaryExpression",
+          "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.BinaryExpression",
           "operator": "GREATER_THAN",
           "first": {
-            "class": "org.apache.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
             "function": {
               "name": "MAX",
               "className": null,
@@ -109,7 +109,7 @@
             },
             "operands": [
               {
-                "class": "org.apache.streamline.streams.layout.component.rule.expression.FieldExpression",
+                "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
                 "value": {
                   "name": "salary",
                   "type": "INTEGER",
@@ -119,7 +119,7 @@
             ]
           },
           "second": {
-            "class": "org.apache.streamline.streams.layout.component.rule.expression.Literal",
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.Literal",
             "value": "5"
           }
         }

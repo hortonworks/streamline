@@ -59,7 +59,7 @@
       "projection": {
         "expressions": [
           {
-            "class": "org.apache.streamline.streams.layout.component.rule.expression.FieldExpression",
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
             "value": {
               "name": "deptid",
               "type": "INTEGER",
@@ -67,9 +67,9 @@
             }
           },
           {
-            "class": "org.apache.streamline.streams.layout.component.rule.expression.AsExpression",
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
             "expression": {
-              "class": "org.apache.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
               "function": {
                 "name": "MAX",
                 "className": null,
@@ -77,7 +77,7 @@
               },
               "operands": [
                 {
-                  "class": "org.apache.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
                   "value": {
                     "name": "salary",
                     "type": "INTEGER",
@@ -94,7 +94,7 @@
       "groupBy": {
         "expressions": [
           {
-            "class": "org.apache.streamline.streams.layout.component.rule.expression.FieldExpression",
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
             "value": {
               "name": "deptid",
               "type": "INTEGER",
@@ -118,7 +118,7 @@
       },
       "actions": [
         {
-          "__type": "org.apache.streamline.streams.layout.component.rule.action.TransformAction",
+          "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction",
           "name": "Rule",
           "outputStreams": [
             "outputstream"
