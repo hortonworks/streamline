@@ -313,33 +313,33 @@ public class UDFCatalogResource {
     private void updateTypeInfo(UDFInfo udfInfo, Class<?> clazz) {
         if (udfInfo.isAggregate()) {
             udfInfo.setReturnType(getReturnType(clazz, "result"));
-            udfInfo.setArgTypes(getArgTypes(clazz, "add"));
+            udfInfo.setArgTypes(getArgTypes(clazz, "add", 1));
         } else {
             udfInfo.setReturnType(getReturnType(clazz, "evaluate"));
-            udfInfo.setArgTypes(getArgTypes(clazz, "evaluate"));
+            udfInfo.setArgTypes(getArgTypes(clazz, "evaluate", 0));
         }
     }
 
     private Schema.Type getReturnType(Class<?> clazz, String methodName) {
         try {
-            Method resultMethod = findMethod(clazz, methodName);
-            if (resultMethod != null) {
-                return Schema.fromJavaType(resultMethod.getReturnType());
+            Method method = findMethod(clazz, methodName);
+            if (method != null) {
+                return Schema.fromJavaType(method.getReturnType());
             }
-        } catch (Exception ex) {
-            LOG.error("Could not determine type info for " + clazz, ex);
+        } catch (ParserException ex) {
+            LOG.warn("Could not determine return type for {}", clazz);
         }
         return null;
     }
 
-    private List<String> getArgTypes(Class<?> clazz, String methodname) {
+    private List<String> getArgTypes(Class<?> clazz, String methodname, int argStartIndex) {
         Method addMethod = findMethod(clazz, methodname);
         if (addMethod == null) {
             return Collections.emptyList();
         }
         final Class<?>[] params = addMethod.getParameterTypes();
         List<String> argTypes = new ArrayList<>();
-        for (int i = 1; i < params.length; i++) {
+        for (int i = argStartIndex; i < params.length; i++) {
             final Class<?> arg = params[i];
             try {
                 argTypes.add(Schema.fromJavaType(arg).toString());
