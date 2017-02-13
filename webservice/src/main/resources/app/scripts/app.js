@@ -23,7 +23,8 @@ class App extends Component {
           FSReactToastr.error(<CommonNotification flag="error" content={results[0].responseMessage}/>, '', toastOpt)
         } else {
           app_state.streamline_config = {
-            registry: results[0].registry
+            registry: results[0].registry,
+            dashboard: results[0].dashboard
           };
         }
       })
