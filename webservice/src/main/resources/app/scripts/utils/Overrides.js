@@ -1,6 +1,5 @@
 import ReactCodemirror from 'react-codemirror';
 import fetch from 'isomorphic-fetch';
-import pace from 'pace-progress';
 
 ReactCodemirror.prototype.componentWillReceiveProps =  function(nextProps){
 
@@ -18,12 +17,12 @@ ReactCodemirror.prototype.componentWillReceiveProps =  function(nextProps){
 
 
 export function CustomFetch(){
-	pace.start()
+	// pace.start()
 	const _promise = fetch.apply(this, arguments);
 	_promise.then(function(){
-		pace.stop()
+		// pace.stop()
 	}, function(){
-		pace.stop()
+		// pace.stop()
 	})
 	return _promise
 }

@@ -46,10 +46,22 @@ export default class Sidebar extends Component {
       app_state.sidebar_activeKey = key;
     }
   }
+  handleClickOnDashboard(key, e) {
+    if(this.props.routes[this.props.routes.length - 1].name === "Application Editor"){
+      this.refs.leaveEditable.show()
+    } else {
+      this.navigateToDashboard()
+      app_state.sidebar_activeKey = key;
+    }
+  }
   navigateToRegistry(){
     let config = app_state.streamline_config;
     let registryURL = window.location.protocol + "//" + config.registry.host + ":" + config.registry.port;
     window.location = registryURL + '/#/schema-registry';
+  }
+  navigateToDashboard(){
+    let config = app_state.streamline_config;
+    window.location = config.dashboard.url;
   }
   confirmLeave(flag) {
     if(flag){
@@ -68,7 +80,7 @@ export default class Sidebar extends Component {
         <section className="sidebar">
         <ul className="sidebar-menu">
           <li className={app_state.sidebar_activeKey === 1 ? 'active' : ''} onClick={this.handleClick.bind(this, 1)}><Link to="/"><i className="fa fa-sitemap"></i> <span>My Application</span></Link></li>
-          <li className={app_state.sidebar_activeKey === 4 ? 'active' : ''} onClick={this.handleClick.bind(this, 4)}><a href="javascript:void(0);"><i className="fa fa-dashboard"></i><span>Dashboard</span></a></li>
+          <li className={app_state.sidebar_activeKey === 4 ? 'active' : ''} onClick={this.handleClickOnDashboard.bind(this, 4)}><a href="javascript:void(0);"><i className="fa fa-dashboard"></i><span>Dashboard</span></a></li>
           <li className={app_state.sidebar_activeKey === 2 ? 'active' : ''} onClick={this.handleClickOnRegistry.bind(this, 2)}><a href="javascript:void(0);"><i className="fa fa-file-code-o"></i> <span>Schema Registry</span></a></li>
           <li className={app_state.sidebar_activeKey === 5 ? 'active' : ''} onClick={this.handleClick.bind(this, 5)}><Link to="/model-registry"><i className="fa fa-cube"></i> <span>Model Registry</span></Link></li>
           <li className={app_state.sidebar_activeKey === 3 ? 'treeview active' : 'treeview'}>
