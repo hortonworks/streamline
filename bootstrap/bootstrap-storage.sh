@@ -31,6 +31,7 @@ done
 
 BOOTSTRAP_DIR=`dirname ${PRG}`
 CONFIG_FILE_PATH=${BOOTSTRAP_DIR}/../conf/streamline.yaml
+MYSQL_JAR_URL_PATH=https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.40.zip
 
 # Which java to use
 if [ -z "${JAVA_HOME}" ]; then
@@ -52,7 +53,7 @@ function streamlineBootstrapStorage {
     FILE_OPT="-f ${SCRIPT_DIR}/drop_tables.sql -f ${SCRIPT_DIR}/create_tables.sql"
 
     echo "Script files option: $FILE_OPT"
-    exec ${JAVA} -cp ${CLASSPATH} ${SCRIPT_RUNNER_MAIN_CLASS} -c ${CONFIG_FILE_PATH} ${FILE_OPT}
+    exec ${JAVA} -Dstreamline.bootstrap.dir=$BOOTSTRAP_DIR  -cp ${CLASSPATH} ${SCRIPT_RUNNER_MAIN_CLASS} -m ${MYSQL_JAR_URL_PATH} -c ${CONFIG_FILE_PATH} ${FILE_OPT}
 }
 
 function main {

@@ -31,6 +31,7 @@ import java.net.URLClassLoader;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Files;
 import java.util.Enumeration;
 import java.util.Map;
 
@@ -84,6 +85,9 @@ public class Utils {
             return mysqlJarFileName;
         } catch (IOException ie) {
             System.out.println("Failed to copy mysql driver into " + bootstrapLibDir + " and " + streamlineLibDir);
+        } catch (Exception e ) {
+            e.printStackTrace();
+            System.out.println("Failed to copy mysql driver into " + bootstrapLibDir + " and " + streamlineLibDir);
         }
         return null;
     }
@@ -118,19 +122,10 @@ public class Utils {
 
     public static void copyFile(File sourceFile, File destFile) throws IOException {
         if (!sourceFile.exists()) {
-            return;
+            throw new IllegalArgumentException("Source File doesn't exists");
         }
-        if (!destFile.exists()) {
-            destFile.createNewFile();
-        }
-        FileChannel source = new FileInputStream(sourceFile).getChannel();
-        FileChannel destination = new FileInputStream(destFile).getChannel();
 
-        if (destination != null && source != null) {
-            destination.transferFrom(source, 0, source.size());
-            source.close();
-            destination.close();
-        }
+        Files.copy(sourceFile.toPath(), destFile.toPath());
     }
 
     public static boolean fileExists(File dir, String regex) {
