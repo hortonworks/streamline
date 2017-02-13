@@ -122,9 +122,11 @@ public class SQLScriptRunner {
                     String mysqlJarFileName = Utils.downloadMysqlJarAndCopyToLibDir(mysqlJarUrl, MYSQL_JAR_FILE_PATTERN);
                     if (mysqlJarFileName != null) {
                         File mysqlJarFile = new File(bootstrapDir+ File.separator + mysqlJarFileName);
+                        System.out.println("mysqlJarFile " + mysqlJarFile);
                         Utils.loadJarIntoClasspath(mysqlJarFile);
                     }
                 } catch(Exception e) {
+                    System.out.println("exception " + e);
                     System.exit(1);
                 }
             }
