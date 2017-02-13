@@ -37,6 +37,9 @@ public class StreamlineConfiguration extends Configuration {
     @NotNull
     private StorageProviderConfiguration storageProviderConfiguration;
 
+    @NotNull
+    private DashboardConfiguration dashboardConfiguration;
+
 
     @JsonProperty
     public StorageProviderConfiguration getStorageProviderConfiguration() {
@@ -95,5 +98,10 @@ public class StreamlineConfiguration extends Configuration {
     public void setCorsUrlPatterns(List<String> corsUrlPatterns) {
         this.corsUrlPatterns = corsUrlPatterns;
     }
+
+    public DashboardConfiguration getDashboardConfiguration () { return dashboardConfiguration; }
+
+    public void setDashboardConfiguration (DashboardConfiguration dashboardConfiguration) { this.dashboardConfiguration = dashboardConfiguration; }
+
 
 }

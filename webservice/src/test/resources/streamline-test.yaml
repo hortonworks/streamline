@@ -26,6 +26,9 @@ fileStorageConfiguration:
   properties:
     directory: "/tmp"
 
+dashboardConfiguration:
+ url: ""
+
 # HDFS based Jar storage
 #fileStorageConfiguration:
 #  className: "com.hortonworks.streamline.common.util.HdfsFileStorage"

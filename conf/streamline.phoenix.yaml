@@ -24,6 +24,9 @@ fileStorageConfiguration:
  properties:
    directory: "/tmp"
 
+dashboardConfiguration:
+ url: ""
+
 # Example configuration for phoenix based JDBC driver
 storageProviderConfiguration:
  providerClass: "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager"

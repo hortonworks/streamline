@@ -29,6 +29,9 @@ fileStorageConfiguration:
  properties:
    directory: "/tmp"
 
+dashboardConfiguration:
+ url: ""
+
 # MySQL based jdbc provider configuration is:
 # to add user and password please follow below convention
 

@@ -50,7 +50,7 @@ public class StreamlineConfigurationResource {
     private final String CONFIG_REGISTRY_API_URL = "apiUrl";
     private final String CONFIG_HOST = "host";
     private final String CONFIG_PORT = "port";
-    private final String CONFIG_PIVOT = "pivot";
+    private final String CONFIG_DASHBOARD = "dashboard";
 
 
 
@@ -92,6 +92,7 @@ public class StreamlineConfigurationResource {
             }
         }
         conf.put(CONFIG_REGISTRY, registryConf);
+        conf.put(CONFIG_DASHBOARD, streamlineConfiguration.getDashboardConfiguration());
     }
 
 

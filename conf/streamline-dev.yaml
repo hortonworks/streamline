@@ -23,6 +23,8 @@ fileStorageConfiguration:
  properties:
    directory: "/tmp"
 
+dashboardConfiguration:
+ url: ""
 # storage provider configuration
 #
 # Example configuration for inmemory is:
