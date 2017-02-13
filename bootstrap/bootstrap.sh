@@ -99,7 +99,12 @@ run_cmd $update_storm_version_command
 #---------------------------------------------
 
 CONF_READER_MAIN_CLASS=com.hortonworks.streamline.storage.tool.StreamlinePropertiesReader
-CLASSPATH=${bootstrap_dir}/lib/storage-tool-0.1.0-SNAPSHOT.jar:
+
+for file in "${bootstrap_dir}"/lib/*.jar;
+do
+    CLASSPATH="$CLASSPATH":"$file"
+done
+
 CATALOG_ROOT_URL_PROPERTY_KEY=catalogRootUrl
 component_dir=${bootstrap_dir}/components
 
