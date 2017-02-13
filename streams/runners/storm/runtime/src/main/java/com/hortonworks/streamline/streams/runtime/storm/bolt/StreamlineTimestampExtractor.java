@@ -1,8 +1,8 @@
-package org.apache.streamline.streams.runtime.storm.bolt;
+package com.hortonworks.streamline.streams.runtime.storm.bolt;
 
+import com.hortonworks.streamline.streams.StreamlineEvent;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.windowing.TimestampExtractor;
-import org.apache.streamline.streams.StreamlineEvent;
 
 /**
  * Extract timestamp value from streamline event.
@@ -17,10 +17,10 @@ public class StreamlineTimestampExtractor implements TimestampExtractor {
     @Override
     public long extractTimestamp(Tuple tuple) {
         StreamlineEvent event = (StreamlineEvent) tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
-        Long ts = (Long) event.get(fieldName);
-        if (ts == null) {
+        Object ts = event.get(fieldName);
+        if (ts == null || !(ts instanceof Long)) {
             throw new IllegalArgumentException("Streamline event does not contain a long value in field: " + fieldName);
         }
-        return ts;
+        return (long) ts;
     }
 }
