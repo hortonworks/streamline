@@ -110,13 +110,15 @@ public class StorageProviderConfigurationReader {
 
     /**
      * storageProviderConfiguration:
-     *   providerClass: "org.apache.streamline.storage.impl.jdbc.JdbcStorageManager"
+     *   providerClass: "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager"
      *   properties:
-     *     db.type: "mysql"
+     *     db.type: "postgresql"
      *     queryTimeoutInSecs: 30
      *     db.properties:
-     *       dataSourceClassName: "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
-     *       dataSource.url: "jdbc:mysql://localhost/test"
+     *     dataSourceClassName: "org.postgresql.ds.PGSimpleDataSource"
+     *     dataSource.url: "jdbc:postgresql://localhost/test"
+     *     dataSource.user: "postgres"
+     *     dataSource.password: "postgres"
      */
     private static StorageProviderConfiguration readPostgresqlProperties(Map<String, Object> dbProperties) {
         String jdbcDriverClass = (String) dbProperties.get(DATA_SOURCE_CLASS_NAME);
