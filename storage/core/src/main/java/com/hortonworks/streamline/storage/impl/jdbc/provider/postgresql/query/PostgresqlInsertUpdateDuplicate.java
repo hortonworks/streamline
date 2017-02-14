@@ -15,20 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.streamline.storage.impl.jdbc.provider.postgresql.query;
+package com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.query;
 
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
-import org.apache.streamline.common.Schema;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.query.AbstractStorableSqlQuery;
+import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.AbstractStorableSqlQuery;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class PostgresqlInsertUpdateDuplicate extends AbstractStorableSqlQuery {
 
@@ -36,18 +34,11 @@ public class PostgresqlInsertUpdateDuplicate extends AbstractStorableSqlQuery {
         super(storable);
     }
 
-    /*@Override
-    /**
-     * if formatter != null applies the formatter to the column names. Examples of output are:
-     * <p/>
-     * formatter == null ==> [colName1, colName2]
-     * <p/>
-     * formatter == "%s = ?" ==> [colName1 = ?, colName2 = ?]
-     */
+    @Override
     protected Collection<String> getColumnNames(Collection<Schema.Field> columns, final String formatter) {
         Collection<String> collection = new ArrayList<>();
         for (Schema.Field field: columns) {
-            if (!field.getName().equalsIgnoreCase("id")) {
+            if (!field.getName().equalsIgnoreCase("id") || getStorableId() != null) {
                 String fieldName = formatter == null ? field.getName() : String.format(formatter, field.getName());
                 collection.add(fieldName);
             }
@@ -55,18 +46,36 @@ public class PostgresqlInsertUpdateDuplicate extends AbstractStorableSqlQuery {
         return collection;
     }
 
-
-
-    // the factor of 2 comes from the fact that each column is referred twice in the MySql query as follows
-    // "INSERT INTO DB.TABLE (id, name, age) VALUES(1, "A", 19) ON DUPLICATE KEY UPDATE id=1, name="A", age=19";
+    // "INSERT INTO DB.TABLE (name, age) VALUES("A", 19) ON DUPLICATE KEY UPDATE name="A", age=19";
     @Override
     protected void setParameterizedSql() {
-
+        Collection<String> columnNames = getColumnNames(columns, "\"%s\"");
         sql = "INSERT INTO " + tableName + " ("
-                + join(getColumnNames(columns, "%s"), ", ")
-                + ") VALUES(" + getBindVariables("?,", columns.size() - 1) + ")"
-                + " ON CONFLICT  DO UPDATE SET " + join(getColumnNames(columns, "%s = ?"), ", ");
+                + join(columnNames, ", ")
+                + ") VALUES(" + getBindVariables("?,", columnNames.size()) + ")"
+                + " ON CONFLICT ON CONSTRAINT " + tableName + "_pkey"
+                + " DO UPDATE SET " + join(getColumnNames(columns, "\"%s\" = ?"), ", ");
         log.debug(sql);
+    }
+
+    @Override
+    public List<Schema.Field> getColumns() {
+        List<Schema.Field> cols = super.getColumns();
+        if (getStorableId() == null) {
+            return cols.stream()
+                    .filter(f -> !f.getName().equalsIgnoreCase("id"))
+                    .collect(Collectors.toList());
+        }
+        return cols;
+    }
+
+    private Long getStorableId() {
+        try {
+            return getStorable().getId();
+        } catch (UnsupportedOperationException ex) {
+            // ignore
+        }
+        return null;
     }
 }
 

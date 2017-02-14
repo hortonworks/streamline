@@ -106,7 +106,6 @@ public class PreparedStatementBuilder {
 
         final PreparedStatement preparedStatement;
         if (returnGeneratedKeys) {
-            log.info("harsha returnGeneratedKeys");
             preparedStatement = connection.prepareStatement(parameterizedSql, Statement.RETURN_GENERATED_KEYS);
         } else {
             preparedStatement = connection.prepareStatement(parameterizedSql);
@@ -145,7 +144,7 @@ public class PreparedStatementBuilder {
         }
 
         if (!isMultiple) {
-            //throw new MalformedQueryException("Number of columns must be a multiple of the number of query parameters");
+            throw new MalformedQueryException("Number of columns must be a multiple of the number of query parameters");
         }
     }
 
@@ -174,8 +173,7 @@ public class PreparedStatementBuilder {
             final int len = columns.size();
             Map<Schema.Field, Object> columnsToValues = sqlBuilder.getPrimaryKey().getFieldsToVal();
 
-            int nTimes = numPrepStmtParams /len;   // Number of times each column must be replaced on a query parameter
-            for (int j = 0; j < len * nTimes; j++) {
+            for (int j = 0; j < numPrepStmtParams; j++) {
                 Schema.Field column = columns.get(j % len);
                 Schema.Type javaType = column.getType();
                 setPreparedStatementParams(preparedStatement, javaType, j + 1, columnsToValues.get(column));
@@ -189,9 +187,8 @@ public class PreparedStatementBuilder {
         if (columns != null) {
             final int len = columns.size();
             final Map columnsToValues = ((AbstractStorableSqlQuery)sqlBuilder).getStorable().toMap();
-            final int nTimes = numPrepStmtParams /len;   // Number of times each column must be replaced on a query parameter
 
-            for (int j = 0; j < len*nTimes; j++) {
+            for (int j = 0; j < numPrepStmtParams; j++) {
                 Schema.Field column = columns.get(j % len);
                 Schema.Type javaType = column.getType();
                 String columnName = column.getName();

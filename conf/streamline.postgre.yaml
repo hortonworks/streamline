@@ -1,0 +1,77 @@
+modules:
+  - name: tag-registry
+    className: com.hortonworks.streamline.registries.tag.service.TagRegistryModule
+  - name: dashboard-registry
+    className: com.hortonworks.streamline.registries.dashboard.service.DashboardRegistryModule
+  - name: model-registry
+    className: com.hortonworks.streamline.registries.model.service.MLModelRegistryModule
+  - name: streams
+    className: com.hortonworks.streamline.streams.service.StreamsModule
+    config:
+      #change the below to the path on your local machine
+      streamlineStormJar: /tmp/streamline-runtime-storm-0.1.0-SNAPSHOT.jar
+      stormHomeDir: /usr/local/Cellar/storm/0.10.0/
+      # schema registry configuration
+      schemaRegistryUrl: "http://localhost:9090/api/v1"
+      #Custom processor upload configuration
+      #customProcessorWatchPath: "/tmp"
+      #customProcessorUploadFailPath: "/tmp/failed"
+      #customProcessorUploadSuccessPath: "/tmp/uploaded"
+      mavenRepoUrl: "hwx-public^http://repo.hortonworks.com/content/groups/public/,hwx-private^http://nexus-private.hortonworks.com/nexus/content/groups/public/"
+
+catalogRootUrl: "http://localhost:8080/api/v1/catalog"
+
+# Filesystem based jar storage
+# Make sure you configure this directory other than /tmp
+
+fileStorageConfiguration:
+ className: "com.hortonworks.streamline.common.util.LocalFileSystemStorage"
+ properties:
+   directory: "/tmp"
+
+
+dashboardConfiguration:
+ url: ""
+
+# PostgreSQL based jdbc provider configuration
+storageProviderConfiguration:
+ providerClass: "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager"
+ properties:
+   db.type: "postgresql"
+   queryTimeoutInSecs: 30
+   db.properties:
+     dataSourceClassName: "org.postgresql.ds.PGSimpleDataSource"
+     dataSource.url: "jdbc:postgresql://localhost/streamline_db"
+     dataSource.user: "streamline_user"
+     dataSource.password: "streamline_password"
+
+enableCors: true
+corsUrlPatterns:
+  - "/api/v1/dashboards/*"
+
+server:
+  rootPath: '/api/*'
+  applicationConnectors:
+    - type: http
+      port: 8080
+  adminConnectors:
+    - type: http
+      port: 8081
+
+# Logging settings.
+logging:
+  # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
+  level: INFO
+  # Logger-specific levels.
+  loggers:
+    # Sets the level for 'com.example.app' to DEBUG.
+    com.hortonworks.streamline: INFO
+  appenders:
+    - type: file
+      threshold: DEBUG
+      logFormat: "%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n"
+      currentLogFilename: ./logs/streamline.log
+      archivedLogFilenamePattern: ./logs/streamline-%d{yyyy-MM-dd}-%i.log.gz
+      archivedFileCount: 7
+      timeZone: UTC
+      maxFileSize: 50MB

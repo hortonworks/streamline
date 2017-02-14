@@ -1,25 +1,36 @@
-package org.apache.streamline.storage.impl.jdbc.provider.postgresql.factory;
+package com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.factory;
 
+import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
-import org.apache.streamline.storage.Storable;
-import org.apache.streamline.storage.impl.jdbc.config.ExecutionConfig;
-import org.apache.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
-import org.apache.streamline.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
-import org.apache.streamline.storage.impl.jdbc.provider.mysql.query.MySqlInsertUpdateDuplicate;
-import org.apache.streamline.storage.impl.jdbc.provider.postgresql.query.PostgresqlInsertUpdateDuplicate;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.factory.AbstractQueryExecutor;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.query.SqlInsertQuery;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
-import org.apache.streamline.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
-import org.apache.streamline.storage.impl.jdbc.util.Util;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
+import com.hortonworks.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
+import com.hortonworks.streamline.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix.query.PhoenixDeleteQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix.query.PhoenixSelectQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.query.PostgresqlDeleteQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.query.PostgresqlInsertQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.query.PostgresqlSelectQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory.AbstractQueryExecutor;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlInsertQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
+import com.hortonworks.streamline.storage.impl.jdbc.util.Util;
 import com.zaxxer.hikari.HikariConfig;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.query.PostgresqlInsertUpdateDuplicate;
 
+import javax.annotation.Nullable;
+import java.sql.ResultSet;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 /**
- * SQL query executor for MySQL DB.
+ * SQL query executor for PostgreSQL
  *
  * To issue the new ID to insert and get auto issued key in concurrent manner, PostgresExecutor utilizes Postgres's
  * SERIAL feature
@@ -50,12 +61,27 @@ public class PostgresqlExecutor extends AbstractQueryExecutor {
 
     @Override
     public void insert(Storable storable) {
-        insertOrUpdateWithUniqueId(storable, new SqlInsertQuery(storable));
+        insertOrUpdateWithUniqueId(storable, new PostgresqlInsertQuery(storable));
     }
 
     @Override
     public void insertOrUpdate(final Storable storable) {
         insertOrUpdateWithUniqueId(storable, new PostgresqlInsertUpdateDuplicate(storable));
+    }
+
+    @Override
+    public <T extends Storable> Collection<T> select(String namespace) {
+        return executeQuery(namespace, new PostgresqlSelectQuery(namespace));
+    }
+
+    @Override
+    public <T extends Storable> Collection<T> select(StorableKey storableKey) {
+        return executeQuery(storableKey.getNameSpace(), new PostgresqlSelectQuery(storableKey));
+    }
+
+    @Override
+    public void delete(StorableKey storableKey) {
+        executeUpdate(new PostgresqlDeleteQuery(storableKey));
     }
 
     @Override
@@ -90,20 +116,41 @@ public class PostgresqlExecutor extends AbstractQueryExecutor {
         return new PostgresqlExecutor(executionConfig, connectionBuilder);
     }
 
+    // this is required since the Id type in Storable is long and Postgres supports Int type for SERIAL (auto increment) field
+    @Override
+    protected QueryExecution getQueryExecution(SqlQuery sqlQuery) {
+        return new QueryExecution(sqlQuery) {
+            @Override
+            protected List<Map<String, Object>> getMapsFromResultSet(ResultSet resultSet) {
+                List<Map<String, Object>> res = super.getMapsFromResultSet(resultSet);
+                if (res != null) {
+                    res.forEach(m -> {
+                        Object id = m.get("id");
+                        if (id != null && id instanceof Integer) {
+                            m.put("id", Long.valueOf((Integer) id));
+                        }
+                    });
+                }
+                return res;
+            }
+        };
+    }
+
     private void insertOrUpdateWithUniqueId(final Storable storable, final SqlQuery sqlQuery) {
         try {
             Long id = storable.getId();
             if (id == null) {
                 id = executeUpdateWithReturningGeneratedKey(sqlQuery);
-                log.info("after executeUPdate {}", id);
+                log.debug("after executeUpdate, generated id {}", id);
                 storable.setId(id);
             } else {
                 executeUpdate(sqlQuery);
             }
         } catch (Exception e) {
-            log.info("wtf {}", e.getMessage());
             executeUpdate(sqlQuery);
         }
     }
+
+
 
 }

@@ -177,15 +177,19 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
     // =============== Private helper Methods ===============
 
     protected void executeUpdate(SqlQuery sqlBuilder) {
-        new QueryExecution(sqlBuilder).executeUpdate();
+        getQueryExecution(sqlBuilder).executeUpdate();
     }
 
     protected Long executeUpdateWithReturningGeneratedKey(SqlQuery sqlBuilder) {
-        return new QueryExecution(sqlBuilder).executeUpdateWithReturningGeneratedKey();
+        return getQueryExecution(sqlBuilder).executeUpdateWithReturningGeneratedKey();
     }
 
     protected <T extends Storable> Collection<T> executeQuery(String namespace, SqlQuery sqlBuilder) {
-        return new QueryExecution(sqlBuilder).executeQuery(namespace);
+        return getQueryExecution(sqlBuilder).executeQuery(namespace);
+    }
+
+    protected QueryExecution getQueryExecution(SqlQuery sqlQuery) {
+        return new QueryExecution(sqlQuery);
     }
 
     protected class QueryExecution {
@@ -259,7 +263,7 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
                 preparedStatementBuilder = cache.get(sqlBuilder, new PreparedStatementBuilderCallable(sqlBuilder, false));
             } else {
                 connection = getConnection();
-                log.info("harsha {}", sqlBuilder.toString());
+                log.debug("sqlBuilder {}", sqlBuilder.toString());
                 preparedStatementBuilder = PreparedStatementBuilder.of(connection, config, sqlBuilder);
             }
             return preparedStatementBuilder.getPreparedStatement(sqlBuilder);
@@ -326,7 +330,7 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
         }
 
         // returns null for empty ResultSet or ResultSet with no rows
-        private List<Map<String, Object>> getMapsFromResultSet(ResultSet resultSet) {
+        protected List<Map<String, Object>> getMapsFromResultSet(ResultSet resultSet) {
             List<Map<String, Object>> maps = null;
 
             try {
