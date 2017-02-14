@@ -353,7 +353,7 @@ class TopologyEditorContainer extends Component {
             this.mapSlideInterval(processor.id,processor.config.properties.window);
             this.setTopologyConfig(topologyName,topologyVersion);
           }else{
-            if(processor.name.indexOf("AGGREGATE") !== -1){
+            if(processor.name.indexOf("AGGREGATE") !== -1 && processor.config.properties.rules !== undefined){
               this.fetchWindowSlideInterval(processor)
               .then((result) => {
                 this.setTopologyConfig(topologyName,topologyVersion);

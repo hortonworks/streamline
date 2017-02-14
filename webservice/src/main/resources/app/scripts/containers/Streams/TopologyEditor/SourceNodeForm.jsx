@@ -32,7 +32,7 @@ export default class SourceNodeForm extends Component {
             showRequired: true,
             activeTabKey: 1,
             clusterArr : [],
-            configJSON : this.fetchFields(),
+            configJSON : [],
             clusterName : '',
             fetchLoader : true
         };
@@ -78,7 +78,10 @@ export default class SourceNodeForm extends Component {
               });
               stateObj.clusterArr = clusters;
             }
-            stateObj.configJSON = this.pushClusterFields(tempArr);
+            stateObj.configJSON = this.fetchFields(stateObj.clusterArr);
+            if(!_.isEmpty(stateObj.clusterArr) && _.keys(stateObj.clusterArr).length > 0){
+              stateObj.configJSON = this.pushClusterFields(tempArr,stateObj.configJSON);
+            }
             stateObj.formData = this.nodeData.config.properties;
             stateObj.description = this.nodeData.description;
             stateObj.fetchLoader = false;
@@ -94,27 +97,28 @@ export default class SourceNodeForm extends Component {
             });
           })
     }
-    fetchFields = () => {
+    fetchFields = (clusterList) => {
       let obj = this.props.configData.topologyComponentUISpecification.fields;
-      const clusterFlag = obj.findIndex(x => {
-        return x.fieldName === 'clusters'
-      });
-      if(clusterFlag === -1){
-        const data = {
-                      "uiName": "Cluster Name",
-                      "fieldName": "clusters",
-                      "isOptional": false,
-                      "tooltip": "Cluster name to read data from",
-                      "type": "CustomEnumstring",
-                      "options": []
-                    };
-          obj.unshift(data);
+      if(_.keys(clusterList).length > 0){
+        const clusterFlag = obj.findIndex(x => {
+          return x.fieldName === 'clusters'
+        });
+        if(clusterFlag === -1){
+          const data = {
+                        "uiName": "Cluster Name",
+                        "fieldName": "clusters",
+                        "isOptional": false,
+                        "tooltip": "Cluster name to read data from",
+                        "type": "CustomEnumstring",
+                        "options": []
+                      };
+            obj.unshift(data);
+        }
       }
       return obj;
     }
-    pushClusterFields = (opt) => {
-      const {configJSON} = this.state;
-      const obj = configJSON.map(x => {
+    pushClusterFields = (opt,uiSpecification) => {
+      const obj = uiSpecification.map(x => {
           if(x.fieldName === 'clusters'){
             x.options = opt;
           }

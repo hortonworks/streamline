@@ -55,9 +55,13 @@ export default class FSForm extends Component {
                 let isFieldValid = false;
                 if(component.props.fieldJson.type === "number"){
                     const val = component.props.data[key];
-                    const min = component.props.fieldJson.min === undefined ? 0 : component.props.fieldJson.min;
-                    const max = component.props.fieldJson.max === undefined ? Number.MAX_SAFE_INTEGER : component.props.fieldJson.max;
-                    isFieldValid = ( val >= min && val <= max) ? true : false;
+                    if((_.isNaN(val) || _.isUndefined(val)) && component.props.fieldJson.isOptional){
+                      isFieldValid = true
+                    } else{
+                      const min = component.props.fieldJson.min === undefined ? 0 : component.props.fieldJson.min;
+                      const max = component.props.fieldJson.max === undefined ? Number.MAX_SAFE_INTEGER : component.props.fieldJson.max;
+                      isFieldValid = ( val >= min && val <= max) ? true : false;
+                    }
                 }else{
                   isFieldValid = component.validate();
                 }

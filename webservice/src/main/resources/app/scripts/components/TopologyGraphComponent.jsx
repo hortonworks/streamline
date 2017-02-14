@@ -702,6 +702,10 @@ export default class TopologyGraphComponent extends Component {
                 thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);
                 thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
             })
+                                                .on('error',function(d){
+                                                                d.imageURL = 'styles/img/icon-'+d.parentType.toLowerCase()+'.png';
+                                                                thisGraph.updateGraph();
+                                                })
             .call(thisGraph.drag);
         //Parallelism Icons
         newGs.append("text").attr("class","fa fa-caret-right").attr("x","173px").attr("y","26px")
