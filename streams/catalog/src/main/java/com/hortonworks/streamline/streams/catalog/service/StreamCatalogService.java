@@ -984,6 +984,14 @@ public class StreamCatalogService {
             throw new IOException("Failed to delete custom processor with name:" + name);
         }
         TopologyComponentBundle customProcessorBundle = result.iterator().next();
+        Collection<TopologyProcessor> processors = this.listTopologyProcessors();
+        if (processors != null && !processors.isEmpty()) {
+            for (TopologyProcessor topologyProcessor: processors) {
+                if (topologyProcessor.getTopologyComponentBundleId().equals(customProcessorBundle.getId())) {
+                    throw new IOException("Cannot delete custom processor as it is being used in one of the topologies.");
+                }
+            }
+        }
         CustomProcessorInfo customProcessorInfo = new CustomProcessorInfo();
         deleteFileFromStorage(customProcessorInfo.fromTopologyComponentBundle(customProcessorBundle).getJarFileName());
         this.removeTopologyComponentBundle(customProcessorBundle.getId());
