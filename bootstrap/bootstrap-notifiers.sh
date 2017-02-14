@@ -20,11 +20,11 @@ CATALOG_ROOT_URL="${1:-http://localhost:8080/api/v1/catalog}"
 
 # Load Notifiers
 echo "Adding Email notifier"
-jarFile=${bootstrap_dir}/notifier-jars/streamline-notifier-*.jar
+jarFile="$(find ${bootstrap_dir}/notifier-jars/ -name 'streamline-notifier-*.jar')"
 if [[ ! -f ${jarFile} ]]
 then
   # try local build path
-  jarFile=${dir}/streams/notifier/target/streamline-notifier-*.jar
+  jarFile="$(find ${dir}/streams/notifier/target/ -name 'streamline-notifier-*.jar')"
   if [[ ! -f ${jarFile} ]]
   then
     echo "Could not find streamline-notifier jar, Exiting ..."
