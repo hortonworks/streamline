@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import com.hortonworks.streamline.common.util.FileStorage;
-import com.hortonworks.streamline.common.util.JsonSchemaValidator;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
 import com.hortonworks.streamline.streams.actions.TopologyActions;
 import com.hortonworks.streamline.streams.actions.container.TopologyActionsContainer;
@@ -84,34 +83,6 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
             conf.put(confEntry.getKey(), value == null ? null : value.toString());
         }
         this.topologyActionsContainer = new TopologyActionsContainer(environmentService, conf);
-    }
-
-    public Topology validateTopology(URL schema, Long topologyId)
-            throws Exception {
-        Topology topology = catalogService.getTopology(topologyId);
-        boolean isValidAsPerSchema;
-        if (topology != null) {
-            String json = topology.getConfig();
-            // first step is to validate against json schema provided
-            isValidAsPerSchema = JsonSchemaValidator
-                    .isValidJsonAsPerSchema(schema, json);
-
-            if (!isValidAsPerSchema) {
-                throw new ComponentConfigException("Topology with id "
-                        + topologyId + " failed to validate against json "
-                        + "schema");
-            }
-            // if first step succeeds, proceed to other validations that
-            // cannot be covered using json schema
-            TopologyLayoutValidator validator = new TopologyLayoutValidator(json);
-            validator.validate();
-
-            TopologyActions topologyActions = getTopologyActionsInstance(topology);
-
-            // finally pass it on for streaming engine based config validations
-            topologyActions.validate(CatalogToLayoutConverter.getTopologyLayout(topology));
-        }
-        return topology;
     }
 
     public void deployTopology(Topology topology) throws Exception {
