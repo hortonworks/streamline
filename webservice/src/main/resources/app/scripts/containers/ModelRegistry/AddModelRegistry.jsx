@@ -53,6 +53,8 @@ class AddModelRegistry  extends Component{
   handleNameChange = (event) => {
     if(event.target.value.trim() !== ''){
       this.setState({modelName : event.target.value.trim(),nameValid : true});
+    } else {
+      this.setState({modelName : event.target.value.trim(),nameValid : false});
     }
   }
   handlePmmlFileChange = () => {
