@@ -106,6 +106,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.hortonworks.streamline.common.util.WSUtils.CURRENT_VERSION;
@@ -2113,7 +2115,7 @@ public class StreamCatalogService {
         rule.setName(ruleInfo.getName());
         rule.setDescription(ruleInfo.getDescription());
         rule.setActions(ruleInfo.getActions());
-        String sql = getSqlString(Arrays.asList(ruleInfo.getStream()), null, ruleInfo.getCondition(), null);
+        String sql = getSqlString(Collections.singletonList(ruleInfo.getStream()), null, ruleInfo.getCondition(), null);
         updateRuleWithSql(rule, sql, ruleInfo.getTopologyId(), ruleInfo.getVersionId());
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(rule);
@@ -2139,25 +2141,72 @@ public class StreamCatalogService {
         return mapper.writeValueAsString(rule);
     }
 
-    private String getSqlString(List<String> streams,
+    String getSqlString(List<String> streams,
                                 List<Projection> projections,
                                 String condition,
                                 List<String> groupByKeys) {
-        String SQL = select(projections).orElse("SELECT * ");
+        String SQL = select(streams, projections).orElse("SELECT * ");
         SQL += join(" FROM ", getTable(streams)).get();
-        SQL += join(" WHERE ", condition).orElse("");
-        SQL += join(" GROUP BY ", groupByKeys).orElse("");
+        SQL += join(" WHERE ", convertNested(streams, condition)).orElse("");
+        SQL += join(" GROUP BY ", convertNested(streams, groupByKeys)).orElse("");
         return SQL;
     }
 
-    private Optional<String> select(List<Projection> projections) {
-        if (projections != null) {
-            return join("SELECT ", Collections2.transform(projections, new Function<Projection, String>() {
-                @Override
-                public String apply(Projection input) {
-                    return input.toString();
+    /*
+      Converts streamline dot(.) separated nested expr to calcite format '[]'.
+      Dot immediately following a stream name are retained.
+
+      E.g. f1.g.h = 'A' and kafka_stream_1.f2[5].j = 100
+      TO   f1['g']['h'] = 'A' and kafka_stream_1.f2[5]['j'] = 100
+
+      In the above example 'kafka_stream_1' is the input stream and the dot immediately following it is retained.
+     */
+    String convertNested(List<String> streams, String expr) {
+        if (StringUtils.isEmpty(expr)) {
+            return expr;
+        }
+        StringBuilder sb = new StringBuilder();
+        Pattern pattern = Pattern.compile("(\\w+)?\\.(\\w+)");
+        Matcher matcher = pattern.matcher(expr);
+        int startFrom = 0;
+        int end = 0;
+        while (matcher.find(startFrom)) {
+            String prefix = matcher.group(1);
+            String suffix = matcher.group(2);
+            if (end < matcher.start()) {
+                sb.append(expr.substring(end, matcher.start()));
+            }
+            if (streams.contains(prefix)) {
+                sb.append(matcher.group());
+            } else {
+                if (startFrom == 0) {
+                    sb.append(prefix);
                 }
-            }));
+                sb.append("['").append(suffix).append("']");
+            }
+            startFrom = matcher.start(2);
+            end = matcher.end();
+        }
+        sb.append(expr.substring(end));
+        return sb.toString();
+    }
+
+    private List<String> convertNested(List<String> streams, List<String> exprs) {
+        if (exprs == null || exprs.isEmpty()) {
+            return exprs;
+        }
+        return exprs.stream().map(x -> convertNested(streams, x)).collect(Collectors.toList());
+    }
+
+    private Optional<String> select(List<String> streams, List<Projection> projections) {
+        if (projections != null) {
+            return join("SELECT ", projections.stream()
+                    .map(p -> {
+                        Projection res = new Projection(convertNested(streams, p.expr), p.functionName,
+                                convertNested(streams, p.args), p.outputFieldName);
+                        return res.toString();
+                    })
+                    .collect(Collectors.toList()));
         }
         return Optional.empty();
     }
