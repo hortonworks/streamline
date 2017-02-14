@@ -130,7 +130,11 @@
             <destName>streamline-env.sh</destName>
         </file>
         <file>
-            <source>${project.basedir}/LICENSE</source>
+            <source>${project.basedir}./LICENSE</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+        <file>
+            <source>${project.basedir}./NOTICE</source>
             <outputDirectory>/</outputDirectory>
         </file>
         <file>
