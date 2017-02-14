@@ -18,11 +18,11 @@ dir=$(dirname $0)/..
 bootstrap_dir=$(dirname $0)
 CATALOG_ROOT_URL="${1:-http://localhost:8080/api/v1/catalog}"
 
-jarFile=${bootstrap_dir}/udf-jars/streamline-functions-*.jar
+jarFile="$(find ${bootstrap_dir}/udf-jars/ -name 'streamline-functions-*.jar')"
 if [[ ! -f ${jarFile} ]]
 then
   # try local build path
-  jarFile=${dir}/streams/functions/target/streamline-functions-*.jar
+  jarFile="$(find ${dir}/streams/functions/target/ -name 'streamline-functions-*.jar')"
   if [[ ! -f ${jarFile} ]]
   then
     echo "Could not find streamline-functions jar, Exiting ..."
