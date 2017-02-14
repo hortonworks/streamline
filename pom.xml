@@ -43,7 +43,6 @@
         <jackson.version>2.7.3</jackson.version>
         <javax.mail.version>1.5.3</javax.mail.version>
         <jersey.version>2.22.1</jersey.version>
-        <json-schema-validator.version>2.2.6</json-schema-validator.version>
         <kryo.version>2.21</kryo.version>
         <mysql-connector-java.version>5.1.38</mysql-connector-java.version>
         <phoenix.version>4.7.0.2.5.0.0-1245</phoenix.version>
@@ -147,17 +146,6 @@
                 <groupId>com.firebase</groupId>
                 <artifactId>firebase-client</artifactId>
                 <version>${firebase-client.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.fge</groupId>
-                <artifactId>json-schema-validator</artifactId>
-                <version>${json-schema-validator.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.mail</groupId>
-                        <artifactId>mailapi</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.google.guava</groupId>
