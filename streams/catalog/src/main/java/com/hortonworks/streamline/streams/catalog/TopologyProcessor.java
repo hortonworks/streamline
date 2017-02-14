@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TopologyProcessor extends TopologyOutputComponent {
-    public static final String NAMESPACE = "topology_processors";
+    public static final String NAMESPACE = "topology_processor";
 
     public TopologyProcessor() {
     }

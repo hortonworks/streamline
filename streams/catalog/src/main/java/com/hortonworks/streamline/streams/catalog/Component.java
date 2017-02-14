@@ -33,7 +33,7 @@ import java.util.Map;
  * Component represents an indivial component of Service. For example, NIMBUS, BROKER, etc.
  */
 public class Component extends AbstractStorable {
-    private static final String NAMESPACE = "components";
+    private static final String NAMESPACE = "component";
 
     public static final String ID = "id";
     public static final String SERVICEID = "serviceId";

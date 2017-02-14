@@ -22,7 +22,7 @@ import com.hortonworks.streamline.streams.layout.component.rule.Rule;
 
 import java.io.IOException;
 
-public abstract class BaseRuleInfo extends AbstractStorable {
+public abstract class BaseTopologyRule extends AbstractStorable {
     @JsonIgnore
     protected abstract String getParsedRuleStr();
 

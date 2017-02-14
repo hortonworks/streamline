@@ -28,7 +28,7 @@ import com.hortonworks.streamline.streams.actions.TopologyActions;
 import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
 import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.Topology;
-import com.hortonworks.streamline.streams.catalog.TopologyVersionInfo;
+import com.hortonworks.streamline.streams.catalog.TopologyVersion;
 import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyData;
@@ -68,7 +68,7 @@ import java.util.concurrent.TimeUnit;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
-import static com.hortonworks.streamline.streams.catalog.TopologyVersionInfo.VERSION_PREFIX;
+import static com.hortonworks.streamline.streams.catalog.TopologyVersion.VERSION_PREFIX;
 import static com.hortonworks.streamline.streams.service.TopologySortType.LAST_UPDATED;
 
 
@@ -180,7 +180,7 @@ public class TopologyCatalogResource {
     @Path("/topologies/{topologyId}/versions")
     @Timed
     public Response listTopologyVersions(@PathParam("topologyId") Long topologyId) {
-        Collection<TopologyVersionInfo> versionInfos = catalogService.listTopologyVersionInfos(
+        Collection<TopologyVersion> versionInfos = catalogService.listTopologyVersionInfos(
                 WSUtils.buildTopologyIdAwareQueryParams(topologyId, null));
         Response response;
         if (versionInfos != null) {
@@ -219,11 +219,11 @@ public class TopologyCatalogResource {
     }
 
     private Response removeAllTopologyVersions(Long topologyId) {
-        Collection<TopologyVersionInfo> versions = catalogService.listTopologyVersionInfos(
+        Collection<TopologyVersion> versions = catalogService.listTopologyVersionInfos(
                 WSUtils.topologyVersionsQueryParam(topologyId));
         Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
         Topology res = null;
-        for (TopologyVersionInfo version : versions) {
+        for (TopologyVersion version : versions) {
             Topology removed = catalogService.removeTopology(topologyId, version.getId(), true);
             if (removed != null && removed.getVersionId().equals(currentVersionId)) {
                 res = removed;
@@ -270,19 +270,19 @@ public class TopologyCatalogResource {
     @POST
     @Path("/topologies/{topologyId}/versions/save")
     @Timed
-    public Response saveTopologyVersion(@PathParam("topologyId") Long topologyId, TopologyVersionInfo versionInfo) {
-        Optional<TopologyVersionInfo> currentVersion = Optional.empty();
+    public Response saveTopologyVersion(@PathParam("topologyId") Long topologyId, TopologyVersion versionInfo) {
+        Optional<TopologyVersion> currentVersion = Optional.empty();
         try {
             currentVersion = catalogService.getCurrentTopologyVersionInfo(topologyId);
             if (!currentVersion.isPresent()) {
                 throw new IllegalArgumentException("Current version is not available for topology id: " + topologyId);
             }
             if (versionInfo == null) {
-                versionInfo = new TopologyVersionInfo();
+                versionInfo = new TopologyVersion();
             }
             // update the current version with the new version info.
             versionInfo.setTopologyId(topologyId);
-            Optional<TopologyVersionInfo> latest = catalogService.getLatestVersionInfo(topologyId);
+            Optional<TopologyVersion> latest = catalogService.getLatestVersionInfo(topologyId);
             int suffix;
             if (latest.isPresent()) {
                 suffix = latest.get().getVersionNumber() + 1;
@@ -293,7 +293,7 @@ public class TopologyCatalogResource {
             if (versionInfo.getDescription() == null) {
                 versionInfo.setDescription("");
             }
-            TopologyVersionInfo savedVersion = catalogService.addOrUpdateTopologyVersionInfo(
+            TopologyVersion savedVersion = catalogService.addOrUpdateTopologyVersionInfo(
                     currentVersion.get().getId(), versionInfo);
             catalogService.cloneTopologyVersion(topologyId, savedVersion.getId());
             return WSUtils.respondEntity(savedVersion, CREATED);
@@ -311,11 +311,11 @@ public class TopologyCatalogResource {
     @Timed
     public Response activateTopologyVersion(@PathParam("topologyId") Long topologyId,
                                             @PathParam("versionId") Long versionId) {
-        Optional<TopologyVersionInfo> currentVersionInfo = catalogService.getCurrentTopologyVersionInfo(topologyId);
+        Optional<TopologyVersion> currentVersionInfo = catalogService.getCurrentTopologyVersionInfo(topologyId);
         if (currentVersionInfo.isPresent() && currentVersionInfo.get().getId().equals(versionId)) {
             throw new IllegalArgumentException("Version id " + versionId + " is already the current version");
         }
-        TopologyVersionInfo savedVersion = catalogService.getTopologyVersionInfo(versionId);
+        TopologyVersion savedVersion = catalogService.getTopologyVersionInfo(versionId);
         if (savedVersion != null) {
             catalogService.cloneTopologyVersion(topologyId, savedVersion.getId());
              /*

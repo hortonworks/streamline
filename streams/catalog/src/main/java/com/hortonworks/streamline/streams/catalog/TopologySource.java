@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TopologySource extends TopologyOutputComponent {
-    public static final String NAMESPACE = "topology_sources";
+    public static final String NAMESPACE = "topology_source";
 
     public TopologySource() {
     }

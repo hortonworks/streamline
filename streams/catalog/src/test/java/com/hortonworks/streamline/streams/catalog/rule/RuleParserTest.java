@@ -21,9 +21,9 @@ import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
 import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.Schema;
-import com.hortonworks.streamline.streams.catalog.RuleInfo;
-import com.hortonworks.streamline.streams.catalog.StreamInfo;
-import com.hortonworks.streamline.streams.catalog.UDFInfo;
+import com.hortonworks.streamline.streams.catalog.TopologyRule;
+import com.hortonworks.streamline.streams.catalog.TopologyStream;
+import com.hortonworks.streamline.streams.catalog.UDF;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.layout.component.Stream;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression;
@@ -42,7 +42,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
@@ -55,27 +54,27 @@ public class RuleParserTest {
     private static final Logger LOG = LoggerFactory.getLogger(RuleParserTest.class);
 
     @Mocked private StreamCatalogService mockCatalogService;
-    @Mocked private StreamInfo mockStreamInfo;
+    @Mocked private TopologyStream mockTopologyStream;
 
     @Test
     public void testParseSimple() throws Exception {
         new Expectations() {{
             mockCatalogService.listStreamInfos(withAny(new ArrayList<QueryParam>()));
-            result=mockStreamInfo;
-            mockStreamInfo.getStreamId();
+            result= mockTopologyStream;
+            mockTopologyStream.getStreamId();
             result="teststream";
-            mockStreamInfo.getFields();
+            mockTopologyStream.getFields();
             result= Arrays.asList(Schema.Field.of("temperature", Schema.Type.LONG),
                     Schema.Field.of("humidity", Schema.Type.LONG));
         }};
-        RuleInfo ruleInfo = new RuleInfo();
-        ruleInfo.setId(1L);
-        ruleInfo.setName("Test");
-        ruleInfo.setDescription("test rule");
-        ruleInfo.setTopologyId(1L);
-        ruleInfo.setVersionId(1L);
-        ruleInfo.setSql("select temperature as temp from teststream where humidity > 80");
-        RuleParser ruleParser = new RuleParser(mockCatalogService, ruleInfo.getSql(), ruleInfo.getTopologyId(), ruleInfo.getVersionId());
+        TopologyRule topologyRule = new TopologyRule();
+        topologyRule.setId(1L);
+        topologyRule.setName("Test");
+        topologyRule.setDescription("test rule");
+        topologyRule.setTopologyId(1L);
+        topologyRule.setVersionId(1L);
+        topologyRule.setSql("select temperature as temp from teststream where humidity > 80");
+        RuleParser ruleParser = new RuleParser(mockCatalogService, topologyRule.getSql(), topologyRule.getTopologyId(), topologyRule.getVersionId());
         ruleParser.parse();
         assertEquals(new Condition(new BinaryExpression(Operator.GREATER_THAN,
                         new FieldExpression(Schema.Field.of("humidity", Schema.Type.LONG)),
@@ -100,21 +99,21 @@ public class RuleParserTest {
     public void testParseStringLiteral() throws Exception {
         new Expectations() {{
             mockCatalogService.listStreamInfos(withAny(new ArrayList<QueryParam>()));
-            result = mockStreamInfo;
-            mockStreamInfo.getStreamId();
+            result = mockTopologyStream;
+            mockTopologyStream.getStreamId();
             result = "teststream";
-            mockStreamInfo.getFields();
+            mockTopologyStream.getFields();
             result = Arrays.asList(Schema.Field.of("eventType", Schema.Type.STRING),
                     Schema.Field.of("temperature", Schema.Type.LONG));
         }};
-        RuleInfo ruleInfo = new RuleInfo();
-        ruleInfo.setId(1L);
-        ruleInfo.setName("Test");
-        ruleInfo.setDescription("test rule");
-        ruleInfo.setTopologyId(1L);
-        ruleInfo.setVersionId(1L);
-        ruleInfo.setSql("select temperature from teststream where eventType <> 'Normal'");
-        RuleParser ruleParser = new RuleParser(mockCatalogService, ruleInfo.getSql(), ruleInfo.getTopologyId(), ruleInfo.getVersionId());
+        TopologyRule topologyRule = new TopologyRule();
+        topologyRule.setId(1L);
+        topologyRule.setName("Test");
+        topologyRule.setDescription("test rule");
+        topologyRule.setTopologyId(1L);
+        topologyRule.setVersionId(1L);
+        topologyRule.setSql("select temperature from teststream where eventType <> 'Normal'");
+        RuleParser ruleParser = new RuleParser(mockCatalogService, topologyRule.getSql(), topologyRule.getTopologyId(), topologyRule.getVersionId());
         ruleParser.parse();
         assertTrue(ruleParser.getCondition().getExpression() instanceof BinaryExpression);
         assertTrue(((BinaryExpression) ruleParser.getCondition().getExpression()).getSecond() instanceof Literal);
@@ -126,21 +125,21 @@ public class RuleParserTest {
     public void testParseAsExpressionWithCase() throws Exception {
         new Expectations() {{
             mockCatalogService.listStreamInfos(withAny(new ArrayList<QueryParam>()));
-            result=mockStreamInfo;
-            mockStreamInfo.getStreamId();
+            result= mockTopologyStream;
+            mockTopologyStream.getStreamId();
             result="teststream";
-            mockStreamInfo.getFields();
+            mockTopologyStream.getFields();
             result= Arrays.asList(Schema.Field.of("temperature", Schema.Type.LONG),
                     Schema.Field.of("humidity", Schema.Type.LONG));
         }};
-        RuleInfo ruleInfo = new RuleInfo();
-        ruleInfo.setId(1L);
-        ruleInfo.setName("Test");
-        ruleInfo.setDescription("test rule");
-        ruleInfo.setTopologyId(1L);
-        ruleInfo.setVersionId(1L);
-        ruleInfo.setSql("select temperature as \"temp_TEST\" from teststream where humidity > 80");
-        RuleParser ruleParser = new RuleParser(mockCatalogService, ruleInfo.getSql(), ruleInfo.getTopologyId(), ruleInfo.getVersionId());
+        TopologyRule topologyRule = new TopologyRule();
+        topologyRule.setId(1L);
+        topologyRule.setName("Test");
+        topologyRule.setDescription("test rule");
+        topologyRule.setTopologyId(1L);
+        topologyRule.setVersionId(1L);
+        topologyRule.setSql("select temperature as \"temp_TEST\" from teststream where humidity > 80");
+        RuleParser ruleParser = new RuleParser(mockCatalogService, topologyRule.getSql(), topologyRule.getTopologyId(), topologyRule.getVersionId());
         ruleParser.parse();
         assertEquals(new Condition(new BinaryExpression(Operator.GREATER_THAN,
                         new FieldExpression(Schema.Field.of("humidity", Schema.Type.LONG)),
@@ -158,7 +157,7 @@ public class RuleParserTest {
 
     @Test
     public void testParseAgg() throws Exception {
-        final UDFInfo stddevp = new UDFInfo();
+        final UDF stddevp = new UDF();
         stddevp.setClassName("foo.class.name");
         stddevp.setDescription("stddev p");
         stddevp.setId(100L);
@@ -167,23 +166,23 @@ public class RuleParserTest {
         stddevp.setType(Udf.Type.AGGREGATE);
         new Expectations() {{
             mockCatalogService.listStreamInfos(withAny(new ArrayList<QueryParam>()));
-            result=mockStreamInfo;
+            result= mockTopologyStream;
             mockCatalogService.listUDFs();
             result= Collections.singleton(stddevp);
-            mockStreamInfo.getStreamId();
+            mockTopologyStream.getStreamId();
             result="teststream";
-            mockStreamInfo.getFields();
+            mockTopologyStream.getFields();
             result= Arrays.asList(Schema.Field.of("temperature", Schema.Type.LONG),
                     Schema.Field.of("humidity", Schema.Type.LONG));
         }};
-        RuleInfo ruleInfo = new RuleInfo();
-        ruleInfo.setId(1L);
-        ruleInfo.setName("Test");
-        ruleInfo.setDescription("test rule");
-        ruleInfo.setTopologyId(1L);
-        ruleInfo.setVersionId(1L);
-        ruleInfo.setSql("select stddevp(temperature) from teststream");
-        RuleParser ruleParser = new RuleParser(mockCatalogService, ruleInfo.getSql(), ruleInfo.getTopologyId(), ruleInfo.getVersionId());
+        TopologyRule topologyRule = new TopologyRule();
+        topologyRule.setId(1L);
+        topologyRule.setName("Test");
+        topologyRule.setDescription("test rule");
+        topologyRule.setTopologyId(1L);
+        topologyRule.setVersionId(1L);
+        topologyRule.setSql("select stddevp(temperature) from teststream");
+        RuleParser ruleParser = new RuleParser(mockCatalogService, topologyRule.getSql(), topologyRule.getTopologyId(), topologyRule.getVersionId());
         ruleParser.parse();
 
         LOG.info("Projection: [{}]", ruleParser.getProjection());
@@ -200,7 +199,7 @@ public class RuleParserTest {
 
     @Test
     public void testParseUDF1() throws Exception {
-        final UDFInfo myFunc = new UDFInfo();
+        final UDF myFunc = new UDF();
         myFunc.setClassName("foo.class.name");
         myFunc.setDescription("My function");
         myFunc.setId(Math.abs(new Random().nextLong()));
@@ -210,24 +209,24 @@ public class RuleParserTest {
 
         new Expectations() {{
             mockCatalogService.listStreamInfos(withAny(new ArrayList<QueryParam>()));
-            result=mockStreamInfo;
+            result= mockTopologyStream;
             mockCatalogService.listUDFs();
             result= Collections.singleton(myFunc);
-            mockStreamInfo.getStreamId();
+            mockTopologyStream.getStreamId();
             result="teststream";
-            mockStreamInfo.getFields();
+            mockTopologyStream.getFields();
             result= Arrays.asList(Schema.Field.of("temperature", Schema.Type.LONG),
                                   Schema.Field.of("humidity", Schema.Type.LONG));
         }};
 
-        RuleInfo ruleInfo = new RuleInfo();
-        ruleInfo.setId(1L);
-        ruleInfo.setName("Test");
-        ruleInfo.setDescription("test rule");
-        ruleInfo.setTopologyId(1L);
-        ruleInfo.setVersionId(1L);
-        ruleInfo.setSql("select myFunc(temperature) from teststream");
-        RuleParser ruleParser = new RuleParser(mockCatalogService, ruleInfo.getSql(), ruleInfo.getTopologyId(), ruleInfo.getVersionId());
+        TopologyRule topologyRule = new TopologyRule();
+        topologyRule.setId(1L);
+        topologyRule.setName("Test");
+        topologyRule.setDescription("test rule");
+        topologyRule.setTopologyId(1L);
+        topologyRule.setVersionId(1L);
+        topologyRule.setSql("select myFunc(temperature) from teststream");
+        RuleParser ruleParser = new RuleParser(mockCatalogService, topologyRule.getSql(), topologyRule.getTopologyId(), topologyRule.getVersionId());
         ruleParser.parse();
 
         LOG.info("Projection: [{}]", ruleParser.getProjection());

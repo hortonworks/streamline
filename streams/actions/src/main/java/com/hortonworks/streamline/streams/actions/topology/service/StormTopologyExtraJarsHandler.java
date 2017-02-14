@@ -18,7 +18,7 @@ package com.hortonworks.streamline.streams.actions.topology.service;
 import com.google.common.base.Joiner;
 import com.hortonworks.streamline.common.ComponentTypes;
 import com.hortonworks.streamline.common.QueryParam;
-import com.hortonworks.streamline.streams.catalog.UDFInfo;
+import com.hortonworks.streamline.streams.catalog.UDF;
 import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
@@ -56,17 +56,17 @@ public class StormTopologyExtraJarsHandler extends TopologyDagVisitor {
 
     @Override
     public void visit(RulesProcessor rulesProcessor) {
-        Set<UDFInfo> udfsToShip = new HashSet<>();
+        Set<UDF> udfsToShip = new HashSet<>();
         for (Rule rule : rulesProcessor.getRules()) {
             for (String udf : rule.getReferredUdfs()) {
-                Collection<UDFInfo> udfInfos = catalogService.listUDFs(Collections.singletonList(new QueryParam(UDFInfo.NAME, udf)));
-                if (udfInfos.size() > 1) {
+                Collection<UDF> udfs = catalogService.listUDFs(Collections.singletonList(new QueryParam(UDF.NAME, udf)));
+                if (udfs.size() > 1) {
                     throw new IllegalArgumentException("Multiple UDF definitions with name:" + udf);
-                } else if (udfInfos.size() == 1) {
-                    udfsToShip.add(udfInfos.iterator().next());
+                } else if (udfs.size() == 1) {
+                    udfsToShip.add(udfs.iterator().next());
                 }
             }
-            for (UDFInfo udf : udfsToShip) {
+            for (UDF udf : udfsToShip) {
                 extraJars.add(udf.getJarStoragePath());
             }
         }

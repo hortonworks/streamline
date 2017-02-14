@@ -19,7 +19,7 @@ package com.hortonworks.streamline.registries.model.service;
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.util.WSUtils;
-import com.hortonworks.streamline.registries.model.data.MLModelInfo;
+import com.hortonworks.streamline.registries.model.data.MLModel;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
@@ -88,14 +88,14 @@ public final class MLModelRegistryResource {
     @Path("ml/models")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Timed
-    public Response addModelInfo(@FormDataParam("modelInfo") final MLModelInfo modelInfo,
+    public Response addModelInfo(@FormDataParam("modelInfo") final MLModel modelInfo,
                                  @FormDataParam("pmmlFile") final InputStream pmmlInputStream,
                                  @FormDataParam("pmmlFile") final FormDataContentDisposition fileDisposition) throws IOException, SAXException, JAXBException {
         if (pmmlInputStream == null) {
             throw BadRequestException.missingParameter("pmmlFile");
         }
         try {
-            MLModelInfo createdModelInfo = modelRegistryService.addModelInfo(modelInfo, pmmlInputStream, fileDisposition.getFileName());
+            MLModel createdModelInfo = modelRegistryService.addModelInfo(modelInfo, pmmlInputStream, fileDisposition.getFileName());
             return WSUtils.respondEntity(createdModelInfo, CREATED);
         } catch (Exception exception) {
             LOG.debug("Error occured while adding the pmml model", exception);
@@ -141,7 +141,7 @@ public final class MLModelRegistryResource {
     @Timed
     public Response addOrUpdateModelInfo(
             @PathParam("id") final Long modelId,
-            @FormDataParam("modelInfo") final MLModelInfo modelInfo,
+            @FormDataParam("modelInfo") final MLModel modelInfo,
             @FormDataParam("pmmlFile") final InputStream pmmlInputStream,
             @FormDataParam("pmmlFile") final FormDataContentDisposition fileDisposition) throws IOException, SAXException, JAXBException {
         if (pmmlInputStream == null) {
@@ -149,7 +149,7 @@ public final class MLModelRegistryResource {
         }
 
         try {
-            MLModelInfo createdModelInfo = modelRegistryService.addOrUpdateModelInfo(
+            MLModel createdModelInfo = modelRegistryService.addOrUpdateModelInfo(
                     modelId, modelInfo, pmmlInputStream, fileDisposition.getFileName());
             return WSUtils.respondEntity(createdModelInfo, CREATED);
         } catch (Exception exception) {
@@ -189,7 +189,7 @@ public final class MLModelRegistryResource {
     @Path("ml/models/{id}")
     @Timed
     public Response removeModelInfo(@PathParam("id") final Long modelId) {
-        MLModelInfo removedModelInfo = modelRegistryService.removeModelInfo(modelId);
+        MLModel removedModelInfo = modelRegistryService.removeModelInfo(modelId);
         return WSUtils.respondEntity(removedModelInfo, OK);
     }
 
@@ -216,7 +216,7 @@ public final class MLModelRegistryResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Timed
     public Response getModelInfoByName(@PathParam("name") final String modelName) {
-        MLModelInfo modelInfo = modelRegistryService.getModelInfo(modelName);
+        MLModel modelInfo = modelRegistryService.getModelInfo(modelName);
         return WSUtils.respondEntity(modelInfo, OK);
     }
 
@@ -243,7 +243,7 @@ public final class MLModelRegistryResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Timed
     public Response getModelInfoById(@PathParam("id") final Long modelId) {
-        MLModelInfo modelInfo = modelRegistryService.getModelInfo(modelId);
+        MLModel modelInfo = modelRegistryService.getModelInfo(modelId);
         return WSUtils.respondEntity(modelInfo, OK);
     }
 
@@ -268,7 +268,7 @@ public final class MLModelRegistryResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Timed
     public Response getModelOutputFieldsById(@PathParam("id") final Long modelId) throws Exception {
-        MLModelInfo modelInfo = modelRegistryService.getModelInfo(modelId);
+        MLModel modelInfo = modelRegistryService.getModelInfo(modelId);
         final List<MLModelField> fieldNames = modelRegistryService.getModelOutputFields(modelInfo);
         return WSUtils.respondEntity(fieldNames, OK);
     }
@@ -295,7 +295,7 @@ public final class MLModelRegistryResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Timed
     public Response getModelInputFieldsById(@PathParam("id") final Long modelId) throws Exception {
-        MLModelInfo modelInfo = modelRegistryService.getModelInfo(modelId);
+        MLModel modelInfo = modelRegistryService.getModelInfo(modelId);
         final List<MLModelField> fieldNames = modelRegistryService.getModelInputFields(modelInfo);
         return WSUtils.respondEntity(fieldNames, OK);
     }
@@ -311,7 +311,7 @@ public final class MLModelRegistryResource {
     @Path("ml/models/pmml/{name}")
     @Timed
     public Response getMLModelContents(@PathParam("name") String modelName) {
-        MLModelInfo modelInfo = modelRegistryService.getModelInfo(modelName);
+        MLModel modelInfo = modelRegistryService.getModelInfo(modelName);
         return WSUtils.respondEntity(modelInfo.getPmml(), OK);
     }
 }

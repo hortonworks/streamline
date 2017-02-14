@@ -28,8 +28,8 @@ import java.util.Map;
 /**
  * Version info specific to a topology.
  */
-public class TopologyVersionInfo extends AbstractStorable {
-    public static final String NAME_SPACE = "topology_versioninfos";
+public class TopologyVersion extends AbstractStorable {
+    public static final String NAME_SPACE = "topology_version";
     public static final String ID = "id";
     public static final String VERSION_PREFIX = "V";
 
@@ -39,10 +39,10 @@ public class TopologyVersionInfo extends AbstractStorable {
     private String description;
     private Long timestamp;
 
-    public TopologyVersionInfo() {
+    public TopologyVersion() {
     }
 
-    public TopologyVersionInfo(TopologyVersionInfo other) {
+    public TopologyVersion(TopologyVersion other) {
         setId(other.getId());
         setTopologyId(other.getTopologyId());
         setName(other.getName());
@@ -123,7 +123,7 @@ public class TopologyVersionInfo extends AbstractStorable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        TopologyVersionInfo that = (TopologyVersionInfo) o;
+        TopologyVersion that = (TopologyVersion) o;
 
         return id != null ? id.equals(that.id) : that.id == null;
 

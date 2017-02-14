@@ -18,14 +18,14 @@ package com.hortonworks.streamline.streams.catalog.topology;
 import java.util.HashMap;
 import java.util.List;
 import com.google.common.base.Preconditions;
-import com.hortonworks.streamline.streams.catalog.BranchRuleInfo;
-import com.hortonworks.streamline.streams.catalog.RuleInfo;
+import com.hortonworks.streamline.streams.catalog.TopologyBranchRule;
+import com.hortonworks.streamline.streams.catalog.TopologyRule;
 import com.hortonworks.streamline.streams.catalog.TopologyEditorMetadata;
 import com.hortonworks.streamline.streams.catalog.TopologySource;
 import com.hortonworks.streamline.streams.catalog.TopologyProcessor;
 import com.hortonworks.streamline.streams.catalog.TopologyEdge;
 import com.hortonworks.streamline.streams.catalog.TopologySink;
-import com.hortonworks.streamline.streams.catalog.WindowInfo;
+import com.hortonworks.streamline.streams.catalog.TopologyWindow;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -41,9 +41,9 @@ public final class TopologyData {
     private List<TopologySink> sinks = new ArrayList<>();
     private List<TopologyProcessor> processors = new ArrayList<>();
     private List<TopologyEdge> edges = new ArrayList<>();
-    private List<RuleInfo> rules = new ArrayList<>();
-    private List<WindowInfo> windows = new ArrayList<>();
-    private List<BranchRuleInfo> branchRules = new ArrayList<>();
+    private List<TopologyRule> rules = new ArrayList<>();
+    private List<TopologyWindow> windows = new ArrayList<>();
+    private List<TopologyBranchRule> branchRules = new ArrayList<>();
     private Map<String, String> bundleIdToType = new HashMap<>();
     private TopologyEditorMetadata topologyEditorMetadata;
 
@@ -58,9 +58,9 @@ public final class TopologyData {
         sinks = other.sinks.stream().map(TopologySink::new).collect(Collectors.toList());
         processors = other.processors.stream().map(TopologyProcessor::new).collect(Collectors.toList());
         edges = other.edges.stream().map(TopologyEdge::new).collect(Collectors.toList());
-        rules = other.rules.stream().map(RuleInfo::new).collect(Collectors.toList());
-        windows = other.windows.stream().map(WindowInfo::new).collect(Collectors.toList());
-        branchRules = other.branchRules.stream().map(BranchRuleInfo::new).collect(Collectors.toList());
+        rules = other.rules.stream().map(TopologyRule::new).collect(Collectors.toList());
+        windows = other.windows.stream().map(TopologyWindow::new).collect(Collectors.toList());
+        branchRules = other.branchRules.stream().map(TopologyBranchRule::new).collect(Collectors.toList());
         bundleIdToType = new HashMap<>(other.getBundleIdToType());
         topologyEditorMetadata = new TopologyEditorMetadata(other.getTopologyEditorMetadata());
     }
@@ -122,34 +122,34 @@ public final class TopologyData {
         this.processors.add(topologyProcessor);
     }
 
-    public List<RuleInfo> getRules() {
+    public List<TopologyRule> getRules() {
         return rules;
     }
 
-    public void addRule(RuleInfo ruleInfo) {
-        Preconditions.checkNotNull(ruleInfo);
+    public void addRule(TopologyRule topologyRule) {
+        Preconditions.checkNotNull(topologyRule);
 
-        this.rules.add(ruleInfo);
+        this.rules.add(topologyRule);
     }
 
-    public List<WindowInfo> getWindows() {
+    public List<TopologyWindow> getWindows() {
         return windows;
     }
 
-    public void addWindow(WindowInfo windowInfo) {
-        Preconditions.checkNotNull(windowInfo);
+    public void addWindow(TopologyWindow topologyWindow) {
+        Preconditions.checkNotNull(topologyWindow);
 
-        this.windows.add(windowInfo);
+        this.windows.add(topologyWindow);
     }
 
-    public List<BranchRuleInfo> getBranchRules() {
+    public List<TopologyBranchRule> getBranchRules() {
         return branchRules;
     }
 
-    public void addBranch(BranchRuleInfo branchRuleInfo) {
-        Preconditions.checkNotNull(branchRuleInfo);
+    public void addBranch(TopologyBranchRule topologyBranchRule) {
+        Preconditions.checkNotNull(topologyBranchRule);
 
-        this.branchRules.add(branchRuleInfo);
+        this.branchRules.add(topologyBranchRule);
     }
 
     public TopologyEditorMetadata getTopologyEditorMetadata() {

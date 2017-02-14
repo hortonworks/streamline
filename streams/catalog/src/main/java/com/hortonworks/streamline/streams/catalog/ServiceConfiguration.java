@@ -30,7 +30,7 @@ import java.util.Map;
  * Catalog that matches one configuration file of service.
  */
 public class ServiceConfiguration extends AbstractStorable {
-  private static final String NAMESPACE = "service_configurations";
+  private static final String NAMESPACE = "service_configuration";
   private static final ObjectMapper objectMapper = new ObjectMapper();
 
   private Long id;
