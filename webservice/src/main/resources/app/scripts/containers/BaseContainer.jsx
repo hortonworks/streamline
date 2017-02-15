@@ -5,18 +5,6 @@ import Sidebar from '../components/Sidebar';
 import {Link} from 'react-router';
 import {Confirm} from '../components/FSModal'
 
-import 'animate.css/animate.css';
-import 'bootstrap-daterangepicker/daterangepicker.css';
-import 'react-select/dist/react-select.css';
-import 'react-bootstrap-switch/dist/css/bootstrap3/react-bootstrap-switch.min.css';
-import 'styles/css/toastr.min.css';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/addon/lint/lint.css';
-import 'styles/css/customScroll.css';
-import 'styles/css/paper-bootstrap-wizard.css';
-import 'styles/css/theme.css';
-import 'styles/css/graph-style.css';
-
 export default class BaseContainer extends Component {
 
   constructor(props) {

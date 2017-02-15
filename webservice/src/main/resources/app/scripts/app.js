@@ -37,8 +37,8 @@ class App extends Component {
   }
 }
 
-const app = render(
+/*const app = render(
   <App />, document.getElementById('app_container')
-)
+)*/
 
-export default app
+export default App
