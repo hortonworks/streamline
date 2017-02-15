@@ -41,8 +41,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class StormTopologyExtraJarsHandler extends TopologyDagVisitor {
-    private static final Logger LOG = LoggerFactory.getLogger(StormTopologyExtraJarsHandler.class);
+/**
+ * This visitor collects all the dependencies like extra jars, maven-artifacts etc for a topology.
+ */
+public class StormTopologyDependenciesHandler extends TopologyDagVisitor {
+    private static final Logger LOG = LoggerFactory.getLogger(StormTopologyDependenciesHandler.class);
     private final Set<String> extraJars = new HashSet<>();
     private final Set<String> resourceNames = new HashSet<>();
     private Set<TopologyComponentBundle> topologyComponentBundleSet = new HashSet<>();
@@ -50,7 +53,7 @@ public class StormTopologyExtraJarsHandler extends TopologyDagVisitor {
 
     private final StreamCatalogService catalogService;
 
-    StormTopologyExtraJarsHandler(StreamCatalogService catalogService) {
+    StormTopologyDependenciesHandler(StreamCatalogService catalogService) {
         this.catalogService = catalogService;
     }
 
