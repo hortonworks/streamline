@@ -395,7 +395,7 @@
             <dependency>
                 <groupId>org.apache.storm</groupId>
                 <artifactId>storm-sql-core</artifactId>
-                <version>${storm.version}</version>
+                <version>1.1.0.2.6.0.0-517</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.slf4j</groupId>
@@ -406,7 +406,7 @@
             <dependency>
                 <groupId>org.apache.storm</groupId>
                 <artifactId>storm-sql-runtime</artifactId>
-                <version>${storm.version}</version>
+                <version>1.1.0.2.6.0.0-517</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.slf4j</groupId>
