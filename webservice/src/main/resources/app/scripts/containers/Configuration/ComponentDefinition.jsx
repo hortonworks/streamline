@@ -1,16 +1,30 @@
+/**
+  * Copyright 2017 Hortonworks.
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *   http://www.apache.org/licenses/LICENSE-2.0
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+**/
+
 import React, {Component}from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import { Table, Thead, Th, Tr, Td, unsafe } from 'reactable';
 import {BtnEdit,BtnView} from '../../components/ActionButtons';
 import FSReactToastr from '../../components/FSReactToastr';
-import Modal from '../../components/FSModal'
+import Modal from '../../components/FSModal';
 import {pageSize} from '../../utils/Constants';
 import BaseContainer from '../../containers/BaseContainer';
 import {FormGroup,InputGroup,FormControl,Button} from 'react-bootstrap';
 import Utils from '../../utils/Utils';
 import CommonNotification from '../../utils/CommonNotification';
-import {toastOpt} from '../../utils/Constants'
+import {toastOpt} from '../../utils/Constants';
 import TopologyREST from '../../rest/TopologyREST';
 import EditDefinition from './EditDefinition';
 import NoData from '../../components/NoData';
@@ -18,7 +32,7 @@ import CommonLoaderSign  from '../../components/CommonLoaderSign';
 
 export default class ComponentDefinition extends Component {
   constructor(props){
-    super(props)
+    super(props);
     this.fetchData();
     this.state = {
       entities: [],
@@ -34,7 +48,7 @@ export default class ComponentDefinition extends Component {
       TopologyREST.getSourceComponent(),
       TopologyREST.getProcessorComponent(),
       TopologyREST.getSinkComponent()
-    ]
+    ];
     Promise.all(promiseArr)
       .then((results) => {
         let tempEntities = [];
@@ -45,23 +59,23 @@ export default class ComponentDefinition extends Component {
           }else{
             Array.prototype.push.apply(tempEntities, Utils.sortArray( result.entities, 'subType', true));
           }
-        })
+        });
         this.setState({entities:tempEntities,fetchLoader:false});
-      })
+      });
   }
   onFilterChange = (e) => {
     this.setState({
       filterValue : e.target.value.trim()
-    })
+    });
   }
   slideInput = (e) => {
-    this.setState({slideInput  : true})
+    this.setState({slideInput  : true});
     const input = document.querySelector('.inputAnimateIn');
     input.focus();
   }
   slideInputOut = () => {
     const input = document.querySelector('.inputAnimateIn');
-    (_.isEmpty(input.value)) ? this.setState({slideInput  : false}) : ''
+    (_.isEmpty(input.value)) ? this.setState({slideInput  : false}) : '';
   }
   getHeaderContent() {
     return (
@@ -71,21 +85,21 @@ export default class ComponentDefinition extends Component {
     );
   }
   handleEditDefinition = (id,flag) => {
-    const data = this.state.entities.filter(o => {return o.id === id});
-    this.setState({editData : data.length === 1 ? data[0]: {},viewMode : flag }, () => {this.refs.definitionModel.show()});
+    const data = this.state.entities.filter(o => {return o.id === id;});
+    this.setState({editData : data.length === 1 ? data[0]: {},viewMode : flag }, () => {this.refs.definitionModel.show();});
   }
   handleSave = () => {
     this.refs.editDefinition.handleSave()
       .then((definition)=>{
         this.fetchData();
         this.refs.definitionModel.hide();
-          if(definition.responseMessage !== undefined){
+        if(definition.responseMessage !== undefined){
           FSReactToastr.error(
-              <CommonNotification flag="error" content={definition.responseMessage}/>, '', toastOpt)
+              <CommonNotification flag="error" content={definition.responseMessage}/>, '', toastOpt);
         } else {
           FSReactToastr.success(<strong>Definition updated successfully</strong>);
         }
-      })
+      });
   }
   handleKeyPress = (event) => {
     if(event.key === "Enter"){
@@ -172,7 +186,7 @@ export default class ComponentDefinition extends Component {
                                                     }
                                                   </Td>
                                                 </Tr>
-                                              )
+                                              );
                                             })}
                                           </Table>
                                         </div>
@@ -193,6 +207,6 @@ export default class ComponentDefinition extends Component {
                     />
                 </Modal>
       </BaseContainer>
-    )
+    );
   }
 }

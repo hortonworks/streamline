@@ -1,4 +1,18 @@
-import React, {Component, PropTypes}from 'react';
+/**
+  * Copyright 2017 Hortonworks.
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *   http://www.apache.org/licenses/LICENSE-2.0
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+**/
+
+import React, {Component, PropTypes} from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import {Tabs, Tab} from 'react-bootstrap';
@@ -10,291 +24,289 @@ import NotesForm from '../../../components/NotesForm';
 import FSReactToastr from '../../../components/FSReactToastr';
 import CommonNotification from '../../../utils/CommonNotification';
 import {toastOpt} from '../../../utils/Constants';
-import { Scrollbars } from 'react-custom-scrollbars';
+import {Scrollbars} from 'react-custom-scrollbars';
 
 export default class SourceNodeForm extends Component {
-    static propTypes = {
-        nodeData: PropTypes.object.isRequired,
-        configData: PropTypes.object.isRequired,
-        editMode: PropTypes.bool.isRequired,
-        nodeType: PropTypes.string.isRequired,
-        topologyId: PropTypes.string.isRequired,
-        versionId: PropTypes.number.isRequired
+  static propTypes = {
+    nodeData: PropTypes.object.isRequired,
+    configData: PropTypes.object.isRequired,
+    editMode: PropTypes.bool.isRequired,
+    nodeType: PropTypes.string.isRequired,
+    topologyId: PropTypes.string.isRequired,
+    versionId: PropTypes.number.isRequired
+  };
+
+  constructor(props) {
+    super(props);
+    this.fetchData();
+    this.state = {
+      formData: {},
+      streamObj: {},
+      description: '',
+      showRequired: true,
+      activeTabKey: 1,
+      clusterArr: [],
+      configJSON: [],
+      clusterName: '',
+      fetchLoader: true
     };
+  }
 
-    constructor(props) {
-        super(props);
-        this.fetchData();
-        this.state = {
-            formData: {},
-            streamObj: {},
-            description: '',
-            showRequired: true,
-            activeTabKey: 1,
-            clusterArr : [],
-            configJSON : [],
-            clusterName : '',
-            fetchLoader : true
-        };
-    }
+  fetchData() {
+    let {topologyId, versionId, nodeType, nodeData, namespaceId} = this.props;
+    const sourceParams = nodeData.parentType + '/' + nodeData.topologyComponentBundleId;
+    let promiseArr = [
+      TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId),
+      TopologyREST.getSourceComponentClusters(sourceParams, namespaceId)
+    ];
 
-    fetchData(){
-        let {topologyId, versionId, nodeType, nodeData,namespaceId} = this.props;
-        const sourceParams = nodeData.parentType+'/'+nodeData.topologyComponentBundleId;
-        let promiseArr = [
-          TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId),
-          TopologyREST.getSourceComponentClusters(sourceParams,namespaceId)
-        ];
-
-        Promise.all(promiseArr)
-          .then((results) => {
-            let stateObj = {},tempArr = [];
-            if(results[0].responseMessage !== undefined){
-              FSReactToastr.error(<CommonNotification flag="error" content={results[0].responseMessage}/>, '', toastOpt);
-            }else{
-              this.nodeData = results[0];
-              if(this.nodeData.outputStreams.length === 0){
-                  this.streamObj = { streamId: this.props.configData.subType.toLowerCase()+'_stream_'+this.nodeData.id, fields: []};
-              } else {
-                  this.streamObj = this.nodeData.outputStreams[0];
-              }
-              stateObj.streamObj = this.streamObj;
-            }
-            if(results[1].responseMessage !== undefined){
-              this.setState({fetchLoader : false});
-              FSReactToastr.error(<CommonNotification flag="error" content={results[1].responseMessage}/>, '', toastOpt);
-            }else{
-              const clusters = results[1];
-              _.keys(clusters).map((x) => {
-                 _.keys(clusters[x]).map(k =>{
-                    if(k === "cluster"){
-                      const obj = {
-                                    fieldName : clusters[x][k].name+'@#$'+clusters[x][k].ambariImportUrl,
-                                    uiName : clusters[x][k].name
-                                  }
-                      tempArr.push(obj);
-                    }
-                  })
-              });
-              stateObj.clusterArr = clusters;
-            }
-            stateObj.configJSON = this.fetchFields(stateObj.clusterArr);
-            if(!_.isEmpty(stateObj.clusterArr) && _.keys(stateObj.clusterArr).length > 0){
-              stateObj.configJSON = this.pushClusterFields(tempArr,stateObj.configJSON);
-            }
-            stateObj.formData = this.nodeData.config.properties;
-            stateObj.description = this.nodeData.description;
-            stateObj.fetchLoader = false;
-            this.setState(stateObj, () => {
-              if(stateObj.formData.cluster !== undefined){
-                this.updateClusterFields(stateObj.formData.cluster);
-                this.setState({streamObj : this.state.streamObj});
-              }
-              if(_.keys(stateObj.clusterArr).length === 1){
-                stateObj.formData.cluster = _.keys(stateObj.clusterArr)[0];
-                this.updateClusterFields(stateObj.formData.cluster);
-              }
-            });
-          })
-    }
-    fetchFields = (clusterList) => {
-      let obj = this.props.configData.topologyComponentUISpecification.fields;
-      if(_.keys(clusterList).length > 0){
-        const clusterFlag = obj.findIndex(x => {
-          return x.fieldName === 'clusters'
-        });
-        if(clusterFlag === -1){
-          const data = {
-                        "uiName": "Cluster Name",
-                        "fieldName": "clusters",
-                        "isOptional": false,
-                        "tooltip": "Cluster name to read data from",
-                        "type": "CustomEnumstring",
-                        "options": []
-                      };
-            obj.unshift(data);
+    Promise.all(promiseArr).then((results) => {
+      let stateObj = {},
+        tempArr = [];
+      if (results[0].responseMessage !== undefined) {
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={results[0].responseMessage}/>, '', toastOpt);
+      } else {
+        this.nodeData = results[0];
+        if (this.nodeData.outputStreams.length === 0) {
+          this.streamObj = {
+            streamId: this.props.configData.subType.toLowerCase() + '_stream_' + this.nodeData.id,
+            fields: []
+          };
+        } else {
+          this.streamObj = this.nodeData.outputStreams[0];
         }
+        stateObj.streamObj = this.streamObj;
       }
-      return obj;
-    }
-    pushClusterFields = (opt,uiSpecification) => {
-      const obj = uiSpecification.map(x => {
-          if(x.fieldName === 'clusters'){
-            x.options = opt;
-          }
-        return x
+      if (results[1].responseMessage !== undefined) {
+        this.setState({fetchLoader: false});
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={results[1].responseMessage}/>, '', toastOpt);
+      } else {
+        const clusters = results[1];
+        _.keys(clusters).map((x) => {
+          _.keys(clusters[x]).map(k => {
+            if (k === "cluster") {
+              const obj = {
+                fieldName: clusters[x][k].name + '@#$' + clusters[x][k].ambariImportUrl,
+                uiName: clusters[x][k].name
+              };
+              tempArr.push(obj);
+            }
+          });
+        });
+        stateObj.clusterArr = clusters;
+      }
+      stateObj.configJSON = this.fetchFields(stateObj.clusterArr);
+      if (!_.isEmpty(stateObj.clusterArr) && _.keys(stateObj.clusterArr).length > 0) {
+        stateObj.configJSON = this.pushClusterFields(tempArr, stateObj.configJSON);
+      }
+      stateObj.formData = this.nodeData.config.properties;
+      stateObj.description = this.nodeData.description;
+      stateObj.fetchLoader = false;
+      this.setState(stateObj, () => {
+        if (stateObj.formData.cluster !== undefined) {
+          this.updateClusterFields(stateObj.formData.cluster);
+          this.setState({streamObj: this.state.streamObj});
+        }
+        if (_.keys(stateObj.clusterArr).length === 1) {
+          stateObj.formData.cluster = _.keys(stateObj.clusterArr)[0];
+          this.updateClusterFields(stateObj.formData.cluster);
+        }
       });
-      return obj;
-    }
-
-    populateClusterFields(val){
-      const tempObj = Object.assign({},this.state.formData,{topic:''});
-      // split the val by (-) to find the key by URL
-      const keyName = this.getClusterKey(val.split('@#$')[1])
-      this.setState({clusterName : keyName,streamObj:'',formData:tempObj}, () => {
-        this.updateClusterFields();
+    });
+  }
+  fetchFields = (clusterList) => {
+    let obj = this.props.configData.topologyComponentUISpecification.fields;
+    if (_.keys(clusterList).length > 0) {
+      const clusterFlag = obj.findIndex(x => {
+        return x.fieldName === 'clusters';
       });
+      if (clusterFlag === -1) {
+        const data = {
+          "uiName": "Cluster Name",
+          "fieldName": "clusters",
+          "isOptional": false,
+          "tooltip": "Cluster name to read data from",
+          "type": "CustomEnumstring",
+          "options": []
+        };
+        obj.unshift(data);
+      }
     }
+    return obj;
+  }
+  pushClusterFields = (opt, uiSpecification) => {
+    const obj = uiSpecification.map(x => {
+      if (x.fieldName === 'clusters') {
+        x.options = opt;
+      }
+      return x;
+    });
+    return obj;
+  }
 
-    getClusterKey(url){
-      const {clusterArr} = this.state;
-      let key = '';
-      _.keys(clusterArr).map(x => {
-        _.keys(clusterArr[x]).map(k => {
-          if(clusterArr[x][k].ambariImportUrl === url){
-            key = x;
-          }
-        })
-      })
-      return key;
-    }
+  populateClusterFields(val) {
+    const tempObj = Object.assign({}, this.state.formData, {topic: ''});
+    // split the val by (-) to find the key by URL
+    const keyName = this.getClusterKey(val.split('@#$')[1]);
+    this.setState({
+      clusterName: keyName,
+      streamObj: '',
+      formData: tempObj
+    }, () => {
+      this.updateClusterFields();
+    });
+  }
 
-    updateClusterFields(name){
-      const {clusterArr,clusterName,streamObj, formData} = this.state;
-      let data = {},obj=[];
-      let config = this.state.configJSON;
-      _.keys(clusterArr).map((x) => {
-        if(name || clusterName === x){
+  getClusterKey(url) {
+    const {clusterArr} = this.state;
+    let key = '';
+    _.keys(clusterArr).map(x => {
+      _.keys(clusterArr[x]).map(k => {
+        if (clusterArr[x][k].ambariImportUrl === url) {
+          key = x;
+        }
+      });
+    });
+    return key;
+  }
+
+  updateClusterFields(name) {
+    const {clusterArr, clusterName, streamObj, formData} = this.state;
+    let data = {},
+      obj = [];
+    let config = this.state.configJSON;
+    _.keys(clusterArr).map((x) => {
+      if (name || clusterName === x) {
         obj = config.map((list) => {
-            _.keys(clusterArr[x].hints).map(k => {
-                if(list.fieldName === k){
-                  if(_.isArray(clusterArr[x].hints[k]) && (name || clusterName) === x){
-                    list.options = clusterArr[x].hints[k].map(v => {
-                      return {
-                        fieldName : v,
-                        uiName : v
-                      }
-                    })
-                    if(list.hint && list.hint.toLowerCase().indexOf("override") !== -1){
-                      if(formData[k]){
-                        if(list.options.findIndex((o)=>{return o.fieldName == formData[k]}) == -1){
-                          list.options.push({fieldName: formData[k], uiName: formData[k]});
-                        }
-                      }
-                    }
-                  }else{
-                    if(!_.isArray(clusterArr[x].hints[k])){
-                      // if (!formData[k]) this means it has come first time
-                      // OR
-                      // if (!name) this means user had change the cluster name
-                      if(!formData[k] || !name){
-                        data[k] = clusterArr[x].hints[k];
-                      }
+          _.keys(clusterArr[x].hints).map(k => {
+            if (list.fieldName === k) {
+              if (_.isArray(clusterArr[x].hints[k]) && (name || clusterName) === x) {
+                list.options = clusterArr[x].hints[k].map(v => {
+                  return {fieldName: v, uiName: v};
+                });
+                if (list.hint && list.hint.toLowerCase().indexOf("override") !== -1) {
+                  if (formData[k]) {
+                    if (list.options.findIndex((o) => {
+                      return o.fieldName == formData[k];
+                    }) == -1) {
+                      list.options.push({fieldName: formData[k], uiName: formData[k]});
                     }
                   }
                 }
-            })
-            data.clusters = clusterArr[name || clusterName].cluster.name;
-            return list;
+              } else {
+                if (!_.isArray(clusterArr[x].hints[k])) {
+                  // if (!formData[k]) this means it has come first time
+                  // OR
+                  // if (!name) this means user had change the cluster name
+                  if (!formData[k] || !name) {
+                    data[k] = clusterArr[x].hints[k];
+                  }
+                }
+              }
+            }
           });
-        }
-      });
-      const tempData = Object.assign({},this.state.formData,data);
-      this.setState({configJSON : obj,formData : tempData});
-    }
+          data.clusters = clusterArr[name || clusterName].cluster.name;
+          return list;
+        });
+      }
+    });
+    const tempData = Object.assign({}, this.state.formData, data);
+    this.setState({configJSON: obj, formData: tempData});
+  }
 
-    validateData(){
-        let validDataFlag = false;
-        if(!this.state.fetchLoader){
-          if(this.refs.Form.validate()){
-              validDataFlag = true;
-              this.setState({activeTabKey: 1, showRequired: true});
-          }
-          if(this.streamObj.fields.length === 0){
-            validDataFlag = false;
-            FSReactToastr.error(<CommonNotification flag="error" content={"Output stream fields cannot be blank."}/>, '', toastOpt);
-          }
-        }
-        return validDataFlag;
+  validateData() {
+    let validDataFlag = false;
+    if (!this.state.fetchLoader) {
+      if (this.refs.Form.validate()) {
+        validDataFlag = true;
+        this.setState({activeTabKey: 1, showRequired: true});
+      }
+      if (this.streamObj.fields.length === 0) {
+        validDataFlag = false;
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={"Output stream fields cannot be blank."}/>, '', toastOpt);
+      }
     }
+    return validDataFlag;
+  }
 
-    handleSave(name){
-        let {topologyId, versionId, nodeType} = this.props;
-        let nodeId = this.nodeData.id;
-        let data = this.refs.Form.state.FormData;
-        this.nodeData.config.properties = data;
-        this.nodeData.name = name;
-        if(this.nodeData.outputStreams.length > 0){
-          this.nodeData.outputStreams[0].fields = this.streamObj.fields;
-        } else {
-          this.nodeData.outputStreams.push({
-            fields: this.streamObj.fields,
-            streamId: this.streamObj.streamId,
-            topologyId: topologyId
-          })
-        }
-        this.nodeData.description = this.state.description;
-        return TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(this.nodeData)});
+  handleSave(name) {
+    let {topologyId, versionId, nodeType} = this.props;
+    let nodeId = this.nodeData.id;
+    let data = this.refs.Form.state.FormData;
+    this.nodeData.config.properties = data;
+    this.nodeData.name = name;
+    if (this.nodeData.outputStreams.length > 0) {
+      this.nodeData.outputStreams[0].fields = this.streamObj.fields;
+    } else {
+      this.nodeData.outputStreams.push({fields: this.streamObj.fields, streamId: this.streamObj.streamId, topologyId: topologyId});
     }
+    this.nodeData.description = this.state.description;
+    return TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {
+      body: JSON.stringify(this.nodeData)
+    });
+  }
 
-    showOutputStream(resultArr){
-        this.streamObj = {
-            streamId: this.props.configData.subType.toLowerCase()+'_stream_'+this.nodeData.id,
-            fields: resultArr
-        };
-        this.setState({streamObj: this.streamObj});
-    }
+  showOutputStream(resultArr) {
+    this.streamObj = {
+      streamId: this.props.configData.subType.toLowerCase() + '_stream_' + this.nodeData.id,
+      fields: resultArr
+    };
+    this.setState({streamObj: this.streamObj});
+  }
 
-    onSelectTab = (eventKey) => {
-        if(eventKey == 1){
-            this.setState({activeTabKey: 1, showRequired: true})
-        }else if(eventKey == 2){
-            this.setState({activeTabKey: 2, showRequired: false})
-        } else if(eventKey == 3){
-            this.setState({activeTabKey: 3})
-        }
+  onSelectTab = (eventKey) => {
+    if (eventKey == 1) {
+      this.setState({activeTabKey: 1, showRequired: true});
+    } else if (eventKey == 2) {
+      this.setState({activeTabKey: 2, showRequired: false});
+    } else if (eventKey == 3) {
+      this.setState({activeTabKey: 3});
     }
+  }
 
-    handleNotesChange(description) {
-        this.setState({description: description});
-    }
+  handleNotesChange(description) {
+    this.setState({description: description});
+  }
 
-    render() {
-        const {configJSON,fetchLoader} = this.state;
-        let formData = this.state.formData;
-        let fields = Utils.genFields(configJSON, [], formData);
-        const form = fetchLoader
-                      ? <div className="col-sm-12">
-                            <div className="loading-img text-center" style={{marginTop : "100px"}}>
-                                <img src="styles/img/start-loader.gif" alt="loading" />
-                            </div>
-                        </div>
-                      : <div className="source-modal-form">
-                            <Scrollbars autoHide
-                              renderThumbHorizontal={props => <div {...props} style={{display : "none"}}/>}
-                              >
-                                  <Form
-                                      ref="Form"
-                                      readOnly={!this.props.editMode}
-                                      showRequired={this.state.showRequired}
-                                      className="customFormClass"
-                                      FormData={formData}
-                                      populateClusterFields={this.populateClusterFields.bind(this)}
-                                      callback={this.showOutputStream.bind(this)}
-                                  >
-                                      {fields}
-                                  </Form>
-                            </Scrollbars>
-                          </div>
-        const outputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={this.state.streamObj} streamType="output" />
-        return (
-            <Tabs id="SinkForm" activeKey={this.state.activeTabKey} className="modal-tabs" onSelect={this.onSelectTab}>
-                <Tab eventKey={1} title="REQUIRED">
-                    {outputSidebar}
-                    {form}
-                </Tab>
-                <Tab eventKey={2} title="OPTIONAL">
-                    {outputSidebar}
-                    {form}
-                </Tab>
-                <Tab eventKey={3} title="NOTES">
-                    <NotesForm
-                        ref="NotesForm"
-                        description={this.state.description}
-                        onChangeDescription={this.handleNotesChange.bind(this)}
-                    />
-                </Tab>
-            </Tabs>
-        )
-    }
+  render() {
+    const {configJSON, fetchLoader} = this.state;
+    let formData = this.state.formData;
+    let fields = Utils.genFields(configJSON, [], formData);
+    const form = fetchLoader
+      ? <div className="col-sm-12">
+          <div className="loading-img text-center" style={{
+            marginTop: "100px"
+          }}>
+            <img src="styles/img/start-loader.gif" alt="loading"/>
+          </div>
+        </div>
+      : <div className="source-modal-form">
+        <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
+          display: "none"
+        }}/>}>
+          <Form ref="Form" readOnly={!this.props.editMode} showRequired={this.state.showRequired} className="customFormClass" FormData={formData} populateClusterFields={this.populateClusterFields.bind(this)} callback={this.showOutputStream.bind(this)}>
+            {fields}
+          </Form>
+        </Scrollbars>
+      </div>;
+    const outputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={this.state.streamObj} streamType="output"/>;
+    return (
+      <Tabs id="SinkForm" activeKey={this.state.activeTabKey} className="modal-tabs" onSelect={this.onSelectTab}>
+        <Tab eventKey={1} title="REQUIRED">
+          {outputSidebar}
+          {form}
+        </Tab>
+        <Tab eventKey={2} title="OPTIONAL">
+          {outputSidebar}
+          {form}
+        </Tab>
+        <Tab eventKey={3} title="NOTES">
+          <NotesForm ref="NotesForm" description={this.state.description} onChangeDescription={this.handleNotesChange.bind(this)}/>
+        </Tab>
+      </Tabs>
+    );
+  }
 }

@@ -1,5 +1,18 @@
-import React, { Component, PropTypes } from 'react'
-import routes from './routers/routes'
+/**
+  * Copyright 2017 Hortonworks.
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *   http://www.apache.org/licenses/LICENSE-2.0
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+**/
+import React, { Component, PropTypes } from 'react';
+import routes from './routers/routes';
 import { render } from 'react-dom';
 import { Router, browserHistory, hashHistory } from 'react-router';
 import FSReactToastr from './components/FSReactToastr';
@@ -10,7 +23,7 @@ import CommonNotification from './utils/CommonNotification';
 
 class App extends Component {
   constructor(){
-    super()
+    super();
     this.fetchData();
   }
   fetchData(){
@@ -20,20 +33,20 @@ class App extends Component {
     Promise.all(promiseArr)
       .then((results)=>{
         if(results[0].responseMessage !== undefined){
-          FSReactToastr.error(<CommonNotification flag="error" content={results[0].responseMessage}/>, '', toastOpt)
+          FSReactToastr.error(<CommonNotification flag="error" content={results[0].responseMessage}/>, '', toastOpt);
         } else {
           app_state.streamline_config = {
             registry: results[0].registry,
             dashboard: results[0].dashboard
           };
         }
-      })
+      });
   }
 
   render() {
     return (
       <Router ref="router" history={hashHistory} routes={routes} />
-    )
+    );
   }
 }
 
@@ -41,4 +54,4 @@ class App extends Component {
   <App />, document.getElementById('app_container')
 )*/
 
-export default App
+export default App;

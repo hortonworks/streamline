@@ -1,3 +1,18 @@
+/**
+ * Copyright 2017 Hortonworks.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ **/
+
+
 // Creates a hot reloading development environment
 
 const path = require('path');
@@ -42,33 +57,33 @@ app.use("/", express.static(__dirname + '/app'));
 //-------------------proxy-------------------
 
 const proxyMiddleware = require('http-proxy-middleware');
-const restTarget = 'http://0.0.0.0:8080';
+const restTarget = 'http://localhost:8090';
 
-const proxyTable = {};    // when request.headers.host == 'dev.localhost:3000',
-proxyTable[host +':'+ port] = restTarget;   // override target 'http://www.example.org' to 'http://localhost:8000'
+const proxyTable = {}; // when request.headers.host == 'dev.localhost:3000',
+proxyTable[host + ':' + port] = restTarget; // override target 'http://www.example.org' to 'http://localhost:8000'
 
 // configure proxy middleware options
 const options = {
-    target: restTarget, // target host
-    changeOrigin: true, // needed for virtual hosted sites
-    ws: true, // proxy websockets
-    router: proxyTable,
-    onProxyRes: function(proxyRes, req, res) {
-        if (proxyRes.headers['set-cookie']) {
-            var _cookie = proxyRes.headers['set-cookie'][0];
-            _cookie = _cookie.replace(/Path=\/[a-zA-Z0-9_.-]*\/;/gi,"Path=/;");
-            proxyRes.headers['set-cookie'] = [_cookie];
-        }
-    },
-    onProxyReq: function(proxyReq, req, res) {
-
-    },
-    onError: function(err, req, res) {
-        console.log(req, res, function(){});
+  target: restTarget, // target host
+  changeOrigin: true, // needed for virtual hosted sites
+  ws: true, // proxy websockets
+  router: proxyTable,
+  onProxyRes: function(proxyRes, req, res) {
+    if (proxyRes.headers['set-cookie']) {
+      var _cookie = proxyRes.headers['set-cookie'][0];
+      _cookie = _cookie.replace(/Path=\/[a-zA-Z0-9_.-]*\/;/gi, "Path=/;");
+      proxyRes.headers['set-cookie'] = [_cookie];
     }
+  },
+  onProxyReq: function(proxyReq, req, res) {
+
+  },
+  onError: function(err, req, res) {
+    console.log(req, res, function() {});
+  }
 };
 
-const context = ['/api'];             // requests with this path will be proxied
+const context = ['/api']; // requests with this path will be proxied
 const proxy = proxyMiddleware(context, options);
 
 app.use(proxy);
