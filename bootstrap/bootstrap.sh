@@ -140,6 +140,7 @@ function add_all_bundles {
     add_bundle /streams/componentbundles/SINK $component_dir/sinks/druid-sink-topology-component.json
     add_bundle /streams/componentbundles/SINK $component_dir/sinks/solr-sink-topology-component.json
     add_bundle /streams/componentbundles/SINK $component_dir/sinks/kafka-sink-topology-component.json
+    add_bundle /streams/componentbundles/SINK $component_dir/sinks/hive-sink-topology-component.json
     # === Topology ===
     add_bundle /streams/componentbundles/TOPOLOGY $component_dir/topology/storm-topology-component.json
 
