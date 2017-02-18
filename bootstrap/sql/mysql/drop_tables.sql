@@ -5,6 +5,8 @@ DROP TABLE IF EXISTS tag;
 DROP TABLE IF EXISTS tag_storable_mapping;
 DROP TABLE IF EXISTS topology_component_bundle;
 DROP TABLE IF EXISTS notifier;
+DROP TABLE IF EXISTS topology_test_run_histories;
+DROP TABLE IF EXISTS topology_test_run_case;
 DROP TABLE IF EXISTS topology_component;
 DROP TABLE IF EXISTS topology_source_stream_mapping;
 DROP TABLE IF EXISTS topology_source;
@@ -39,5 +41,9 @@ DROP TABLE IF EXISTS role_hierarchy;
 DROP TABLE IF EXISTS user_role;
 DROP TABLE IF EXISTS role;
 DROP TABLE IF EXISTS user_entry;
+DROP TABLE IF EXISTS topology_test_run_case;
+DROP TABLE IF EXISTS topology_test_run_case_source;
+DROP TABLE IF EXISTS topology_test_run_case_sink;
+DROP TABLE IF EXISTS topology_test_run_histories;
 
 SET FOREIGN_KEY_CHECKS=1;

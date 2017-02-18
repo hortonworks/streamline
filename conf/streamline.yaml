@@ -9,6 +9,8 @@ modules:
     className: com.hortonworks.streamline.streams.service.StreamsModule
     config:
       stormHomeDir: /usr/local/Cellar/storm/0.10.0/
+      # directory to store the results of topology test run
+      topologyTestRunResultDir: /tmp
       # schema registry configuration
       schemaRegistryUrl: "http://localhost:9090/api/v1"
       #Custom processor upload configuration

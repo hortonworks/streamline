@@ -23,6 +23,8 @@ import com.google.common.base.Stopwatch;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.exception.service.exception.request.TopologyAlreadyExistsOnCluster;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import com.hortonworks.streamline.common.util.ParallelStreamUtil;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.actions.TopologyActions;
@@ -41,9 +43,6 @@ import com.hortonworks.streamline.streams.security.Roles;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import com.hortonworks.streamline.streams.storm.common.StormNotReachableException;
-import com.hortonworks.streamline.streams.storm.common.TopologyNotAliveException;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,7 +94,6 @@ public class TopologyCatalogResource {
     private static final Boolean DEFAULT_SORT_ORDER_ASCENDING = false;
 
     private static final int FORK_JOIN_POOL_PARALLELISM = 10;
-
     private final ForkJoinPool forkJoinPool = new ForkJoinPool(FORK_JOIN_POOL_PARALLELISM);
 
     private final URL SCHEMA = Thread.currentThread().getContextClassLoader()
@@ -454,6 +452,7 @@ public class TopologyCatalogResource {
         }
         throw EntityNotFoundException.byId(topologyId.toString());
     }
+
 
     @POST
     @Path("/topologies/{topologyId}/versions/{versionId}/actions/deploy")

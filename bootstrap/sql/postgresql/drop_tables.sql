@@ -37,3 +37,6 @@ DROP TABLE IF EXISTS role_hierarchy CASCADE;
 DROP TABLE IF EXISTS user_role CASCADE;
 DROP TABLE IF EXISTS role CASCADE;
 DROP TABLE IF EXISTS user_entry CASCADE;
+DROP TABLE IF EXISTS topology_test_run_case CASCADE;
+DROP TABLE IF EXISTS topology_test_run_case_source CASCADE;
+DROP TABLE IF EXISTS topology_test_run_histories CASCADE;

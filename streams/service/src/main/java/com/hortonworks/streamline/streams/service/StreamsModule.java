@@ -134,7 +134,8 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
                 new RuleCatalogResource(authorizer, streamcatalogService),
                 new BranchRuleCatalogResource(authorizer, streamcatalogService),
                 new WindowCatalogResource(authorizer, streamcatalogService),
-                new TopologyEditorToolbarResource(authorizer, streamcatalogService, securityCatalogService)
+                new TopologyEditorToolbarResource(authorizer, streamcatalogService, securityCatalogService),
+                new TopologyTestRunResource(streamcatalogService, actionsService)
         );
     }
 

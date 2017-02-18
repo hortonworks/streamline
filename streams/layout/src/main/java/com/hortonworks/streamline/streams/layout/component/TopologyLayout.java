@@ -43,6 +43,13 @@ public class TopologyLayout {
         this.topologyDag = topologyDag;
     }
 
+    public TopologyLayout(Long id, String name, Config config, TopologyDag topologyDag) {
+        this.id = id;
+        this.name = name;
+        this.config = config;
+        this.topologyDag = topologyDag;
+    }
+
     public Long getId() {
         return id;
     }

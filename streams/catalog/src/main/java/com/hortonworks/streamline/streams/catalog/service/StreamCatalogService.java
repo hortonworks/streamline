@@ -36,6 +36,8 @@ import com.hortonworks.streamline.common.util.ProxyUtil;
 import com.hortonworks.streamline.common.util.Utils;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
+import com.hortonworks.streamline.storage.PrimaryKey;
+import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.storage.exception.StorageException;
@@ -58,6 +60,10 @@ import com.hortonworks.streamline.streams.catalog.TopologySink;
 import com.hortonworks.streamline.streams.catalog.TopologySource;
 import com.hortonworks.streamline.streams.catalog.TopologySourceStreamMapping;
 import com.hortonworks.streamline.streams.catalog.TopologyStream;
+import com.hortonworks.streamline.streams.catalog.TopologyTestRunCase;
+import com.hortonworks.streamline.streams.catalog.TopologyTestRunCaseSink;
+import com.hortonworks.streamline.streams.catalog.TopologyTestRunCaseSource;
+import com.hortonworks.streamline.streams.catalog.TopologyTestRunHistory;
 import com.hortonworks.streamline.streams.catalog.TopologyVersion;
 import com.hortonworks.streamline.streams.catalog.TopologyWindow;
 import com.hortonworks.streamline.streams.catalog.UDF;
@@ -2402,4 +2408,225 @@ public class StreamCatalogService {
     private Collection<File> listFiles(List<QueryParam> queryParams) {
         return dao.find(File.NAMESPACE, queryParams);
     }
+
+    public Collection<TopologyTestRunHistory> listTopologyTestRunHistory(Long topologyId) {
+        List<QueryParam> queryParams = new ArrayList<>();
+        queryParams.add(new QueryParam("topologyId", String.valueOf(topologyId)));
+        return dao.find(TopologyTestRunHistory.NAMESPACE, queryParams);
+    }
+
+    public Collection<TopologyTestRunHistory> listTopologyTestRunHistory(Long topologyId, Long versionId) {
+        List<QueryParam> queryParams = new ArrayList<>();
+        queryParams.add(new QueryParam("topologyId", String.valueOf(topologyId)));
+        queryParams.add(new QueryParam("versionId", String.valueOf(versionId)));
+        return dao.find(TopologyTestRunHistory.NAMESPACE, queryParams);
+    }
+
+    public TopologyTestRunHistory getTopologyTestRunHistory(Long id) {
+        TopologyTestRunHistory history = new TopologyTestRunHistory();
+        history.setId(id);
+        return dao.get(new StorableKey(TopologyTestRunHistory.NAMESPACE, history.getPrimaryKey()));
+    }
+
+    public TopologyTestRunHistory addTopologyTestRunHistory(TopologyTestRunHistory history) {
+        if (history.getId() == null) {
+            history.setId(dao.nextId(TopologyTestRunHistory.NAMESPACE));
+        }
+        history.setTimestamp(System.currentTimeMillis());
+        dao.add(history);
+        return history;
+    }
+
+    public TopologyTestRunHistory addOrUpdateTopologyTestRunHistory(Long id, TopologyTestRunHistory history) {
+        history.setId(id);
+        history.setTimestamp(System.currentTimeMillis());
+        dao.addOrUpdate(history);
+        return history;
+    }
+
+    public Collection<TopologyTestRunCase> listTopologyTestRunCase(Long topologyId) {
+        List<QueryParam> queryParams = new ArrayList<>();
+        queryParams.add(new QueryParam("topologyId", String.valueOf(topologyId)));
+        return dao.find(TopologyTestRunCase.NAMESPACE, queryParams);
+    }
+
+    public TopologyTestRunCase getTopologyTestRunCase(Long topologyId, Long testcaseId) {
+        TopologyTestRunCase testCase = new TopologyTestRunCase();
+        testCase.setId(testcaseId);
+
+        TopologyTestRunCase found = dao.get(new StorableKey(TopologyTestRunCase.NAMESPACE, testCase.getPrimaryKey()));
+        if (found == null || !found.getTopologyId().equals(topologyId)) {
+            return null;
+        }
+
+        return found;
+    }
+
+    public TopologyTestRunCase addTopologyTestRunCase(TopologyTestRunCase testCase) {
+        if (testCase.getId() == null) {
+            testCase.setId(dao.nextId(TopologyTestRunCase.NAMESPACE));
+        }
+        testCase.setTimestamp(System.currentTimeMillis());
+        dao.add(testCase);
+        return testCase;
+    }
+
+    public TopologyTestRunCase addOrUpdateTopologyTestRunCase(Long id, TopologyTestRunCase testCase) {
+        testCase.setId(id);
+        testCase.setTimestamp(System.currentTimeMillis());
+        dao.addOrUpdate(testCase);
+        return testCase;
+    }
+
+    public TopologyTestRunCase removeTestRunCase(Long topologyId, Long testcaseId) {
+        TopologyTestRunCase testcase = getTopologyTestRunCase(topologyId, testcaseId);
+        if (testcase != null) {
+            testcase = dao.remove(testcase.getStorableKey());
+        }
+
+        return testcase;
+    }
+
+    public TopologyTestRunCaseSource getTopologyTestRunCaseSourceBySourceId(Long testCaseId, Long sourceId) {
+        TopologyTestRunCaseSource testCaseSource = new TopologyTestRunCaseSource();
+        testCaseSource.setId(testCaseId);
+
+        Collection<TopologyTestRunCaseSource> sources = dao.find(TopologyTestRunCaseSource.NAMESPACE,
+                Lists.newArrayList(
+                        new QueryParam("testCaseId", testCaseId.toString()),
+                        new QueryParam("sourceId", sourceId.toString())
+                ));
+
+        if (sources == null || sources.isEmpty()) {
+            return null;
+        } else if (sources.size() > 1) {
+            LOG.warn("More than one test run case source entity for same test case and source. test case id: " + testCaseId + " , source id: " + sourceId);
+            LOG.warn("Returning first one...");
+        }
+
+        return sources.iterator().next();
+    }
+
+    public TopologyTestRunCaseSource getTopologyTestRunCaseSource(Long testcaseId, Long id) {
+        TopologyTestRunCaseSource testCaseSource = new TopologyTestRunCaseSource();
+        testCaseSource.setId(id);
+
+        TopologyTestRunCaseSource retrieved = dao.get(new StorableKey(TopologyTestRunCaseSource.NAMESPACE, testCaseSource.getPrimaryKey()));
+        if (retrieved == null || !retrieved.getTestCaseId().equals(testcaseId)) {
+            return null;
+        }
+
+        return retrieved;
+    }
+
+    public TopologyTestRunCaseSource addTopologyTestRunCaseSource(TopologyTestRunCaseSource testCaseSource) {
+        if (testCaseSource.getId() == null) {
+            testCaseSource.setId(dao.nextId(TopologyTestRunCaseSource.NAMESPACE));
+        }
+        testCaseSource.setTimestamp(System.currentTimeMillis());
+        dao.add(testCaseSource);
+        return testCaseSource;
+    }
+
+    public TopologyTestRunCaseSource addOrUpdateTopologyTestRunCaseSource(Long id, TopologyTestRunCaseSource testCaseSource) {
+        testCaseSource.setId(id);
+        testCaseSource.setTimestamp(System.currentTimeMillis());
+        dao.addOrUpdate(testCaseSource);
+        return testCaseSource;
+    }
+
+    public TopologyTestRunCaseSource removeTestRunCaseSourceBySourceId(Long testcaseId, Long sourceId) {
+        TopologyTestRunCaseSource testcase = getTopologyTestRunCaseSourceBySourceId(testcaseId, sourceId);
+        if (testcase != null) {
+            testcase = dao.remove(testcase.getStorableKey());
+        }
+
+        return testcase;
+    }
+
+    public TopologyTestRunCaseSource removeTestRunCaseSource(Long id) {
+        TopologyTestRunCaseSource testcaseSource = new TopologyTestRunCaseSource();
+        testcaseSource.setId(id);
+
+        return dao.remove(testcaseSource.getStorableKey());
+    }
+
+    public Collection<TopologyTestRunCaseSource> listTopologyTestRunCaseSource(Long topologyId, Long testCaseId) {
+        List<QueryParam> queryParams = new ArrayList<>();
+        queryParams.add(new QueryParam("topologyId", String.valueOf(topologyId)));
+        queryParams.add(new QueryParam("testCaseId", String.valueOf(testCaseId)));
+        return dao.find(TopologyTestRunCaseSource.NAMESPACE, queryParams);
+    }
+
+    public TopologyTestRunCaseSink getTopologyTestRunCaseSinkBySinkId(Long testCaseId, Long sinkId) {
+        TopologyTestRunCaseSink testCaseSink = new TopologyTestRunCaseSink();
+        testCaseSink.setId(testCaseId);
+
+        Collection<TopologyTestRunCaseSink> sinks = dao.find(TopologyTestRunCaseSink.NAMESPACE,
+                Lists.newArrayList(
+                        new QueryParam("testCaseId", testCaseId.toString()),
+                        new QueryParam("sinkId", sinkId.toString())
+                ));
+
+        if (sinks == null || sinks.isEmpty()) {
+            return null;
+        } else if (sinks.size() > 1) {
+            LOG.warn("More than one test run case sink entity for same test case and sink. test case id: " + testCaseId + " , sink id: " + sinkId);
+            LOG.warn("Returning first one...");
+        }
+
+        return sinks.iterator().next();
+    }
+
+    public TopologyTestRunCaseSink getTopologyTestRunCaseSink(Long testcaseId, Long id) {
+        TopologyTestRunCaseSink testCaseSink = new TopologyTestRunCaseSink();
+        testCaseSink.setId(id);
+
+        TopologyTestRunCaseSink retrieved = dao.get(new StorableKey(TopologyTestRunCaseSink.NAMESPACE, testCaseSink.getPrimaryKey()));
+        if (retrieved == null || !retrieved.getTestCaseId().equals(testcaseId)) {
+            return null;
+        }
+
+        return retrieved;
+    }
+
+    public TopologyTestRunCaseSink addTopologyTestRunCaseSink(TopologyTestRunCaseSink testCaseSink) {
+        if (testCaseSink.getId() == null) {
+            testCaseSink.setId(dao.nextId(TopologyTestRunCaseSink.NAMESPACE));
+        }
+        testCaseSink.setTimestamp(System.currentTimeMillis());
+        dao.add(testCaseSink);
+        return testCaseSink;
+    }
+
+    public TopologyTestRunCaseSink addOrUpdateTopologyTestRunCaseSink(Long id, TopologyTestRunCaseSink testCaseSink) {
+        testCaseSink.setId(id);
+        testCaseSink.setTimestamp(System.currentTimeMillis());
+        dao.addOrUpdate(testCaseSink);
+        return testCaseSink;
+    }
+
+    public TopologyTestRunCaseSink removeTestRunCaseSinkBySinkId(Long testcaseId, Long sinkId) {
+        TopologyTestRunCaseSink testcase = getTopologyTestRunCaseSinkBySinkId(testcaseId, sinkId);
+        if (testcase != null) {
+            testcase = dao.remove(testcase.getStorableKey());
+        }
+
+        return testcase;
+    }
+
+    public TopologyTestRunCaseSink removeTestRunCaseSink(Long id) {
+        TopologyTestRunCaseSink testcaseSink = new TopologyTestRunCaseSink();
+        testcaseSink.setId(id);
+
+        return dao.remove(testcaseSink.getStorableKey());
+    }
+
+    public Collection<TopologyTestRunCaseSink> listTopologyTestRunCaseSink(Long topologyId, Long testCaseId) {
+        List<QueryParam> queryParams = new ArrayList<>();
+        queryParams.add(new QueryParam("topologyId", String.valueOf(topologyId)));
+        queryParams.add(new QueryParam("testCaseId", String.valueOf(testCaseId)));
+        return dao.find(TopologyTestRunCaseSink.NAMESPACE, queryParams);
+    }
+
 }
