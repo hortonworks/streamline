@@ -16,8 +16,11 @@
 package com.hortonworks.streamline.streams.actions;
 
 import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
+import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
+import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,6 +34,11 @@ public interface TopologyActions {
     // Deploy the artifact generated using the underlying streaming
     // engine
     void deploy(TopologyLayout topology, String mavenArtifacts) throws Exception;
+
+    // Compose test topology based on topology DAG using the underlying streaming engine
+    void testRun(TopologyLayout topology, String mavenArtifacts,
+                 Map<String, TestRunSource> testRunSourcesMap,
+                 Map<String, TestRunSink> testRunSinksMap) throws Exception;
 
     //Kill the artifact that was deployed using deploy
     void kill (TopologyLayout topology) throws Exception;

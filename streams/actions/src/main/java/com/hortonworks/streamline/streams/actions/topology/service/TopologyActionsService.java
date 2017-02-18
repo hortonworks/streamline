@@ -15,7 +15,12 @@
  **/
 package com.hortonworks.streamline.streams.actions.topology.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.streamline.streams.layout.component.StreamlineSink;
+import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
+import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
+import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import com.hortonworks.streamline.common.util.FileStorage;
@@ -39,6 +44,7 @@ import com.hortonworks.streamline.streams.layout.component.OutputComponent;
 import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
 import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
 import com.hortonworks.streamline.streams.layout.component.TopologyDag;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,11 +57,18 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 public class TopologyActionsService implements ContainingNamespaceAwareContainer {
     private static final Logger LOG = LoggerFactory.getLogger(TopologyActionsService.class);
+
+    public static final String TOPOLOGY_TEST_RUN_RESULT_DIR = "topologyTestRunResultDir";
 
     private final StreamCatalogService catalogService;
     private final EnvironmentService environmentService;
@@ -63,6 +76,7 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
     private final ConfigFileWriter configFileWriter;
     private final FileStorage fileStorage;
     private final TopologyActionsContainer topologyActionsContainer;
+    private final String topologyTestRunResultDir;
 
     public TopologyActionsService(StreamCatalogService catalogService, EnvironmentService environmentService,
                                   FileStorage fileStorage, MLModelRegistryClient modelRegistryClient,
@@ -78,7 +92,23 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
             Object value = confEntry.getValue();
             conf.put(confEntry.getKey(), value == null ? null : value.toString());
         }
+
+        String topologyTestRunResultDir = conf.get(TOPOLOGY_TEST_RUN_RESULT_DIR);
+        if (StringUtils.isEmpty(topologyTestRunResultDir)) {
+            throw new RuntimeException("Configuration of topology test run result dir is not set.");
+        }
+
+        if (topologyTestRunResultDir.endsWith(File.separator)) {
+            this.topologyTestRunResultDir = topologyTestRunResultDir.substring(0, topologyTestRunResultDir.length() - 1);
+        } else {
+            this.topologyTestRunResultDir = topologyTestRunResultDir;
+        }
+
         this.topologyActionsContainer = new TopologyActionsContainer(environmentService, conf);
+    }
+
+    public String getTopologyTestRunResult(String uuid) {
+        return topologyTestRunResultDir + File.separator + uuid;
     }
 
     public void deployTopology(Topology topology) throws Exception {
@@ -90,6 +120,44 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
         setUpClusterArtifacts(topology, topologyActions);
         String mavenArtifacts = setUpExtraJars(topology, topologyActions);
         topologyActions.deploy(CatalogToLayoutConverter.getTopologyLayout(topology, dag), mavenArtifacts);
+    }
+
+    public Map<String, TestRunSink> testRunTopology(Topology topology, String configJson) throws Exception {
+        TopologyDag dag = topologyDagBuilder.getDag(topology);
+        topology.setTopologyDag(dag);
+        ensureValid(dag);
+        TopologyActions topologyActions = getTopologyActionsInstance(topology);
+        LOG.debug("Running topology {} in test mode", topology);
+        setUpClusterArtifacts(topology, topologyActions);
+        String mavenArtifacts = setUpExtraJars(topology, topologyActions);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, List<Map<String, Object>>> testRecordsMap = objectMapper.readValue(configJson,
+                new TypeReference<Map<String, List<Map<String, Object>>>>() {});
+
+        List<StreamlineSource> sources = dag.getOutputComponents().stream()
+                .filter(c -> c instanceof StreamlineSource)
+                .map(c -> (StreamlineSource) c)
+                .collect(toList());
+
+        List<StreamlineSink> sinks = dag.getInputComponents().stream()
+                .filter(c -> c instanceof StreamlineSink)
+                .map(c -> (StreamlineSink) c)
+                .collect(toList());
+
+        Map<String, TestRunSource> testRunSourceMap = sources.stream()
+                .collect(toMap(s -> s.getName(), s -> new TestRunSource(s.getOutputStreams(), testRecordsMap.get(s.getName()))));
+
+        Map<String, TestRunSink> testRunSinkMap = sinks.stream()
+                .collect(toMap(s -> s.getName(), s -> {
+                    String uuid = UUID.randomUUID().toString();
+                    return new TestRunSink(uuid, getTopologyTestRunResult(uuid));
+                }));
+
+        TopologyLayout topologyLayout = CatalogToLayoutConverter.getTopologyLayout(topology, dag);
+        topologyActions.testRun(topologyLayout, mavenArtifacts, testRunSourceMap, testRunSinkMap);
+
+        return testRunSinkMap;
     }
 
     public void killTopology(Topology topology) throws Exception {
