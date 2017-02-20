@@ -132,8 +132,8 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
         String mavenArtifacts = setUpExtraJars(topology, topologyActions);
 
         ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, List<Map<String, Object>>> testRecordsMap = objectMapper.readValue(configJson,
-                new TypeReference<Map<String, List<Map<String, Object>>>>() {});
+        Map<String, Map<String, List<Map<String, Object>>>> testRecordsMap = objectMapper.readValue(configJson,
+                new TypeReference<Map<String, Map<String, List<Map<String, Object>>>>>() {});
 
         List<StreamlineSource> sources = dag.getOutputComponents().stream()
                 .filter(c -> c instanceof StreamlineSource)

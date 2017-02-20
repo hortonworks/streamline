@@ -13,7 +13,9 @@ import org.apache.storm.tuple.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
@@ -22,7 +24,7 @@ public class TestRunSourceSpout extends BaseRichSpout {
     private SpoutOutputCollector _collector;
 
     private final TestRunSource testRunSource;
-    private final Queue<Map<String, Object>> testRecordsQueue;
+    private final Map<String, Queue<Map<String, Object>>> testRecordsQueueMap;
 
     public TestRunSourceSpout(String testRunSourceJson) {
         this(Utils.createObjectFromJson(testRunSourceJson, TestRunSource.class));
@@ -30,10 +32,12 @@ public class TestRunSourceSpout extends BaseRichSpout {
 
     public TestRunSourceSpout(TestRunSource testRunSource) {
         this.testRunSource = testRunSource;
+        testRecordsQueueMap = new HashMap<>();
         if (testRunSource != null) {
-            testRecordsQueue = new LinkedList<>(testRunSource.getTestRecords());
-        } else {
-            testRecordsQueue = new LinkedList<>();
+            Map<String, List<Map<String, Object>>> testRecords = testRunSource.getTestRecords();
+            for (Map.Entry<String, List<Map<String, Object>>> entry : testRecords.entrySet()) {
+                testRecordsQueueMap.put(entry.getKey(), new LinkedList<>(entry.getValue()));
+            }
         }
     }
 
@@ -47,8 +51,24 @@ public class TestRunSourceSpout extends BaseRichSpout {
 
     @Override
     public void nextTuple() {
-        Map<String, Object> record = testRecordsQueue.poll();
-        if (record == null) {
+        int emitCount = 0;
+
+        // loop output stream and emit at most one record per output stream
+        for (Map.Entry<String, Queue<Map<String, Object>>> entry : testRecordsQueueMap.entrySet()) {
+            String outputStream = entry.getKey();
+            Queue<Map<String, Object>> queue = entry.getValue();
+
+            Map<String, Object> record = queue.poll();
+            if (record != null) {
+                StreamlineEventImpl streamlineEvent = new StreamlineEventImpl(record, testRunSource.getId());
+                LOG.info("Emitting event {} to stream {}", streamlineEvent, outputStream);
+                _collector.emit(outputStream, new Values(streamlineEvent), streamlineEvent.getId());
+
+                emitCount++;
+            }
+        }
+
+        if (emitCount == 0) {
             LOG.info("No more records, sleeping...");
             try {
                 Thread.sleep(1000);
@@ -57,12 +77,6 @@ public class TestRunSourceSpout extends BaseRichSpout {
             }
             return;
         }
-
-        testRunSource.getOutputStreams().forEach(stream -> {
-            StreamlineEventImpl streamlineEvent = new StreamlineEventImpl(record, testRunSource.getId());
-            LOG.info("Emitting event {} to stream {}", streamlineEvent, stream.getId());
-            _collector.emit(stream.getId(), new Values(streamlineEvent), streamlineEvent.getId());
-        });
     }
 
     @Override

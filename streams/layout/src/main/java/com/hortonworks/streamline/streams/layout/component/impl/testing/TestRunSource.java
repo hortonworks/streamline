@@ -8,19 +8,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Source for topology test run. This class contains test records which will be emitted from test run Spout.
+ */
 public class TestRunSource extends StreamlineSource {
-    private final List<Map<String, Object>> testRecords;
+    private final Map<String, List<Map<String, Object>>> testRecords;
 
     public TestRunSource() {
-        this(Collections.EMPTY_SET, Collections.EMPTY_LIST);
+        this(Collections.EMPTY_SET, Collections.EMPTY_MAP);
     }
 
-    public TestRunSource(Set<Stream> outputStreams, List<Map<String, Object>> testRecords) {
+    public TestRunSource(Set<Stream> outputStreams, Map<String, List<Map<String, Object>>> testRecords) {
         super(outputStreams);
         this.testRecords = testRecords;
     }
 
-    public List<Map<String, Object>> getTestRecords() {
+    public Map<String, List<Map<String, Object>>> getTestRecords() {
         return testRecords;
     }
 

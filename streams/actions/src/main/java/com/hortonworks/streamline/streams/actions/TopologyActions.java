@@ -35,7 +35,8 @@ public interface TopologyActions {
     // engine
     void deploy(TopologyLayout topology, String mavenArtifacts) throws Exception;
 
-    // Compose test topology based on topology DAG using the underlying streaming engine
+    // Compose test topology based on current topology DAG using the underlying streaming engine
+    // It copies topology DAG, and replaces sources to test purpose one and also sinks to test purpose one
     void testRun(TopologyLayout topology, String mavenArtifacts,
                  Map<String, TestRunSource> testRunSourcesMap,
                  Map<String, TestRunSink> testRunSinksMap) throws Exception;
