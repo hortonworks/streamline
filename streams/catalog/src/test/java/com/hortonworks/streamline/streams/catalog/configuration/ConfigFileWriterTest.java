@@ -16,7 +16,6 @@
 package com.hortonworks.streamline.streams.catalog.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -39,7 +38,7 @@ public class ConfigFileWriterTest {
 
   @Test
   public void writeHadoopXmlConfigToFile() throws Exception {
-    Map<String, Object> configuration = createDummyConfiguration();
+    Map<String, String> configuration = createDummyConfiguration();
 
     File destPath = Files.createTempFile("config", "xml").toFile();
     destPath.deleteOnExit();
@@ -56,7 +55,7 @@ public class ConfigFileWriterTest {
       assertTrue(content.contains("<property>"));
       assertTrue(content.contains("</property>"));
 
-      for (Map.Entry<String, Object> property : configuration.entrySet()) {
+      for (Map.Entry<String, String> property : configuration.entrySet()) {
         assertTrue(content.contains("<name>" + property.getKey() + "</name>"));
         assertTrue(content.contains("<value>" + property.getValue() + "</value>"));
       }
@@ -65,7 +64,7 @@ public class ConfigFileWriterTest {
 
   @Test
   public void writeJavaPropertiesConfigToFile() throws Exception {
-    Map<String, Object> configuration = createDummyConfiguration();
+    Map<String, String> configuration = createDummyConfiguration();
 
     File destPath = Files.createTempFile("config", "properties").toFile();
     destPath.deleteOnExit();
@@ -81,7 +80,7 @@ public class ConfigFileWriterTest {
       Properties prop = new Properties();
       prop.load(is);
 
-      for (Map.Entry<String, Object> property : configuration.entrySet()) {
+      for (Map.Entry<String, String> property : configuration.entrySet()) {
         assertEquals(property.getValue().toString(), prop.getProperty(property.getKey()));
       }
     }
@@ -89,7 +88,7 @@ public class ConfigFileWriterTest {
 
   @Test
   public void writeYamlConfigToFile() throws Exception {
-    Map<String, Object> configuration = createDummyConfiguration();
+    Map<String, String> configuration = createDummyConfiguration();
 
     File destPath = Files.createTempFile("config", "yaml").toFile();
     destPath.deleteOnExit();
@@ -109,7 +108,7 @@ public class ConfigFileWriterTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void writeUnknownTypeConfigToFile() throws Exception {
-    Map<String, Object> configuration = createDummyConfiguration();
+    Map<String, String> configuration = createDummyConfiguration();
 
     File destPath = Files.createTempFile("config", "unknown").toFile();
     destPath.deleteOnExit();
@@ -118,10 +117,10 @@ public class ConfigFileWriterTest {
     fail("It shouldn't reach here.");
   }
 
-  private Map<String, Object> createDummyConfiguration() {
-    Map<String, Object> dummyConfiguration = new HashMap<>();
+  private Map<String, String> createDummyConfiguration() {
+    Map<String, String> dummyConfiguration = new HashMap<>();
     dummyConfiguration.put("javax.jdo.option.ConnectionDriverName", "com.mysql.jdbc.Driver");
-    dummyConfiguration.put("ipc.client.connect.max.retries", 50);
+    dummyConfiguration.put("ipc.client.connect.max.retries", "50");
     return dummyConfiguration;
   }
 }
