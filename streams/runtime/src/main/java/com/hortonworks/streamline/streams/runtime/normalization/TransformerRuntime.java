@@ -38,7 +38,7 @@ public class TransformerRuntime {
     private final Transformer transformer;
     private final GroovyScript<Object> groovyScript;
 
-    private TransformerRuntime(Transformer transformer, GroovyScript groovyScript) {
+    private TransformerRuntime(Transformer transformer, GroovyScript<Object> groovyScript) {
         this.transformer = transformer;
         this.groovyScript = groovyScript;
     }
@@ -89,7 +89,7 @@ public class TransformerRuntime {
                 throw new IllegalArgumentException("input field should always be set for transformer");
             }
             //todo may add more validation for script.
-            GroovyScript groovyScript = null;
+            GroovyScript<Object> groovyScript = null;
             if (transformer.getConverterScript() != null) {
                 groovyScript = new GroovyScript<>(transformer.getConverterScript(), new GroovyScriptEngine());
             }

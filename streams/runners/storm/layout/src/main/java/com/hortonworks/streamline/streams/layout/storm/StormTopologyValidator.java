@@ -126,7 +126,7 @@ public class StormTopologyValidator {
             dataSourceNames.add((String) dataSource.get(TopologyLayoutConstants.JSON_KEY_UINAME));
         }
         List<Map> processors = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_PROCESSORS);
-        Map<String, Map> ruleProcessors = new LinkedHashMap<>();
+        Map<String, Map<String, Set<String>>> ruleProcessors = new LinkedHashMap<>();
         for (Map processor: processors) {
             String type = (String) processor.get(TopologyLayoutConstants.JSON_KEY_TYPE);
             if ("RULE".equals(type)) {

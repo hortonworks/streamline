@@ -20,13 +20,12 @@ import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.container.NamespaceAwareContainer;
 import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
-import com.hortonworks.streamline.streams.metrics.container.mapping.MappedTimeSeriesQuerierImpl;
-import com.hortonworks.streamline.streams.metrics.container.mapping.MappedTopologyMetricsImpl;
-import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.exception.ConfigException;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.streamline.streams.metrics.TimeSeriesQuerier;
+import com.hortonworks.streamline.streams.metrics.container.mapping.MappedTimeSeriesQuerierImpl;
+import com.hortonworks.streamline.streams.metrics.container.mapping.MappedTopologyMetricsImpl;
 import com.hortonworks.streamline.streams.metrics.topology.TopologyMetrics;
 
 import java.util.HashMap;
@@ -96,7 +95,7 @@ public class TopologyMetricsContainer extends NamespaceAwareContainer<TopologyMe
 
     private TimeSeriesQuerier initTimeSeriesQuerier(Map<String, String> conf, String className) {
         try {
-            Class timeSeriesQuerierImplClass = Class.forName(className);
+            Class<?> timeSeriesQuerierImplClass = Class.forName(className);
             TimeSeriesQuerier timeSeriesQuerier = (TimeSeriesQuerier) timeSeriesQuerierImplClass.newInstance();
             timeSeriesQuerier.init(conf);
             return timeSeriesQuerier;

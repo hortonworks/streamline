@@ -113,7 +113,7 @@ public class JoinBoltFluxComponentTest {
             return;
         }
 
-        List<Map<String, Object>> components = (List) yamlMap.get(collectionKey);
+        List<Map<String, Object>> components = (List<Map<String, Object>>) yamlMap.get(collectionKey);
         if (components == null) {
             components = new ArrayList<>();
             yamlMap.put(collectionKey, components);

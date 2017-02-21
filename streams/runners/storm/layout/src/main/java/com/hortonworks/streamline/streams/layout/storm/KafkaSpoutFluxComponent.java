@@ -44,8 +44,8 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         String spoutConfigRef = addSpoutConfigComponent();
         String spoutId = "kafkaSpout" + UUID_FOR_COMPONENTS;
         String spoutClassName = "org.apache.storm.kafka.KafkaSpout";
-        List spoutConstructorArgs = new ArrayList();
-        Map ref = getRefYaml(spoutConfigRef);
+        List<Map<String, String>> spoutConstructorArgs = new ArrayList<>();
+        Map<String, String> ref = getRefYaml(spoutConfigRef);
         spoutConstructorArgs.add(ref);
         component = createComponent(spoutId, spoutClassName, null, spoutConstructorArgs, null);
         addParallelismToComponent();
@@ -85,12 +85,12 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
             LOG.error(msg, kafkaSource);
             throw new IllegalArgumentException(msg);
         }
-        List propertiesYaml = getPropertiesYaml(properties);
+        List<Object> propertiesYaml = getPropertiesYaml(properties);
 
         propertiesYaml.add(getSchemeRefEntry(schemeRef));
 
-        List spoutConfigConstructorArgs = new ArrayList();
-        Map ref = getRefYaml(zkHostsRef);
+        List<Object> spoutConfigConstructorArgs = new ArrayList<Object>();
+        Map<String, String> ref = getRefYaml(zkHostsRef);
         spoutConfigConstructorArgs.add(ref);
         Object[] constructorArgs = {
             conf.get(TopologyLayoutConstants.JSON_KEY_TOPIC),
@@ -133,14 +133,14 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         String[] propertyNames = {TopologyLayoutConstants
                 .JSON_KEY_REFRESH_FREQ_SECS};
         //properties
-        List properties = getPropertiesYaml(propertyNames);
+        List<Object> properties = getPropertiesYaml(propertyNames);
 
         //constructor args
         String[] constructorArgNames = {
             TopologyLayoutConstants.JSON_KEY_ZK_URL,
             TopologyLayoutConstants.JSON_KEY_ZK_PATH
         };
-        List zkHostsConstructorArgs = getConstructorArgsYaml
+        List<Object> zkHostsConstructorArgs = getConstructorArgsYaml
                 (constructorArgNames);
 
         this.addToComponents(this.createComponent(zkHostsComponentId,
