@@ -421,7 +421,7 @@ class TopologyEditorContainer extends Component {
         value: slideIntVal + 5
       });
     } else {
-      timeoutSec = 0;
+      timeoutSec = 30;
       this.tempIntervalArr[index].value = slideIntVal + 5;
     }
     const maxObj = _.maxBy(this.tempIntervalArr, "value");

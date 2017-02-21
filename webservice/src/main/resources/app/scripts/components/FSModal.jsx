@@ -76,7 +76,7 @@ export default class FSModal extends Component {
   }
   render() {
     return (
-      <Modal aria-labelledby='contained-modal-title' backdrop="static" keyboard={false} onHide={this.cancel.bind(this)} show={this.state.show} {...this.props}>
+      <Modal aria-labelledby='contained-modal-title' backdrop="static" keyboard={true} onHide={this.cancel.bind(this)} show={this.state.show} {...this.props}>
         {this.props.hideHeader
           ? ''
           : this.header()}
