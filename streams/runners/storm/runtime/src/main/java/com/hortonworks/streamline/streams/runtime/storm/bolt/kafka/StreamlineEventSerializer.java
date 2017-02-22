@@ -14,6 +14,7 @@ import com.hortonworks.streamline.streams.StreamlineEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +49,8 @@ public class StreamlineEventSerializer implements Serializer<StreamlineEvent> {
         if (streamlineEvent == null || streamlineEvent.isEmpty()) {
             return null;
         } else {
-            return avroSnapshotSerializer.serialize(getAvroGenericRecord(streamlineEvent, schemaVersionInfo.getSchemaText()), schemaMetadata);
+            return avroSnapshotSerializer.serialize(getAvroRecord(streamlineEvent, new Schema.Parser().parse(schemaVersionInfo.getSchemaText())),
+                    schemaMetadata);
         }
     }
 
@@ -61,9 +63,12 @@ public class StreamlineEventSerializer implements Serializer<StreamlineEvent> {
         }
     }
 
-    private static GenericRecord getAvroGenericRecord (Map<String, Object> streamlineEvent, String schemaText) {
+    //package level access for testing
+    static Object getAvroRecord (StreamlineEvent streamlineEvent, Schema schema) {
+        if (streamlineEvent.keySet().size() == 1 && streamlineEvent.containsKey(StreamlineEvent.PRIMITIVE_PAYLOAD_FIELD)) {
+            return streamlineEvent.get(StreamlineEvent.PRIMITIVE_PAYLOAD_FIELD);
+        }
         GenericRecord result;
-        Schema schema = new Schema.Parser().parse(schemaText);
         result = new GenericData.Record(schema);
         for (Map.Entry<String, Object> entry: streamlineEvent.entrySet()) {
             result.put(entry.getKey(), getAvroValue(entry.getValue(), schema.getField(entry.getKey()).schema()));
@@ -72,16 +77,25 @@ public class StreamlineEventSerializer implements Serializer<StreamlineEvent> {
     }
 
     private static Object getAvroValue(Object input, Schema schema) {
-        if (input instanceof byte[]) {
+        if (input instanceof byte[] && Schema.Type.FIXED.equals(schema.getType())) {
             return new GenericData.Fixed(schema, (byte[]) input);
         } else if (input instanceof Map && !((Map) input).isEmpty()) {
-            return getAvroGenericRecord((StreamlineEvent) input, schema.toString());
-        } else if (input instanceof List && !((List) input).isEmpty()) {
+            GenericRecord result;
+            result = new GenericData.Record(schema);
+            for (Map.Entry<String, Object> entry: ((Map<String, Object>) input).entrySet()) {
+                result.put(entry.getKey(), getAvroValue(entry.getValue(), schema.getField(entry.getKey()).schema()));
+            }
+            return result;
+        } else if (input instanceof Collection && !((Collection) input).isEmpty()) {
             // for array even though we(Schema in streamline registry) support different types of elements in an array, avro expects an array
             // schema to have elements of same type. Hence, for now we will restrict array to have elements of same type. Other option is convert
             // a  streamline Schema Array field to Record in avro. However, with that the issue is that avro Field constructor does not allow a
             // null name. We could potentiall hack it by plugging in a dummy name like arrayfield, but seems hacky so not taking that path
-            return new GenericData.Array<Object>(schema, (Collection<Object>) input);
+            List<Object> values = new ArrayList<>(((Collection) input).size());
+            for (Object value: (Collection) input) {
+                values.add(getAvroValue(value, schema.getElementType()));
+            }
+            return new GenericData.Array<Object>(schema, values);
         } else {
             return input;
         }
