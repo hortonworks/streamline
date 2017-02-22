@@ -186,7 +186,7 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
   private List<String> createAmbariConfNameList(ServiceConfigurations serviceConfigurations) {
     String[] confNames = serviceConfigurations.getConfNames();
     return Arrays.stream(confNames).map(confName -> {
-      AmbariConfigTypeRollbackPattern pattern = AmbariConfigTypeRollbackPattern.lookupByOriginConfType(confName);
+      ServiceConfigTypeAmbariToOriginalPattern pattern = ServiceConfigTypeAmbariToOriginalPattern.findByOriginalConfType(confName);
       if (pattern != null) {
         return pattern.ambariConfType();
       }
@@ -195,7 +195,7 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
   }
 
   private String getOriginConfigTypeName(String confItemType) {
-    AmbariConfigTypeRollbackPattern pattern = AmbariConfigTypeRollbackPattern.lookupByAmbariConfType(confItemType);
+    ServiceConfigTypeAmbariToOriginalPattern pattern = ServiceConfigTypeAmbariToOriginalPattern.findByAmbariConfType(confItemType);
     if (pattern != null) {
       return pattern.originConfType();
     }
@@ -204,7 +204,7 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
 
 
   @Override
-  public String getOriginFileName(String configType) {
+  public String getOriginalFileName(String configType) {
     return ConfigFilePattern.getOriginFileName(configType);
   }
 

@@ -37,7 +37,7 @@ public class ConfigFileWriter {
   public void writeConfigToFile(ConfigFileType confFileType, Map<String, String> configuration,
       File destPath) throws IOException {
     if (confFileType == null) {
-      throw new IllegalArgumentException("You should provide valid config file type to write configuration to file.");
+      throw new IllegalArgumentException("Config file type cannot be null.");
     }
 
     switch (confFileType) {
@@ -54,7 +54,7 @@ public class ConfigFileWriter {
       break;
 
     default:
-      throw new IllegalArgumentException("Writer doesn't know how to write such kind of file type. file type: " + confFileType);
+      throw new IllegalArgumentException("Writer does not support file type. file type: " + confFileType);
     }
   }
 
@@ -65,7 +65,7 @@ public class ConfigFileWriter {
 
     HadoopXml hadoopXml = new HadoopXml();
     for (Map.Entry<String, String> property : configuration.entrySet()) {
-      hadoopXml.addProperty(new HadoopXmlProperty(property.getKey(), property.getValue()));
+      hadoopXml.addProperty(new HadoopXml.HadoopXmlProperty(property.getKey(), property.getValue()));
     }
 
     objectMapper.writeValue(destPath, hadoopXml);

@@ -66,10 +66,10 @@ public interface ServiceNodeDiscoverer {
   Map<String, Map<String, String>> getConfigurations(String serviceName);
 
   /**
-   * Get actual file name for given config type. This is for including configuration files to topology jar.
+   * Get original file name for given config type. This is for including configuration files to topology jar.
    *
    * @param configType config type which is as same as discoverer provides
-   * @return actual configuration file name
+   * @return original configuration file name
    */
-  String getOriginFileName(String configType);
+  String getOriginalFileName(String configType);
 }

@@ -15,6 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.catalog.configuration;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
@@ -39,4 +40,36 @@ public class HadoopXml {
   public void addProperty(HadoopXmlProperty property) {
     properties.add(property);
   }
+
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  public static class HadoopXmlProperty {
+    private String name;
+    private String value;
+
+    // for jackson
+    public HadoopXmlProperty() {
+    }
+
+    public HadoopXmlProperty(String name, String value) {
+      this.name = name;
+      this.value = value;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public String getValue() {
+      return value;
+    }
+
+    public void setValue(String value) {
+      this.value = value;
+    }
+  }
+
 }

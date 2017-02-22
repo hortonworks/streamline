@@ -100,7 +100,7 @@ public class ClusterImporter {
 
                         LOG.debug("conf-type start {}", confType);
 
-                        String actualFileName = serviceNodeDiscoverer.getOriginFileName(confType);
+                        String actualFileName = serviceNodeDiscoverer.getOriginalFileName(confType);
 
                         addServiceConfiguration(objectMapper, service, confType, configuration, actualFileName);
                         flattenConfigurations.putAll(configuration);
@@ -112,9 +112,9 @@ public class ClusterImporter {
                 });
     }
 
-    private void addComponent(Map<String, String> flattenConfigurations, Service service, String componentName, List<String> hosts) {
+    private void addComponent(Map<String, String> flatConfigurations, Service service, String componentName, List<String> hosts) {
         Component component = environmentService.initializeComponent(service, componentName, hosts);
-        environmentService.injectProtocolAndPortToComponent(flattenConfigurations, component);
+        environmentService.injectProtocolAndPortToComponent(flatConfigurations, component);
         environmentService.addComponent(component);
     }
 

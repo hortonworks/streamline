@@ -39,7 +39,7 @@ public class ConfigFileReader {
 
     public Map<String, String> readConfig(ConfigFileType confFileType, InputStream configFileStream) throws IOException {
         if (confFileType == null) {
-            throw new IllegalArgumentException("You should provide valid config file type to read configuration from stream.");
+            throw new IllegalArgumentException("Config file type cannot be null.");
         }
 
         switch (confFileType) {
@@ -54,7 +54,7 @@ public class ConfigFileReader {
                 return readConfigFromYamlType(configFileStream);
 
             default:
-                throw new IllegalArgumentException("Reader doesn't know how to write such kind of file type. file type: " + confFileType);
+                throw new IllegalArgumentException("Reader does not support file type. file type: " + confFileType);
         }
     }
 
@@ -63,7 +63,7 @@ public class ConfigFileReader {
         HadoopXml hadoopXml = reader.forType(HadoopXml.class).readValue(configFileStream);
 
         Map<String, String> configMap = new HashMap<>();
-        for (HadoopXmlProperty property : hadoopXml.getProperties()) {
+        for (HadoopXml.HadoopXmlProperty property : hadoopXml.getProperties()) {
             configMap.put(property.getName(), property.getValue());
         }
 

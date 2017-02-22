@@ -27,7 +27,7 @@ public enum ConfigFileType {
   public static ConfigFileType getFileTypeFromFileName(String fileName) {
     String fileExt = Files.getFileExtension(fileName);
     if (fileExt.isEmpty()) {
-      return null;
+      throw new IllegalArgumentException("Not supported config file extension: " + fileExt);
     }
 
     switch (fileExt) {
@@ -45,6 +45,6 @@ public enum ConfigFileType {
       return ZOOKEEPER_CFG;
     }
 
-    return null;
+    throw new IllegalArgumentException("Not supported config file extension: " + fileExt);
   }
 }

@@ -15,18 +15,23 @@
  **/
 package com.hortonworks.streamline.streams.cluster.discovery.ambari;
 
-public enum AmbariConfigTypeRollbackPattern {
+/**
+ * This enum defines how Ambari configuration type is converted to original service configuration type.
+ * This enum is needed because Ambari names the config different from origin service, and we would want to respect
+ * original service's configuration name.
+ */
+public enum ServiceConfigTypeAmbariToOriginalPattern {
     // 'storm': storm.yaml
     STORM_SITE("storm-site", "storm"),
     // 'server': server.properties
     KAFKA_BROKER("kafka-broker", "server");
 
     private final String ambariConfType;
-    private final String originConfType;
+    private final String originalConfType;
 
-    AmbariConfigTypeRollbackPattern(String ambariConfType, String originConfType) {
+    ServiceConfigTypeAmbariToOriginalPattern(String ambariConfType, String originalConfType) {
         this.ambariConfType = ambariConfType;
-        this.originConfType = originConfType;
+        this.originalConfType = originalConfType;
     }
 
     public String ambariConfType() {
@@ -34,20 +39,11 @@ public enum AmbariConfigTypeRollbackPattern {
     }
 
     public String originConfType() {
-        return originConfType;
+        return originalConfType;
     }
 
-    public static String findOriginConfType(String ambariConfType) {
-        AmbariConfigTypeRollbackPattern pattern = lookupByAmbariConfType(ambariConfType);
-        if (pattern != null) {
-            return pattern.originConfType;
-        }
-
-        return null;
-    }
-
-    public static AmbariConfigTypeRollbackPattern lookupByAmbariConfType(String ambariConfType) {
-        for (AmbariConfigTypeRollbackPattern value : values()) {
+    public static ServiceConfigTypeAmbariToOriginalPattern findByAmbariConfType(String ambariConfType) {
+        for (ServiceConfigTypeAmbariToOriginalPattern value : values()) {
             if (value.ambariConfType.equals(ambariConfType)) {
                 return value;
             }
@@ -56,9 +52,9 @@ public enum AmbariConfigTypeRollbackPattern {
         return null;
     }
 
-    public static AmbariConfigTypeRollbackPattern lookupByOriginConfType(String originConfType) {
-        for (AmbariConfigTypeRollbackPattern value : values()) {
-            if (value.originConfType.equals(originConfType)) {
+    public static ServiceConfigTypeAmbariToOriginalPattern findByOriginalConfType(String originalConfType) {
+        for (ServiceConfigTypeAmbariToOriginalPattern value : values()) {
+            if (value.originalConfType.equals(originalConfType)) {
                 return value;
             }
         }
