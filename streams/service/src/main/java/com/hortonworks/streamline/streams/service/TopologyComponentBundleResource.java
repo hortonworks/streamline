@@ -60,6 +60,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -209,15 +210,15 @@ public class TopologyComponentBundleResource {
     }
 
     /**
-     * Update a topology component bundle.
+     * Update a topology component bundle by id.
      * <p>
-     * curl -sS -X PUT -i -F topologyComponentBundle=@kafka-topology-bundle -F bundleJar=@/Users/pshah/dev/IoTaS/streams/runners/storm/layout/target/streams-layout-storm-0.1.0-SNAPSHOT.jar  http://localhost:8080/api/v1/catalog/streams/componentbundles/SOURCE/
+     * curl -sS -X PUT -i -F topologyComponentBundle=@kafka-topology-bundle -F bundleJar=@/Users/pshah/dev/IoTaS/streams/runners/storm/layout/target/streams-layout-storm-0.1.0-SNAPSHOT.jar  http://localhost:8080/api/v1/catalog/streams/componentbundles/SOURCE/1
      * </p>
      */
     @PUT
     @Path("/componentbundles/{component}/{id}")
     @Timed
-    public Response addOrUpdateTopologyComponentBundle (@PathParam("component")
+    public Response addOrUpdateTopologyComponentBundleById (@PathParam("component")
                                                         TopologyComponentBundle.TopologyComponentType componentType, @PathParam("id") Long id,
                                                         FormDataMultiPart form) throws IOException, ComponentConfigException {
         InputStream bundleJar = null;
@@ -252,6 +253,66 @@ public class TopologyComponentBundleResource {
             }
         }
     }
+
+    /**
+     * Update a topology component bundle by trying to find id using type, sub type and streaming engine.
+     * <p>
+     * curl -sS -X PUT -i -F topologyComponentBundle=@kafka-topology-bundle -F bundleJar=@/Users/pshah/dev/IoTaS/streams/runners/storm/layout/target/streams-layout-storm-0.1.0-SNAPSHOT.jar  http://localhost:8080/api/v1/catalog/streams/componentbundles/SOURCE/
+     * </p>
+     */
+    @PUT
+    @Path("/componentbundles/{component}")
+    @Timed
+    public Response addOrUpdateTopologyComponentBundle (@PathParam("component") TopologyComponentBundle.TopologyComponentType componentType,
+                                                        FormDataMultiPart form) throws IOException, ComponentConfigException {
+        InputStream bundleJar = null;
+        try {
+            String bundleJsonString = this.getFormDataFromMultiPartRequestAs(String.class, form, TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME);
+            TopologyComponentBundle topologyComponentBundle = new ObjectMapper().readValue(bundleJsonString, TopologyComponentBundle.class);
+            if (topologyComponentBundle == null) {
+                LOG.debug(TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME + " is missing or invalid");
+                throw BadRequestException.missingParameter(TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME);
+            }
+            if (!componentType.equals(topologyComponentBundle.getType())) {
+                String message = "Cant update a " + topologyComponentBundle.getType() + " on " + componentType + " endpoint. Verify PUT request";
+                LOG.debug(message);
+                throw BadRequestException.message(message);
+            }
+            if (!topologyComponentBundle.getBuiltin()) {
+                bundleJar = this.getFormDataFromMultiPartRequestAs(InputStream.class, form, BUNDLE_JAR_FILE_PARAM_NAME);
+                if (bundleJar == null) {
+                    LOG.debug(BUNDLE_JAR_FILE_PARAM_NAME + " is missing or invalid");
+                    throw BadRequestException.missingParameter(BUNDLE_JAR_FILE_PARAM_NAME);
+                }
+            }
+            validateTopologyBundle(topologyComponentBundle);
+            List<QueryParam> queryParams = new ArrayList<>();
+            queryParams.add(new QueryParam(TopologyComponentBundle.STREAMING_ENGINE, topologyComponentBundle.getStreamingEngine()));
+            queryParams.add(new QueryParam(TopologyComponentBundle.TYPE, topologyComponentBundle.getType().name()));
+            queryParams.add(new QueryParam(TopologyComponentBundle.SUB_TYPE, topologyComponentBundle.getSubType()));
+            Collection<TopologyComponentBundle> existing = catalogService.listTopologyComponentBundlesForTypeWithFilter(componentType, queryParams);
+            if (existing != null && existing.size() == 1) {
+                TopologyComponentBundle updatedBundle = catalogService.addOrUpdateTopologyComponentBundle(existing.iterator().next().getId(), topologyComponentBundle, bundleJar);
+                return WSUtils.respondEntity(updatedBundle, OK);
+            } else {
+                String message = "Cant update because lookup using streaming engine, type and subtype returned either no existing bundle or more than one";
+                LOG.debug(message);
+                throw BadRequestException.message(message);
+            }
+        } catch (Exception e) {
+            LOG.debug("Error occured while updating topology component bundle", e);
+            throw e;
+        } finally {
+            try {
+                if (bundleJar != null) {
+                    bundleJar.close();
+                }
+            } catch (IOException e) {
+                LOG.debug("Error while closing jar file stream", e);
+            }
+        }
+    }
+
     /**
      * Delete a topology component bundle.
      * <p>
