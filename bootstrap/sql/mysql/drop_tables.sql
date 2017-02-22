@@ -30,3 +30,4 @@ DROP TABLE IF EXISTS widget;
 DROP TABLE IF EXISTS datasource;
 DROP TABLE IF EXISTS ml_models;
 DROP TABLE IF EXISTS dashboard;
+DROP TABLE IF EXISTS service_bundles;

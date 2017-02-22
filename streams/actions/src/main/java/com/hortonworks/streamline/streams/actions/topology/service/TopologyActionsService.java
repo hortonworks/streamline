@@ -15,6 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.actions.topology.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -30,8 +31,6 @@ import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.configuration.ConfigFileType;
 import com.hortonworks.streamline.streams.catalog.configuration.ConfigFileWriter;
-import com.hortonworks.streamline.streams.catalog.container.ContainingNamespaceAwareContainer;
-import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
 import com.hortonworks.streamline.streams.catalog.topology.component.TopologyDagBuilder;
@@ -39,6 +38,10 @@ import com.hortonworks.streamline.streams.layout.component.OutputComponent;
 import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
 import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
 import com.hortonworks.streamline.streams.layout.component.TopologyDag;
+import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
+import com.hortonworks.streamline.streams.cluster.container.ContainingNamespaceAwareContainer;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -237,7 +240,8 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
             if (fileType != null) {
                 File destPath = Paths.get(artifactsDir.toString(), filename).toFile();
 
-                Map<String, Object> conf = objectMapper.readValue(configuration.getConfiguration(), Map.class);
+                Map<String, String> conf = objectMapper.readValue(configuration.getConfiguration(),
+                        new TypeReference<Map<String, String>>() {});
 
                 try {
                     configFileWriter.writeConfigToFile(fileType, conf, destPath);

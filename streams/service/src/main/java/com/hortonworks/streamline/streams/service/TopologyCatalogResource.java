@@ -29,9 +29,9 @@ import com.hortonworks.streamline.streams.actions.topology.service.TopologyActio
 import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyVersionInfo;
-import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyData;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.storm.common.TopologyNotAliveException;
 import com.hortonworks.streamline.streams.metrics.topology.TopologyMetrics;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;

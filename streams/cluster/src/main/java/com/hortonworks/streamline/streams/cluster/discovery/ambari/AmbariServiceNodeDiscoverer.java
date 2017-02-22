@@ -16,7 +16,6 @@
 package com.hortonworks.streamline.streams.cluster.discovery.ambari;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.JsonClientUtil;
 import com.hortonworks.streamline.common.exception.WrappedWebApplicationException;
 import com.hortonworks.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
@@ -38,13 +37,15 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Services and nodes discover using Ambari.
@@ -144,7 +145,7 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
     return componentNodes;
   }
 
-  @Override public Map<String, Map<String, Object>> getConfigurations(String serviceName) {
+  @Override public Map<String, Map<String, String>> getConfigurations(String serviceName) {
     // this will throw IllegalArgumentException if service is not supported yet.
     ServiceConfigurations serviceConfigurations;
     try {
@@ -153,10 +154,9 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
       throw new IllegalArgumentException("service " + serviceName + " is not supported.");
     }
 
-    String[] confNames = serviceConfigurations.getConfNames();
-    List<String> confNameList = Lists.newArrayList(confNames);
+    List<String> confNameList = createAmbariConfNameList(serviceConfigurations);
 
-    Map<String, Map<String, Object>> configurations = new HashMap<>();
+    Map<String, Map<String, String>> configurations = new HashMap<>();
 
     String targetUrl = apiRootUrl + CONFIGURATIONS_URL;
 
@@ -171,7 +171,9 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
                 confNameList, items);
 
         for (ServiceConfigurationItem confItem : confToItem.values()) {
-          configurations.put(confItem.getType(), getProperties(confItem));
+          // convert Ambari type to the actual Service's configuration file
+          String type = getOriginConfigTypeName(confItem.getType());
+          configurations.put(type, getProperties(confItem));
         }
       }
 
@@ -181,9 +183,29 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
     }
   }
 
+  private List<String> createAmbariConfNameList(ServiceConfigurations serviceConfigurations) {
+    String[] confNames = serviceConfigurations.getConfNames();
+    return Arrays.stream(confNames).map(confName -> {
+      ServiceConfigTypeAmbariToOriginalPattern pattern = ServiceConfigTypeAmbariToOriginalPattern.findByOriginalConfType(confName);
+      if (pattern != null) {
+        return pattern.ambariConfType();
+      }
+      return confName;
+    }).collect(toList());
+  }
+
+  private String getOriginConfigTypeName(String confItemType) {
+    ServiceConfigTypeAmbariToOriginalPattern pattern = ServiceConfigTypeAmbariToOriginalPattern.findByAmbariConfType(confItemType);
+    if (pattern != null) {
+      return pattern.originConfType();
+    }
+    return confItemType;
+  }
+
+
   @Override
-  public String getActualFileName(String configType) {
-    return ConfigFilePattern.getActualFileName(configType);
+  public String getOriginalFileName(String configType) {
+    return ConfigFilePattern.getOriginFileName(configType);
   }
 
   public String getStormViewUrl() {
@@ -257,7 +279,7 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
     return confToItem;
   }
 
-  private Map<String, Object> getProperties(ServiceConfigurationItem confItem) {
+  private Map<String, String> getProperties(ServiceConfigurationItem confItem) {
     String targetUrl = confItem.getHref();
 
     LOG.debug("configuration item URI: {}", targetUrl);
@@ -267,7 +289,7 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
       List<Map<String, ?>> items = (List<Map<String, ?>>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_ITEMS);
 
       if (items.size() > 0) {
-        return (Map<String, Object>) items.get(0).get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_PROPERTIES);
+        return (Map<String, String>) items.get(0).get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_PROPERTIES);
       }
 
       return Collections.emptyMap();

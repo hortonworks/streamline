@@ -52,20 +52,19 @@ function post {
   run_cmd $cmd
 }
 
-function add_sample_bundle {
+function add_sample_topology_component_bundle {
   echo "POST sample_bundle"
   cmd="curl -sS -X POST -i -F topologyComponentBundle=@$bootstrap_dir/kafka-topology-bundle ${CATALOG_ROOT_URL}/streams/componentbundles/SOURCE/"
   run_cmd $cmd
 }
 
-function add_bundle {
+function add_topology_component_bundle {
   uri=$1
   data=$2
   cmd="curl -sS -X POST -i -F topologyComponentBundle=@$data ${CATALOG_ROOT_URL}$uri"
   echo "POST $data"
   run_cmd $cmd
 }
-
 
 function usage {
   cat <<-EOF 
@@ -107,6 +106,7 @@ done
 
 CATALOG_ROOT_URL_PROPERTY_KEY=catalogRootUrl
 component_dir=${bootstrap_dir}/components
+service_dir=${bootstrap_dir}/services
 
 echo "Configuration file: ${CONFIG_FILE_PATH}"
 
@@ -118,30 +118,31 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Catalog Root URL: ${CATALOG_ROOT_URL}"
-echo $component_dir
+echo "Component bundle Root dir: ${component_dir}"
+echo "Service bundle Root dir: ${service_dir}"
 
 function add_all_bundles {
     # === Source ===
-    add_bundle /streams/componentbundles/SOURCE $component_dir/sources/kafka-source-topology-component.json
-    add_bundle /streams/componentbundles/SOURCE $component_dir/sources/hdfs-source-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SOURCE ${component_dir}/sources/kafka-source-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SOURCE ${component_dir}/sources/hdfs-source-topology-component.json
     # === Processor ===
-    add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/rule-topology-component.json
-    add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/window-topology-component.json
-    add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/branch-topology-component.json
-    add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/join-bolt-topology-component.json
-    add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/model-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/rule-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/window-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/branch-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/join-bolt-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/model-topology-component.json
     # === Sink ===
-    add_bundle /streams/componentbundles/SINK $component_dir/sinks/hdfs-sink-topology-component.json
-    add_bundle /streams/componentbundles/SINK $component_dir/sinks/hbase-sink-topology-component.json
-    add_bundle /streams/componentbundles/SINK $component_dir/sinks/notification-sink-topology-component.json
-    add_bundle /streams/componentbundles/SINK $component_dir/sinks/opentsdb-sink-topology-component.json
-    add_bundle /streams/componentbundles/SINK $component_dir/sinks/jdbc-sink-topology-component.json
-    add_bundle /streams/componentbundles/SINK $component_dir/sinks/cassandra-sink-topology-component.json
-    add_bundle /streams/componentbundles/SINK $component_dir/sinks/druid-sink-topology-component.json
-    add_bundle /streams/componentbundles/SINK $component_dir/sinks/solr-sink-topology-component.json
-    add_bundle /streams/componentbundles/SINK $component_dir/sinks/kafka-sink-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/hdfs-sink-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/hbase-sink-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/notification-sink-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/opentsdb-sink-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/jdbc-sink-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/cassandra-sink-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/druid-sink-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/solr-sink-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/kafka-sink-topology-component.json
     # === Topology ===
-    add_bundle /streams/componentbundles/TOPOLOGY $component_dir/topology/storm-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/TOPOLOGY ${component_dir}/topology/storm-topology-component.json
 
     #add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/split-topology-component
     #add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/normalization-processor-topology-component.json
@@ -152,6 +153,14 @@ function add_all_bundles {
     #post /streams/componentbundles/TRANSFORM $component_dir/sinks/enrichment-transform-topology-component
     #note that the below is just a sample for ui to work with. Once UI is ready, all above will be replaced with new bundle components
     #add_sample_bundle
+
+    # === service bundles ===
+    post /servicebundles ${service_dir}/zookeeper-bundle.json
+    post /servicebundles ${service_dir}/storm-bundle.json
+    post /servicebundles ${service_dir}/kafka-bundle.json
+    post /servicebundles ${service_dir}/hdfs-bundle.json
+    post /servicebundles ${service_dir}/hbase-bundle.json
+    post /servicebundles ${service_dir}/hive-bundle.json
 
     #----------------------------------
     # Execute other bootstrap scripts

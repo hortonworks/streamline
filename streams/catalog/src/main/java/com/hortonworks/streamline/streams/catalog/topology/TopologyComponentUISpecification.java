@@ -54,6 +54,7 @@ import java.util.Set;
  * enumobject       | if the component wants to capture values for one of the implementations of an intercace. For example, rotationPolicy in hdfs
  * array.object     | array of object type described above, For example zkServers. fields will describe ZkServer object and ui will let user add more of those
  * array.enumobject | array of objects where each element in array is one of the options provided for this type
+ * file             | if the component wants file upload.
  */
 public class TopologyComponentUISpecification {
     private static final Logger LOG = LoggerFactory.getLogger(TopologyComponentUISpecification.class);
@@ -63,7 +64,8 @@ public class TopologyComponentUISpecification {
     public enum UIFieldType {
         STRING("string"), ENUMSTRING("enumstring"), ARRAYSTRING("array.string"), ARRAYENUMSTRING("array.enumstring"),
         NUMBER("number"), ARRAYNUMBER("array.number"), BOOLEAN("boolean"), ARRAYBOOLEAN("array.boolean"),
-        OBJECT("object"), ENUMOBJECT("enumobject"), ARRAYOBJECT("array.object"), ARRAYENUMOBJECT("array.enumobject");
+        OBJECT("object"), ENUMOBJECT("enumobject"), ARRAYOBJECT("array.object"), ARRAYENUMOBJECT("array.enumobject"),
+        FILE("file");
 
         private String uiFieldTypeText;
 

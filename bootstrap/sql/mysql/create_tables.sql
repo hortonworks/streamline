@@ -364,3 +364,12 @@ CREATE TABLE IF NOT EXISTS components (
   timestamp BIGINT,
   PRIMARY KEY (id)
 );
+
+CREATE TABLE IF NOT EXISTS service_bundles (
+  id BIGINT AUTO_INCREMENT NOT NULL,
+  name VARCHAR(256) NOT NULL,
+  serviceUISpecification TEXT NOT NULL,
+  registerClass TEXT,
+  timestamp  BIGINT,
+  PRIMARY KEY (id)
+)

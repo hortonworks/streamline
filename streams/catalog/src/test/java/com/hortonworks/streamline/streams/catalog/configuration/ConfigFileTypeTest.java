@@ -25,6 +25,7 @@ public class ConfigFileTypeTest {
     assertEquals(ConfigFileType.HADOOP_XML, ConfigFileType.getFileTypeFromFileName("core-site.xml"));
     assertEquals(ConfigFileType.YAML, ConfigFileType.getFileTypeFromFileName("storm.yaml"));
     assertEquals(ConfigFileType.PROPERTIES, ConfigFileType.getFileTypeFromFileName("config.properties"));
+    assertEquals(ConfigFileType.ZOOKEEPER_CFG, ConfigFileType.getFileTypeFromFileName("zoo.cfg"));
     assertNull(ConfigFileType.getFileTypeFromFileName("config"));
     assertNull(ConfigFileType.getFileTypeFromFileName("config.hadoop"));
   }
