@@ -23,18 +23,18 @@ public class TestTopologyDagCreatingVisitor extends TopologyDagVisitor {
 
     private final Map<String, StreamlineSource> sourceToReplacedTestSourceMap;
     private final Map<String, StreamlineSink> sinkToReplacedTestSinkMap;
-    private final Map<String, TestRunSource> testRunSourcesMap;
-    private final Map<String, TestRunSink> testRunSinksMap;
+    private final Map<String, TestRunSource> testRunSourcesForEachSource;
+    private final Map<String, TestRunSink> testRunSinksForEachSink;
     private final TopologyDag originTopologyDag;
 
     private TopologyDag testTopologyDag;
 
     public TestTopologyDagCreatingVisitor(TopologyDag originTopologyDag,
-                                          Map<String, TestRunSource> testRunSourcesMap,
-                                          Map<String, TestRunSink> testRunSinksMap) {
+                                          Map<String, TestRunSource> testRunSourcesForEachSource,
+                                          Map<String, TestRunSink> testRunSinksForEachSink) {
         this.originTopologyDag = originTopologyDag;
-        this.testRunSourcesMap = testRunSourcesMap;
-        this.testRunSinksMap = testRunSinksMap;
+        this.testRunSourcesForEachSource = testRunSourcesForEachSource;
+        this.testRunSinksForEachSink = testRunSinksForEachSink;
 
         this.testTopologyDag = new TopologyDag();
         this.sourceToReplacedTestSourceMap = new HashMap<>();
@@ -51,13 +51,13 @@ public class TestTopologyDagCreatingVisitor extends TopologyDagVisitor {
         String id = source.getId();
         String sourceName = source.getName();
 
-        if (!testRunSourcesMap.containsKey(sourceName)) {
+        if (!testRunSourcesForEachSource.containsKey(sourceName)) {
             throw new IllegalStateException("Not all sources have corresponding TestRunSource instance. source name: " + sourceName);
         }
 
         Config config = new Config(source.getConfig());
 
-        TestRunSource testRunSource = testRunSourcesMap.get(sourceName);
+        TestRunSource testRunSource = testRunSourcesForEachSource.get(sourceName);
 
         testRunSource.setId(id);
         testRunSource.setName(sourceName);
@@ -73,13 +73,13 @@ public class TestTopologyDagCreatingVisitor extends TopologyDagVisitor {
         String id = sink.getId();
         String sinkName = sink.getName();
 
-        if (!testRunSinksMap.containsKey(sinkName)) {
+        if (!testRunSinksForEachSink.containsKey(sinkName)) {
             throw new IllegalStateException("Not all sinks have corresponding TestRunSink instance. sink name: " + sinkName);
         }
 
         Config config = new Config(sink.getConfig());
 
-        TestRunSink testRunSink = testRunSinksMap.get(sinkName);
+        TestRunSink testRunSink = testRunSinksForEachSink.get(sinkName);
 
         testRunSink.setId(id);
         testRunSink.setName(sinkName);

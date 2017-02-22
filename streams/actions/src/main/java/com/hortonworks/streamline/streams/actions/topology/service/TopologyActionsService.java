@@ -132,7 +132,7 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
         String mavenArtifacts = setUpExtraJars(topology, topologyActions);
 
         ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, Map<String, List<Map<String, Object>>>> testRecordsMap = objectMapper.readValue(configJson,
+        Map<String, Map<String, List<Map<String, Object>>>> testRecordsForEachSource = objectMapper.readValue(configJson,
                 new TypeReference<Map<String, Map<String, List<Map<String, Object>>>>>() {});
 
         List<StreamlineSource> sources = dag.getOutputComponents().stream()
@@ -146,7 +146,7 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
                 .collect(toList());
 
         Map<String, TestRunSource> testRunSourceMap = sources.stream()
-                .collect(toMap(s -> s.getName(), s -> new TestRunSource(s.getOutputStreams(), testRecordsMap.get(s.getName()))));
+                .collect(toMap(s -> s.getName(), s -> new TestRunSource(s.getOutputStreams(), testRecordsForEachSource.get(s.getName()))));
 
         Map<String, TestRunSink> testRunSinkMap = sinks.stream()
                 .collect(toMap(s -> s.getName(), s -> {

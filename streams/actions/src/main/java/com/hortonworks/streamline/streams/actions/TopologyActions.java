@@ -35,11 +35,12 @@ public interface TopologyActions {
     // engine
     void deploy(TopologyLayout topology, String mavenArtifacts) throws Exception;
 
-    // Compose test topology based on current topology DAG using the underlying streaming engine
-    // It copies topology DAG, and replaces sources to test purpose one and also sinks to test purpose one
+    // Compose and run parameter topology as test mode using the underlying streaming engine.
+    // The parameter 'topology' should contain its own topology DAG.
+    // Please refer the javadoc of TestRunSource and also TestRunSink to see which information this method requires.
     void testRun(TopologyLayout topology, String mavenArtifacts,
-                 Map<String, TestRunSource> testRunSourcesMap,
-                 Map<String, TestRunSink> testRunSinksMap) throws Exception;
+                 Map<String, TestRunSource> testRunSourcesForEachSource,
+                 Map<String, TestRunSink> testRunSinksForEachSink) throws Exception;
 
     //Kill the artifact that was deployed using deploy
     void kill (TopologyLayout topology) throws Exception;

@@ -150,12 +150,12 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public void testRun(TopologyLayout topology, String mavenArtifacts,
-                        Map<String, TestRunSource> testRunSourcesMap,
-                        Map<String, TestRunSink> testRunSinksMap) throws Exception {
+                        Map<String, TestRunSource> testRunSourcesForEachSource,
+                        Map<String, TestRunSink> testRunSinksForEachSink) throws Exception {
         TopologyDag originalTopologyDag = topology.getTopologyDag();
 
         TestTopologyDagCreatingVisitor visitor = new TestTopologyDagCreatingVisitor(originalTopologyDag,
-                testRunSourcesMap, testRunSinksMap);
+                testRunSourcesForEachSource, testRunSinksForEachSink);
         originalTopologyDag.traverse(visitor);
         TopologyDag testTopologyDag = visitor.getTestTopologyDag();
 

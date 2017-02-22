@@ -34,7 +34,7 @@ public class TestRunSourceSpout extends BaseRichSpout {
         this.testRunSource = testRunSource;
         testRecordsQueueMap = new HashMap<>();
         if (testRunSource != null) {
-            Map<String, List<Map<String, Object>>> testRecords = testRunSource.getTestRecords();
+            Map<String, List<Map<String, Object>>> testRecords = testRunSource.getTestRecordsForEachStream();
             for (Map.Entry<String, List<Map<String, Object>>> entry : testRecords.entrySet()) {
                 testRecordsQueueMap.put(entry.getKey(), new LinkedList<>(entry.getValue()));
             }

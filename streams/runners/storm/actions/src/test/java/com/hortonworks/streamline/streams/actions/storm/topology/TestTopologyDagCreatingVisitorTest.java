@@ -55,7 +55,7 @@ public class TestTopologyDagCreatingVisitorTest {
 
         TestRunSource testRunSource = (TestRunSource) testSources.get(0);
         assertEquals(originSource.getId(), testRunSource.getId());
-        assertEquals(testSource.getTestRecords(), testRunSource.getTestRecords());
+        assertEquals(testSource.getTestRecordsForEachStream(), testRunSource.getTestRecordsForEachStream());
     }
 
     @Test
