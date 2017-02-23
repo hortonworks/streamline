@@ -20,6 +20,8 @@ import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
+import com.hortonworks.streamline.common.exception.DuplicateEntityException;
+import com.hortonworks.streamline.common.exception.service.exception.request.TopologyAlreadyExistsOnCluster;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import com.hortonworks.streamline.common.util.ParallelStreamUtil;
@@ -58,14 +60,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.toList;
+import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static com.hortonworks.streamline.streams.catalog.TopologyVersionInfo.VERSION_PREFIX;
@@ -391,9 +396,12 @@ public class TopologyCatalogResource {
     public Response deployTopology (@PathParam("topologyId") Long topologyId) throws Exception {
         Topology result = catalogService.getTopology(topologyId);
         if (result != null) {
-//TODO: fix     catalogService.validateTopology(SCHEMA, topologyId);
-            actionsService.deployTopology(result);
-            return WSUtils.respondEntity(result, OK);
+            try {
+                actionsService.deployTopology(result);
+                return WSUtils.respondEntity(result, OK);
+            } catch (TopologyAlreadyExistsOnCluster ex) {
+                return ex.getResponse();
+            }
         }
 
         throw EntityNotFoundException.byId(topologyId.toString());
@@ -406,9 +414,12 @@ public class TopologyCatalogResource {
                                           @PathParam("versionId") Long versionId) throws Exception {
         Topology result = catalogService.getTopology(topologyId, versionId);
         if (result != null) {
-//TODO: fix     catalogService.validateTopology(SCHEMA, topologyId);
-            actionsService.deployTopology(result);
-            return WSUtils.respondEntity(result, OK);
+            try {
+                actionsService.deployTopology(result);
+                return WSUtils.respondEntity(result, OK);
+            } catch (TopologyAlreadyExistsOnCluster ex) {
+                return ex.getResponse();
+            }
         }
 
         throw EntityNotFoundException.byVersion(topologyId.toString(), versionId.toString());
