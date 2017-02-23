@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
@@ -34,6 +35,7 @@ import java.util.Map;
 
 import static com.hortonworks.streamline.streams.layout.component.rule.expression.Udf.Type;
 
+@StorableEntity
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UDFInfo extends AbstractStorable {
     private static final String NAMESPACE = "udfs";

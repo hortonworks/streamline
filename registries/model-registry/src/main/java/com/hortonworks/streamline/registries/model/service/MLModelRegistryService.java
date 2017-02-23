@@ -53,7 +53,6 @@ public final class MLModelRegistryService {
     private final StorageManager storageManager;
     public MLModelRegistryService(StorageManager storageManager) {
         this.storageManager = storageManager;
-        this.storageManager.registerStorables(getStorableClasses());
     }
 
     public Collection<MLModelInfo> listModelInfos() {
@@ -158,21 +157,6 @@ public final class MLModelRegistryService {
             fieldNames.add(getModelField(modelEvaluator.getDataField(predictedField)));
         }
         return fieldNames;
-    }
-
-    private static Collection<Class<? extends Storable>> getStorableClasses() {
-        InputStream resourceAsStream = MLModelRegistryService.class.getClassLoader().getResourceAsStream("mlmodelregistrystorables.props");
-        HashSet<Class<? extends Storable>> classes = new HashSet<>();
-        try {
-            List<String> classNames = IOUtils.readLines(resourceAsStream, Charset.defaultCharset());
-            for (String className : classNames) {
-                classes.add((Class<? extends Storable>) Class.forName(className));
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-
-        return classes;
     }
 
     private MLModelField getModelField(Field dataField) {

@@ -17,12 +17,14 @@ package com.hortonworks.streamline.registries.dashboard.entites;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@StorableEntity
 public class Datasource extends AbstractStorable {
     public static final String NAMESPACE = "datasource";
     public static final String ID = "id";

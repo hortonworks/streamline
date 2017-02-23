@@ -21,12 +21,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import org.apache.commons.lang3.StringUtils;
 import com.hortonworks.streamline.common.Schema;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.Storable;
-import com.hortonworks.streamline.storage.catalog.AbstractStorable;
-import com.hortonworks.streamline.streams.layout.component.rule.Rule;
 import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
 
 import java.io.IOException;
@@ -39,6 +38,7 @@ import java.util.stream.Collectors;
 /**
  * A branch rule as represented in the UI layout
  */
+@StorableEntity
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BranchRuleInfo extends BaseRuleInfo {
     public static final String NAMESPACE = "branchruleinfos";

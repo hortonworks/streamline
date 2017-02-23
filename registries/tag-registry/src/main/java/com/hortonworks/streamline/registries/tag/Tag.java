@@ -17,6 +17,7 @@ package com.hortonworks.streamline.registries.tag;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
 
@@ -27,6 +28,7 @@ import java.util.Map;
 /**
  * Represents a tag that can be associated with any storable entitiy.
  */
+@StorableEntity
 public class Tag extends AbstractStorable {
     public static final String NAMESPACE = "tag";
     public static final String ID = "id";

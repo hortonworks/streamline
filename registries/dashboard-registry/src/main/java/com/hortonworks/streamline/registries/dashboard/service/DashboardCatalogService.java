@@ -48,22 +48,7 @@ public class DashboardCatalogService {
 
     public DashboardCatalogService(StorageManager storageManager, FileStorage fileStorage) {
         dao = storageManager;
-        dao.registerStorables(getStorableClasses());
         this.fileStorage = fileStorage;
-    }
-
-    public static Collection<Class<? extends Storable>> getStorableClasses() {
-        InputStream resourceAsStream = DashboardCatalogService.class.getClassLoader().getResourceAsStream("dashboardstorables.props");
-        HashSet<Class<? extends Storable>> classes = new HashSet<>();
-        try {
-            List<String> classNames = IOUtils.readLines(resourceAsStream);
-            for (String className : classNames) {
-                classes.add((Class<? extends Storable>) Class.forName(className));
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        return classes;
     }
 
     /*

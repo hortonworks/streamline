@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.streamline.common.Schema;
 import com.hortonworks.streamline.common.Schema.Field;
 import com.hortonworks.streamline.common.Schema.Type;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
 
@@ -30,6 +31,7 @@ import java.util.Map;
 /*
 ** Storable Entity for saving the pmml model details.
  */
+@StorableEntity
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class MLModelInfo extends AbstractStorable {
     public static final String NAME = "name";

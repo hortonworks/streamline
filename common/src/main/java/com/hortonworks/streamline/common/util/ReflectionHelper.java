@@ -18,11 +18,17 @@ package com.hortonworks.streamline.common.util;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -68,4 +74,19 @@ public class ReflectionHelper {
         }
         return instanceVariableNamesToTypes;
     }
+
+    public static Collection<Class<?>> getAnnotatedClasses(String basePackage, Class<? extends Annotation> annotation) {
+        Collection<Class<?>> classes = new ArrayList<>();
+        ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
+        provider.addIncludeFilter(new AnnotationTypeFilter(annotation));
+        for (BeanDefinition beanDef : provider.findCandidateComponents(basePackage)) {
+            try {
+                classes.add(Class.forName(beanDef.getBeanClassName()));
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return classes;
+    }
+
 }

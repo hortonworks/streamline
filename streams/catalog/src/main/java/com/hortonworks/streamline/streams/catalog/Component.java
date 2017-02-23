@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.catalog;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import org.apache.commons.lang3.StringUtils;
 import com.hortonworks.streamline.common.Schema;
 import com.hortonworks.streamline.storage.PrimaryKey;
@@ -32,6 +33,7 @@ import java.util.Map;
 /**
  * Component represents an indivial component of Service. For example, NIMBUS, BROKER, etc.
  */
+@StorableEntity
 public class Component extends AbstractStorable {
     private static final String NAMESPACE = "components";
 
