@@ -22,6 +22,7 @@ import com.hortonworks.streamline.streams.layout.component.Stream;
 
 import org.apache.storm.pmml.model.ModelOutputs;
 import org.apache.storm.pmml.runner.jpmml.JPmmlModelRunner;
+import org.apache.storm.shade.com.google.common.collect.ImmutableMap;
 import org.apache.storm.tuple.Tuple;
 import org.dmg.pmml.FieldName;
 import org.jpmml.evaluator.Evaluator;
@@ -82,20 +83,19 @@ public class StreamlineJPMMLModelRunner extends JPmmlModelRunner {
 
     private Map<String, List<Object>> toStreamLineEvents(Map<FieldName, ?> predScores) {
         Map<String, List<Object>> streamsToEvents = new HashMap<>();
-        final Map<String, Object> scoredVals = new LinkedHashMap<>();
-
+        StreamlineEventImpl.Builder eventBuilder = StreamlineEventImpl.builder();
         for (FieldName predictedField : getPredictedFields()) {
             Object targetValue = predScores.get(predictedField);
-            scoredVals.put(predictedField.getValue(), EvaluatorUtil.decode(targetValue));
+            eventBuilder.put(predictedField.getValue(), EvaluatorUtil.decode(targetValue));
         }
 
         for (FieldName outputField : getOutputFields()) {
             Object targetValue = predScores.get(outputField);
-            scoredVals.put(outputField.getValue(), EvaluatorUtil.decode(targetValue));
+            eventBuilder.put(outputField.getValue(), EvaluatorUtil.decode(targetValue));
         };
 
         for (Stream stream : outputStreams) {
-            streamsToEvents.put(stream.getId(), Collections.singletonList(new StreamlineEventImpl(scoredVals, modelId)));
+            streamsToEvents.put(stream.getId(), Collections.singletonList(eventBuilder.dataSourceId(modelId).build()));
         }
 
         return streamsToEvents;

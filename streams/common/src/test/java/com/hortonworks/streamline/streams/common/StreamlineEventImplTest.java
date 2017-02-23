@@ -15,6 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.common;
 
+import com.google.common.collect.ImmutableMap;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
@@ -27,6 +28,7 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by aiyer on 9/23/15.
@@ -155,5 +157,40 @@ public class StreamlineEventImplTest {
             it.next();
             it.remove();
         }
+    }
+
+    @Test
+    public void testBuilder() {
+        StreamlineEventImpl event = StreamlineEventImpl.builder().put("a", "A").build();
+        assertEquals(1, event.size());
+        assertEquals("A", event.get("a"));
+
+        event = StreamlineEventImpl.builder().put("a", "A").put("b", "B").build();
+        assertEquals(2, event.size());
+        assertEquals("A", event.get("a"));
+        assertEquals("B", event.get("b"));
+
+        event = StreamlineEventImpl.builder().put("a", "A").putAll(ImmutableMap.of("b", "B", "c", "C")).build();
+        assertEquals(3, event.size());
+        assertEquals("A", event.get("a"));
+        assertEquals("B", event.get("b"));
+        assertEquals("C", event.get("c"));
+
+        ImmutableMap<String, Object> kv = ImmutableMap.of("b", "B", "c", "C");
+        event = StreamlineEventImpl.builder().putAll(kv).build();
+        assertEquals(2, event.size());
+        assertEquals("B", event.get("b"));
+        assertEquals("C", event.get("c"));
+        // should be same reference
+        assertTrue(kv == event.delegate());
+
+
+        event = StreamlineEventImpl.builder().put("a", "A").put("b", "B").build();
+
+        StreamlineEventImpl event2 = StreamlineEventImpl.builder().dataSourceId("dsrcid").putAll(event).build();
+
+        // should be same reference
+        assertTrue(event.delegate() == event2.delegate());
+
     }
 }
