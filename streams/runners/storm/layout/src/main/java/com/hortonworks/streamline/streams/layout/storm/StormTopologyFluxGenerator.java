@@ -257,9 +257,9 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
         Map<String, Object> grouping = new LinkedHashMap<>();
         if (Stream.Grouping.FIELDS.equals(groupingType)) {
             grouping.put(StormTopologyLayoutConstants.YAML_KEY_TYPE, StormTopologyLayoutConstants.YAML_KEY_CUSTOM_GROUPING);
-            Map customGroupingClass = new HashMap<>();
+            Map<Object, Object> customGroupingClass = new HashMap<>();
             customGroupingClass.put(StormTopologyLayoutConstants.YAML_KEY_CLASS_NAME, StormTopologyLayoutConstants.YAML_KEY_CUSTOM_GROUPING_CLASSNAME);
-            List constructorArgs = new ArrayList<>();
+            List<Object> constructorArgs = new ArrayList<>();
             constructorArgs.add(fields);
             customGroupingClass.put(StormTopologyLayoutConstants.YAML_KEY_CONSTRUCTOR_ARGS, constructorArgs);
             grouping.put(StormTopologyLayoutConstants.YAML_KEY_CUSTOM_GROUPING_CLASS, customGroupingClass);

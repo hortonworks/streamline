@@ -33,7 +33,7 @@ import java.util.UUID;
  * components and component variables
  */
 public abstract class AbstractFluxComponent implements FluxComponent {
-    protected enum ArgsType {
+    protected enum Args {
         NONE
     }
 
@@ -102,7 +102,7 @@ public abstract class AbstractFluxComponent implements FluxComponent {
         referencedComponents.add(componentMap);
     }
 
-    protected Map<String, Object> createComponent (String id, String className, List properties, List constructorArgs, List configMethods) {
+    protected Map<String, Object> createComponent (String id, String className, List<Object> properties, List constructorArgs, List configMethods) {
         Map<String, Object> component = new LinkedHashMap<>();
         component.put(StormTopologyLayoutConstants.YAML_KEY_ID, id);
         component.put(StormTopologyLayoutConstants.YAML_KEY_CLASS_NAME, className);
@@ -118,13 +118,13 @@ public abstract class AbstractFluxComponent implements FluxComponent {
         return component;
     }
 
-    protected List getPropertiesYaml (String[] propertyNames) {
-        List properties = new ArrayList();
+    protected List<Object> getPropertiesYaml (String[] propertyNames) {
+        List<Object> properties = new ArrayList<>();
         if ((propertyNames != null) && (propertyNames.length > 0)) {
             for (String propertyName : propertyNames) {
                 Object value = conf.get(propertyName);
                 if (value != null) {
-                    Map propertyMap = new LinkedHashMap();
+                    Map<String, Object> propertyMap = new LinkedHashMap<>();
                     propertyMap.put(StormTopologyLayoutConstants.YAML_KEY_NAME, propertyName);
                     propertyMap.put(StormTopologyLayoutConstants.YAML_KEY_VALUE, value);
                     properties.add(propertyMap);
@@ -134,8 +134,8 @@ public abstract class AbstractFluxComponent implements FluxComponent {
         return properties;
     }
 
-    protected List getConstructorArgsYaml (String[] constructorArgNames) {
-        List constructorArgs = new ArrayList();
+    protected List<Object> getConstructorArgsYaml (String[] constructorArgNames) {
+        List<Object> constructorArgs = new ArrayList<>();
         if ((constructorArgNames != null) && (constructorArgNames.length > 0)) {
             for (String constructorArgName : constructorArgNames) {
                 Object value = conf.get(constructorArgName);
@@ -157,8 +157,8 @@ public abstract class AbstractFluxComponent implements FluxComponent {
         return constructorArgs;
     }
 
-    protected List getConfigMethodsYaml (String[] configMethodNames, String[] configKeys) {
-        List configMethods = new ArrayList();
+    protected List<Map<String, Object>> getConfigMethodsYaml (String[] configMethodNames, String[] configKeys) {
+        List<Map<String, Object>> configMethods = new ArrayList<>();
         List<String> nonNullConfigMethodNames = new ArrayList<>();
         List<Object[]> values = new ArrayList<Object[]>(configKeys == null ? 0 : configKeys.length);
 
@@ -171,7 +171,7 @@ public abstract class AbstractFluxComponent implements FluxComponent {
                     if(args.getClass().isArray()) {
                         values.add( (Object[])args );
                     } else {
-                        if(args != ArgsType.NONE) {
+                        if(args != Args.NONE) {
                             values.add(new Object[]{args});
                         }
                     }
@@ -190,19 +190,19 @@ public abstract class AbstractFluxComponent implements FluxComponent {
         return result;
     }
 
-    protected List getConfigMethodsYaml (String[] configMethodNames, Object[] values) {
-        List configMethods = new ArrayList();
+    protected List<Map<String, Object>> getConfigMethodsYaml (String[] configMethodNames, Object[] values) {
+        List<Map<String, Object>> configMethods = new ArrayList<>();
         if ((configMethodNames != null) && (values != null) &&
                 (configMethodNames.length == values.length) && (values.length > 0)) {
             for (int i = 0; i < values.length; ++i) {
-                Map configMethod = new LinkedHashMap();
+                Map<String, Object> configMethod = new LinkedHashMap<>();
                 configMethod.put(StormTopologyLayoutConstants.YAML_KEY_NAME, configMethodNames[i]);
-                List methodArgs = new ArrayList();
+                List<Object> methodArgs = new ArrayList<>();
                 Object value = values[i];
                 if(value.getClass().isArray()) {
                     methodArgs.addAll(Arrays.asList( (Object[])value ) );
                 } else {
-                    if(value != ArgsType.NONE) {
+                    if(value != Args.NONE) {
                         methodArgs.add(value);
                     }
                 }
@@ -215,17 +215,17 @@ public abstract class AbstractFluxComponent implements FluxComponent {
         return configMethods;
     }
 
-    protected List getConfigMethodsYaml2 (String[] configMethodNames, Object[][] values) {
-        List configMethods = new ArrayList();
+    protected List<Map<String, Object>> getConfigMethodsYaml2 (String[] configMethodNames, Object[][] values) {
+        List<Map<String, Object>> configMethods = new ArrayList<>();
         if ((configMethodNames != null) && (values != null) &&
                 (configMethodNames.length == values.length) && (values.length > 0)) {
             for (int i = 0; i < values.length; ++i) {
-                Map configMethod = new LinkedHashMap();
+                Map<String, Object> configMethod = new LinkedHashMap<>();
                 configMethod.put(StormTopologyLayoutConstants.YAML_KEY_NAME, configMethodNames[i]);
-                List methodArgs = new ArrayList();
+                List<Object> methodArgs = new ArrayList<>();
                 Object[] value = values[i];
                 for (int j = 0; j < value.length; j++) {
-                    if(value[j] != ArgsType.NONE) {
+                    if(value[j] != Args.NONE) {
                         methodArgs.add(value[j]);
                     }
                 }
@@ -238,23 +238,23 @@ public abstract class AbstractFluxComponent implements FluxComponent {
         return configMethods;
     }
 
-    protected Map getRefYaml (String refId) {
-        Map ref = new LinkedHashMap();
+    protected Map<String, String> getRefYaml (String refId) {
+        Map<String, String> ref = new LinkedHashMap<>();
         ref.put(StormTopologyLayoutConstants.YAML_KEY_REF, refId);
         return ref;
     }
 
-    protected List getConfigMethodWithRefArg (String[] configMethodNames,
-                                              String[] refIds) {
-        List configMethods = new ArrayList();
+    protected List<Map<String, Object>> getConfigMethodWithRefArg (String[] configMethodNames,
+                                                                   String[] refIds) {
+        List<Map<String, Object>> configMethods = new ArrayList<>();
         if ((configMethodNames != null) && (refIds != null) &&
                 (configMethodNames.length == refIds.length) && (refIds.length > 0)) {
             for (int i = 0; i < refIds.length; ++i) {
-                Map configMethod = new LinkedHashMap();
+                Map<String, Object> configMethod = new LinkedHashMap<>();
                 configMethod.put(StormTopologyLayoutConstants.YAML_KEY_NAME,
                         configMethodNames[i]);
-                List methodArgs = new ArrayList();
-                Map refMap = new HashMap();
+                List<Map<String, String>> methodArgs = new ArrayList<>();
+                Map<String, String> refMap = new HashMap<>();
                 refMap.put(StormTopologyLayoutConstants.YAML_KEY_REF, refIds[i]);
                 methodArgs.add(refMap);
                 configMethod.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, methodArgs);
@@ -489,16 +489,16 @@ public abstract class AbstractFluxComponent implements FluxComponent {
         return args;
     }
 
-    protected void addArg(final List<Object> args, String key) {
-        Object value = conf.get(key);
+    protected <T> void addArg(final List<? super T> args, T key) {
+        T value = (T) conf.get(key);
         if (value == null) {
             throw new IllegalArgumentException("Value for key '" + key + "' not found in config");
         }
         args.add(value);
     }
 
-    protected void addArg(final List<Object> args, String key, Object defaultValue) {
-        Object value = conf.get(key);
+    protected <T> void addArg(final List<? super T> args, String key, T defaultValue) {
+        T value = (T) conf.get(key);
         if (value != null) {
             args.add(value);
         } else {
@@ -506,7 +506,7 @@ public abstract class AbstractFluxComponent implements FluxComponent {
         }
     }
 
-    protected void addArg(List<Object> args, Map ref) {
+    protected void addArg(List<Object> args, Map<String, String> ref) {
         args.add(ref);
     }
 }

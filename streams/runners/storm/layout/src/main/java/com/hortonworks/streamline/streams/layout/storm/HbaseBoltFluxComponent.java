@@ -34,8 +34,8 @@ public class HbaseBoltFluxComponent extends AbstractFluxComponent {
         String[] constructorArgNames = {
             TopologyLayoutConstants.JSON_KEY_TABLE
         };
-        List boltConstructorArgs = getConstructorArgsYaml(constructorArgNames);
-        Map ref = getRefYaml(hbaseMapperRef);
+        List<Object> boltConstructorArgs = getConstructorArgsYaml(constructorArgNames);
+        Map<String, String> ref = getRefYaml(hbaseMapperRef);
         boltConstructorArgs.add(ref);
         List<String> configMethodNames = new ArrayList<>();
         List<Object> values = new ArrayList<>();
@@ -53,7 +53,7 @@ public class HbaseBoltFluxComponent extends AbstractFluxComponent {
          */
         configMethodNames.add("withConfigKey");
         values.add("hbaseConf");
-        List configMethods = getConfigMethodsYaml(configMethodNames.toArray(new String[0]), values.toArray());
+        List<Map<String, Object>> configMethods = getConfigMethodsYaml(configMethodNames.toArray(new String[0]), values.toArray());
         component = createComponent(boltId, boltClassName, null, boltConstructorArgs, configMethods);
         addParallelismToComponent();
     }
@@ -68,7 +68,7 @@ public class HbaseBoltFluxComponent extends AbstractFluxComponent {
         String[] constructorArgNames = {
             TopologyLayoutConstants.JSON_KEY_COLUMN_FAMILY
         };
-        List hbaseMapperConstructorArgs = getConstructorArgsYaml
+        List<Object> hbaseMapperConstructorArgs = getConstructorArgsYaml
                 (constructorArgNames);
 
         this.addToComponents(this.createComponent(hbaseMapperComponentId,

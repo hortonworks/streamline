@@ -82,7 +82,7 @@ public class HdfsSpoutFluxComponent extends AbstractFluxComponent {
                 KEY_COMMIT_FREQUENCY_SEC
         };
 
-        List configMethods = getConfigMethodsYaml(configMethodNames,  configKeys);
+        List<Map<String, Object>> configMethods = getConfigMethodsYaml(configMethodNames,  configKeys);
         String outputStream =  hdfsSource.getOutputStreams().iterator().next().getId();
         addConfMethod(configMethods, "withOutputStream", outputStream);
 
@@ -93,10 +93,10 @@ public class HdfsSpoutFluxComponent extends AbstractFluxComponent {
         addParallelismToComponent();
     }
 
-    private void addConfMethod(List configMethods, String methodName, Object argument) {
-        Map method = new LinkedHashMap(1);
+    private void addConfMethod(List<Map<String, Object>> configMethods, String methodName, Object argument) {
+        Map<String, Object> method = new LinkedHashMap<>(1);
         method.put(StormTopologyLayoutConstants.YAML_KEY_NAME, methodName);
-        ArrayList args = new ArrayList(1);
+        ArrayList<Object> args = new ArrayList<>(1);
         args.add(argument);
         method.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, args);
 
