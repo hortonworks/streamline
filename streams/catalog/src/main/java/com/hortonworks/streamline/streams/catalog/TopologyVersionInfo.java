@@ -16,6 +16,7 @@
 package com.hortonworks.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import org.apache.commons.lang.StringUtils;
 import com.hortonworks.streamline.common.Schema;
 import com.hortonworks.streamline.storage.PrimaryKey;
@@ -28,6 +29,7 @@ import java.util.Map;
 /**
  * Version info specific to a topology.
  */
+@StorableEntity
 public class TopologyVersionInfo extends AbstractStorable {
     public static final String NAME_SPACE = "topology_versioninfos";
     public static final String ID = "id";

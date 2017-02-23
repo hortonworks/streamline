@@ -53,23 +53,6 @@ public class CatalogTagService implements TagService {
 
     public CatalogTagService(StorageManager dao) {
         this.dao = dao;
-        dao.registerStorables(getStorableClasses());
-
-    }
-
-    public static Collection<Class<? extends Storable>> getStorableClasses() {
-        InputStream resourceAsStream = CatalogTagService.class.getClassLoader().getResourceAsStream("tagstorables.props");
-        HashSet<Class<? extends Storable>> classes = new HashSet<>();
-        try {
-            List<String> classNames = IOUtils.readLines(resourceAsStream);
-            for (String className : classNames) {
-                classes.add((Class<? extends Storable>) Class.forName(className));
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-
-        return classes;
     }
 
     // handle this check at application layer since in-memory storage etc does not contain unique key constraint

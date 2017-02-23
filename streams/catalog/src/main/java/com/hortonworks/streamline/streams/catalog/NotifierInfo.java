@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
@@ -34,6 +35,7 @@ import java.util.Map;
 /**
  * The notifier instance config stored in database.
  */
+@StorableEntity
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class NotifierInfo extends AbstractStorable {
     public static final String NAMESPACE = "notifierinfos";

@@ -17,6 +17,7 @@ package com.hortonworks.streamline.registries.dashboard.entites;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.registries.dashboard.dto.WidgetDto;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
@@ -24,6 +25,7 @@ import com.hortonworks.streamline.storage.catalog.AbstractStorable;
 import java.util.HashMap;
 import java.util.Map;
 
+@StorableEntity
 public class Widget extends AbstractStorable {
     public static final String NAMESPACE = "widget";
     public static final String ID = "id";

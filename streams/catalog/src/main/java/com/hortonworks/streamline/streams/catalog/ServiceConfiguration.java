@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
 
@@ -29,6 +30,7 @@ import java.util.Map;
 /**
  * Catalog that matches one configuration file of service.
  */
+@StorableEntity
 public class ServiceConfiguration extends AbstractStorable {
   private static final String NAMESPACE = "service_configurations";
   private static final ObjectMapper objectMapper = new ObjectMapper();

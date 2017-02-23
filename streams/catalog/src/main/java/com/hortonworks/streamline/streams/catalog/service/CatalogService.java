@@ -53,23 +53,7 @@ public class CatalogService {
 
     public CatalogService(StorageManager dao, FileStorage fileStorage, TagClient tagClient) {
         this.dao = dao;
-        dao.registerStorables(getStorableClasses());
         this.fileStorage = fileStorage;
-    }
-
-    public static Collection<Class<? extends Storable>> getStorableClasses() {
-        InputStream resourceAsStream = CatalogService.class.getClassLoader().getResourceAsStream("storables.props");
-        HashSet<Class<? extends Storable>> classes = new HashSet<>();
-        try {
-            List<String> classNames = IOUtils.readLines(resourceAsStream);
-            for (String className : classNames) {
-                classes.add((Class<? extends Storable>) Class.forName(className));
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-
-        return classes;
     }
 
     public String uploadFileToStorage(InputStream inputStream, String jarFileName) throws IOException {

@@ -17,6 +17,7 @@ package com.hortonworks.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
 
@@ -26,6 +27,7 @@ import java.util.Map;
 /**
  * The association between service in namespace and cluster.
  */
+@StorableEntity
 public class NamespaceServiceClusterMapping extends AbstractStorable {
   private static final String NAMESPACE = "namespace_service_cluster_mapping";
   private static final String FIELD_NAMESPACE_ID = "namespaceId";

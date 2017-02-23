@@ -17,12 +17,14 @@
 package com.hortonworks.streamline.streams.catalog;
 
 import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@StorableEntity
 public class TopologySourceStreamMapping extends AbstractStorable {
     public static final String NAMESPACE = "topology_source_stream_mapping";
     public static final String FIELD_SOURCE_ID = "sourceId";

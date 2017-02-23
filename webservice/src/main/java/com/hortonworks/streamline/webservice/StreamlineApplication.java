@@ -18,7 +18,6 @@
 package com.hortonworks.streamline.webservice;
 
 import com.google.common.cache.CacheBuilder;
-import io.dropwizard.server.AbstractServerFactory;
 import com.hortonworks.streamline.cache.Cache;
 import com.hortonworks.streamline.common.Constants;
 import com.hortonworks.streamline.common.ModuleRegistration;
@@ -33,13 +32,14 @@ import com.hortonworks.streamline.storage.cache.impl.GuavaCache;
 import com.hortonworks.streamline.storage.cache.writer.StorageWriteThrough;
 import com.hortonworks.streamline.storage.cache.writer.StorageWriter;
 import com.hortonworks.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.streams.service.GenericExceptionMapper;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.jetty.HttpConnectorFactory;
+import io.dropwizard.server.AbstractServerFactory;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import com.hortonworks.streamline.streams.service.GenericExceptionMapper;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.slf4j.Logger;
@@ -48,9 +48,12 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
+
+import static com.hortonworks.streamline.storage.util.StorageUtils.getStreamlineEntities;
 
 public class StreamlineApplication extends Application<StreamlineConfiguration> {
     private static final Logger LOG = LoggerFactory.getLogger(StreamlineApplication.class);
@@ -155,6 +158,9 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
 
     private void registerResources(StreamlineConfiguration configuration, Environment environment) throws ConfigException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         StorageManager storageManager = getCacheBackedDao(configuration);
+        Collection<Class<? extends Storable>> streamlineEntities = getStreamlineEntities();
+        storageManager.registerStorables(streamlineEntities);
+        LOG.info("Registered streamline entities {}", streamlineEntities);
         FileStorage fileStorage = this.getJarStorage(configuration);
         int appPort = ((HttpConnectorFactory) ((DefaultServerFactory) configuration.getServerFactory()).getApplicationConnectors().get(0)).getPort();
         String catalogRootUrl = configuration.getCatalogRootUrl().replaceFirst("8080", appPort +"");
