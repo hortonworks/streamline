@@ -16,6 +16,10 @@
 package com.hortonworks.streamline.streams.actions.storm.topology;
 
 import com.google.common.base.Joiner;
+import com.hortonworks.streamline.streams.layout.component.StreamlineSink;
+import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
+import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
+import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -48,6 +52,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +65,7 @@ import static java.util.stream.Collectors.toList;
 public class StormTopologyActionsImpl implements TopologyActions {
     private static final Logger LOG = LoggerFactory.getLogger(StormTopologyActionsImpl.class);
     public static final int DEFAULT_WAIT_TIME_SEC = 30;
+    public static final int TEST_RUN_TOPOLOGY_WAIT_MILLIS_FOR_SHUTDOWN = 30_000;
 
     private static final String NIMBUS_SEEDS = "nimbus.seeds";
     private static final String NIMBUS_PORT = "nimbus.port";
@@ -142,87 +148,41 @@ public class StormTopologyActionsImpl implements TopologyActions {
         }
     }
 
-    private List<String> getMavenArtifactsRelatedArgs (String mavenArtifacts) {
-        List<String> args = new ArrayList<>();
-        if (mavenArtifacts != null && !mavenArtifacts.isEmpty()) {
-            args.add("--artifacts");
-            args.add(mavenArtifacts);
-            args.add("--artifactRepositories");
-            args.add(conf.get("mavenRepoUrl"));
+    @Override
+    public void testRun(TopologyLayout topology, String mavenArtifacts,
+                        Map<String, TestRunSource> testRunSourcesForEachSource,
+                        Map<String, TestRunSink> testRunSinksForEachSink) throws Exception {
+        TopologyDag originalTopologyDag = topology.getTopologyDag();
+
+        TestTopologyDagCreatingVisitor visitor = new TestTopologyDagCreatingVisitor(originalTopologyDag,
+                testRunSourcesForEachSource, testRunSinksForEachSink);
+        originalTopologyDag.traverse(visitor);
+        TopologyDag testTopologyDag = visitor.getTestTopologyDag();
+
+        TopologyLayout testTopology = copyTopologyLayout(topology, testTopologyDag);
+
+        Path jarToDeploy = addArtifactsToJar(getArtifactsLocation(testTopology));
+        String fileName = createYamlFile(testTopology);
+        List<String> commands = new ArrayList<String>();
+        commands.add(stormCliPath);
+        commands.add("jar");
+        commands.add(jarToDeploy.toString());
+        commands.addAll(getExtraJarsArg(testTopology));
+        commands.addAll(getMavenArtifactsRelatedArgs(mavenArtifacts));
+        commands.addAll(getNimbusConf());
+        commands.add("org.apache.storm.flux.Flux");
+        commands.add("--local");
+        commands.add("-s");
+        commands.add(String.valueOf(TEST_RUN_TOPOLOGY_WAIT_MILLIS_FOR_SHUTDOWN));
+        commands.add(fileName);
+
+        ShellProcessResult shellProcessResult = executeShellProcess(commands);
+        int exitValue = shellProcessResult.exitValue;
+        if (exitValue != 0) {
+            LOG.error("Topology deploy command as test mode failed - exit code: {} / output: {}", exitValue, shellProcessResult.stdout);
+            throw new Exception("Topology could not be run " +
+                    "successfully as test mode: storm deploy command failed");
         }
-        return args;
-    }
-
-    private List<String> getExtraJarsArg(TopologyLayout topology) {
-        List<String> args = new ArrayList<>();
-        List<String> jars = new ArrayList<>();
-        Path extraJarsPath = getExtraJarsLocation(topology);
-        if (extraJarsPath.toFile().isDirectory()) {
-            File[] jarFiles = extraJarsPath.toFile().listFiles();
-            if (jarFiles != null && jarFiles.length > 0) {
-                for (File jarFile : jarFiles) {
-                    jars.add(jarFile.getAbsolutePath());
-                }
-            }
-        } else {
-            LOG.debug("Extra jars directory {} does not exist, not adding any extra jars", extraJarsPath);
-        }
-        if (!jars.isEmpty()) {
-            args.add("--jars");
-            args.add(Joiner.on(",").join(jars));
-        }
-        return args;
-    }
-
-    private List<String> getNimbusConf() {
-        List<String> args = new ArrayList<>();
-
-        // FIXME: Can't find how to pass list to nimbus.seeds for Storm CLI
-        // Maybe we need to fix Storm to parse string when expected parameter type is list
-        args.add("-c");
-        args.add("nimbus.host=" + nimbusSeeds.split(",")[0]);
-
-        args.add("-c");
-        args.add("nimbus.port=" + String.valueOf(nimbusPort));
-
-        return args;
-    }
-
-    private Path addArtifactsToJar(Path artifactsLocation) throws Exception {
-        Path jarFile = Paths.get(stormJarLocation);
-        if (artifactsLocation.toFile().isDirectory()) {
-            File[] artifacts = artifactsLocation.toFile().listFiles();
-            if (artifacts != null && artifacts.length > 0) {
-                Path newJar = Files.copy(jarFile, artifactsLocation.resolve(jarFile.getFileName()));
-
-                List<String> artifactFileNames = Arrays.stream(artifacts).filter(File::isFile)
-                        .map(File::getName).collect(toList());
-                List<String> commands = new ArrayList<>();
-
-                commands.add(javaJarCommand);
-                commands.add("uf");
-                commands.add(newJar.toString());
-
-                artifactFileNames.stream().forEachOrdered(name -> {
-                    commands.add("-C");
-                    commands.add(artifactsLocation.toString());
-                    commands.add(name);
-                });
-
-                ShellProcessResult shellProcessResult = executeShellProcess(commands);
-                if (shellProcessResult.exitValue != 0) {
-                    LOG.error("Adding artifacts to jar command failed - exit code: {} / output: {}",
-                            shellProcessResult.exitValue, shellProcessResult.stdout);
-                    throw new RuntimeException("Topology could not be deployed " +
-                            "successfully: fail to add artifacts to jar");
-                }
-                LOG.debug("Added files {} to jar {}", artifactFileNames, jarFile);
-                return newJar;
-            }
-        } else {
-            LOG.debug("Artifacts directory {} does not exist, not adding any artifacts to jar", artifactsLocation);
-        }
-        return jarFile;
     }
 
     @Override
@@ -309,6 +269,93 @@ public class StormTopologyActionsImpl implements TopologyActions {
             throw new TopologyNotAliveException("Topology not found in Storm Cluster - topology id: " + topology.getId());
         }
         return stormTopologyId;
+    }
+
+    private TopologyLayout copyTopologyLayout(TopologyLayout topology, TopologyDag replacedTopologyDag) {
+        return new TopologyLayout(topology.getId(), topology.getName(), topology.getConfig(), replacedTopologyDag);
+    }
+
+    private List<String> getMavenArtifactsRelatedArgs (String mavenArtifacts) {
+        List<String> args = new ArrayList<>();
+        if (mavenArtifacts != null && !mavenArtifacts.isEmpty()) {
+            args.add("--artifacts");
+            args.add(mavenArtifacts);
+            args.add("--artifactRepositories");
+            args.add(conf.get("mavenRepoUrl"));
+        }
+        return args;
+    }
+
+    private List<String> getExtraJarsArg(TopologyLayout topology) {
+        List<String> args = new ArrayList<>();
+        List<String> jars = new ArrayList<>();
+        Path extraJarsPath = getExtraJarsLocation(topology);
+        if (extraJarsPath.toFile().isDirectory()) {
+            File[] jarFiles = extraJarsPath.toFile().listFiles();
+            if (jarFiles != null && jarFiles.length > 0) {
+                for (File jarFile : jarFiles) {
+                    jars.add(jarFile.getAbsolutePath());
+                }
+            }
+        } else {
+            LOG.debug("Extra jars directory {} does not exist, not adding any extra jars", extraJarsPath);
+        }
+        if (!jars.isEmpty()) {
+            args.add("--jars");
+            args.add(Joiner.on(",").join(jars));
+        }
+        return args;
+    }
+
+    private List<String> getNimbusConf() {
+        List<String> args = new ArrayList<>();
+
+        // FIXME: Can't find how to pass list to nimbus.seeds for Storm CLI
+        // Maybe we need to fix Storm to parse string when expected parameter type is list
+        args.add("-c");
+        args.add("nimbus.host=" + nimbusSeeds.split(",")[0]);
+
+        args.add("-c");
+        args.add("nimbus.port=" + String.valueOf(nimbusPort));
+
+        return args;
+    }
+
+    private Path addArtifactsToJar(Path artifactsLocation) throws Exception {
+        Path jarFile = Paths.get(stormJarLocation);
+        if (artifactsLocation.toFile().isDirectory()) {
+            File[] artifacts = artifactsLocation.toFile().listFiles();
+            if (artifacts != null && artifacts.length > 0) {
+                Path newJar = Files.copy(jarFile, artifactsLocation.resolve(jarFile.getFileName()));
+
+                List<String> artifactFileNames = Arrays.stream(artifacts).filter(File::isFile)
+                        .map(File::getName).collect(toList());
+                List<String> commands = new ArrayList<>();
+
+                commands.add(javaJarCommand);
+                commands.add("uf");
+                commands.add(newJar.toString());
+
+                artifactFileNames.stream().forEachOrdered(name -> {
+                    commands.add("-C");
+                    commands.add(artifactsLocation.toString());
+                    commands.add(name);
+                });
+
+                ShellProcessResult shellProcessResult = executeShellProcess(commands);
+                if (shellProcessResult.exitValue != 0) {
+                    LOG.error("Adding artifacts to jar command failed - exit code: {} / output: {}",
+                            shellProcessResult.exitValue, shellProcessResult.stdout);
+                    throw new RuntimeException("Topology could not be deployed " +
+                            "successfully: fail to add artifacts to jar");
+                }
+                LOG.debug("Added files {} to jar {}", artifactFileNames, jarFile);
+                return newJar;
+            }
+        } else {
+            LOG.debug("Artifacts directory {} does not exist, not adding any artifacts to jar", artifactsLocation);
+        }
+        return jarFile;
     }
 
     private String createYamlFile (TopologyLayout topology) throws Exception {
@@ -405,4 +452,5 @@ public class StormTopologyActionsImpl implements TopologyActions {
             this.stdout = stdout;
         }
     }
+
 }

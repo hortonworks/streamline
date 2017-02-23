@@ -18,8 +18,11 @@ package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
+import com.hortonworks.streamline.common.exception.service.exception.server.UnhandledServerException;
+import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import com.hortonworks.streamline.common.util.ParallelStreamUtil;
@@ -51,21 +54,29 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static com.hortonworks.streamline.streams.catalog.TopologyVersionInfo.VERSION_PREFIX;
@@ -397,6 +408,74 @@ public class TopologyCatalogResource {
         }
 
         throw EntityNotFoundException.byId(topologyId.toString());
+    }
+
+    @POST
+    @Path("/topologies/{topologyId}/actions/testrun")
+    @Timed
+    public Response testRunTopology (@Context UriInfo urlInfo,
+                                     @PathParam("topologyId") Long topologyId,
+                                     String testRecordsJson) throws Exception {
+        Topology result = catalogService.getTopology(topologyId);
+        if (result != null) {
+            Map<String, TestRunSink> sinkNameToTestRunSinkMap = actionsService.testRunTopology(result, testRecordsJson);
+
+            URI eventDumpApiRootPath = urlInfo.resolve(new URI("/api/v1/catalog/topologies/actions/testrun/result"));
+            Map<String, TestRunSinkReponse> response = sinkNameToTestRunSinkMap.entrySet()
+                    .stream().collect(toMap(e -> e.getKey(), e ->
+                            new TestRunSinkReponse(e.getValue().getOutputFileUUID(), eventDumpApiRootPath.toString())));
+            return WSUtils.respondEntity(response, OK);
+        }
+
+        throw EntityNotFoundException.byId(topologyId.toString());
+    }
+
+    private static class TestRunSinkReponse {
+        private final String uuid;
+        private final String eventDumpLink;
+
+        public TestRunSinkReponse(String uuid, String eventDumpRootApiPath) {
+            this.uuid = uuid;
+
+            if (eventDumpRootApiPath.endsWith("/")) {
+                this.eventDumpLink = eventDumpRootApiPath + uuid;
+            } else {
+                this.eventDumpLink = eventDumpRootApiPath + "/" + uuid;
+            }
+        }
+
+        public String getUuid() {
+            return uuid;
+        }
+
+        public String getEventDumpLink() {
+            return eventDumpLink;
+        }
+    }
+
+    @GET
+    @Path("/topologies/actions/testrun/result/{uuid}")
+    @Timed
+    public Response getResultOfTestRunTopology (@PathParam("uuid") String uuid) throws Exception {
+        String filePath = actionsService.getTopologyTestRunResult(uuid);
+
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            List<Map<String, Object>> results = br.lines().map(line -> {
+                try {
+                    return (Map<String, Object>) objectMapper.readValue(line,
+                            new TypeReference<Map<String, Object>>() {});
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }).collect(toList());
+
+            return WSUtils.respondEntities(results, OK);
+        } catch (FileNotFoundException e) {
+            throw EntityNotFoundException.byId("Test run result " + uuid);
+        } catch (IOException e) {
+            throw new UnhandledServerException("Failed to read the result. Requested uuid: " + uuid);
+        }
     }
 
     @POST
