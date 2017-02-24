@@ -9,7 +9,7 @@ modules:
     className: com.hortonworks.streamline.streams.service.StreamsModule
     config:
       #change the below to the path on your local machine
-      streamlineStormJar: /tmp/streamline-runtime-storm-0.1.0-SNAPSHOT.jar
+      streamlineStormJar: ${STREAMLINE_HOME}/libs/streamline-runtime-storm-0.1.0-SNAPSHOT.jar
       stormHomeDir: /usr/local/Cellar/storm/0.10.0/
       # schema registry configuration
       schemaRegistryUrl: "http://localhost:9090/api/v1"

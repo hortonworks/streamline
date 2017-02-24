@@ -69,6 +69,8 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     private static final String NIMBUS_SEEDS = "nimbus.seeds";
     private static final String NIMBUS_PORT = "nimbus.port";
+    public static final String RESERVED_PATH_STREAMLINE_HOME = "${STREAMLINE_HOME}";
+    public static final String SYSTEM_PROPERTY_STREAMLINE_HOME = "streamline.home";
 
     private String stormArtifactsLocation = "/tmp/storm-artifacts/";
     private String stormCliPath = "storm";
@@ -97,7 +99,9 @@ public class StormTopologyActionsImpl implements TopologyActions {
                 }
                 stormCliPath = stormHomeDir + "bin" + File.separator + "storm";
             }
-            stormJarLocation = conf.get(StormTopologyLayoutConstants.STORM_JAR_LOCATION_KEY);
+            String stormJarLocation = conf.get(StormTopologyLayoutConstants.STORM_JAR_LOCATION_KEY);
+            this.stormJarLocation = applyReservedPaths(stormJarLocation);
+
             catalogRootUrl = conf.get(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL);
 
             Map<String, String> env = System.getenv();
@@ -122,6 +126,14 @@ public class StormTopologyActionsImpl implements TopologyActions {
         }
         File f = new File (stormArtifactsLocation);
         f.mkdirs();
+    }
+
+    private String applyReservedPaths(String stormJarLocation) {
+        return stormJarLocation.replace(RESERVED_PATH_STREAMLINE_HOME, System.getProperty(SYSTEM_PROPERTY_STREAMLINE_HOME, getCWD()));
+    }
+
+    private String getCWD() {
+        return Paths.get(".").toAbsolutePath().normalize().toString();
     }
 
 
