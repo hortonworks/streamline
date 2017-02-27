@@ -1,0 +1,93 @@
+{
+  "type": "SOURCE",
+  "name": "Event Hubs",
+  "subType": "EVENTHUBS",
+  "streamingEngine": "STORM",
+  "builtin": true,
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.EventHubSpoutFluxComponent",
+  "fieldHintProviderClass": "com.hortonworks.streamline.streams.catalog.topology.component.bundle.impl.EventHubsSourceHintProvider",
+  "mavenDeps": "org.apache.storm:storm-eventhubs:STORM_VERSION^org.slf4j:slf4j-log4j12",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "Username",
+        "fieldName": "username",
+        "isOptional": false,
+        "tooltip": "The Event Hubs user name (policy name in Event Hubs Portal)",
+        "type": "string"
+      },
+      {
+        "uiName": "Password",
+        "fieldName": "password",
+        "isOptional": false,
+        "tooltip": "The Event Hubs password (shared access key in Event Hubs Portal)",
+        "type": "string",
+        "hint": "password"
+      },
+      {
+        "uiName": "Namespace",
+        "fieldName": "namespace",
+        "isOptional": false,
+        "tooltip": "The Event Hubs namespace",
+        "type": "string"
+      },
+      {
+        "uiName": "Entity path",
+        "fieldName": "entityPath",
+        "isOptional": false,
+        "tooltip": "The Event Hubs entity path",
+        "type": "string",
+        "hint": "schema"
+      },
+      {
+        "uiName": "Partition count",
+        "fieldName": "partitionCount",
+        "isOptional": false,
+        "tooltip": "The number of partitions in the Event Hubs",
+        "type": "number"
+      },
+      {
+        "uiName": "Zookeeper Connection String",
+        "fieldName": "zkConnectionString",
+        "isOptional": true,
+        "tooltip": "The Zookeeper connection string",
+        "type": "string"
+      },
+      {
+        "uiName": "Checkpoint Interval (secs)",
+        "fieldName": "checkpointIntervalInSeconds",
+        "isOptional": true,
+        "tooltip": "The frequency at which offsets are checkpointed",
+        "type": "number"
+      },
+      {
+        "uiName": "Receiver credits",
+        "fieldName": "receiverCredits",
+        "isOptional": true,
+        "tooltip": "Receiver credits",
+        "type": "number"
+      },
+      {
+        "uiName": "Max pending messages per partition",
+        "fieldName": "maxPendingMsgsPerPartition",
+        "isOptional": true,
+        "tooltip": "The max pending messages per partition",
+        "type": "number"
+      },
+      {
+        "uiName": "Enqueue Time Filter",
+        "fieldName": "enqueueTimeFilter",
+        "isOptional": true,
+        "tooltip": "The enqueue time filter",
+        "type": "number"
+      },
+      {
+        "uiName": "Consumer Group Name",
+        "fieldName": "consumerGroupName",
+        "isOptional": true,
+        "tooltip": "The consumer group name",
+        "type": "string"
+      }
+    ]
+  }
+}
