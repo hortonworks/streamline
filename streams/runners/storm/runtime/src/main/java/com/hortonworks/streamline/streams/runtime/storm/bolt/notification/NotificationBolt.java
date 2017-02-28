@@ -18,11 +18,11 @@
 package com.hortonworks.streamline.streams.runtime.storm.bolt.notification;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.streamline.streams.runtime.storm.bolt.BaseTickTupleAwareRichBolt;
 import org.apache.commons.lang.StringUtils;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
-import org.apache.storm.topology.base.BaseRichBolt;
 import org.apache.storm.tuple.Tuple;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.layout.component.impl.NotificationSink;
@@ -47,7 +47,7 @@ import java.util.Properties;
  * This storm bolt receives tuples from rule engine
  * and uses notification service to send out notifications.
  */
-public class NotificationBolt extends BaseRichBolt {
+public class NotificationBolt extends BaseTickTupleAwareRichBolt {
     private static final Logger LOG = LoggerFactory.getLogger(NotificationBolt.class);
 
     private static final String CATALOG_ROOT_URL = "catalog.root.url";
@@ -138,7 +138,7 @@ public class NotificationBolt extends BaseRichBolt {
     }
 
     @Override
-    public void execute(Tuple tuple) {
+    protected void process(Tuple tuple) {
         Notification notification = new StreamlineEventAdapter((StreamlineEvent) tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT));
         notificationContext.track(notification.getId(), tuple);
         // send to notifier

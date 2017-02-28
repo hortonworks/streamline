@@ -21,6 +21,7 @@ import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.base.BaseRichBolt;
 import org.apache.storm.tuple.Tuple;
+import org.apache.storm.utils.TupleUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,7 @@ import java.util.Map;
 /**
  *
  */
-public abstract class AbstractProcessorBolt extends BaseRichBolt {
+public abstract class AbstractProcessorBolt extends BaseTickTupleAwareRichBolt {
     protected static final Logger LOG = LoggerFactory.getLogger(AbstractProcessorBolt.class);
 
     protected Map stormConf;
@@ -44,21 +45,21 @@ public abstract class AbstractProcessorBolt extends BaseRichBolt {
     }
 
     @Override
-    public void execute(Tuple inputTuple) {
+    protected void process(Tuple tuple) {
         try {
-            Object event = inputTuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
-            LOG.debug("Executing StreamlineEvent: [{}] with tuple: [{}]", event, inputTuple);
+            Object event = tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
+            LOG.debug("Executing StreamlineEvent: [{}] with tuple: [{}]", event, tuple);
 
             if(event instanceof StreamlineEvent) {
-                process(inputTuple, (StreamlineEvent) event);
+                process(tuple, (StreamlineEvent) event);
             } else {
-                LOG.debug("Received invalid input tuple:[{}] with streamline event:[{}] and it is not processed.", inputTuple, event);
+                LOG.debug("Received invalid input tuple:[{}] with streamline event:[{}] and it is not processed.", tuple, event);
             }
 
-            collector.ack(inputTuple);
+            collector.ack(tuple);
         } catch(Exception e) {
             LOG.error("Error occurred while processing the tuple", e);
-            collector.fail(inputTuple);
+            collector.fail(tuple);
             collector.reportError(e);
         }
     }
