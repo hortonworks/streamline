@@ -2467,3 +2467,19 @@ input[type="checkbox"] {
 .form-group span.Select-value-label {
   padding-right: 11px !important;
 }
+
+.hidden-file-input {
+  display: none !important;
+}
+
+.file-upload.input-group-addon {
+  padding: 0;
+  z-index: 10;
+  border: none;
+}
+
+.file-upload .browseBtn {
+  border-right: none;
+  border-bottom-left-radius: 5px;
+  border-top-left-radius: 5px;
+}

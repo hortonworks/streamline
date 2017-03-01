@@ -24,6 +24,7 @@ import {
   Td,
   unsafe
 } from 'reactable';
+import {FormGroup,InputGroup,FormControl,Button} from 'react-bootstrap';
 import {BtnDelete, BtnEdit} from '../../components/ActionButtons';
 import ConfigFieldsForm from './ConfigFieldsForm';
 import CustomProcessorREST from '../../rest/CustomProcessorREST';
@@ -65,6 +66,7 @@ class CustomProcessorForm extends Component {
     description: '',
     customProcessorImpl: '',
     jarFileName: '',
+    fileName: '',
     inputSchema: '',
     outputStreamToSchema: [],
     topologyComponentUISpecification: [],
@@ -125,6 +127,13 @@ class CustomProcessorForm extends Component {
           outputStreamToSchema
         };
         obj.topologyComponentUISpecification = topologyComponentUISpecification.fields;
+        CustomProcessorREST.getCustomProcessorFile(jarFileName)
+          .then((response)=>{
+            let f = new File([response], jarFileName);
+            obj.jarFileName = f;
+            obj.fileName = f.name;
+            this.setState(obj);
+          });
         this.setState(obj);
       }
     });
@@ -195,7 +204,11 @@ class CustomProcessorForm extends Component {
       return;
     }
     let fileObj = event.target.files[0];
-    this.setState({jarFileName: fileObj});
+    this.setState({jarFileName: fileObj, fileName: fileObj.name});
+  }
+
+  handleUpload(e) {
+    this.refs.jarFileName.click();
   }
 
   handleAddFields() {
@@ -463,12 +476,31 @@ class CustomProcessorForm extends Component {
                       <span className="text-danger">*</span>
                     </label>
                     <div className="col-sm-5">
-                      <input type="file" name="jarFileName" placeholder="Select Jar" accept=".jar" className={this.state.jarFileName == ""
-                        ? "form-control invalidInput"
-                        : "form-control"} ref="jarFileName" onChange={(event) => {
+                      <input type="file" name="jarFileName" placeholder="Select Jar" accept=".jar" className="hidden-file-input" ref="jarFileName"
+                        onChange={(event) => {
                           this.handleJarUpload.call(this, event);
                         }}
                         required={true}/>
+                      <div>
+                        <InputGroup>
+                          <InputGroup.Addon className="file-upload">
+                            <Button
+                              type="button"
+                              className="browseBtn btn-primary"
+                              onClick={this.handleUpload.bind(this)}
+                            >
+                              <i className="fa fa-folder-open-o"></i>&nbsp;Browse
+                            </Button>
+                          </InputGroup.Addon>
+                          <FormControl
+                            type="text"
+                            placeholder="No file chosen"
+                            disabled={true}
+                            value={this.state.fileName}
+                            className={this.state.jarFileName == "" ? "form-control invalidInput" : "form-control"}
+                          />
+                        </InputGroup>
+                      </div>
                     </div>
                   </div>
                   <div className="form-group">

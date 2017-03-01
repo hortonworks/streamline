@@ -59,6 +59,15 @@ const CustomProcessorREST = {
       .then((response) => {
         return response.json();
       });
+  },
+  getCustomProcessorFile(id, options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.responseType = 'blob';
+    return fetch(url + '/' + id, options)
+      .then((response) => {
+        return response.blob();
+      });
   }
 };
 
