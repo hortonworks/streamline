@@ -349,7 +349,7 @@ public class StreamCatalogService {
         // put actual version id
         topology.setVersionId(versionInfo.getId());
 
-        this.dao.add(topology);
+        this.dao.addOrUpdate(topology);
         return topology;
     }
 

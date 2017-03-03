@@ -18,7 +18,7 @@ public class PostgresqlInsertQuery extends AbstractStorableSqlQuery {
     protected Collection<String> getColumnNames(Collection<Schema.Field> columns, final String formatter) {
         Collection<String> collection = new ArrayList<>();
         for (Schema.Field field: columns) {
-            if (!field.getName().equalsIgnoreCase("id")) {
+            if (!field.getName().equalsIgnoreCase("id") || getStorableId() != null) {
                 String fieldName = formatter == null ? field.getName() : String.format(formatter, field.getName());
                 collection.add(fieldName);
             }
@@ -29,7 +29,7 @@ public class PostgresqlInsertQuery extends AbstractStorableSqlQuery {
     @Override
     protected void setParameterizedSql() {
         Collection<String> columnNames = getColumnNames(columns, "\"%s\"");;
-        sql = "INSERT INTO " + tableName + " ("
+        sql = "INSERT INTO \"" + tableName + "\" ("
                 + join(columnNames, ", ")
                 + ") VALUES( " + getBindVariables("?,", columnNames.size()) + ")";
         log.debug(sql);
