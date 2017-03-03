@@ -22,9 +22,11 @@ import com.hortonworks.streamline.common.util.Utils;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.Result;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.exception.ProcessingException;
 import com.hortonworks.streamline.streams.layout.component.Stream;
 import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.streamline.streams.runtime.processor.RuleProcessorRuntime;
+import com.hortonworks.streamline.streams.runtime.storm.bolt.AbstractProcessorBolt;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -32,6 +34,7 @@ import org.apache.storm.topology.base.BaseRichBolt;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
+import org.apache.storm.utils.TupleUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,14 +43,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class RulesBolt extends BaseRichBolt {
+public class RulesBolt extends AbstractProcessorBolt {
     private static final Logger LOG = LoggerFactory.getLogger(RulesBolt.class);
 
     private RuleProcessorRuntime ruleProcessorRuntime;
     private final RulesProcessor rulesProcessor;
     private final RuleProcessorRuntime.ScriptType scriptType;
-
-    private OutputCollector collector;
 
     public RulesBolt(RulesProcessor rulesProcessor, RuleProcessorRuntime.ScriptType scriptType) {
         this.rulesProcessor = rulesProcessor;
@@ -60,10 +61,11 @@ public class RulesBolt extends BaseRichBolt {
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
+        super.prepare(stormConf, context, collector);
+
         if (this.rulesProcessor == null) {
             throw new RuntimeException("rulesProcessor cannot be null");
         }
-        this.collector = collector;
         ruleProcessorRuntime = new RuleProcessorRuntime(rulesProcessor, scriptType);
 
         Map<String, Object> config = Collections.emptyMap();
@@ -76,26 +78,17 @@ public class RulesBolt extends BaseRichBolt {
     }
 
     @Override
-    public void execute(Tuple input) {  // Input tuple is expected to be an StreamlineEvent
+    protected void process(Tuple input, StreamlineEvent event) {  // Input tuple is expected to be an StreamlineEvent
+        StreamlineEvent eventWithStream = getStreamlineEventWithStream(event, input);
+        LOG.debug("++++++++ Executing tuple [{}], StreamlineEvent [{}]", input, eventWithStream);
         try {
-            final Object event = input.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
-            if (event instanceof StreamlineEvent) {
-                StreamlineEvent eventWithStream = getStreamlineEventWithStream((StreamlineEvent) event, input);
-                LOG.debug("++++++++ Executing tuple [{}], StreamlineEvent [{}]", input, eventWithStream);
-                for (Result result : ruleProcessorRuntime.process(eventWithStream)) {
-                    for (StreamlineEvent e : result.events) {
-                        collector.emit(result.stream, input, new Values(e));
-                    }
+            for (Result result : ruleProcessorRuntime.process(eventWithStream)) {
+                for (StreamlineEvent e : result.events) {
+                    collector.emit(result.stream, input, new Values(e));
                 }
-            } else {
-                LOG.debug("Invalid tuple received. Tuple disregarded and rules not evaluated.\n\tTuple [{}]." +
-                        "\n\tStreamlineEvent [{}].", input, event);
             }
-            collector.ack(input);
-        } catch (Exception e) {
-            collector.fail(input);
-            collector.reportError(e);
-            LOG.debug("", e);                        // useful to debug unit tests
+        } catch (ProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 

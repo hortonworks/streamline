@@ -44,6 +44,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.assertTrue;
+
 @RunWith(JMockit.class)
 public class CustomProcessorBoltTest {
     private Schema inputSchema = new Schema.SchemaBuilder().field(new Schema.Field("A", Schema.Type.INTEGER)).build();
@@ -139,6 +141,8 @@ public class CustomProcessorBoltTest {
         results.add(result);
         final ProcessingException pe = new ProcessingException("Test");
         new Expectations() {{
+            tuple.getSourceComponent();
+            returns("datasource");
             tuple.getSourceStreamId();
             returns(stream);
             tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
@@ -159,14 +163,19 @@ public class CustomProcessorBoltTest {
         customProcessorBolt.execute(tuple);
         if (!isSuccess) {
             new VerificationsInOrder(){{
+                RuntimeException e;
                 customProcessorRuntime.process(event);
                 times = 1;
                 mockOutputCollector.fail(tuple);
                 times = 1;
-                mockOutputCollector.reportError(pe);
+                mockOutputCollector.reportError(e = withCapture());
+                assertTrue(e.getCause() == pe);
             }};
+
         } else {
             new VerificationsInOrder() {{
+                tuple.getSourceComponent();
+                times = 1;
                 tuple.getSourceStreamId();
                 times = 1;
                 StreamlineEvent actual;
