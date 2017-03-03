@@ -43,7 +43,7 @@ public class SecurityCatalogServiceTest {
         userAclEntry.setSidId(1L);
         userAclEntry.setObjectId(1L);
         userAclEntry.setObjectNamespace("topology");
-        userAclEntry.setPermissions(EnumSet.of(Permission.CREATE));
+        userAclEntry.setPermissions(EnumSet.of(Permission.WRITE));
 
         AclEntry roleAclEntry = new AclEntry();
         roleAclEntry.setSidType(AclEntry.SidType.ROLE);
@@ -83,8 +83,8 @@ public class SecurityCatalogServiceTest {
         }};
 
         assertTrue(catalogService.checkUserPermissions("topology", 1L, 1L, EnumSet.of(Permission.READ)));
-        assertTrue(catalogService.checkUserPermissions("topology", 1L, 1L, EnumSet.of(Permission.CREATE)));
-        assertTrue(catalogService.checkUserPermissions("topology", 1L, 1L, EnumSet.of(Permission.CREATE, Permission.READ)));
-        assertFalse(catalogService.checkUserPermissions("topology", 1L, 1L, EnumSet.of(Permission.CREATE, Permission.DELETE)));
+        assertTrue(catalogService.checkUserPermissions("topology", 1L, 1L, EnumSet.of(Permission.WRITE)));
+        assertTrue(catalogService.checkUserPermissions("topology", 1L, 1L, EnumSet.of(Permission.WRITE, Permission.READ)));
+        assertFalse(catalogService.checkUserPermissions("topology", 1L, 1L, EnumSet.of(Permission.WRITE, Permission.DELETE)));
     }
 }

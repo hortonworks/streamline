@@ -56,6 +56,10 @@
             <groupId>com.hortonworks.registries</groupId>
             <artifactId>schema-registry-client</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.hortonworks.streamline</groupId>
+            <artifactId>streamline-authorizer</artifactId>
+        </dependency>
 
         <!-- test dependency -->
         <dependency>

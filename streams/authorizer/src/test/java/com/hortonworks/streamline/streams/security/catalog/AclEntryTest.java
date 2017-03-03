@@ -30,9 +30,9 @@ public class AclEntryTest {
         aclEntry.setSidId(1L);
         aclEntry.setObjectId(1L);
         aclEntry.setObjectNamespace("topology");
-        aclEntry.setPermissions(EnumSet.of(Permission.CREATE, Permission.READ));
+        aclEntry.setPermissions(EnumSet.of(Permission.WRITE, Permission.READ));
         Map<String, Object> map = aclEntry.toMap();
-        Assert.assertEquals("[\"CREATE\",\"READ\"]", map.get(AclEntry.PERMISSIONS));
+        Assert.assertEquals("[\"READ\",\"WRITE\"]", map.get(AclEntry.PERMISSIONS));
         AclEntry newEntry = new AclEntry();
         newEntry.fromMap(map);
         Assert.assertEquals(aclEntry.getPermissions(), newEntry.getPermissions());

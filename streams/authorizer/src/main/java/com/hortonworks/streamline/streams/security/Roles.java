@@ -18,5 +18,7 @@ package com.hortonworks.streamline.streams.security;
 public class Roles {
     public static final String ROLE_ADMIN = "ROLE_ADMIN";
     public static final String ROLE_SECURITY_ADMIN = "ROLE_SECURITY_ADMIN";
-    public static final String ROLE_TOPOLOGY_EDITOR = "ROLE_TOPOLOGY_EDITOR";
+    public static final String ROLE_TOPOLOGY_ADMIN = "ROLE_TOPOLOGY_ADMIN";
+    public static final String ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN = "ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN";
+    public static final String ROLE_CLUSTER_ADMIN = "ROLE_CLUSTER_ADMIN";
 }

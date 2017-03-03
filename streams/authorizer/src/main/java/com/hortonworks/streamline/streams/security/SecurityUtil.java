@@ -22,6 +22,7 @@ import javax.ws.rs.core.SecurityContext;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public final class SecurityUtil {
@@ -62,12 +63,19 @@ public final class SecurityUtil {
     }
 
     public static <T extends Storable> Collection<T> filter(StreamlineAuthorizer authorizer, SecurityContext securityContext,
-                                                            String targetEntityNamespace, Collection<T> entities,
+                                                            String entityNamespace, Collection<T> entities,
+                                                            Permission first, Permission... rest) {
+        return filter(authorizer, securityContext, entityNamespace, entities, Storable::getId, first, rest);
+    }
+
+    public static <T extends Storable> Collection<T> filter(StreamlineAuthorizer authorizer, SecurityContext securityContext,
+                                                            String entityNamespace, Collection<T> entities,
+                                                            Function<T, Long> idFunction,
                                                             Permission first, Permission... rest) {
         Principal principal = securityContext.getUserPrincipal();
         EnumSet<Permission> permissions = EnumSet.of(first, rest);
         return entities.stream()
-                .filter(e -> doCheckPermissions(authorizer, principal, targetEntityNamespace, e.getId(), permissions))
+                .filter(e -> doCheckPermissions(authorizer, principal, entityNamespace, idFunction.apply(e), permissions))
                 .collect(Collectors.toList());
     }
 

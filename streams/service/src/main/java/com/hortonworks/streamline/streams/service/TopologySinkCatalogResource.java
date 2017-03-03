@@ -18,10 +18,13 @@ package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologySink;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
-import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -33,13 +36,16 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import java.util.Collection;
 import java.util.List;
 
+import static com.hortonworks.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
+import static com.hortonworks.streamline.streams.security.Permission.READ;
+import static com.hortonworks.streamline.streams.security.Permission.WRITE;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
-import static com.hortonworks.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
 
 /**
  * Sink component within an StreamlineTopology
@@ -47,9 +53,11 @@ import static com.hortonworks.streamline.common.util.WSUtils.buildTopologyIdAndV
 @Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologySinkCatalogResource {
+    private final StreamlineAuthorizer authorizer;
     private final StreamCatalogService catalogService;
 
-    public TopologySinkCatalogResource(StreamCatalogService catalogService) {
+    public TopologySinkCatalogResource(StreamlineAuthorizer authorizer, StreamCatalogService catalogService) {
+        this.authorizer = authorizer;
         this.catalogService = catalogService;
     }
 
@@ -81,10 +89,13 @@ public class TopologySinkCatalogResource {
     @GET
     @Path("/topologies/{topologyId}/sinks")
     @Timed
-    public Response listTopologySinks(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) throws Exception {
+    public Response listTopologySinks(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo,
+                                      @Context SecurityContext securityContext) throws Exception {
         Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
         return listTopologySinks(
-                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo));
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo),
+                topologyId,
+                securityContext);
     }
 
     @GET
@@ -92,12 +103,16 @@ public class TopologySinkCatalogResource {
     @Timed
     public Response listTopologySinksForVersion(@PathParam("topologyId") Long topologyId,
                                                 @PathParam("versionId") Long versionId,
-                                                @Context UriInfo uriInfo) throws Exception {
+                                                @Context UriInfo uriInfo,
+                                                @Context SecurityContext securityContext) throws Exception {
         return listTopologySinks(
-                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, versionId, uriInfo));
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, versionId, uriInfo),
+                topologyId,
+                securityContext);
     }
 
-    private Response listTopologySinks(List<QueryParam> queryParams) throws Exception {
+    private Response listTopologySinks(List<QueryParam> queryParams, Long topologyId, SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
         Collection<TopologySink> sinks = catalogService.listTopologySinks(queryParams);
         if (sinks != null) {
             return WSUtils.respondEntities(sinks, OK);
@@ -133,7 +148,9 @@ public class TopologySinkCatalogResource {
     @GET
     @Path("/topologies/{topologyId}/sinks/{id}")
     @Timed
-    public Response getTopologySinkById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sinkId) {
+    public Response getTopologySinkById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sinkId,
+                                        @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
         TopologySink sink = catalogService.getTopologySink(topologyId, sinkId);
         if (sink != null) {
             return WSUtils.respondEntity(sink, OK);
@@ -147,7 +164,9 @@ public class TopologySinkCatalogResource {
     @Timed
     public Response getTopologySinkByIdAndVersion(@PathParam("topologyId") Long topologyId,
                                                   @PathParam("id") Long sourceId,
-                                                  @PathParam("versionId") Long versionId) {
+                                                  @PathParam("versionId") Long versionId,
+                                                  @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
         TopologySink sink = catalogService.getTopologySink(topologyId, sourceId, versionId);
         if (sink != null) {
             return WSUtils.respondEntity(sink, OK);
@@ -195,7 +214,9 @@ public class TopologySinkCatalogResource {
     @POST
     @Path("/topologies/{topologyId}/sinks")
     @Timed
-    public Response addTopologySink(@PathParam("topologyId") Long topologyId, TopologySink topologySink) {
+    public Response addTopologySink(@PathParam("topologyId") Long topologyId, TopologySink topologySink,
+                                    @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
         TopologySink createdSink = catalogService.addTopologySink(topologyId, topologySink);
         return WSUtils.respondEntity(createdSink, CREATED);
     }
@@ -238,7 +259,8 @@ public class TopologySinkCatalogResource {
     @Path("/topologies/{topologyId}/sinks/{id}")
     @Timed
     public Response addOrUpdateTopologySink(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sinkId,
-                                            TopologySink topologySink) {
+                                            TopologySink topologySink, @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
         TopologySink createdTopologySink = catalogService.addOrUpdateTopologySink(topologyId, sinkId, topologySink);
         return WSUtils.respondEntity(createdTopologySink, CREATED);
     }
@@ -270,7 +292,9 @@ public class TopologySinkCatalogResource {
     @Path("/topologies/{topologyId}/sinks/{id}")
     @Timed
     public Response removeTopologySink(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sinkId,
-                                       @javax.ws.rs.QueryParam("removeEdges") boolean removeEdges) {
+                                       @javax.ws.rs.QueryParam("removeEdges") boolean removeEdges,
+                                       @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
         TopologySink topologySink = catalogService.removeTopologySink(topologyId, sinkId, removeEdges);
         if (topologySink != null) {
             return WSUtils.respondEntity(topologySink, OK);

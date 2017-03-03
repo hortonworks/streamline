@@ -19,5 +19,5 @@ package com.hortonworks.streamline.streams.security;
  * The object level permissions which is stored in the ACL.
  */
 public enum Permission {
-    CREATE, READ, UPDATE, DELETE, EXECUTE
+    READ, WRITE, EXECUTE, DELETE
 }

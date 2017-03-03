@@ -18,10 +18,13 @@ package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologySource;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
-import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -33,24 +36,27 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static com.hortonworks.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
+import static com.hortonworks.streamline.streams.security.Permission.READ;
+import static com.hortonworks.streamline.streams.security.Permission.WRITE;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
-import static com.hortonworks.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
-
 /**
  * Source component within an StreamlineTopology
  */
 @Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologySourceCatalogResource {
+    private final StreamlineAuthorizer authorizer;
     private final StreamCatalogService catalogService;
 
-    public TopologySourceCatalogResource(StreamCatalogService catalogService) {
+    public TopologySourceCatalogResource(StreamlineAuthorizer authorizer, StreamCatalogService catalogService) {
+        this.authorizer = authorizer;
         this.catalogService = catalogService;
     }
 
@@ -85,10 +91,13 @@ public class TopologySourceCatalogResource {
     @GET
     @Path("/topologies/{topologyId}/sources")
     @Timed
-    public Response listTopologySources(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) throws Exception {
+    public Response listTopologySources(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo,
+                                        @Context SecurityContext securityContext) throws Exception {
         Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
         return listTopologySources(
-                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo));
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo),
+                topologyId,
+                securityContext);
     }
 
     @GET
@@ -96,12 +105,16 @@ public class TopologySourceCatalogResource {
     @Timed
     public Response listTopologySourcesForVersion(@PathParam("topologyId") Long topologyId,
                                                   @PathParam("versionId") Long versionId,
-                                                  @Context UriInfo uriInfo) throws Exception {
+                                                  @Context UriInfo uriInfo,
+                                                  @Context SecurityContext securityContext) throws Exception {
         return listTopologySources(
-                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, versionId, uriInfo));
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, versionId, uriInfo),
+                topologyId,
+                securityContext);
     }
 
-    private Response listTopologySources(List<QueryParam> queryParams) throws Exception {
+    private Response listTopologySources(List<QueryParam> queryParams, Long topologyId, SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
         Collection<TopologySource> sources = catalogService.listTopologySources(queryParams);
         if (sources != null) {
             return WSUtils.respondEntities(sources, OK);
@@ -139,7 +152,9 @@ public class TopologySourceCatalogResource {
     @GET
     @Path("/topologies/{topologyId}/sources/{id}")
     @Timed
-    public Response getTopologySourceById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sourceId) {
+    public Response getTopologySourceById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sourceId,
+                                          @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
         TopologySource source = catalogService.getTopologySource(topologyId, sourceId);
         if (source != null) {
             return WSUtils.respondEntity(source, OK);
@@ -153,7 +168,9 @@ public class TopologySourceCatalogResource {
     @Timed
     public Response getTopologySourceByIdAndVersion(@PathParam("topologyId") Long topologyId,
                                                     @PathParam("id") Long sourceId,
-                                                    @PathParam("versionId") Long versionId) {
+                                                    @PathParam("versionId") Long versionId,
+                                                    @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
         TopologySource source = catalogService.getTopologySource(topologyId, sourceId, versionId);
         if (source != null) {
             return WSUtils.respondEntity(source, OK);
@@ -210,7 +227,9 @@ public class TopologySourceCatalogResource {
     @POST
     @Path("/topologies/{topologyId}/sources")
     @Timed
-    public Response addTopologySource(@PathParam("topologyId") Long topologyId, TopologySource topologySource) {
+    public Response addTopologySource(@PathParam("topologyId") Long topologyId, TopologySource topologySource,
+                                      @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
         TopologySource createdSource = catalogService.addTopologySource(topologyId, topologySource);
         return WSUtils.respondEntity(createdSource, CREATED);
     }
@@ -259,7 +278,8 @@ public class TopologySourceCatalogResource {
     @Path("/topologies/{topologyId}/sources/{id}")
     @Timed
     public Response addOrUpdateTopologySource(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sourceId,
-                                              TopologySource topologySource) {
+                                              TopologySource topologySource, @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
         TopologySource createdTopologySource = catalogService.addOrUpdateTopologySource(topologyId, sourceId, topologySource);
         return WSUtils.respondEntity(createdTopologySource, CREATED);
     }
@@ -294,7 +314,9 @@ public class TopologySourceCatalogResource {
     @Path("/topologies/{topologyId}/sources/{id}")
     @Timed
     public Response removeTopologySource(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sourceId,
-                                         @javax.ws.rs.QueryParam("removeEdges") boolean removeEdges) {
+                                         @javax.ws.rs.QueryParam("removeEdges") boolean removeEdges,
+                                         @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
         TopologySource topologySource = catalogService.removeTopologySource(topologyId, sourceId, removeEdges);
         if (topologySource != null) {
             return WSUtils.respondEntity(topologySource, OK);

@@ -18,6 +18,8 @@ package com.hortonworks.streamline.streams.security.authentication;
 import com.google.common.io.BaseEncoding;
 import com.hortonworks.streamline.common.exception.service.exception.request.WebserviceAuthorizationException;
 import com.hortonworks.streamline.streams.security.StreamlinePrincipal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Priority;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -32,6 +34,8 @@ import java.util.Map;
  */
 @Priority(100)
 public class StreamlineBasicAuthorizationRequestFilter implements ContainerRequestFilter {
+    private static final Logger LOG = LoggerFactory.getLogger(StreamlineBasicAuthorizationRequestFilter.class);
+
     private String prefix = "Basic";
 
     @Override
@@ -41,6 +45,7 @@ public class StreamlineBasicAuthorizationRequestFilter implements ContainerReque
             throw new WebserviceAuthorizationException("Not authorized");
         }
         StreamlinePrincipal user = new StreamlinePrincipal(auth.getKey());
+        LOG.debug("StreamlinePrincipal: {}", user);
         String scheme = requestContext.getUriInfo().getRequestUri().getScheme();
         requestContext.setSecurityContext(new StreamlineSecurityContext(user, scheme));
     }
