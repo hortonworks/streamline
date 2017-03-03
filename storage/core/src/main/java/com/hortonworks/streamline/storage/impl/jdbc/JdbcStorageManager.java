@@ -36,6 +36,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -61,14 +63,17 @@ public class JdbcStorageManager implements StorageManager {
     @Override
     public void add(Storable storable) throws AlreadyExistsException {
         log.debug("Adding storable [{}]", storable);
-        final Storable existing = get(storable.getStorableKey());
 
-        if(existing == null) {
-            addOrUpdate(storable);
-        } else if (!existing.equals(storable)) {
-            throw new AlreadyExistsException("Another instance with same id = " + storable.getPrimaryKey()
-                    + " exists with different value in namespace " + storable.getNameSpace()
-                    + ". Consider using addOrUpdate method if you always want to overwrite.");
+        try {
+            queryExecutor.insert(storable);
+        } catch (StorageException ex) {
+            if (ex.getCause() instanceof SQLIntegrityConstraintViolationException) {
+                throw new AlreadyExistsException("Another instance with same id = " + storable.getPrimaryKey()
+                                                         + " exists with different value in namespace " + storable.getNameSpace()
+                                                         + ". Consider using addOrUpdate method if you always want to overwrite.");
+            }
+
+            throw ex;
         }
     }
 

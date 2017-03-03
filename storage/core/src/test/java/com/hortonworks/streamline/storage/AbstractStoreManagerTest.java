@@ -84,7 +84,9 @@ public abstract class AbstractStoreManagerTest {
     }
 
     // UnequalExistingStorable => Storable that has the same StorableKey but does NOT verify .equals()
-    //@Test(expected = AlreadyExistsException.class)
+    // All DBs does not throw SQLIntegrityConstraintViolationException, some of them throw their own custom SQLException
+    // so, storage layer wraps that as StorageException
+    //@Test(expected = StorageException.class)
     public void testAdd_UnequalExistingStorable_AlreadyExistsException() {
         for (StorableTest test : storableTests) {
             Storable storable1 = test.getStorableList().get(0);
@@ -102,7 +104,7 @@ public abstract class AbstractStoreManagerTest {
         for (StorableTest test : storableTests) {
             Storable storable1 = test.getStorableList().get(0);
             getStorageManager().add(storable1);
-            getStorageManager().add(storable1);     // should throw exception
+            getStorageManager().addOrUpdate(storable1);
             Assert.assertEquals(storable1, getStorageManager().get(storable1.getStorableKey()));
         }
     }
