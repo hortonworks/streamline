@@ -18,7 +18,7 @@ package com.hortonworks.streamline.streams.service;
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.util.WSUtils;
-import com.hortonworks.streamline.streams.catalog.WindowInfo;
+import com.hortonworks.streamline.streams.catalog.TopologyWindow;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import org.slf4j.Logger;
@@ -79,9 +79,9 @@ public class WindowCatalogResource {
     }
 
     private Response listTopologyWindows(List<QueryParam> queryParams) throws Exception {
-        Collection<WindowInfo> windowInfos = catalogService.listWindows(queryParams);
-        if (windowInfos != null) {
-            return WSUtils.respondEntities(windowInfos, OK);
+        Collection<TopologyWindow> topologyWindows = catalogService.listWindows(queryParams);
+        if (topologyWindows != null) {
+            return WSUtils.respondEntities(topologyWindows, OK);
         }
 
         throw EntityNotFoundException.byFilter(queryParams.toString());
@@ -92,9 +92,9 @@ public class WindowCatalogResource {
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTopologyWindowById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long windowId) throws Exception {
-        WindowInfo windowInfo = catalogService.getWindow(topologyId, windowId);
-        if (windowInfo != null) {
-            return WSUtils.respondEntity(windowInfo, OK);
+        TopologyWindow topologyWindow = catalogService.getWindow(topologyId, windowId);
+        if (topologyWindow != null) {
+            return WSUtils.respondEntity(topologyWindow, OK);
         }
 
         throw EntityNotFoundException.byId(buildMessageForCompositeId(topologyId, windowId));
@@ -107,9 +107,9 @@ public class WindowCatalogResource {
     public Response getTopologyWindowByIdAndVersion(@PathParam("topologyId") Long topologyId,
                                                     @PathParam("id") Long windowId,
                                                     @PathParam("versionId") Long versionId) throws Exception {
-        WindowInfo windowInfo = catalogService.getWindow(topologyId, windowId, versionId);
-        if (windowInfo != null) {
-            return WSUtils.respondEntity(windowInfo, OK);
+        TopologyWindow topologyWindow = catalogService.getWindow(topologyId, windowId, versionId);
+        if (topologyWindow != null) {
+            return WSUtils.respondEntity(topologyWindow, OK);
         }
 
         throw EntityNotFoundException.byVersion(buildMessageForCompositeId(topologyId, windowId),
@@ -119,27 +119,27 @@ public class WindowCatalogResource {
     @POST
     @Path("/topologies/{topologyId}/windows")
     @Timed
-    public Response addTopologyWindow(@PathParam("topologyId") Long topologyId, WindowInfo windowInfo) throws Exception {
-        WindowInfo createdWindowInfo = catalogService.addWindow(topologyId, windowInfo);
-        return WSUtils.respondEntity(createdWindowInfo, CREATED);
+    public Response addTopologyWindow(@PathParam("topologyId") Long topologyId, TopologyWindow topologyWindow) throws Exception {
+        TopologyWindow createdTopologyWindow = catalogService.addWindow(topologyId, topologyWindow);
+        return WSUtils.respondEntity(createdTopologyWindow, CREATED);
     }
 
     @PUT
     @Path("/topologies/{topologyId}/windows/{id}")
     @Timed
     public Response addOrUpdateWindow(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId,
-                                      WindowInfo windowInfo) throws Exception {
-        WindowInfo createdWindowInfo = catalogService.addOrUpdateWindow(topologyId, ruleId, windowInfo);
-        return WSUtils.respondEntity(createdWindowInfo, CREATED);
+                                      TopologyWindow topologyWindow) throws Exception {
+        TopologyWindow createdTopologyWindow = catalogService.addOrUpdateWindow(topologyId, ruleId, topologyWindow);
+        return WSUtils.respondEntity(createdTopologyWindow, CREATED);
     }
 
     @DELETE
     @Path("/topologies/{topologyId}/windows/{id}")
     @Timed
     public Response removeWindowById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long windowId) throws Exception {
-        WindowInfo windowInfo = catalogService.removeWindow(topologyId, windowId);
-        if (windowInfo != null) {
-            return WSUtils.respondEntity(windowInfo, OK);
+        TopologyWindow topologyWindow = catalogService.removeWindow(topologyId, windowId);
+        if (topologyWindow != null) {
+            return WSUtils.respondEntity(topologyWindow, OK);
         }
 
         throw EntityNotFoundException.byId(buildMessageForCompositeId(topologyId, windowId));

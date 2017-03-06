@@ -1,14 +1,27 @@
-import React from 'react'
-import { Router, Route, hashHistory, browserHistory, IndexRoute } from 'react-router'
+/**
+  * Copyright 2017 Hortonworks.
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *   http://www.apache.org/licenses/LICENSE-2.0
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+**/
+import React from 'react';
+import { Router, Route, hashHistory, browserHistory, IndexRoute } from 'react-router';
 
-import MetricsContainer from '../containers/Streams/Metrics/MetricsContainer'
-import TopologyListContainer from '../containers/Streams/TopologyListing/TopologyListingContainer'
-import TopologyViewContainer from '../containers/Streams/TopologyEditor/TopologyViewContainer'
-import TopologyEditorContainer from '../containers/Streams/TopologyEditor/TopologyEditorContainer'
-import NewsFeedContainer from '../containers/NewsFeed/NewsFeedContainer'
-import CustomProcessorContainer from '../containers/Configuration/CustomProcessorContainer'
-import TagsContainer from '../containers/Configuration/TagsContainer'
-import FilesContainer from '../containers/Configuration/FilesContainer'
+import MetricsContainer from '../containers/Streams/Metrics/MetricsContainer';
+import TopologyListContainer from '../containers/Streams/TopologyListing/TopologyListingContainer';
+import TopologyViewContainer from '../containers/Streams/TopologyEditor/TopologyViewContainer';
+import TopologyEditorContainer from '../containers/Streams/TopologyEditor/TopologyEditorContainer';
+import NewsFeedContainer from '../containers/NewsFeed/NewsFeedContainer';
+import CustomProcessorContainer from '../containers/Configuration/CustomProcessorContainer';
+import TagsContainer from '../containers/Configuration/TagsContainer';
+import FilesContainer from '../containers/Configuration/FilesContainer';
 import state from '../app_state';
 import ServicePoolContainer  from '../containers/Service/ServicePoolContainer';
 import EnvironmentContainer from '../containers/Environment/EnvironmentContainer';
@@ -16,12 +29,12 @@ import ModelRegistryContainer from '../containers/ModelRegistry/ModelRegistryCon
 import ComponentDefinition from '../containers/Configuration/ComponentDefinition';
 
 const onEnter = (nextState, replace, callback) => {
-	var sidebarRoute = nextState.routes[1];
-  if(sidebarRoute){
-    if(sidebarRoute.name === 'My Applications'){
+  var sidebarRoute = nextState.routes[1];
+  if (sidebarRoute) {
+    if (sidebarRoute.name === 'My Applications') {
       state.sidebar_activeKey = 1;
       state.sidebar_toggleFlag = false;
-    } else if(sidebarRoute.name === 'Model Registry'){
+    } else if (sidebarRoute.name === 'Model Registry') {
       state.sidebar_activeKey = 5;
       state.sidebar_toggleFlag = false;
     } else {
@@ -29,8 +42,8 @@ const onEnter = (nextState, replace, callback) => {
       state.sidebar_toggleFlag = false;
     }
   }
-	callback();
-}
+  callback();
+};
 
 export default (
 
@@ -52,4 +65,4 @@ export default (
   <Route path="component-definition" name="Component Definition" component={ComponentDefinition} onEnter={onEnter}/>
   </Route>
 
-)
+);

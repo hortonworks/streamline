@@ -50,7 +50,7 @@ public class NotificationBoltFluxComponent extends AbstractFluxComponent {
         } catch (JsonProcessingException ex) {
             throw new RuntimeException(ex);
         }
-        List boltConstructorArgs = getConstructorArgsYaml(constructorArgNames);
+        List<Object> boltConstructorArgs = getConstructorArgsYaml(constructorArgNames);
         String[] configMethodNames = {"withNotificationStoreClass"};
         String[] configKeys = {TopologyLayoutConstants.JSON_KEY_NOTIFICATION_STORE_CLASS};
         List configMethods = getConfigMethodsYaml(configMethodNames, configKeys);
@@ -82,7 +82,7 @@ public class NotificationBoltFluxComponent extends AbstractFluxComponent {
     }
 
     private void validateProperties () throws ComponentConfigException {
-        Map<String, Object> properties = (Map) conf.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_PROPERTIES);
+        Map<String, Object> properties = (Map<String, Object>) conf.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_PROPERTIES);
         if (properties == null) {
             throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants
                     .JSON_KEY_NOTIFIER_PROPERTIES));
@@ -114,7 +114,7 @@ public class NotificationBoltFluxComponent extends AbstractFluxComponent {
     }
 
     private void validateFieldValues () throws ComponentConfigException {
-        Map<String, Object> fieldValues = (Map) conf.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_FIELD_VALUES);
+        Map<String, Object> fieldValues = (Map<String, Object>) conf.get(TopologyLayoutConstants.JSON_KEY_NOTIFIER_FIELD_VALUES);
         if (fieldValues == null) {
             throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, TopologyLayoutConstants
                     .JSON_KEY_NOTIFIER_FIELD_VALUES));

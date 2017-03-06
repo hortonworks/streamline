@@ -16,9 +16,9 @@
 
 package com.hortonworks.streamline.streams.runtime.storm.bolt;
 
+import com.hortonworks.streamline.streams.exception.ProcessingException;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
-import org.apache.storm.topology.IRichBolt;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
@@ -36,12 +36,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-public class StreamsShellBolt implements IRichBolt {
+public class StreamsShellBolt extends AbstractProcessorBolt {
 
     public static final Logger LOG = LoggerFactory.getLogger(StreamsShellBolt.class);
 
-    private OutputCollector collector;
-    private TopologyContext context;
     private List<String> outputStreams;
     private String command;
     private Random rand;
@@ -69,9 +67,7 @@ public class StreamsShellBolt implements IRichBolt {
 
     public void prepare(Map stormConf, TopologyContext context,
                         final OutputCollector collector) {
-
-        this.collector = collector;
-        this.context = context;
+        super.prepare(stormConf, context, collector);
         rand = new Random();
 
         ShellContext shellContext = getShellContext(context);
@@ -96,28 +92,19 @@ public class StreamsShellBolt implements IRichBolt {
         return shellContext;
     }
 
-    public void execute(Tuple input) {
+    @Override
+    protected void process(Tuple input, StreamlineEvent event) {
+        //just need an id
+        String genId = Long.toString(rand.nextLong());
+        StreamlineEvent eventWithStream = getStreamlineEventWithStream(event, input, genId);
         try {
-            final Object tupleField = input.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
-            if (tupleField instanceof StreamlineEvent) {
-                //just need an id
-                String genId = Long.toString(rand.nextLong());
-                StreamlineEvent event = (StreamlineEvent) tupleField;
-                StreamlineEvent eventWithStream = getStreamlineEventWithStream(event, input, genId);
-                for (Result result : processorRuntime.process(eventWithStream)) {
-                    for (StreamlineEvent e : result.events) {
-                        collector.emit(result.stream, input, new Values(e));
-                    }
+            for (Result result : processorRuntime.process(eventWithStream)) {
+                for (StreamlineEvent e : result.events) {
+                    collector.emit(result.stream, input, new Values(e));
                 }
-            } else {
-                LOG.debug("Invalid tuple received. Tuple disregarded and rules not evaluated.\n\tTuple [{}]." +
-                        "\n\tStreamlineEvent [{}].", input, tupleField);
             }
-            collector.ack(input);
-        } catch (Exception e) {
-            collector.fail(input);
-            collector.reportError(e);
-            LOG.debug("", e);
+        } catch (ProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 

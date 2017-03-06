@@ -1,111 +1,123 @@
+/**
+  * Copyright 2017 Hortonworks.
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *   http://www.apache.org/licenses/LICENSE-2.0
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+**/
+
 import React, {Component} from 'react';
-import ReactDOM, { findDOMNode } from 'react-dom';
+import ReactDOM, {findDOMNode} from 'react-dom';
 import {Overlay, Popover, Button} from 'react-bootstrap';
 
 export default class Editable extends Component {
-    state = {
-        edit: false,
-        errorMsg: ''
+  state = {
+    edit: false,
+    errorMsg: ''
+  };
+
+  handleClick = () => {
+    let state = this.state;
+    state.edit = true;
+    this.setState(state);
+  }
+
+  handleResolve = () => {
+    const {resolve} = this.props;
+    if (resolve) {
+      resolve(this);
     }
+  }
 
-    handleClick = () => {
-        let state = this.state;
-        state.edit = true;
-        this.setState(state);
+  handleReject = () => {
+    const {reject} = this.props;
+    if (reject) {
+      reject(this);
+    } else {
+      this.hideEditor();
     }
+  }
 
-    handleResolve = () => {
-        const {resolve} = this.props;
-        if(resolve){
-            resolve(this)
-        }
+  hideEditor = () => {
+    let state = this.state;
+    state.edit = false;
+    this.setState(state);
+  }
+
+  getValueString() {
+    const {children} = this.props;
+
+    if (children.type == 'input' || children.type == 'textarea') {
+      return children.props.value || children.props.defaultValue;
+    } else if (children.type == 'select') {} else {
+      var fn = children.getStringValue;
+      if (fn) {
+        return fn();
+      } else {
+        console.error('Custom component must have getValueString() function.');
+      }
     }
+  }
 
-    handleReject = () => {
-        const {reject} = this.props;
-        if(reject){
-            reject(this)
-        }else{
-            this.hideEditor();
-        }
-    }
+  anchorStyle = {
+    textDecoration: 'none',
+    borderBottom: 'dashed 1px #0088cc',
+    cursor: 'pointer',
+    color: '#323133'
+  };
 
-    hideEditor = () => {
-        let state = this.state;
-        state.edit = false;
-        this.setState(state);
-    }
+  render() {
+    const {children, showButtons, inline, placement, title} = this.props;
+    const {edit, errorMsg} = this.state;
 
-    getValueString(){
-        const {children} = this.props;
+    const buttons = showButtons
+      ? ([<Button className="btn-link btn-xs" bsStyle="success" onClick={this.handleResolve} key="resolve">
+          <i className="fa fa-check"></i></Button>,
+        <Button className="btn-link btn-xs" bsStyle="danger" onClick={this.handleReject} key="reject">
+            <i className="fa fa-times"></i>
+          </Button>
+      ])
+      : null;
 
-        if(children.type == 'input' || children.type == 'textarea'){
-            return children.props.value || children.props.defaultValue;
-        }else if(children.type == 'select'){
+    const error = errorMsg
+      ? (
+        <div className="editable-error">{errorMsg}</div>
+      )
+      : null;
 
-        }else{
-            var fn = children.getStringValue;
-            if(fn){
-                return fn();
-            }else{
-                console.error('Custom component must have getValueString() function.');
-            }
-        }
-    }
-    
-    anchorStyle = {
-        textDecoration: 'none',
-        borderBottom: 'dashed 1px #0088cc',
-        cursor: 'pointer',
-        color: '#323133'
-    }
+    const popover = (
+      <Popover id="popover-positioned-left" title={title || ''}>
+        {children}
+        {buttons}
+        {error}
+      </Popover>
+    );
 
-    render() {
-        const {children, showButtons, inline, placement, title} = this.props;
-        const {edit, errorMsg} = this.state;
-
-        const buttons = showButtons ? (
-            [<Button className="btn-link btn-xs" bsStyle="success" onClick={this.handleResolve} key="resolve"><i className="fa fa-check"></i></Button>,
-            <Button className="btn-link btn-xs" bsStyle="danger" onClick={this.handleReject} key="reject"><i className="fa fa-times"></i></Button>]
-        ) : null;
-
-        const error = errorMsg ? (
-            <div className="editable-error">{errorMsg}</div>
-        ) : null;
-
-        const popover = (
-            <Popover id="popover-positioned-left" title={title || ''}>
-                {children}
-                {buttons}
-                {error}
-            </Popover>
-        )
-
-        return (
-            <div className="editable-container" style={{display:'inline'}} id={this.props.id || ''}>
-                {edit && inline ?
-                    null
-                    :
-                    <a ref="target" onClick={this.handleClick} style={this.anchorStyle}>{this.getValueString()}</a>
-                }
-                {edit && inline ?
-                    [children, buttons, error]
-                    :
-                    <Overlay
-                        show={edit}
-                        target={() => ReactDOM.findDOMNode(this.refs.target)}
-                        {...this.props}
-                    >
-                        {popover}
-                    </Overlay>
-                }
-            </div>
-        );
-    }
+    return (
+      <div className="editable-container" style={{display: 'inline'}} id={this.props.id || ''}>
+        {edit && inline
+          ? null
+          : <a ref="target" onClick={this.handleClick} style={this.anchorStyle}>{this.getValueString()}</a>
+}
+        {edit && inline
+          ? [children, buttons, error]
+          : <Overlay show={edit} target={() => ReactDOM.findDOMNode(this.refs.target)} {...this.props}>
+            {popover}
+          </Overlay>
+}
+      </div>
+    );
+  }
 }
 
 Editable.defaultProps = {
-    showButtons: true,
-    inline: false,
-    placement: "top"
+  showButtons: true,
+  inline: false,
+  placement: "top"
 };

@@ -19,7 +19,7 @@ import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.common.util.WSUtils;
-import com.hortonworks.streamline.streams.catalog.NotifierInfo;
+import com.hortonworks.streamline.streams.catalog.Notifier;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.common.exception.service.exception.request.UnsupportedMediaTypeException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -47,9 +47,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -76,18 +78,18 @@ public class NotifierInfoCatalogResource {
     @GET
     @Path("/notifiers")
     @Timed
-    public Response listNotifiers(@Context UriInfo uriInfo) throws Exception {
+    public Response listNotifiers(@Context UriInfo uriInfo) {
         List<QueryParam> queryParams = new ArrayList<>();
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
-        Collection<NotifierInfo> notifierInfos;
+        Collection<Notifier> notifiers;
         if (params.isEmpty()) {
-            notifierInfos = catalogService.listNotifierInfos();
+            notifiers = catalogService.listNotifierInfos();
         } else {
             queryParams = WSUtils.buildQueryParameters(params);
-            notifierInfos = catalogService.listNotifierInfos(queryParams);
+            notifiers = catalogService.listNotifierInfos(queryParams);
         }
-        if (notifierInfos != null) {
-            return WSUtils.respondEntities(notifierInfos, OK);
+        if (notifiers != null) {
+            return WSUtils.respondEntities(notifiers, OK);
         }
 
         throw EntityNotFoundException.byFilter(queryParams.toString());
@@ -97,7 +99,7 @@ public class NotifierInfoCatalogResource {
     @Path("/notifiers/{id}")
     @Timed
     public Response getNotifierById(@PathParam("id") Long id) {
-        NotifierInfo result = catalogService.getNotifierInfo(id);
+        Notifier result = catalogService.getNotifierInfo(id);
         if (result != null) {
             return WSUtils.respondEntity(result, OK);
         }
@@ -144,20 +146,26 @@ public class NotifierInfoCatalogResource {
         if (!mediaType.equals(MediaType.APPLICATION_JSON_TYPE)) {
             throw new UnsupportedMediaTypeException(mediaType.toString());
         }
-        NotifierInfo notifierInfo = notifierConfig.getValueAs(NotifierInfo.class);
-        String jarFileName = uploadJar(inputStream, notifierInfo.getName());
-        notifierInfo.setJarFileName(jarFileName);
-        NotifierInfo createdNotifierInfo = catalogService.addNotifierInfo(notifierInfo);
-        return WSUtils.respondEntity(createdNotifierInfo, CREATED);
+        Notifier notifier = notifierConfig.getValueAs(Notifier.class);
+        Collection<Notifier> existing = null;
+        existing = catalogService.listNotifierInfos(Collections.singletonList(new QueryParam(Notifier.NOTIFIER_NAME, notifier.getName())));
+        if (existing != null && !existing.isEmpty()) {
+            LOG.warn("Received a post request for an already registered notifier. Not creating entity for " + notifier);
+            return WSUtils.respondEntity(notifier, CONFLICT);
+        }
+        String jarFileName = uploadJar(inputStream, notifier.getName());
+        notifier.setJarFileName(jarFileName);
+        Notifier createdNotifier = catalogService.addNotifierInfo(notifier);
+        return WSUtils.respondEntity(createdNotifier, CREATED);
     }
 
     @DELETE
     @Path("/notifiers/{id}")
     @Timed
     public Response removeNotifierInfo(@PathParam("id") Long id) {
-        NotifierInfo removedNotifierInfo = catalogService.removeNotifierInfo(id);
-        if (removedNotifierInfo != null) {
-            return WSUtils.respondEntity(removedNotifierInfo, OK);
+        Notifier removedNotifier = catalogService.removeNotifierInfo(id);
+        if (removedNotifier != null) {
+            return WSUtils.respondEntity(removedNotifier, OK);
         }
 
         throw EntityNotFoundException.byId(id.toString());
@@ -177,11 +185,11 @@ public class NotifierInfoCatalogResource {
         if (!mediaType.equals(MediaType.APPLICATION_JSON_TYPE)) {
             throw new UnsupportedMediaTypeException(mediaType.toString());
         }
-        NotifierInfo notifierInfo = notifierConfig.getValueAs(NotifierInfo.class);
-        String jarFileName = uploadJar(inputStream, notifierInfo.getName());
-        notifierInfo.setJarFileName(jarFileName);
-        NotifierInfo newNotifierInfo = catalogService.addOrUpdateNotifierInfo(id, notifierInfo);
-        return WSUtils.respondEntity(newNotifierInfo, CREATED);
+        Notifier notifier = notifierConfig.getValueAs(Notifier.class);
+        String jarFileName = uploadJar(inputStream, notifier.getName());
+        notifier.setJarFileName(jarFileName);
+        Notifier newNotifier = catalogService.addOrUpdateNotifierInfo(id, notifier);
+        return WSUtils.respondEntity(newNotifier, CREATED);
     }
 
     /**
@@ -195,10 +203,10 @@ public class NotifierInfoCatalogResource {
     @Produces({"application/java-archive", "application/json"})
     @Path("/notifiers/download/{notifierId}")
     public Response downloadUdf(@PathParam("notifierId") Long notifierId) throws IOException {
-        NotifierInfo notifierInfo = catalogService.getNotifierInfo(notifierId);
-        if (notifierInfo != null) {
+        Notifier notifier = catalogService.getNotifierInfo(notifierId);
+        if (notifier != null) {
             StreamingOutput streamOutput = WSUtils.wrapWithStreamingOutput(
-                    catalogService.downloadFileFromStorage(notifierInfo.getJarFileName()));
+                    catalogService.downloadFileFromStorage(notifier.getJarFileName()));
             return Response.ok(streamOutput).build();
         }
 

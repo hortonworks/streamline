@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.catalog;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
 
@@ -29,6 +30,7 @@ import java.util.Map;
 /**
  * A storable object mainly to store any information needed by UI in a persistent fashion
  */
+@StorableEntity
 public class TopologyEditorMetadata extends AbstractStorable {
     public static final String NAME_SPACE = "topology_editor_metadata";
     public static final String TOPOLOGY_ID = "topologyId";

@@ -16,14 +16,11 @@
 
 package com.hortonworks.streamline.streams.catalog.rule;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.hortonworks.streamline.common.QueryParam;
-import com.hortonworks.streamline.streams.catalog.RuleInfo;
-import com.hortonworks.streamline.streams.catalog.StreamInfo;
-import com.hortonworks.streamline.streams.catalog.TopologyVersionInfo;
-import com.hortonworks.streamline.streams.catalog.UDFInfo;
+import com.hortonworks.streamline.streams.catalog.TopologyRule;
+import com.hortonworks.streamline.streams.catalog.TopologyStream;
+import com.hortonworks.streamline.streams.catalog.UDF;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.layout.component.Stream;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.Condition;
@@ -77,9 +74,9 @@ public class RuleParser {
         this.sql = sql;
         this.topologyId = topologyId;
         this.versionId = versionId;
-        for (UDFInfo udfInfo: catalogService.listUDFs()) {
-            catalogUdfs.put(udfInfo.getName().toUpperCase(),
-                    new Udf(udfInfo.getName(), udfInfo.getClassName(), udfInfo.getType()));
+        for (UDF udf : catalogService.listUDFs()) {
+            catalogUdfs.put(udf.getName().toUpperCase(),
+                    new Udf(udf.getName(), udf.getClassName(), udf.getType()));
         }
     }
 
@@ -191,23 +188,23 @@ public class RuleParser {
 
     // stream assumed to be unique within a topology
     private Stream getStream(final String streamName) throws Exception {
-        List<StreamInfo> streamInfos = getStreamInfos().stream()
+        List<TopologyStream> topologyStreams = getStreamInfos().stream()
                 .filter(s -> s.getStreamId().equalsIgnoreCase(streamName))
                 .collect(Collectors.toList());
-        if (streamInfos.isEmpty()) {
+        if (topologyStreams.isEmpty()) {
             throw new IllegalArgumentException("Stream '" + streamName + "' does not exist");
-        } else if (streamInfos.size() != 1) {
+        } else if (topologyStreams.size() != 1) {
             throw new IllegalArgumentException("Stream '" + streamName + "' is not unique");
         } else {
-            StreamInfo streamInfo = streamInfos.get(0);
-            return new Stream(streamInfo.getStreamId(), streamInfo.getFields());
+            TopologyStream topologyStream = topologyStreams.get(0);
+            return new Stream(topologyStream.getStreamId(), topologyStream.getFields());
         }
     }
 
-    private Collection<StreamInfo> getStreamInfos() throws Exception {
+    private Collection<TopologyStream> getStreamInfos() throws Exception {
         return catalogService.listStreamInfos(ImmutableList.<QueryParam>builder()
-                .add(new QueryParam(RuleInfo.TOPOLOGY_ID, String.valueOf(topologyId)))
-                .add(new QueryParam(StreamInfo.VERSIONID, String.valueOf(versionId)))
+                .add(new QueryParam(TopologyRule.TOPOLOGY_ID, String.valueOf(topologyId)))
+                .add(new QueryParam(TopologyStream.VERSIONID, String.valueOf(versionId)))
                 .build());
     }
 

@@ -64,7 +64,7 @@ public class JsonMultilangSerializer implements ISerializer  {
         connectMsg.setContext(context);
         writeConnectMsg(connectMsg);
 
-        JsonNode node = (JsonNode) readMessage();
+        JsonNode node = readMessage();
         JsonNode pidNode = node.get("pid");
         Long pid = pidNode.asLong();
         return pid;
@@ -101,9 +101,9 @@ public class JsonMultilangSerializer implements ISerializer  {
 
     }
 
-    private Object readMessage() throws IOException, NoOutputException {
+    private JsonNode readMessage() throws IOException, NoOutputException {
         String jsonString = readString();
-        Object msg = objectMapper.readValue(jsonString, JsonNode.class);
+        JsonNode msg = objectMapper.readValue(jsonString, JsonNode.class);
         if (msg != null) {
             return msg;
         } else {

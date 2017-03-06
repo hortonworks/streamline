@@ -1,3 +1,17 @@
+/**
+  * Copyright 2017 Hortonworks.
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *   http://www.apache.org/licenses/LICENSE-2.0
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+**/
+
 import React, {Component, PropTypes} from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
@@ -17,87 +31,81 @@ import BaseContainer from '../../BaseContainer';
 import NoData from '../../../components/NoData';
 import CommonNotification from '../../../utils/CommonNotification';
 
-class CloneTopology extends Component{
-  constructor(props){
-    super(props)
+class CloneTopology extends Component {
+  constructor(props) {
+    super(props);
     this.state = {
       namespaceId: '',
       namespaceOptions: [],
       validSelect: true,
-      showRequired : true
-    }
+      showRequired: true
+    };
     this.fetchData();
   }
 
   fetchData = () => {
-    let promiseArr = [
-      EnvironmentREST.getAllNameSpaces()
-    ];
-    Promise.all(promiseArr)
-    .then(result => {
-      if(result[0].responseMessage !== undefined) {
-          FSReactToastr.error(
-              <CommonNotification flag="error" content={result[0].responseMessage}/>, '', toastOpt)
+    let promiseArr = [EnvironmentREST.getAllNameSpaces()];
+    Promise.all(promiseArr).then(result => {
+      if (result[0].responseMessage !== undefined) {
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={result[0].responseMessage}/>, '', toastOpt);
       } else {
         const resultSet = result[0].entities;
-        let namespaces = []
-        resultSet.map((e)=>{
+        let namespaces = [];
+        resultSet.map((e) => {
           namespaces.push(e.namespace);
         });
         this.setState({namespaceOptions: namespaces});
       }
-    })
+    });
   }
 
   validate() {
     const {namespaceId} = this.state;
     let validDataFlag = true;
-    if(namespaceId === ''){
+    if (namespaceId === '') {
       validDataFlag = false;
       this.setState({validSelect: false});
-    } else{
-      validDataFlag = true
+    } else {
+      validDataFlag = true;
       this.setState({validSelect: true});
     }
     return validDataFlag;
   }
 
   handleSave = () => {
-    if(!this.validate())
+    if (!this.validate()) {
       return;
+    }
     const {namespaceId} = this.state;
 
-    return TopologyREST.cloneTopology(this.props.topologyId, namespaceId)
+    return TopologyREST.cloneTopology(this.props.topologyId, namespaceId);
   }
   handleOnChangeEnvironment = (obj) => {
-    if(obj) {
+    if (obj) {
       this.setState({namespaceId: obj.id, validSelect: true});
-    } else this.setState({namespaceId: '', validSelect: false});
+    } else {
+      this.setState({namespaceId: '', validSelect: false});
+    }
   }
 
-  render(){
+  render() {
     const {validSelect, showRequired, namespaceId, namespaceOptions} = this.state;
 
-    return(
+    return (
       <div className="modal-form config-modal-form">
         <div className="form-group">
-          <label>Environment <span className="text-danger">*</span></label>
+          <label>Environment
+            <span className="text-danger">*</span>
+          </label>
           <div>
-            <Select
-              value={namespaceId}
-              options={namespaceOptions}
-              onChange={this.handleOnChangeEnvironment}
-              className={!validSelect ? 'invalidSelect' : ''}
-              placeholder="Select Environment"
-              required={true}
-              clearable={false}
-              labelKey="name"
-              valueKey="id"
-            />
+            <Select value={namespaceId} options={namespaceOptions} onChange={this.handleOnChangeEnvironment} className={!validSelect
+              ? 'invalidSelect'
+              : ''} placeholder="Select Environment" required={true} clearable={false} labelKey="name" valueKey="id"/>
           </div>
         </div>
       </div>
-    )
+    );
   }
 }
 

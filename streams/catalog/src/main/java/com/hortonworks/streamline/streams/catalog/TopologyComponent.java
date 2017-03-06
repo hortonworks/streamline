@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
 import org.apache.commons.lang3.StringUtils;
@@ -29,8 +30,9 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
 
+@StorableEntity
 public class TopologyComponent extends AbstractStorable {
-    public static final String NAMESPACE = "topology_components";
+    public static final String NAMESPACE = "topology_component";
 
     public static final String ID = "id";
     public static final String VERSIONID = "versionId";

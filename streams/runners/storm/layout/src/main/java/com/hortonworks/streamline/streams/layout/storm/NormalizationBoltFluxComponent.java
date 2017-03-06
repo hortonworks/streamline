@@ -41,7 +41,7 @@ public class NormalizationBoltFluxComponent extends AbstractFluxComponent {
         normalizationProcessor = (NormalizationProcessor) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
         String boltId = "normalizationBolt" + UUID_FOR_COMPONENTS;
         String boltClassName = "com.hortonworks.streamline.streams.runtime.storm.bolt.normalization.NormalizationBolt";
-        List boltConstructorArgs = new ArrayList();
+        List<String> boltConstructorArgs = new ArrayList<>();
         ObjectMapper mapper = new ObjectMapper();
         String normalizationProcessorJson = null;
         try {

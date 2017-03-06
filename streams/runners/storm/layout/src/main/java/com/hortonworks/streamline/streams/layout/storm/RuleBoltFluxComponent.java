@@ -42,7 +42,7 @@ public class RuleBoltFluxComponent extends AbstractFluxComponent {
         rulesProcessor = (RulesProcessor) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
         String boltId = "ruleBolt" + UUID_FOR_COMPONENTS;
         String boltClassName = "com.hortonworks.streamline.streams.runtime.storm.bolt.rules.RulesBolt";
-        List boltConstructorArgs = new ArrayList();
+        List<String> boltConstructorArgs = new ArrayList<>();
         ObjectMapper mapper = new ObjectMapper();
         String rulesProcessorJson = null;
         try {

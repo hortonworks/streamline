@@ -34,7 +34,7 @@ public class KafkaBoltFluxComponent extends AbstractFluxComponent {
     protected void generateComponent() {
         String boltId = "kafkaBolt" + UUID_FOR_COMPONENTS;
         String boltClassName = "org.apache.storm.kafka.bolt.KafkaBolt";
-        List configMethods = new ArrayList();
+        List<Object> configMethods = new ArrayList<>();
         String[]  configMethodNames = {"setFireAndForget", "setAsync"};
         String[] configKeys = {"fireAndForget", "async"};
         configMethods.addAll(getConfigMethodsYaml(configMethodNames, configKeys));
@@ -56,7 +56,7 @@ public class KafkaBoltFluxComponent extends AbstractFluxComponent {
         String mapperComponentId = "tupleToKafkaMapper" + UUID_FOR_COMPONENTS;
         String mapperClassName = "com.hortonworks.streamline.streams.runtime.storm.bolt.kafka.StreamlineEventToKafkaMapper";
         String[] constructorArgNames = { "keyField" };
-        List constructorArgs = getConstructorArgsYaml(constructorArgNames);
+        List<Object> constructorArgs = getConstructorArgsYaml(constructorArgNames);
         addToComponents(createComponent(mapperComponentId, mapperClassName, null, constructorArgs, null));
         return mapperComponentId;
     }
@@ -65,7 +65,7 @@ public class KafkaBoltFluxComponent extends AbstractFluxComponent {
         String topicSelectorComponentId = "topicSelector" + UUID_FOR_COMPONENTS;
         String topicSelectorClassName = "org.apache.storm.kafka.bolt.selector.DefaultTopicSelector";
         String[] constructorArgNames = { "topic" };
-        List constructorArgs = getConstructorArgsYaml(constructorArgNames);
+        List<Object> constructorArgs = getConstructorArgsYaml(constructorArgNames);
         addToComponents(createComponent(topicSelectorComponentId, topicSelectorClassName, null, constructorArgs, null));
         return topicSelectorComponentId;
     }
@@ -91,7 +91,7 @@ public class KafkaBoltFluxComponent extends AbstractFluxComponent {
             TopologyLayoutConstants.SCHEMA_REGISTRY_URL
         };
         List<String> methodNames = new ArrayList<>();
-        List args = new ArrayList<>();
+        List<Object> args = new ArrayList<>();
         methodNames.add(methodName);
         args.add(new String[]{specialPropertyNames[0], getKeySerializer()});
         methodNames.add(methodName);

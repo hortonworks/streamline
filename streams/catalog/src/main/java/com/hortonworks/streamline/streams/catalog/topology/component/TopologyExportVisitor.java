@@ -18,13 +18,13 @@ package com.hortonworks.streamline.streams.catalog.topology.component;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.hortonworks.streamline.common.ComponentTypes;
-import com.hortonworks.streamline.streams.catalog.BranchRuleInfo;
-import com.hortonworks.streamline.streams.catalog.RuleInfo;
+import com.hortonworks.streamline.streams.catalog.TopologyBranchRule;
+import com.hortonworks.streamline.streams.catalog.TopologyRule;
 import com.hortonworks.streamline.streams.catalog.TopologyEdge;
 import com.hortonworks.streamline.streams.catalog.TopologyProcessor;
 import com.hortonworks.streamline.streams.catalog.TopologySink;
 import com.hortonworks.streamline.streams.catalog.TopologySource;
-import com.hortonworks.streamline.streams.catalog.WindowInfo;
+import com.hortonworks.streamline.streams.catalog.TopologyWindow;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyData;
@@ -37,7 +37,6 @@ import com.hortonworks.streamline.streams.layout.component.TopologyDagVisitor;
 import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.rule.Rule;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -66,24 +65,24 @@ public final class TopologyExportVisitor extends TopologyDagVisitor {
         rulesHandlerBuilder.put(ComponentTypes.RULE, new RulesHandler() {
             @Override
             public void handle(Rule rule) throws Exception {
-                RuleInfo ruleInfo = streamCatalogService.getRule(topologyId, rule.getId());
-                topologyData.addRule(ruleInfo);
+                TopologyRule topologyRule = streamCatalogService.getRule(topologyId, rule.getId());
+                topologyData.addRule(topologyRule);
             }
         });
 
         rulesHandlerBuilder.put(ComponentTypes.BRANCH, new RulesHandler() {
             @Override
             public void handle(Rule rule) throws Exception {
-                BranchRuleInfo branchRuleInfo = streamCatalogService.getBranchRule(topologyId, rule.getId());
-                topologyData.addBranch(branchRuleInfo);
+                TopologyBranchRule topologyBranchRule = streamCatalogService.getBranchRule(topologyId, rule.getId());
+                topologyData.addBranch(topologyBranchRule);
             }
         });
 
         rulesHandlerBuilder.put(ComponentTypes.WINDOW, new RulesHandler() {
             @Override
             public void handle(Rule rule) throws Exception {
-                WindowInfo windowInfo = streamCatalogService.getWindow(topologyId, rule.getId());
-                topologyData.addWindow(windowInfo);
+                TopologyWindow topologyWindow = streamCatalogService.getWindow(topologyId, rule.getId());
+                topologyData.addWindow(topologyWindow);
             }
         });
         return rulesHandlerBuilder.build();

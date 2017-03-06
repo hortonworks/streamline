@@ -19,6 +19,7 @@ package com.hortonworks.streamline.streams.service;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.Schema;
 import com.hortonworks.streamline.common.util.FileUtil;
 import com.hortonworks.streamline.common.util.ProxyUtil;
 import com.hortonworks.streamline.common.util.WSUtils;
@@ -49,6 +50,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
@@ -58,12 +60,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -169,6 +173,17 @@ public class TopologyComponentBundleResource {
                 LOG.debug(TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME + " is missing or invalid");
                 throw BadRequestException.missingParameter(TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME);
             }
+            List<QueryParam> queryParams;
+            MultivaluedMap<String, String> params = new MultivaluedHashMap<>();
+            params.putSingle(TopologyComponentBundle.STREAMING_ENGINE, topologyComponentBundle.getStreamingEngine());
+            params.putSingle(TopologyComponentBundle.SUB_TYPE, topologyComponentBundle.getSubType());
+            queryParams = WSUtils.buildQueryParameters(params);
+            Collection<TopologyComponentBundle> topologyComponentBundles = catalogService.listTopologyComponentBundlesForTypeWithFilter(componentType,
+                    queryParams);
+            if (topologyComponentBundles != null && !topologyComponentBundles.isEmpty()) {
+                LOG.warn("Received a post request for an already registered bundle. Not creating entity for " + topologyComponentBundle);
+                return WSUtils.respondEntity(topologyComponentBundle, CONFLICT);
+            }
             if (!topologyComponentBundle.getBuiltin()) {
                 bundleJar = this.getFormDataFromMultiPartRequestAs(InputStream.class, form, BUNDLE_JAR_FILE_PARAM_NAME);
                 if (bundleJar == null) {
@@ -195,15 +210,15 @@ public class TopologyComponentBundleResource {
     }
 
     /**
-     * Update a topology component bundle.
+     * Update a topology component bundle by id.
      * <p>
-     * curl -sS -X PUT -i -F topologyComponentBundle=@kafka-topology-bundle -F bundleJar=@/Users/pshah/dev/IoTaS/streams/runners/storm/layout/target/streams-layout-storm-0.1.0-SNAPSHOT.jar  http://localhost:8080/api/v1/catalog/streams/componentbundles/SOURCE/
+     * curl -sS -X PUT -i -F topologyComponentBundle=@kafka-topology-bundle -F bundleJar=@/Users/pshah/dev/IoTaS/streams/runners/storm/layout/target/streams-layout-storm-0.1.0-SNAPSHOT.jar  http://localhost:8080/api/v1/catalog/streams/componentbundles/SOURCE/1
      * </p>
      */
     @PUT
     @Path("/componentbundles/{component}/{id}")
     @Timed
-    public Response addOrUpdateTopologyComponentBundle (@PathParam("component")
+    public Response addOrUpdateTopologyComponentBundleById (@PathParam("component")
                                                         TopologyComponentBundle.TopologyComponentType componentType, @PathParam("id") Long id,
                                                         FormDataMultiPart form) throws IOException, ComponentConfigException {
         InputStream bundleJar = null;
@@ -238,6 +253,66 @@ public class TopologyComponentBundleResource {
             }
         }
     }
+
+    /**
+     * Update a topology component bundle by trying to find id using type, sub type and streaming engine.
+     * <p>
+     * curl -sS -X PUT -i -F topologyComponentBundle=@kafka-topology-bundle -F bundleJar=@/Users/pshah/dev/IoTaS/streams/runners/storm/layout/target/streams-layout-storm-0.1.0-SNAPSHOT.jar  http://localhost:8080/api/v1/catalog/streams/componentbundles/SOURCE/
+     * </p>
+     */
+    @PUT
+    @Path("/componentbundles/{component}")
+    @Timed
+    public Response addOrUpdateTopologyComponentBundle (@PathParam("component") TopologyComponentBundle.TopologyComponentType componentType,
+                                                        FormDataMultiPart form) throws IOException, ComponentConfigException {
+        InputStream bundleJar = null;
+        try {
+            String bundleJsonString = this.getFormDataFromMultiPartRequestAs(String.class, form, TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME);
+            TopologyComponentBundle topologyComponentBundle = new ObjectMapper().readValue(bundleJsonString, TopologyComponentBundle.class);
+            if (topologyComponentBundle == null) {
+                LOG.debug(TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME + " is missing or invalid");
+                throw BadRequestException.missingParameter(TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME);
+            }
+            if (!componentType.equals(topologyComponentBundle.getType())) {
+                String message = "Cant update a " + topologyComponentBundle.getType() + " on " + componentType + " endpoint. Verify PUT request";
+                LOG.debug(message);
+                throw BadRequestException.message(message);
+            }
+            if (!topologyComponentBundle.getBuiltin()) {
+                bundleJar = this.getFormDataFromMultiPartRequestAs(InputStream.class, form, BUNDLE_JAR_FILE_PARAM_NAME);
+                if (bundleJar == null) {
+                    LOG.debug(BUNDLE_JAR_FILE_PARAM_NAME + " is missing or invalid");
+                    throw BadRequestException.missingParameter(BUNDLE_JAR_FILE_PARAM_NAME);
+                }
+            }
+            validateTopologyBundle(topologyComponentBundle);
+            List<QueryParam> queryParams = new ArrayList<>();
+            queryParams.add(new QueryParam(TopologyComponentBundle.STREAMING_ENGINE, topologyComponentBundle.getStreamingEngine()));
+            queryParams.add(new QueryParam(TopologyComponentBundle.TYPE, topologyComponentBundle.getType().name()));
+            queryParams.add(new QueryParam(TopologyComponentBundle.SUB_TYPE, topologyComponentBundle.getSubType()));
+            Collection<TopologyComponentBundle> existing = catalogService.listTopologyComponentBundlesForTypeWithFilter(componentType, queryParams);
+            if (existing != null && existing.size() == 1) {
+                TopologyComponentBundle updatedBundle = catalogService.addOrUpdateTopologyComponentBundle(existing.iterator().next().getId(), topologyComponentBundle, bundleJar);
+                return WSUtils.respondEntity(updatedBundle, OK);
+            } else {
+                String message = "Cant update because lookup using streaming engine, type and subtype returned either no existing bundle or more than one";
+                LOG.debug(message);
+                throw BadRequestException.message(message);
+            }
+        } catch (Exception e) {
+            LOG.debug("Error occured while updating topology component bundle", e);
+            throw e;
+        } finally {
+            try {
+                if (bundleJar != null) {
+                    bundleJar.close();
+                }
+            } catch (IOException e) {
+                LOG.debug("Error while closing jar file stream", e);
+            }
+        }
+    }
+
     /**
      * Delete a topology component bundle.
      * <p>
@@ -315,6 +390,10 @@ public class TopologyComponentBundleResource {
                 throw BadRequestException.missingParameter(missingParam);
             }
             CustomProcessorInfo customProcessorInfo = new ObjectMapper().readValue(customProcessorInfoStr, CustomProcessorInfo.class);
+            if (!isValidOutputSchema(customProcessorInfo.getOutputStreamToSchema())) {
+                LOG.debug("Output schema is missing while adding custom processor");
+                throw BadRequestException.missingParameter(CustomProcessorInfo.OUTPUT_STREAM_TO_SCHEMA);
+            }
             if (!verifyCustomProcessorImplFromJar(new ByteArrayInputStream(jarBytes), customProcessorInfo)) {
                 String message = "Custom Processor jar file is missing customProcessorImpl class " + customProcessorInfo.getCustomProcessorImpl();
                 LOG.debug(message);
@@ -354,6 +433,10 @@ public class TopologyComponentBundleResource {
                 throw BadRequestException.missingParameter(missingParam);
             }
             CustomProcessorInfo customProcessorInfo = new ObjectMapper().readValue(customProcessorInfoStr, CustomProcessorInfo.class);
+            if (!isValidOutputSchema(customProcessorInfo.getOutputStreamToSchema())) {
+                LOG.debug("Output schema is missing while updating custom processor");
+                throw BadRequestException.missingParameter(CustomProcessorInfo.OUTPUT_STREAM_TO_SCHEMA);
+            }
             if (!verifyCustomProcessorImplFromJar(new ByteArrayInputStream(jarBytes), customProcessorInfo)) {
                 String message = "Custom Processor jar file is missing customProcessorImpl class " + customProcessorInfo.getCustomProcessorImpl();
                 LOG.debug(message);
@@ -488,6 +571,18 @@ public class TopologyComponentBundleResource {
 
         }
         return result;
+    }
+
+    private boolean isValidOutputSchema (Map<String, Schema> outputSchema) {
+        if (outputSchema == null || outputSchema.isEmpty()) {
+            return false;
+        }
+        for (Schema schema: outputSchema.values()) {
+            if (schema.getFields() == null || schema.getFields().isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 }
 

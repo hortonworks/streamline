@@ -226,16 +226,17 @@
                        </configuration>
                     </execution>
                     <execution>
-                        <id>gulp build</id>
+                        <id>npm run-script build</id>
                         <goals>
-                            <goal>gulp</goal>
+                            <goal>npm</goal>
                         </goals>
                         <!-- optional: the default phase is "generate-resources" -->
                         <phase>generate-resources</phase>
                         <configuration>
-                            <!-- optional: if not specified, it will run gulp's default task 
+                            <!-- optional: if not specified, it will run gulp's default task
                                 (and you can remove this whole <configuration> section.) -->
-                            <arguments>build</arguments>
+                            <arguments>run-script build</arguments>
+                            <!--arguments>build</arguments-->
                         </configuration>
                     </execution>
                </executions>

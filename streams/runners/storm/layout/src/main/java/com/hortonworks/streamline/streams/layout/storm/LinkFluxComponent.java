@@ -36,14 +36,14 @@ public class LinkFluxComponent extends AbstractFluxComponent {
                 (TopologyLayoutConstants.JSON_KEY_TO));
     }
 
-    protected void updateLinkComponentWithGrouping (Map groupingInfo) {
+    protected void updateLinkComponentWithGrouping (Map<String, Object> groupingInfo) {
         if (groupingInfo != null && !groupingInfo.isEmpty()) {
             component.put(StormTopologyLayoutConstants.YAML_KEY_GROUPING, groupingInfo);
         }
     }
 
-    protected Map getGroupingYamlForType (String groupingType) {
-        Map grouping = new LinkedHashMap();
+    protected Map<String, Object> getGroupingYamlForType (String groupingType) {
+        Map<String, Object> grouping = new LinkedHashMap<>();
         grouping.put(StormTopologyLayoutConstants.YAML_KEY_TYPE, groupingType);
         if (conf.get(TopologyLayoutConstants.JSON_KEY_STREAM_ID) != null) {
             grouping.put(StormTopologyLayoutConstants.YAML_KEY_STREAM_ID, conf.get(TopologyLayoutConstants.JSON_KEY_STREAM_ID));

@@ -15,21 +15,24 @@
  **/
 package com.hortonworks.streamline.streams.catalog.service;
 
-import mockit.Expectations;
-import mockit.Injectable;
-import mockit.Tested;
-import mockit.integration.junit4.JMockit;
 import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
 import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.streams.catalog.Projection;
 import com.hortonworks.streamline.streams.catalog.Topology;
-import com.hortonworks.streamline.streams.catalog.TopologyVersionInfo;
+import com.hortonworks.streamline.streams.catalog.TopologyVersion;
+import mockit.Expectations;
+import mockit.Injectable;
+import mockit.Tested;
+import mockit.integration.junit4.JMockit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -63,7 +66,7 @@ public class StreamCatalogServiceTest {
         topologies.add(createTopology(2L));
         topologies.add(createTopology(3L));
 
-        List<TopologyVersionInfo> versions = topologies.stream()
+        List<TopologyVersion> versions = topologies.stream()
                 .map(x -> createTopologyVersionInfo(x.getId(), x.getId()))
                 .collect(Collectors.toList());
 
@@ -71,7 +74,7 @@ public class StreamCatalogServiceTest {
             dao.find(withEqual(new Topology().getNameSpace()), withAny(new ArrayList<>()));
             result = topologies;
 
-            dao.find(withEqual(new TopologyVersionInfo().getNameSpace()), withAny(new ArrayList<>()));
+            dao.find(withEqual(new TopologyVersion().getNameSpace()), withAny(new ArrayList<>()));
             result = versions;
 
             dao.get(withEqual(new StorableKey(versions.get(0).getNameSpace(), versions.get(0).getPrimaryKey())));
@@ -104,14 +107,14 @@ public class StreamCatalogServiceTest {
         return topology;
     }
 
-    private TopologyVersionInfo createTopologyVersionInfo(Long id, Long topologyId) {
-        TopologyVersionInfo topologyVersionInfo = new TopologyVersionInfo();
-        topologyVersionInfo.setId(id);
-        topologyVersionInfo.setName("name" + id);
-        topologyVersionInfo.setTopologyId(topologyId);
-        topologyVersionInfo.setDescription("description" + id);
-        topologyVersionInfo.setTimestamp(System.currentTimeMillis());
-        return topologyVersionInfo;
+    private TopologyVersion createTopologyVersionInfo(Long id, Long topologyId) {
+        TopologyVersion topologyVersion = new TopologyVersion();
+        topologyVersion.setId(id);
+        topologyVersion.setName("name" + id);
+        topologyVersion.setTopologyId(topologyId);
+        topologyVersion.setDescription("description" + id);
+        topologyVersion.setTimestamp(System.currentTimeMillis());
+        return topologyVersion;
     }
 
     @Test
@@ -133,5 +136,29 @@ public class StreamCatalogServiceTest {
         assertEquals("foo-clone10", streamCatalogService.getLatestCloneName("foo", topologies).get());
     }
 
+    @Test
+    public void testConvertNested() {
+        List<String> streams = Collections.singletonList("kafka_stream_1");
+        String res = streamCatalogService.convertNested(streams, "f1.g.h = 'A' and  kafka_stream_1.f2[5].j = 100");
+        System.out.println(res);
+        assertEquals("f1['g']['h'] = 'A' and  kafka_stream_1.f2[5]['j'] = 100", res);
 
+        res = streamCatalogService.convertNested(streams, "kafka_stream_1.f2.x.y = 100");
+        assertEquals("kafka_stream_1.f2['x']['y'] = 100", res);
+
+        res = streamCatalogService.convertNested(streams, "f1.f2.x.y = 100");
+        assertEquals("f1['f2']['x']['y'] = 100", res);
+    }
+
+    @Test
+    public void testgetSqlString() {
+        List<String> streams = Collections.singletonList("kafka_stream_1");
+        List<String> gbk = Collections.singletonList("a.b.c");
+        List<Projection> projections = Collections.singletonList(new Projection("f1.g.h", null, null, null));
+        String sql = streamCatalogService.getSqlString(streams, projections, "f1.a.b = kafka_stream_1.g.h", gbk);
+        assertEquals("SELECT f1['g']['h'] FROM kafka_stream_1 WHERE f1['a']['b'] = kafka_stream_1.g['h'] GROUP BY a['b']['c']", sql);
+        projections = Collections.singletonList(new Projection(null, "foo", Arrays.asList("a.b", "kafka_stream_1.c.d"), "res"));
+        sql = streamCatalogService.getSqlString(streams, projections, "f1.a.b = kafka_stream_1.g.h", gbk);
+        assertEquals("SELECT foo(a['b'],kafka_stream_1.c['d']) AS \"res\" FROM kafka_stream_1 WHERE f1['a']['b'] = kafka_stream_1.g['h'] GROUP BY a['b']['c']", sql);
+    }
 }

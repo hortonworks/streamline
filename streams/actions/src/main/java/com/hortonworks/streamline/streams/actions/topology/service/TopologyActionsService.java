@@ -34,14 +34,11 @@ import com.hortonworks.streamline.streams.catalog.container.ContainingNamespaceA
 import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
-import com.hortonworks.streamline.streams.catalog.topology.TopologyLayoutValidator;
 import com.hortonworks.streamline.streams.catalog.topology.component.TopologyDagBuilder;
 import com.hortonworks.streamline.streams.layout.component.OutputComponent;
 import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
 import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
 import com.hortonworks.streamline.streams.layout.component.TopologyDag;
-import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
-import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +46,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -155,7 +151,7 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
     // Copies all the extra jars needed for deploying the topology to extraJarsLocation and returns
     // a string representing all additional maven modules needed for deploying the topology
     private String setUpExtraJars(Topology topology, TopologyActions topologyActions) throws IOException {
-        StormTopologyExtraJarsHandler extraJarsHandler = new StormTopologyExtraJarsHandler(catalogService);
+        StormTopologyDependenciesHandler extraJarsHandler = new StormTopologyDependenciesHandler(catalogService);
         topology.getTopologyDag().traverse(extraJarsHandler);
         Path extraJarsLocation = topologyActions.getExtraJarsLocation(CatalogToLayoutConverter.getTopologyLayout(topology));
         makeEmptyDir(extraJarsLocation);

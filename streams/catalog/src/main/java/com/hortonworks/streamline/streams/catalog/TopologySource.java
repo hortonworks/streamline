@@ -18,10 +18,12 @@ package com.hortonworks.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 
+@StorableEntity
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TopologySource extends TopologyOutputComponent {
-    public static final String NAMESPACE = "topology_sources";
+    public static final String NAMESPACE = "topology_source";
 
     public TopologySource() {
     }

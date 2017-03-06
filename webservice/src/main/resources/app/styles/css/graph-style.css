@@ -1,4 +1,20 @@
+/**
+  * Copyright 2017 Hortonworks.
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *   http://www.apache.org/licenses/LICENSE-2.0
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+**/
+
+
 /* Topology Editor */
+
 #windowSlider, #kafkaSlider {
   position: absolute;
   top: 0px;
@@ -8,14 +24,15 @@
   overflow: auto;
   background-color: #fff;
   right: -650px;
-  box-shadow: -1px 0px 1px rgba(0,0,0,0.20);
+  box-shadow: -1px 0px 1px rgba(0, 0, 0, 0.20);
   z-index: 9;
-
   transition: ease .5s all;
 }
+
 #windowSlider.active, #kafkaSlider.active {
   right: 0px;
 }
+
 h3.slider-title {
   font-weight: 300;
   margin-top: 0px;
@@ -23,7 +40,8 @@ h3.slider-title {
   padding: 5px;
   border-bottom: 1px dotted #ccc;
 }
-.divider{
+
+.divider {
   position: relative;
   color: #C2CADA;
   display: inline-block;
@@ -31,14 +49,18 @@ h3.slider-title {
   height: 20px;
   top: 4px;
 }
-.panel-title > a { cursor:pointer }
 
-.topology-icon{
+.panel-title>a {
+  cursor: pointer
+}
+
+.topology-icon {
   width: 48px;
   margin-right: 3px;
   margin-bottom: 2px;
   cursor: pointer;
 }
+
 svg {
   background-color: transparent;
   cursor: default;
@@ -83,7 +105,9 @@ text.id {
   z-index: 9999;
 }
 
+
 /* Creates a small triangle extender for the tooltip */
+
 .d3-tip:after {
   box-sizing: border-box;
   display: inline;
@@ -95,6 +119,7 @@ text.id {
   position: absolute;
   text-align: center;
 }
+
 .d3-tip.e:after {
   right: 100%;
   top: 50%;
@@ -105,134 +130,164 @@ text.id {
   position: absolute;
   pointer-events: none;
   border-color: rgba(120, 120, 120, 0);
-  border-right-color: rgba(120,120,120,0.95);
+  border-right-color: rgba(120, 120, 120, 0.95);
   border-width: 15px;
   margin-top: -15px;
 }
 
+
 /* Style northward tooltips differently */
+
 .d3-tip.n:after {
   margin: -1px 0 0 0;
   top: 100%;
   left: 0;
 }
 
-.d3-tip ul {padding:0; margin:0; list-style: none;}
-.d3-tip ul li {line-height: 20px;}
-.table-backgrid>thead>tr>th>a {
-  color:#707980;
+.d3-tip ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
+
+.d3-tip ul li {
+  line-height: 20px;
+}
+
+.table-backgrid>thead>tr>th>a {
+  color: #707980;
+}
+
 .conceptG {
   cursor: pointer;
 }
-.conceptG.selected{
+
+.conceptG.selected {
   stroke-width: 2;
 }
+
 .conceptG.selected .node-rectangle {
   stroke: #1190c0;
 }
-marker{
-    fill: grey;
+
+marker {
+  fill: grey;
 }
 
-g.conceptG circle{
-    stroke-width: 2px;
-    stroke: white;
+g.conceptG circle {
+  stroke-width: 2px;
+  stroke: white;
 }
 
 path.link {
-    fill: transparent;
-    stroke: #636363;
-    cursor: pointer;
+  fill: transparent;
+  stroke: #636363;
+  cursor: pointer;
 }
 
-path.link:hover{
-    stroke: #67c2ef;
+path.link:hover {
+  stroke: #67c2ef;
 }
 
-g.connect-node circle{
-    fill: #BEFFFF;
+g.connect-node circle {
+  fill: #BEFFFF;
 }
 
-path.link.hidden{
-    stroke-width: 0;
+path.link.hidden {
+  stroke-width: 0;
 }
 
 path.link.selected {
-    stroke-dasharray: 5, 5;
-    stroke-width: 2;
+  stroke-dasharray: 5, 5;
+  stroke-width: 2;
 }
+
 rect.node-rectangle {
   filter: url(#dropshadow);
 }
+
 rect.datasink {
   fill: #fff;
 }
+
 rect.processor {
   fill: #fff;
 }
+
 rect.source {
   fill: #fff;
 }
+
 rect.datasink-img {
   fill: #fff;
   cursor: auto;
 }
+
 rect.processor-img {
   fill: #fff;
   cursor: auto;
 }
+
 rect.source-img {
   fill: #fff;
   cursor: auto;
 }
+
 text.datasink {
   fill: #a9a9a9;
 }
+
 text.processor {
   fill: #a9a9a9;
 }
+
 text.source {
   fill: #a9a9a9;
 }
-circle.source,
-circle.processor,
-circle.datasink {
+
+circle.source, circle.processor, circle.datasink {
   fill: #3eae49;
 }
+
 text.node-title {
   font-size: 16px;
   fill: #666;
 }
+
 text.node-type-label {
   fill: #a9a9a9;
   font-size: 12px;
 }
-svg > foreignObject > p {
+
+svg>foreignObject>p {
   text-align: center;
   overflow: overlay;
   position: relative;
 }
-.conceptG .fa-times{
+
+.conceptG .fa-times {
   fill: #EA0000;
   cursor: pointer;
 }
-.conceptG .parallelism-count{
+
+.conceptG .parallelism-count {
   fill: #666;
   cursor: pointer;
   font-size: 12px
 }
-.conceptG .fa-caret-right,
-.conceptG .fa-caret-left {
+
+.conceptG .fa-caret-right, .conceptG .fa-caret-left {
   fill: #a9a9a9;
   cursor: pointer;
   font-size: 20px;
 }
-.conceptG .parallelism-count{
+
+.conceptG .parallelism-count {
   cursor: auto;
   font-size: 13px;
 }
-.link-group .fa-random{
+
+.link-group .fa-random {
   fill: #69BE29;
   cursor: pointer;
 }
@@ -255,6 +310,7 @@ svg > foreignObject > p {
   color: #666;
   background-color: #DDD;
 }
+
 .node .node-icon {
   position: absolute;
   top: 0px;
@@ -265,30 +321,37 @@ svg > foreignObject > p {
   background-color: #666;
   border-radius: 4px 0px 0px 4px;
 }
+
 .node.datasource {
   border-color: #3db5e6;
   color: #3db5e6;
   background-color: #ebf9ff;
 }
+
 .node.datasource .node-icon {
   background-color: #3db5e6;
 }
+
 .node.processor {
   border-color: #e17000;
   color: #e17000;
   background-color: #fff0e1;
 }
+
 .node.processor .node-icon {
   background-color: #e17000;
 }
+
 .node.sink {
   border-color: #f6a800;
   color: #f6a800;
   background-color: #fff7ea;
 }
+
 .node.sink .node-icon {
   background-color: #f6a800;
 }
+
 .invalidInput {
   border-color: #d81010;
 }

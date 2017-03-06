@@ -19,7 +19,7 @@ package com.hortonworks.streamline.streams.service;
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.util.WSUtils;
-import com.hortonworks.streamline.streams.catalog.StreamInfo;
+import com.hortonworks.streamline.streams.catalog.TopologyStream;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 
@@ -108,7 +108,7 @@ public class TopologyStreamCatalogResource {
     }
 
     private Response listTopologyStreams(List<QueryParam> queryParams) throws Exception {
-        Collection<StreamInfo> sources = catalogService.listStreamInfos(queryParams);
+        Collection<TopologyStream> sources = catalogService.listStreamInfos(queryParams);
         if (sources != null) {
             return WSUtils.respondEntities(sources, OK);
         }
@@ -146,9 +146,9 @@ public class TopologyStreamCatalogResource {
     @Path("/topologies/{topologyId}/streams/{id}")
     @Timed
     public Response getStreamInfoById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long streamId) {
-        StreamInfo streamInfo = catalogService.getStreamInfo(topologyId, streamId);
-        if (streamInfo != null) {
-            return WSUtils.respondEntity(streamInfo, OK);
+        TopologyStream topologyStream = catalogService.getStreamInfo(topologyId, streamId);
+        if (topologyStream != null) {
+            return WSUtils.respondEntity(topologyStream, OK);
         }
 
         throw EntityNotFoundException.byId(buildMessageForCompositeId(topologyId, streamId));
@@ -160,9 +160,9 @@ public class TopologyStreamCatalogResource {
     public Response getStreamInfoById(@PathParam("topologyId") Long topologyId,
                                       @PathParam("versionId") Long versionId,
                                       @PathParam("id") Long streamId) {
-        StreamInfo streamInfo = catalogService.getStreamInfo(topologyId, streamId, versionId);
-        if (streamInfo != null) {
-            return WSUtils.respondEntity(streamInfo, OK);
+        TopologyStream topologyStream = catalogService.getStreamInfo(topologyId, streamId, versionId);
+        if (topologyStream != null) {
+            return WSUtils.respondEntity(topologyStream, OK);
         }
 
         throw EntityNotFoundException.byVersion(buildMessageForCompositeId(topologyId, streamId),
@@ -212,8 +212,8 @@ public class TopologyStreamCatalogResource {
     @POST
     @Path("/topologies/{topologyId}/streams")
     @Timed
-    public Response addStreamInfo(@PathParam("topologyId") Long topologyId, StreamInfo streamInfo) {
-        StreamInfo createdStream = catalogService.addStreamInfo(topologyId, streamInfo);
+    public Response addStreamInfo(@PathParam("topologyId") Long topologyId, TopologyStream topologyStream) {
+        TopologyStream createdStream = catalogService.addStreamInfo(topologyId, topologyStream);
         return WSUtils.respondEntity(createdStream, CREATED);
     }
 
@@ -264,15 +264,15 @@ public class TopologyStreamCatalogResource {
      * </pre>
      *
      * @param id  the id of the stream to be updated
-     * @param streamInfo the updated StreamInfo object
+     * @param topologyStream the updated StreamInfo object
      * @return the response
      */
     @PUT
     @Path("/topologies/{topologyId}/streams/{id}")
     @Timed
-    public Response addOrUpdateStreamInfo(@PathParam("topologyId") Long topologyId, @PathParam("id") Long id, StreamInfo streamInfo) {
-        StreamInfo newStreamInfo = catalogService.addOrUpdateStreamInfo(topologyId, id, streamInfo);
-        return WSUtils.respondEntity(newStreamInfo, OK);
+    public Response addOrUpdateStreamInfo(@PathParam("topologyId") Long topologyId, @PathParam("id") Long id, TopologyStream topologyStream) {
+        TopologyStream newTopologyStream = catalogService.addOrUpdateStreamInfo(topologyId, id, topologyStream);
+        return WSUtils.respondEntity(newTopologyStream, OK);
     }
 
     /**
@@ -309,7 +309,7 @@ public class TopologyStreamCatalogResource {
     @Path("/topologies/{topologyId}/streams/{id}")
     @Timed
     public Response removeStreamInfo(@PathParam("topologyId") Long topologyId, @PathParam("id") Long id) {
-        StreamInfo removedStream = catalogService.removeStreamInfo(topologyId, id);
+        TopologyStream removedStream = catalogService.removeStreamInfo(topologyId, id);
         if (removedStream != null) {
             return WSUtils.respondEntity(removedStream, OK);
         }

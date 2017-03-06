@@ -31,6 +31,7 @@ import org.apache.storm.topology.base.BaseRichBolt;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
+import org.apache.storm.utils.TupleUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,10 +44,9 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Bolt for supporting custom processors components in an Streamline topology
  */
-public class CustomProcessorBolt extends BaseRichBolt {
+public class CustomProcessorBolt extends AbstractProcessorBolt {
     private static final Logger LOG = LoggerFactory.getLogger(CustomProcessorBolt.class);
     private static final ConcurrentHashMap<String, CustomProcessorRuntime> customProcessorConcurrentHashMap = new ConcurrentHashMap<>();
-    private OutputCollector collector;
     private CustomProcessorRuntime customProcessorRuntime;
     private String customProcessorImpl;
     private Map<String, Object> config;
@@ -144,7 +144,7 @@ public class CustomProcessorBolt extends BaseRichBolt {
 
     @Override
     public void prepare (Map stormConf, TopologyContext context, OutputCollector collector) {
-        this.collector = collector;
+        super.prepare(stormConf, context, collector);
         String message;
         if (StringUtils.isEmpty(customProcessorImpl)) {
             message = "Custom processor implementation class not specified.";
@@ -156,32 +156,20 @@ public class CustomProcessorBolt extends BaseRichBolt {
     }
 
     @Override
-    public void execute (Tuple input) {
+    protected void process (Tuple input, StreamlineEvent event) {
         try {
-            final Object tupleField = input.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
-            if (tupleField instanceof StreamlineEvent) {
-                StreamlineEvent event = (StreamlineEvent) tupleField;
-                List<Result> results = customProcessorRuntime.process(new StreamlineEventImpl(event, event.getDataSourceId(), event
-                        .getId(), event.getHeader(), input.getSourceStreamId()));
-                if (results != null) {
-                    for (Result result : results) {
-                        for (StreamlineEvent e : result.events) {
-                            collector.emit(result.stream, input, new Values(e));
-                        }
+            List<Result> results = customProcessorRuntime.process(new StreamlineEventImpl(event, event.getDataSourceId(), event
+                    .getId(), event.getHeader(), input.getSourceStreamId()));
+            if (results != null) {
+                for (Result result : results) {
+                    for (StreamlineEvent e : result.events) {
+                        collector.emit(result.stream, input, new Values(e));
                     }
                 }
-            } else {
-                LOG.debug("Invalid tuple received. Tuple disregarded and not sent to custom processor for processing.\n\tTuple [{}]." +
-                        "\n\tStreamlineEvent [{}].", input, tupleField);
             }
-            collector.ack(input);
         } catch (ProcessingException e) {
             LOG.error("Custom Processor threw a ProcessingException. ", e);
-            collector.fail(input);
-            collector.reportError(e);
-        } catch (Exception e) {
-            collector.fail(input);
-            collector.reportError(e);
+            throw new RuntimeException(e);
         }
     }
 

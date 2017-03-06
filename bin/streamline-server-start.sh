@@ -19,7 +19,22 @@ then
         echo "USAGE: $0 [-daemon] streamline.yaml"
         exit 1
 fi
-base_dir=$(dirname $0)/..
+
+# Resolve links - $0 may be a softlink
+PRG="${0}"
+
+while [ -h "${PRG}" ]; do
+  ls=`ls -ld "${PRG}"`
+  link=`expr "$ls" : '.*-> \(.*\)$'`
+  if expr "$link" : '/.*' > /dev/null; then
+    PRG="$link"
+  else
+    PRG=`dirname "${PRG}"`/"$link"
+  fi
+done
+
+bin_dir=`dirname ${PRG}`
+base_dir=`cd ${bin_dir}/..;pwd`
 
 if [ "x$STREAMLINE_HEAP_OPTS" = "x" ]; then
     export STREAMLINE_HEAP_OPTS="-Xmx1G -Xms1G"
@@ -81,6 +96,9 @@ if [ -z "$JAVA_HOME" ]; then
 else
   JAVA="$JAVA_HOME/bin/java"
 fi
+
+# add streamline base directory
+STREAMLINE_OPTS="-Dstreamline.home=${base_dir} "
 
 # JVM performance options
 if [ -z "$STREAMLINE_JVM_PERFORMANCE_OPTS" ]; then

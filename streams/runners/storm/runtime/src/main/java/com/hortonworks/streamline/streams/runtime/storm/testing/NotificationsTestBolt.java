@@ -17,6 +17,7 @@ package com.hortonworks.streamline.streams.runtime.storm.testing;
 
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.runtime.storm.bolt.BaseTickTupleAwareRichBolt;
 import com.hortonworks.streamline.streams.runtime.transform.AddHeaderTransformRuntime;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -25,6 +26,7 @@ import org.apache.storm.topology.base.BaseRichBolt;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
+import org.apache.storm.utils.TupleUtils;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -34,7 +36,7 @@ import java.util.Map;
 /**
  * This is a dummy bolt to just send some notifications for testing the Notifications.
  */
-public class NotificationsTestBolt extends BaseRichBolt {
+public class NotificationsTestBolt extends BaseTickTupleAwareRichBolt {
 
     public static final String STREAMLINE_NOTIFICATION = "streamline.notification";
     private static final int EMAIL_NOTIFICATION_INTERVAL = 500; // after every 500 notifications
@@ -61,7 +63,7 @@ public class NotificationsTestBolt extends BaseRichBolt {
     }
 
     @Override
-    public void execute(Tuple input) {
+    protected void process(Tuple input) {
         StreamlineEvent event = (StreamlineEvent) input.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
         List<String> eventIds = Arrays.asList(event.getId());
         List<String> dataSourceIds = Arrays.asList(event.getDataSourceId());

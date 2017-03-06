@@ -72,7 +72,8 @@ public class AvroKafkaSpoutScheme implements MultiScheme {
                              schemaMetadata,
                              null);
 
-        return Collections.<List<Object>>singletonList(new Values(new StreamlineEventImpl(keyValues, dataSourceId)));
+        StreamlineEvent streamlineEvent = StreamlineEventImpl.builder().putAll(keyValues).dataSourceId(dataSourceId).build();
+        return Collections.<List<Object>>singletonList(new Values(streamlineEvent));
     }
 
     @Override

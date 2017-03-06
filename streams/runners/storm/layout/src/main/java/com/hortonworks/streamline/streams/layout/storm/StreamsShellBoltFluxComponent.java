@@ -26,6 +26,7 @@ import com.hortonworks.streamline.streams.layout.component.impl.MultiLangProcess
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class StreamsShellBoltFluxComponent extends  AbstractFluxComponent {
 
@@ -48,7 +49,7 @@ public class StreamsShellBoltFluxComponent extends  AbstractFluxComponent {
         configMethodNames.add("withOutputStreams");
         values.add(getStreams());
 
-        List configMethods = getConfigMethodsYaml(configMethodNames.toArray(new String[0]), values.toArray());
+        List<Map<String, Object>> configMethods = getConfigMethodsYaml(configMethodNames.toArray(new String[0]), values.toArray());
 
         component = createComponent(boltId, boltClassName, null, boltConstructorArgs, configMethods);
 

@@ -85,7 +85,7 @@ public class WindowedQueryBolt_TestTopology {
     } // main
 
     private static Nimbus.Client runOnStormCluster(Config conf, StormTopology topology) throws AlreadyAliveException, InvalidTopologyException, AuthorizationException {
-        Map clusterConf = Utils.readStormConfig();
+        Map<String, Object> clusterConf = Utils.readStormConfig();
         StormSubmitter.submitTopologyWithProgressBar(TOPO_NAME, conf, topology);
         return NimbusClient.getConfiguredClient(clusterConf).getClient();
     }

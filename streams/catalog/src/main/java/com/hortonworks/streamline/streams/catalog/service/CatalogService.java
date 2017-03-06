@@ -23,7 +23,7 @@ import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.storage.util.StorageUtils;
-import com.hortonworks.streamline.streams.catalog.FileInfo;
+import com.hortonworks.streamline.streams.catalog.File;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,7 @@ public class CatalogService {
     private static final Logger LOG = LoggerFactory.getLogger(CatalogService.class);
 
     // TODO: the namespace and Id generation logic should be moved inside DAO
-    private static final String FILE_NAMESPACE = FileInfo.NAME_SPACE;
+    private static final String FILE_NAMESPACE = File.NAME_SPACE;
 
     private final StorageManager dao;
     private final FileStorage fileStorage;
@@ -53,23 +53,7 @@ public class CatalogService {
 
     public CatalogService(StorageManager dao, FileStorage fileStorage, TagClient tagClient) {
         this.dao = dao;
-        dao.registerStorables(getStorableClasses());
         this.fileStorage = fileStorage;
-    }
-
-    public static Collection<Class<? extends Storable>> getStorableClasses() {
-        InputStream resourceAsStream = CatalogService.class.getClassLoader().getResourceAsStream("storables.props");
-        HashSet<Class<? extends Storable>> classes = new HashSet<>();
-        try {
-            List<String> classNames = IOUtils.readLines(resourceAsStream);
-            for (String className : classNames) {
-                classes.add((Class<? extends Storable>) Class.forName(className));
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-
-        return classes;
     }
 
     public String uploadFileToStorage(InputStream inputStream, String jarFileName) throws IOException {
@@ -84,32 +68,32 @@ public class CatalogService {
         return fileStorage.deleteFile(jarName);
     }
 
-    public Collection<FileInfo> listFiles() {
+    public Collection<File> listFiles() {
         return dao.list(FILE_NAMESPACE);
     }
 
-    public Collection<FileInfo> listFiles(List<QueryParam> queryParams) {
+    public Collection<File> listFiles(List<QueryParam> queryParams) {
         return dao.find(FILE_NAMESPACE, queryParams);
     }
 
-    public FileInfo getFile(Long jarId) {
-        FileInfo file = new FileInfo();
+    public File getFile(Long jarId) {
+        File file = new File();
         file.setId(jarId);
         return dao.get(new StorableKey(FILE_NAMESPACE, file.getPrimaryKey()));
     }
 
-    public FileInfo removeFile(Long fileId) {
-        FileInfo file = new FileInfo();
+    public File removeFile(Long fileId) {
+        File file = new File();
         file.setId(fileId);
         return dao.remove(new StorableKey(FILE_NAMESPACE, file.getPrimaryKey()));
     }
 
     // handle this check at application layer since in-memory storage etc does not contain unique key constraint
-    private void validateFileInfo(FileInfo fileInfo) {
-        StorageUtils.ensureUnique(fileInfo, this::listFiles, QueryParam.params("name", fileInfo.getName()));
+    private void validateFileInfo(File file) {
+        StorageUtils.ensureUnique(file, this::listFiles, QueryParam.params("name", file.getName()));
     }
 
-    public FileInfo addFile(FileInfo file) {
+    public File addFile(File file) {
         if (file.getId() == null) {
             file.setId(dao.nextId(FILE_NAMESPACE));
         }
@@ -121,7 +105,7 @@ public class CatalogService {
         return file;
     }
 
-    public FileInfo addOrUpdateFile(Long fileId, FileInfo file) {
+    public File addOrUpdateFile(Long fileId, File file) {
         file.setId(fileId);
         file.setTimestamp(System.currentTimeMillis());
         validateFileInfo(file);
