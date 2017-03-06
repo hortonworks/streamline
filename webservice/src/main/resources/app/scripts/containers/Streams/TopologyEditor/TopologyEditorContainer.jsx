@@ -758,7 +758,7 @@ class TopologyEditorContainer extends Component {
         //Make the save request
         this.refs.ConfigModal.handleSave(this.modalTitle).then((savedNode) => {
           if (savedNode instanceof Array) {
-            if (this.node.currentType.toLowerCase() === 'window' || this.node.currentType.toLowerCase() === 'join') {
+            if (this.node.currentType.toLowerCase() === 'window' || this.node.currentType.toLowerCase() === 'join' || this.node.currentType.toLowerCase() === 'projection') {
               let updatedEdges = [];
               savedNode.map((n, i) => {
                 if (i > 0) {
@@ -838,26 +838,28 @@ class TopologyEditorContainer extends Component {
         ]
       };
 
-      if (newEdge.target.currentType.toLowerCase() === 'window' || newEdge.target.currentType.toLowerCase() === 'join') {
+      if (newEdge.target.currentType.toLowerCase() === 'window'
+          || newEdge.target.currentType.toLowerCase() === 'join'
+          || newEdge.target.currentType.toLowerCase() === 'projection') {
         edgeData.streamGroupings[0].grouping = 'FIELDS';
         edgeData.streamGroupings[0].fields = null;
       }
 
-      if (node && nodeType === 'window') {
+      if (node && nodeType === 'window' || nodeType === 'projection') {
         let outputStreamObj = {};
         if (node.config.properties.rules && node.config.properties.rules.length > 0) {
           let rulesPromiseArr = [];
           let saveRulesPromiseArr = [];
           node.config.properties.rules.map((id) => {
-            rulesPromiseArr.push(TopologyREST.getNode(topologyId, versionId, 'windows', id));
+            rulesPromiseArr.push(TopologyREST.getNode(topologyId, versionId, nodeType === 'window' ? 'windows' : 'rules', id));
           });
           Promise.all(rulesPromiseArr).then((results) => {
-            let windowNodeData = results[0];
+            let rulesNodeData = results[0];
             if (newEdge.target.currentType.toLowerCase() === 'notification') {
-              outputStreamObj = _.find(node.outputStreams, {streamId: windowNodeData.outputStreams[1]});
+              outputStreamObj = _.find(node.outputStreams, {streamId: rulesNodeData.outputStreams[1]});
               edgeData.streamGroupings[0].streamId = outputStreamObj.id;
             } else {
-              outputStreamObj = _.find(node.outputStreams, {streamId: windowNodeData.outputStreams[0]});
+              outputStreamObj = _.find(node.outputStreams, {streamId: rulesNodeData.outputStreams[0]});
               edgeData.streamGroupings[0].streamId = outputStreamObj.id;
             }
             results.map((result) => {
@@ -886,7 +888,7 @@ class TopologyEditorContainer extends Component {
               if (!hasActionType) {
                 data.actions.push(actionObj);
               }
-              saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'windows', data.id, {body: JSON.stringify(data)}));
+              saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, nodeType === 'window' ? 'windows' : 'rules', data.id, {body: JSON.stringify(data)}));
             });
             Promise.all(saveRulesPromiseArr).then((windowResult) => {
               TopologyREST.createNode(topologyId, versionId, 'edges', {body: JSON.stringify(edgeData)}).then((edge) => {
@@ -1057,7 +1059,7 @@ class TopologyEditorContainer extends Component {
         </Modal>
         <Modal ref="NodeModal" onKeyPress={this.handleKeyPress.bind(this)} bsSize={this.processorNode && nodeType.toLowerCase() !== 'join'
           ? "large"
-          : null} dialogClassName={nodeType.toLowerCase() === 'join' || nodeType.toLowerCase() === 'window'
+          : null} dialogClassName={nodeType.toLowerCase() === 'join' || nodeType.toLowerCase() === 'window' || nodeType.toLowerCase() === 'projection'
           ? "modal-xl"
           : "modal-fixed-height"} data-title={<Editable ref="editableNodeName" inline={true}
         resolve={this.handleSaveNodeName.bind(this)}

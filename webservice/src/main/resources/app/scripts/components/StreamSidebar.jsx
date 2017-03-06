@@ -93,7 +93,7 @@ export default class StreamSidebar extends Component {
               return (
                 <li key={i} style={styleObj}>
                   {field.name}
-                  {!field.optional
+                  {!field.optional && field.type !== "NESTED"
                     ? <span className="text-danger">*</span>
                     : null}
                   <span className="output-type">{field.type}</span>

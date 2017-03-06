@@ -30,6 +30,7 @@ import NormalizationNodeForm from '../containers/Streams/TopologyEditor/Normaliz
 import WindowingAggregateNodeForm from '../containers/Streams/TopologyEditor/WindowingAggregateNodeForm';
 import BranchNodeForm from '../containers/Streams/TopologyEditor/BranchNodeForm';
 import ModelNodeForm from '../containers/Streams/TopologyEditor/ModelNodeForm';
+import ProjectionProcessorContainer from '../containers/Streams/TopologyEditor/ProjectionProcessorContainer';
 //Sinks
 import SinkNodeForm from '../containers/Streams/TopologyEditor/SinkNodeForm';
 import CommonNotification from './CommonNotification';
@@ -214,7 +215,7 @@ const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callb
       }
       return d.source === newEdge.source && d.target === newEdge.target;
     });
-    if (d.currentType.toLowerCase() === 'rule' || d.currentType.toLowerCase() === 'window') {
+    if (d.currentType.toLowerCase() === 'rule' || d.currentType.toLowerCase() === 'window' || d.currentType.toLowerCase() === 'Projection') {
       let filtEdges = paths.filter(function(d) {
         return newEdge.target === d.target;
       });
@@ -229,7 +230,7 @@ const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callb
       TopologyREST.getNode(topologyId, versionId, this.getNodeType(newEdge.source.parentType), newEdge.source.nodeId).then((result) => {
         setLastChange(result.timestamp);
         let nodeData = result;
-        if (newEdge.source.currentType.toLowerCase() === 'window' || newEdge.source.currentType.toLowerCase() === 'rule') {
+        if (newEdge.source.currentType.toLowerCase() === 'window' || newEdge.source.currentType.toLowerCase() === 'rule' || newEdge.source.currentType.toLowerCase() === 'Projection') {
           nodeData.type = newEdge.source.currentType.toUpperCase();
         }
         drawLine.classed('hidden', true);
@@ -288,12 +289,14 @@ const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, in
   let currentActionType = "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction";
   let streamId = null;
   connectingNodes.map((o, i) => {
-    if (o.source.currentType.toLowerCase() === 'rule' || o.source.currentType.toLowerCase() === 'window' || o.source.currentType.toLowerCase() === 'branch') {
-      let type = o.source.currentType.toLowerCase() === 'rule'
+    if (o.source.currentType.toLowerCase() === 'rule' || o.source.currentType.toLowerCase() === 'window' ||
+        o.source.currentType.toLowerCase() === 'branch' || o.source.currentType.toLowerCase() === 'projection') {
+      let t = o.source.currentType.toLowerCase();
+      let type = (t === 'rule' || t === "projection")
         ? 'rules'
-        : (o.source.currentType.toLowerCase() === 'branch'
+        : t === 'branch'
           ? 'branchrules'
-          : 'windows');
+          : 'windows';
       streamId = o.streamGrouping.streamId;
       let currentNodeEdges = edges.filter((obj) => {
         return obj.source === o.source && streamId === obj.streamGrouping.streamId;
@@ -431,10 +434,10 @@ const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, in
         }
 
         //Delete Window incase of Window Processor
-        if (nodeData.type.toLowerCase() === 'window') {
+        if (nodeData.type.toLowerCase() === 'window' || nodeData.type.toLowerCase() === 'projection') {
           if (nodeData.config.properties.rules) {
             nodeData.config.properties.rules.map(ruleId => {
-              processorsPromiseArr.push(TopologyREST.deleteNode(topologyId, 'windows', ruleId));
+              processorsPromiseArr.push(TopologyREST.deleteNode(topologyId, nodeData.type.toLowerCase() === 'window' ? 'windows' : 'rules', ruleId));
             });
           }
         }
@@ -506,7 +509,8 @@ const deleteEdge = function(selectedEdge, topologyId, versionId, internalFlags, 
     TopologyREST.getNode(topologyId, versionId, targetNodeType, selectedEdge.target.nodeId),
     TopologyREST.getAllNodes(topologyId, versionId, 'streams')
   ];
-  if (selectedEdge.source.currentType.toLowerCase() === 'rule' || selectedEdge.source.currentType.toLowerCase() === 'window' || selectedEdge.source.currentType.toLowerCase() === 'branch') {
+  if (selectedEdge.source.currentType.toLowerCase() === 'rule' || selectedEdge.source.currentType.toLowerCase() === 'window'
+      || selectedEdge.source.currentType.toLowerCase() === 'branch' || selectedEdge.source.currentType.toLowerCase() === 'projection') {
     promiseArr.push(TopologyREST.getNode(topologyId, versionId, 'processors', selectedEdge.source.nodeId));
   }
   Promise.all(promiseArr).then((results) => {
@@ -533,7 +537,7 @@ const deleteEdge = function(selectedEdge, topologyId, versionId, internalFlags, 
       let t = selectedEdge.source.currentType.toLowerCase();
       let type = t === 'window'
         ? 'windows'
-        : (t === 'rule'
+        : (t === 'rule' || t === 'projection'
           ? 'rules'
           : 'branchrules');
       if (ruleProcessorNode.config.properties.rules) {
@@ -755,6 +759,11 @@ const getConfigContainer = function(node, configData, editMode, topologyId, vers
     case 'PMML': //Pmml
       childElement = () => {
         return <ModelNodeForm ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} nodeType={nodeType} topologyId={topologyId} versionId={versionId}/>;
+      };
+      break;
+    case 'PROJECTION': //Projection
+      childElement = () => {
+        return <ProjectionProcessorContainer  ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNode={sourceNodes[0]} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions} currentEdges={currentEdges}/>;
       };
       break;
     }
