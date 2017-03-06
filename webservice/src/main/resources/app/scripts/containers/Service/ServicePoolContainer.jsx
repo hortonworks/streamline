@@ -89,12 +89,12 @@ class PoolItemsCard extends Component {
               <span>{cluster.ambariImportUrl}</span>
             </h4>
             <div className="pull-right">
-              <DropdownButton noCaret title={ellipseIcon} id="dropdown" bsStyle="link" className="dropdown-toggle">
-                <MenuItem onClick={this.onActionClick.bind(this, "refresh/")}>
+              <DropdownButton noCaret title={ellipseIcon} id="dropdown" bsStyle="link" className="dropdown-toggle" data-stest="service-pool-actions">
+                <MenuItem onClick={this.onActionClick.bind(this, "refresh/")} data-stest="edit-service-pool">
                   <i className="fa fa-refresh"></i>
                   &nbsp;Refresh
                 </MenuItem>
-                <MenuItem onClick={this.onActionClick.bind(this, "delete/")}>
+                <MenuItem onClick={this.onActionClick.bind(this, "delete/")} data-stest="delete-service-pool">
                   <i className="fa fa-trash"></i>
                   &nbsp;Delete
                 </MenuItem>

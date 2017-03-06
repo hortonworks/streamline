@@ -27,7 +27,7 @@ const ItemsMapping = (props) => {
   let name = item.name.replace('_', ' ');
   return (
     <li>
-      <div><img onClick={itemClicked} data-id={`${item.clusterId}@${item.name}`} className='' src={`styles/img/icon-${item.name.toLowerCase()}.png`}/></div>
+      <div><img onClick={itemClicked} data-id={`${item.clusterId}@${item.name}`} data-service={item.name} className='' src={`styles/img/icon-${item.name.toLowerCase()}.png`}/></div>
       {name}
     </li>
   );
