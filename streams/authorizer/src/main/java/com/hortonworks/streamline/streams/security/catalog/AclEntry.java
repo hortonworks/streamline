@@ -44,6 +44,7 @@ public class AclEntry extends AbstractStorable {
     public static final String SID_ID = "sidId";
     public static final String SID_TYPE = "sidType";
     public static final String PERMISSIONS = "permissions";
+    public static final String TIMESTAMP = "timestamp";
 
     public enum SidType {USER, ROLE}
 
@@ -136,7 +137,8 @@ public class AclEntry extends AbstractStorable {
                 Schema.Field.of(OBJECT_NAMESPACE, Schema.Type.STRING),
                 Schema.Field.of(SID_ID, Schema.Type.LONG),
                 Schema.Field.of(SID_TYPE, Schema.Type.STRING),
-                Schema.Field.of(PERMISSIONS, Schema.Type.STRING)
+                Schema.Field.of(PERMISSIONS, Schema.Type.STRING),
+                Schema.Field.of(TIMESTAMP, Schema.Type.LONG)
         );
     }
 
@@ -159,6 +161,7 @@ public class AclEntry extends AbstractStorable {
             }
             setPermissions(permissions);
         }
+        setTimestamp((Long) map.get(TIMESTAMP));
         return this;
     }
 

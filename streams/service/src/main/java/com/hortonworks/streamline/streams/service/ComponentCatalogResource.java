@@ -23,6 +23,8 @@ import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityAlreadyExistsException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -35,11 +37,13 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static com.hortonworks.streamline.streams.security.Permission.READ;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -47,9 +51,11 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Produces(MediaType.APPLICATION_JSON)
 
 public class ComponentCatalogResource {
+    private final StreamlineAuthorizer authorizer;
     private final EnvironmentService environmentService;
 
-    public ComponentCatalogResource(EnvironmentService environmentService) {
+    public ComponentCatalogResource(StreamlineAuthorizer authorizer, EnvironmentService environmentService) {
+        this.authorizer = authorizer;
         this.environmentService = environmentService;
     }
 
@@ -59,7 +65,10 @@ public class ComponentCatalogResource {
     @GET
     @Path("/services/{serviceId}/components")
     @Timed
-    public Response listComponents(@PathParam("serviceId") Long serviceId, @Context UriInfo uriInfo) {
+    public Response listComponents(@PathParam("serviceId") Long serviceId,
+                                   @Context UriInfo uriInfo,
+                                   @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, getClusterId(serviceId), READ);
         List<QueryParam> queryParams = buildServiceIdAwareQueryParams(serviceId, uriInfo);
         Collection<Component> components = environmentService.listComponents(queryParams);
         if (components != null) {
@@ -72,7 +81,9 @@ public class ComponentCatalogResource {
     @GET
     @Path("/services/{serviceId}/components/{id}")
     @Timed
-    public Response getComponentById(@PathParam("serviceId") Long serviceId, @PathParam("id") Long componentId) {
+    public Response getComponentById(@PathParam("serviceId") Long serviceId, @PathParam("id") Long componentId,
+                                     @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, getClusterId(serviceId), READ);
         Component component = environmentService.getComponent(componentId);
         if (component != null) {
             if (component.getServiceId() == null || !component.getServiceId().equals(serviceId)) {
@@ -87,7 +98,9 @@ public class ComponentCatalogResource {
     @POST
     @Path("/services/{serviceId}/components")
     @Timed
-    public Response addComponent(@PathParam("serviceId") Long serviceId, Component component) {
+    public Response addComponent(@PathParam("serviceId") Long serviceId, Component component,
+                                 @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, getClusterId(serviceId), READ);
         // overwrite service id to given path param
         component.setServiceId(serviceId);
 
@@ -110,7 +123,9 @@ public class ComponentCatalogResource {
     @PUT
     @Path("/services/{serviceId}/components")
     @Timed
-    public Response addOrUpdateComponent(@PathParam("serviceId") Long serviceId, Component component) {
+    public Response addOrUpdateComponent(@PathParam("serviceId") Long serviceId, Component component,
+                                         @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, getClusterId(serviceId), READ);
         // overwrite service id to given path param
         component.setServiceId(serviceId);
 
@@ -126,7 +141,10 @@ public class ComponentCatalogResource {
     @DELETE
     @Path("/services/{serviceId}/components/{id}")
     @Timed
-    public Response removeComponent(@PathParam("id") Long componentId) {
+    public Response removeComponent(@PathParam("serviceId") Long serviceId,
+                                    @PathParam("id") Long componentId,
+                                    @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, getClusterId(serviceId), READ);
         Component removeComponent = environmentService.removeComponent(componentId);
         if (removeComponent != null) {
             return WSUtils.respondEntity(removeComponent, CREATED);
@@ -139,7 +157,9 @@ public class ComponentCatalogResource {
     @Path("/services/{serviceId}/components/{id}")
     @Timed
     public Response addOrUpdateComponent(@PathParam("serviceId") Long serviceId,
-                                         @PathParam("id") Long componentId, Component component) {
+                                         @PathParam("id") Long componentId, Component component,
+                                         @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, getClusterId(serviceId), READ);
         // overwrite service id to given path param
         component.setServiceId(serviceId);
 
@@ -163,5 +183,10 @@ public class ComponentCatalogResource {
     private String buildMessageForCompositeId(Long serviceId, Long componentId) {
         return String.format("service id <%d>, component id <%d>",
                 serviceId, componentId);
+    }
+
+    private Long getClusterId(Long serviceId) {
+        Service service = environmentService.getService(serviceId);
+        return (service == null) ? -1L : service.getClusterId();
     }
 }

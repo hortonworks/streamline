@@ -108,7 +108,7 @@ public class TopologyComponentBundleResource {
     @Path("/componentbundles")
     @Timed
     public Response listTopologyComponentBundleTypes (@Context SecurityContext securityContext) {
-        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN);
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_USER);
         Collection<TopologyComponentBundle.TopologyComponentType>
                 topologyComponents = catalogService.listTopologyComponentBundleTypes();
         if (topologyComponents != null) {
@@ -130,7 +130,7 @@ public class TopologyComponentBundleResource {
     public Response listTopologyComponentBundlesForTypeWithFilter (@PathParam ("component") TopologyComponentBundle.TopologyComponentType componentType,
                                                                    @Context UriInfo uriInfo,
                                                                    @Context SecurityContext securityContext) {
-        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN);
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_USER);
         List<QueryParam> queryParams;
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
         queryParams = WSUtils.buildQueryParameters(params);
@@ -156,7 +156,7 @@ public class TopologyComponentBundleResource {
     public Response getTopologyComponentBundleById (@PathParam("component") TopologyComponentBundle.TopologyComponentType componentType,
                                                     @PathParam ("id") Long id,
                                                     @Context SecurityContext securityContext) {
-        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN);
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_USER);
         TopologyComponentBundle result = catalogService.getTopologyComponentBundle(id);
         if (result != null) {
             return WSUtils.respondEntity(result, OK);
@@ -358,7 +358,7 @@ public class TopologyComponentBundleResource {
     public Response downloadCustomProcessorFile (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType,
                                                  @PathParam("fileName") String fileName,
                                                  @Context SecurityContext securityContext) throws IOException {
-        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN);
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_USER);
         if (!TopologyComponentBundle.TopologyComponentType.PROCESSOR.equals(componentType)) {
             throw new CustomProcessorOnlyException();
         }
@@ -380,7 +380,7 @@ public class TopologyComponentBundleResource {
     public Response listCustomProcessorsWithFilters (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType,
                                                      @Context UriInfo uriInfo,
                                                      @Context SecurityContext securityContext) throws IOException {
-        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN);
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_USER);
         if (!TopologyComponentBundle.TopologyComponentType.PROCESSOR.equals(componentType)) {
             throw new CustomProcessorOnlyException();
         }
@@ -509,7 +509,7 @@ public class TopologyComponentBundleResource {
     public Response getFieldHints(@PathParam("component") TopologyComponentBundle.TopologyComponentType componentType,
                                   @PathParam ("id") Long id, @PathParam("namespaceId") Long namespaceId,
                                   @Context SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN);
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_USER);
         TopologyComponentBundle bundle = catalogService.getTopologyComponentBundle(id);
         if (bundle == null || !bundle.getType().equals(componentType)) {
             throw EntityNotFoundException.byId("component bundle id: " + id + " with type: " + componentType);

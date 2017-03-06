@@ -23,6 +23,8 @@ import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityAlreadyExistsException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -35,20 +37,25 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static com.hortonworks.streamline.streams.security.Permission.READ;
+import static com.hortonworks.streamline.streams.security.Permission.WRITE;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 
 @Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class ServiceConfigurationCatalogResource {
+    private final StreamlineAuthorizer authorizer;
     private EnvironmentService environmentService;
 
-    public ServiceConfigurationCatalogResource(EnvironmentService environmentService) {
+    public ServiceConfigurationCatalogResource(StreamlineAuthorizer authorizer, EnvironmentService environmentService) {
+        this.authorizer = authorizer;
         this.environmentService = environmentService;
     }
 
@@ -58,9 +65,10 @@ public class ServiceConfigurationCatalogResource {
     @GET
     @Path("/services/{serviceId}/configurations")
     @Timed
-    public Response listServiceConfigurations(@PathParam("serviceId") Long serviceId, @Context UriInfo uriInfo) {
+    public Response listServiceConfigurations(@PathParam("serviceId") Long serviceId, @Context UriInfo uriInfo,
+                                              @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, getClusterId(serviceId), READ);
         List<QueryParam> queryParams = buildServiceIdAwareQueryParams(serviceId, uriInfo);
-
         Collection<ServiceConfiguration> configurations = environmentService.listServiceConfigurations(queryParams);
         if (configurations != null) {
             return WSUtils.respondEntities(configurations, OK);
@@ -72,7 +80,9 @@ public class ServiceConfigurationCatalogResource {
     @GET
     @Path("/services/{serviceId}/configurations/{id}")
     @Timed
-    public Response getConfigurationById(@PathParam("serviceId") Long serviceId, @PathParam("id") Long configurationId) {
+    public Response getConfigurationById(@PathParam("serviceId") Long serviceId, @PathParam("id") Long configurationId,
+                                         @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, getClusterId(serviceId), READ);
         ServiceConfiguration configuration = environmentService.getServiceConfiguration(configurationId);
         if (configuration != null) {
             if (configuration.getServiceId() == null || !configuration.getServiceId().equals(serviceId)) {
@@ -87,7 +97,9 @@ public class ServiceConfigurationCatalogResource {
     @POST
     @Path("/services/{serviceId}/configurations")
     @Timed
-    public Response addServiceConfiguration(@PathParam("serviceId") Long serviceId, ServiceConfiguration serviceConfiguration) {
+    public Response addServiceConfiguration(@PathParam("serviceId") Long serviceId, ServiceConfiguration serviceConfiguration,
+                                            @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, getClusterId(serviceId), WRITE);
         // just overwrite the service id to given path param
         serviceConfiguration.setServiceId(serviceId);
 
@@ -111,7 +123,8 @@ public class ServiceConfigurationCatalogResource {
     @Path("/services/{serviceId}/configurations")
     @Timed
     public Response addOrUpdateServiceConfiguration(@PathParam("serviceId") Long serviceId,
-        ServiceConfiguration serviceConfiguration) {
+        ServiceConfiguration serviceConfiguration, @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, getClusterId(serviceId), WRITE);
         // overwrite service id to given path param
         serviceConfiguration.setServiceId(serviceId);
 
@@ -128,7 +141,10 @@ public class ServiceConfigurationCatalogResource {
     @DELETE
     @Path("/services/{serviceId}/configurations/{id}")
     @Timed
-    public Response removeServiceConfiguration(@PathParam("id") Long serviceConfigurationId) {
+    public Response removeServiceConfiguration(@PathParam("serviceId") Long serviceId,
+                                               @PathParam("id") Long serviceConfigurationId,
+                                               @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, getClusterId(serviceId), WRITE);
         ServiceConfiguration removedConfiguration = environmentService.removeServiceConfiguration(serviceConfigurationId);
         if (removedConfiguration != null) {
             return WSUtils.respondEntity(removedConfiguration, OK);
@@ -141,7 +157,10 @@ public class ServiceConfigurationCatalogResource {
     @Path("/services/{serviceId}/configurations/{id}")
     @Timed
     public Response addOrUpdateServiceConfiguration(@PathParam("serviceId") Long serviceId,
-        @PathParam("id") Long serviceConfigurationId, ServiceConfiguration serviceConfiguration) {
+                                                    @PathParam("id") Long serviceConfigurationId,
+                                                    ServiceConfiguration serviceConfiguration,
+                                                    @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, getClusterId(serviceId), WRITE);
         // overwrite service id to given path param
         serviceConfiguration.setServiceId(serviceId);
 
@@ -166,6 +185,11 @@ public class ServiceConfigurationCatalogResource {
     private String buildMessageForCompositeId(Long serviceId, Long serviceConfigurationId) {
         return String.format("service id <%d>, configuration id <%d>",
                 serviceId, serviceConfigurationId);
+    }
+
+    private Long getClusterId(Long serviceId) {
+        Service service = environmentService.getService(serviceId);
+        return (service == null) ? -1L : service.getClusterId();
     }
 
 }

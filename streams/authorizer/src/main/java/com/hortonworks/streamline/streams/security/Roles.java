@@ -19,6 +19,8 @@ public class Roles {
     public static final String ROLE_ADMIN = "ROLE_ADMIN";
     public static final String ROLE_SECURITY_ADMIN = "ROLE_SECURITY_ADMIN";
     public static final String ROLE_TOPOLOGY_ADMIN = "ROLE_TOPOLOGY_ADMIN";
+    public static final String ROLE_TOPOLOGY_COMPONENT_BUNDLE_USER = "ROLE_TOPOLOGY_COMPONENT_BUNDLE_USER";
     public static final String ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN = "ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN";
+    // role that can create service pool and environments
     public static final String ROLE_CLUSTER_ADMIN = "ROLE_CLUSTER_ADMIN";
 }

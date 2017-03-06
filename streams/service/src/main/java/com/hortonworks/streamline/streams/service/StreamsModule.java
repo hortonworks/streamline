@@ -86,16 +86,16 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         result.addAll(getAuthorizerResources(authorizer, securityCatalogService));
         //
 
-        result.add(new MetricsResource(streamcatalogService, topologyMetricsService));
-        result.addAll(getClusterRelatedResources(environmentService));
+        result.add(new MetricsResource(authorizer, streamcatalogService, topologyMetricsService));
+        result.addAll(getClusterRelatedResources(authorizer, environmentService));
         result.add(new FileCatalogResource(catalogService));
         result.addAll(getTopologyRelatedResources(authorizer, streamcatalogService, environmentService, topologyActionsService,
                 topologyMetricsService));
         result.add(new UDFCatalogResource(streamcatalogService, fileStorage));
         result.addAll(getNotificationsRelatedResources(streamcatalogService));
         result.add(new SchemaResource(createSchemaRegistryClient()));
-        result.addAll(getServiceMetadataResources(environmentService));
-        result.add(new NamespaceCatalogResource(streamcatalogService, topologyActionsService, environmentService));
+        result.addAll(getServiceMetadataResources(authorizer, environmentService));
+        result.add(new NamespaceCatalogResource(authorizer, streamcatalogService, topologyActionsService, environmentService));
         watchFiles(streamcatalogService);
         setupPlaceholderEntities(streamcatalogService);
         return result;
@@ -136,32 +136,23 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         );
     }
 
-    private List<Object> getClusterRelatedResources(EnvironmentService environmentService) {
-        List<Object> result = new ArrayList<>();
-        final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(environmentService);
-        result.add(clusterCatalogResource);
-        final ServiceCatalogResource serviceCatalogResource = new ServiceCatalogResource(environmentService);
-        result.add(serviceCatalogResource);
-        final ServiceConfigurationCatalogResource serviceConfigurationCatalogResource = new ServiceConfigurationCatalogResource(environmentService);
-        result.add(serviceConfigurationCatalogResource);
-        final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(environmentService);
-        result.add(componentCatalogResource);
-        final ServiceBundleResource serviceBundleResource = new ServiceBundleResource(environmentService);
-        result.add(serviceBundleResource);
-        return result;
+    private List<Object> getClusterRelatedResources(StreamlineAuthorizer authorizer, EnvironmentService environmentService) {
+        return Arrays.asList(
+                new ClusterCatalogResource(authorizer, environmentService),
+                new ServiceCatalogResource(authorizer, environmentService),
+                new ServiceConfigurationCatalogResource(authorizer, environmentService),
+                new ComponentCatalogResource(authorizer, environmentService),
+                new ServiceBundleResource(environmentService)
+        );
     }
 
-    private List<Object> getServiceMetadataResources(EnvironmentService environmentService) {
-        final List<Object> result = new ArrayList<>();
-        final KafkaMetadataResource kafkaMetadataResource = new KafkaMetadataResource(environmentService);
-        result.add(kafkaMetadataResource);
-        final StormMetadataResource stormMetadataResource = new StormMetadataResource(environmentService);
-        result.add(stormMetadataResource);
-        final HiveMetadataResource hiveMetadataResource = new HiveMetadataResource(environmentService);
-        result.add(hiveMetadataResource);
-        final HBaseMetadataResource hbaseMetadataResource = new HBaseMetadataResource(environmentService);
-        result.add(hbaseMetadataResource);
-        return result;
+    private List<Object> getServiceMetadataResources(StreamlineAuthorizer authorizer, EnvironmentService environmentService) {
+        return Arrays.asList(
+                new KafkaMetadataResource(authorizer, environmentService),
+                new StormMetadataResource(authorizer, environmentService),
+                new HiveMetadataResource(authorizer, environmentService),
+                new HBaseMetadataResource(authorizer, environmentService)
+        );
     }
 
     private List<Object> getNotificationsRelatedResources(StreamCatalogService streamcatalogService) {
