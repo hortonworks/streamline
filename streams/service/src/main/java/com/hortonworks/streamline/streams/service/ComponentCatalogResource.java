@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.service;
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
@@ -44,6 +45,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static com.hortonworks.streamline.streams.security.Permission.READ;
+import static com.hortonworks.streamline.streams.security.Permission.WRITE;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -100,7 +102,7 @@ public class ComponentCatalogResource {
     @Timed
     public Response addComponent(@PathParam("serviceId") Long serviceId, Component component,
                                  @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, getClusterId(serviceId), READ);
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, getClusterId(serviceId), WRITE);
         // overwrite service id to given path param
         component.setServiceId(serviceId);
 
@@ -125,7 +127,7 @@ public class ComponentCatalogResource {
     @Timed
     public Response addOrUpdateComponent(@PathParam("serviceId") Long serviceId, Component component,
                                          @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, getClusterId(serviceId), READ);
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, getClusterId(serviceId), WRITE);
         // overwrite service id to given path param
         component.setServiceId(serviceId);
 
@@ -144,7 +146,7 @@ public class ComponentCatalogResource {
     public Response removeComponent(@PathParam("serviceId") Long serviceId,
                                     @PathParam("id") Long componentId,
                                     @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, getClusterId(serviceId), READ);
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, getClusterId(serviceId), WRITE);
         Component removeComponent = environmentService.removeComponent(componentId);
         if (removeComponent != null) {
             return WSUtils.respondEntity(removeComponent, CREATED);
@@ -159,7 +161,7 @@ public class ComponentCatalogResource {
     public Response addOrUpdateComponent(@PathParam("serviceId") Long serviceId,
                                          @PathParam("id") Long componentId, Component component,
                                          @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, getClusterId(serviceId), READ);
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, getClusterId(serviceId), WRITE);
         // overwrite service id to given path param
         component.setServiceId(serviceId);
 

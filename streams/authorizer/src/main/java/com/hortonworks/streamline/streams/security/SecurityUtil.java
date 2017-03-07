@@ -68,10 +68,10 @@ public final class SecurityUtil {
         return filter(authorizer, securityContext, entityNamespace, entities, Storable::getId, first, rest);
     }
 
-    public static <T extends Storable> Collection<T> filter(StreamlineAuthorizer authorizer, SecurityContext securityContext,
-                                                            String entityNamespace, Collection<T> entities,
-                                                            Function<T, Long> idFunction,
-                                                            Permission first, Permission... rest) {
+    public static <T> Collection<T> filter(StreamlineAuthorizer authorizer, SecurityContext securityContext,
+                                           String entityNamespace, Collection<T> entities,
+                                           Function<T, Long> idFunction,
+                                           Permission first, Permission... rest) {
         Principal principal = securityContext.getUserPrincipal();
         EnumSet<Permission> permissions = EnumSet.of(first, rest);
         return entities.stream()

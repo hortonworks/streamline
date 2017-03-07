@@ -20,6 +20,8 @@ import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.streams.catalog.Notifier;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
+import com.hortonworks.streamline.streams.security.impl.NoopAuthorizer;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.integration.junit4.JMockit;
@@ -31,6 +33,7 @@ import org.junit.runner.RunWith;
 
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -66,9 +69,16 @@ public class NotifierInfoCatalogResourceTest {
 
     MultivaluedMap<String, String> multiValuedMap;
 
+    @Injectable
+    StreamlineAuthorizer authorizer = new NoopAuthorizer();
+
+    @Injectable
+    SecurityContext securityContext;
+
+
     @Before
     public void setUp() throws Exception {
-        resource = new NotifierInfoCatalogResource(mockCatalogService, mockFileStorage);
+        resource = new NotifierInfoCatalogResource(authorizer, mockCatalogService, mockFileStorage);
         multiValuedMap = new MultivaluedHashMap<>();
     }
 
@@ -88,7 +98,7 @@ public class NotifierInfoCatalogResourceTest {
             }
         };
 
-        CollectionResponse collectionResponse = (CollectionResponse) resource.listNotifiers(mockUriInfo).getEntity();
+        CollectionResponse collectionResponse = (CollectionResponse) resource.listNotifiers(mockUriInfo, securityContext).getEntity();
 
         assertEquals(1, collectionResponse .getEntities().size());
         assertEquals(notifier, collectionResponse.getEntities().iterator().next());
@@ -104,7 +114,7 @@ public class NotifierInfoCatalogResourceTest {
             }
         };
 
-        Notifier result = (Notifier) resource.getNotifierById(1L).getEntity();
+        Notifier result = (Notifier) resource.getNotifierById(1L, securityContext).getEntity();
         assertEquals(notifier, result);
     }
 
@@ -129,7 +139,8 @@ public class NotifierInfoCatalogResourceTest {
         Notifier result = (Notifier) resource.addNotifier(
                 mockInputStream,
                 mockFormDataContentDisposition,
-                mockFormDataBodyPart).getEntity();
+                mockFormDataBodyPart,
+                securityContext).getEntity();
 
         assertEquals(notifier, result);
     }

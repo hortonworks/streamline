@@ -19,19 +19,16 @@ package com.hortonworks.streamline.streams.catalog.service;
 import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.registries.tag.client.TagClient;
-import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.storage.util.StorageUtils;
 import com.hortonworks.streamline.streams.catalog.File;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 
 
@@ -45,7 +42,7 @@ public class CatalogService {
     private static final Logger LOG = LoggerFactory.getLogger(CatalogService.class);
 
     // TODO: the namespace and Id generation logic should be moved inside DAO
-    private static final String FILE_NAMESPACE = File.NAME_SPACE;
+    private static final String FILE_NAMESPACE = File.NAMESPACE;
 
     private final StorageManager dao;
     private final FileStorage fileStorage;

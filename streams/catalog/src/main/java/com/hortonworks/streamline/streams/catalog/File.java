@@ -30,7 +30,7 @@ import java.util.Map;
  */
 @StorableEntity
 public class File extends AbstractStorable {
-    public static final String NAME_SPACE = "file";
+    public static final String NAMESPACE = "file";
     public static final String ID = "id";
     public static final String NAME = "name";
 
@@ -69,7 +69,7 @@ public class File extends AbstractStorable {
     @Override
     @JsonIgnore
     public String getNameSpace() {
-        return NAME_SPACE;
+        return NAMESPACE;
     }
 
     @Override

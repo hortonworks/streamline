@@ -88,12 +88,12 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
 
         result.add(new MetricsResource(authorizer, streamcatalogService, topologyMetricsService));
         result.addAll(getClusterRelatedResources(authorizer, environmentService));
-        result.add(new FileCatalogResource(catalogService));
+        result.add(new FileCatalogResource(authorizer, catalogService));
         result.addAll(getTopologyRelatedResources(authorizer, streamcatalogService, environmentService, topologyActionsService,
                 topologyMetricsService));
-        result.add(new UDFCatalogResource(streamcatalogService, fileStorage));
-        result.addAll(getNotificationsRelatedResources(streamcatalogService));
-        result.add(new SchemaResource(createSchemaRegistryClient()));
+        result.add(new UDFCatalogResource(authorizer, streamcatalogService, fileStorage));
+        result.addAll(getNotificationsRelatedResources(authorizer, streamcatalogService));
+        result.add(new SchemaResource(authorizer, createSchemaRegistryClient()));
         result.addAll(getServiceMetadataResources(authorizer, environmentService));
         result.add(new NamespaceCatalogResource(authorizer, streamcatalogService, topologyActionsService, environmentService));
         watchFiles(streamcatalogService);
@@ -113,10 +113,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
     }
 
     private List<Object> getAuthorizerResources(StreamlineAuthorizer authorizer, SecurityCatalogService securityCatalogService) {
-        final List<Object> result = new ArrayList<>();
-        SecurityCatalogResource securityCatalogResource = new SecurityCatalogResource(authorizer, securityCatalogService);
-        result.add(securityCatalogResource);
-        return result;
+        return Collections.singletonList(new SecurityCatalogResource(authorizer, securityCatalogService));
     }
 
     private List<Object> getTopologyRelatedResources(StreamlineAuthorizer authorizer, StreamCatalogService streamcatalogService, EnvironmentService environmentService,
@@ -155,11 +152,11 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         );
     }
 
-    private List<Object> getNotificationsRelatedResources(StreamCatalogService streamcatalogService) {
-        List<Object> result = new ArrayList<>();
-        result.add(new NotifierInfoCatalogResource(streamcatalogService, fileStorage));
-        result.add(new NotificationsResource(new NotificationServiceImpl()));
-        return result;
+    private List<Object> getNotificationsRelatedResources(StreamlineAuthorizer authorizer, StreamCatalogService streamcatalogService) {
+        return Arrays.asList(
+                new NotifierInfoCatalogResource(authorizer, streamcatalogService, fileStorage),
+                new NotificationsResource(authorizer, new NotificationServiceImpl())
+        );
     }
 
     private void watchFiles(StreamCatalogService catalogService) {

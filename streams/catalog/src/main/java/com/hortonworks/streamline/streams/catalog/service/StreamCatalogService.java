@@ -2364,6 +2364,6 @@ public class StreamCatalogService {
     }
 
     private Collection<File> listFiles(List<QueryParam> queryParams) {
-        return dao.find(File.NAME_SPACE, queryParams);
+        return dao.find(File.NAMESPACE, queryParams);
     }
 }

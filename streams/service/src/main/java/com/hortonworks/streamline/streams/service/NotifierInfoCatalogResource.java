@@ -22,6 +22,10 @@ import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.Notifier;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.common.exception.service.exception.request.UnsupportedMediaTypeException;
+import com.hortonworks.streamline.streams.security.Permission;
+import com.hortonworks.streamline.streams.security.Roles;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -41,6 +45,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
@@ -48,9 +53,14 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
 
+import static com.hortonworks.streamline.streams.security.Permission.EXECUTE;
+import static com.hortonworks.streamline.streams.security.Permission.READ;
+import static com.hortonworks.streamline.streams.security.Permission.DELETE;
+import static com.hortonworks.streamline.streams.security.Permission.WRITE;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -63,11 +73,13 @@ import static javax.ws.rs.core.Response.Status.OK;
 public class NotifierInfoCatalogResource {
     private static final Logger LOG = LoggerFactory.getLogger(NotifierInfoCatalogResource.class);
 
+    private final StreamlineAuthorizer authorizer;
     private final StreamCatalogService catalogService;
     private final FileStorage fileStorage;
 
 
-    public NotifierInfoCatalogResource(StreamCatalogService catalogService, FileStorage fileStorage) {
+    public NotifierInfoCatalogResource(StreamlineAuthorizer authorizer, StreamCatalogService catalogService, FileStorage fileStorage) {
+        this.authorizer = authorizer;
         this.catalogService = catalogService;
         this.fileStorage = fileStorage;
     }
@@ -78,7 +90,7 @@ public class NotifierInfoCatalogResource {
     @GET
     @Path("/notifiers")
     @Timed
-    public Response listNotifiers(@Context UriInfo uriInfo) {
+    public Response listNotifiers(@Context UriInfo uriInfo, @Context SecurityContext securityContext) {
         List<QueryParam> queryParams = new ArrayList<>();
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
         Collection<Notifier> notifiers;
@@ -89,7 +101,8 @@ public class NotifierInfoCatalogResource {
             notifiers = catalogService.listNotifierInfos(queryParams);
         }
         if (notifiers != null) {
-            return WSUtils.respondEntities(notifiers, OK);
+            Collection<Notifier> result = SecurityUtil.filter(authorizer, securityContext, Notifier.NAMESPACE, notifiers, READ);
+            return WSUtils.respondEntities(result, OK);
         }
 
         throw EntityNotFoundException.byFilter(queryParams.toString());
@@ -98,7 +111,8 @@ public class NotifierInfoCatalogResource {
     @GET
     @Path("/notifiers/{id}")
     @Timed
-    public Response getNotifierById(@PathParam("id") Long id) {
+    public Response getNotifierById(@PathParam("id") Long id, @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Notifier.NAMESPACE, id, READ);
         Notifier result = catalogService.getNotifierInfo(id);
         if (result != null) {
             return WSUtils.respondEntity(result, OK);
@@ -139,8 +153,9 @@ public class NotifierInfoCatalogResource {
     @Timed
     public Response addNotifier(@FormDataParam("notifierJarFile") final InputStream inputStream,
                                 @FormDataParam("notifierJarFile") final FormDataContentDisposition contentDispositionHeader,
-                                @FormDataParam("notifierConfig") final FormDataBodyPart notifierConfig)
-        throws IOException {
+                                @FormDataParam("notifierConfig") final FormDataBodyPart notifierConfig,
+                                @Context SecurityContext securityContext) throws IOException {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_NOTIFIER_ADMIN);
         MediaType mediaType = notifierConfig.getMediaType();
         LOG.debug("Media type {}", mediaType);
         if (!mediaType.equals(MediaType.APPLICATION_JSON_TYPE)) {
@@ -156,15 +171,19 @@ public class NotifierInfoCatalogResource {
         String jarFileName = uploadJar(inputStream, notifier.getName());
         notifier.setJarFileName(jarFileName);
         Notifier createdNotifier = catalogService.addNotifierInfo(notifier);
+        SecurityUtil.addAcl(authorizer, securityContext, Notifier.NAMESPACE, createdNotifier.getId(),
+                EnumSet.allOf(Permission.class));
         return WSUtils.respondEntity(createdNotifier, CREATED);
     }
 
     @DELETE
     @Path("/notifiers/{id}")
     @Timed
-    public Response removeNotifierInfo(@PathParam("id") Long id) {
+    public Response removeNotifierInfo(@PathParam("id") Long id, @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Notifier.NAMESPACE, id, DELETE);
         Notifier removedNotifier = catalogService.removeNotifierInfo(id);
         if (removedNotifier != null) {
+            SecurityUtil.removeAcl(authorizer, securityContext, Notifier.NAMESPACE, id);
             return WSUtils.respondEntity(removedNotifier, OK);
         }
 
@@ -178,8 +197,9 @@ public class NotifierInfoCatalogResource {
     public Response addOrUpdateNotifierInfo(@PathParam("id") Long id,
                                             @FormDataParam("notifierJarFile") final InputStream inputStream,
                                             @FormDataParam("notifierJarFile") final FormDataContentDisposition contentDispositionHeader,
-                                            @FormDataParam("notifierConfig") final FormDataBodyPart notifierConfig)
-        throws IOException {
+                                            @FormDataParam("notifierConfig") final FormDataBodyPart notifierConfig,
+                                            @Context SecurityContext securityContext) throws IOException {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Notifier.NAMESPACE, id, WRITE);
         MediaType mediaType = notifierConfig.getMediaType();
         LOG.debug("Media type {}", mediaType);
         if (!mediaType.equals(MediaType.APPLICATION_JSON_TYPE)) {
@@ -202,7 +222,8 @@ public class NotifierInfoCatalogResource {
     @GET
     @Produces({"application/java-archive", "application/json"})
     @Path("/notifiers/download/{notifierId}")
-    public Response downloadUdf(@PathParam("notifierId") Long notifierId) throws IOException {
+    public Response downloadNotifier(@PathParam("notifierId") Long notifierId, @Context SecurityContext securityContext) throws IOException {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Notifier.NAMESPACE, notifierId, READ, EXECUTE);
         Notifier notifier = catalogService.getNotifierInfo(notifierId);
         if (notifier != null) {
             StreamingOutput streamOutput = WSUtils.wrapWithStreamingOutput(

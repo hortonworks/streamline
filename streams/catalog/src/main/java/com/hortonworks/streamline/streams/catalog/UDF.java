@@ -38,7 +38,7 @@ import static com.hortonworks.streamline.streams.layout.component.rule.expressio
 @StorableEntity
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UDF extends AbstractStorable {
-    private static final String NAMESPACE = "udf";
+    public static final String NAMESPACE = "udf";
 
     public static final String ID = "id";
     public static final String NAME = "name";
