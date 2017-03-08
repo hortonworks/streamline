@@ -1,4 +1,5 @@
 ## 0.1.4
+ * STREAMLINE-723: JdbcStorageManager#add(Storable) should not call insert instead of insertOrUpdate on QueryExecutor
  * STREAMLINE-664: Handle tick tuples in all storm components of a streamline topology
  * STREAMLINE-666: Change kafka sink to produce records based on schema registered by UI
  * STREAMLINE-420: Change topology component definition for Eventhub to use yaml spec file 
