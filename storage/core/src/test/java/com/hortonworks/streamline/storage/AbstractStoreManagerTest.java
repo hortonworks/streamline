@@ -84,8 +84,8 @@ public abstract class AbstractStoreManagerTest {
     }
 
     // UnequalExistingStorable => Storable that has the same StorableKey but does NOT verify .equals()
-    //@Test(expected = AlreadyExistsException.class)
-    public void testAdd_UnequalExistingStorable_AlreadyExistsException() {
+    //@Test(expected = StorageException.class)
+    public void testAdd_UnequalExistingStorable_Storage_Exception() {
         for (StorableTest test : storableTests) {
             Storable storable1 = test.getStorableList().get(0);
             Storable storable2 = test.getStorableList().get(1);
@@ -102,7 +102,7 @@ public abstract class AbstractStoreManagerTest {
         for (StorableTest test : storableTests) {
             Storable storable1 = test.getStorableList().get(0);
             getStorageManager().add(storable1);
-            getStorageManager().add(storable1);     // should throw exception
+            getStorageManager().addOrUpdate(storable1);
             Assert.assertEquals(storable1, getStorageManager().get(storable1.getStorableKey()));
         }
     }

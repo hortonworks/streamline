@@ -61,15 +61,7 @@ public class JdbcStorageManager implements StorageManager {
     @Override
     public void add(Storable storable) throws AlreadyExistsException {
         log.debug("Adding storable [{}]", storable);
-        final Storable existing = get(storable.getStorableKey());
-
-        if(existing == null) {
-            addOrUpdate(storable);
-        } else if (!existing.equals(storable)) {
-            throw new AlreadyExistsException("Another instance with same id = " + storable.getPrimaryKey()
-                    + " exists with different value in namespace " + storable.getNameSpace()
-                    + ". Consider using addOrUpdate method if you always want to overwrite.");
-        }
+        queryExecutor.insert(storable);
     }
 
     @Override
