@@ -30,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Map;
 
 public class SQLScriptRunner {
@@ -37,20 +38,48 @@ public class SQLScriptRunner {
     private static final String OPTION_CONFIG_FILE_PATH = "config";
     private static final String OPTION_MYSQL_JAR_URL_PATH = "mysql-jar-url";
     public static final String PLACEHOLDER_REPLACE_DBTYPE = "<dbtype>";
-    public static final String MYSQL_JAR_FILE_PATTERN = "mysql-connector-java-.*?-bin.jar";
 
+    private final StorageProviderConfiguration storageProperties;
 
-    private final String url;
-    private final String user;
-    private final String password;
-
-    public SQLScriptRunner(String url, String user, String password) {
-        this.url = url;
-        this.user = user;
-        this.password = password;
+    public SQLScriptRunner(StorageProviderConfiguration storageProperties) {
+        this.storageProperties = storageProperties;
     }
 
-    public void runScript(String path, String delimiter) throws Exception {
+    public void initializeDriver() throws ClassNotFoundException {
+        Class.forName(storageProperties.getDriverClass());
+    }
+
+    public void runScriptWithReplaceDBType(String path) throws Exception {
+        String newPath = path.replace(PLACEHOLDER_REPLACE_DBTYPE, storageProperties.getDbType());
+        runScript(newPath);
+    }
+
+    public boolean checkConnection() {
+        try (Connection connection = connect()) {
+            return true;
+        } catch (SQLException e) {
+            System.out.println("Connection failure: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private Connection connect() throws SQLException {
+        String user = storageProperties.getUser();
+        String password = storageProperties.getPassword();
+        String url = storageProperties.getUrl();
+
+        Connection connection;
+        if ((user == null && password == null) || (user.equals("") && password.equals(""))) {
+            connection = DriverManager.getConnection(url);
+        } else {
+            connection = DriverManager.getConnection(url, user, password);
+        }
+        return connection;
+    }
+
+    public void runScript(String path) throws Exception {
+        String delimiter = storageProperties.getDelimiter();
+
         final File file = new File(path);
         if (!file.exists()) {
             throw new RuntimeException("File not found for given path " + path);
@@ -58,25 +87,20 @@ public class SQLScriptRunner {
 
         String content = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())), StandardCharsets.UTF_8);
 
-        Connection connection;
-        if ((user == null && password == null) || (user.equals("") && password.equals(""))) {
-           connection =  DriverManager.getConnection(url);
-        } else {
-            connection = DriverManager.getConnection(url, user, password);
-        }
-        connection.setAutoCommit(true);
+        try (Connection connection = connect()) {
+            connection.setAutoCommit(true);
 
-        String[] queries = content.split(delimiter);
-        for (String query : queries) {
-            query = query.trim();
-            if (!query.isEmpty()) {
-                System.out.println(String.format("######## SQL Query:  %s ", query));
-                connection.createStatement().execute(query);
-                System.out.println("######## Query executed");
+            String[] queries = content.split(delimiter);
+            for (String query : queries) {
+                query = query.trim();
+                if (!query.isEmpty()) {
+                    System.out.println(String.format("######## SQL Query:  %s ", query));
+                    connection.createStatement().execute(query);
+                    System.out.println("######## Query executed");
+                }
             }
         }
     }
-    
 
     public static void main(String[] args) throws Exception {
         Options options = new Options();
@@ -104,46 +128,20 @@ public class SQLScriptRunner {
             StorageProviderConfigurationReader confReader = new StorageProviderConfigurationReader();
             StorageProviderConfiguration storageProperties = confReader.readStorageConfig(conf);
 
-            /* Due to license issues we will not be able to ship mysql driver.
-               If the dbtype is mysql we will prompt user to download the jar and place
-               it under bootstrap/lib and libs folder. This runs only one-time and for
-               next time onwards we will check if the mysql jar exists in the path.
-             */
-            File bootstrapDir = new File (System.getProperty("streamline.bootstrap.dir") + File.separator + "lib/");
-            File streamlineDir = new File (System.getProperty("streamline.bootstrap.dir") + File.separator +  "../libs/");
-    
-            if (storageProperties.getDbType().equals("mysql")
-                    && (!Utils.fileExists(streamlineDir, MYSQL_JAR_FILE_PATTERN)
-                    || !Utils.fileExists(bootstrapDir, MYSQL_JAR_FILE_PATTERN))) {
-                if (mysqlJarUrl == null || mysqlJarUrl == "")
-                    throw new IllegalArgumentException("Missing mysql client jar url. " +
-                            "Please pass mysql client jar url using -m option.");
-                try {
-                    String mysqlJarFileName = Utils.downloadMysqlJarAndCopyToLibDir(mysqlJarUrl, MYSQL_JAR_FILE_PATTERN);
-                    if (mysqlJarFileName != null) {
-                        File mysqlJarFile = new File(bootstrapDir+ File.separator + mysqlJarFileName);
-                        System.out.println("mysqlJarFile " + mysqlJarFile);
-                        Utils.loadJarIntoClasspath(mysqlJarFile);
-                    }
-                } catch(Exception e) {
-                    System.out.println("exception " + e);
-                    System.exit(1);
-                }
-            }
+            String bootstrapDirPath = System.getProperty("bootstrap.dir");
 
+            MySqlDriverHelper.downloadMySQLJarIfNeeded(storageProperties, bootstrapDirPath, mysqlJarUrl);
+
+            SQLScriptRunner sqlScriptRunner = new SQLScriptRunner(storageProperties);
             try {
-                Class.forName(storageProperties.getDriverClass());
+                sqlScriptRunner.initializeDriver();
             } catch (ClassNotFoundException e) {
                 System.err.println("Driver class is not found in classpath. Please ensure that driver is in classpath.");
                 System.exit(1);
             }
 
-            SQLScriptRunner SQLScriptRunner = new SQLScriptRunner(storageProperties.getUrl(), storageProperties.getUser(),
-                    storageProperties.getPassword());
-
             for (String script : scripts) {
-                script = script.replace(PLACEHOLDER_REPLACE_DBTYPE, storageProperties.getDbType());
-                SQLScriptRunner.runScript(script, storageProperties.getDelimiter());
+                sqlScriptRunner.runScriptWithReplaceDBType(script);
             }
         } catch (IOException e) {
             System.err.println("Error occurred while reading config file: " + confFilePath);
