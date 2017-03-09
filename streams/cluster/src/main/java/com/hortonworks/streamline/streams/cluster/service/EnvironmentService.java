@@ -61,11 +61,13 @@ public class EnvironmentService {
     private final StorageManager dao;
     private final ClusterImporter clusterImporter;
     private final List<ContainingNamespaceAwareContainer> containers;
+    private final ObjectMapper objectMapper;
 
     public EnvironmentService(StorageManager dao) {
         this.dao = dao;
         this.clusterImporter = new ClusterImporter(this);
         this.containers = new ArrayList<>();
+        this.objectMapper = new ObjectMapper();
     }
 
     public void addNamespaceAwareContainer(ContainingNamespaceAwareContainer container) {
@@ -95,8 +97,8 @@ public class EnvironmentService {
         return component;
     }
 
-    public ServiceConfiguration initializeServiceConfiguration(ObjectMapper objectMapper, Long serviceId,
-                                                               String confType, String actualFileName, Map<String, String> configuration) throws JsonProcessingException {
+    public ServiceConfiguration initializeServiceConfiguration(Long serviceId, String confType, String actualFileName,
+                                                               Map<String, String> configuration) throws JsonProcessingException {
         ServiceConfiguration conf = new ServiceConfiguration();
         conf.setId(this.dao.nextId(SERVICE_CONFIGURATION_NAMESPACE));
         conf.setName(confType);

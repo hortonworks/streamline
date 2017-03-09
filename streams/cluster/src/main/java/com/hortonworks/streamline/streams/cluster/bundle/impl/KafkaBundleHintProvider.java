@@ -15,6 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.cluster.bundle.impl;
 
+import com.hortonworks.streamline.streams.cluster.Constants;
 import org.apache.commons.lang3.StringUtils;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
@@ -33,7 +34,6 @@ import static java.util.stream.Collectors.toList;
 public class KafkaBundleHintProvider extends AbstractBundleHintProvider {
     public static final String DEFAULT_BROKER_ZK_PATH = "/brokers";
 
-    public static final String SERVICE_NAME = "KAFKA";
     public static final String FIELD_NAME_ZK_URL = "zkUrl";
     public static final String FIELD_NAME_TOPIC = "topic";
     public static final String FIELD_NAME_BROKER_ZK_PATH = "zkPath";
@@ -65,7 +65,7 @@ public class KafkaBundleHintProvider extends AbstractBundleHintProvider {
             fillZookeeperHints(cluster, hintClusterMap);
         } catch (ServiceNotFoundException e) {
             // we access it from mapping information so shouldn't be here
-            throw new IllegalStateException("Service " + SERVICE_NAME + " in cluster " + cluster.getName() +
+            throw new IllegalStateException("Service " + Constants.Kafka.SERVICE_NAME + " in cluster " + cluster.getName() +
                     " not found but mapping information exists.");
         } catch (ServiceConfigurationNotFoundException e) {
             // there's KAFKA service but not enough configuration info.
@@ -91,6 +91,6 @@ public class KafkaBundleHintProvider extends AbstractBundleHintProvider {
 
     @Override
     public String getServiceName() {
-        return SERVICE_NAME;
+        return Constants.Kafka.SERVICE_NAME;
     }
 }

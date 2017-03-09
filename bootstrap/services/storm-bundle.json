@@ -18,7 +18,7 @@
         "type": "array.string"
       },
       {
-        "uiName": "storm.yaml",
+        "uiName": "Storm config file (storm.yaml)",
         "fieldName": "storm.yaml",
         "isOptional": false,
         "tooltip": "Upload storm.yaml file used by Storm cluster",

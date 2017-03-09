@@ -11,7 +11,7 @@
         "type": "array.string"
       },
       {
-        "uiName": "server.properties",
+        "uiName": "Kafka config file (server.properties)",
         "fieldName": "server.properties",
         "isOptional": false,
         "tooltip": "Upload server.properties file used by Kafka cluster",

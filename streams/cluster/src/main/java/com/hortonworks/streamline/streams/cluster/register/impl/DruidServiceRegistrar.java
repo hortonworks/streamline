@@ -19,19 +19,15 @@ import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.Constants;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static com.hortonworks.streamline.streams.cluster.discovery.ambari.ConfigFilePattern.HBASE_SITE;
-
-public class HBaseServiceRegistrar extends AbstractServiceRegistrar {
-
+public class DruidServiceRegistrar extends AbstractServiceRegistrar {
     @Override
     protected String getServiceName() {
-        return Constants.HBase.SERVICE_NAME;
+        return Constants.Druid.SERVICE_NAME;
     }
 
     @Override
@@ -49,22 +45,15 @@ public class HBaseServiceRegistrar extends AbstractServiceRegistrar {
     @Override
     protected boolean validateServiceConfigurations(List<ServiceConfiguration> serviceConfigurations) {
         // requirements
-        // 1. hbase-site.xml should be provided
+        // 1. common.runtime.properties should be provided
 
-        long validConfigFileCount = serviceConfigurations.stream().filter(configuration -> {
-            if (configuration.getName().equals(HBASE_SITE.getConfType())) {
-                if (!StringUtils.isEmpty(configuration.getFilename())) {
-                    return true;
-                }
-            }
-            return false;
-        }).count();
-
-        return validConfigFileCount == 1;
+        return serviceConfigurations.stream()
+                .anyMatch(configuration -> configuration.getName().equals(Constants.Druid.CONF_TYPE_COMMON_RUNTIME));
     }
 
     @Override
     protected boolean validateServiceConfiguationsAsFlattenedMap(Map<String, String> configMap) {
-        return configMap.containsKey(Constants.HBase.PROPERTY_KEY_HBASE_ZOOKEEPER_QUORUM);
+        // only druid.zk.service.host is mandatory
+        return configMap.containsKey(Constants.Druid.PROPERTY_KEY_ZK_SERVICE_HOSTS);
     }
 }

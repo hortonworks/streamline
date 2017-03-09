@@ -20,6 +20,7 @@ import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,7 +58,7 @@ public class KafkaServiceRegistrarTest extends AbstractServiceRegistrarTest<Kafk
             registrar.register(cluster, config, Lists.newArrayList(serverProperties));
         }
 
-        Service kafkaService = environmentService.getServiceByName(cluster.getId(), KafkaServiceRegistrar.SERVICE_NAME_KAFKA);
+        Service kafkaService = environmentService.getServiceByName(cluster.getId(), Constants.Kafka.SERVICE_NAME);
         assertNotNull(kafkaService);
         ServiceConfiguration serverPropertiesConf = environmentService.getServiceConfigurationByName(kafkaService.getId(), CONFIGURATION_NAME_SERVER_PROPERTIES);
         assertNotNull(serverPropertiesConf);
@@ -77,7 +78,7 @@ public class KafkaServiceRegistrarTest extends AbstractServiceRegistrarTest<Kafk
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
-            Service kafkaService = environmentService.getServiceByName(cluster.getId(), KafkaServiceRegistrar.SERVICE_NAME_KAFKA);
+            Service kafkaService = environmentService.getServiceByName(cluster.getId(), Constants.Kafka.SERVICE_NAME);
             assertNull(kafkaService);
         }
     }
@@ -94,7 +95,7 @@ public class KafkaServiceRegistrarTest extends AbstractServiceRegistrarTest<Kafk
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
-            Service kafkaService = environmentService.getServiceByName(cluster.getId(), KafkaServiceRegistrar.SERVICE_NAME_KAFKA);
+            Service kafkaService = environmentService.getServiceByName(cluster.getId(), Constants.Kafka.SERVICE_NAME);
             assertNull(kafkaService);
         }
     }
@@ -111,6 +112,8 @@ public class KafkaServiceRegistrarTest extends AbstractServiceRegistrarTest<Kafk
             registrar.register(cluster, config, Lists.newArrayList());
         } catch (IllegalArgumentException e) {
             // OK
+            Service kafkaService = environmentService.getServiceByName(cluster.getId(), Constants.Kafka.SERVICE_NAME);
+            assertNull(kafkaService);
         }
     }
 
