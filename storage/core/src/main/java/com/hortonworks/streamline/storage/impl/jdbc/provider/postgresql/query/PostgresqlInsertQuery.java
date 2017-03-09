@@ -6,6 +6,8 @@ import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.AbstractS
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class PostgresqlInsertQuery extends AbstractStorableSqlQuery {
 
@@ -31,5 +33,25 @@ public class PostgresqlInsertQuery extends AbstractStorableSqlQuery {
                 + join(columnNames, ", ")
                 + ") VALUES( " + getBindVariables("?,", columnNames.size()) + ")";
         log.debug(sql);
+    }
+
+    @Override
+    public List<Schema.Field> getColumns() {
+        List<Schema.Field> cols = super.getColumns();
+        if (getStorableId() == null) {
+            return cols.stream()
+                    .filter(f -> !f.getName().equalsIgnoreCase("id"))
+                    .collect(Collectors.toList());
+        }
+        return cols;
+    }
+
+    private Long getStorableId() {
+        try {
+            return getStorable().getId();
+        } catch (UnsupportedOperationException ex) {
+            // ignore
+        }
+        return null;
     }
 }
