@@ -14,7 +14,7 @@
 
 import React, {Component, PropTypes} from 'react';
 import ReactDOM, {findDOMNode} from 'react-dom';
-import {OverlayTrigger, Tooltip, Accordion, Panel, PanelGroup} from 'react-bootstrap';
+import {OverlayTrigger, Tooltip, Accordion, Panel, PanelGroup, Popover} from 'react-bootstrap';
 import {ItemTypes, Components} from '../../../utils/Constants';
 import {DragSource} from 'react-dnd';
 import NodeContainer from './NodeContainer';
@@ -92,37 +92,111 @@ export default class ComponentNodeContainer extends Component {
               </h6>
               <ul className="component-list">
                 {this.state.datasources.map((source, i) => {
-                  return (<NodeContainer key={i} imgPath={"styles/img/icon-" + source.subType.toLowerCase() + ".png"} name={source.name.toUpperCase()} type={source.type} nodeLable={source.name.toUpperCase()} nodeType={source.subType} hideSourceOnDrag={false} topologyComponentBundleId={source.id} defaultImagePath='styles/img/icon-source.png'/>);
-                })
-}
+                  if(i < 2) {
+                    return (<NodeContainer key={i} imgPath={"styles/img/icon-" + source.subType.toLowerCase() + ".png"} name={source.name.toUpperCase()} type={source.type} nodeLable={source.name.toUpperCase()} nodeType={source.subType} hideSourceOnDrag={false} topologyComponentBundleId={source.id} defaultImagePath='styles/img/icon-source.png'/>);
+                  }
+                })}
+                {
+                this.state.datasources.length > 2 ? (
+                  <li><OverlayTrigger
+                    trigger="click"
+                    rootClose
+                    placement="right"
+                    overlay={
+                      <Popover id="popover-trigger-click-root-close" className="component-popover">
+                      <ul className="component-list">
+                      {this.state.datasources.map((source, i)=>{
+                        if(i >= 2) {
+                          return (<NodeContainer key={i} imgPath={"styles/img/icon-" + source.subType.toLowerCase() + ".png"} name={source.name.toUpperCase()} type={source.type} nodeLable={source.name.toUpperCase()} nodeType={source.subType} hideSourceOnDrag={false} topologyComponentBundleId={source.id} defaultImagePath='styles/img/icon-source.png'/>);
+                        }
+                      })}
+                      </ul>
+                      </Popover>}
+                    ><a href="javascript:void(0);">+{this.state.datasources.length - 2}</a>
+                    </OverlayTrigger></li>
+                ): ''
+                }
               </ul>
               <h6 className="component-title">
                 Processor
               </h6>
               <ul className="component-list">
                 {this.state.processors.map((processor, i) => {
-                  if (processor.subType === 'CUSTOM') {
-                    let config = processor.topologyComponentUISpecification.fields,
-                      name = _.find(config, {fieldName: "name"});
-                    return (<NodeContainer key={i} imgPath="styles/img/icon-custom.png" name={name
-                      ? name.defaultValue
-                      : 'Custom'} nodeLable={name
-                      ? name.defaultValue
-                      : 'Custom'} type={processor.type} nodeType="Custom" hideSourceOnDrag={false} topologyComponentBundleId={processor.id} defaultImagePath='styles/img/icon-processor.png'/>);
-                  } else {
-                    return (<NodeContainer key={i} imgPath={"styles/img/icon-" + processor.subType.toLowerCase() + ".png"} name={processor.name.toUpperCase()} nodeLable={processor.name.toUpperCase()} type={processor.type} nodeType={processor.subType} hideSourceOnDrag={false} topologyComponentBundleId={processor.id} defaultImagePath='styles/img/icon-processor.png'/>);
+                  if(i < 4) {
+                    if (processor.subType === 'CUSTOM') {
+                      let config = processor.topologyComponentUISpecification.fields,
+                        name = _.find(config, {fieldName: "name"});
+                      return (<NodeContainer key={i} imgPath="styles/img/icon-custom.png" name={name
+                        ? name.defaultValue
+                        : 'Custom'} nodeLable={name
+                        ? name.defaultValue
+                        : 'Custom'} type={processor.type} nodeType="Custom" hideSourceOnDrag={false} topologyComponentBundleId={processor.id} defaultImagePath='styles/img/icon-processor.png'/>);
+                    } else {
+                      return (<NodeContainer key={i} imgPath={"styles/img/icon-" + processor.subType.toLowerCase() + ".png"} name={processor.name.toUpperCase()} nodeLable={processor.name.toUpperCase()} type={processor.type} nodeType={processor.subType} hideSourceOnDrag={false} topologyComponentBundleId={processor.id} defaultImagePath='styles/img/icon-processor.png'/>);
+                    }
                   }
                 })
-}
+                }
+                {
+                this.state.processors.length > 4 ? (
+                  <li><OverlayTrigger
+                    trigger="click"
+                    rootClose
+                    placement="right"
+                    overlay={
+                      <Popover id="popover-trigger-click-root-close" className="component-popover">
+                      <ul className="component-list">
+                      {this.state.processors.map((processor, i)=>{
+                        if(i >= 4) {
+                          if (processor.subType === 'CUSTOM') {
+                            let config = processor.topologyComponentUISpecification.fields,
+                              name = _.find(config, {fieldName: "name"});
+                            return (<NodeContainer key={i} imgPath="styles/img/icon-custom.png" name={name
+                              ? name.defaultValue
+                              : 'Custom'} nodeLable={name
+                              ? name.defaultValue
+                              : 'Custom'} type={processor.type} nodeType="Custom" hideSourceOnDrag={false} topologyComponentBundleId={processor.id} defaultImagePath='styles/img/icon-processor.png'/>);
+                          } else {
+                            return (<NodeContainer key={i} imgPath={"styles/img/icon-" + processor.subType.toLowerCase() + ".png"} name={processor.name.toUpperCase()} nodeLable={processor.name.toUpperCase()} type={processor.type} nodeType={processor.subType} hideSourceOnDrag={false} topologyComponentBundleId={processor.id} defaultImagePath='styles/img/icon-processor.png'/>);
+                          }
+                        }
+                      })}
+                      </ul>
+                      </Popover>}
+                    ><a href="javascript:void(0);">+{this.state.processors.length - 4}</a>
+                    </OverlayTrigger></li>
+                ): ''
+                }
               </ul>
               <h6 className="component-title">
                 Sink
               </h6>
               <ul className="component-list">
                 {this.state.sinks.map((sink, i) => {
-                  return (<NodeContainer key={i} imgPath={"styles/img/icon-" + sink.subType.toLowerCase() + ".png"} name={sink.name.toUpperCase()} nodeLable={sink.name.toUpperCase()} type={sink.type} nodeType={sink.subType} hideSourceOnDrag={false} topologyComponentBundleId={sink.id} defaultImagePath='styles/img/icon-sink.png'/>);
-                })
-}
+                  if(i < 2) {
+                    return (<NodeContainer key={i} imgPath={"styles/img/icon-" + sink.subType.toLowerCase() + ".png"} name={sink.name.toUpperCase()} type={sink.type} nodeLable={sink.name.toUpperCase()} nodeType={sink.subType} hideSourceOnDrag={false} topologyComponentBundleId={sink.id} defaultImagePath='styles/img/icon-sink.png'/>);
+                  }
+                })}
+                {
+                this.state.sinks.length > 2 ? (
+                  <li><OverlayTrigger
+                    trigger="click"
+                    rootClose
+                    placement="right"
+                    overlay={
+                      <Popover id="popover-trigger-click-root-close" className="component-popover">
+                      <ul className="component-list">
+                      {this.state.sinks.map((sink, i)=>{
+                        if(i >= 2) {
+                          return (<NodeContainer key={i} imgPath={"styles/img/icon-" + sink.subType.toLowerCase() + ".png"} name={sink.name.toUpperCase()} type={sink.type} nodeLable={sink.name.toUpperCase()} nodeType={sink.subType} hideSourceOnDrag={false} topologyComponentBundleId={sink.id} defaultImagePath='styles/img/icon-sink.png'/>);
+                        }
+                      })}
+                      </ul>
+                      </Popover>}
+                    ><a href="javascript:void(0);">+{this.state.sinks.length - 2}</a>
+                    </OverlayTrigger></li>
+                ): ''
+                }
               </ul>
             </div>
           </Scrollbars>
