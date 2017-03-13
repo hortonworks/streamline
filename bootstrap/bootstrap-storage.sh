@@ -32,6 +32,7 @@ done
 BOOTSTRAP_DIR=`dirname ${PRG}`
 CONFIG_FILE_PATH=${BOOTSTRAP_DIR}/../conf/streamline.yaml
 MYSQL_JAR_URL_PATH=https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.40.zip
+SCRIPT_ROOT_DIR="${BOOTSTRAP_DIR}/sql"
 
 # Which java to use
 if [ -z "${JAVA_HOME}" ]; then
@@ -40,7 +41,7 @@ else
   JAVA="${JAVA_HOME}/bin/java"
 fi
 
-SCRIPT_RUNNER_MAIN_CLASS=com.hortonworks.streamline.storage.tool.SQLScriptRunner
+TABLE_INITIALIZER_MAIN_CLASS=com.hortonworks.streamline.storage.tool.TablesInitializer
 for file in "${BOOTSTRAP_DIR}"/lib/*.jar;
 do
     CLASSPATH="$CLASSPATH":"$file"
@@ -48,26 +49,52 @@ done
 
 echo "Using Configuration file: ${CONFIG_FILE_PATH}"
 
-function streamlineBootstrapStorage {
-    SCRIPT_DIR="${BOOTSTRAP_DIR}/sql/<dbtype>"
-    FILE_OPT="-f ${SCRIPT_DIR}/drop_tables.sql -f ${SCRIPT_DIR}/create_tables.sql"
-
-    echo "Script files option: $FILE_OPT"
-    exec ${JAVA} -Dstreamline.bootstrap.dir=$BOOTSTRAP_DIR  -cp ${CLASSPATH} ${SCRIPT_RUNNER_MAIN_CLASS} -m ${MYSQL_JAR_URL_PATH} -c ${CONFIG_FILE_PATH} ${FILE_OPT}
+function dropTables {
+    ${JAVA} -Dbootstrap.dir=$BOOTSTRAP_DIR  -cp ${CLASSPATH} ${TABLE_INITIALIZER_MAIN_CLASS} -m ${MYSQL_JAR_URL_PATH} -c ${CONFIG_FILE_PATH} -s ${SCRIPT_ROOT_DIR} --drop
 }
 
-function main {
-    echo ""
-    echo "===================================================================================="
-    echo "Running bootstrap-storage will drop any existing streamline tables and re-create them."
-    read -p "Are you sure you want to proceed. (y/n)? " yesorno
-    
-    case ${yesorno:0:1} in
-        y|Y)
-            streamlineBootstrapStorage;;
-        * )
-            exit;;
-    esac
+function createTables {
+    ${JAVA} -Dbootstrap.dir=$BOOTSTRAP_DIR  -cp ${CLASSPATH} ${TABLE_INITIALIZER_MAIN_CLASS} -m ${MYSQL_JAR_URL_PATH} -c ${CONFIG_FILE_PATH} -s ${SCRIPT_ROOT_DIR} --create
 }
 
-main
+function checkStorageConnection {
+    ${JAVA} -Dbootstrap.dir=$BOOTSTRAP_DIR  -cp ${CLASSPATH} ${TABLE_INITIALIZER_MAIN_CLASS} -m ${MYSQL_JAR_URL_PATH} -c ${CONFIG_FILE_PATH} -s ${SCRIPT_ROOT_DIR} --check-connection
+}
+
+function printUsage {
+    echo "USAGE: $0 [create|drop|check-connection|drop-create]"
+}
+
+opt="create"
+
+if [ $# -gt 0 ]
+then
+    opt="$1"
+fi
+
+case "${opt}" in
+create)
+    createTables
+    ;;
+drop)
+    dropTables
+    ;;
+drop-create)
+    dropTables && createTables
+    ;;
+check-connection)
+    checkStorageConnection
+    if [ $? == 0 ]
+    then
+        echo "Connection check succeed."
+        exit 0
+    else
+        echo "Connection check failed."
+        exit 2
+    fi
+    ;;
+*)
+    printUsage
+    exit 1
+    ;;
+esac
