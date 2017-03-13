@@ -29,6 +29,7 @@ import com.hortonworks.streamline.storage.exception.IllegalQueryParameterExcepti
 import com.hortonworks.streamline.storage.exception.StorageException;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.mysql.factory.MySqlExecutor;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.factory.PostgresqlExecutor;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.MetadataHelper;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlSelectQuery;
@@ -61,15 +62,7 @@ public class JdbcStorageManager implements StorageManager {
     @Override
     public void add(Storable storable) throws AlreadyExistsException {
         log.debug("Adding storable [{}]", storable);
-        final Storable existing = get(storable.getStorableKey());
-
-        if(existing == null) {
-            addOrUpdate(storable);
-        } else if (!existing.equals(storable)) {
-            throw new AlreadyExistsException("Another instance with same id = " + storable.getPrimaryKey()
-                    + " exists with different value in namespace " + storable.getNameSpace()
-                    + ". Consider using addOrUpdate method if you always want to overwrite.");
-        }
+        queryExecutor.insert(storable);
     }
 
     @Override
@@ -215,7 +208,7 @@ public class JdbcStorageManager implements StorageManager {
 
         // When we have more providers we can add a layer to have a factory to create respective jdbc storage managers.
         // For now, keeping it simple as there are only 2.
-        if(!"phoenix".equals(type) && !"mysql".equals(type)) {
+        if(!"phoenix".equals(type) && !"mysql".equals(type) && !"postgresql".equals(type)) {
             throw new IllegalArgumentException("Unknown jdbc storage provider type: "+type);
         }
         log.info("jdbc provider type: [{}]", type);
@@ -232,6 +225,9 @@ public class JdbcStorageManager implements StorageManager {
                 break;
             case "mysql":
                 queryExecutor = MySqlExecutor.createExecutor(dbProperties);
+                break;
+            case "postgresql":
+                queryExecutor = PostgresqlExecutor.createExecutor(dbProperties);
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported storage provider type: "+type);

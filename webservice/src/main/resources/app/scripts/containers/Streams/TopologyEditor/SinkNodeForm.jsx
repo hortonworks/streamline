@@ -140,7 +140,7 @@ export default class SinkNodeForm extends Component {
         let type = sourceNodes[0].currentType.toLowerCase();
         this.sourceChildNodeType = type === 'window'
           ? 'windows'
-          : (type === 'rule'
+          : (type === 'rule' || type === 'projection'
             ? 'rules'
             : 'branchrules');
         if (this.sourceNodeData.config.properties && this.sourceNodeData.config.properties.rules && this.sourceNodeData.config.properties.rules.length > 0) {

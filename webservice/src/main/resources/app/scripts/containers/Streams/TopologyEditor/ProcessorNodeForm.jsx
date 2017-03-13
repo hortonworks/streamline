@@ -44,7 +44,8 @@ export default class ProcessorNodeForm extends Component {
       streamObj: {},
       description: '',
       outputStreamObj: {},
-      inputStreamOptions: []
+      inputStreamOptions: [],
+      processorNode : {}
     };
   }
   getChildContext() {
@@ -62,6 +63,7 @@ export default class ProcessorNodeForm extends Component {
       TopologyREST.getAllNodes(topologyId, versionId, 'edges')
     ];
     Promise.all(promiseArr).then(results => {
+      let processorNode = results[0];
       let description = results[0].description
         ? results[0].description
         : '';
@@ -79,7 +81,7 @@ export default class ProcessorNodeForm extends Component {
             let s = result;
             inputStreams.push(s);
           });
-          this.setState({streamObj: inputStreams[0], inputStreamOptions: inputStreams});
+          this.setState({streamObj: inputStreams[0], inputStreamOptions: inputStreams,processorNode:processorNode});
           // this.refs.StreamSidebarInput.update(streamResult);
         });
       }

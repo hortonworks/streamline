@@ -113,7 +113,7 @@ class EnvironmentCards extends Component {
             <div className="pull-right">
               <DropdownButton noCaret title={ellipseIcon} id="dropdown" bsStyle="link" className="dropdown-toggle" data-stest="environment-actions">
                 <MenuItem onClick={this.onActionClick.bind(this, "edit/")} data-stest="edit-environment">
-                  <i className="fa fa-refresh"></i>
+                  <i className="fa fa-pencil"></i>
                   &nbsp;Edit
                 </MenuItem>
                 <MenuItem onClick={this.onActionClick.bind(this, "delete/")} data-stest="delete-environment">
