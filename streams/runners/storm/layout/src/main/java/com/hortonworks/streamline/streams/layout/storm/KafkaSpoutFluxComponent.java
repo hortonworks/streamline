@@ -19,11 +19,14 @@ import com.google.common.collect.Lists;
 import com.hortonworks.streamline.streams.layout.ConfigFieldValidation;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.streamline.streams.layout.component.impl.KafkaSource;
+import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,8 +35,11 @@ import java.util.Map;
  * Implementation for KafkaSpout
  */
 public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
+    public static final String DEFAULT_SCHEME_CLASS = "com.hortonworks.streamline.streams.runtime.storm.spout.AvroKafkaSpoutScheme";
+
     private static final Logger LOG = LoggerFactory.getLogger(KafkaSpoutFluxComponent.class);
     private KafkaSource kafkaSource;
+
     // for unit tests
     public KafkaSpoutFluxComponent() {
     }
@@ -61,9 +67,6 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
                 TopologyLayoutConstants.JSON_KEY_SOCKET_TIMEOUT_MS,
                 TopologyLayoutConstants.JSON_KEY_FETCH_MAX_WAIT,
                 TopologyLayoutConstants.JSON_KEY_BUFFER_SIZE_BYTES,
-                //ignore multi scheme impl for now. always use default
-                // RawScheme. add check in validation
-//                TopologyLayoutConstants.JSON_KEY_MULTI_SCHEME_IMPL,
                 TopologyLayoutConstants.JSON_KEY_IGNORE_ZK_OFFSETS,
                 TopologyLayoutConstants.JSON_KEY_MAX_OFFSET_BEHIND,
                 TopologyLayoutConstants.JSON_KEY_USE_START_OFFSET_IF_OFFSET_OUT_OF_RANGE,
@@ -113,13 +116,47 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
 
     private String addSchemeComponent() {
         String streamsSchemeId = "streamsScheme-" + UUID_FOR_COMPONENTS;
-        String schemeClassName = "com.hortonworks.streamline.streams.runtime.storm.spout.AvroKafkaSpoutScheme";
-        String topicName = (String) conf.get(TopologyLayoutConstants.JSON_KEY_TOPIC);
-        String schemaRegistryUrl = (String) conf.get(TopologyLayoutConstants.SCHEMA_REGISTRY_URL);
-        List<String> constructorArgs = Lists.newArrayList((kafkaSource != null ? kafkaSource.getId() : ""), topicName, schemaRegistryUrl);
-        addToComponents(createComponent(streamsSchemeId, schemeClassName, null, constructorArgs, null));
+        String schemeClassName = (String) conf.getOrDefault(TopologyLayoutConstants.JSON_KEY_SCHEME_CLASS_NAME,
+                                                            DEFAULT_SCHEME_CLASS);
+        if(schemeClassName.isEmpty()) {
+            throw new RuntimeException("Property [" + TopologyLayoutConstants.JSON_KEY_SCHEME_CLASS_NAME
+                                               + "] value can not be an empty String, it must be a valid class.");
+        }
+
+        Map<String, Object> configMethod = getConfigMethodWithRefArgs("init",
+                                                                      Collections.singletonList(addConfigMapInstance()));
+        addToComponents(createComponent(streamsSchemeId,
+                                        schemeClassName,
+                                        null,
+                                        null,
+                                        Collections.singletonList(configMethod)));
 
         return streamsSchemeId;
+    }
+
+    private String addConfigMapInstance() {
+        String mapClassId = "map-" + UUID_FOR_COMPONENTS;
+        List<Pair<String, Object>> entries =
+                Lists.newArrayList(Pair.of(KafkaSourceScheme.TOPIC_KEY,
+                                           conf.get(TopologyLayoutConstants.JSON_KEY_TOPIC)),
+                                   Pair.of(KafkaSourceScheme.SCHEMA_REGISTRY_URL_KEY,
+                                           conf.get(TopologyLayoutConstants.SCHEMA_REGISTRY_URL)),
+                                   Pair.of(KafkaSourceScheme.DATASOURCE_ID_KEY,
+                                           kafkaSource != null ? kafkaSource.getId() : ""));
+        List<Map<String, Object>> configMethods = new ArrayList<>();
+        for (Map.Entry<String, Object> entry : entries) {
+            Map<String, Object> configMethod = new LinkedHashMap<>();
+            configMethod.put(StormTopologyLayoutConstants.YAML_KEY_NAME, "put");
+            configMethod.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, Arrays.asList(entry.getKey(), entry.getValue()));
+            configMethods.add(configMethod);
+        }
+        addToComponents(createComponent(mapClassId,
+                                        "java.util.HashMap",
+                                        null,
+                                        null,
+                                        configMethods));
+
+        return mapClassId;
     }
 
     // Add BrokerHosts yaml component and return its yaml id to further use

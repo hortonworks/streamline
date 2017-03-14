@@ -37,6 +37,7 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_CONFIG = "config";
     public final static String JSON_KEY_ZK_URL = "zkUrl";
     public final static String JSON_KEY_TOPIC = "topic";
+    public static final String JSON_KEY_SCHEME_CLASS_NAME = "schemeClassName";
     public final static String JSON_KEY_PROCESSORS = "processors";
     public final static String JSON_KEY_DATA_SINKS = "dataSinks";
     public final static String JSON_KEY_ROOT_DIR = "rootDir";
