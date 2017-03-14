@@ -47,7 +47,7 @@
         </dependency>
         <dependency>
             <groupId>com.hortonworks.registries</groupId>
-            <artifactId>common</artifactId>
+            <artifactId>registry-common</artifactId>
             <version>${schema-registry.version}</version>
         </dependency>
 
