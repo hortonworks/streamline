@@ -20,10 +20,13 @@ package com.hortonworks.streamline.storage.impl.jdbc.provider.mysql.factory;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
 import com.hortonworks.streamline.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.mysql.query.MySqlInsertUpdateDuplicate;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.mysql.query.MysqlInsertQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.mysql.query.MysqlSelectQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory.AbstractQueryExecutor;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlInsertQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
@@ -31,6 +34,7 @@ import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.statement.Prepa
 import com.hortonworks.streamline.storage.impl.jdbc.util.Util;
 import com.zaxxer.hikari.HikariConfig;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 
@@ -67,7 +71,7 @@ public class MySqlExecutor extends AbstractQueryExecutor {
 
     @Override
     public void insert(Storable storable) {
-        insertOrUpdateWithUniqueId(storable, new SqlInsertQuery(storable));
+        insertOrUpdateWithUniqueId(storable, new MysqlInsertQuery(storable));
     }
 
     @Override
@@ -79,6 +83,16 @@ public class MySqlExecutor extends AbstractQueryExecutor {
     public Long nextId(String namespace) {
         // We intentionally return null. Please refer the class javadoc for more details.
         return null;
+    }
+
+    @Override
+    public <T extends Storable> Collection<T> select(String namespace) {
+        return executeQuery(namespace, new MysqlSelectQuery(namespace));
+    }
+
+    @Override
+    public <T extends Storable> Collection<T> select(StorableKey storableKey) {
+        return executeQuery(storableKey.getNameSpace(), new MysqlSelectQuery(storableKey));
     }
 
     public static MySqlExecutor createExecutor(Map<String, Object> jdbcProps) {
