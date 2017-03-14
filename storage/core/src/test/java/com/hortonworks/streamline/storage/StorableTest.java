@@ -16,7 +16,7 @@
 package com.hortonworks.streamline.storage;
 
 import com.hortonworks.streamline.common.QueryParam;
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 import org.junit.Assert;
 
 import java.util.ArrayList;

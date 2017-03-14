@@ -17,7 +17,7 @@
 
 package com.hortonworks.streamline.storage.impl.jdbc.provider.sql.statement;
 
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.storage.exception.MalformedQueryException;
 import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.AbstractStorableKeyQuery;

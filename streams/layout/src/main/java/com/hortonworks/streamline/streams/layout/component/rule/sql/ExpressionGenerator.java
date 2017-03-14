@@ -17,7 +17,7 @@
 package com.hortonworks.streamline.streams.layout.component.rule.sql;
 
 import org.apache.calcite.sql.type.SqlTypeName;
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.streams.layout.component.Stream;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.ArrayFieldExpression;

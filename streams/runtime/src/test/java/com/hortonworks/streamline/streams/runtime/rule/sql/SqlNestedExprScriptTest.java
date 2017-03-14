@@ -15,7 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.runtime.rule.sql;
 
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.ArrayFieldExpression;

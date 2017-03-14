@@ -16,7 +16,7 @@
 package com.hortonworks.streamline.registries.dashboard.entites;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;

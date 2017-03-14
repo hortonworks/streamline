@@ -20,7 +20,7 @@ package com.hortonworks.streamline.streams.layout.component.impl.normalization;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.hortonworks.streamline.common.Config;
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 
 /**
  * Base class for normalization processor configuration.

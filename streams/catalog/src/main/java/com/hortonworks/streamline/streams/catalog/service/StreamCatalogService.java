@@ -30,7 +30,7 @@ import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.hortonworks.streamline.common.ComponentTypes;
 import com.hortonworks.streamline.common.QueryParam;
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.common.util.ProxyUtil;
 import com.hortonworks.streamline.common.util.Utils;

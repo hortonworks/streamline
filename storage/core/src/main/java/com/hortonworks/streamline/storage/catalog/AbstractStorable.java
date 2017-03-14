@@ -16,8 +16,8 @@
 package com.hortonworks.streamline.storage.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hortonworks.streamline.common.Schema;
-import com.hortonworks.streamline.common.exception.ParserException;
+import com.hortonworks.registries.common.Schema;
+import com.hortonworks.registries.common.exception.ParserException;
 import com.hortonworks.streamline.common.util.ReflectionHelper;
 import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableKey;

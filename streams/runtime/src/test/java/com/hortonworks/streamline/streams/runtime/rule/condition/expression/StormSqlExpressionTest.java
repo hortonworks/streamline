@@ -16,7 +16,7 @@
 package com.hortonworks.streamline.streams.runtime.rule.condition.expression;
 
 import com.google.common.collect.ImmutableList;
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.BinaryExpression;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.Condition;

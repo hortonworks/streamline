@@ -18,9 +18,9 @@ package com.hortonworks.streamline.registries.model.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hortonworks.streamline.common.Schema;
-import com.hortonworks.streamline.common.Schema.Field;
-import com.hortonworks.streamline.common.Schema.Type;
+import com.hortonworks.registries.common.Schema;
+import com.hortonworks.registries.common.Schema.Field;
+import com.hortonworks.registries.common.Schema.Type;
 import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;

@@ -16,7 +16,7 @@
 package com.hortonworks.streamline.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

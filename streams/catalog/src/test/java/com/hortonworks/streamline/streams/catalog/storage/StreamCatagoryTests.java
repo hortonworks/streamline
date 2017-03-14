@@ -16,7 +16,7 @@
 package com.hortonworks.streamline.streams.catalog.storage;
 
 import com.google.common.collect.Lists;
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableTest;
 import com.hortonworks.streamline.streams.catalog.Notifier;

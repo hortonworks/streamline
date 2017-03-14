@@ -15,7 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.layout.component.rule.expression;
 
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 
 /**
  * A variable (field) expression, e.g. x

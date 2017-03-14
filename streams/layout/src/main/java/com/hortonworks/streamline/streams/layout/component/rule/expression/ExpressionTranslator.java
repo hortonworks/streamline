@@ -14,7 +14,7 @@
   * limitations under the License.
  **/
 package com.hortonworks.streamline.streams.layout.component.rule.expression;
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 
 import java.util.ArrayList;
 import java.util.Collections;
