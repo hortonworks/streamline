@@ -1,4 +1,5 @@
 ## 0.1.4
+ * STREAMLINE-596: Use Schema from registry/common module
  * STREAMLINE-727: bootstrap-stroage script should allow create only and keep deletion as an option
  * STREAMLINE-723: JdbcStorageManager#add(Storable) should not call insert instead of insertOrUpdate on QueryExecutor
  * STREAMLINE-664: Handle tick tuples in all storm components of a streamline topology
