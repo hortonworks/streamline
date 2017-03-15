@@ -1,4 +1,6 @@
 ## 0.1.4
+ * STREAMLINE-705: Add a way to associate streamId with rules/branchrules/windows
+ * STREAMLINE-706: Fix issues in UDF return type argType handling
  * STREAMLINE-707: Support Postgres db
  * STREAMLINE-643: Remove packaging of mysql jar and make it downloadable during the bootstrap
  * STREAMLINE-732: Escape column names in mysql select and insert query
