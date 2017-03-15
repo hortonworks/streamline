@@ -17,7 +17,7 @@
 
 package com.hortonworks.streamline.streams.runtime.rule.condition.expression;
 
-import com.hortonworks.streamline.common.Schema.Field;
+import com.hortonworks.registries.common.Schema.Field;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.Condition;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.GroupBy;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.Having;

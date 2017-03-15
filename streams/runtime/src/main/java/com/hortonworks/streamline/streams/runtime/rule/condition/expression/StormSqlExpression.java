@@ -18,7 +18,7 @@
 package com.hortonworks.streamline.streams.runtime.rule.condition.expression;
 
 import com.google.common.base.Joiner;
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.Condition;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.Expression;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.ExpressionTranslator;

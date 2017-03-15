@@ -936,6 +936,38 @@ label {
   width: 22px;
 }
 
+.component-list li a {
+  color: #72bcd5;
+  font-weight: bold;
+  font-size: 22px;
+}
+
+.component-list li a:hover, .component-list li a:focus {
+  color: #1992c1;
+  text-decoration: none;
+}
+
+.popover-content .component-list {
+  margin-bottom: 0px;
+}
+
+.popover-content .component-list li {
+  display: inline-block;
+  margin-bottom: 0px;
+}
+
+.popover-content .component-list li + li {
+  margin-left: 15px;
+}
+
+.component-popover.popover {
+  max-width: 280px;
+}
+.component-popover.popover .popover-content .component-list li {
+  min-width: 50px;
+  margin: 5px;
+}
+
 .topology-footer {
   position: absolute;
   bottom: 30px;

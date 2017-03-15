@@ -1,4 +1,11 @@
 ## 0.1.4
+ * STREAMLINE-705: Add a way to associate streamId with rules/branchrules/windows
+ * STREAMLINE-706: Fix issues in UDF return type argType handling
+ * STREAMLINE-707: Support Postgres db
+ * STREAMLINE-643: Remove packaging of mysql jar and make it downloadable during the bootstrap
+ * STREAMLINE-732: Escape column names in mysql select and insert query
+ * STREAMLINE-730: Runtime dependency issues while loading Storables
+ * STREAMLINE-596: Use Schema from registry/common module
  * STREAMLINE-727: bootstrap-stroage script should allow create only and keep deletion as an option
  * STREAMLINE-723: JdbcStorageManager#add(Storable) should not call insert instead of insertOrUpdate on QueryExecutor
  * STREAMLINE-664: Handle tick tuples in all storm components of a streamline topology

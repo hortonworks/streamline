@@ -18,6 +18,7 @@
 package com.hortonworks.streamline.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.registries.common.Schema;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 
@@ -27,7 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.hortonworks.streamline.common.Schema.Type;
+import static com.hortonworks.registries.common.Schema.Type;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

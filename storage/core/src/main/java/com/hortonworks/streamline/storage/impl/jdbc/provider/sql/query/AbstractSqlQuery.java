@@ -19,7 +19,7 @@ package com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Collections2;
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;

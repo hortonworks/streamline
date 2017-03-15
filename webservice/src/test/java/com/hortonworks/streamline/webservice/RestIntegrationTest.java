@@ -20,7 +20,7 @@ package com.hortonworks.streamline.webservice;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.common.test.IntegrationTest;
 import com.hortonworks.streamline.registries.tag.dto.TagDto;
 import com.hortonworks.streamline.streams.catalog.Cluster;

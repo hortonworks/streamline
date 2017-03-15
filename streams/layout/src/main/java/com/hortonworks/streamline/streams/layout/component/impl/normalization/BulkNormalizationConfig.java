@@ -16,11 +16,11 @@
 
 package com.hortonworks.streamline.streams.layout.component.impl.normalization;
 
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 
 /**
- * It represents normalization configuration which uses bulk script to normalize payload from input {@link com.hortonworks.streamline.common.Schema}
- * to output {@link com.hortonworks.streamline.common.Schema}.
+ * It represents normalization configuration which uses bulk script to normalize payload from input {@link com.hortonworks.registries.common.Schema}
+ * to output {@link com.hortonworks.registries.common.Schema}.
  *
  */
 public class BulkNormalizationConfig extends NormalizationConfig {

@@ -16,7 +16,7 @@
 
 package com.hortonworks.streamline.streams.runtime.normalization;
 
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.layout.component.impl.normalization.FieldBasedNormalizationConfig;
 import com.hortonworks.streamline.streams.layout.component.impl.normalization.FieldValueGenerator;

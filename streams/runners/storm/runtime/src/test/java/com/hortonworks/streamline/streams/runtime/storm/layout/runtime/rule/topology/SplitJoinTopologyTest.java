@@ -16,7 +16,7 @@
 
 package com.hortonworks.streamline.streams.runtime.storm.layout.runtime.rule.topology;
 
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.streams.layout.Transform;
 import com.hortonworks.streamline.streams.layout.component.Stream;
 import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;

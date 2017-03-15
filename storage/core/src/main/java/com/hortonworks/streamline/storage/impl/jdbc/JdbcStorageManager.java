@@ -18,7 +18,7 @@ package com.hortonworks.streamline.storage.impl.jdbc;
 
 
 import com.hortonworks.streamline.common.QueryParam;
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableFactory;

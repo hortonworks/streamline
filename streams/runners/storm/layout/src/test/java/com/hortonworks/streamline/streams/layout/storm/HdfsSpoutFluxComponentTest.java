@@ -17,7 +17,7 @@
 
 package com.hortonworks.streamline.streams.layout.storm;
 
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.layout.component.Stream;
 import com.hortonworks.streamline.streams.layout.component.impl.HdfsSource;

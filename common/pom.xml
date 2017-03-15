@@ -84,6 +84,12 @@
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-multipart</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.hortonworks.registries</groupId>
+            <artifactId>registry-common</artifactId>
+            <version>${schema-registry.version}</version>
+        </dependency>
+
         <!--test-->
         <dependency>
             <groupId>junit</groupId>
