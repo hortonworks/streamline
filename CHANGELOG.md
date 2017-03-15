@@ -1,5 +1,6 @@
 ## 0.1.4
- * STREAMLINE:730: Runtime dependency issues while loading Storables
+ * STREAMLINE-732: Escape column names in mysql select and insert query
+ * STREAMLINE-730: Runtime dependency issues while loading Storables
  * STREAMLINE-596: Use Schema from registry/common module
  * STREAMLINE-727: bootstrap-stroage script should allow create only and keep deletion as an option
  * STREAMLINE-723: JdbcStorageManager#add(Storable) should not call insert instead of insertOrUpdate on QueryExecutor
