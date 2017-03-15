@@ -1,5 +1,6 @@
 ## 0.1.4
- * STREAMLINE-643: Postgresql support
+ * STREAMLINE-707: Support Postgres db
+ * STREAMLINE-643: Remove packaging of mysql jar and make it downloadable during the bootstrap
  * STREAMLINE-732: Escape column names in mysql select and insert query
  * STREAMLINE-730: Runtime dependency issues while loading Storables
  * STREAMLINE-596: Use Schema from registry/common module
