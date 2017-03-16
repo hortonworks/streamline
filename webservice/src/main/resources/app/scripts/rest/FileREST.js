@@ -21,6 +21,7 @@ const FileREST = {
   getAllFiles(options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'files', options)
       .then((response) => {
         return response.json();
@@ -29,6 +30,7 @@ const FileREST = {
   getFile(id, options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'files/' + id, options)
       .then((response) => {
         return response.json();
@@ -37,6 +39,7 @@ const FileREST = {
   postFile(options) {
     options = options || {};
     options.method = options.method || 'POST';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'files', options)
       .then((response) => {
         return response.json();
@@ -45,6 +48,7 @@ const FileREST = {
   putFile(id, options) {
     options = options || {};
     options.method = options.method || 'PUT';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'files/' + id, options)
       .then((response) => {
         return response.json();
@@ -53,6 +57,7 @@ const FileREST = {
   deleteFile(id, options) {
     options = options || {};
     options.method = options.method || 'DELETE';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'files/' + id, options)
       .then((response) => {
         return response.json();
