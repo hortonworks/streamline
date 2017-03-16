@@ -23,6 +23,7 @@ const CustomProcessorREST = {
   getAllProcessors(options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     return fetch(url, options)
       .then((response) => {
         return response.json();
@@ -31,6 +32,7 @@ const CustomProcessorREST = {
   getProcessor(id, options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     return fetch(url + '?name=' + id, options)
       .then((response) => {
         return response.json();
@@ -39,6 +41,7 @@ const CustomProcessorREST = {
   postProcessor(options) {
     options = options || {};
     options.method = options.method || 'POST';
+    options.credentials = 'same-origin';
     return fetch(url, options)
       .then((response) => {
         return response.json();
@@ -47,6 +50,7 @@ const CustomProcessorREST = {
   putProcessor(id, options) {
     options = options || {};
     options.method = options.method || 'PUT';
+    options.credentials = 'same-origin';
     return fetch(url, options)
       .then((response) => {
         return response.json();
@@ -55,6 +59,7 @@ const CustomProcessorREST = {
   deleteProcessor(id, options) {
     options = options || {};
     options.method = options.method || 'DELETE';
+    options.credentials = 'same-origin';
     return fetch(url + '/' + id, options)
       .then((response) => {
         return response.json();
@@ -63,6 +68,7 @@ const CustomProcessorREST = {
   getCustomProcessorFile(id, options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     options.responseType = 'blob';
     return fetch(url + '/' + id, options)
       .then((response) => {
