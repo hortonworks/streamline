@@ -215,7 +215,7 @@ const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callb
       }
       return d.source === newEdge.source && d.target === newEdge.target;
     });
-    if (d.currentType.toLowerCase() === 'rule' || d.currentType.toLowerCase() === 'window' || d.currentType.toLowerCase() === 'Projection') {
+    if (d.currentType.toLowerCase() === 'rule' || d.currentType.toLowerCase() === 'window' || d.currentType.toLowerCase() === 'projection') {
       let filtEdges = paths.filter(function(d) {
         return newEdge.target === d.target;
       });
@@ -230,7 +230,7 @@ const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callb
       TopologyREST.getNode(topologyId, versionId, this.getNodeType(newEdge.source.parentType), newEdge.source.nodeId).then((result) => {
         setLastChange(result.timestamp);
         let nodeData = result;
-        if (newEdge.source.currentType.toLowerCase() === 'window' || newEdge.source.currentType.toLowerCase() === 'rule' || newEdge.source.currentType.toLowerCase() === 'Projection') {
+        if (newEdge.source.currentType.toLowerCase() === 'window' || newEdge.source.currentType.toLowerCase() === 'rule' || newEdge.source.currentType.toLowerCase() === 'projection') {
           nodeData.type = newEdge.source.currentType.toUpperCase();
         }
         drawLine.classed('hidden', true);
@@ -287,7 +287,7 @@ const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, in
   });
   let actionsPromiseArr = [];
   let currentActionType = "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction";
-  let streamId = null;
+  let streamId = [];
   connectingNodes.map((o, i) => {
     if (o.source.currentType.toLowerCase() === 'rule' || o.source.currentType.toLowerCase() === 'window' ||
         o.source.currentType.toLowerCase() === 'branch' || o.source.currentType.toLowerCase() === 'projection') {
@@ -297,9 +297,9 @@ const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, in
         : t === 'branch'
           ? 'branchrules'
           : 'windows';
-      streamId = o.streamGrouping.streamId;
+      streamId[i] = o.streamGrouping.streamId;
       let currentNodeEdges = edges.filter((obj) => {
-        return obj.source === o.source && streamId === obj.streamGrouping.streamId;
+        return obj.source === o.source && streamId[i] === obj.streamGrouping.streamId;
       });
       if (currentNode.currentType.toLowerCase() === 'notification') {
         currentActionType = "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction";
@@ -317,12 +317,12 @@ const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, in
             actions = [],
             hasAction = false;
           let ruleStream = results[0].entities.find((s) => {
-            return s.id === streamId;
+            return s.id === streamId[i];
           });
           actionsArr.map((a) => {
             if (a.outputStreams[0] === ruleStream.streamId && a.__type === currentActionType) {
               hasAction = true;
-              if (currentNodeEdges.length > 1) {
+              if (currentNodeEdges.length > 0) {
                 if (currentActionType === 'com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction') {
                   let notifierActionsArr = currentNodeEdges.filter((obj) => {
                     return obj.target !== currentNode && obj.target.currentType.toLowerCase() === 'notification';
@@ -561,7 +561,7 @@ const deleteEdge = function(selectedEdge, topologyId, versionId, internalFlags, 
             rule.actions.map((a, i) => {
               if (a.outputStreams[0] === ruleStream.streamId && a.__type === currentActionType) {
                 index = i;
-                if (currentNodeEdges.length > 1) {
+                if (currentNodeEdges.length > 0) {
                   if (currentActionType === 'com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction') {
                     let notifierActionsArr = currentNodeEdges.filter((obj) => {
                       return obj.target !== selectedEdge.target && obj.target.currentType.toLowerCase() === 'notification';

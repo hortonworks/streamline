@@ -656,7 +656,7 @@ export default class TopologyGraphComponent extends Component {
     }).on("mouseout", function(d) {
       if (!thisGraph.editMode) {
         thisGraph.edgeStream.style('display', 'none');
-        this.main_edgestream.style('display', 'none');
+        thisGraph.main_edgestream.style('display', 'none');
       }
     }).on("mousedown", function(d) {
       if (thisGraph.editMode) {

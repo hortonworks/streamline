@@ -29,6 +29,7 @@ import {
 } from '../../../utils/Constants';
 import CommonNotification from '../../../utils/CommonNotification';
 import {Scrollbars} from 'react-custom-scrollbars';
+import ProcessorUtils  from '../../../utils/ProcessorUtils';
 
 export default class ProjectionProcessorContainer extends Component {
 
@@ -68,9 +69,11 @@ export default class ProjectionProcessorContainer extends Component {
       invalidInput : false,
       projectionKeys : [],
       projectionSelectedKey : [],
-      argumentKeysGroup : []
+      argumentKeysGroup : [],
+      showLoading : true
     };
     this.state = obj;
+    this.fetchData();
   }
 
   /*
@@ -85,7 +88,7 @@ export default class ProjectionProcessorContainer extends Component {
   */
   componentWillUpdate() {
     if(this.context.ParentForm.state.inputStreamOptions.length > 0 && !(this.fetchDataAgain)){
-      this.fetchData();
+      this.getDataFromParentFormContext();
     }
   }
 
@@ -103,7 +106,33 @@ export default class ProjectionProcessorContainer extends Component {
     we call this.populateOutputStreamsFromServer Method to update the UI with pre populate fields.
   */
   fetchData = () => {
-    const {
+    AggregateUdfREST.getAllUdfs().then((udfResult) => {
+      if(udfResult.responseMessage !== undefined){
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={results.responseMessage}/>, '', toastOpt);
+      } else {
+        //Gather all "FUNCTION" functions only
+        this.udfList = ProcessorUtils.populateFieldsArr(udfResult.entities , "FUNCTION");
+        if(this.context.ParentForm.state.inputStreamOptions.length){
+          this.getDataFromParentFormContext();
+        }
+      }
+    });
+  }
+
+  /*
+    getDataFromParentFormContext is called from two FUNCTION[fetchData,componentWillUpdate]
+    Depend upon the condition
+
+    Get the projectionNode from the this.context.ParentForm.state.processorNode
+    Get the stream from the this.context.ParentForm.state.inputStreamOptions
+    And if projectionNode has the rules Id
+    we call this.populateOutputStreamsFromServer with rules ID to pre fill the value on UI
+    OR
+    we create a dummy ruleNode for the particular projectionNode and update the processor
+  */
+  getDataFromParentFormContext(){
+    let {
       topologyId,
       versionId,
       nodeType,
@@ -111,68 +140,52 @@ export default class ProjectionProcessorContainer extends Component {
       currentEdges,
       targetNodes
     } = this.props;
+    this.fetchDataAgain = true;
 
-    let promiseArr = [
-      AggregateUdfREST.getAllUdfs()
-    ];
+    // get the ProcessorNode from parentForm Context
+    this.projectionNode = this.context.ParentForm.state.processorNode;
+    this.configFields = this.projectionNode.config.properties;
+    this.projectionRuleId = this.configFields.rules;
 
-    Promise.all(promiseArr).then((resultArr) => {
-      this.fetchDataAgain = true;
-      // catch error resultArr
-      resultArr.map((result) => {
-        if(result.responseMessage !== undefined){
-          FSReactToastr.error(
-            <CommonNotification flag="error" content={results.responseMessage}/>, '', toastOpt);
-        }
-      });
-
-      // get the ProcessorNode from parentForm Context
-      this.projectionNode = this.context.ParentForm.state.processorNode;
-      this.configFields = this.projectionNode.config.properties;
-      this.projectionRuleId = this.configFields.rules;
-
-      //Gather all "Function" functions only
-      let udfList = Utils.populateFieldsArr(resultArr[0].entities , "FUNCTION");
-
-      // get the inputStream from parentForm Context
-      const inputStreamFromContext = this.context.ParentForm.state.inputStreamOptions;
-      let fields = [];
-      inputStreamFromContext.map((result, i) => {
-        this.streamIdList.push(result.streamId);
-        fields.push(...result.fields);
-      });
-      this.fieldsArr = Utils.getSchemaFields(_.unionBy(fields,'name'), 0,false);
-      let stateObj = {
-        fieldList: JSON.parse(JSON.stringify(this.fieldsArr)),
-        functionListArr: udfList
-      };
-
-      if(this.projectionRuleId){
-        this.fetchRulesNode(this.projectionRuleId).then((ruleNode) => {
-          this.projectionRulesNode = ruleNode;
-          this.populateOutputStreamsFromServer(this.projectionRulesNode);
-        });
-      } else {
-        //Creating projection object so output streams can get it
-        let dummyProjectionObj = {
-          name: 'projection_auto_generated',
-          description: 'projection description auto generated',
-          projections: [],
-          streams: [this.streamIdList[0]],
-          actions: [],
-          outputStreams: []
-        };
-        TopologyREST.createNode(topologyId, versionId, "rules", {body: JSON.stringify(dummyProjectionObj)}).then((rulesNode) => {
-          this.projectionRulesNode = rulesNode;
-          this.projectionRuleId = rulesNode.id;
-          this.projectionNode.config.properties.rules = [this.projectionRuleId];
-          TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {
-            body: JSON.stringify(this.projectionNode)
-          });
-        });
-      }
-      this.setState(stateObj);
+    // get the inputStream from parentForm Context
+    const inputStreamFromContext = this.context.ParentForm.state.inputStreamOptions;
+    let fields = [];
+    inputStreamFromContext.map((result, i) => {
+      this.streamIdList.push(result.streamId);
+      fields.push(...result.fields);
     });
+    this.fieldsArr = ProcessorUtils.getSchemaFields(_.unionBy(fields,'name'), 0,false);
+    let stateObj = {
+      fieldList: JSON.parse(JSON.stringify(this.fieldsArr)),
+      functionListArr: this.udfList,
+      showLoading : false
+    };
+
+    if(this.projectionRuleId){
+      this.fetchRulesNode(this.projectionRuleId).then((ruleNode) => {
+        this.projectionRulesNode = ruleNode;
+        this.populateOutputStreamsFromServer(this.projectionRulesNode);
+      });
+    } else {
+      //Creating projection object so output streams can get it
+      let dummyProjectionObj = {
+        name: 'projection_auto_generated',
+        description: 'projection description auto generated',
+        projections: [],
+        streams: [this.streamIdList[0]],
+        actions: [],
+        outputStreams: []
+      };
+      TopologyREST.createNode(topologyId, versionId, "rules", {body: JSON.stringify(dummyProjectionObj)}).then((rulesNode) => {
+        this.projectionRulesNode = rulesNode;
+        this.projectionRuleId = rulesNode.id;
+        this.projectionNode.config.properties.rules = [this.projectionRuleId];
+        TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {
+          body: JSON.stringify(this.projectionNode)
+        });
+      });
+    }
+    this.setState(stateObj);
   }
 
   /*
@@ -186,57 +199,26 @@ export default class ProjectionProcessorContainer extends Component {
   populateOutputStreamsFromServer(serverStreamObj){
     if(serverStreamObj.projections.length > 0){
       const {fieldList} = this.state;
-      let keyArrObj = [],argsFieldsArrObj = [],argsGroupKeys=[];
-      serverStreamObj.projections.map(o => {
-        if (o.expr) {
-          if (o.expr.search('\\[') !== -1) {
-            let a = o.expr.replace("['", " ").replace("']", " ").split(' ');
-            if (a.length > 1) {
-              o.expr = a[a.length - 1] != ''
-                ? a[a.length - 1]
-                : a[a.length - 2];
-            } else {
-              o.expr = a[0];
-            }
-          }
-          keyArrObj.push(this.getKeyList(o.expr));
-        } else {
-          let argsArr = [];
-          if(_.isArray(o.args)){
-            _.map(o.args,(arg) => {
-              if (arg.search('\\[') !== -1) {
-                let a = arg.replace("['", " ").replace("']", " ").split(' ');
-                if (a.length > 1) {
-                  arg = a[a.length - 1] != ''
-                    ? a[a.length - 1]
-                    : a[a.length - 2];
-                } else {
-                  arg = a[0];
-                }
-              }
-              argsArr.push(arg);
-            });
-          }
-          o.args = argsArr;
-          argsFieldsArrObj.push(o);
-        }
-      });
+      let argsGroupKeys=[];
+
+      const projectionData = ProcessorUtils.normalizationProjectionKeys(serverStreamObj.projections,fieldList);
+      const {keyArrObj,argsFieldsArrObj} = projectionData;
 
       // populate argumentFieldGroupKey
       _.map(argsFieldsArrObj, (obj, index) => {
         if(_.isArray(obj.args)){
           let _arr = [];
           _.map(obj.args , (o) => {
-            const fieldObj = this.getKeyList(o);
+            const fieldObj = ProcessorUtils.getKeyList(o,fieldList);
             _arr.push(fieldObj);
           });
-          const {keys,gKeys} = Utils.getKeysAndGroupKey(_arr);
+          const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey(_arr);
           argsGroupKeys[index] = gKeys;
         }
       });
 
-      const {keys,gKeys} = Utils.getKeysAndGroupKey(keyArrObj);
-      const keyData = Utils.createSelectedKeysHierarchy(keyArrObj,fieldList);
+      const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey(keyArrObj);
+      const keyData = ProcessorUtils.createSelectedKeysHierarchy(keyArrObj,fieldList);
       const outputFieldsObj =  this.generateOutputFields(argsFieldsArrObj,0);
 
       const tempFields = _.concat(keyData,argsFieldsArrObj);
@@ -247,7 +229,7 @@ export default class ProjectionProcessorContainer extends Component {
 
       // assign mainStreamObj value to "this.tempStreamContextData" make available for further methods
       this.tempStreamContextData = mainStreamObj;
-      this.setState({outputFieldsArr :argsFieldsArrObj,outputStreamFields: outputFieldsObj,projectionKeys:keys,projectionSelectedKey:keyData,projectionGroupByKeys : gKeys,argumentKeysGroup :argsGroupKeys});
+      this.setState({outputFieldsArr :argsFieldsArrObj,outputStreamFields: outputFieldsObj,projectionKeys:keys,projectionSelectedKey:keyData,projectionGroupByKeys : gKeys,argumentKeysGroup :argsGroupKeys,showLoading : false});
       this.context.ParentForm.setState({outputStreamObj: mainStreamObj});
     }
   }
@@ -307,10 +289,11 @@ export default class ProjectionProcessorContainer extends Component {
     And it modify the fields into new Object with returnType
   */
   generateOutputFields(fields, level) {
+    const {fieldList} = this.state;
     return fields.map((field) => {
       let obj = {
         name: field.name || field.outputFieldName ,
-        type: field.type || this.getReturnType(field.functionName, this.getKeyList(field.args))
+        type: field.type || this.getReturnType(field.functionName, ProcessorUtils.getKeyList(field.args,fieldList))
       };
 
       if (field.type === 'NESTED' && field.fields) {
@@ -433,17 +416,6 @@ export default class ProjectionProcessorContainer extends Component {
   }
 
   /*
-    getKeyList Method accept the argName
-    And return the obj matches in fieldList
-  */
-  getKeyList(argName){
-    let fieldObj = this.state.fieldList.find((field) => {
-      return field.name === argName;
-    });
-    return fieldObj;
-  }
-
-  /*
     handleProjectionKeysChange Method accept arr of obj
     And SET
     projectionKeys : key of arr used on UI for listing
@@ -452,10 +424,10 @@ export default class ProjectionProcessorContainer extends Component {
   */
   handleProjectionKeysChange(arr){
     let {fieldList,outputStreamFields,projectionSelectedKey} = this.state;
-    const keyData = Utils.createSelectedKeysHierarchy(arr,fieldList);
+    const keyData = ProcessorUtils.createSelectedKeysHierarchy(arr,fieldList);
     this.tempStreamContextData.fields = outputStreamFields.length > 0  ? _.concat(keyData , outputStreamFields) : keyData;
 
-    const {keys,gKeys} = Utils.getKeysAndGroupKey(arr);
+    const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey(arr);
     this.setState({projectionKeys: keys, projectionGroupByKeys: gKeys, projectionSelectedKey: keyData});
     this.context.ParentForm.setState({outputStreamObj: this.tempStreamContextData});
   }
@@ -482,8 +454,8 @@ export default class ProjectionProcessorContainer extends Component {
     const {fieldList,argumentKeysGroup } = this.state;
     let argumentGroupArr = _.cloneDeep(argumentKeysGroup);
     let tempArr = _.cloneDeep(this.state.outputFieldsArr);
-    const fieldData = Utils.createSelectedKeysHierarchy(arr,fieldList);
-    const {keys,gKeys} = Utils.getKeysAndGroupKey(arr);
+    const fieldData = ProcessorUtils.createSelectedKeysHierarchy(arr,fieldList);
+    const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey(arr);
     tempArr[index].args = keys;
     argumentGroupArr[index]= gKeys;
     this.setState({outputFieldsArr : tempArr, argumentKeysGroup : argumentGroupArr}, () => {
@@ -515,12 +487,12 @@ export default class ProjectionProcessorContainer extends Component {
   */
   setParentContextOutputStream(index) {
     let funcReturnType = "";
-    const {outputFieldsArr,projectionSelectedKey} = this.state;
+    const {outputFieldsArr,projectionSelectedKey,fieldList} = this.state;
     let mainObj = _.cloneDeep(this.state.outputStreamFields);
     if(outputFieldsArr[index].args.length > 0 && (outputFieldsArr[index].functionName !== undefined && outputFieldsArr[index].functionName !== "")){
       _.map(outputFieldsArr[index].args, (arg) => {
         // set the returnType for function
-        funcReturnType = this.getReturnType(outputFieldsArr[index].functionName, this.getKeyList(arg),index);
+        funcReturnType = this.getReturnType(outputFieldsArr[index].functionName, ProcessorUtils.getKeyList(arg,fieldList),index);
       });
     }
     mainObj[index] = {
@@ -577,7 +549,8 @@ export default class ProjectionProcessorContainer extends Component {
       outputStreamId,
       argumentError,
       invalidInput,
-      projectionKeys
+      projectionKeys,
+      showLoading
     } = this.state;
 
     return (
@@ -585,67 +558,75 @@ export default class ProjectionProcessorContainer extends Component {
         <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
           display: "none"
         }}/>}>
-        <form className="customFormClass">
-          <div className="form-group">
-            <label>Projection Fields
-              <span className="text-danger">*</span>
-            </label>
-            <div>
-              <Select  value={projectionKeys} options={fieldList} onChange={this.handleProjectionKeysChange.bind(this)} clearable={false} multi={true} required={true} disabled={!editMode} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+        {
+          showLoading
+          ? <div className="loading-img text-center">
+              <img src="styles/img/start-loader.gif" alt="loading" style={{
+                marginTop: "140px"
+              }}/>
             </div>
-          </div>
-          <div className="form-group">
-            <div className="row">
-              <div className="col-sm-12">
-                {(argumentError)
-                  ? <label className="color-error">The Projection Function is not supported by input</label>
-                  : ''
-  }
-              </div>
-            </div>
-            <div className="row">
-              <div className="col-sm-3 outputCaption">
-                <label>Function</label>
-              </div>
-              <div className="col-sm-4 outputCaption">
-                <label>Arguments</label>
-              </div>
-              <div className="col-sm-3 outputCaption">
-                <label>Fields Name</label>
-              </div>
-            </div>
-            {outputFieldsArr.map((obj, i) => {
-              return (
-                <div key={i} className="row form-group">
-                  <div className="col-sm-3">
-                    <Select className={outputFieldsArr.length === i
-                      ? "menu-outer-top"
-                      : ''} value={obj.functionName} options={functionListArr} onChange={this.handleFieldChange.bind(this, i)} required={true} disabled={!editMode} valueKey="name" labelKey="name"/>
-                  </div>
-                  <div className="col-sm-4">
-                    <Select className={outputFieldsArr.length === i
-                      ? "menu-outer-top"
-                      : ''} value={obj.args} options={fieldList} onChange={this.handleFieldsKeyChange.bind(this, i)} clearable={false} multi={true} required={true} disabled={!editMode} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
-                  </div>
-                  <div className="col-sm-3">
-                    <input name="outputFieldName" value={obj.outputFieldName} ref="outputFieldName" onChange={this.handleFieldNameChange.bind(this, i)} type="text" className={invalidInput ? "form-control invalidInput" : "form-control" }  required={true} disabled={!editMode}/>
-                  </div>
-                  {editMode
-                    ? <div className="col-sm-2">
-                        <button className="btn btn-default btn-sm" type="button" onClick={this.addProjectionOutputFields.bind(this)}>
-                          <i className="fa fa-plus"></i>
-                        </button>&nbsp; {i > 0
-                          ? <button className="btn btn-sm btn-danger" type="button" onClick={this.deleteProjectionRow.bind(this, i)}>
-                              <i className="fa fa-trash"></i>
-                            </button>
-                          : null}
-                      </div>
-                    : null}
+          : <form className="customFormClass">
+              <div className="form-group">
+                <label>Projection Fields
+                  <span className="text-danger">*</span>
+                </label>
+                <div>
+                  <Select  value={projectionKeys} options={fieldList} onChange={this.handleProjectionKeysChange.bind(this)} clearable={false} multi={true} required={true} disabled={!editMode} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
                 </div>
-              );
-            })}
-          </div>
-        </form>
+              </div>
+              <div className="form-group">
+                <div className="row">
+                  <div className="col-sm-12">
+                    {(argumentError)
+                      ? <label className="color-error">The Projection Function is not supported by input</label>
+                      : ''
+  }
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="col-sm-3 outputCaption">
+                    <label>Function</label>
+                  </div>
+                  <div className="col-sm-4 outputCaption">
+                    <label>Arguments</label>
+                  </div>
+                  <div className="col-sm-3 outputCaption">
+                    <label>Fields Name</label>
+                  </div>
+                </div>
+                {outputFieldsArr.map((obj, i) => {
+                  return (
+                    <div key={i} className="row form-group">
+                      <div className="col-sm-3">
+                        <Select className={outputFieldsArr.length === i
+                          ? "menu-outer-top"
+                          : ''} value={obj.functionName} options={functionListArr} onChange={this.handleFieldChange.bind(this, i)} required={true} disabled={!editMode} valueKey="name" labelKey="name"/>
+                      </div>
+                      <div className="col-sm-4">
+                        <Select className={outputFieldsArr.length === i
+                          ? "menu-outer-top"
+                          : ''} value={obj.args} options={fieldList} onChange={this.handleFieldsKeyChange.bind(this, i)} clearable={false} multi={true} required={true} disabled={!editMode} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+                      </div>
+                      <div className="col-sm-3">
+                        <input name="outputFieldName" value={obj.outputFieldName} ref="outputFieldName" onChange={this.handleFieldNameChange.bind(this, i)} type="text" className={invalidInput ? "form-control invalidInput" : "form-control" }  required={true} disabled={!editMode}/>
+                      </div>
+                      {editMode
+                        ? <div className="col-sm-2">
+                            <button className="btn btn-default btn-sm" type="button" onClick={this.addProjectionOutputFields.bind(this)}>
+                              <i className="fa fa-plus"></i>
+                            </button>&nbsp; {i > 0
+                              ? <button className="btn btn-sm btn-danger" type="button" onClick={this.deleteProjectionRow.bind(this, i)}>
+                                  <i className="fa fa-trash"></i>
+                                </button>
+                              : null}
+                          </div>
+                        : null}
+                    </div>
+                  );
+                })}
+              </div>
+            </form>
+        }
         </Scrollbars>
       </div>
     );
