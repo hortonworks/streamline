@@ -23,6 +23,7 @@ import com.hortonworks.streamline.common.ModuleRegistration;
 import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
 import com.hortonworks.streamline.registries.tag.client.TagClient;
+import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.storage.StorageManagerAware;
 import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
@@ -36,8 +37,13 @@ import com.hortonworks.streamline.streams.service.metadata.HBaseMetadataResource
 import com.hortonworks.streamline.streams.service.metadata.HiveMetadataResource;
 import com.hortonworks.streamline.streams.service.metadata.KafkaMetadataResource;
 import com.hortonworks.streamline.streams.service.metadata.StormMetadataResource;
+import org.apache.streamline.storage.StorableType;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +65,9 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
     @Override
     public List<Object> getResources() {
         List<Object> result = new ArrayList<>();
+
+        storageManager.registerStorables(getStorableClasses());
+
         String catalogRootUrl = (String) config.get(Constants.CONFIG_CATALOG_ROOT_URL);
         MLModelRegistryClient modelRegistryClient = new MLModelRegistryClient(catalogRootUrl);
         final StreamCatalogService streamcatalogService = new StreamCatalogService(storageManager, fileStorage, modelRegistryClient);
@@ -88,6 +97,20 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         watchFiles(streamcatalogService);
         setupPlaceholderEntities(streamcatalogService);
         return result;
+    }
+
+    private Collection<Class<? extends Storable>> getStorableClasses() {
+        Collection<Class<? extends Storable>> classes = new ArrayList<>();
+        ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
+        provider.addIncludeFilter(new AnnotationTypeFilter(StorableType.class));
+        for (BeanDefinition beanDef : provider.findCandidateComponents("")) {
+            try {
+                classes.add((Class<? extends Storable>) Class.forName(beanDef.getBeanClassName()));
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return classes;
     }
 
     private SchemaRegistryClient createSchemaRegistryClient() {
