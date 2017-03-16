@@ -34,11 +34,11 @@ function run_cmd {
   then
     echo $cmd
   fi
-  response=$(eval $cmd)
+  response=$(eval $cmd) 
   if [[ $verbose == "true" ]]
   then
     echo $response
-  else
+  else 
     echo $response | grep -o '"responseMessage":[^"]*"[^"]*"'
   fi
   echo "--------------------------------------"
@@ -68,7 +68,7 @@ function add_bundle {
 
 
 function usage {
-  cat <<-EOF
+  cat <<-EOF 
 $0 [-vh] [-d bootstrap_dir]
    -v               verbose
    -h               help
@@ -131,7 +131,6 @@ function add_all_bundles {
     add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/branch-topology-component.json
     add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/join-bolt-topology-component.json
     add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/model-topology-component.json
-    add_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/projection-topology-component.json
     # === Sink ===
     add_bundle /streams/componentbundles/SINK $component_dir/sinks/hdfs-sink-topology-component.json
     add_bundle /streams/componentbundles/SINK $component_dir/sinks/hbase-sink-topology-component.json
