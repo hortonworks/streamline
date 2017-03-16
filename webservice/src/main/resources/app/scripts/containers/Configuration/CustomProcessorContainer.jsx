@@ -90,8 +90,8 @@ export default class CustomProcessorContainer extends Component {
         } else {
           FSReactToastr.success(
             <strong>Processor {this.state.processorId
-                ? "updated "
-                : "added "}
+                ? "updated"
+                : "added"}
               successfully</strong>
           );
           this.fetchData();
