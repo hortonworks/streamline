@@ -42,11 +42,14 @@ export default class SinkNodeForm extends Component {
   constructor(props) {
     super(props);
     this.sourceNodesId = [];
+    this.sourceChildNodeType = [];
+    this.tempStreamFieldArr = [];
     props.sourceNodes.map((node) => {
       this.sourceNodesId.push(node.nodeId);
     });
     this.state = {
       formData: {},
+      inputStreamArr : [],
       streamObj: {},
       description: '',
       showRequired: true,
@@ -61,6 +64,10 @@ export default class SinkNodeForm extends Component {
     });
   }
 
+  getChildContext() {
+    return {ParentForm: this};
+  }
+
   fetchData() {
     let {
       topologyId,
@@ -71,26 +78,36 @@ export default class SinkNodeForm extends Component {
       namespaceId
     } = this.props;
     const sourceParams = nodeData.parentType + '/' + nodeData.topologyComponentBundleId;
-    let sourceNodeType = null;
+    let sourceNodeType = null,sourceNodePromiseArr= [];
     let promiseArr = [
       TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId),
       TopologyREST.getAllNodes(topologyId, versionId, 'edges'),
       TopologyREST.getSourceComponentClusters(sourceParams, namespaceId)
     ];
     if (sourceNodes.length > 0) {
-      sourceNodeType = TopologyUtils.getNodeType(sourceNodes[0].parentType);
-      promiseArr.push(TopologyREST.getNode(topologyId, versionId, sourceNodeType, sourceNodes[0].nodeId));
+      _.map(sourceNodes, (sourceNode) => {
+        sourceNodePromiseArr.push(TopologyREST.getNode(topologyId, versionId ,TopologyUtils.getNodeType(sourceNode.parentType) ,sourceNode.nodeId));
+      });
+
+      // sourceNodeType = TopologyUtils.getNodeType(sourceNodes[0].parentType);
+      // promiseArr.push(TopologyREST.getNode(topologyId, versionId, sourceNodeType, sourceNodes[0].nodeId));
+
     }
     Promise.all(promiseArr).then(results => {
       let stateObj = {},
         tempArr = [];
       this.nodeData = results[0];
       if (results[1].entities) {
+        let tempStreamArr = [];
         results[1].entities.map((edge) => {
           if (edge.toId === nodeData.nodeId && this.sourceNodesId.indexOf(edge.fromId) !== -1) {
             //TODO - Once we support multiple input streams, need to fix this.
             TopologyREST.getNode(topologyId, versionId, 'streams', edge.streamGroupings[0].streamId).then(streamResult => {
-              this.setState({streamObj: streamResult});
+              tempStreamArr.push(streamResult);
+              _.map(tempStreamArr, (stream) => {
+                this.tempStreamFieldArr.push(_.flattenDeep(stream.fields));
+              });
+              this.setState({inputStreamArr: tempStreamArr, streamObj :tempStreamArr[0],streamObjArr : tempStreamArr.length > 1 ? tempStreamArr : []});
             });
           }
         });
@@ -132,26 +149,56 @@ export default class SinkNodeForm extends Component {
           this.updateClusterFields(stateObj.formData.cluster);
         }
       });
-      if (sourceNodes.length > 0) {
-        //Finding the source node and updating actions for rules/windows
-        this.sourceNodeData = results[3];
+
+      Promise.all(sourceNodePromiseArr).then(connectedNodes => {
+        _.map(connectedNodes, (connectedNode) => {
+          if(connectedNode.responseMessage !== undefined){
+            FSReactToastr.error(
+              <CommonNotification flag="error" content={connectedNode.responseMessage}/>, '', toastOpt);
+          }
+        });
+
         let sourcePromiseArr = [];
-        // sourceChildNodeType are processor nodes inner child, window or rule
-        let type = sourceNodes[0].currentType.toLowerCase();
-        this.sourceChildNodeType = type === 'window'
-          ? 'windows'
-          : (type === 'rule' || type === 'projection'
-            ? 'rules'
-            : 'branchrules');
-        if (this.sourceNodeData.config.properties && this.sourceNodeData.config.properties.rules && this.sourceNodeData.config.properties.rules.length > 0) {
-          this.sourceNodeData.config.properties.rules.map((id) => {
-            sourcePromiseArr.push(TopologyREST.getNode(topologyId, versionId, this.sourceChildNodeType, id));
-          });
-        }
+        _.map(connectedNodes, (connectedNode,index) => {
+          // sourceChildNodeType are processor nodes inner child, window or rule
+          let type = sourceNodes[index].currentType.toLowerCase();
+          this.sourceChildNodeType[index] = type === 'window'
+            ? 'windows'
+            : (type === 'rule' || type === 'projection'
+              ? 'rules'
+              : 'branchrules');
+
+          if (connectedNode.config.properties && connectedNode.config.properties.rules && connectedNode.config.properties.rules.length > 0) {
+            connectedNode.config.properties.rules.map((id) => {
+              sourcePromiseArr.push(TopologyREST.getNode(topologyId, versionId, this.sourceChildNodeType[index], id));
+            });
+          }
+        });
+
         Promise.all(sourcePromiseArr).then(sourceResults => {
           this.allSourceChildNodeData = sourceResults;
         });
-      }
+      });
+      // if (sourceNodes.length > 0) {
+      //   //Finding the source node and updating actions for rules/windows
+      //   this.sourceNodeData = results[3];
+      //   let sourcePromiseArr = [];
+      //   // sourceChildNodeType are processor nodes inner child, window or rule
+      //   let type = sourceNodes[0].currentType.toLowerCase();
+      //   this.sourceChildNodeType = type === 'window'
+      //     ? 'windows'
+      //     : (type === 'rule' || type === 'projection'
+      //       ? 'rules'
+      //       : 'branchrules');
+      //   if (this.sourceNodeData.config.properties && this.sourceNodeData.config.properties.rules && this.sourceNodeData.config.properties.rules.length > 0) {
+      //     this.sourceNodeData.config.properties.rules.map((id) => {
+      //       sourcePromiseArr.push(TopologyREST.getNode(topologyId, versionId, this.sourceChildNodeType, id));
+      //     });
+      //   }
+      //   Promise.all(sourcePromiseArr).then(sourceResults => {
+      //     this.allSourceChildNodeData = sourceResults;
+      //   });
+      // }
     });
   }
 
@@ -230,7 +277,7 @@ export default class SinkNodeForm extends Component {
 
   handleSave(name) {
     let {topologyId, versionId, nodeType, nodeData} = this.props;
-    const {uiSpecification} = this.state;
+    const {uiSpecification,inputStreamArr} = this.state;
     let nodeId = this.nodeData.id;
     let data = this.refs.Form.state.FormData;
     delete data.nodeType;
@@ -242,6 +289,7 @@ export default class SinkNodeForm extends Component {
       body: JSON.stringify(this.nodeData)
     })
     ];
+
     // Check hint schema is present in the uiSpecification fields
     let schemaName ='';
     uiSpecification.map((x) => {
@@ -265,23 +313,23 @@ export default class SinkNodeForm extends Component {
         },
         schemaVersion: {
           description : 'auto_description',
-          schemaText : JSON.stringify(this.state.streamObj.fields)
+          schemaText : JSON.stringify(_.uniqBy(_.flattenDeep(this.tempStreamFieldArr),'name'))
         }
       };
       promiseArr.push(TopologyREST.createSchema({body : JSON.stringify(schemaData)}));
     }
     if (this.allSourceChildNodeData && this.allSourceChildNodeData.length > 0) {
-      this.allSourceChildNodeData.map((childData) => {
+      this.allSourceChildNodeData.map((childData,index) => {
         let child = childData;
         let obj = child.actions.find((o) => {
-          return o.outputStreams[0] == this.state.streamObj.streamId && o.name === 'notifierAction';
+          return o.outputStreams[0] == inputStreamArr[index].streamId && o.name === 'notifierAction';
         });
         if (obj) {
           if (nodeData.currentType.toLowerCase() == 'notification') {
             obj.outputFieldsAndDefaults = this.nodeData.config.properties.fieldValues || {};
             obj.notifierName = this.nodeData.config.properties.notifierName || '';
           }
-          promiseArr.push(TopologyREST.updateNode(topologyId, versionId, this.sourceChildNodeType, child.id, {body: JSON.stringify(child)}));
+          promiseArr.push(TopologyREST.updateNode(topologyId, versionId, this.sourceChildNodeType[index], child.id, {body: JSON.stringify(child)}));
         }
       });
     }
@@ -374,10 +422,11 @@ export default class SinkNodeForm extends Component {
     let {
       formData,
       streamObj = {},
+      streamObjArr = [],
       uiSpecification,
       fetchLoader
     } = this.state;
-    let fields = Utils.genFields(uiSpecification, [], formData, streamObj.fields);
+    let fields = Utils.genFields(uiSpecification, [], formData, _.uniqBy(_.flattenDeep(this.tempStreamFieldArr),'name'));
     const form = fetchLoader
       ? <div className="col-sm-12">
           <div className="loading-img text-center" style={{
@@ -395,7 +444,7 @@ export default class SinkNodeForm extends Component {
           </Form>
         </Scrollbars>
       </div>;
-    const inputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={streamObj} streamType="input"/>;
+    const inputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={streamObj} inputStreamOptions={streamObjArr} streamType="input"/>;
     return (
       <Tabs id="SinkForm" activeKey={this.state.activeTabKey} className="modal-tabs" onSelect={this.onSelectTab}>
         <Tab eventKey={1} title="REQUIRED">
@@ -413,3 +462,7 @@ export default class SinkNodeForm extends Component {
     );
   }
 }
+
+SinkNodeForm.childContextTypes = {
+  ParentForm: React.PropTypes.object
+};

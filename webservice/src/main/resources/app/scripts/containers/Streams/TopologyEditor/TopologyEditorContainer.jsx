@@ -826,6 +826,11 @@ class TopologyEditorContainer extends Component {
     };
     this.edgeConfigTitle = newEdge.source.uiname + '-' + newEdge.target.uiname;
     let nodeType = newEdge.source.currentType.toLowerCase();
+    let promiseArr = [];
+    if(newEdge.target.currentType.toLowerCase() === 'notification'){
+      let targetNodeType = TopologyUtils.getNodeType(newEdge.target.parentType);
+      promiseArr.push(TopologyREST.getNode(topologyId,versionId,targetNodeType,newEdge.target.nodeId));
+    }
     if (node && nodeType !== 'rule' && nodeType !== 'branch') {
       let edgeData = {
         fromId: newEdge.source.nodeId,
@@ -848,12 +853,19 @@ class TopologyEditorContainer extends Component {
       if (node && nodeType === 'window' || nodeType === 'projection') {
         let outputStreamObj = {};
         if (node.config.properties.rules && node.config.properties.rules.length > 0) {
-          let rulesPromiseArr = [];
           let saveRulesPromiseArr = [];
           node.config.properties.rules.map((id) => {
-            rulesPromiseArr.push(TopologyREST.getNode(topologyId, versionId, nodeType === 'window' ? 'windows' : 'rules', id));
+            promiseArr.push(TopologyREST.getNode(topologyId, versionId, nodeType === 'window' ? 'windows' : 'rules', id));
           });
-          Promise.all(rulesPromiseArr).then((results) => {
+          Promise.all(promiseArr).then((results) => {
+            let targetNodeObj = {};
+            // check the targetNode is present in result array
+            if(newEdge.target.currentType.toLowerCase() === 'notification'){
+              targetNodeObj = results[0];
+              // remove the target node from the results Arr
+              results.splice(0,1);
+            }
+            // only rules arr is present in results
             let rulesNodeData = results[0];
             if (newEdge.target.currentType.toLowerCase() === 'notification') {
               outputStreamObj = _.find(node.outputStreams, {streamId: rulesNodeData.outputStreams[1]});
@@ -868,8 +880,8 @@ class TopologyEditorContainer extends Component {
                 outputStreams: [outputStreamObj.streamId]
               };
               if (newEdge.target.currentType.toLowerCase() === 'notification') {
-                actionObj.outputFieldsAndDefaults = node.config.properties.fieldValues || {};
-                actionObj.notifierName = node.config.properties.notifierName || '';
+                actionObj.outputFieldsAndDefaults = targetNodeObj.config.properties.fieldValues || {};
+                actionObj.notifierName = targetNodeObj.config.properties.notifierName || '';
                 actionObj.name = 'notifierAction';
                 actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction";
               } else {
