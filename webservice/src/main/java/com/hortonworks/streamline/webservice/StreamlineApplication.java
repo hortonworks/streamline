@@ -40,6 +40,7 @@ import io.dropwizard.server.AbstractServerFactory;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.slf4j.Logger;
@@ -87,6 +88,17 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
             List<String> urlPatterns = configuration.getCorsUrlPatterns();
             if (urlPatterns != null && !urlPatterns.isEmpty()) {
                 enableCORS(environment, urlPatterns);
+            }
+        }
+
+        setupCustomTrustStore(configuration);
+    }
+
+    private void setupCustomTrustStore(StreamlineConfiguration configuration) {
+        if (StringUtils.isNotEmpty(configuration.getTrustStorePath())) {
+            System.setProperty("javax.net.ssl.trustStore", configuration.getTrustStorePath());
+            if (StringUtils.isNotEmpty(configuration.getTrustStorePassword())) {
+                System.setProperty("javax.net.ssl.trustStorePassword", configuration.getTrustStorePassword());
             }
         }
     }

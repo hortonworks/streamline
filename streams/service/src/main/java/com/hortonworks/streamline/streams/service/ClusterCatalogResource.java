@@ -190,8 +190,7 @@ public class ClusterCatalogResource {
             }
         } catch (Throwable e) {
             // other exceptions
-            response = Collections.singletonMap(RESPONSE_MESSAGE,
-                    RESPONSE_MESSAGE_BAD_INPUT_NOT_VALID_AMBARI_CLUSTER_REST_API_URL);
+            response = Collections.singletonMap(RESPONSE_MESSAGE, e.getMessage());
         }
 
         return WSUtils.respondEntity(response, OK);
