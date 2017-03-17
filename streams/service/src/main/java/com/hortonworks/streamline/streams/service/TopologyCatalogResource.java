@@ -234,6 +234,8 @@ public class TopologyCatalogResource {
                 res = removed;
             }
         }
+        // remove topology state information
+        catalogService.removeTopologyState(topologyId);
         if (res != null) {
             return WSUtils.respondEntity(res, OK);
         } else {
@@ -334,6 +336,17 @@ public class TopologyCatalogResource {
         }
 
         throw EntityNotFoundException.byVersion(topologyId.toString(), versionId.toString());
+    }
+
+
+    @GET
+    @Path("/topologies/{topologyId}/deploymentstate")
+    @Timed
+    public Response topologyDeploymentState(@PathParam("topologyId") Long topologyId) throws Exception {
+        return Optional.ofNullable(catalogService.getTopology(topologyId))
+                .flatMap(t -> catalogService.getTopologyState(t.getId()))
+                .map(s -> WSUtils.respondEntity(s, OK))
+                .orElseThrow(() -> EntityNotFoundException.byId(topologyId.toString()));
     }
 
     @GET

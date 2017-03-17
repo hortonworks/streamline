@@ -30,7 +30,7 @@ public interface TopologyActions {
 
     // Deploy the artifact generated using the underlying streaming
     // engine
-    void deploy(TopologyLayout topology, String mavenArtifacts) throws Exception;
+    void deploy(TopologyLayout topology, String mavenArtifacts, TopologyActionContext ctx) throws Exception;
 
     //Kill the artifact that was deployed using deploy
     void kill (TopologyLayout topology) throws Exception;

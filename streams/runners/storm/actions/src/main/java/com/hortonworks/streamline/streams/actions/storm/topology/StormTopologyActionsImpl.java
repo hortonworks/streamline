@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.actions.storm.topology;
 import com.google.common.base.Joiner;
 import com.hortonworks.streamline.common.exception.DuplicateEntityException;
 import com.hortonworks.streamline.common.exception.service.exception.request.TopologyAlreadyExistsOnCluster;
+import com.hortonworks.streamline.streams.actions.TopologyActionContext;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -126,9 +127,12 @@ public class StormTopologyActionsImpl implements TopologyActions {
     }
 
     @Override
-    public void deploy(TopologyLayout topology, String mavenArtifacts) throws Exception {
+    public void deploy(TopologyLayout topology, String mavenArtifacts, TopologyActionContext ctx) throws Exception {
+        ctx.setCurrentAction("Adding artifacts to jar");
         Path jarToDeploy = addArtifactsToJar(getArtifactsLocation(topology));
+        ctx.setCurrentAction("Creating Storm topology YAML file");
         String fileName = createYamlFile(topology);
+        ctx.setCurrentAction("Deploying topology via 'storm jar' command");
         List<String> commands = new ArrayList<String>();
         commands.add(stormCliPath);
         commands.add("jar");

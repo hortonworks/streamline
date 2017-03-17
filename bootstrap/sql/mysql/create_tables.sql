@@ -352,3 +352,10 @@ CREATE TABLE IF NOT EXISTS component (
   timestamp BIGINT,
   PRIMARY KEY (id)
 );
+
+CREATE TABLE IF NOT EXISTS topology_state (
+  topologyId BIGINT NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  description VARCHAR(255) NOT NULL,
+  PRIMARY KEY (topologyId)
+);
