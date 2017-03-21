@@ -57,7 +57,11 @@ public class StreamlineConfiguration extends Configuration {
     @JsonProperty
     private List<String> corsUrlPatterns;
 
+    @JsonProperty
+    private String trustStorePath;
 
+    @JsonProperty
+    private String trustStorePassword;
 
     public String getCatalogRootUrl () {
         return catalogRootUrl;
@@ -97,6 +101,22 @@ public class StreamlineConfiguration extends Configuration {
 
     public void setCorsUrlPatterns(List<String> corsUrlPatterns) {
         this.corsUrlPatterns = corsUrlPatterns;
+    }
+
+    public String getTrustStorePath() {
+        return trustStorePath;
+    }
+
+    public void setTrustStorePath(String trustStorePath) {
+        this.trustStorePath = trustStorePath;
+    }
+
+    public String getTrustStorePassword() {
+        return trustStorePassword;
+    }
+
+    public void setTrustStorePassword(String trustStorePassword) {
+        this.trustStorePassword = trustStorePassword;
     }
 
     public DashboardConfiguration getDashboardConfiguration () { return dashboardConfiguration; }
