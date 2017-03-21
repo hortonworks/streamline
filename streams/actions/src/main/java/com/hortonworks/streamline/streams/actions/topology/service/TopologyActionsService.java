@@ -89,13 +89,14 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
         this.stateFactory = TopologyStateFactory.getInstance();
     }
 
-    public void deployTopology(Topology topology) throws Exception {
+    public Void deployTopology(Topology topology) throws Exception {
         TopologyContext ctx = getTopologyContext(topology);
         LOG.debug("Deploying topology {}", topology);
         while (ctx.getState() != TopologyStates.TOPOLOGY_STATE_DEPLOYED) {
             LOG.debug("Current state {}", ctx.getStateName());
             ctx.deploy();
         }
+        return null;
     }
 
     public void killTopology(Topology topology) throws Exception {
