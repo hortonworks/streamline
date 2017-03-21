@@ -1,4 +1,5 @@
 ## 0.1.4
+ * STREAMLINE-728: Ambari cluster import should work when Ambari is on SSL or Kerberos
  * STREAMLINE-561: MySQL drop table script easy to break due to foreign key and order of drop table
  * STREAMLINE-705: Add a way to associate streamId with rules/branchrules/windows
  * STREAMLINE-706: Fix issues in UDF return type argType handling
