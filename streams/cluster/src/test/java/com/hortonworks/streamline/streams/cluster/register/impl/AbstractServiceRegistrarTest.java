@@ -22,14 +22,14 @@ import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 
 import java.io.File;
 
-public class AbstractServiceRegistererTest<T extends AbstractServiceRegisterer> {
+public class AbstractServiceRegistrarTest<T extends AbstractServiceRegistrar> {
 
-    public static final String REGISTER_RESOURCE_DIRECTORY = "register" + File.separator + "happycase" + File.separator;
-    public static final String REGISTER_BADCASE_RESOURCE_DIRECTORY = "register" + File.separator + "badcase" + File.separator;
+    public static final String REGISTER_RESOURCE_DIRECTORY = "register" + File.separator + "correct_config" + File.separator;
+    public static final String REGISTER_BADCASE_RESOURCE_DIRECTORY = "register" + File.separator + "invalid_config" + File.separator;
 
     private final Class<T> testClazz;
 
-    public AbstractServiceRegistererTest(Class<T> testClazz) {
+    public AbstractServiceRegistrarTest(Class<T> testClazz) {
         this.testClazz = testClazz;
     }
 
@@ -48,11 +48,11 @@ public class AbstractServiceRegistererTest<T extends AbstractServiceRegisterer> 
         environmentService = new EnvironmentService(dao);
     }
 
-    protected T initializeServiceRegisterer() {
+    protected T initializeServiceRegistrar() {
         try {
-            T registerer = testClazz.newInstance();
-            registerer.init(environmentService);
-            return registerer;
+            T registrar = testClazz.newInstance();
+            registrar.init(environmentService);
+            return registrar;
         } catch (InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }

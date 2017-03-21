@@ -18,23 +18,22 @@ package com.hortonworks.streamline.streams.cluster.register.impl;
 import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Cluster;
-import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegisterer;
+import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.InputStream;
-import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class KafkaServiceRegistererTest extends AbstractServiceRegistererTest<KafkaServiceRegisterer> {
+public class KafkaServiceRegistrarTest extends AbstractServiceRegistrarTest<KafkaServiceRegistrar> {
     public static final String SERVER_PROPERTIES = "server.properties";
     public static final String SERVER_PROPERTIES_FILE_PATH = REGISTER_RESOURCE_DIRECTORY + SERVER_PROPERTIES;
     public static final String SERVER_PROPERTIES_BADCASE_FILE_PATH = REGISTER_BADCASE_RESOURCE_DIRECTORY + SERVER_PROPERTIES;
     public static final String COMPONENT_KAFKA_BROKER = "KAFKA_BROKER";
 
-    public KafkaServiceRegistererTest() {
-        super(KafkaServiceRegisterer.class);
+    public KafkaServiceRegistrarTest() {
+        super(KafkaServiceRegistrar.class);
     }
 
     @Before
@@ -43,30 +42,30 @@ public class KafkaServiceRegistererTest extends AbstractServiceRegistererTest<Ka
     }
 
     @Test
-    public void testRegister_happyCase() throws Exception {
+    public void testRegister() throws Exception {
         Cluster cluster = getTestCluster(1L);
 
-        KafkaServiceRegisterer registerer = initializeServiceRegisterer();
+        KafkaServiceRegistrar registrar = initializeServiceRegistrar();
 
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(SERVER_PROPERTIES_FILE_PATH)) {
             Config config = new Config();
-            config.put(KafkaServiceRegisterer.PARAM_KAFKA_BROKER_HOSTNAMES, "kafka-1,kafka-2");
-            ManualServiceRegisterer.ConfigFileInfo serverProperties = new ManualServiceRegisterer.ConfigFileInfo(SERVER_PROPERTIES, is);
-            registerer.register(cluster, config, Lists.newArrayList(serverProperties));
+            config.put(KafkaServiceRegistrar.PARAM_KAFKA_BROKER_HOSTNAMES, "kafka-1,kafka-2");
+            ManualServiceRegistrar.ConfigFileInfo serverProperties = new ManualServiceRegistrar.ConfigFileInfo(SERVER_PROPERTIES, is);
+            registrar.register(cluster, config, Lists.newArrayList(serverProperties));
         }
     }
 
     @Test
-    public void testRegister_requiredPropertyNotPresented() throws Exception {
+    public void testRegister_requiredPropertyNotPresent() throws Exception {
         Cluster cluster = getTestCluster(1L);
 
-        KafkaServiceRegisterer registerer = initializeServiceRegisterer();
+        KafkaServiceRegistrar registrar = initializeServiceRegistrar();
 
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(SERVER_PROPERTIES_BADCASE_FILE_PATH)) {
             Config config = new Config();
-            config.put(KafkaServiceRegisterer.PARAM_KAFKA_BROKER_HOSTNAMES, "kafka-1,kafka-2");
-            ManualServiceRegisterer.ConfigFileInfo serverProperties = new ManualServiceRegisterer.ConfigFileInfo(SERVER_PROPERTIES, is);
-            registerer.register(cluster, config, Lists.newArrayList(serverProperties));
+            config.put(KafkaServiceRegistrar.PARAM_KAFKA_BROKER_HOSTNAMES, "kafka-1,kafka-2");
+            ManualServiceRegistrar.ConfigFileInfo serverProperties = new ManualServiceRegistrar.ConfigFileInfo(SERVER_PROPERTIES, is);
+            registrar.register(cluster, config, Lists.newArrayList(serverProperties));
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
@@ -77,11 +76,11 @@ public class KafkaServiceRegistererTest extends AbstractServiceRegistererTest<Ka
     public void testRegister_component_kafka_broker_notPresent() throws Exception {
         Cluster cluster = getTestCluster(1L);
 
-        KafkaServiceRegisterer registerer = initializeServiceRegisterer();
+        KafkaServiceRegistrar registrar = initializeServiceRegistrar();
 
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(SERVER_PROPERTIES_FILE_PATH)) {
-            ManualServiceRegisterer.ConfigFileInfo serverProperties = new ManualServiceRegisterer.ConfigFileInfo(SERVER_PROPERTIES, is);
-            registerer.register(cluster, new Config(), Lists.newArrayList(serverProperties));
+            ManualServiceRegistrar.ConfigFileInfo serverProperties = new ManualServiceRegistrar.ConfigFileInfo(SERVER_PROPERTIES, is);
+            registrar.register(cluster, new Config(), Lists.newArrayList(serverProperties));
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
@@ -92,12 +91,12 @@ public class KafkaServiceRegistererTest extends AbstractServiceRegistererTest<Ka
     public void testRegister_server_properties_notPresent() throws Exception {
         Cluster cluster = getTestCluster(1L);
 
-        KafkaServiceRegisterer registerer = initializeServiceRegisterer();
+        KafkaServiceRegistrar registrar = initializeServiceRegistrar();
 
         try {
             Config config = new Config();
-            config.put(KafkaServiceRegisterer.PARAM_KAFKA_BROKER_HOSTNAMES, "kafka-1,kafka-2");
-            registerer.register(cluster, config, Lists.newArrayList());
+            config.put(KafkaServiceRegistrar.PARAM_KAFKA_BROKER_HOSTNAMES, "kafka-1,kafka-2");
+            registrar.register(cluster, config, Lists.newArrayList());
         } catch (IllegalArgumentException e) {
             // OK
         }

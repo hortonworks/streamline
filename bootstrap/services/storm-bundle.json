@@ -1,6 +1,6 @@
 {
   "name": "STORM",
-  "registerClass": "com.hortonworks.streamline.streams.cluster.register.impl.StormServiceRegisterer",
+  "registerClass": "com.hortonworks.streamline.streams.cluster.register.impl.StormServiceRegistrar",
   "serviceUISpecification": {
     "fields": [
       {
@@ -21,7 +21,7 @@
         "uiName": "storm.yaml",
         "fieldName": "storm.yaml",
         "isOptional": false,
-        "tooltip": "Upload storm.yaml file which Storm cluster is using",
+        "tooltip": "Upload storm.yaml file used by Storm cluster",
         "type": "file"
       }
     ]

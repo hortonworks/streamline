@@ -24,17 +24,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static com.hortonworks.streamline.streams.cluster.discovery.ambari.ConfigFilePattern.CORE_SITE;
-import static com.hortonworks.streamline.streams.cluster.discovery.ambari.ConfigFilePattern.HDFS_SITE;
+import static com.hortonworks.streamline.streams.cluster.discovery.ambari.ConfigFilePattern.HBASE_SITE;
 
-public class HDFSServiceRegisterer extends AbstractServiceRegisterer {
+public class HBaseServiceRegistrar extends AbstractServiceRegistrar {
 
-    public static final String SERVICE_NAME_HDFS = "HDFS";
-    public static final String PROPERTY_KEY_DEFAULT_FS = "fs.defaultFS";
+    public static final String SERVICE_NAME_HBASE = "HBASE";
+    public static final String PROPERTY_KEY_HBASE_ZOOKEEPER_QUORUM = "hbase.zookeeper.quorum";
 
     @Override
     protected String getServiceName() {
-        return SERVICE_NAME_HDFS;
+        return SERVICE_NAME_HBASE;
     }
 
     @Override
@@ -52,11 +51,10 @@ public class HDFSServiceRegisterer extends AbstractServiceRegisterer {
     @Override
     protected boolean validateServiceConfigurations(List<ServiceConfiguration> serviceConfigurations) {
         // requirements
-        // 1. core-site.xml should be provided
-        // 2. hdfs-site.xml should be provided
+        // 1. hbase-site.xml should be provided
 
         long validConfigFileCount = serviceConfigurations.stream().filter(configuration -> {
-            if (configuration.getName().equals(CORE_SITE.getConfType()) || configuration.getName().equals(HDFS_SITE.getConfType())) {
+            if (configuration.getName().equals(HBASE_SITE.getConfType())) {
                 if (!StringUtils.isEmpty(configuration.getFilename())) {
                     return true;
                 }
@@ -64,12 +62,11 @@ public class HDFSServiceRegisterer extends AbstractServiceRegisterer {
             return false;
         }).count();
 
-        return validConfigFileCount == 2;
+        return validConfigFileCount == 1;
     }
 
     @Override
-    protected boolean validateServiceConfiguationsViaFlattenMap(Map<String, String> configMap) {
-        // FIXME: which configuration KVs are mandatory?
-        return configMap.containsKey(PROPERTY_KEY_DEFAULT_FS);
+    protected boolean validateServiceConfiguationsAsFlattenedMap(Map<String, String> configMap) {
+        return configMap.containsKey(PROPERTY_KEY_HBASE_ZOOKEEPER_QUORUM);
     }
 }

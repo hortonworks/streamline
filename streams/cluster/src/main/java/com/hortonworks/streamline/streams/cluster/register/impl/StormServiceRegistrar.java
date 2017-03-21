@@ -28,7 +28,7 @@ import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 
-public class StormServiceRegisterer extends AbstractServiceRegisterer {
+public class StormServiceRegistrar extends AbstractServiceRegistrar {
     public static final String COMPONENT_STORM_UI_SERVER = ComponentPropertyPattern.STORM_UI_SERVER.name();
     public static final String COMPONENT_NIMBUS = ComponentPropertyPattern.NIMBUS.name();
     public static final String SERVICE_NAME_STORM = "STORM";
@@ -82,14 +82,14 @@ public class StormServiceRegisterer extends AbstractServiceRegisterer {
     }
 
     @Override
-    protected boolean validateServiceConfiguationsViaFlattenMap(Map<String, String> configMap) {
+    protected boolean validateServiceConfiguationsAsFlattenedMap(Map<String, String> configMap) {
         // for now, every requirements will be checked from components
         return true;
     }
 
     private Component createStormUIServerComponent(Config config, Map<String, String> flattenConfigMap) {
         if (!config.contains(PARAM_STORM_UI_SERVER_HOSTNAME)) {
-            throw new IllegalArgumentException("Required parameter " + PARAM_STORM_UI_SERVER_HOSTNAME + " not presented.");
+            throw new IllegalArgumentException("Required parameter " + PARAM_STORM_UI_SERVER_HOSTNAME + " not present.");
         }
 
         String stormUiServerHost;
@@ -106,9 +106,9 @@ public class StormServiceRegisterer extends AbstractServiceRegisterer {
         return stormUiServer;
     }
 
-    private Component createNimbusComponent(Config config, Map<String, String> flattenConfigMap) {
+    private Component createNimbusComponent(Config config, Map<String, String> flatConfigMap) {
         if (!config.contains(PARAM_NIMBUS_HOSTNAMES)) {
-            throw new IllegalArgumentException("Required parameter " + PARAM_NIMBUS_HOSTNAMES + " not presented.");
+            throw new IllegalArgumentException("Required parameter " + PARAM_NIMBUS_HOSTNAMES + " not present.");
         }
 
         List<String> stormNimbusServerHosts;
@@ -122,7 +122,7 @@ public class StormServiceRegisterer extends AbstractServiceRegisterer {
         Component nimbus = new Component();
         nimbus.setName(COMPONENT_NIMBUS);
         nimbus.setHosts(stormNimbusServerHosts);
-        environmentService.injectProtocolAndPortToComponent(flattenConfigMap, nimbus);
+        environmentService.injectProtocolAndPortToComponent(flatConfigMap, nimbus);
         return nimbus;
     }
 

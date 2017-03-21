@@ -28,7 +28,7 @@ import java.util.Map;
 import static com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern.ZOOKEEPER_SERVER;
 import static java.util.stream.Collectors.toList;
 
-public class ZookeeperServiceRegisterer extends AbstractServiceRegisterer {
+public class ZookeeperServiceRegistrar extends AbstractServiceRegistrar {
     public static final String COMPONENT_ZOOKEEPER_SERVER = ComponentPropertyPattern.ZOOKEEPER_SERVER.name();
     public static final String SERVICE_NAME_ZOOKEEPER = "ZOOKEEPER";
     public static final String PARAM_ZOOKEEPER_SERVER_HOSTNAMES = "zkServersHostnames";
@@ -66,14 +66,14 @@ public class ZookeeperServiceRegisterer extends AbstractServiceRegisterer {
     }
 
     @Override
-    protected boolean validateServiceConfiguationsViaFlattenMap(Map<String, String> configMap) {
+    protected boolean validateServiceConfiguationsAsFlattenedMap(Map<String, String> configMap) {
         // for now, every requirements will be checked from components
         return true;
     }
 
     private Component createZookeeperServerComponent(Config config, Map<String, String> flattenConfigMap) {
         if (!config.contains(PARAM_ZOOKEEPER_SERVER_HOSTNAMES)) {
-            throw new IllegalArgumentException("Required parameter " + PARAM_ZOOKEEPER_SERVER_HOSTNAMES + " not presented.");
+            throw new IllegalArgumentException("Required parameter " + PARAM_ZOOKEEPER_SERVER_HOSTNAMES + " not present.");
         }
 
         List<String> zookeeperServerHosts;

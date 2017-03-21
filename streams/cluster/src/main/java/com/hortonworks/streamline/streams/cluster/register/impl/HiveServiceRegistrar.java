@@ -26,7 +26,7 @@ import java.util.Map;
 
 import static com.hortonworks.streamline.streams.cluster.discovery.ambari.ConfigFilePattern.HIVE_SITE;
 
-public class HiveServiceRegisterer extends AbstractServiceRegisterer {
+public class HiveServiceRegistrar extends AbstractServiceRegistrar {
 
     public static final String SERVICE_NAME_HIVE = "HIVE";
     public static final String PROPERTY_KEY_HIVE_ZOOKEEPER_QUORUM = "hive.zookeeper.quorum";
@@ -53,8 +53,6 @@ public class HiveServiceRegisterer extends AbstractServiceRegisterer {
         // requirements
         // 1. hive-site.xml should be provided
 
-        // FIXME: hive-metastore.xml in Ambari should be included to the proper place (maybe hive-site.xml?)
-
         long validConfigFileCount = serviceConfigurations.stream().filter(configuration -> {
             if (configuration.getName().equals(HIVE_SITE.getConfType())) {
                 if (!StringUtils.isEmpty(configuration.getFilename())) {
@@ -68,8 +66,7 @@ public class HiveServiceRegisterer extends AbstractServiceRegisterer {
     }
 
     @Override
-    protected boolean validateServiceConfiguationsViaFlattenMap(Map<String, String> configMap) {
-        // FIXME: which configuration KVs are mandatory?
+    protected boolean validateServiceConfiguationsAsFlattenedMap(Map<String, String> configMap) {
         return configMap.containsKey(PROPERTY_KEY_HIVE_ZOOKEEPER_QUORUM);
     }
 }

@@ -44,6 +44,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -186,20 +187,17 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
   private List<String> createAmbariConfNameList(ServiceConfigurations serviceConfigurations) {
     String[] confNames = serviceConfigurations.getConfNames();
     return Arrays.stream(confNames).map(confName -> {
-      ServiceConfigTypeAmbariToOriginalPattern pattern = ServiceConfigTypeAmbariToOriginalPattern.findByOriginalConfType(confName);
-      if (pattern != null) {
-        return pattern.ambariConfType();
-      }
-      return confName;
+      Optional<ServiceConfigTypeAmbariToOriginalPattern> pattern = ServiceConfigTypeAmbariToOriginalPattern.findByOriginalConfType(confName);
+      return pattern.map(p -> p.ambariConfType()).orElse(confName);
     }).collect(toList());
   }
 
   private String getOriginConfigTypeName(String confItemType) {
-    ServiceConfigTypeAmbariToOriginalPattern pattern = ServiceConfigTypeAmbariToOriginalPattern.findByAmbariConfType(confItemType);
-    if (pattern != null) {
-      return pattern.originConfType();
+    if (confItemType == null) {
+      throw new IllegalArgumentException("confItemType can't be null");
     }
-    return confItemType;
+    Optional<ServiceConfigTypeAmbariToOriginalPattern> pattern = ServiceConfigTypeAmbariToOriginalPattern.findByAmbariConfType(confItemType);
+    return pattern.map(p -> p.originConfType()).orElse(confItemType);
   }
 
 

@@ -1,6 +1,6 @@
 {
   "name": "ZOOKEEPER",
-  "registerClass": "com.hortonworks.streamline.streams.cluster.register.impl.ZookeeperServiceRegisterer",
+  "registerClass": "com.hortonworks.streamline.streams.cluster.register.impl.ZookeeperServiceRegistrar",
   "serviceUISpecification": {
     "fields": [
       {
@@ -14,7 +14,7 @@
         "uiName": "zoo.cfg",
         "fieldName": "zoo.cfg",
         "isOptional": false,
-        "tooltip": "Upload zoo.cfg file which Zookeeper cluster is using",
+        "tooltip": "Upload zoo.cfg file used by Zookeeper cluster",
         "type": "file"
       }
     ]

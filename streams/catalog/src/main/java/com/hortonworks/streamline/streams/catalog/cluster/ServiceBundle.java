@@ -30,6 +30,8 @@ import java.util.Map;
 
 public class ServiceBundle implements Storable {
 
+    public static final ObjectMapper mapper = new ObjectMapper();
+
     public static final String NAME_SPACE = "service_bundle";
     public static final String ID = "id";
     public static final String NAME = "name";
@@ -97,7 +99,6 @@ public class ServiceBundle implements Storable {
 
     @Override
     public Map toMap () {
-        ObjectMapper mapper = new ObjectMapper();
         String uiSpecification;
         try {
             uiSpecification = mapper.writeValueAsString(serviceUISpecification);
@@ -118,7 +119,6 @@ public class ServiceBundle implements Storable {
         id = (Long) map.get(ID);
         name = (String)  map.get(NAME);
         timestamp = (Long) map.get(TIMESTAMP);
-        ObjectMapper mapper = new ObjectMapper();
         try {
             serviceUISpecification = mapper.readValue((String) map.get(UI_SPECIFICATION), TopologyComponentUISpecification.class);
         } catch (IOException e) {

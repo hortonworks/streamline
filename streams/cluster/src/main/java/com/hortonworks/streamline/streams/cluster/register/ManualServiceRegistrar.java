@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-public interface ManualServiceRegisterer {
+public interface ManualServiceRegistrar {
 
     void init(EnvironmentService environmentService);
 

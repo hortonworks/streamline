@@ -1,6 +1,6 @@
 {
   "name": "KAFKA",
-  "registerClass": "com.hortonworks.streamline.streams.cluster.register.impl.KafkaServiceRegisterer",
+  "registerClass": "com.hortonworks.streamline.streams.cluster.register.impl.KafkaServiceRegistrar",
   "serviceUISpecification": {
     "fields": [
       {
@@ -14,7 +14,7 @@
         "uiName": "server.properties",
         "fieldName": "server.properties",
         "isOptional": false,
-        "tooltip": "Upload server.properties file which Kafka cluster is using",
+        "tooltip": "Upload server.properties file used by Kafka cluster",
         "type": "file"
       }
     ]

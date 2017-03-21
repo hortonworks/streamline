@@ -29,7 +29,7 @@ import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 
-public class KafkaServiceRegisterer extends AbstractServiceRegisterer {
+public class KafkaServiceRegistrar extends AbstractServiceRegistrar {
     public static final String COMPONENT_KAFKA_BROKER = ComponentPropertyPattern.KAFKA_BROKER.name();
     public static final String CONFIG_SERVER_PROPERTIES = ServiceConfigurations.KAFKA.getConfNames()[0];
     public static final String SERVICE_NAME_KAFKA = "KAFKA";
@@ -73,7 +73,7 @@ public class KafkaServiceRegisterer extends AbstractServiceRegisterer {
     }
 
     @Override
-    protected boolean validateServiceConfiguationsViaFlattenMap(Map<String, String> configMap) {
+    protected boolean validateServiceConfiguationsAsFlattenedMap(Map<String, String> configMap) {
         // requirements
         // 1. zookeeper.connect should be available in kafka-broker
         // if it exists, it should be within kafka-broker since we are allowing only one 'kafka-broker'
@@ -82,7 +82,7 @@ public class KafkaServiceRegisterer extends AbstractServiceRegisterer {
 
     private Component createKafkaBrokerComponent(Config config, Map<String, String> flattenConfigMap) {
         if (!config.contains(PARAM_KAFKA_BROKER_HOSTNAMES)) {
-            throw new IllegalArgumentException("Required parameter " + PARAM_KAFKA_BROKER_HOSTNAMES + " not presented.");
+            throw new IllegalArgumentException("Required parameter " + PARAM_KAFKA_BROKER_HOSTNAMES + " not present.");
         }
 
         List<String> kafkaBrokerHosts;

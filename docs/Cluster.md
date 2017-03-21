@@ -273,7 +273,7 @@ and show only sample for creating a service, service configuration, component.
 ```json
 {
   "name": "STORM",
-  "registerClass": "com.hortonworks.streamline.streams.cluster.register.impl.StormServiceRegisterer",
+  "registerClass": "com.hortonworks.streamline.streams.cluster.register.impl.StormServiceRegistrar",
   "serviceUISpecification": {
     "fields": [
       {
@@ -340,7 +340,7 @@ and show only sample for creating a service, service configuration, component.
       }
     ]
   },
-  "registerClass": "com.hortonworks.streamline.streams.cluster.register.impl.StormServiceRegisterer"
+  "registerClass": "com.hortonworks.streamline.streams.cluster.register.impl.StormServiceRegistrar"
 }
 ```
 

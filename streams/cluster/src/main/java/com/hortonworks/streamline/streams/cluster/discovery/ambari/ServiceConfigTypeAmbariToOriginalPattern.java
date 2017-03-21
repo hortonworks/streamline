@@ -15,6 +15,8 @@
  **/
 package com.hortonworks.streamline.streams.cluster.discovery.ambari;
 
+import java.util.Optional;
+
 /**
  * This enum defines how Ambari configuration type is converted to original service configuration type.
  * This enum is needed because Ambari names the config different from origin service, and we would want to respect
@@ -42,23 +44,23 @@ public enum ServiceConfigTypeAmbariToOriginalPattern {
         return originalConfType;
     }
 
-    public static ServiceConfigTypeAmbariToOriginalPattern findByAmbariConfType(String ambariConfType) {
+    public static Optional<ServiceConfigTypeAmbariToOriginalPattern> findByAmbariConfType(String ambariConfType) {
         for (ServiceConfigTypeAmbariToOriginalPattern value : values()) {
             if (value.ambariConfType.equals(ambariConfType)) {
-                return value;
+                return Optional.of(value);
             }
         }
 
-        return null;
+        return Optional.empty();
     }
 
-    public static ServiceConfigTypeAmbariToOriginalPattern findByOriginalConfType(String originalConfType) {
+    public static Optional<ServiceConfigTypeAmbariToOriginalPattern> findByOriginalConfType(String originalConfType) {
         for (ServiceConfigTypeAmbariToOriginalPattern value : values()) {
             if (value.originalConfType.equals(originalConfType)) {
-                return value;
+                return Optional.of(value);
             }
         }
 
-        return null;
+        return Optional.empty();
     }
 }

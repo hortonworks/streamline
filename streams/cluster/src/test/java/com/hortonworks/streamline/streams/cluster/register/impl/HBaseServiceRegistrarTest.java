@@ -18,7 +18,7 @@ package com.hortonworks.streamline.streams.cluster.register.impl;
 import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Cluster;
-import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegisterer;
+import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import mockit.integration.junit4.JMockit;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,13 +29,13 @@ import java.io.InputStream;
 import static org.junit.Assert.*;
 
 @RunWith(JMockit.class)
-public class HBaseServiceRegistererTest extends AbstractServiceRegistererTest<HBaseServiceRegisterer> {
+public class HBaseServiceRegistrarTest extends AbstractServiceRegistrarTest<HBaseServiceRegistrar> {
     public static final String HBASE_SITE_XML = "hbase-site.xml";
     public static final String HBASE_SITE_XML_FILE_PATH = REGISTER_RESOURCE_DIRECTORY + HBASE_SITE_XML;
     public static final String HBASE_SITE_XML_BADCASE_FILE_PATH = REGISTER_BADCASE_RESOURCE_DIRECTORY + HBASE_SITE_XML;
 
-    public HBaseServiceRegistererTest() {
-        super(HBaseServiceRegisterer.class);
+    public HBaseServiceRegistrarTest() {
+        super(HBaseServiceRegistrar.class);
     }
 
     @Before
@@ -44,26 +44,26 @@ public class HBaseServiceRegistererTest extends AbstractServiceRegistererTest<HB
     }
 
     @Test
-    public void testRegister_happyCase() throws Exception {
+    public void testRegister() throws Exception {
         Cluster cluster = getTestCluster(1L);
 
-        HBaseServiceRegisterer registerer = initializeServiceRegisterer();
+        HBaseServiceRegistrar registrar = initializeServiceRegistrar();
 
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(HBASE_SITE_XML_FILE_PATH)) {
-            ManualServiceRegisterer.ConfigFileInfo hiveSiteXml = new ManualServiceRegisterer.ConfigFileInfo(HBASE_SITE_XML, is);
-            registerer.register(cluster, new Config(), Lists.newArrayList(hiveSiteXml));
+            ManualServiceRegistrar.ConfigFileInfo hiveSiteXml = new ManualServiceRegistrar.ConfigFileInfo(HBASE_SITE_XML, is);
+            registrar.register(cluster, new Config(), Lists.newArrayList(hiveSiteXml));
         }
     }
 
     @Test
-    public void testRegister_requiredPropertyNotPresented() throws Exception {
+    public void testRegister_requiredPropertyNotPresent() throws Exception {
         Cluster cluster = getTestCluster(1L);
 
-        HBaseServiceRegisterer registerer = initializeServiceRegisterer();
+        HBaseServiceRegistrar registrar = initializeServiceRegistrar();
 
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(HBASE_SITE_XML_BADCASE_FILE_PATH)) {
-            ManualServiceRegisterer.ConfigFileInfo hbaseSiteXml = new ManualServiceRegisterer.ConfigFileInfo(HBASE_SITE_XML, is);
-            registerer.register(cluster, new Config(), Lists.newArrayList(hbaseSiteXml));
+            ManualServiceRegistrar.ConfigFileInfo hbaseSiteXml = new ManualServiceRegistrar.ConfigFileInfo(HBASE_SITE_XML, is);
+            registrar.register(cluster, new Config(), Lists.newArrayList(hbaseSiteXml));
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
@@ -74,10 +74,10 @@ public class HBaseServiceRegistererTest extends AbstractServiceRegistererTest<HB
     public void testRegister_hbase_site_xml_notPresent() throws Exception {
         Cluster cluster = getTestCluster(1L);
 
-        HBaseServiceRegisterer registerer = initializeServiceRegisterer();
+        HBaseServiceRegistrar registrar = initializeServiceRegistrar();
 
         try {
-            registerer.register(cluster, new Config(), Lists.newArrayList());
+            registrar.register(cluster, new Config(), Lists.newArrayList());
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK

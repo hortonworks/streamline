@@ -29,7 +29,7 @@ import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.catalog.cluster.ServiceBundle;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentUISpecification;
 import com.hortonworks.streamline.streams.cluster.model.ServiceWithComponents;
-import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegisterer;
+import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityAlreadyExistsException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
@@ -195,10 +195,10 @@ public class ServiceCatalogResource {
             throw BadRequestException.message("Not supported service: " + serviceName);
         }
 
-        ManualServiceRegisterer registerer;
+        ManualServiceRegistrar registrar;
         try {
             Class<?> clazz = Class.forName(serviceBundle.getRegisterClass());
-            registerer = (ManualServiceRegisterer) clazz.newInstance();
+            registrar = (ManualServiceRegistrar) clazz.newInstance();
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
             throw new RuntimeException(e);
         }
@@ -214,7 +214,7 @@ public class ServiceCatalogResource {
                     clusterId);
         }
 
-        registerer.init(environmentService);
+        registrar.init(environmentService);
 
         TopologyComponentUISpecification specification = serviceBundle.getServiceUISpecification();
 
@@ -238,17 +238,17 @@ public class ServiceCatalogResource {
             config = new Config();
         }
 
-        List<ManualServiceRegisterer.ConfigFileInfo> configFileInfos = fields.entrySet().stream()
+        List<ManualServiceRegistrar.ConfigFileInfo> configFileInfos = fields.entrySet().stream()
                 .filter(entry -> fileFieldNames.contains(entry.getKey()))
                 .flatMap(entry -> {
                     String key = entry.getKey();
                     List<FormDataBodyPart> values = entry.getValue();
                     return values.stream()
-                            .map(val -> new ManualServiceRegisterer.ConfigFileInfo(key, val.getEntityAs(InputStream.class)));
+                            .map(val -> new ManualServiceRegistrar.ConfigFileInfo(key, val.getEntityAs(InputStream.class)));
                 }).collect(toList());
 
         try {
-            Service registeredService = registerer.register(cluster, config, configFileInfos);
+            Service registeredService = registrar.register(cluster, config, configFileInfos);
             return WSUtils.respondEntity(buildManualServiceRegisterResult(registeredService), CREATED);
         } catch (IllegalArgumentException e) {
             throw BadRequestException.message(e.getMessage());

@@ -24,7 +24,7 @@ import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.catalog.configuration.ConfigFileReader;
 import com.hortonworks.streamline.streams.catalog.configuration.ConfigFileType;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ConfigFilePattern;
-import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegisterer;
+import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import org.apache.commons.io.FilenameUtils;
 
@@ -34,7 +34,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractServiceRegisterer implements ManualServiceRegisterer {
+public abstract class AbstractServiceRegistrar implements ManualServiceRegistrar {
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
     protected EnvironmentService environmentService;
 
     protected abstract String getServiceName();
@@ -45,7 +47,7 @@ public abstract class AbstractServiceRegisterer implements ManualServiceRegister
 
     protected abstract boolean validateServiceConfigurations(List<ServiceConfiguration> serviceConfigurations);
 
-    protected abstract boolean validateServiceConfiguationsViaFlattenMap(Map<String, String> configMap);
+    protected abstract boolean validateServiceConfiguationsAsFlattenedMap(Map<String, String> configMap);
 
     @Override
     public void init(EnvironmentService environmentService) {
@@ -59,7 +61,7 @@ public abstract class AbstractServiceRegisterer implements ManualServiceRegister
         List<ServiceConfiguration> configurations = new ArrayList<>();
         Map<String, String> flattenConfigMap = new HashMap<>();
 
-        ObjectMapper objectMapper = new ObjectMapper();
+
         for (ConfigFileInfo configFileInfo : configFileInfos) {
             Map<String, String> configMap = readConfigFile(configFileInfo);
 
@@ -83,7 +85,7 @@ public abstract class AbstractServiceRegisterer implements ManualServiceRegister
             throw new IllegalArgumentException("Validation failed for service configurations.");
         }
 
-        if (!validateServiceConfiguationsViaFlattenMap(flattenConfigMap)) {
+        if (!validateServiceConfiguationsAsFlattenedMap(flattenConfigMap)) {
             throw new IllegalArgumentException("Validation failed for service configurations.");
         }
 

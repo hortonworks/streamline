@@ -459,7 +459,7 @@ public class EnvironmentService {
                             component.setPort(Integer.parseInt(portStr));
                         } catch (NumberFormatException e) {
                             LOG.warn(
-                                    "Protocol/Port information [{}] for component {} doesn't seem to known format [{}]."
+                                    "Protocol/Port information [{}] for component {} has illegal format [{}]."
                                             + "skip assigning...", value, component.getName(), confMap.getParsePattern());
 
                             // reset protocol information
@@ -468,7 +468,7 @@ public class EnvironmentService {
                     }
                 } else {
                     LOG.warn("Protocol/Port information [{}] for component {} doesn't seem to known format [{}]. "
-                            + "skip assigning...", value, component.getName(), confMap.getParsePattern());
+                            + "skipping assignment...", value, component.getName(), confMap.getParsePattern());
                 }
             } else {
                 LOG.warn("Protocol/Port related configuration ({}) is not set", confMap.getConnectionConfName());
@@ -485,7 +485,7 @@ public class EnvironmentService {
     public ServiceBundle getServiceBundleByName(String serviceName) {
         Collection<ServiceBundle> serviceBundles = listServiceBundles(Lists.newArrayList(new QueryParam("name", serviceName)));
         if (serviceBundles.size() > 1) {
-            LOG.warn("Multiple service bundles have same name: {} returning first match.", serviceName);
+            LOG.warn("Multiple service bundles with the same name: {} returning first match.", serviceName);
             return serviceBundles.iterator().next();
         } else if (serviceBundles.size() == 1) {
             return serviceBundles.iterator().next();

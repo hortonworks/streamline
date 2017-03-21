@@ -32,11 +32,15 @@ import java.util.Map;
 import static java.util.stream.Collectors.toMap;
 
 /**
- * Reader that read configuration stream based on the file type.
+ * Configuration reader that based on the file type.
  */
 public class ConfigFileReader {
     private ObjectMapper objectMapper = new ObjectMapper();
 
+    /**
+     * Read configuration from stream for each supported file type.
+     * Throws IllegalArgumentException if file type not supported.
+     */
     public Map<String, String> readConfig(ConfigFileType confFileType, InputStream configFileStream) throws IOException {
         if (confFileType == null) {
             throw new IllegalArgumentException("Config file type cannot be null.");
