@@ -18,6 +18,8 @@ package com.hortonworks.streamline.streams.cluster.register.impl;
 import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.catalog.Service;
+import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import mockit.integration.junit4.JMockit;
 import org.junit.Before;
@@ -26,6 +28,8 @@ import org.junit.runner.RunWith;
 
 import java.io.InputStream;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 @RunWith(JMockit.class)
@@ -33,6 +37,7 @@ public class HiveServiceRegistrarTest extends AbstractServiceRegistrarTest<HiveS
     public static final String HIVE_SITE_XML = "hive-site.xml";
     public static final String HIVE_SITE_XML_FILE_PATH = REGISTER_RESOURCE_DIRECTORY + HIVE_SITE_XML;
     public static final String HIVE_SITE_XML_BADCASE_FILE_PATH = REGISTER_BADCASE_RESOURCE_DIRECTORY + HIVE_SITE_XML;
+    private static final String CONFIGURATION_NAME_HIVE_SITE = "hive-site";
 
     public HiveServiceRegistrarTest() {
         super(HiveServiceRegistrar.class);
@@ -53,6 +58,11 @@ public class HiveServiceRegistrarTest extends AbstractServiceRegistrarTest<HiveS
             ManualServiceRegistrar.ConfigFileInfo hiveSiteXml = new ManualServiceRegistrar.ConfigFileInfo(HIVE_SITE_XML, is);
             registrar.register(cluster, new Config(), Lists.newArrayList(hiveSiteXml));
         }
+
+        Service hiveService = environmentService.getServiceByName(cluster.getId(), HiveServiceRegistrar.SERVICE_NAME_HIVE);
+        assertNotNull(hiveService);
+        ServiceConfiguration coreSiteConf = environmentService.getServiceConfigurationByName(hiveService.getId(), CONFIGURATION_NAME_HIVE_SITE);
+        assertNotNull(coreSiteConf);
     }
 
     @Test
@@ -67,6 +77,8 @@ public class HiveServiceRegistrarTest extends AbstractServiceRegistrarTest<HiveS
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
+            Service hiveService = environmentService.getServiceByName(cluster.getId(), HiveServiceRegistrar.SERVICE_NAME_HIVE);
+            assertNull(hiveService);
         }
     }
 
@@ -81,6 +93,8 @@ public class HiveServiceRegistrarTest extends AbstractServiceRegistrarTest<HiveS
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
+            Service hiveService = environmentService.getServiceByName(cluster.getId(), HiveServiceRegistrar.SERVICE_NAME_HIVE);
+            assertNull(hiveService);
         }
     }
 }

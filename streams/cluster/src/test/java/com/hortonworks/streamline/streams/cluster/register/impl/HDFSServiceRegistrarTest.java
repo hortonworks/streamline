@@ -18,6 +18,8 @@ package com.hortonworks.streamline.streams.cluster.register.impl;
 import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.catalog.Service;
+import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +35,8 @@ public class HDFSServiceRegistrarTest extends AbstractServiceRegistrarTest<HDFSS
     public static final String HDFS_SITE_XML_FILE_PATH = REGISTER_RESOURCE_DIRECTORY + HDFS_SITE_XML;
     public static final String CORE_SITE_XML_BADCASE_FILE_PATH = REGISTER_BADCASE_RESOURCE_DIRECTORY + CORE_SITE_XML;
     public static final String HDFS_SITE_XML_BADCASE_FILE_PATH = REGISTER_BADCASE_RESOURCE_DIRECTORY + HDFS_SITE_XML;
+    private static final String CONFIGURATION_NAME_CORE_SITE = "core-site";
+    private static final String CONFIGURATION_NAME_HDFS_SITE = "hdfs-site";
 
     public HDFSServiceRegistrarTest() {
         super(HDFSServiceRegistrar.class);
@@ -55,6 +59,13 @@ public class HDFSServiceRegistrarTest extends AbstractServiceRegistrarTest<HDFSS
             ManualServiceRegistrar.ConfigFileInfo hdfsSiteXml = new ManualServiceRegistrar.ConfigFileInfo(HDFS_SITE_XML, hdfsSiteIs);
             registrar.register(cluster, new Config(), Lists.newArrayList(coreSiteXml, hdfsSiteXml));
         }
+
+        Service hdfsService = environmentService.getServiceByName(cluster.getId(), HDFSServiceRegistrar.SERVICE_NAME_HDFS);
+        assertNotNull(hdfsService);
+        ServiceConfiguration coreSiteConf = environmentService.getServiceConfigurationByName(hdfsService.getId(), CONFIGURATION_NAME_CORE_SITE);
+        assertNotNull(coreSiteConf);
+        ServiceConfiguration hdfsSiteConf = environmentService.getServiceConfigurationByName(hdfsService.getId(), CONFIGURATION_NAME_HDFS_SITE);
+        assertNotNull(hdfsSiteConf);
     }
 
     @Test
@@ -71,6 +82,8 @@ public class HDFSServiceRegistrarTest extends AbstractServiceRegistrarTest<HDFSS
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
+            Service hdfsService = environmentService.getServiceByName(cluster.getId(), HDFSServiceRegistrar.SERVICE_NAME_HDFS);
+            assertNull(hdfsService);
         }
     }
 
@@ -86,6 +99,8 @@ public class HDFSServiceRegistrarTest extends AbstractServiceRegistrarTest<HDFSS
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
+            Service hdfsService = environmentService.getServiceByName(cluster.getId(), HDFSServiceRegistrar.SERVICE_NAME_HDFS);
+            assertNull(hdfsService);
         }
     }
 
@@ -101,6 +116,8 @@ public class HDFSServiceRegistrarTest extends AbstractServiceRegistrarTest<HDFSS
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
+            Service hdfsService = environmentService.getServiceByName(cluster.getId(), HDFSServiceRegistrar.SERVICE_NAME_HDFS);
+            assertNull(hdfsService);
         }
     }
 }

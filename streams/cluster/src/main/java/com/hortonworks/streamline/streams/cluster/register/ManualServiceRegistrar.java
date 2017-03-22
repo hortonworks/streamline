@@ -24,6 +24,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+/**
+ * A service registrar which handles manual input from user.
+ */
 public interface ManualServiceRegistrar {
 
     void init(EnvironmentService environmentService);

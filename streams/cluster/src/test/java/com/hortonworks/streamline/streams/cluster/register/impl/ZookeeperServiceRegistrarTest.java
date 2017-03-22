@@ -18,6 +18,8 @@ package com.hortonworks.streamline.streams.cluster.register.impl;
 import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.catalog.Service;
+import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +32,7 @@ public class ZookeeperServiceRegistrarTest extends AbstractServiceRegistrarTest<
     public static final String ZOO_CFG = "zoo.cfg";
     public static final String ZOO_CFG_FILE_PATH = REGISTER_RESOURCE_DIRECTORY + ZOO_CFG;
     public static final String ZOO_CFG_BADCASE_FILE_PATH = REGISTER_BADCASE_RESOURCE_DIRECTORY + ZOO_CFG;
+    private static final String CONFIGURATION_NAME_ZOO_CFG = "zoo";
 
     public ZookeeperServiceRegistrarTest() {
         super(ZookeeperServiceRegistrar.class);
@@ -52,6 +55,11 @@ public class ZookeeperServiceRegistrarTest extends AbstractServiceRegistrarTest<
             ManualServiceRegistrar.ConfigFileInfo zooCfg = new ManualServiceRegistrar.ConfigFileInfo(ZOO_CFG, is);
             registrar.register(cluster, config, Lists.newArrayList(zooCfg));
         }
+
+        Service zkService = environmentService.getServiceByName(cluster.getId(), ZookeeperServiceRegistrar.SERVICE_NAME_ZOOKEEPER);
+        assertNotNull(zkService);
+        ServiceConfiguration zooConf = environmentService.getServiceConfigurationByName(zkService.getId(), CONFIGURATION_NAME_ZOO_CFG);
+        assertNotNull(zooConf);
     }
 
     @Test
@@ -68,6 +76,8 @@ public class ZookeeperServiceRegistrarTest extends AbstractServiceRegistrarTest<
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
+            Service zkService = environmentService.getServiceByName(cluster.getId(), ZookeeperServiceRegistrar.SERVICE_NAME_ZOOKEEPER);
+            assertNull(zkService);
         }
     }
 
@@ -83,6 +93,8 @@ public class ZookeeperServiceRegistrarTest extends AbstractServiceRegistrarTest<
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
+            Service zkService = environmentService.getServiceByName(cluster.getId(), ZookeeperServiceRegistrar.SERVICE_NAME_ZOOKEEPER);
+            assertNull(zkService);
         }
     }
 
@@ -99,6 +111,8 @@ public class ZookeeperServiceRegistrarTest extends AbstractServiceRegistrarTest<
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
+            Service zkService = environmentService.getServiceByName(cluster.getId(), ZookeeperServiceRegistrar.SERVICE_NAME_ZOOKEEPER);
+            assertNull(zkService);
         }
     }
 

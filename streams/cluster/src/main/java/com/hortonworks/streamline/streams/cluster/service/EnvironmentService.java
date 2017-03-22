@@ -44,6 +44,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
+/**
+ * A service layer for Namespace(Environment) where we could put our business logic.
+ */
 public class EnvironmentService {
     private static final Logger LOG = LoggerFactory.getLogger(EnvironmentService.class);
 

@@ -18,6 +18,8 @@ package com.hortonworks.streamline.streams.cluster.register.impl;
 import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.catalog.Service;
+import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import mockit.integration.junit4.JMockit;
 import org.junit.Before;
@@ -33,6 +35,7 @@ public class HBaseServiceRegistrarTest extends AbstractServiceRegistrarTest<HBas
     public static final String HBASE_SITE_XML = "hbase-site.xml";
     public static final String HBASE_SITE_XML_FILE_PATH = REGISTER_RESOURCE_DIRECTORY + HBASE_SITE_XML;
     public static final String HBASE_SITE_XML_BADCASE_FILE_PATH = REGISTER_BADCASE_RESOURCE_DIRECTORY + HBASE_SITE_XML;
+    public static final String CONFIGURATION_NAME_HBASE_SITE = "hbase-site";
 
     public HBaseServiceRegistrarTest() {
         super(HBaseServiceRegistrar.class);
@@ -53,6 +56,11 @@ public class HBaseServiceRegistrarTest extends AbstractServiceRegistrarTest<HBas
             ManualServiceRegistrar.ConfigFileInfo hiveSiteXml = new ManualServiceRegistrar.ConfigFileInfo(HBASE_SITE_XML, is);
             registrar.register(cluster, new Config(), Lists.newArrayList(hiveSiteXml));
         }
+
+        Service hbaseService = environmentService.getServiceByName(cluster.getId(), HBaseServiceRegistrar.SERVICE_NAME_HBASE);
+        assertNotNull(hbaseService);
+        ServiceConfiguration hbaseSiteConf = environmentService.getServiceConfigurationByName(hbaseService.getId(), CONFIGURATION_NAME_HBASE_SITE);
+        assertNotNull(hbaseSiteConf);
     }
 
     @Test
@@ -67,6 +75,8 @@ public class HBaseServiceRegistrarTest extends AbstractServiceRegistrarTest<HBas
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
+            Service hbaseService = environmentService.getServiceByName(cluster.getId(), HBaseServiceRegistrar.SERVICE_NAME_HBASE);
+            assertNull(hbaseService);
         }
     }
 
@@ -81,6 +91,8 @@ public class HBaseServiceRegistrarTest extends AbstractServiceRegistrarTest<HBas
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
+            Service hbaseService = environmentService.getServiceByName(cluster.getId(), HBaseServiceRegistrar.SERVICE_NAME_HBASE);
+            assertNull(hbaseService);
         }
     }
 }

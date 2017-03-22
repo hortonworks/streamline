@@ -117,8 +117,6 @@ import static com.hortonworks.streamline.streams.catalog.TopologyEditorMetadata.
 
 /**
  * A service layer where we could put our business logic.
- * Right now this exists as a very thin layer between the DAO and
- * the REST controllers.
  */
 public class StreamCatalogService {
 
