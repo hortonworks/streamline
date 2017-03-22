@@ -35,6 +35,12 @@ storageProviderConfiguration:
      jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
      jdbcUrl: "jdbc:phoenix:localhost:2181:/hbase-unsecure"
 
+# Truststore information which is needed for importing certificated Ambari cluster.
+# which default truststore doesn't cover the CA or self-certified.
+# When the options are not provided, JDK default truststore will be used.
+# It only supports single truststores, so admin needs to maintain single truststore and import certificates to that.
+#trustStorePath: ""
+#trustStorePassword: ""
 
 enableCors: true
 corsUrlPatterns:
