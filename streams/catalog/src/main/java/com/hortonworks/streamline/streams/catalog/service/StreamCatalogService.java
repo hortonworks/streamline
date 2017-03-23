@@ -67,6 +67,7 @@ import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentUISp
 import com.hortonworks.streamline.streams.catalog.topology.TopologyData;
 import com.hortonworks.streamline.streams.catalog.topology.component.TopologyDagBuilder;
 import com.hortonworks.streamline.streams.catalog.topology.component.TopologyExportVisitor;
+import com.hortonworks.streamline.streams.catalog.topology.state.TopologyState;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.streamline.streams.layout.component.Stream;
 import com.hortonworks.streamline.streams.layout.component.TopologyDag;
@@ -139,6 +140,7 @@ public class StreamCatalogService {
     private static final String TOPOLOGY_BRANCHRULEINFO_NAMESPACE = new TopologyBranchRule().getNameSpace();
     private static final String TOPOLOGY_WINDOWINFO_NAMESPACE = new TopologyWindow().getNameSpace();
     private static final String UDF_NAMESPACE = new UDF().getNameSpace();
+    private static final String TOPOLOGY_STATE_NAMESPACE = new TopologyState().getNameSpace();
 
     private static final ArrayList<Class<?>> UDF_CLASSES = Lists.newArrayList(UDAF.class, UDAF2.class, com.hortonworks.streamline.streams.rule.UDF.class, UDF2.class,
                                                                               UDF3.class, UDF4.class, UDF5.class, UDF6.class, UDF7.class);
@@ -765,6 +767,31 @@ public class StreamCatalogService {
 
     String getNextCloneName(String topologyName) {
         return Utils.getNextName(topologyName, CLONE_SUFFIX);
+    }
+
+    public Optional<TopologyState> getTopologyState(Long topologyId) {
+        TopologyState state = new TopologyState();
+        state.setTopologyId(topologyId);
+        TopologyState result = this.dao.get(state.getStorableKey());
+        return Optional.ofNullable(result);
+    }
+
+    public TopologyState addTopologyState(Long topologyId, TopologyState state) {
+        state.setTopologyId(topologyId);
+        this.dao.add(state);
+        return state;
+    }
+
+    public TopologyState addOrUpdateTopologyState(Long topologyID, TopologyState state) {
+        state.setTopologyId(topologyID);
+        dao.addOrUpdate(state);
+        return state;
+    }
+
+    public TopologyState removeTopologyState(Long topologyId) {
+        TopologyState state = new TopologyState();
+        state.setTopologyId(topologyId);
+        return dao.remove(new StorableKey(TOPOLOGY_STATE_NAMESPACE, state.getPrimaryKey()));
     }
 
     public Collection<TopologyComponentBundle.TopologyComponentType> listTopologyComponentBundleTypes() {

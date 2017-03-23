@@ -19,6 +19,7 @@ import com.google.common.base.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -45,6 +46,27 @@ public class ParallelStreamUtil {
             LOG.debug("execute complete - elapsed: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
             stopwatch.stop();
         }
+    }
+
+    public static void runAsync(Callable<Void> callable, Executor executor) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        LOG.debug("runAsync start");
+        CompletableFuture<Void> res = CompletableFuture.supplyAsync(() -> {
+            try {
+                return callable.call();
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        }, executor);
+
+        res.whenComplete((r, th) -> {
+            // LOG any exceptions
+            if (th != null) {
+                LOG.error("Got exception while running async task", th.getCause());
+            }
+            LOG.debug("runAsync complete - elapsed: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            stopwatch.stop();
+        });
     }
 
     private static void handleExecutionException(ExecutionException e) {
