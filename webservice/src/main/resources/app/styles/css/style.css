@@ -113,6 +113,10 @@ footer {
   height: 100vh;
 }
 
+.content-wrapper.environment-wrapper {
+  padding-top: 90px;
+}
+
 .contentEditor-wrapper {
   padding-left: 70px;
   padding-right: 10px;
@@ -1334,76 +1338,17 @@ label {
   color: #ef6062 !important;
 }
 
-.page-title-box input.inputAnimateIn {
-  position: absolute;
-  z-index: -1;
-  margin-left: 91%;
-  width: 0px;
-  float: Left;
-  -webkit-transition: all 1s ease-in-out;
-  -moz-transition: all 1s ease-in-out;
-  -o-transition: all 1s ease-in-out;
-  transition: all 1s ease-in-out;
-  background-color: #ececec;
-  border-color: #cacaca;
-}
-
-.inputAnimateIn:focus {
-  border-color: #cacaca;
-}
-
 
 /*.page-title-box .input-group{
   overflow: hidden;
 }
 */
 
-.page-title-box .input-group-addon {
-  padding: 0;
-  z-index: 10;
-  border: none;
-}
-
-.page-title-box input.inputAnimateOut {
-  margin-left: 0 !important;
-  z-index: 0;
-  cursor: text;
-  width: 90%;
-}
-
-
 /*.dropdown-toggle{
   font-size: 24px;
   color: #838383;
   padding-top: 0;
 }*/
-
-@media (min-width: 768px) {
-  .page-title-box input.inputAnimateIn {
-    margin-left: 87%;
-  }
-  .page-title-box input.inputAnimateOut {
-    width: 87%;
-  }
-}
-
-@media (min-width: 1023px) {
-  .page-title-box input.inputAnimateIn {
-    margin-left: 89%;
-  }
-  .page-title-box input.inputAnimateOut {
-    width: 89%;
-  }
-}
-
-@media (min-width: 1280px) {
-  .page-title-box input.inputAnimateIn {
-    margin-left: 91%;
-  }
-  .page-title-box input.inputAnimateOut {
-    width: 90%;
-  }
-}
 
 @media (min-width: 992px) {
   .modal-xl {
@@ -2482,4 +2427,107 @@ input[type="checkbox"] {
   border-right: none;
   border-bottom-left-radius: 5px;
   border-top-left-radius: 5px;
+}
+
+.spotlight.spotlight-overlay {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    margin-left: -340px;
+    width: 680px;
+    z-index: 2147483647;
+    font-size: 12px;
+    letter-spacing: .3px;
+    border: 1px solid rgba(51,52,53,.1);
+    font-family: Verdana,"Lucida Sans Unicode",sans-serif;
+    box-shadow: 0 12px 15px 0 rgba(0,0,0,.24), 0 17px 50px 0 rgba(0,0,0,.19);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.spotlight.spotlight-overlay .spotlight-searchbar {
+    z-index: 10;
+    position: relative;
+    height: 45px;
+    background-color: #fff;
+}
+
+.spotlight.spotlight-overlay .spotlight-searchbar .spotlight-input {
+    background-color: transparent;
+    font-size: 1.33em;
+    margin: 0;
+    outline: 0!important;
+    height: 45px;
+    max-width: 100%!important;
+    border: none!important;
+    font-weight: 100;
+    box-sizing: border-box
+}
+
+.spotlight.spotlight-overlay .spotlight-searchbar .spotlight-input-after {
+  display: inline-block;
+  color: #606162;
+}
+
+.spotlight.spotlight-overlay .spotlight-searchbar .spotlight-icon {
+    color: #fff;
+    position: static;
+    float: left;
+    height: 22px;
+    width: 22px;
+    margin: 11.5px;
+}
+.spotlight.spotlight-overlay .spotlight-searchbar .spotlight-icon a {
+  font-size: 1.5em;
+  color: #635d5c;
+}
+.spotlight.spotlight-overlay .spotlight-searchbar {
+    box-shadow: 0 4px 1px -2px rgba(0,0,0,.14),0 2px 2px 0 rgba(0,0,0,.098),0 1px 5px 0 rgba(0,0,0,.084)
+}
+
+.spotlight.spotlight-overlay .spotlight-results-panel {
+    min-height: 375px;
+    background-color: #fff;
+}
+
+.spotlight.spotlight-overlay .spotlight-results-panel .spotlight-results-list {
+    position: absolute;
+    width: 100%;
+    height: calc(100% - 45px);
+    overflow: hidden;
+    overflow-y: auto;
+    user-select: none;
+}
+.spotlight.spotlight-overlay .spotlight-results-panel .spotlight-results-list .result-header {
+  padding: 10px 0px 6px 12px;
+  background-color: #e0e0e0;
+}
+.spotlight.spotlight-overlay .spotlight-results-panel .spotlight-results-list .result-list {
+    list-style: none;
+    padding: 0px;
+    margin-bottom: 0px;
+}
+
+.spotlight.spotlight-overlay .spotlight-results-panel .spotlight-results-list .result-list > li {
+    margin: 0px;
+    margin-bottom: 0px;
+    padding: 10px;
+    text-align: left;
+    font-size: 12px;
+    color: #60aec9;
+    cursor: pointer;
+}
+
+.spotlight.spotlight-overlay .spotlight-results-panel .spotlight-results-list .result-list li.activeItem {
+    color: #fff;
+    background-color: #337ef1;
+}
+
+.spotlight.spotlight-overlay .spotlight-results-panel .spotlight-results-list .result-list li.activeItem img {
+  filter: brightness(100);
+}
+
+.spotlight.spotlight-overlay .spotlight-results-panel .spotlight-results-list .result-list > li > img {
+    height: 14px;
+    margin-right: 10px;
 }

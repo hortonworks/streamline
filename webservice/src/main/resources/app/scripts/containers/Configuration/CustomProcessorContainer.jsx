@@ -46,7 +46,6 @@ export default class CustomProcessorContainer extends Component {
       entities: [],
       showListing: true,
       filterValue: '',
-      slideInput: false,
       childPopUpFlag: false,
       fetchLoader: true
     };
@@ -126,17 +125,7 @@ export default class CustomProcessorContainer extends Component {
   onFilterChange = (e) => {
     this.setState({filterValue: e.target.value.trim()});
   }
-  slideInput = (e) => {
-    this.setState({slideInput: true});
-    const input = document.querySelector('.inputAnimateIn');
-    input.focus();
-  }
-  slideInputOut = () => {
-    const input = document.querySelector('.inputAnimateIn');
-    (_.isEmpty(input.value))
-      ? this.setState({slideInput: false})
-      : '';
-  }
+
   getHeaderContent() {
     return (
       <span>
@@ -167,7 +156,7 @@ export default class CustomProcessorContainer extends Component {
   }
 
   render() {
-    let {entities, filterValue, slideInput, fetchLoader} = this.state;
+    let {entities, filterValue, fetchLoader} = this.state;
     const filteredEntities = Utils.filterByName(entities, filterValue);
 
     return (
@@ -179,17 +168,13 @@ export default class CustomProcessorContainer extends Component {
               ? <div>
                   <div className="row">
                     <div className="page-title-box clearfix">
-                      <div className="col-md-4 col-md-offset-6 text-right">
+                      <div className="col-md-3 col-md-offset-8 text-right">
                         {((filterValue && filteredEntities.length === 0) || filteredEntities.length !== 0)
                           ? <FormGroup>
                               <InputGroup>
-                                <FormControl type="text" placeholder="Search by name" onKeyUp={this.onFilterChange} className={`inputAnimateIn ${ (slideInput)
-                                  ? "inputAnimateOut"
-                                  : ''}`} onBlur={this.slideInputOut}/>
+                                <FormControl type="text" placeholder="Search by name" onKeyUp={this.onFilterChange} className=""/>
                                 <InputGroup.Addon>
-                                  <Button type="button" className="searchBtn" onClick={this.slideInput}>
-                                    <i className="fa fa-search"></i>
-                                  </Button>
+                                  <i className="fa fa-search"></i>
                                 </InputGroup.Addon>
                               </InputGroup>
                             </FormGroup>

@@ -661,17 +661,13 @@ class TopologyListingContainer extends Component {
               {((filterValue && splitData.length === 0) || splitData.length !== 0)
                 ? <div className="row">
                     <div className="page-title-box clearfix">
-                      <div className="col-md-4 col-md-offset-5 text-right">
+                      <div className="col-md-3 col-md-offset-6 text-right">
                         <FormGroup>
                           <InputGroup>
-                            <FormControl type="text" placeholder="Search by name" onKeyUp={this.onFilterChange} className={`inputAnimateIn ${(slideInput)
-                              ? "inputAnimateOut"
-                              : ''}`} onBlur={this.slideInputOut}/>
-                            <InputGroup.Addon className="page-search">
-                              <Button type="button" className="searchBtn" onClick={this.slideInput}>
-                                <i className="fa fa-search"></i>
-                              </Button>
-                            </InputGroup.Addon>
+                          <FormControl type="text" placeholder="Search by name" onKeyUp={this.onFilterChange} className="" />
+                          <InputGroup.Addon>
+                            <i className="fa fa-search"></i>
+                          </InputGroup.Addon>
                           </InputGroup>
                         </FormGroup>
                       </div>

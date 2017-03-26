@@ -22,6 +22,7 @@ import d3Tip from 'd3-tip';
 import $ from 'jquery';
 import jQuery from 'jquery';
 import TopologyUtils from '../utils/TopologyUtils';
+import state from '../app_state';
 
 window.$ = $;
 window.jQuery = jQuery;
@@ -66,6 +67,7 @@ export default class TopologyGraphComponent extends Component {
 
   componentWillUnmount() {
     d3.select('body').on("keydown", null).on("keyup", null);
+    window.removeEventListener('keydown', this.handleKeyDown.bind(this), false);
     this.toolTip.hide();
   }
 
@@ -94,9 +96,34 @@ export default class TopologyGraphComponent extends Component {
     graphClass: "graph",
     BACKSPACE_KEY: 8,
     DELETE_KEY: 46,
+    SPACE_KEY: 32,
+    ESCAPE_KEY: 27,
     rectangleWidth: 145,
     rectangleHeight: 40
   };
+
+  componentDidUpdate() {
+    window.removeEventListener('keydown', this.handleKeyDown.bind(this), false);
+    if(!this.props.viewMode) {
+      window.addEventListener('keydown', this.handleKeyDown.bind(this), false);
+    }
+  }
+
+  handleKeyDown(event) {
+    if(!this.props.viewMode) {
+      switch(event.keyCode) {
+      case this.constants.SPACE_KEY:
+        if(event.ctrlKey || event.metaKey) {
+          event.preventDefault();
+          state.showSpotlightSearch = true;
+        }
+        break;
+      case this.constants.ESCAPE_KEY:
+        state.showSpotlightSearch = false;
+        break;
+      }
+    }
+  }
 
   componentDidMount() {
     let thisGraph = this;
@@ -465,6 +492,7 @@ export default class TopologyGraphComponent extends Component {
       this.edgeStream.style('display', 'none');
       this.main_edgestream.style('display', 'none');
     }
+    state.showSpotlightSearch = false;
   }
 
   // mouseup on main svg
@@ -515,6 +543,44 @@ export default class TopologyGraphComponent extends Component {
     let createNodeArr = [d];
     TopologyUtils.createNode(topologyId, versionId, createNodeArr, this.updateGraph.bind(this), metaInfo, paths, edges, internalFlags, uinamesList, setLastChange);
     internalFlags.graphMouseDown = false;
+  }
+  /*
+    addComponentToGraph method accepts object with component details
+    get co-ordinates for the new node and make call to create node in graph
+  */
+  addComponentToGraph(itemObj) {
+    let {
+      internalFlags,
+      constants,
+      nodes,
+      topologyId,
+      versionId,
+      metaInfo,
+      paths,
+      edges,
+      uinamesList,
+      setLastChange
+    } = this;
+    let d = {
+      parentType: itemObj.type,
+      currentType: itemObj.nodeType,
+      uiname: itemObj.nodeLabel,
+      imageURL: itemObj.imgPath,
+      isConfigured: false,
+      parallelismCount: 1,
+      nodeLabel: itemObj.nodeLabel,
+      topologyComponentBundleId: itemObj.topologyComponentBundleId
+    };
+    let xcoord = 15, ycoord = 15;
+    if(nodes.length > 0) {
+      xcoord = _.minBy(nodes, function(o) {return o.x;}).x + (constants.rectangleWidth / 2) - constants.rectangleWidth + 40;
+      ycoord = _.maxBy(nodes, function(o) {return o.y;}).y - (constants.rectangleHeight / 2) - 5.5 + 40;
+    }
+    d.x = xcoord;
+    d.y = ycoord;
+    nodes.push(d);
+    let createNodeArr = [d];
+    TopologyUtils.createNode(topologyId, versionId, createNodeArr, this.updateGraph.bind(this), metaInfo, paths, edges, internalFlags, uinamesList, setLastChange);
   }
 
   // keydown on main svg

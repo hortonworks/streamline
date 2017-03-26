@@ -329,7 +329,7 @@ export default class ProjectionProcessorContainer extends Component {
       });
     }
     this.projectionNode.description = description;
-    return TopologyREST.updateNode(topologyId, versionId, nodeType, this.projectionNode.id, {body: JSON.stringify(this.projectionNode)});
+    return this.projectionNode;
   }
 
   /*
@@ -357,9 +357,15 @@ export default class ProjectionProcessorContainer extends Component {
         'projection_notifier_stream_'+this.projectionNode.id
       ];
       this.projectionRulesNode.outputStreams = this.outputStreamStringArr;
-      return TopologyREST.updateNode(topologyId, versionId, 'rules', this.projectionRuleId, {body: JSON.stringify(this.projectionRulesNode)}).then((processorResult) => {
-        return this.updateProcessorNode(name, description);
-      });
+
+      let promiseArr = [];
+
+      const projectionNodeData = this.updateProcessorNode(name, description);
+      promiseArr.push(TopologyREST.updateNode(topologyId, versionId, nodeType, projectionNodeData.id, {body: JSON.stringify(projectionNodeData)}));
+
+      promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'rules', this.projectionRuleId, {body: JSON.stringify(this.projectionRulesNode)}));
+
+      return Promise.all(promiseArr);
     }
   }
 

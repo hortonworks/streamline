@@ -356,7 +356,37 @@ export default class WindowingAggregateNodeForm extends Component {
     }
     this.windowsNode.config.properties.parallelism = parallelism;
     this.windowsNode.description = description;
-    return TopologyREST.updateNode(topologyId, versionId, nodeType, this.windowsNode.id, {body: JSON.stringify(this.windowsNode)});
+    return this.windowsNode;
+  }
+
+  /*
+    updateEdges Method update the edge
+    using inputStreamsArr id to filter the currentEdges.streamGrouping.streamId for the particular nodeType
+    And update with fields selected as a outputStreams
+  */
+  updateEdges(){
+    const {currentEdges} = this.props;
+    const {inputStreamOptions} = this.context.ParentForm.state;
+
+    const fields = this.windowRulesNode.groupbykeys.map((field) => {
+      return field.replace(/\[\'/g, ".").replace(/\'\]/g, "");
+    });
+    const edgeObj = _.filter(currentEdges, (edge) => {
+      return edge.streamGrouping.streamId === inputStreamOptions[0].id;
+    });
+    let edgeData = {
+      fromId: edgeObj[0].source.nodeId,
+      toId: edgeObj[0].target.nodeId,
+      streamGroupings: [
+        {
+          streamId: edgeObj[0].streamGrouping.streamId,
+          grouping: 'FIELDS',
+          fields: fields
+        }
+      ]
+    };
+    const edgeId = edgeObj[0].edgeId;
+    return {edgeId,edgeData};
   }
 
   /*
@@ -421,9 +451,16 @@ export default class WindowingAggregateNodeForm extends Component {
           };
         }
       }
-      return TopologyREST.updateNode(topologyId, versionId, 'windows', this.windowsRuleId, {body: JSON.stringify(this.windowRulesNode)}).then((processorResult) => {
-        return this.updateProcessorNode(name, description);
-      });
+      let promiseArr = [];
+      const windowsNodeObj = this.updateProcessorNode(name, description);
+      promiseArr.push(TopologyREST.updateNode(topologyId, versionId, nodeType, windowsNodeObj.id, {body: JSON.stringify(windowsNodeObj)}));
+
+      promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'windows', this.windowsRuleId, {body: JSON.stringify(this.windowRulesNode)}));
+
+      const {edgeId , edgeData} = this.updateEdges();
+      promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'edges', edgeId, {body: JSON.stringify(edgeData)}));
+
+      return  Promise.all(promiseArr);
     }
   }
 
