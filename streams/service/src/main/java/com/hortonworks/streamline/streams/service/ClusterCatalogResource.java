@@ -17,6 +17,7 @@ package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.streamline.streams.cluster.model.ServiceWithComponents;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import com.hortonworks.streamline.common.QueryParam;
@@ -28,9 +29,8 @@ import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
-import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
-import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
-import com.hortonworks.streamline.streams.catalog.service.metadata.StormMetadataService;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+import com.hortonworks.streamline.streams.cluster.service.metadata.StormMetadataService;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.AmbariServiceNodeDiscoverer;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
@@ -58,7 +58,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -269,8 +268,7 @@ public class ClusterCatalogResource {
             Collection<ServiceConfiguration> configurations = environmentService.listServiceConfigurations(service.getId());
             Collection<Component> components = environmentService.listComponents(service.getId());
 
-            ClusterServicesImportResult.ServiceWithComponents s =
-                new ClusterServicesImportResult.ServiceWithComponents(service);
+            ServiceWithComponents s = new ServiceWithComponents(service);
             s.setComponents(components);
             s.setConfigurations(configurations);
 
@@ -384,36 +382,6 @@ public class ClusterCatalogResource {
     private static class ClusterServicesImportResult {
         private Cluster cluster;
         private Collection<ServiceWithComponents> services = new ArrayList<>();
-
-        static class ServiceWithComponents {
-            private Service service;
-            private Collection<ServiceConfiguration> configurations;
-            private Collection<Component> components;
-
-            public ServiceWithComponents(Service service) {
-                this.service = service;
-            }
-
-            public Service getService() {
-                return service;
-            }
-
-            public Collection<Component> getComponents() {
-                return components;
-            }
-
-            public void setComponents(Collection<Component> components) {
-                this.components = components;
-            }
-
-            public Collection<ServiceConfiguration> getConfigurations() {
-                return configurations;
-            }
-
-            public void setConfigurations(Collection<ServiceConfiguration> configurations) {
-                this.configurations = configurations;
-            }
-        }
 
         public ClusterServicesImportResult(Cluster cluster) {
             this.cluster = cluster;

@@ -39,6 +39,11 @@
                  </exclusion>
              </exclusions>
         </dependency>
+        <dependency>
+            <groupId>com.hortonworks.streamline</groupId>
+            <artifactId>streamline-cluster</artifactId>
+        </dependency>
+
         <!-- Test Scope Dependencies -->
         <dependency>
             <groupId>junit</groupId>

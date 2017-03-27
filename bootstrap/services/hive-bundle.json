@@ -1,0 +1,15 @@
+{
+  "name": "HIVE",
+  "registerClass": "com.hortonworks.streamline.streams.cluster.register.impl.HiveServiceRegistrar",
+  "serviceUISpecification": {
+    "fields": [
+      {
+        "uiName": "hive-site.xml",
+        "fieldName": "hive-site.xml",
+        "isOptional": false,
+        "tooltip": "Upload hive-site.xml file used by Hive cluster",
+        "type": "file"
+      }
+    ]
+  }
+}

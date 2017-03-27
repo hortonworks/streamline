@@ -31,6 +31,7 @@ DROP TABLE IF EXISTS datasource
 DROP TABLE IF EXISTS widget_datasource_mapping
 DROP TABLE IF EXISTS ml_model
 DROP TABLE IF EXISTS topology_state
+DROP TABLE IF EXISTS service_bundle
 DROP SEQUENCE IF EXISTS topology_version_sequence
 DROP SEQUENCE IF EXISTS topology_sequence
 DROP SEQUENCE IF EXISTS topology_component_bundle_sequence
@@ -57,3 +58,4 @@ DROP SEQUENCE IF EXISTS widget_sequence
 DROP SEQUENCE IF EXISTS datasource_sequence
 DROP SEQUENCE IF EXISTS ml_model_sequence
 DROP SEQUENCE IF EXISTS topology_state_sequence
+DROP SEQUENCE IF EXISTS service_bundle_sequence
