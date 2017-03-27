@@ -353,14 +353,13 @@ CREATE TABLE IF NOT EXISTS component (
   PRIMARY KEY (id)
 );
 
-<<<<<<< HEAD
 CREATE TABLE IF NOT EXISTS topology_state (
   topologyId BIGINT NOT NULL,
   name VARCHAR(255) NOT NULL,
   description VARCHAR(255) NOT NULL,
   PRIMARY KEY (topologyId)
 );
-=======
+
 CREATE TABLE IF NOT EXISTS service_bundle (
   id BIGINT AUTO_INCREMENT NOT NULL,
   name VARCHAR(256) NOT NULL,
@@ -368,5 +367,4 @@ CREATE TABLE IF NOT EXISTS service_bundle (
   registerClass TEXT,
   timestamp  BIGINT,
   PRIMARY KEY (id)
-)
->>>>>>> STREAMLINE-545 Add services to service pool manually
+);
