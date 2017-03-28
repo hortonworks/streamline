@@ -17,7 +17,7 @@ package com.hortonworks.streamline.streams.security.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.hortonworks.streamline.common.Schema;
+import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.annotation.SchemaIgnore;
 import com.hortonworks.streamline.storage.annotation.StorableEntity;
