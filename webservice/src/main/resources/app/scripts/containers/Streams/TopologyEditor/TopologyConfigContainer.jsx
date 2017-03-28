@@ -40,13 +40,12 @@ export default class TopologyConfigContainer extends Component {
   fetchData = () => {
     const {topologyId, versionId} = this.props;
     let promiseArr = [
-      TopologyREST.getTopologyConfig(),
       TopologyREST.getTopologyWithoutMetrics(topologyId, versionId)
     ];
     Promise.all(promiseArr).then(result => {
-      const formField = result[0].entities[0].topologyComponentUISpecification;
-      const config = result[1].config;
-      this.namespaceId = result[1].namespaceId;
+      const formField = this.props.uiConfigFields.topologyComponentUISpecification;
+      const config = result[0].config;
+      this.namespaceId = result[0].namespaceId;
       this.setState({formData: JSON.parse(config), formField: formField, fetchLoader: false});
     }).catch(err => {
       this.setState({fetchLoader: false});
