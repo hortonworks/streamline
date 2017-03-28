@@ -29,7 +29,9 @@ CREATE TABLE IF NOT EXISTS widget ("id" BIGINT NOT NULL, "dashboardId" BIGINT NO
 CREATE TABLE IF NOT EXISTS datasource ("id" BIGINT NOT NULL, "dashboardId" BIGINT NOT NULL, "name" VARCHAR, "description" VARCHAR, "type" VARCHAR, "url" VARCHAR, "data" VARCHAR, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id", "dashboardId"))
 CREATE TABLE IF NOT EXISTS widget_datasource_mapping ("widgetId" BIGINT NOT NULL, "datasourceId" BIGINT NOT NULL, CONSTRAINT pk PRIMARY KEY ("widgetId", "datasourceId"))
 CREATE TABLE IF NOT EXISTS ml_model ("id" BIGINT NOT NULL, "name" VARCHAR(256) NOT NULL, "pmml" VARCHAR, "uploadedFileName" VARCHAR(256), "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id", "name"))
-CREATE TABLE IF NOT EXISTS sequence_table ("id" VARCHAR, "file" BIGINT, "topology_version" BIGINT, "topology" BIGINT, "topology_component_bundle" BIGINT,"topology_component" BIGINT, "tag" BIGINT,  "topology_stream" BIGINT, "notifier" BIGINT, "topology_source" BIGINT, "topology_sink" BIGINT, "topology_processor" BIGINT, "topology_edge" BIGINT,"topology_rule" BIGINT, "topology_window" BIGINT, "udf" BIGINT, "cluster" BIGINT, "service" BIGINT, "service_configuration" BIGINT,"topology_branchrule" BIGINT, "component" BIGINT, "dashboard" BIGINT, "widget" BIGINT, "datasource" BIGINT, "namespace" BIGINT, "ml_model" BIGINT CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS topology_state ("topologyId" BIGINT NOT NULL, "name" VARCHAR(255) NOT NULL, "description" VARCHAR(255) NOT NULL, CONSTRAINT pk PRIMARY KEY ("topologyId"))
+CREATE TABLE IF NOT EXISTS service_bundle ("id" BIGINT NOT NULL, "name" VARCHAR(256), "serviceUISpecification" VARCHAR, "registerClass" VARCHAR, "timestamp"  BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS sequence_table ("id" VARCHAR, "file" BIGINT, "topology_version" BIGINT, "topology" BIGINT, "topology_component_bundle" BIGINT,"topology_component" BIGINT, "tag" BIGINT,  "topology_stream" BIGINT, "notifier" BIGINT, "topology_source" BIGINT, "topology_sink" BIGINT, "topology_processor" BIGINT, "topology_edge" BIGINT,"topology_rule" BIGINT, "topology_window" BIGINT, "udf" BIGINT, "cluster" BIGINT, "service" BIGINT, "service_configuration" BIGINT,"topology_branchrule" BIGINT, "component" BIGINT, "dashboard" BIGINT, "widget" BIGINT, "datasource" BIGINT, "namespace" BIGINT, "ml_model" BIGINT, "topology_state" BIGINT, "service_bundle" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
 
 CREATE SEQUENCE IF NOT EXISTS topology_version_sequence
 CREATE SEQUENCE IF NOT EXISTS topology_sequence
@@ -56,3 +58,5 @@ CREATE SEQUENCE IF NOT EXISTS dashboard_sequence
 CREATE SEQUENCE IF NOT EXISTS widget_sequence
 CREATE SEQUENCE IF NOT EXISTS datasource_sequence
 CREATE SEQUENCE IF NOT EXISTS ml_model_sequence
+CREATE SEQUENCE IF NOT EXISTS topology_state_sequence
+CREATE SEQUENCE IF NOT EXISTS service_bundle_sequence

@@ -15,9 +15,6 @@
  **/
 package com.hortonworks.streamline.streams.catalog.exception;
 
-
-import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
-
 public class ServiceConfigurationNotFoundException extends EntityNotFoundException {
     public ServiceConfigurationNotFoundException(String message) {
         super(message);
@@ -31,7 +28,7 @@ public class ServiceConfigurationNotFoundException extends EntityNotFoundExcepti
         super(cause);
     }
 
-    public ServiceConfigurationNotFoundException(Long clusterId, ServiceConfigurations service, String configurationName) {
-        this(String.format("Configuration [%s] not found for service [%s] in cluster with id [%d]", configurationName, service.name(), clusterId));
+    public ServiceConfigurationNotFoundException(Long clusterId, String serviceName, String configurationName) {
+        this(String.format("Configuration [%s] not found for service [%s] in cluster with id [%d]", configurationName, serviceName, clusterId));
     }
 }

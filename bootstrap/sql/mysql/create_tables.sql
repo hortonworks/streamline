@@ -352,3 +352,19 @@ CREATE TABLE IF NOT EXISTS component (
   timestamp BIGINT,
   PRIMARY KEY (id)
 );
+
+CREATE TABLE IF NOT EXISTS topology_state (
+  topologyId BIGINT NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  description VARCHAR(255) NOT NULL,
+  PRIMARY KEY (topologyId)
+);
+
+CREATE TABLE IF NOT EXISTS service_bundle (
+  id BIGINT AUTO_INCREMENT NOT NULL,
+  name VARCHAR(256) NOT NULL,
+  serviceUISpecification TEXT NOT NULL,
+  registerClass TEXT,
+  timestamp  BIGINT,
+  PRIMARY KEY (id)
+);

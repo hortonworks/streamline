@@ -25,6 +25,7 @@ class app_state {
     dashboard: {}
   }
   @observable showComponentNodeContainer = true
+  @observable showSpotlightSearch = false
 }
 
 export default new app_state();

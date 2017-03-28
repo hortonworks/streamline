@@ -213,6 +213,266 @@ and show only sample for creating a service, service configuration, component.
 }
 ```
 
+
+### Create Services
+
+`POST /api/v1/clusters/:clusterId/services`
+
+**Sample Input**
+
+```json
+{
+  "clusterId": 3,
+  "name": "HIVE",
+  "description": ""
+}
+```
+   
+**Success Response**
+
+    HTTP/1.1 201 Created
+    Content-Type: application/json
+    
+```json
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "id": 13,
+    "clusterId": 3,
+    "name": "HIVE",
+    "description": "",
+    "timestamp": 1475660875465
+  }
+}
+```
+
+### List Services
+
+`GET /api/v1/catalog/clusters/:clusterId/services`
+
+### Get Service
+
+`GET /api/v1/catalog/clusters/{clusterId}/services/{id}`
+
+### Update Service
+
+`PUT /api/v1/catalog/clusters/{clusterId}/services/{id}`
+
+### Delete Service
+
+`DELETE /api/v1/catalog/clusters/{clusterId}/services/{id}`
+
+
+### Create Service Bundle
+
+`POST /api/v1/catalog/servicebundles`
+
+**Sample Input**
+
+```json
+{
+  "name": "STORM",
+  "registerClass": "com.hortonworks.streamline.streams.cluster.register.impl.StormServiceRegistrar",
+  "serviceUISpecification": {
+    "fields": [
+      {
+        "uiName": "UI server hostname",
+        "fieldName": "uiServerHostname",
+        "isOptional": false,
+        "tooltip": "Hostname of Storm UI server",
+        "type": "string"
+      },
+      {
+        "uiName": "Nimbuses hostnames",
+        "fieldName": "nimbusesHostnames",
+        "isOptional": false,
+        "tooltip": "Hostnames of Nimbuses",
+        "type": "array.string"
+      },
+      {
+        "uiName": "storm.yaml",
+        "fieldName": "storm.yaml",
+        "isOptional": false,
+        "tooltip": "Upload storm.yaml file which Storm cluster is using",
+        "type": "file"
+      }
+    ]
+  }
+}
+```
+   
+**Success Response**
+
+    HTTP/1.1 201 Created
+    Content-Type: application/json
+    
+```json
+{
+  "id": 1,
+  "name": "STORM",
+  "timestamp": 1487228012093,
+  "serviceUISpecification": {
+    "fields": [
+      {
+        "uiName": "UI server hostname",
+        "fieldName": "uiServerHostname",
+        "isUserInput": true,
+        "tooltip": "Hostname of Storm UI server",
+        "isOptional": false,
+        "type": "string"
+      },
+      {
+        "uiName": "Nimbuses hostnames",
+        "fieldName": "nimbusesHostnames",
+        "isUserInput": true,
+        "tooltip": "Hostnames of Nimbuses",
+        "isOptional": false,
+        "type": "array.string"
+      },
+      {
+        "uiName": "storm.yaml",
+        "fieldName": "storm.yaml",
+        "isUserInput": true,
+        "tooltip": "Upload storm.yaml file which Storm cluster is using",
+        "isOptional": false,
+        "type": "file"
+      }
+    ]
+  },
+  "registerClass": "com.hortonworks.streamline.streams.cluster.register.impl.StormServiceRegistrar"
+}
+```
+
+### List Services Bundle
+
+`GET /api/v1/catalog/servicebundles`
+
+### Get Service Bundle
+
+`GET /api/v1/catalog/servicebundles/{id}`
+
+### Get Service Bundle (by service name)
+
+`GET /api/v1/catalog/servicebundles/name/{serviceName}`
+
+### Delete Service Bundle
+
+`DELETE /api/v1/catalog/servicebundles/{id}`
+
+### Create Service Configurations
+
+`POST /api/v1/catalog/services/{serviceId}/configurations`
+
+**Sample Input**
+
+```json
+{
+  "serviceId": 13,
+  "name": "hive-interactive-site",
+  "configuration": "{\"hive.driver.parallel.compilation\":\"true\",\"hive.exec.orc.split.strategy\":\"HYBRID\",\"hive.execution.engine\":\"tez\",\"hive.execution.mode\":\"llap\",\"hive.llap.auto.allow.uber\":\"false\",\"hive.llap.client.consistent.splits\":\"true\",\"hive.llap.daemon.allow.permanent.fns\":\"false\",\"hive.llap.daemon.memory.per.instance.mb\":\"250\",\"hive.llap.daemon.num.executors\":\"1\",\"hive.llap.daemon.queue.name\":\"default\",\"hive.llap.daemon.rpc.port\":\"15001\",\"hive.llap.daemon.service.hosts\":\"@llap0\",\"hive.llap.daemon.task.scheduler.enable.preemption\":\"true\",\"hive.llap.daemon.vcpus.per.instance\":\"${hive.llap.daemon.num.executors}\",\"hive.llap.daemon.work.dirs\":\"${yarn.nodemanager.local-dirs}\",\"hive.llap.daemon.yarn.container.mb\":\"341\",\"hive.llap.daemon.yarn.shuffle.port\":\"15551\",\"hive.llap.execution.mode\":\"all\",\"hive.llap.io.enabled\":\"true\",\"hive.llap.io.memory.mode\":\"cache\",\"hive.llap.io.memory.size\":\"0\",\"hive.llap.io.threadpool.size\":\"2\",\"hive.llap.io.use.lrfu\":\"true\",\"hive.llap.management.rpc.port\":\"15004\",\"hive.llap.object.cache.enabled\":\"true\",\"hive.llap.task.scheduler.locality.delay\":\"-1\",\"hive.llap.zk.sm.connectionString\":\"sandbox.hortonworks.com:2181\",\"hive.mapjoin.hybridgrace.hashtable\":\"false\",\"hive.metastore.event.listeners\":\"\",\"hive.metastore.uris\":\"\",\"hive.optimize.dynamic.partition.hashjoin\":\"true\",\"hive.prewarm.enabled\":\"false\",\"hive.server2.enable.doAs\":\"false\",\"hive.server2.tez.default.queues\":\"default\",\"hive.server2.tez.initialize.default.sessions\":\"true\",\"hive.server2.tez.sessions.per.default.queue\":\"1\",\"hive.server2.thrift.http.port\":\"10501\",\"hive.server2.thrift.port\":\"10500\",\"hive.server2.webui.port\":\"10502\",\"hive.server2.webui.use.ssl\":\"false\",\"hive.server2.zookeeper.namespace\":\"hiveserver2-hive2\",\"hive.tez.bucket.pruning\":\"true\",\"hive.tez.exec.print.summary\":\"true\",\"hive.tez.input.generate.consistent.splits\":\"true\",\"hive.vectorized.execution.mapjoin.minmax.enabled\":\"true\",\"hive.vectorized.execution.mapjoin.native.enabled\":\"true\",\"hive.vectorized.execution.mapjoin.native.fast.hashtable.enabled\":\"true\",\"hive.vectorized.execution.reduce.enabled\":\"true\",\"llap.shuffle.connection-keep-alive.enable\":\"true\",\"llap.shuffle.connection-keep-alive.timeout\":\"60\"}",
+  "description": "",
+  "filename": "hive-interactive-site.xml"
+}
+```
+   
+**Success Response**
+
+    HTTP/1.1 201 Created
+    Content-Type: application/json
+    
+```json
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "id": 37,
+    "serviceId": 13,
+    "name": "hive-interactive-site",
+    "configuration": "{\"hive.driver.parallel.compilation\":\"true\",\"hive.exec.orc.split.strategy\":\"HYBRID\",\"hive.execution.engine\":\"tez\",\"hive.execution.mode\":\"llap\",\"hive.llap.auto.allow.uber\":\"false\",\"hive.llap.client.consistent.splits\":\"true\",\"hive.llap.daemon.allow.permanent.fns\":\"false\",\"hive.llap.daemon.memory.per.instance.mb\":\"250\",\"hive.llap.daemon.num.executors\":\"1\",\"hive.llap.daemon.queue.name\":\"default\",\"hive.llap.daemon.rpc.port\":\"15001\",\"hive.llap.daemon.service.hosts\":\"@llap0\",\"hive.llap.daemon.task.scheduler.enable.preemption\":\"true\",\"hive.llap.daemon.vcpus.per.instance\":\"${hive.llap.daemon.num.executors}\",\"hive.llap.daemon.work.dirs\":\"${yarn.nodemanager.local-dirs}\",\"hive.llap.daemon.yarn.container.mb\":\"341\",\"hive.llap.daemon.yarn.shuffle.port\":\"15551\",\"hive.llap.execution.mode\":\"all\",\"hive.llap.io.enabled\":\"true\",\"hive.llap.io.memory.mode\":\"cache\",\"hive.llap.io.memory.size\":\"0\",\"hive.llap.io.threadpool.size\":\"2\",\"hive.llap.io.use.lrfu\":\"true\",\"hive.llap.management.rpc.port\":\"15004\",\"hive.llap.object.cache.enabled\":\"true\",\"hive.llap.task.scheduler.locality.delay\":\"-1\",\"hive.llap.zk.sm.connectionString\":\"sandbox.hortonworks.com:2181\",\"hive.mapjoin.hybridgrace.hashtable\":\"false\",\"hive.metastore.event.listeners\":\"\",\"hive.metastore.uris\":\"\",\"hive.optimize.dynamic.partition.hashjoin\":\"true\",\"hive.prewarm.enabled\":\"false\",\"hive.server2.enable.doAs\":\"false\",\"hive.server2.tez.default.queues\":\"default\",\"hive.server2.tez.initialize.default.sessions\":\"true\",\"hive.server2.tez.sessions.per.default.queue\":\"1\",\"hive.server2.thrift.http.port\":\"10501\",\"hive.server2.thrift.port\":\"10500\",\"hive.server2.webui.port\":\"10502\",\"hive.server2.webui.use.ssl\":\"false\",\"hive.server2.zookeeper.namespace\":\"hiveserver2-hive2\",\"hive.tez.bucket.pruning\":\"true\",\"hive.tez.exec.print.summary\":\"true\",\"hive.tez.input.generate.consistent.splits\":\"true\",\"hive.vectorized.execution.mapjoin.minmax.enabled\":\"true\",\"hive.vectorized.execution.mapjoin.native.enabled\":\"true\",\"hive.vectorized.execution.mapjoin.native.fast.hashtable.enabled\":\"true\",\"hive.vectorized.execution.reduce.enabled\":\"true\",\"llap.shuffle.connection-keep-alive.enable\":\"true\",\"llap.shuffle.connection-keep-alive.timeout\":\"60\"}",
+    "description": "",
+    "filename": "hive-interactive-site.xml",
+    "timestamp": 1475677909645
+  }
+}
+```
+
+### List Service Configurations
+
+`GET /api/v1/catalog/services/:serviceId/configurations`
+
+`GET /api/v1/catalog/services/name/:serviceName/configurations`
+
+### Get Service Configuration
+
+`GET /api/v1/catalog/services/:serviceId/configurations/:configurationId`
+
+### Update Service Configuration
+
+`PUT /api/v1/catalog/services/:serviceId/configurations/:configurationId`
+
+### Delete Service Configuration
+
+`DELETE /api/v1/catalog/services/:serviceId/configurations/:configurationId`
+
+### Create components
+
+`POST /api/v1/services/:serviceId/components`
+
+**Sample Input**
+
+```json
+{
+  "serviceId": 13,
+  "name": "HIVE_SERVER",
+  "hosts": [
+    "sandbox.hortonworks.com"
+  ],
+  "protocol": "thrift",
+  "port": 10500
+}
+```
+   
+**Success Response**
+
+    HTTP/1.1 201 Created
+    Content-Type: application/json
+    
+```json
+{
+  "responseCode": 1000,
+  "responseMessage": "Success",
+  "entity": {
+    "id": 39,
+    "serviceId": 13,
+    "name": "HIVE_SERVER",
+    "hosts": [
+      "sandbox.hortonworks.com"
+    ],
+    "protocol": "thrift",
+    "port": 10500,
+    "timestamp": 1475678254672
+  }
+}
+```
+
+### List Components
+
+`GET /api/v1/catalog/clusters/:clusterId/services`
+
+### Get Component
+
+`GET /api/v1/catalog/clusters/{clusterId}/services/{id}`
+
+### Update Component
+
+`PUT /api/v1/catalog/services/{serviceId}/configurations/{id}`
+
+### Delete Component
+
+`DELETE /api/v1/catalog/services/{serviceId}/configurations/{id}`
+
+
 ### Importing Ambari Cluster to Streamline Cluster
     
 Streamline provides importing Ambari Cluster to Streamline Cluster, which means that known services and relevant components are automatically registered from Ambari.
@@ -616,165 +876,41 @@ User should create a new Cluster entity or specify existing one. If user chooses
 }
 ```
 
-### Create Services
+### Register Service manually
 
-`POST /api/v1/clusters/:clusterId/services`
+Streamline also provides bundle-registered service and relevant components manually.
+User should specify existing cluster to make new service belong to.
 
-**Sample Input**
+`POST /api/v1/clusters/:clusterId/services/register/:serviceName`
+
+`Content-Type` of the API is `multipart/form-data`, since user needs to upload config files for service.
+
+It receives two types of parameters - `config` and `config files`:
+
+* config: component information JSON, same structure of topology component bundle
+* config files: service relevant configuration files to upload
+
+Each service bundle defines its specification (config), similar to topology component bundle.
+Unless the type of field is `file`, the value of field should be passed to config json.
+
+The sample format for config:
 
 ```json
 {
-  "clusterId": 3,
-  "name": "HIVE",
-  "description": ""
-}
-```
-   
-**Success Response**
-
-    HTTP/1.1 201 Created
-    Content-Type: application/json
-    
-```json
-{
-  "responseCode": 1000,
-  "responseMessage": "Success",
-  "entity": {
-    "id": 13,
-    "clusterId": 3,
-    "name": "HIVE",
-    "description": "",
-    "timestamp": 1475660875465
+  "properties": {
+    "uiServerHostname": "jlim-streamlin-3.openstacklocal", 
+    "nimbusesHostnames": "jlim-streamlin-2.openstacklocal,jlim-streamlin-3.openstacklocal"
   }
 }
 ```
 
-### List Services
+If the specification defines the type of field as `file`, you need to provide the value from separate parameter.
+The parameter name is same as field name on definition.
 
-`GET /api/v1/catalog/clusters/:clusterId/services`
+Here is the sample STORM service registration via curl:
 
-### Get Service
-
-`GET /api/v1/catalog/clusters/{clusterId}/services/{id}`
-
-### Update Service
-
-`PUT /api/v1/catalog/clusters/{clusterId}/services/{id}`
-
-### Delete Service
-
-`DELETE /api/v1/catalog/clusters/{clusterId}/services/{id}`
-
-### Create Service Configurations
-
-`POST /api/v1/catalog/services/{serviceId}/configurations`
-
-
-**Sample Input**
-
-```json
-{
-  "serviceId": 13,
-  "name": "hive-interactive-site",
-  "configuration": "{\"hive.driver.parallel.compilation\":\"true\",\"hive.exec.orc.split.strategy\":\"HYBRID\",\"hive.execution.engine\":\"tez\",\"hive.execution.mode\":\"llap\",\"hive.llap.auto.allow.uber\":\"false\",\"hive.llap.client.consistent.splits\":\"true\",\"hive.llap.daemon.allow.permanent.fns\":\"false\",\"hive.llap.daemon.memory.per.instance.mb\":\"250\",\"hive.llap.daemon.num.executors\":\"1\",\"hive.llap.daemon.queue.name\":\"default\",\"hive.llap.daemon.rpc.port\":\"15001\",\"hive.llap.daemon.service.hosts\":\"@llap0\",\"hive.llap.daemon.task.scheduler.enable.preemption\":\"true\",\"hive.llap.daemon.vcpus.per.instance\":\"${hive.llap.daemon.num.executors}\",\"hive.llap.daemon.work.dirs\":\"${yarn.nodemanager.local-dirs}\",\"hive.llap.daemon.yarn.container.mb\":\"341\",\"hive.llap.daemon.yarn.shuffle.port\":\"15551\",\"hive.llap.execution.mode\":\"all\",\"hive.llap.io.enabled\":\"true\",\"hive.llap.io.memory.mode\":\"cache\",\"hive.llap.io.memory.size\":\"0\",\"hive.llap.io.threadpool.size\":\"2\",\"hive.llap.io.use.lrfu\":\"true\",\"hive.llap.management.rpc.port\":\"15004\",\"hive.llap.object.cache.enabled\":\"true\",\"hive.llap.task.scheduler.locality.delay\":\"-1\",\"hive.llap.zk.sm.connectionString\":\"sandbox.hortonworks.com:2181\",\"hive.mapjoin.hybridgrace.hashtable\":\"false\",\"hive.metastore.event.listeners\":\"\",\"hive.metastore.uris\":\"\",\"hive.optimize.dynamic.partition.hashjoin\":\"true\",\"hive.prewarm.enabled\":\"false\",\"hive.server2.enable.doAs\":\"false\",\"hive.server2.tez.default.queues\":\"default\",\"hive.server2.tez.initialize.default.sessions\":\"true\",\"hive.server2.tez.sessions.per.default.queue\":\"1\",\"hive.server2.thrift.http.port\":\"10501\",\"hive.server2.thrift.port\":\"10500\",\"hive.server2.webui.port\":\"10502\",\"hive.server2.webui.use.ssl\":\"false\",\"hive.server2.zookeeper.namespace\":\"hiveserver2-hive2\",\"hive.tez.bucket.pruning\":\"true\",\"hive.tez.exec.print.summary\":\"true\",\"hive.tez.input.generate.consistent.splits\":\"true\",\"hive.vectorized.execution.mapjoin.minmax.enabled\":\"true\",\"hive.vectorized.execution.mapjoin.native.enabled\":\"true\",\"hive.vectorized.execution.mapjoin.native.fast.hashtable.enabled\":\"true\",\"hive.vectorized.execution.reduce.enabled\":\"true\",\"llap.shuffle.connection-keep-alive.enable\":\"true\",\"llap.shuffle.connection-keep-alive.timeout\":\"60\"}",
-  "description": "",
-  "filename": "hive-interactive-site.xml"
-}
 ```
-   
-**Success Response**
-
-    HTTP/1.1 201 Created
-    Content-Type: application/json
-    
-```json
-{
-  "responseCode": 1000,
-  "responseMessage": "Success",
-  "entity": {
-    "id": 37,
-    "serviceId": 13,
-    "name": "hive-interactive-site",
-    "configuration": "{\"hive.driver.parallel.compilation\":\"true\",\"hive.exec.orc.split.strategy\":\"HYBRID\",\"hive.execution.engine\":\"tez\",\"hive.execution.mode\":\"llap\",\"hive.llap.auto.allow.uber\":\"false\",\"hive.llap.client.consistent.splits\":\"true\",\"hive.llap.daemon.allow.permanent.fns\":\"false\",\"hive.llap.daemon.memory.per.instance.mb\":\"250\",\"hive.llap.daemon.num.executors\":\"1\",\"hive.llap.daemon.queue.name\":\"default\",\"hive.llap.daemon.rpc.port\":\"15001\",\"hive.llap.daemon.service.hosts\":\"@llap0\",\"hive.llap.daemon.task.scheduler.enable.preemption\":\"true\",\"hive.llap.daemon.vcpus.per.instance\":\"${hive.llap.daemon.num.executors}\",\"hive.llap.daemon.work.dirs\":\"${yarn.nodemanager.local-dirs}\",\"hive.llap.daemon.yarn.container.mb\":\"341\",\"hive.llap.daemon.yarn.shuffle.port\":\"15551\",\"hive.llap.execution.mode\":\"all\",\"hive.llap.io.enabled\":\"true\",\"hive.llap.io.memory.mode\":\"cache\",\"hive.llap.io.memory.size\":\"0\",\"hive.llap.io.threadpool.size\":\"2\",\"hive.llap.io.use.lrfu\":\"true\",\"hive.llap.management.rpc.port\":\"15004\",\"hive.llap.object.cache.enabled\":\"true\",\"hive.llap.task.scheduler.locality.delay\":\"-1\",\"hive.llap.zk.sm.connectionString\":\"sandbox.hortonworks.com:2181\",\"hive.mapjoin.hybridgrace.hashtable\":\"false\",\"hive.metastore.event.listeners\":\"\",\"hive.metastore.uris\":\"\",\"hive.optimize.dynamic.partition.hashjoin\":\"true\",\"hive.prewarm.enabled\":\"false\",\"hive.server2.enable.doAs\":\"false\",\"hive.server2.tez.default.queues\":\"default\",\"hive.server2.tez.initialize.default.sessions\":\"true\",\"hive.server2.tez.sessions.per.default.queue\":\"1\",\"hive.server2.thrift.http.port\":\"10501\",\"hive.server2.thrift.port\":\"10500\",\"hive.server2.webui.port\":\"10502\",\"hive.server2.webui.use.ssl\":\"false\",\"hive.server2.zookeeper.namespace\":\"hiveserver2-hive2\",\"hive.tez.bucket.pruning\":\"true\",\"hive.tez.exec.print.summary\":\"true\",\"hive.tez.input.generate.consistent.splits\":\"true\",\"hive.vectorized.execution.mapjoin.minmax.enabled\":\"true\",\"hive.vectorized.execution.mapjoin.native.enabled\":\"true\",\"hive.vectorized.execution.mapjoin.native.fast.hashtable.enabled\":\"true\",\"hive.vectorized.execution.reduce.enabled\":\"true\",\"llap.shuffle.connection-keep-alive.enable\":\"true\",\"llap.shuffle.connection-keep-alive.timeout\":\"60\"}",
-    "description": "",
-    "filename": "hive-interactive-site.xml",
-    "timestamp": 1475677909645
-  }
-}
+curl -v -H "Content-Type: multipart/form-data" -X POST \
+-F config='{"properties": {"uiServerHostname": "storm-1", "nimbusesHostnames": "storm-2,storm-3"}}' \
+-F storm.yaml=@./storm.yaml http://localhost:8080/api/v1/catalog/clusters/1/services/register/STORM
 ```
-
-### List Service Configurations
-
-`GET /api/v1/catalog/services/:serviceId/configurations`
-
-`GET /api/v1/catalog/services/name/:serviceName/configurations`
-
-### Get Service Configuration
-
-`GET /api/v1/catalog/services/:serviceId/configurations/:configurationId`
-
-### Update Service Configuration
-
-`PUT /api/v1/catalog/services/:serviceId/configurations/:configurationId`
-
-### Delete Service Configuration
-
-`DELETE /api/v1/catalog/services/:serviceId/configurations/:configurationId`
-
-### Create components
-
-`POST /api/v1/services/:serviceId/components`
-
-**Sample Input**
-
-```json
-{
-  "serviceId": 13,
-  "name": "HIVE_SERVER",
-  "hosts": [
-    "sandbox.hortonworks.com"
-  ],
-  "protocol": "thrift",
-  "port": 10500
-}
-```
-   
-**Success Response**
-
-    HTTP/1.1 201 Created
-    Content-Type: application/json
-    
-```json
-{
-  "responseCode": 1000,
-  "responseMessage": "Success",
-  "entity": {
-    "id": 39,
-    "serviceId": 13,
-    "name": "HIVE_SERVER",
-    "hosts": [
-      "sandbox.hortonworks.com"
-    ],
-    "protocol": "thrift",
-    "port": 10500,
-    "timestamp": 1475678254672
-  }
-}
-```
-
-### List Components
-
-`GET /api/v1/catalog/clusters/:clusterId/services`
-
-### Get Component
-
-`GET /api/v1/catalog/clusters/{clusterId}/services/{id}`
-
-### Update Component
-
-`PUT /api/v1/catalog/services/{serviceId}/configurations/{id}`
-
-### Delete Component
-
-`DELETE /api/v1/catalog/services/{serviceId}/configurations/{id}`
-

@@ -39,6 +39,7 @@ import state from '../../../app_state';
 import CommonNotification from '../../../utils/CommonNotification';
 import AnimatedLoader from '../../../components/AnimatedLoader';
 import CommonLoaderSign from '../../../components/CommonLoaderSign';
+import SpotlightSearch from '../../../components/SpotlightSearch';
 
 const componentTarget = {
   drop(props, monitor, component) {
@@ -88,6 +89,29 @@ class EditorGraph extends Component {
       }
     }));
   }
+  /*
+    addComponent callback method accepts the component details from SpotlightSearch and
+    gets node name in case of custom processor
+    invokes method to add component in TopologyGraphComponent
+  */
+  addComponent(item) {
+    let obj = {
+      type: item.type,
+      imgPath: 'styles/img/icon-' + item.subType.toLowerCase() + '.png',
+      name: item.subType,
+      nodeLabel: item.subType,
+      nodeType: item.subType,
+      topologyComponentBundleId: item.id
+    };
+    if(item.subType === 'CUSTOM') {
+      let config = item.topologyComponentUISpecification.fields,
+        name = _.find(config, {fieldName: "name"});
+      obj.name = name ? name.defaultValue : 'Custom';
+      obj.nodeLabel = name ? name.defaultValue : 'Custom';
+      obj.nodeType = 'Custom';
+    }
+    this.refs.TopologyGraph.decoratedComponentInstance.addComponentToGraph(obj);
+  }
   render() {
     const actualHeight = (window.innerHeight - (this.props.viewMode
       ? 360
@@ -106,14 +130,16 @@ class EditorGraph extends Component {
       topologyConfigMessageCB
     } = this.props;
     const {boxes, bundleArr} = this.state;
+    const componentsBundle = [...bundleArr.sourceBundle, ...bundleArr.processorsBundle, ...bundleArr.sinksBundle];
     return connectDropTarget(
       <div>
         <div className="" style={{
           height: actualHeight
         }}>
-          <TopologyGraphComponent ref="TopologyGraph" height={parseInt(actualHeight, 10)} data={graphData} topologyId={topologyId} versionId={versionId} versionsArr={versionsArr} viewMode={viewMode} getModalScope={getModalScope} setModalContent={setModalContent} getEdgeConfigModal={getEdgeConfigModal} setLastChange={setLastChange} topologyConfigMessageCB={topologyConfigMessageCB}/> {state.showComponentNodeContainer
+          <TopologyGraphComponent ref="TopologyGraph" height={parseInt(actualHeight, 10)} data={graphData} topologyId={topologyId} versionId={versionId} versionsArr={versionsArr} viewMode={viewMode} getModalScope={getModalScope} setModalContent={setModalContent} getEdgeConfigModal={getEdgeConfigModal} setLastChange={setLastChange} topologyConfigMessageCB={topologyConfigMessageCB} /> {state.showComponentNodeContainer
             ? <ComponentNodeContainer left={boxes.left} top={boxes.top} hideSourceOnDrag={true} viewMode={viewMode} customProcessors={this.props.customProcessors} bundleArr={bundleArr}/>
             : null}
+            {state.showSpotlightSearch ? <SpotlightSearch viewMode={viewMode} componentsList={Utils.sortArray(componentsBundle, 'name', true)} addComponentCallback={this.addComponent.bind(this)}/> : ''}
         </div>
       </div>
     );
@@ -761,7 +787,7 @@ class TopologyEditorContainer extends Component {
             if (this.node.currentType.toLowerCase() === 'window' || this.node.currentType.toLowerCase() === 'join' || this.node.currentType.toLowerCase() === 'projection') {
               let updatedEdges = [];
               savedNode.map((n, i) => {
-                if (i > 0) {
+                if (i > 0 && n.streamGrouping) {
                   updatedEdges.push(n);
                 }
               });
@@ -1035,6 +1061,11 @@ class TopologyEditorContainer extends Component {
                     <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip"> Configure </Tooltip>}>
                       <a href="javascript:void(0);" className="config" onClick={this.showConfig.bind(this)}>
                         <i className="fa fa-gear"></i>
+                      </a>
+                    </OverlayTrigger>
+                    <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip"><div>Spotlight Search show/hide</div><div>(Ctrl+Space/Esc)</div></Tooltip>}>
+                      <a href="javascript:void(0);" className="spotlight-search" onClick={()=>{state.showSpotlightSearch = !state.showSpotlightSearch;}}>
+                        <i className="fa fa-search"></i>
                       </a>
                     </OverlayTrigger>
                   </div>

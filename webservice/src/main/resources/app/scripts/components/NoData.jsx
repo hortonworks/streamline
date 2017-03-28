@@ -136,7 +136,7 @@ export default class NoData extends Component {
                           : <div className="list">
                             <h4>
                               <span className="hb success">1</span>
-                              &nbsp;Go to
+                              &nbsp;Go to&nbsp;
                               <Link to="/service-pool">Service Pool</Link>
                             </h4>
                             <div className="intro-content">
@@ -164,7 +164,7 @@ export default class NoData extends Component {
                           : <div className="list">
                             <h4>
                               <span className="hb success">2</span>
-                              &nbsp;Go to
+                              &nbsp;Go to&nbsp;
                               <Link to="/environments">Environments</Link>
                             </h4>
                             <div className="intro-content">
@@ -179,7 +179,7 @@ export default class NoData extends Component {
                       : <div className="list">
                         <h4>
                           <span className="hb success">3</span>
-                          &nbsp;Go to
+                          &nbsp;Go to&nbsp;
                           <Link to="/">Application</Link>
                         </h4>
                         <div className="intro-content">

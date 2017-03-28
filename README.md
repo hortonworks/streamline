@@ -1,7 +1,7 @@
 # Hortonworks Streaming Analytics Manager
 Develop and deploy Streaming Analytics applications visually with bindings for streaming engine and multiple source/sinks, rich set of streaming operators and operational lifecycle management.
 
-##How to run locally
+## How to run locally
 From command line execute the following commands:
 
 `cd $STREAMLINE-HOME`  
@@ -13,18 +13,18 @@ From command line execute the following commands:
 This should start the webserver on localhost port 8080. If you are running storm on the same host you may get 
 `java.net.BindException: Address already in use` in which case you should modify `server` section of streamline.yaml.
 
-##Intellij
+## Intellij
 `Run -> Edit Configuration -> Application -> StreamlineApplication` in the `Program argument section` add `server $STREAMLINE-HOME/webservice/conf/streamline.yaml`
 
 Same config can be used to start debugging.
 
-##Bootstrapping webserver with test data
+## Bootstrapping webserver with test data
 `cd $STREAMLINE-HOME\bootstrap`
 `./bootstrap.sh`
 
 Please see `bootstrap.sh` which is just bunch of curl commands in case you want to add some other objects to webservice's in memory store.
 
-#Running storm topology
+# Running storm topology
 First you need to populate your kafka topic, if you have not done so create your kafka topic by executing    
 `kafka-topics.sh --create --topic nest-topic --zookeeper localhost:2181 --replication-factor 1 --partitions 3`  
 
@@ -45,7 +45,7 @@ You should verify from kafka's server.properties that the listerner port and hos
 
 You can run the simulator command in a loop or run it multiple times to produce same data again and again.
 
-##HBase set up
+## HBase set up
 
 Before starting hbase, put the below hbase-site.xml in the hbase config directory so that hbase uses the local ZK instance running in your localhost and localfs for storage so that you dont need to start a separate HDFS server instance.
 
@@ -92,7 +92,7 @@ Now you need to create HBase tables where the StreamlineEvent and Notifications 
 ## Running the Topology
 UI can be used to create/generate a topology and run that on a storm cluster.
 
-#Accounting for bad tuples in a topology
+# Accounting for bad tuples in a topology
 A mechanism has been added so that when messages are being played from a 
 spout in an Streamline topology and they can't successfully be parsed then such 
 messages end up in some persistent storage. The way it works is ParserBolt 
@@ -105,7 +105,7 @@ failed to parse using the field `bytes`. In sample topology in storm module
 an HdfsBolt is used to store the unparsed tuples.
 
 
-#Accessing UI
+# Accessing UI
 http://localhost:8080/ui/index.html
 
 

@@ -20,7 +20,6 @@ import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
-import com.hortonworks.streamline.common.exception.DuplicateEntityException;
 import com.hortonworks.streamline.common.exception.service.exception.request.TopologyAlreadyExistsOnCluster;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -31,9 +30,9 @@ import com.hortonworks.streamline.streams.actions.topology.service.TopologyActio
 import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyVersion;
-import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyData;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.storm.common.TopologyNotAliveException;
 import com.hortonworks.streamline.streams.metrics.topology.TopologyMetrics;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
@@ -234,6 +233,8 @@ public class TopologyCatalogResource {
                 res = removed;
             }
         }
+        // remove topology state information
+        catalogService.removeTopologyState(topologyId);
         if (res != null) {
             return WSUtils.respondEntity(res, OK);
         } else {
@@ -336,6 +337,17 @@ public class TopologyCatalogResource {
         throw EntityNotFoundException.byVersion(topologyId.toString(), versionId.toString());
     }
 
+
+    @GET
+    @Path("/topologies/{topologyId}/deploymentstate")
+    @Timed
+    public Response topologyDeploymentState(@PathParam("topologyId") Long topologyId) throws Exception {
+        return Optional.ofNullable(catalogService.getTopology(topologyId))
+                .flatMap(t -> catalogService.getTopologyState(t.getId()))
+                .map(s -> WSUtils.respondEntity(s, OK))
+                .orElseThrow(() -> EntityNotFoundException.byId(topologyId.toString()));
+    }
+
     @GET
     @Path("/topologies/{topologyId}/actions/status")
     @Timed
@@ -394,16 +406,10 @@ public class TopologyCatalogResource {
     @Path("/topologies/{topologyId}/actions/deploy")
     @Timed
     public Response deployTopology (@PathParam("topologyId") Long topologyId) throws Exception {
-        Topology result = catalogService.getTopology(topologyId);
-        if (result != null) {
-            try {
-                actionsService.deployTopology(result);
-                return WSUtils.respondEntity(result, OK);
-            } catch (TopologyAlreadyExistsOnCluster ex) {
-                return ex.getResponse();
-            }
+        Topology topology = catalogService.getTopology(topologyId);
+        if (topology != null) {
+            return deploy(topology);
         }
-
         throw EntityNotFoundException.byId(topologyId.toString());
     }
 
@@ -412,17 +418,20 @@ public class TopologyCatalogResource {
     @Timed
     public Response deployTopologyVersion(@PathParam("topologyId") Long topologyId,
                                           @PathParam("versionId") Long versionId) throws Exception {
-        Topology result = catalogService.getTopology(topologyId, versionId);
-        if (result != null) {
-            try {
-                actionsService.deployTopology(result);
-                return WSUtils.respondEntity(result, OK);
-            } catch (TopologyAlreadyExistsOnCluster ex) {
-                return ex.getResponse();
-            }
+        Topology topology = catalogService.getTopology(topologyId, versionId);
+        if (topology != null) {
+            return deploy(topology);
         }
-
         throw EntityNotFoundException.byVersion(topologyId.toString(), versionId.toString());
+    }
+
+    private Response deploy(Topology topology) {
+        try {
+            ParallelStreamUtil.runAsync(() -> actionsService.deployTopology(topology), forkJoinPool);
+            return WSUtils.respondEntity(topology, OK);
+        } catch (TopologyAlreadyExistsOnCluster ex) {
+            return ex.getResponse();
+        }
     }
 
     @POST

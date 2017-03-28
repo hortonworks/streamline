@@ -28,8 +28,8 @@ import com.hortonworks.streamline.storage.StorageManagerAware;
 import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
 import com.hortonworks.streamline.streams.catalog.TopologyVersion;
 import com.hortonworks.streamline.streams.catalog.service.CatalogService;
-import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.metrics.topology.service.TopologyMetricsService;
 import com.hortonworks.streamline.streams.notification.service.NotificationServiceImpl;
 import com.hortonworks.streamline.streams.service.metadata.HBaseMetadataResource;
@@ -134,6 +134,8 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         result.add(serviceConfigurationCatalogResource);
         final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(environmentService);
         result.add(componentCatalogResource);
+        final ServiceBundleResource serviceBundleResource = new ServiceBundleResource(environmentService);
+        result.add(serviceBundleResource);
         return result;
     }
 
