@@ -10,6 +10,7 @@ DROP TABLE IF EXISTS topology_source_stream_mapping;
 DROP TABLE IF EXISTS topology_source;
 DROP TABLE IF EXISTS topology;
 DROP TABLE IF EXISTS topology_editor_metadata;
+DROP TABLE IF EXISTS topology_editor_toolbar;
 DROP TABLE IF EXISTS topology_sink;
 DROP TABLE IF EXISTS topology_processor_stream_mapping;
 DROP TABLE IF EXISTS topology_processor;

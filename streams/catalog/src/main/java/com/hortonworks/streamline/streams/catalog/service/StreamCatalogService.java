@@ -28,9 +28,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
+import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.common.ComponentTypes;
 import com.hortonworks.streamline.common.QueryParam;
-import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.common.util.ProxyUtil;
 import com.hortonworks.streamline.common.util.Utils;
@@ -41,25 +41,26 @@ import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.storage.exception.StorageException;
 import com.hortonworks.streamline.storage.util.StorageUtils;
 import com.hortonworks.streamline.streams.StreamlineEvent;
-import com.hortonworks.streamline.streams.catalog.TopologyBranchRule;
 import com.hortonworks.streamline.streams.catalog.File;
 import com.hortonworks.streamline.streams.catalog.Notifier;
 import com.hortonworks.streamline.streams.catalog.Projection;
-import com.hortonworks.streamline.streams.catalog.TopologyRule;
-import com.hortonworks.streamline.streams.catalog.TopologyStream;
 import com.hortonworks.streamline.streams.catalog.Topology;
+import com.hortonworks.streamline.streams.catalog.TopologyBranchRule;
 import com.hortonworks.streamline.streams.catalog.TopologyComponent;
 import com.hortonworks.streamline.streams.catalog.TopologyEdge;
 import com.hortonworks.streamline.streams.catalog.TopologyEditorMetadata;
+import com.hortonworks.streamline.streams.catalog.TopologyEditorToolbar;
 import com.hortonworks.streamline.streams.catalog.TopologyOutputComponent;
 import com.hortonworks.streamline.streams.catalog.TopologyProcessor;
 import com.hortonworks.streamline.streams.catalog.TopologyProcessorStreamMapping;
+import com.hortonworks.streamline.streams.catalog.TopologyRule;
 import com.hortonworks.streamline.streams.catalog.TopologySink;
 import com.hortonworks.streamline.streams.catalog.TopologySource;
 import com.hortonworks.streamline.streams.catalog.TopologySourceStreamMapping;
+import com.hortonworks.streamline.streams.catalog.TopologyStream;
 import com.hortonworks.streamline.streams.catalog.TopologyVersion;
-import com.hortonworks.streamline.streams.catalog.UDF;
 import com.hortonworks.streamline.streams.catalog.TopologyWindow;
+import com.hortonworks.streamline.streams.catalog.UDF;
 import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
 import com.hortonworks.streamline.streams.catalog.rule.RuleParser;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
@@ -999,6 +1000,41 @@ public class StreamCatalogService {
         deleteFileFromStorage(customProcessorInfo.fromTopologyComponentBundle(customProcessorBundle).getJarFileName());
         this.removeTopologyComponentBundle(customProcessorBundle.getId());
         return customProcessorInfo;
+    }
+
+    public Optional<TopologyEditorToolbar> getTopologyEditorToolbar(long userId) {
+        List<QueryParam> qps = QueryParam.params(TopologyEditorToolbar.USER_ID, String.valueOf(userId));
+        Collection<TopologyEditorToolbar> res = listTopologyEditorToolbar(qps);
+        return res.isEmpty() ? Optional.empty() : Optional.ofNullable(res.iterator().next());
+    }
+
+    public Collection<TopologyEditorToolbar> listTopologyEditorToolbar(List<QueryParam> queryParams) {
+        return this.dao.find(TopologyEditorToolbar.NAMESPACE, queryParams);
+    }
+
+    public TopologyEditorToolbar addTopologyEditorToolbar(TopologyEditorToolbar toolbar) {
+        if (toolbar.getUserId() == null) {
+            toolbar.setUserId(-1L);
+        }
+        if (toolbar.getTimestamp() == null) {
+            toolbar.setTimestamp(System.currentTimeMillis());
+        }
+        this.dao.add(toolbar);
+        return toolbar;
+    }
+
+    public TopologyEditorToolbar addOrUpdateTopologyEditorToolbar(TopologyEditorToolbar toolbar) {
+        if (toolbar.getUserId() == null) {
+            toolbar.setUserId(-1L);
+        }
+        toolbar.setTimestamp(System.currentTimeMillis());
+        this.dao.addOrUpdate(toolbar);
+        return toolbar;
+    }
+
+    public Optional<TopologyEditorToolbar> removeTopologyEditorToolbar(long userId) {
+        return getTopologyEditorToolbar(userId)
+                .map(toolbar -> dao.<TopologyEditorToolbar>remove(toolbar.getStorableKey()));
     }
 
     public Collection<TopologyEditorMetadata> listTopologyEditorMetadata() {

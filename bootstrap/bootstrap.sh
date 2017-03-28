@@ -107,6 +107,7 @@ done
 CATALOG_ROOT_URL_PROPERTY_KEY=catalogRootUrl
 component_dir=${bootstrap_dir}/components
 service_dir=${bootstrap_dir}/services
+user_role_dir=${bootstrap_dir}/users_roles
 
 echo "Configuration file: ${CONFIG_FILE_PATH}"
 
@@ -120,6 +121,7 @@ fi
 echo "Catalog Root URL: ${CATALOG_ROOT_URL}"
 echo "Component bundle Root dir: ${component_dir}"
 echo "Service bundle Root dir: ${service_dir}"
+echo "User/Role bundle Root dir: ${user_role_dir}"
 
 function add_all_bundles {
     # === Source ===
@@ -164,6 +166,9 @@ function add_all_bundles {
     post /servicebundles ${service_dir}/hdfs-bundle.json
     post /servicebundles ${service_dir}/hbase-bundle.json
     post /servicebundles ${service_dir}/hive-bundle.json
+
+    # === anonymous user ===
+    post /users ${user_role_dir}/user_anon.json
 
     #----------------------------------
     # Execute other bootstrap scripts

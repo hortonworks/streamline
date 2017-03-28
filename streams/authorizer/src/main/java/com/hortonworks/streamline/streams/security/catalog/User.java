@@ -31,6 +31,8 @@ import java.util.Set;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @StorableEntity
 public class User extends AbstractStorable {
+    public static final String USER_ANONYMOUS = "anonymous";
+
     public static final String NAMESPACE = "user_entry";
     public static final String ID = "id";
     public static final String NAME = "name";

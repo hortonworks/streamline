@@ -391,3 +391,10 @@ CREATE TABLE IF NOT EXISTS user_role (
   FOREIGN KEY ("userId") REFERENCES "user_entry" (id),
   FOREIGN KEY ("roleId") REFERENCES "role" (id)
 );
+
+CREATE TABLE IF NOT EXISTS topology_editor_toolbar (
+  "userId" BIGINT NOT NULL REFERENCES "user_entry" (id),
+  "data" TEXT NOT NULL,
+  "timestamp" BIGINT,
+  PRIMARY KEY ("userId")
+);

@@ -37,6 +37,7 @@ DROP TABLE IF EXISTS role
 DROP TABLE IF EXISTS role_hierarchy
 DROP TABLE IF EXISTS user_entry
 DROP TABLE IF EXISTS user_role
+DROP TABLE IF EXISTS topology_editor_toolbar
 DROP SEQUENCE IF EXISTS topology_version_sequence
 DROP SEQUENCE IF EXISTS topology_sequence
 DROP SEQUENCE IF EXISTS topology_component_bundle_sequence
@@ -69,3 +70,4 @@ DROP SEQUENCE IF EXISTS role_sequence
 DROP SEQUENCE IF EXISTS role_hierarchy_sequence
 DROP SEQUENCE IF EXISTS user_entry_sequence
 DROP SEQUENCE IF EXISTS user_role_sequence
+DROP SEQUENCE IF EXISTS topology_editor_toolbar_sequence
