@@ -338,3 +338,12 @@ CREATE TABLE IF NOT EXISTS topology_state (
   "description" VARCHAR(255) NOT NULL,
   PRIMARY KEY (topologyId)
 );
+
+CREATE TABLE IF NOT EXISTS service_bundle (
+  "id" SERIAL NOT NULL,
+  "name" VARCHAR(256) NOT NULL,
+  "serviceUISpecification" TEXT NOT NULL,
+  "registerClass" TEXT,
+  "timestamp" BIGINT,
+  PRIMARY KEY (id)
+);
