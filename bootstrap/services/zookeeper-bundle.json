@@ -11,7 +11,7 @@
         "type": "array.string"
       },
       {
-        "uiName": "zoo.cfg",
+        "uiName": "Zookeeper config file (zoo.cfg)",
         "fieldName": "zoo.cfg",
         "isOptional": false,
         "tooltip": "Upload zoo.cfg file used by Zookeeper cluster",

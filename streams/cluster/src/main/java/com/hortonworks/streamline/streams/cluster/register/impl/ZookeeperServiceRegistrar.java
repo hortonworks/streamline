@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.cluster.register.impl;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 
 import java.util.Arrays;
@@ -30,12 +31,11 @@ import static java.util.stream.Collectors.toList;
 
 public class ZookeeperServiceRegistrar extends AbstractServiceRegistrar {
     public static final String COMPONENT_ZOOKEEPER_SERVER = ComponentPropertyPattern.ZOOKEEPER_SERVER.name();
-    public static final String SERVICE_NAME_ZOOKEEPER = "ZOOKEEPER";
     public static final String PARAM_ZOOKEEPER_SERVER_HOSTNAMES = "zkServersHostnames";
 
     @Override
     protected String getServiceName() {
-        return SERVICE_NAME_ZOOKEEPER;
+        return Constants.Zookeeper.SERVICE_NAME;
     }
 
     @Override

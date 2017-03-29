@@ -4,7 +4,7 @@
   "serviceUISpecification": {
     "fields": [
       {
-        "uiName": "hive-site.xml",
+        "uiName": "Hive config file (hive-site.xml)",
         "fieldName": "hive-site.xml",
         "isOptional": false,
         "tooltip": "Upload hive-site.xml file used by Hive cluster",

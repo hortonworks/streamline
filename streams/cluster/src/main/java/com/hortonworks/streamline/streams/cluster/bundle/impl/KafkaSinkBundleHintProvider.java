@@ -15,6 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.cluster.bundle.impl;
 
+import com.hortonworks.streamline.streams.cluster.Constants;
 import org.apache.commons.lang.StringUtils;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
@@ -30,7 +31,6 @@ import java.util.Map;
 import static java.util.stream.Collectors.toList;
 
 public class KafkaSinkBundleHintProvider extends AbstractBundleHintProvider {
-    public static final String SERVICE_NAME = "KAFKA";
     public static final String FIELD_NAME_TOPIC = "topic";
     public static final String FIELD_NAME_BOOTSTRAP_SERVERS = "bootstrapServers";
     public static final String FIELD_NAME_SECURITY_PROTOCOL = "securityProtocol";
@@ -57,7 +57,7 @@ public class KafkaSinkBundleHintProvider extends AbstractBundleHintProvider {
             }
         } catch (ServiceNotFoundException e) {
             // we access it from mapping information so shouldn't be here
-            throw new IllegalStateException("Service " + SERVICE_NAME + " in cluster " + cluster.getName() +
+            throw new IllegalStateException("Service " + Constants.Kafka.SERVICE_NAME + " in cluster " + cluster.getName() +
                     " not found but mapping information exists.");
         } catch (ServiceConfigurationNotFoundException e) {
             // there's KAFKA service but not enough configuration info.
@@ -69,6 +69,6 @@ public class KafkaSinkBundleHintProvider extends AbstractBundleHintProvider {
 
     @Override
     public String getServiceName() {
-        return SERVICE_NAME;
+        return Constants.Kafka.SERVICE_NAME;
     }
 }

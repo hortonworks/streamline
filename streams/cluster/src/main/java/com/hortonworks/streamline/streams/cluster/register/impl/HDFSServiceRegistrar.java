@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.cluster.register.impl;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.Constants;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
@@ -29,12 +30,9 @@ import static com.hortonworks.streamline.streams.cluster.discovery.ambari.Config
 
 public class HDFSServiceRegistrar extends AbstractServiceRegistrar {
 
-    public static final String SERVICE_NAME_HDFS = "HDFS";
-    public static final String PROPERTY_KEY_DEFAULT_FS = "fs.defaultFS";
-
     @Override
     protected String getServiceName() {
-        return SERVICE_NAME_HDFS;
+        return Constants.HDFS.SERVICE_NAME;
     }
 
     @Override
@@ -69,6 +67,6 @@ public class HDFSServiceRegistrar extends AbstractServiceRegistrar {
 
     @Override
     protected boolean validateServiceConfiguationsAsFlattenedMap(Map<String, String> configMap) {
-        return configMap.containsKey(PROPERTY_KEY_DEFAULT_FS);
+        return configMap.containsKey(Constants.HDFS.PROPERTY_KEY_DEFAULT_FS);
     }
 }

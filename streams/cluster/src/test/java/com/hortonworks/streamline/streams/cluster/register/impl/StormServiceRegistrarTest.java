@@ -20,6 +20,7 @@ import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,7 +60,7 @@ public class StormServiceRegistrarTest extends AbstractServiceRegistrarTest<Stor
             registrar.register(cluster, config, Lists.newArrayList(stormYaml));
         }
 
-        Service stormService = environmentService.getServiceByName(cluster.getId(), StormServiceRegistrar.SERVICE_NAME_STORM);
+        Service stormService = environmentService.getServiceByName(cluster.getId(), Constants.Storm.SERVICE_NAME);
         assertNotNull(stormService);
         ServiceConfiguration stormYamlConf = environmentService.getServiceConfigurationByName(stormService.getId(), CONFIGURATION_NAME_STORM_YAML);
         assertNotNull(stormYamlConf);
@@ -80,7 +81,7 @@ public class StormServiceRegistrarTest extends AbstractServiceRegistrarTest<Stor
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
-            Service stormService = environmentService.getServiceByName(cluster.getId(), StormServiceRegistrar.SERVICE_NAME_STORM);
+            Service stormService = environmentService.getServiceByName(cluster.getId(), Constants.Storm.SERVICE_NAME);
             assertNull(stormService);
         }
     }
@@ -99,7 +100,7 @@ public class StormServiceRegistrarTest extends AbstractServiceRegistrarTest<Stor
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
-            Service stormService = environmentService.getServiceByName(cluster.getId(), StormServiceRegistrar.SERVICE_NAME_STORM);
+            Service stormService = environmentService.getServiceByName(cluster.getId(), Constants.Storm.SERVICE_NAME);
             assertNull(stormService);
         }
     }
@@ -118,7 +119,7 @@ public class StormServiceRegistrarTest extends AbstractServiceRegistrarTest<Stor
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
-            Service stormService = environmentService.getServiceByName(cluster.getId(), StormServiceRegistrar.SERVICE_NAME_STORM);
+            Service stormService = environmentService.getServiceByName(cluster.getId(), Constants.Storm.SERVICE_NAME);
             assertNull(stormService);
         }
     }

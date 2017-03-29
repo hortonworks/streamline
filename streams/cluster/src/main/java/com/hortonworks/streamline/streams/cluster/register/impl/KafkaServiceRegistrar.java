@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.cluster.register.impl;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import org.apache.commons.lang3.StringUtils;
@@ -38,7 +39,7 @@ public class KafkaServiceRegistrar extends AbstractServiceRegistrar {
 
     @Override
     protected String getServiceName() {
-        return SERVICE_NAME_KAFKA;
+        return Constants.Kafka.SERVICE_NAME;
     }
 
     @Override
@@ -77,7 +78,7 @@ public class KafkaServiceRegistrar extends AbstractServiceRegistrar {
         // requirements
         // 1. zookeeper.connect should be available in kafka-broker
         // if it exists, it should be within kafka-broker since we are allowing only one 'kafka-broker'
-        return configMap.containsKey(KAFKA_PROPERTY_ZOOKEEPER_CONNECT);
+        return configMap.containsKey(Constants.Kafka.PROPERTY_KEY_ZOOKEEPER_CONNECT);
     }
 
     private Component createKafkaBrokerComponent(Config config, Map<String, String> flattenConfigMap) {

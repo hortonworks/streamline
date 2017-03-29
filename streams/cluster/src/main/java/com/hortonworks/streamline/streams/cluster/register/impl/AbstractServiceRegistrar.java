@@ -35,8 +35,6 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractServiceRegistrar implements ManualServiceRegistrar {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
     protected EnvironmentService environmentService;
 
     protected abstract String getServiceName();
@@ -69,7 +67,7 @@ public abstract class AbstractServiceRegistrar implements ManualServiceRegistrar
             String confType = getConfType(fileName);
             String actualFileName = ConfigFilePattern.getOriginFileName(confType);
 
-            ServiceConfiguration configuration = environmentService.initializeServiceConfiguration(objectMapper,
+            ServiceConfiguration configuration = environmentService.initializeServiceConfiguration(
                     service.getId(), confType, actualFileName, new HashMap<>(configMap));
             configurations.add(configuration);
             flattenConfigMap.putAll(configMap);

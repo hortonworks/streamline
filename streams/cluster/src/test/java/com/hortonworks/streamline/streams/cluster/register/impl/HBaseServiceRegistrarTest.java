@@ -20,6 +20,7 @@ import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import mockit.integration.junit4.JMockit;
 import org.junit.Before;
@@ -57,7 +58,7 @@ public class HBaseServiceRegistrarTest extends AbstractServiceRegistrarTest<HBas
             registrar.register(cluster, new Config(), Lists.newArrayList(hiveSiteXml));
         }
 
-        Service hbaseService = environmentService.getServiceByName(cluster.getId(), HBaseServiceRegistrar.SERVICE_NAME_HBASE);
+        Service hbaseService = environmentService.getServiceByName(cluster.getId(), Constants.HBase.SERVICE_NAME);
         assertNotNull(hbaseService);
         ServiceConfiguration hbaseSiteConf = environmentService.getServiceConfigurationByName(hbaseService.getId(), CONFIGURATION_NAME_HBASE_SITE);
         assertNotNull(hbaseSiteConf);
@@ -75,7 +76,7 @@ public class HBaseServiceRegistrarTest extends AbstractServiceRegistrarTest<HBas
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
-            Service hbaseService = environmentService.getServiceByName(cluster.getId(), HBaseServiceRegistrar.SERVICE_NAME_HBASE);
+            Service hbaseService = environmentService.getServiceByName(cluster.getId(), Constants.HBase.SERVICE_NAME);
             assertNull(hbaseService);
         }
     }
@@ -91,7 +92,7 @@ public class HBaseServiceRegistrarTest extends AbstractServiceRegistrarTest<HBas
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
-            Service hbaseService = environmentService.getServiceByName(cluster.getId(), HBaseServiceRegistrar.SERVICE_NAME_HBASE);
+            Service hbaseService = environmentService.getServiceByName(cluster.getId(), Constants.HBase.SERVICE_NAME);
             assertNull(hbaseService);
         }
     }

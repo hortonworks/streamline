@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.cluster.bundle.impl;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
+import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.bundle.AbstractBundleHintProvider;
 import com.hortonworks.streamline.streams.cluster.service.metadata.HBaseMetadataService;
 
@@ -25,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HBaseBundleHintProvider extends AbstractBundleHintProvider {
-    public static final String SERVICE_NAME = "HBASE";
     public static final String FIELD_NAME_TABLE = "table";
 
     @Override
@@ -35,7 +35,7 @@ public class HBaseBundleHintProvider extends AbstractBundleHintProvider {
             hintMap.put(FIELD_NAME_TABLE, hBaseMetadataService.getHBaseTables().getTables());
         } catch (ServiceNotFoundException e) {
             // we access it from mapping information so shouldn't be here
-            throw new IllegalStateException("Service " + SERVICE_NAME + " in cluster " + cluster.getName() +
+            throw new IllegalStateException("Service " + Constants.HBase.SERVICE_NAME + " in cluster " + cluster.getName() +
                     " not found but mapping information exists.");
         } catch (ServiceConfigurationNotFoundException e) {
             // there's HBASE service but not enough configuration info.
@@ -47,6 +47,6 @@ public class HBaseBundleHintProvider extends AbstractBundleHintProvider {
 
     @Override
     public String getServiceName() {
-        return SERVICE_NAME;
+        return Constants.HBase.SERVICE_NAME;
     }
 }
