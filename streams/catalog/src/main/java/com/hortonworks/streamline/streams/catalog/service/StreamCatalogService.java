@@ -349,7 +349,7 @@ public class StreamCatalogService {
         // put actual version id
         topology.setVersionId(versionInfo.getId());
 
-        this.dao.add(topology);
+        this.dao.addOrUpdate(topology);
         return topology;
     }
 
@@ -2364,6 +2364,6 @@ public class StreamCatalogService {
     }
 
     private Collection<File> listFiles(List<QueryParam> queryParams) {
-        return dao.find(File.NAME_SPACE, queryParams);
+        return dao.find(File.NAMESPACE, queryParams);
     }
 }

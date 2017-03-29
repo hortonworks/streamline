@@ -16,6 +16,10 @@
 package com.hortonworks.streamline.streams.service;
 
 import com.google.common.collect.Lists;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
+import com.hortonworks.streamline.streams.security.StreamlinePrincipal;
+import com.hortonworks.streamline.streams.security.authentication.StreamlineSecurityContext;
+import com.hortonworks.streamline.streams.security.impl.NoopAuthorizer;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Tested;
@@ -33,6 +37,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.ws.rs.core.SecurityContext;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,6 +54,9 @@ public class NamespaceCatalogResourceTest {
     private NamespaceCatalogResource namespaceCatalogResource;
 
     @Injectable
+    private StreamlineAuthorizer authorizer = new NoopAuthorizer();
+
+    @Injectable
     private StreamCatalogService catalogService;
 
     @Injectable
@@ -56,6 +64,9 @@ public class NamespaceCatalogResourceTest {
 
     @Injectable
     private EnvironmentService environmentService;
+
+    @Injectable
+    private SecurityContext securityContext;
 
     @Test
     public void testExcludeStreamingEngineViaSetServicesToClusterInNamespace() throws Exception {
@@ -71,7 +82,7 @@ public class NamespaceCatalogResourceTest {
                 .filter(m -> !m.getServiceName().equals(TEST_STREAMING_ENGINE)).collect(toList());
 
         try {
-            namespaceCatalogResource.setServicesToClusterInNamespace(testNamespaceId, mappingsToApply);
+            namespaceCatalogResource.setServicesToClusterInNamespace(testNamespaceId, mappingsToApply, securityContext);
             Assert.fail("Should throw BadRequestException");
         } catch (BadRequestException e) {
             // passed
@@ -100,7 +111,7 @@ public class NamespaceCatalogResourceTest {
         mappingsToApply.add(new NamespaceServiceClusterMapping(testNamespaceId, TEST_STREAMING_ENGINE, 2L));
 
         try {
-            namespaceCatalogResource.setServicesToClusterInNamespace(testNamespaceId, mappingsToApply);
+            namespaceCatalogResource.setServicesToClusterInNamespace(testNamespaceId, mappingsToApply, securityContext);
             Assert.fail("Should throw BadRequestException");
         } catch (BadRequestException e) {
             // passed
@@ -128,7 +139,7 @@ public class NamespaceCatalogResourceTest {
             result = existingMappings;
         }};
 
-        namespaceCatalogResource.setServicesToClusterInNamespace(testNamespaceId, new ArrayList<>(existingMappings));
+        namespaceCatalogResource.setServicesToClusterInNamespace(testNamespaceId, new ArrayList<>(existingMappings), securityContext);
 
         new Verifications() {{
             catalogService.listTopologies();
@@ -165,7 +176,7 @@ public class NamespaceCatalogResourceTest {
         );
 
         try {
-            namespaceCatalogResource.setServicesToClusterInNamespace(testNamespaceId, mappingsToApply);
+            namespaceCatalogResource.setServicesToClusterInNamespace(testNamespaceId, mappingsToApply, securityContext);
             Assert.fail("Should throw BadRequestException");
         } catch (BadRequestException e) {
             // passed
@@ -205,7 +216,7 @@ public class NamespaceCatalogResourceTest {
         );
 
         try {
-            namespaceCatalogResource.setServicesToClusterInNamespace(testNamespaceId, mappingsToApply);
+            namespaceCatalogResource.setServicesToClusterInNamespace(testNamespaceId, mappingsToApply, securityContext);
             Assert.fail("Should throw BadRequestException");
         } catch (BadRequestException e) {
             // passed
@@ -240,7 +251,7 @@ public class NamespaceCatalogResourceTest {
         NamespaceServiceClusterMapping newMapping = new NamespaceServiceClusterMapping(testNamespaceId, TEST_STREAMING_ENGINE, 2L);
 
         try {
-            namespaceCatalogResource.mapServiceToClusterInNamespace(testNamespaceId, newMapping);
+            namespaceCatalogResource.mapServiceToClusterInNamespace(testNamespaceId, newMapping, securityContext);
             Assert.fail("Should throw BadRequestException");
         } catch (BadRequestException e) {
             // passed
@@ -270,7 +281,7 @@ public class NamespaceCatalogResourceTest {
         NamespaceServiceClusterMapping newMapping = new NamespaceServiceClusterMapping(testNamespaceId, TEST_TIME_SERIES_DB, 2L);
 
         try {
-            namespaceCatalogResource.mapServiceToClusterInNamespace(testNamespaceId, newMapping);
+            namespaceCatalogResource.mapServiceToClusterInNamespace(testNamespaceId, newMapping, securityContext);
             Assert.fail("Should throw BadRequestException");
         } catch (BadRequestException e) {
             // passed
@@ -300,7 +311,7 @@ public class NamespaceCatalogResourceTest {
         NamespaceServiceClusterMapping existingStreamingEngineMapping = existingMappings.stream()
                 .filter(m -> m.getServiceName().equals(TEST_STREAMING_ENGINE)).findAny().get();
 
-        namespaceCatalogResource.mapServiceToClusterInNamespace(testNamespaceId, existingStreamingEngineMapping);
+        namespaceCatalogResource.mapServiceToClusterInNamespace(testNamespaceId, existingStreamingEngineMapping, securityContext);
 
         new Verifications() {{
             environmentService.addOrUpdateServiceClusterMapping(withAny(new NamespaceServiceClusterMapping()));
@@ -326,7 +337,7 @@ public class NamespaceCatalogResourceTest {
         NamespaceServiceClusterMapping existingTimeSeriesDBMapping = existingMappings.stream()
                 .filter(m -> m.getServiceName().equals(TEST_TIME_SERIES_DB)).findAny().get();
 
-        namespaceCatalogResource.mapServiceToClusterInNamespace(testNamespaceId, existingTimeSeriesDBMapping);
+        namespaceCatalogResource.mapServiceToClusterInNamespace(testNamespaceId, existingTimeSeriesDBMapping, securityContext);
 
         new Verifications() {{
             environmentService.addOrUpdateServiceClusterMapping(withAny(new NamespaceServiceClusterMapping()));
@@ -345,7 +356,7 @@ public class NamespaceCatalogResourceTest {
         setupExpectationForSimulatingTopologyIsRunning(testNamespaceId, testNamespace, existingMappings);
 
         try {
-            namespaceCatalogResource.unmapServiceToClusterInNamespace(testNamespaceId, TEST_STREAMING_ENGINE, 1L);
+            namespaceCatalogResource.unmapServiceToClusterInNamespace(testNamespaceId, TEST_STREAMING_ENGINE, 1L, securityContext);
             Assert.fail("Should throw BadRequestException");
         } catch (BadRequestException e) {
             // passed
@@ -368,7 +379,7 @@ public class NamespaceCatalogResourceTest {
         setupExpectationForSimulatingTopologyIsRunning(testNamespaceId, testNamespace, existingMappings);
 
         try {
-            namespaceCatalogResource.unmapAllServicesToClusterInNamespace(testNamespaceId);
+            namespaceCatalogResource.unmapAllServicesToClusterInNamespace(testNamespaceId, securityContext);
             Assert.fail("Should throw BadRequestException");
         } catch (BadRequestException e) {
             // passed

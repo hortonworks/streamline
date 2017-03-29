@@ -16,7 +16,6 @@
 package com.hortonworks.streamline.streams.cluster;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.common.util.ParallelStreamUtil;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Component;
@@ -47,21 +46,19 @@ public class ClusterImporter {
     }
 
     public Cluster importCluster(ServiceNodeDiscoverer serviceNodeDiscoverer, Cluster cluster) {
-        ObjectMapper objectMapper = new ObjectMapper();
-
         // remove all of relevant services and associated components
         removeAllServices(cluster);
 
         List<String> availableServices = serviceNodeDiscoverer.getServices();
 
         ParallelStreamUtil.execute(
-                () -> handleServices(serviceNodeDiscoverer, cluster, objectMapper, availableServices),
+                () -> handleServices(serviceNodeDiscoverer, cluster, availableServices),
                 forkJoinPool);
 
         return cluster;
     }
 
-    private Void handleServices(ServiceNodeDiscoverer serviceNodeDiscoverer, Cluster cluster, ObjectMapper objectMapper, List<String> availableServices) {
+    private Void handleServices(ServiceNodeDiscoverer serviceNodeDiscoverer, Cluster cluster, List<String> availableServices) {
         availableServices.parallelStream()
                 .filter(ServiceConfigurations::contains)
                 .forEach(serviceName -> {
@@ -71,7 +68,7 @@ public class ClusterImporter {
 
                     Map<String, String> flattenConfigurations = new ConcurrentHashMap<>();
                     Map<String, Map<String, String>> configurations = serviceNodeDiscoverer.getConfigurations(serviceName);
-                    handleConfigurations(serviceNodeDiscoverer, objectMapper, flattenConfigurations, configurations, service);
+                    handleConfigurations(serviceNodeDiscoverer, flattenConfigurations, configurations, service);
 
                     List<String> components = serviceNodeDiscoverer.getComponents(serviceName);
                     handleComponents(serviceNodeDiscoverer, serviceName, flattenConfigurations, service, components);
@@ -91,7 +88,7 @@ public class ClusterImporter {
         });
     }
 
-    private void handleConfigurations(ServiceNodeDiscoverer serviceNodeDiscoverer, ObjectMapper objectMapper, Map<String, String> flattenConfigurations, Map<String, Map<String, String>> configurations, Service service) {
+    private void handleConfigurations(ServiceNodeDiscoverer serviceNodeDiscoverer, Map<String, String> flattenConfigurations, Map<String, Map<String, String>> configurations, Service service) {
         configurations.entrySet().parallelStream()
                 .forEach(entry -> {
                     try {
@@ -102,7 +99,7 @@ public class ClusterImporter {
 
                         String actualFileName = serviceNodeDiscoverer.getOriginalFileName(confType);
 
-                        addServiceConfiguration(objectMapper, service, confType, configuration, actualFileName);
+                        addServiceConfiguration(service, confType, configuration, actualFileName);
                         flattenConfigurations.putAll(configuration);
 
                         LOG.debug("conf-type end {}", confType);
@@ -118,9 +115,9 @@ public class ClusterImporter {
         environmentService.addComponent(component);
     }
 
-    private void addServiceConfiguration(ObjectMapper objectMapper, Service service, String confType, Map<String, String> configuration, String actualFileName) throws JsonProcessingException {
-        ServiceConfiguration serviceConfiguration = environmentService.initializeServiceConfiguration(objectMapper,
-                service.getId(), confType, actualFileName, configuration);
+    private void addServiceConfiguration(Service service, String confType, Map<String, String> configuration, String actualFileName) throws JsonProcessingException {
+        ServiceConfiguration serviceConfiguration = environmentService.initializeServiceConfiguration(service.getId(),
+                confType, actualFileName, configuration);
 
         environmentService.addServiceConfiguration(serviceConfiguration);
     }

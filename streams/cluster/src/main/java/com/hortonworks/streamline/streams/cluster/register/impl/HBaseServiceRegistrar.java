@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.cluster.register.impl;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.Constants;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
@@ -28,12 +29,9 @@ import static com.hortonworks.streamline.streams.cluster.discovery.ambari.Config
 
 public class HBaseServiceRegistrar extends AbstractServiceRegistrar {
 
-    public static final String SERVICE_NAME_HBASE = "HBASE";
-    public static final String PROPERTY_KEY_HBASE_ZOOKEEPER_QUORUM = "hbase.zookeeper.quorum";
-
     @Override
     protected String getServiceName() {
-        return SERVICE_NAME_HBASE;
+        return Constants.HBase.SERVICE_NAME;
     }
 
     @Override
@@ -67,6 +65,6 @@ public class HBaseServiceRegistrar extends AbstractServiceRegistrar {
 
     @Override
     protected boolean validateServiceConfiguationsAsFlattenedMap(Map<String, String> configMap) {
-        return configMap.containsKey(PROPERTY_KEY_HBASE_ZOOKEEPER_QUORUM);
+        return configMap.containsKey(Constants.HBase.PROPERTY_KEY_HBASE_ZOOKEEPER_QUORUM);
     }
 }

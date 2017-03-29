@@ -19,6 +19,7 @@ import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 
 import java.util.Arrays;
@@ -31,13 +32,12 @@ import static java.util.stream.Collectors.toList;
 public class StormServiceRegistrar extends AbstractServiceRegistrar {
     public static final String COMPONENT_STORM_UI_SERVER = ComponentPropertyPattern.STORM_UI_SERVER.name();
     public static final String COMPONENT_NIMBUS = ComponentPropertyPattern.NIMBUS.name();
-    public static final String SERVICE_NAME_STORM = "STORM";
     public static final String PARAM_STORM_UI_SERVER_HOSTNAME = "uiServerHostname";
     public static final String PARAM_NIMBUS_HOSTNAMES = "nimbusesHostnames";
 
     @Override
     protected String getServiceName() {
-        return SERVICE_NAME_STORM;
+        return Constants.Storm.SERVICE_NAME;
     }
 
     @Override

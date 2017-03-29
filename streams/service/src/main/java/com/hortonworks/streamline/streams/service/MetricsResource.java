@@ -18,7 +18,8 @@
 package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
-import org.apache.commons.lang3.tuple.Pair;
+import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.ParallelStreamUtil;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.Topology;
@@ -26,9 +27,10 @@ import com.hortonworks.streamline.streams.catalog.TopologyComponent;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.metrics.topology.TopologyMetrics;
 import com.hortonworks.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
-import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
-import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.streams.metrics.topology.service.TopologyMetricsService;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,16 +39,17 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 
+import static com.hortonworks.streamline.streams.security.Permission.READ;
 import static java.util.stream.Collectors.toMap;
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -61,10 +64,12 @@ public class MetricsResource {
 
     private final ForkJoinPool forkJoinPool = new ForkJoinPool(FORK_JOIN_POOL_PARALLELISM);
 
+    private final StreamlineAuthorizer authorizer;
     private final StreamCatalogService catalogService;
     private final TopologyMetricsService metricsService;
 
-    public MetricsResource(StreamCatalogService catalogService, TopologyMetricsService metricsService) {
+    public MetricsResource(StreamlineAuthorizer authorizer, StreamCatalogService catalogService, TopologyMetricsService metricsService) {
+        this.authorizer = authorizer;
         this.catalogService = catalogService;
         this.metricsService = metricsService;
     }
@@ -72,7 +77,8 @@ public class MetricsResource {
     @GET
     @Path("/topologies/{id}")
     @Timed
-    public Response getTopologyMetricsById(@PathParam("id") Long id) throws Exception {
+    public Response getTopologyMetricsById(@PathParam("id") Long id, @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, id, READ);
         Topology topology = catalogService.getTopology(id);
         if (topology != null) {
             Map<String, TopologyMetrics.ComponentMetric> topologyMetrics = metricsService.getTopologyMetrics(topology);
@@ -87,9 +93,10 @@ public class MetricsResource {
     @Timed
     public Response getTopologyMetricsViaTimeSeriesById(@PathParam("id") Long id,
                                                         @QueryParam("from") Long from,
-                                                        @QueryParam("to") Long to) throws Exception {
+                                                        @QueryParam("to") Long to,
+                                                        @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, id, READ);
         assertTimeRange(from, to);
-
         Topology topology = catalogService.getTopology(id);
         if (topology != null) {
             TopologyTimeSeriesMetrics.TimeSeriesComponentMetric topologyMetrics =
@@ -106,9 +113,10 @@ public class MetricsResource {
     public Response getCompleteLatency(@PathParam("id") Long id,
                                        @PathParam("topologyComponentId") Long topologyComponentId,
                                        @QueryParam("from") Long from,
-                                       @QueryParam("to") Long to) throws Exception {
+                                       @QueryParam("to") Long to,
+                                       @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, id, READ);
         assertTimeRange(from, to);
-
         Topology topology = catalogService.getTopology(id);
         TopologyComponent topologyComponent = catalogService.getTopologyComponent(id, topologyComponentId);
         if (topology != null && topologyComponent != null) {
@@ -127,9 +135,10 @@ public class MetricsResource {
     @Timed
     public Response getComponentStats(@PathParam("id") Long id,
                                       @QueryParam("from") Long from,
-                                      @QueryParam("to") Long to) throws Exception {
+                                      @QueryParam("to") Long to,
+                                      @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, id, READ);
         assertTimeRange(from, to);
-
         Topology topology = catalogService.getTopology(id);
         if (topology != null) {
             List<TopologyComponent> topologyComponents = new ArrayList<>();
@@ -164,9 +173,10 @@ public class MetricsResource {
     public Response getComponentStats(@PathParam("id") Long id,
                                       @PathParam("topologyComponentId") Long topologyComponentId,
                                       @QueryParam("from") Long from,
-                                      @QueryParam("to") Long to) throws IOException {
+                                      @QueryParam("to") Long to,
+                                      @Context SecurityContext securityContext) throws IOException {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, id, READ);
         assertTimeRange(from, to);
-
         Topology topology = catalogService.getTopology(id);
         TopologyComponent topologyComponent = catalogService.getTopologyComponent(id, topologyComponentId);
         if (topology != null && topologyComponent != null) {
@@ -187,9 +197,10 @@ public class MetricsResource {
     public Response getKafkaTopicOffsets(@PathParam("id") Long id,
                                          @PathParam("topologyComponentId") Long topologyComponentId,
                                          @QueryParam("from") Long from,
-                                         @QueryParam("to") Long to) throws IOException {
+                                         @QueryParam("to") Long to,
+                                         @Context SecurityContext securityContext) throws IOException {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, id, READ);
         assertTimeRange(from, to);
-
         Topology topology = catalogService.getTopology(id);
         TopologyComponent topologyComponent = catalogService.getTopologyComponent(id, topologyComponentId);
         if (topology != null && topologyComponent != null) {

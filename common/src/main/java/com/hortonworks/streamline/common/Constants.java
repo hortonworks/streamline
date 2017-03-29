@@ -25,6 +25,8 @@ public class Constants {
     public static final String CATALOG_ROOT_URL = "catalog.root.url";
     public static final String LOCAL_FILES_PATH = "local.files.path";
     public static final String CONFIG_CATALOG_ROOT_URL = "catalogRootUrl";
+    public static final String CONFIG_AUTHORIZER = "authorizer";
+    public static final String CONFIG_SECURITY_CATALOG_SERVICE = "securityCatalogService";
     public static final String CONFIG_MODULES = "modules";
     public static final String CONFIG_SCHEMA_REGISTRY_URL = "schemaRegistryUrl";
     public static final String CONFIG_STREAMS_MODULE = "streams";

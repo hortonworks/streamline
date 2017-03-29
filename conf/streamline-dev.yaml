@@ -23,6 +23,11 @@ fileStorageConfiguration:
  properties:
    directory: "/tmp"
 
+authorizerConfiguration:
+ className: "com.hortonworks.streamline.streams.security.impl.DefaultStreamlineAuthorizer"
+ adminPrincipals:
+   - "root"
+
 dashboardConfiguration:
  url: ""
 # storage provider configuration

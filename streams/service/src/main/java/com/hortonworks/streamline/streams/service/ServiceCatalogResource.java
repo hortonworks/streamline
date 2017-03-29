@@ -16,11 +16,12 @@
 package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityAlreadyExistsException;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Component;
@@ -31,8 +32,8 @@ import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentUISp
 import com.hortonworks.streamline.streams.cluster.model.ServiceWithComponents;
 import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
-import com.hortonworks.streamline.common.exception.service.exception.request.EntityAlreadyExistsException;
-import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.slf4j.Logger;
@@ -50,6 +51,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,8 +61,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static com.hortonworks.streamline.streams.security.Permission.READ;
+import static com.hortonworks.streamline.streams.security.Permission.WRITE;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -68,10 +71,12 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Produces(MediaType.APPLICATION_JSON)
 public class ServiceCatalogResource {
     private static final Logger LOG = LoggerFactory.getLogger(ServiceCatalogResource.class);
+    private final StreamlineAuthorizer authorizer;
     private final EnvironmentService environmentService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ServiceCatalogResource(EnvironmentService environmentService) {
+    public ServiceCatalogResource(StreamlineAuthorizer authorizer, EnvironmentService environmentService) {
+        this.authorizer = authorizer;
         this.environmentService = environmentService;
     }
 
@@ -81,7 +86,9 @@ public class ServiceCatalogResource {
     @GET
     @Path("/clusters/{clusterId}/services")
     @Timed
-    public Response listServices(@PathParam("clusterId") Long clusterId, @Context UriInfo uriInfo) {
+    public Response listServices(@PathParam("clusterId") Long clusterId, @Context UriInfo uriInfo,
+                                 @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, clusterId, READ);
         List<QueryParam> queryParams = buildClusterIdAwareQueryParams(clusterId, uriInfo);
         Collection<Service> services;
         services = environmentService.listServices(queryParams);
@@ -95,7 +102,9 @@ public class ServiceCatalogResource {
     @GET
     @Path("/clusters/{clusterId}/services/{id}")
     @Timed
-    public Response getServiceById(@PathParam("clusterId") Long clusterId, @PathParam("id") Long serviceId) {
+    public Response getServiceById(@PathParam("clusterId") Long clusterId, @PathParam("id") Long serviceId,
+                                   @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, clusterId, READ);
         Service result = environmentService.getService(serviceId);
         if (result != null) {
             if (result.getClusterId() == null || !result.getClusterId().equals(clusterId)) {
@@ -110,7 +119,9 @@ public class ServiceCatalogResource {
     @Timed
     @POST
     @Path("/clusters/{clusterId}/services")
-    public Response addService(@PathParam("clusterId") Long clusterId, Service service) {
+    public Response addService(@PathParam("clusterId") Long clusterId, Service service,
+                               @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, clusterId, WRITE);
         // overwrite cluster id to given path param
         service.setClusterId(clusterId);
 
@@ -133,7 +144,9 @@ public class ServiceCatalogResource {
     @DELETE
     @Path("/clusters/{clusterId}/services/{id}")
     @Timed
-    public Response removeService(@PathParam("id") Long serviceId) {
+    public Response removeService(@PathParam("clusterId") Long clusterId, @PathParam("id") Long serviceId,
+                                  @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, clusterId, WRITE);
         Service removedService = environmentService.removeService(serviceId);
         if (removedService != null) {
             return WSUtils.respondEntity(removedService, OK);
@@ -146,7 +159,8 @@ public class ServiceCatalogResource {
     @Path("/clusters/{clusterId}/services/{id}")
     @Timed
     public Response addOrUpdateService(@PathParam("clusterId") Long clusterId,
-        @PathParam("id") Long serviceId, Service service) {
+        @PathParam("id") Long serviceId, Service service, @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, clusterId, WRITE);
         // overwrite cluster id to given path param
         service.setClusterId(clusterId);
 

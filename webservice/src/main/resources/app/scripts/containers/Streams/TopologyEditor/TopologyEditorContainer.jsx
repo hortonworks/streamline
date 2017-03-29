@@ -225,7 +225,8 @@ class TopologyEditorContainer extends Component {
     progressBarColor: 'green',
     fetchLoader: true,
     mapSlideInterval: [],
-    defaultTimeSec: 0
+    topologyTimeSec: 0,
+    defaultTimeSec : 0
   };
 
   fetchData(versionId) {
@@ -252,12 +253,13 @@ class TopologyEditorContainer extends Component {
         promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'edges'));
         promiseArr.push(TopologyREST.getMetaInfo(this.topologyId, versionId));
         promiseArr.push(TopologyREST.getAllVersions(this.topologyId));
+        promiseArr.push(TopologyREST.getTopologyConfig());
 
         Promise.all(promiseArr).then((resultsArr) => {
           let allNodes = [];
           this.topologyName = data.topology.name;
           this.topologyConfig = JSON.parse(data.topology.config);
-          this.defaultTimeSec = this.topologyConfig["topology.message.timeout.secs"];
+          this.topologyTimeSec = this.topologyConfig["topology.message.timeout.secs"];
           this.runtimeObj = data.runtime || {
             metric: (data.runtime === undefined)
               ? ''
@@ -294,8 +296,11 @@ class TopologyEditorContainer extends Component {
           this.graphData.metaInfo = JSON.parse(resultsArr[8].data);
 
           let versions = resultsArr[9].entities || [];
-          Utils.sortArray(versions, 'name', true);
 
+          this.topologyConfigData = resultsArr[10].entities[0] || [];
+          let defaultTimeSecVal = this.getDefaultTimeSec(this.topologyConfigData);
+
+          Utils.sortArray(versions, 'name', true);
           this.graphData.nodes = TopologyUtils.syncNodeData(sourcesNode, processorsNode, sinksNode, this.graphData.metaInfo, this.sourceConfigArr, this.processorConfigArr, this.sinkConfigArr);
 
           this.graphData.uinamesList = [];
@@ -327,7 +332,8 @@ class TopologyEditorContainer extends Component {
             fetchLoader: false,
             unknown,
             mapTopologyConfig: this.topologyConfig,
-            defaultTimeSec: this.defaultTimeSec
+            topologyTimeSec: this.topologyTimeSec,
+            defaultTimeSec : defaultTimeSecVal
           });
           this.customProcessors = this.getCustomProcessors();
           this.processorSlideInterval(processorsNode);
@@ -353,15 +359,25 @@ class TopologyEditorContainer extends Component {
       }
     };
   }
+
+  // get the default time sec of topologyName
+  getDefaultTimeSec(data){
+    const fields = data.topologyComponentUISpecification.fields || [];
+    const obj = _.find(fields, (field) => {
+      return field.fieldName === "topology.message.timeout.secs";
+    });
+    return obj.defaultValue;
+  }
+
   // fetchProcessors on graph render
   fetchProcessors() {
-    const {topologyVersion, defaultTimeSec, topologyName} = this.state;
+    const {topologyVersion, topologyTimeSec, topologyName} = this.state;
     TopologyREST.getAllNodes(this.topologyId, topologyVersion, 'processors').then((processor) => {
       if (processor.responseMessage !== undefined) {
         FSReactToastr.error(
           <CommonNotification flag="error" content={processor.responseMessage}/>, '', toastOpt);
       } else {
-        this.topologyConfig["topology.message.timeout.secs"] = defaultTimeSec;
+        this.topologyConfig["topology.message.timeout.secs"] = topologyTimeSec;
         if (processor.entities.length > 0) {
           this.processorSlideInterval(processor.entities);
         } else {
@@ -389,7 +405,7 @@ class TopologyEditorContainer extends Component {
     });
   }
   processorSlideInterval(processors) {
-    const {defaultTimeSec, topologyName, topologyVersion} = this.state;
+    const {topologyTimeSec, topologyName, topologyVersion} = this.state;
     let tempIntervalArr = [];
     const p_String = "JOIN,AGGREGATE";
     const p_index = _.findIndex(processors, function(processor) {
@@ -400,7 +416,7 @@ class TopologyEditorContainer extends Component {
     });
     if (p_index === -1) {
       this.tempIntervalArr = [];
-      this.topologyConfig["topology.message.timeout.secs"] = defaultTimeSec;
+      this.topologyConfig["topology.message.timeout.secs"] = topologyTimeSec;
       this.setState({
         mapTopologyConfig: this.topologyConfig,
         mapSlideInterval: this.tempIntervalArr
@@ -425,6 +441,7 @@ class TopologyEditorContainer extends Component {
     }
   }
   mapSlideInterval(id, timeObj) {
+    const {defaultTimeSec} = this.state;
     this.tempIntervalArr = this.state.mapSlideInterval;
     let timeoutSec = this.topologyConfig["topology.message.timeout.secs"];
     let slideIntVal = 0,
@@ -444,11 +461,11 @@ class TopologyEditorContainer extends Component {
     if (index === -1) {
       this.tempIntervalArr.push({
         id: id,
-        value: slideIntVal + 5
+        value: slideIntVal + defaultTimeSec
       });
     } else {
-      timeoutSec = 30;
-      this.tempIntervalArr[index].value = slideIntVal + 5;
+      timeoutSec = defaultTimeSec;
+      this.tempIntervalArr[index].value = slideIntVal + defaultTimeSec;
     }
     const maxObj = _.maxBy(this.tempIntervalArr, "value");
     const maxVal = maxObj.value;
@@ -471,10 +488,10 @@ class TopologyEditorContainer extends Component {
     }
   }
   topologyConfigMessageCB(id) {
-    const {defaultTimeSec} = this.state;
+    const {topologyTimeSec} = this.state;
     this.tempIntervalArr = this.state.mapSlideInterval;
     if (id) {
-      this.topologyConfig["topology.message.timeout.secs"] = defaultTimeSec;
+      this.topologyConfig["topology.message.timeout.secs"] = topologyTimeSec;
       const index = this.tempIntervalArr.findIndex((x) => {
         return x.id === id;
       });
@@ -1098,7 +1115,7 @@ class TopologyEditorContainer extends Component {
           </div>
         </div>
         <Modal ref="TopologyConfigModal" data-title="Topology Configuration" onKeyPress={this.handleKeyPress.bind(this)} data-resolve={this.handleSaveConfig.bind(this)}>
-          <TopologyConfig ref="topologyConfig" topologyId={this.topologyId} versionId={this.versionId} data={mapTopologyConfig} topologyName={this.state.topologyName} viewMode={this.viewMode}/>
+          <TopologyConfig ref="topologyConfig" topologyId={this.topologyId} versionId={this.versionId} data={mapTopologyConfig} topologyName={this.state.topologyName} viewMode={this.viewMode} uiConfigFields={this.topologyConfigData}/>
         </Modal>
         <Modal ref="NodeModal" onKeyPress={this.handleKeyPress.bind(this)} bsSize={this.processorNode && nodeType.toLowerCase() !== 'join'
           ? "large"

@@ -40,6 +40,8 @@ public class StreamlineConfiguration extends Configuration {
     @NotNull
     private DashboardConfiguration dashboardConfiguration;
 
+    private AuthorizerConfiguration authorizerConfiguration;
+
 
     @JsonProperty
     public StorageProviderConfiguration getStorageProviderConfiguration() {
@@ -124,4 +126,11 @@ public class StreamlineConfiguration extends Configuration {
     public void setDashboardConfiguration (DashboardConfiguration dashboardConfiguration) { this.dashboardConfiguration = dashboardConfiguration; }
 
 
+    public AuthorizerConfiguration getAuthorizerConfiguration() {
+        return authorizerConfiguration;
+    }
+
+    public void setAuthorizerConfiguration(AuthorizerConfiguration authorizerConfiguration) {
+        this.authorizerConfiguration = authorizerConfiguration;
+    }
 }

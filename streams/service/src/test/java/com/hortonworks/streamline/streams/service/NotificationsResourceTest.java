@@ -17,7 +17,11 @@
 
 package com.hortonworks.streamline.streams.service;
 
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
+import com.hortonworks.streamline.streams.security.impl.NoopAuthorizer;
 import mockit.Expectations;
+import mockit.Injectable;
 import mockit.Mocked;
 import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
@@ -30,6 +34,7 @@ import org.junit.runner.RunWith;
 
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
 
@@ -47,9 +52,15 @@ public class NotificationsResourceTest {
     @Mocked
     NotificationService mockNotificationService;
 
+    @Injectable
+    StreamlineAuthorizer authorizer = new NoopAuthorizer();
+
+    @Injectable
+    SecurityContext securityContext;
+
     @Before
     public void setUp() {
-        resource = new NotificationsResource(mockNotificationService);
+        resource = new NotificationsResource(authorizer, mockNotificationService);
     }
 
     @Test
@@ -71,7 +82,7 @@ public class NotificationsResourceTest {
         };
 
         try {
-            resource.listNotifications(mockUriInfo);
+            resource.listNotifications(mockUriInfo, securityContext);
 
             fail("We don't mock the result so it should throw entity not found");
         } catch (EntityNotFoundException e) {

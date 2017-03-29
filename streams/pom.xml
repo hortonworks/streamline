@@ -26,6 +26,7 @@
         <module>cluster</module>
         <module>multilang</module>
         <module>actions</module>
+        <module>authorizer</module>
     </modules>
 
 

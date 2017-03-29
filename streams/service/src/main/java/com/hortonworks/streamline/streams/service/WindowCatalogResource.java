@@ -17,10 +17,13 @@ package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyWindow;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
-import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,13 +37,16 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import java.util.Collection;
 import java.util.List;
 
+import static com.hortonworks.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
+import static com.hortonworks.streamline.streams.security.Permission.READ;
+import static com.hortonworks.streamline.streams.security.Permission.WRITE;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
-import static com.hortonworks.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
 
 /**
  * REST resource for managing window rule with aggregate function.
@@ -51,21 +57,26 @@ import static com.hortonworks.streamline.common.util.WSUtils.buildTopologyIdAndV
 @Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class WindowCatalogResource {
+    private final StreamlineAuthorizer authorizer;
     private static final Logger LOG = LoggerFactory.getLogger(WindowCatalogResource.class);
 
     private final StreamCatalogService catalogService;
 
-    public WindowCatalogResource(StreamCatalogService catalogService) {
+    public WindowCatalogResource(StreamlineAuthorizer authorizer, StreamCatalogService catalogService) {
+        this.authorizer = authorizer;
         this.catalogService = catalogService;
     }
 
     @GET
     @Path("/topologies/{topologyId}/windows")
     @Timed
-    public Response listTopologyWindows(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) throws Exception {
+    public Response listTopologyWindows(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo,
+                                        @Context SecurityContext securityContext) throws Exception {
         Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
         return listTopologyWindows(
-                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo));
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo),
+                topologyId,
+                securityContext);
     }
 
     @GET
@@ -73,12 +84,16 @@ public class WindowCatalogResource {
     @Timed
     public Response listTopologySourcesForVersion(@PathParam("topologyId") Long topologyId,
                                                   @PathParam("versionId") Long versionId,
-                                                  @Context UriInfo uriInfo) throws Exception {
+                                                  @Context UriInfo uriInfo,
+                                                  @Context SecurityContext securityContext) throws Exception {
         return listTopologyWindows(
-                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, versionId, uriInfo));
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, versionId, uriInfo),
+                topologyId,
+                securityContext);
     }
 
-    private Response listTopologyWindows(List<QueryParam> queryParams) throws Exception {
+    private Response listTopologyWindows(List<QueryParam> queryParams, Long topologyId, SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
         Collection<TopologyWindow> topologyWindows = catalogService.listWindows(queryParams);
         if (topologyWindows != null) {
             return WSUtils.respondEntities(topologyWindows, OK);
@@ -91,7 +106,9 @@ public class WindowCatalogResource {
     @Path("/topologies/{topologyId}/windows/{id}")
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTopologyWindowById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long windowId) throws Exception {
+    public Response getTopologyWindowById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long windowId,
+                                          @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
         TopologyWindow topologyWindow = catalogService.getWindow(topologyId, windowId);
         if (topologyWindow != null) {
             return WSUtils.respondEntity(topologyWindow, OK);
@@ -106,7 +123,9 @@ public class WindowCatalogResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTopologyWindowByIdAndVersion(@PathParam("topologyId") Long topologyId,
                                                     @PathParam("id") Long windowId,
-                                                    @PathParam("versionId") Long versionId) throws Exception {
+                                                    @PathParam("versionId") Long versionId,
+                                                    @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
         TopologyWindow topologyWindow = catalogService.getWindow(topologyId, windowId, versionId);
         if (topologyWindow != null) {
             return WSUtils.respondEntity(topologyWindow, OK);
@@ -119,7 +138,9 @@ public class WindowCatalogResource {
     @POST
     @Path("/topologies/{topologyId}/windows")
     @Timed
-    public Response addTopologyWindow(@PathParam("topologyId") Long topologyId, TopologyWindow topologyWindow) throws Exception {
+    public Response addTopologyWindow(@PathParam("topologyId") Long topologyId, TopologyWindow topologyWindow,
+                                      @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
         TopologyWindow createdTopologyWindow = catalogService.addWindow(topologyId, topologyWindow);
         return WSUtils.respondEntity(createdTopologyWindow, CREATED);
     }
@@ -128,7 +149,8 @@ public class WindowCatalogResource {
     @Path("/topologies/{topologyId}/windows/{id}")
     @Timed
     public Response addOrUpdateWindow(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId,
-                                      TopologyWindow topologyWindow) throws Exception {
+                                      TopologyWindow topologyWindow, @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
         TopologyWindow createdTopologyWindow = catalogService.addOrUpdateWindow(topologyId, ruleId, topologyWindow);
         return WSUtils.respondEntity(createdTopologyWindow, CREATED);
     }
@@ -136,7 +158,9 @@ public class WindowCatalogResource {
     @DELETE
     @Path("/topologies/{topologyId}/windows/{id}")
     @Timed
-    public Response removeWindowById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long windowId) throws Exception {
+    public Response removeWindowById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long windowId,
+                                     @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
         TopologyWindow topologyWindow = catalogService.removeWindow(topologyId, windowId);
         if (topologyWindow != null) {
             return WSUtils.respondEntity(topologyWindow, OK);

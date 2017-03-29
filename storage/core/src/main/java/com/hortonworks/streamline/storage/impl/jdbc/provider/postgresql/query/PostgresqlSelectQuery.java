@@ -14,7 +14,7 @@ public class PostgresqlSelectQuery extends AbstractStorableKeyQuery {
 
     @Override
     protected void setParameterizedSql() {
-        sql = "SELECT * FROM " + tableName;
+        sql = "SELECT * FROM \"" + tableName + "\"";
         if (columns != null) {
             sql += " WHERE " + join(getColumnNames(columns, "\"%s\" = ?"), " AND ");
         }

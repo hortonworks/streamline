@@ -347,3 +347,47 @@ CREATE TABLE IF NOT EXISTS service_bundle (
   "timestamp" BIGINT,
   PRIMARY KEY (id)
 );
+
+CREATE TABLE IF NOT EXISTS acl_entry (
+  "id"              SERIAL       NOT NULL,
+  "objectId"        BIGINT       NOT NULL,
+  "objectNamespace" VARCHAR(255) NOT NULL,
+  "sidId"           BIGINT       NOT NULL,
+  "sidType"         VARCHAR(255) NOT NULL,
+  "permissions"     TEXT         NOT NULL,
+  "timestamp"       BIGINT,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS role (
+  "id"        SERIAL       NOT NULL,
+  "name"      VARCHAR(255) NOT NULL,
+  "timestamp" BIGINT,
+  CONSTRAINT UK_name_role UNIQUE ("name"),
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS role_hierarchy (
+  "parentId" BIGINT NOT NULL,
+  "childId"  BIGINT NOT NULL,
+  PRIMARY KEY ("parentId", "childId"),
+  FOREIGN KEY ("parentId") REFERENCES role ("id"),
+  FOREIGN KEY ("childId") REFERENCES role ("id")
+);
+
+CREATE TABLE IF NOT EXISTS user_entry (
+  "id"        SERIAL       NOT NULL,
+  "name"      VARCHAR(255) NOT NULL,
+  "email"     VARCHAR(255) NOT NULL,
+  "timestamp" BIGINT,
+  CONSTRAINT UK_name_user UNIQUE ("name"),
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS user_role (
+  "userId" BIGINT NOT NULL,
+  "roleId" BIGINT NOT NULL,
+  PRIMARY KEY ("userId", "roleId"),
+  FOREIGN KEY ("userId") REFERENCES "user_entry" (id),
+  FOREIGN KEY ("roleId") REFERENCES "role" (id)
+);

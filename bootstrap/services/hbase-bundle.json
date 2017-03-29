@@ -4,7 +4,7 @@
   "serviceUISpecification": {
     "fields": [
       {
-        "uiName": "hbase-site.xml",
+        "uiName": "HBase config file (hbase-site.xml)",
         "fieldName": "hbase-site.xml",
         "isOptional": false,
         "tooltip": "Upload hbase-site.xml file used by HBase cluster",

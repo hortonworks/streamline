@@ -20,6 +20,7 @@ import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import mockit.integration.junit4.JMockit;
 import org.junit.Before;
@@ -59,7 +60,7 @@ public class HiveServiceRegistrarTest extends AbstractServiceRegistrarTest<HiveS
             registrar.register(cluster, new Config(), Lists.newArrayList(hiveSiteXml));
         }
 
-        Service hiveService = environmentService.getServiceByName(cluster.getId(), HiveServiceRegistrar.SERVICE_NAME_HIVE);
+        Service hiveService = environmentService.getServiceByName(cluster.getId(), Constants.Hive.SERVICE_NAME);
         assertNotNull(hiveService);
         ServiceConfiguration coreSiteConf = environmentService.getServiceConfigurationByName(hiveService.getId(), CONFIGURATION_NAME_HIVE_SITE);
         assertNotNull(coreSiteConf);
@@ -77,7 +78,7 @@ public class HiveServiceRegistrarTest extends AbstractServiceRegistrarTest<HiveS
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
-            Service hiveService = environmentService.getServiceByName(cluster.getId(), HiveServiceRegistrar.SERVICE_NAME_HIVE);
+            Service hiveService = environmentService.getServiceByName(cluster.getId(), Constants.Hive.SERVICE_NAME);
             assertNull(hiveService);
         }
     }
@@ -93,7 +94,7 @@ public class HiveServiceRegistrarTest extends AbstractServiceRegistrarTest<HiveS
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
-            Service hiveService = environmentService.getServiceByName(cluster.getId(), HiveServiceRegistrar.SERVICE_NAME_HIVE);
+            Service hiveService = environmentService.getServiceByName(cluster.getId(), Constants.Hive.SERVICE_NAME);
             assertNull(hiveService);
         }
     }
