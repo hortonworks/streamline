@@ -20,9 +20,9 @@ import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
+import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.exception.service.exception.request.TopologyAlreadyExistsOnCluster;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import com.hortonworks.streamline.common.util.ParallelStreamUtil;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.actions.TopologyActions;
@@ -35,10 +35,15 @@ import com.hortonworks.streamline.streams.catalog.topology.TopologyData;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.storm.common.TopologyNotAliveException;
 import com.hortonworks.streamline.streams.metrics.topology.TopologyMetrics;
-import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
-import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.streams.metrics.topology.service.TopologyMetricsService;
+import com.hortonworks.streamline.streams.security.Permission;
+import com.hortonworks.streamline.streams.security.Roles;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import com.hortonworks.streamline.streams.storm.common.StormNotReachableException;
+import com.hortonworks.streamline.streams.storm.common.TopologyNotAliveException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,28 +57,33 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 
+import static com.hortonworks.streamline.streams.catalog.Topology.NAMESPACE;
+import static com.hortonworks.streamline.streams.catalog.TopologyVersion.VERSION_PREFIX;
+import static com.hortonworks.streamline.streams.security.Permission.DELETE;
+import static com.hortonworks.streamline.streams.security.Permission.EXECUTE;
+import static com.hortonworks.streamline.streams.security.Permission.READ;
+import static com.hortonworks.streamline.streams.security.Permission.WRITE;
+import static com.hortonworks.streamline.streams.service.TopologySortType.LAST_UPDATED;
 import static java.util.stream.Collectors.toList;
-import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
-import static com.hortonworks.streamline.streams.catalog.TopologyVersion.VERSION_PREFIX;
-import static com.hortonworks.streamline.streams.service.TopologySortType.LAST_UPDATED;
 
 
 @Path("/v1/catalog")
@@ -91,13 +101,16 @@ public class TopologyCatalogResource {
     private final URL SCHEMA = Thread.currentThread().getContextClassLoader()
             .getResource("assets/schemas/topology.json");
 
+    private final StreamlineAuthorizer authorizer;
     private final StreamCatalogService catalogService;
     private final EnvironmentService environmentService;
     private final TopologyActionsService actionsService;
     private final TopologyMetricsService metricsService;
 
-    public TopologyCatalogResource(StreamCatalogService catalogService, EnvironmentService environmentService,
-                                   TopologyActionsService actionsService, TopologyMetricsService metricsService) {
+    public TopologyCatalogResource(StreamlineAuthorizer authorizer, StreamCatalogService catalogService,
+                                   EnvironmentService environmentService, TopologyActionsService actionsService,
+                                   TopologyMetricsService metricsService) {
+        this.authorizer = authorizer;
         this.catalogService = catalogService;
         this.environmentService = environmentService;
         this.actionsService = actionsService;
@@ -110,8 +123,10 @@ public class TopologyCatalogResource {
     public Response listTopologies (@javax.ws.rs.QueryParam("detail") Boolean detail,
                                     @javax.ws.rs.QueryParam("sort") String sortType,
                                     @javax.ws.rs.QueryParam("ascending") Boolean ascending,
-                                    @javax.ws.rs.QueryParam("latencyTopN") Integer latencyTopN) {
-        Collection<Topology> topologies = catalogService.listTopologies();
+                                    @javax.ws.rs.QueryParam("latencyTopN") Integer latencyTopN,
+                                    @Context SecurityContext securityContext) {
+        Collection<Topology> topologies = SecurityUtil.filter(authorizer, securityContext, NAMESPACE,
+                catalogService.listTopologies(), READ);
         Response response;
         if (topologies != null) {
             if (detail == null || !detail) {
@@ -140,7 +155,9 @@ public class TopologyCatalogResource {
     @Timed
     public Response getTopologyById(@PathParam("topologyId") Long topologyId,
                                     @javax.ws.rs.QueryParam("detail") Boolean detail,
-                                    @javax.ws.rs.QueryParam("latencyTopN") Integer latencyTopN) {
+                                    @javax.ws.rs.QueryParam("latencyTopN") Integer latencyTopN,
+                                    @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, READ);
         Response response = getTopologyByIdAndVersionId(topologyId,
                 catalogService.getCurrentVersionId(topologyId),
                 detail, latencyTopN);
@@ -157,7 +174,9 @@ public class TopologyCatalogResource {
     public Response getTopologyByIdAndVersion(@PathParam("topologyId") Long topologyId,
                                               @PathParam("versionId") Long versionId,
                                               @javax.ws.rs.QueryParam("detail") Boolean detail,
-                                              @javax.ws.rs.QueryParam("latencyTopN") Integer latencyTopN) {
+                                              @javax.ws.rs.QueryParam("latencyTopN") Integer latencyTopN,
+                                              @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, READ);
         Response response = getTopologyByIdAndVersionId(topologyId, versionId, detail, latencyTopN);
         if (response != null) {
             return response;
@@ -183,7 +202,8 @@ public class TopologyCatalogResource {
     @GET
     @Path("/topologies/{topologyId}/versions")
     @Timed
-    public Response listTopologyVersions(@PathParam("topologyId") Long topologyId) {
+    public Response listTopologyVersions(@PathParam("topologyId") Long topologyId, @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, READ);
         Collection<TopologyVersion> versionInfos = catalogService.listTopologyVersionInfos(
                 WSUtils.buildTopologyIdAwareQueryParams(topologyId, null));
         Response response;
@@ -199,7 +219,8 @@ public class TopologyCatalogResource {
     @POST
     @Path("/topologies")
     @Timed
-    public Response addTopology(Topology topology) {
+    public Response addTopology(Topology topology, @Context SecurityContext securityContext) {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_ADMIN);
         if (StringUtils.isEmpty(topology.getName())) {
             throw BadRequestException.missingParameter(Topology.NAME);
         }
@@ -207,6 +228,8 @@ public class TopologyCatalogResource {
             throw BadRequestException.missingParameter(Topology.CONFIG);
         }
         Topology createdTopology = catalogService.addTopology(topology);
+        SecurityUtil.addAcl(authorizer, securityContext, NAMESPACE, createdTopology.getId(),
+                EnumSet.allOf(Permission.class));
         return WSUtils.respondEntity(createdTopology, CREATED);
     }
 
@@ -214,12 +237,17 @@ public class TopologyCatalogResource {
     @Path("/topologies/{topologyId}")
     @Timed
     public Response removeTopology(@PathParam("topologyId") Long topologyId,
-                                   @javax.ws.rs.QueryParam("onlyCurrent") boolean onlyCurrent) {
+                                   @javax.ws.rs.QueryParam("onlyCurrent") boolean onlyCurrent,
+                                   @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, DELETE);
+        Response response;
         if (onlyCurrent) {
-            return removeCurrentTopologyVersion(topologyId);
+            response = removeCurrentTopologyVersion(topologyId);
         } else {
-            return removeAllTopologyVersions(topologyId);
+            response = removeAllTopologyVersions(topologyId);
         }
+        SecurityUtil.removeAcl(authorizer, securityContext, NAMESPACE, topologyId);
+        return response;
     }
 
     private Response removeAllTopologyVersions(Long topologyId) {
@@ -255,7 +283,8 @@ public class TopologyCatalogResource {
     @Path("/topologies/{topologyId}")
     @Timed
     public Response addOrUpdateTopology (@PathParam("topologyId") Long topologyId,
-                                         Topology topology) {
+                                         Topology topology, @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, WRITE);
         if (StringUtils.isEmpty(topology.getName())) {
             throw BadRequestException.missingParameter(Topology.NAME);
         }
@@ -276,7 +305,10 @@ public class TopologyCatalogResource {
     @POST
     @Path("/topologies/{topologyId}/versions/save")
     @Timed
-    public Response saveTopologyVersion(@PathParam("topologyId") Long topologyId, TopologyVersion versionInfo) {
+    public Response saveTopologyVersion(@PathParam("topologyId") Long topologyId, TopologyVersion versionInfo,
+                                        @Context SecurityContext securityContext) {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_ADMIN);
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, READ);
         Optional<TopologyVersion> currentVersion = Optional.empty();
         try {
             currentVersion = catalogService.getCurrentTopologyVersionInfo(topologyId);
@@ -316,7 +348,10 @@ public class TopologyCatalogResource {
     @Path("/topologies/{topologyId}/versions/{versionId}/activate")
     @Timed
     public Response activateTopologyVersion(@PathParam("topologyId") Long topologyId,
-                                            @PathParam("versionId") Long versionId) {
+                                            @PathParam("versionId") Long versionId,
+                                            @Context SecurityContext securityContext) {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_ADMIN);
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, READ);
         Optional<TopologyVersion> currentVersionInfo = catalogService.getCurrentTopologyVersionInfo(topologyId);
         if (currentVersionInfo.isPresent() && currentVersionInfo.get().getId().equals(versionId)) {
             throw new IllegalArgumentException("Version id " + versionId + " is already the current version");
@@ -351,7 +386,9 @@ public class TopologyCatalogResource {
     @GET
     @Path("/topologies/{topologyId}/actions/status")
     @Timed
-    public Response topologyStatus (@PathParam("topologyId") Long topologyId) throws Exception {
+    public Response topologyStatus (@PathParam("topologyId") Long topologyId,
+                                    @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, READ, EXECUTE);
         Topology result = catalogService.getTopology(topologyId);
         if (result != null) {
             TopologyActions.Status status = actionsService.topologyStatus(result);
@@ -365,7 +402,9 @@ public class TopologyCatalogResource {
     @Path("/topologies/{topologyId}/versions/{versionId}/actions/status")
     @Timed
     public Response topologyStatusVersion(@PathParam("topologyId") Long topologyId,
-                                          @PathParam("versionId") Long versionId) throws Exception {
+                                          @PathParam("versionId") Long versionId,
+                                          @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, READ, EXECUTE);
         Topology result = catalogService.getTopology(topologyId, versionId);
         if (result != null) {
             TopologyActions.Status status = actionsService.topologyStatus(result);
@@ -378,7 +417,8 @@ public class TopologyCatalogResource {
     @POST
     @Path("/topologies/{topologyId}/actions/validate")
     @Timed
-    public Response validateTopology (@PathParam("topologyId") Long topologyId) {
+    public Response validateTopology (@PathParam("topologyId") Long topologyId, @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, READ, EXECUTE);
         Topology result = catalogService.getTopology(topologyId);
         if (result != null) {
             //catalogService.validateTopology(SCHEMA, topologyId);
@@ -392,7 +432,8 @@ public class TopologyCatalogResource {
     @Path("/topologies/{topologyId}/versions/{versionId}/actions/validate")
     @Timed
     public Response validateTopologyVersion(@PathParam("topologyId") Long topologyId,
-                                            @PathParam("versionId") Long versionId) {
+                                            @PathParam("versionId") Long versionId, @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, READ, EXECUTE);
         Topology result = catalogService.getTopology(topologyId, versionId);
         if (result != null) {
             //catalogService.validateTopology(SCHEMA, topologyId);
@@ -405,7 +446,8 @@ public class TopologyCatalogResource {
     @POST
     @Path("/topologies/{topologyId}/actions/deploy")
     @Timed
-    public Response deployTopology (@PathParam("topologyId") Long topologyId) throws Exception {
+    public Response deployTopology (@PathParam("topologyId") Long topologyId, @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, READ, EXECUTE);
         Topology topology = catalogService.getTopology(topologyId);
         if (topology != null) {
             return deploy(topology);
@@ -417,7 +459,9 @@ public class TopologyCatalogResource {
     @Path("/topologies/{topologyId}/versions/{versionId}/actions/deploy")
     @Timed
     public Response deployTopologyVersion(@PathParam("topologyId") Long topologyId,
-                                          @PathParam("versionId") Long versionId) throws Exception {
+                                          @PathParam("versionId") Long versionId,
+                                          @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, READ, EXECUTE);
         Topology topology = catalogService.getTopology(topologyId, versionId);
         if (topology != null) {
             return deploy(topology);
@@ -437,7 +481,8 @@ public class TopologyCatalogResource {
     @POST
     @Path("/topologies/{topologyId}/actions/kill")
     @Timed
-    public Response killTopology (@PathParam("topologyId") Long topologyId) throws Exception {
+    public Response killTopology (@PathParam("topologyId") Long topologyId, @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, READ, EXECUTE);
         Topology result = catalogService.getTopology(topologyId);
         if (result != null) {
             actionsService.killTopology(result);
@@ -451,7 +496,9 @@ public class TopologyCatalogResource {
     @Path("/topologies/{topologyId}/versions/{versionId}/actions/kill")
     @Timed
     public Response killTopologyVersion(@PathParam("topologyId") Long topologyId,
-                                        @PathParam("versionId") Long versionId) throws Exception {
+                                        @PathParam("versionId") Long versionId,
+                                        @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, READ, EXECUTE);
         Topology result = catalogService.getTopology(topologyId, versionId);
         if (result != null) {
             actionsService.killTopology(result);
@@ -464,7 +511,8 @@ public class TopologyCatalogResource {
     @POST
     @Path("/topologies/{topologyId}/actions/suspend")
     @Timed
-    public Response suspendTopology (@PathParam("topologyId") Long topologyId) throws Exception {
+    public Response suspendTopology (@PathParam("topologyId") Long topologyId, @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, READ, EXECUTE);
         Topology result = catalogService.getTopology(topologyId);
         if (result != null) {
             actionsService.suspendTopology(result);
@@ -478,7 +526,9 @@ public class TopologyCatalogResource {
     @Path("/topologies/{topologyId}/versions/{versionId}/actions/suspend")
     @Timed
     public Response suspendTopologyVersion(@PathParam("topologyId") Long topologyId,
-                                           @PathParam("versionId") Long versionId) throws Exception {
+                                           @PathParam("versionId") Long versionId,
+                                           @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, READ, EXECUTE);
         Topology result = catalogService.getTopology(topologyId, versionId);
         if (result != null) {
             actionsService.suspendTopology(result);
@@ -491,7 +541,9 @@ public class TopologyCatalogResource {
     @POST
     @Path("/topologies/{topologyId}/actions/resume")
     @Timed
-    public Response resumeTopology (@PathParam("topologyId") Long topologyId) throws Exception {
+    public Response resumeTopology (@PathParam("topologyId") Long topologyId,
+                                    @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, READ, EXECUTE);
         Topology result = catalogService.getTopology(topologyId);
         if (result != null) {
             actionsService.resumeTopology(result);
@@ -505,7 +557,9 @@ public class TopologyCatalogResource {
     @Path("/topologies/{topologyId}/versions/{versionId}/actions/resume")
     @Timed
     public Response resumeTopologyVersion(@PathParam("topologyId") Long topologyId,
-                                          @PathParam("versionId") Long versionId) throws Exception {
+                                          @PathParam("versionId") Long versionId,
+                                          @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, READ, EXECUTE);
         Topology result = catalogService.getTopology(topologyId, versionId);
         if (result != null) {
             actionsService.resumeTopology(result);
@@ -519,7 +573,8 @@ public class TopologyCatalogResource {
     @Path("/topologies/{topologyId}/actions/export")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @Timed
-    public Response exportTopology(@PathParam("topologyId") Long topologyId) throws Exception {
+    public Response exportTopology(@PathParam("topologyId") Long topologyId, @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, READ, EXECUTE);
         Topology topology = catalogService.getTopology(topologyId);
         if (topology != null) {
             String exportedTopology = catalogService.exportTopology(topology);
@@ -539,7 +594,11 @@ public class TopologyCatalogResource {
     @POST
     @Path("/topologies/{topologyId}/actions/clone")
     @Timed
-    public Response cloneTopology(@PathParam("topologyId") Long topologyId, @QueryParam("namespaceId") Long namespaceId) throws Exception {
+    public Response cloneTopology(@PathParam("topologyId") Long topologyId,
+                                  @QueryParam("namespaceId") Long namespaceId,
+                                  @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_ADMIN);
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, topologyId, READ, EXECUTE);
         Topology originalTopology = catalogService.getTopology(topologyId);
         if (originalTopology != null) {
             Topology clonedTopology = catalogService.cloneTopology(namespaceId, originalTopology);
@@ -558,7 +617,9 @@ public class TopologyCatalogResource {
     @Timed
     public Response importTopology(@FormDataParam("file") final InputStream inputStream,
                                    @FormDataParam("namespaceId") final Long namespaceId,
-                                   @FormDataParam("topologyName") final String topologyName) throws Exception {
+                                   @FormDataParam("topologyName") final String topologyName,
+                                   @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_ADMIN);
         if (namespaceId == null) {
             throw new IllegalArgumentException("Missing namespaceId");
         }

@@ -21,15 +21,18 @@ import com.hortonworks.registries.common.exception.ParserException;
 import com.hortonworks.streamline.common.util.ReflectionHelper;
 import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.annotation.SchemaIgnore;
 import com.hortonworks.streamline.storage.exception.StorageException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -101,23 +104,33 @@ public abstract class AbstractStorable implements Storable {
 
         for(Map.Entry<String, Class> entry : fieldNamesToTypes.entrySet()) {
             try {
-                Object val = ReflectionHelper.invokeGetter(entry.getKey(), this);
-                Schema.Type type;
-                if(val != null) {
-                    type = Schema.fromJavaType(val);
-                } else {
-                    type = Schema.fromJavaType(entry.getValue());
-                }
-                fields.add(new Schema.Field(entry.getKey(), type));
-                if(LOG.isTraceEnabled()) {
-                    LOG.trace("getSchema: Adding {} = {} ", entry.getKey(), type);
-                }
-            } catch (NoSuchMethodException|InvocationTargetException|IllegalAccessException|ParserException e) {
+                getField(entry.getKey(), entry.getValue()).ifPresent(field -> {
+                    fields.add(field);
+                    LOG.trace("getSchema: Adding {}", field);
+                });
+            } catch (NoSuchFieldException|NoSuchMethodException|InvocationTargetException|IllegalAccessException|ParserException e) {
                 throw new StorageException(e);
             }
         }
 
         return Schema.of(fields);
+    }
+
+    private Optional<Schema.Field> getField(String name, Class<?> clazz) throws NoSuchFieldException,
+            NoSuchMethodException, IllegalAccessException, InvocationTargetException, ParserException {
+        Field field = this.getClass().getDeclaredField(name);
+        if (field.getAnnotation(SchemaIgnore.class) != null) {
+            LOG.debug("Ignoring field {}", field);
+            return Optional.empty();
+        }
+        Object val = ReflectionHelper.invokeGetter(name, this);
+        Schema.Type type;
+        if (val != null) {
+            type = Schema.fromJavaType(val);
+        } else {
+            type = Schema.fromJavaType(clazz);
+        }
+        return Optional.of(new Schema.Field(name, type));
     }
 
     @Override

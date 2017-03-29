@@ -17,21 +17,24 @@ package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.registries.common.exception.ParserException;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.common.exception.service.exception.request.UnsupportedMediaTypeException;
 import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.common.util.FileUtil;
 import com.hortonworks.streamline.common.util.ProxyUtil;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.UDF;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.security.Permission;
+import com.hortonworks.streamline.streams.security.Roles;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import org.apache.commons.codec.binary.Hex;
-import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
-import com.hortonworks.streamline.common.exception.service.exception.request.UnsupportedMediaTypeException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -50,6 +53,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 import java.io.File;
@@ -63,12 +67,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.hortonworks.streamline.streams.security.Permission.DELETE;
+import static com.hortonworks.streamline.streams.security.Permission.EXECUTE;
+import static com.hortonworks.streamline.streams.security.Permission.READ;
+import static com.hortonworks.streamline.streams.security.Permission.WRITE;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -76,10 +86,12 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Produces(MediaType.APPLICATION_JSON)
 public class UDFCatalogResource {
     private static final Logger LOG = LoggerFactory.getLogger(UDFCatalogResource.class);
+    private final StreamlineAuthorizer authorizer;
     private final StreamCatalogService catalogService;
     private final FileStorage fileStorage;
 
-    public UDFCatalogResource(StreamCatalogService catalogService, FileStorage fileStorage) {
+    public UDFCatalogResource(StreamlineAuthorizer authorizer, StreamCatalogService catalogService, FileStorage fileStorage) {
+        this.authorizer = authorizer;
         this.catalogService = catalogService;
         this.fileStorage = fileStorage;
     }
@@ -114,7 +126,8 @@ public class UDFCatalogResource {
     @GET
     @Path("/udfs")
     @Timed
-    public Response listUDFs(@Context UriInfo uriInfo) {
+    public Response listUDFs(@Context UriInfo uriInfo,
+                             @Context SecurityContext securityContext) {
         List<QueryParam> queryParams = new ArrayList<>();
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
         Collection<UDF> udfs;
@@ -125,6 +138,7 @@ public class UDFCatalogResource {
             udfs = catalogService.listUDFs(queryParams);
         }
         if (udfs != null) {
+            udfs = SecurityUtil.filter(authorizer, securityContext, UDF.NAMESPACE, udfs, READ);
             return WSUtils.respondEntities(udfs, OK);
         }
 
@@ -154,7 +168,8 @@ public class UDFCatalogResource {
     @GET
     @Path("/udfs/{id}")
     @Timed
-    public Response getUDFById(@PathParam("id") Long id) {
+    public Response getUDFById(@PathParam("id") Long id, @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, UDF.NAMESPACE, id, READ);
         UDF result = catalogService.getUDF(id);
         if (result != null) {
             return WSUtils.respondEntity(result, OK);
@@ -177,7 +192,9 @@ public class UDFCatalogResource {
     public Response addUDF(@FormDataParam("udfJarFile") final InputStream inputStream,
                            @FormDataParam("udfJarFile") final FormDataContentDisposition contentDispositionHeader,
                            @FormDataParam("udfConfig") final FormDataBodyPart udfConfig,
-                           @FormDataParam("builtin") final boolean builtin) throws Exception {
+                           @FormDataParam("builtin") final boolean builtin,
+                           @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_UDF_ADMIN);
         MediaType mediaType = udfConfig.getMediaType();
         LOG.debug("Media type {}", mediaType);
         if (!mediaType.equals(MediaType.APPLICATION_JSON_TYPE)) {
@@ -186,6 +203,7 @@ public class UDFCatalogResource {
         UDF udf = udfConfig.getValueAs(UDF.class);
         processUdf(inputStream, udf, true, builtin);
         UDF createdUdf = catalogService.addUDF(udf);
+        SecurityUtil.addAcl(authorizer, securityContext, UDF.NAMESPACE, createdUdf.getId(), EnumSet.allOf(Permission.class));
         return WSUtils.respondEntity(createdUdf, CREATED);
     }
 
@@ -212,9 +230,11 @@ public class UDFCatalogResource {
     @DELETE
     @Path("/udfs/{id}")
     @Timed
-    public Response removeUDF(@PathParam("id") Long id) {
+    public Response removeUDF(@PathParam("id") Long id, @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, UDF.NAMESPACE, id, DELETE);
         UDF removedUDF = catalogService.removeUDF(id);
         if (removedUDF != null) {
+            SecurityUtil.removeAcl(authorizer, securityContext, UDF.NAMESPACE, id);
             return WSUtils.respondEntity(removedUDF, OK);
         }
 
@@ -251,8 +271,9 @@ public class UDFCatalogResource {
                                    @FormDataParam("udfJarFile") final InputStream inputStream,
                                    @FormDataParam("udfJarFile") final FormDataContentDisposition contentDispositionHeader,
                                    @FormDataParam("udfConfig") final FormDataBodyPart udfConfig,
-                                   @FormDataParam("builtin") final boolean builtin)
-        throws Exception {
+                                   @FormDataParam("builtin") final boolean builtin,
+                                   @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, UDF.NAMESPACE, udfId, WRITE);
         MediaType mediaType = udfConfig.getMediaType();
         LOG.debug("Media type {}", mediaType);
         if (!mediaType.equals(MediaType.APPLICATION_JSON_TYPE)) {
@@ -274,7 +295,8 @@ public class UDFCatalogResource {
     @GET
     @Produces({"application/java-archive", "application/json"})
     @Path("/udfs/download/{udfId}")
-    public Response downloadUdf(@PathParam("udfId") Long udfId) throws IOException {
+    public Response downloadUdf(@PathParam("udfId") Long udfId, @Context SecurityContext securityContext) throws IOException {
+        SecurityUtil.checkPermissions(authorizer, securityContext, UDF.NAMESPACE, udfId, READ, EXECUTE);
         UDF udf = catalogService.getUDF(udfId);
         if (udf != null) {
             StreamingOutput streamOutput = WSUtils.wrapWithStreamingOutput(
@@ -305,7 +327,7 @@ public class UDFCatalogResource {
             String digest = Hex.encodeHexString(md.digest());
             LOG.debug("Digest: {}", digest);
             udf.setDigest(digest);
-            String jarPath = getExistingJarPath(digest).or(uploadJar(new FileInputStream(tmpFile), udf.getName()));
+            String jarPath = getExistingJarPath(digest).orElse(uploadJar(new FileInputStream(tmpFile), udf.getName()));
             udf.setJarStoragePath(jarPath);
         }
     }
@@ -410,6 +432,6 @@ public class UDFCatalogResource {
         if (existing.size() >= 1) {
             return Optional.of(existing.iterator().next().getJarStoragePath());
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 }

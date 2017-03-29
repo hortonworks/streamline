@@ -16,6 +16,10 @@
 package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
+import com.hortonworks.streamline.streams.security.Permission;
+import com.hortonworks.streamline.streams.security.Roles;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import com.hortonworks.streamline.common.QueryParam;
@@ -44,15 +48,20 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.hortonworks.streamline.streams.security.Permission.READ;
+import static com.hortonworks.streamline.streams.security.Permission.DELETE;
+import static com.hortonworks.streamline.streams.security.Permission.WRITE;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -60,12 +69,14 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class NamespaceCatalogResource {
+  private final StreamlineAuthorizer authorizer;
   private final StreamCatalogService catalogService;
   private final TopologyActionsService topologyActionsService;
   private final EnvironmentService environmentService;
 
-  public NamespaceCatalogResource(StreamCatalogService catalogService, TopologyActionsService topologyActionsService,
-                                  EnvironmentService environmentService) {
+  public NamespaceCatalogResource(StreamlineAuthorizer authorizer, StreamCatalogService catalogService,
+                                  TopologyActionsService topologyActionsService, EnvironmentService environmentService) {
+    this.authorizer = authorizer;
     this.catalogService = catalogService;
     this.topologyActionsService = topologyActionsService;
     this.environmentService = environmentService;
@@ -74,7 +85,8 @@ public class NamespaceCatalogResource {
   @GET
   @Path("/namespaces")
   @Timed
-  public Response listNamespaces(@Context UriInfo uriInfo) {
+  public Response listNamespaces(@Context UriInfo uriInfo,
+                                 @Context SecurityContext securityContext) {
     List<QueryParam> queryParams = new ArrayList<>();
     MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
     Collection<Namespace> namespaces;
@@ -94,7 +106,8 @@ public class NamespaceCatalogResource {
       namespaces = environmentService.listNamespaces(queryParams);
     }
     if (namespaces != null) {
-      return buildNamespacesGetResponse(namespaces, detail);
+      return buildNamespacesGetResponse(SecurityUtil.filter(authorizer, securityContext, Namespace.NAMESPACE,
+              namespaces, READ), detail);
     }
 
     throw EntityNotFoundException.byFilter(queryParams.toString());
@@ -104,7 +117,9 @@ public class NamespaceCatalogResource {
   @Path("/namespaces/{id}")
   @Timed
   public Response getNamespaceById(@PathParam("id") Long namespaceId,
-                                   @javax.ws.rs.QueryParam("detail") Boolean detail) {
+                                   @javax.ws.rs.QueryParam("detail") Boolean detail,
+                                   @Context SecurityContext securityContext) {
+    SecurityUtil.checkPermissions(authorizer, securityContext, Namespace.NAMESPACE, namespaceId, READ);
     Namespace result = environmentService.getNamespace(namespaceId);
     if (result != null) {
       return buildNamespaceGetResponse(result, detail);
@@ -117,9 +132,11 @@ public class NamespaceCatalogResource {
   @Path("/namespaces/name/{namespaceName}")
   @Timed
   public Response getNamespaceByName(@PathParam("namespaceName") String namespaceName,
-                                     @javax.ws.rs.QueryParam("detail") Boolean detail) {
+                                     @javax.ws.rs.QueryParam("detail") Boolean detail,
+                                     @Context SecurityContext securityContext) {
     Namespace result = environmentService.getNamespaceByName(namespaceName);
     if (result != null) {
+      SecurityUtil.checkPermissions(authorizer, securityContext, Namespace.NAMESPACE, result.getId(), READ);
       return buildNamespaceGetResponse(result, detail);
     }
 
@@ -129,15 +146,16 @@ public class NamespaceCatalogResource {
   @Timed
   @POST
   @Path("/namespaces")
-  public Response addNamespace(Namespace namespace) {
+  public Response addNamespace(Namespace namespace, @Context SecurityContext securityContext) {
+    SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_CLUSTER_ADMIN);
     try {
       String namespaceName = namespace.getName();
       Namespace result = environmentService.getNamespaceByName(namespaceName);
       if (result != null) {
         throw new AlreadyExistsException("Namespace entity already exists with name " + namespaceName);
       }
-
       Namespace created = environmentService.addNamespace(namespace);
+      SecurityUtil.addAcl(authorizer, securityContext, Namespace.NAMESPACE, created.getId(), EnumSet.allOf(Permission.class));
       return WSUtils.respondEntity(created, CREATED);
     } catch (ProcessingException ex) {
       throw BadRequestException.of();
@@ -147,14 +165,14 @@ public class NamespaceCatalogResource {
   @DELETE
   @Path("/namespaces/{id}")
   @Timed
-  public Response removeNamespace(@PathParam("id") Long namespaceId) {
+  public Response removeNamespace(@PathParam("id") Long namespaceId, @Context SecurityContext securityContext) {
+    SecurityUtil.checkPermissions(authorizer, securityContext, Namespace.NAMESPACE, namespaceId, DELETE);
     assertNoTopologyRefersNamespace(namespaceId);
-
     Namespace removed = environmentService.removeNamespace(namespaceId);
     if (removed != null) {
+      SecurityUtil.removeAcl(authorizer, securityContext, Namespace.NAMESPACE, namespaceId);
       return WSUtils.respondEntity(removed, OK);
     }
-
     throw EntityNotFoundException.byId(namespaceId.toString());
   }
 
@@ -162,7 +180,8 @@ public class NamespaceCatalogResource {
   @Path("/namespaces/{id}")
   @Timed
   public Response addOrUpdateNamespace(@PathParam("id") Long namespaceId,
-      Namespace namespace) {
+      Namespace namespace, @Context SecurityContext securityContext) {
+    SecurityUtil.checkPermissions(authorizer, securityContext, Namespace.NAMESPACE, namespaceId, WRITE);
     try {
       Namespace newNamespace = environmentService.addOrUpdateNamespace(namespaceId, namespace);
       return WSUtils.respondEntity(newNamespace, OK);
@@ -174,7 +193,8 @@ public class NamespaceCatalogResource {
   @GET
   @Path("/namespaces/{id}/mapping")
   @Timed
-  public Response listServiceToClusterMappingInNamespace(@PathParam("id") Long namespaceId) {
+  public Response listServiceToClusterMappingInNamespace(@PathParam("id") Long namespaceId, @Context SecurityContext securityContext) {
+    SecurityUtil.checkPermissions(authorizer, securityContext, Namespace.NAMESPACE, namespaceId, READ);
     Namespace namespace = environmentService.getNamespace(namespaceId);
     if (namespace == null) {
       throw EntityNotFoundException.byId(namespaceId.toString());
@@ -192,7 +212,9 @@ public class NamespaceCatalogResource {
   @Path("/namespaces/{id}/mapping/{serviceName}")
   @Timed
   public Response findServicesToClusterMappingInNamespace(@PathParam("id") Long namespaceId,
-                                                          @PathParam("serviceName") String serviceName) {
+                                                          @PathParam("serviceName") String serviceName,
+                                                          @Context SecurityContext securityContext) {
+    SecurityUtil.checkPermissions(authorizer, securityContext, Namespace.NAMESPACE, namespaceId, READ);
     Namespace namespace = environmentService.getNamespace(namespaceId);
     if (namespace == null) {
       throw EntityNotFoundException.byId("Namespace: " + namespaceId.toString());
@@ -210,7 +232,9 @@ public class NamespaceCatalogResource {
   @Path("/namespaces/{id}/mapping/bulk")
   @Timed
   public Response setServicesToClusterInNamespace(@PathParam("id") Long namespaceId,
-                                                  List<NamespaceServiceClusterMapping> mappings) {
+                                                  List<NamespaceServiceClusterMapping> mappings,
+                                                  @Context SecurityContext securityContext) {
+    SecurityUtil.checkPermissions(authorizer, securityContext, Namespace.NAMESPACE, namespaceId, WRITE);
     Namespace namespace = environmentService.getNamespace(namespaceId);
     if (namespace == null) {
       throw EntityNotFoundException.byId(namespaceId.toString());
@@ -251,7 +275,8 @@ public class NamespaceCatalogResource {
   @Path("/namespaces/{id}/mapping")
   @Timed
   public Response mapServiceToClusterInNamespace(@PathParam("id") Long namespaceId,
-            NamespaceServiceClusterMapping mapping) {
+            NamespaceServiceClusterMapping mapping, @Context SecurityContext securityContext) {
+    SecurityUtil.checkPermissions(authorizer, securityContext, Namespace.NAMESPACE, namespaceId, WRITE);
     Namespace namespace = environmentService.getNamespace(namespaceId);
     if (namespace == null) {
       throw EntityNotFoundException.byId(namespaceId.toString());
@@ -276,7 +301,10 @@ public class NamespaceCatalogResource {
   @Path("/namespaces/{id}/mapping/{serviceName}/cluster/{clusterId}")
   @Timed
   public Response unmapServiceToClusterInNamespace(@PathParam("id") Long namespaceId,
-      @PathParam("serviceName") String serviceName, @PathParam("clusterId") Long clusterId) {
+                                                   @PathParam("serviceName") String serviceName,
+                                                   @PathParam("clusterId") Long clusterId,
+                                                   @Context SecurityContext securityContext) {
+    SecurityUtil.checkPermissions(authorizer, securityContext, Namespace.NAMESPACE, namespaceId, WRITE);
     Namespace namespace = environmentService.getNamespace(namespaceId);
     if (namespace == null) {
       throw EntityNotFoundException.byId(namespaceId.toString());
@@ -302,7 +330,9 @@ public class NamespaceCatalogResource {
   @DELETE
   @Path("/namespaces/{id}/mapping")
   @Timed
-  public Response unmapAllServicesToClusterInNamespace(@PathParam("id") Long namespaceId) {
+  public Response unmapAllServicesToClusterInNamespace(@PathParam("id") Long namespaceId,
+                                                       @Context SecurityContext securityContext) {
+    SecurityUtil.checkPermissions(authorizer, securityContext, Namespace.NAMESPACE, namespaceId, WRITE);
     Namespace namespace = environmentService.getNamespace(namespaceId);
     if (namespace == null) {
       throw EntityNotFoundException.byId(namespaceId.toString());

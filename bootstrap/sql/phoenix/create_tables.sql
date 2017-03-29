@@ -31,7 +31,12 @@ CREATE TABLE IF NOT EXISTS widget_datasource_mapping ("widgetId" BIGINT NOT NULL
 CREATE TABLE IF NOT EXISTS ml_model ("id" BIGINT NOT NULL, "name" VARCHAR(256) NOT NULL, "pmml" VARCHAR, "uploadedFileName" VARCHAR(256), "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id", "name"))
 CREATE TABLE IF NOT EXISTS topology_state ("topologyId" BIGINT NOT NULL, "name" VARCHAR(255) NOT NULL, "description" VARCHAR(255) NOT NULL, CONSTRAINT pk PRIMARY KEY ("topologyId"))
 CREATE TABLE IF NOT EXISTS service_bundle ("id" BIGINT NOT NULL, "name" VARCHAR(256), "serviceUISpecification" VARCHAR, "registerClass" VARCHAR, "timestamp"  BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
-CREATE TABLE IF NOT EXISTS sequence_table ("id" VARCHAR, "file" BIGINT, "topology_version" BIGINT, "topology" BIGINT, "topology_component_bundle" BIGINT,"topology_component" BIGINT, "tag" BIGINT,  "topology_stream" BIGINT, "notifier" BIGINT, "topology_source" BIGINT, "topology_sink" BIGINT, "topology_processor" BIGINT, "topology_edge" BIGINT,"topology_rule" BIGINT, "topology_window" BIGINT, "udf" BIGINT, "cluster" BIGINT, "service" BIGINT, "service_configuration" BIGINT,"topology_branchrule" BIGINT, "component" BIGINT, "dashboard" BIGINT, "widget" BIGINT, "datasource" BIGINT, "namespace" BIGINT, "ml_model" BIGINT, "topology_state" BIGINT, "service_bundle" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS acl_entry ("id" BIGINT NOT NULL, "objectId" BIGINT NOT NULL, "objectNamespace" VARCHAR(256) NOT NULL, "sidId" BIGINT NOT NULL, "sidType" VARCHAR(256) NOT NULL, "permissions" VARCHAR(256) NOT NULL, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS role ("id" BIGINT NOT NULL, "name" VARCHAR(256) NOT NULL, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS role_hierarchy ("parentId" BIGINT NOT NULL, "childId" BIGINT NOT NULL, CONSTRAINT pk PRIMARY KEY ("parentId", "childId"))
+CREATE TABLE IF NOT EXISTS user_entry ("id" BIGINT NOT NULL, "name" VARCHAR(256) NOT NULL, "email" VARCHAR(256) NOT NULL, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS user_role ("userId" BIGINT NOT NULL, "roleId" BIGINT NOT NULL, CONSTRAINT pk PRIMARY KEY ("userId", "roleId"))
+CREATE TABLE IF NOT EXISTS sequence_table ("id" VARCHAR, "file" BIGINT, "topology_version" BIGINT, "topology" BIGINT, "topology_component_bundle" BIGINT,"topology_component" BIGINT, "tag" BIGINT,  "topology_stream" BIGINT, "notifier" BIGINT, "topology_source" BIGINT, "topology_sink" BIGINT, "topology_processor" BIGINT, "topology_edge" BIGINT,"topology_rule" BIGINT, "topology_window" BIGINT, "udf" BIGINT, "cluster" BIGINT, "service" BIGINT, "service_configuration" BIGINT,"topology_branchrule" BIGINT, "component" BIGINT, "dashboard" BIGINT, "widget" BIGINT, "datasource" BIGINT, "namespace" BIGINT, "ml_model" BIGINT, "topology_state" BIGINT, "service_bundle" BIGINT, "acl_entry" BIGINT, "role" BIGINT, "role_hierarchy" BIGINT, "user_entry" BIGINT, "user_role" BIGINT CONSTRAINT pk PRIMARY KEY ("id"))
 
 CREATE SEQUENCE IF NOT EXISTS topology_version_sequence
 CREATE SEQUENCE IF NOT EXISTS topology_sequence
@@ -60,3 +65,8 @@ CREATE SEQUENCE IF NOT EXISTS datasource_sequence
 CREATE SEQUENCE IF NOT EXISTS ml_model_sequence
 CREATE SEQUENCE IF NOT EXISTS topology_state_sequence
 CREATE SEQUENCE IF NOT EXISTS service_bundle_sequence
+CREATE SEQUENCE IF NOT EXISTS acl_entry_sequence
+CREATE SEQUENCE IF NOT EXISTS role_sequence
+CREATE SEQUENCE IF NOT EXISTS role_hierarchy_sequence
+CREATE SEQUENCE IF NOT EXISTS user_entry_sequence
+CREATE SEQUENCE IF NOT EXISTS user_role_sequence
