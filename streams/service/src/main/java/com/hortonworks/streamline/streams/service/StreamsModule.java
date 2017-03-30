@@ -90,7 +90,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         result.addAll(getClusterRelatedResources(authorizer, environmentService));
         result.add(new FileCatalogResource(authorizer, catalogService));
         result.addAll(getTopologyRelatedResources(authorizer, streamcatalogService, environmentService, topologyActionsService,
-                topologyMetricsService));
+                topologyMetricsService, securityCatalogService));
         result.add(new UDFCatalogResource(authorizer, streamcatalogService, fileStorage));
         result.addAll(getNotificationsRelatedResources(authorizer, streamcatalogService));
         result.add(new SchemaResource(authorizer, createSchemaRegistryClient()));
@@ -116,8 +116,12 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         return Collections.singletonList(new SecurityCatalogResource(authorizer, securityCatalogService));
     }
 
-    private List<Object> getTopologyRelatedResources(StreamlineAuthorizer authorizer, StreamCatalogService streamcatalogService, EnvironmentService environmentService,
-                                                     TopologyActionsService actionsService, TopologyMetricsService metricsService) {
+    private List<Object> getTopologyRelatedResources(StreamlineAuthorizer authorizer,
+                                                     StreamCatalogService streamcatalogService,
+                                                     EnvironmentService environmentService,
+                                                     TopologyActionsService actionsService,
+                                                     TopologyMetricsService metricsService,
+                                                     SecurityCatalogService securityCatalogService) {
         return Arrays.asList(
                 new TopologyCatalogResource(authorizer, streamcatalogService, environmentService, actionsService, metricsService),
                 new TopologyComponentBundleResource(authorizer, streamcatalogService, environmentService),
@@ -129,7 +133,8 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
                 new TopologyEdgeCatalogResource(authorizer, streamcatalogService),
                 new RuleCatalogResource(authorizer, streamcatalogService),
                 new BranchRuleCatalogResource(authorizer, streamcatalogService),
-                new WindowCatalogResource(authorizer, streamcatalogService)
+                new WindowCatalogResource(authorizer, streamcatalogService),
+                new TopologyEditorToolbarResource(authorizer, streamcatalogService, securityCatalogService)
         );
     }
 

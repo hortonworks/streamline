@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS file ("id" BIGINT NOT NULL, "name" VARCHAR(256) ,"ver
 CREATE TABLE IF NOT EXISTS topology ("id" BIGINT NOT NULL, "versionId" BIGINT NOT NULL, "name" VARCHAR (256), "description" VARCHAR, "namespaceId" BIGINT, "config" VARCHAR, CONSTRAINT pk PRIMARY KEY ("id", "versionId"))
 CREATE TABLE IF NOT EXISTS topology_component_bundle("id" BIGINT NOT NULL, "name" VARCHAR(256), "type" VARCHAR, "subType" VARCHAR, "streamingEngine" VARCHAR, "topologyComponentUISpecification" VARCHAR, "fieldHintProviderClass" VARCHAR, "transformationClass" VARCHAR, "timestamp"  BIGINT, "bundleJar" VARCHAR, "builtin" CHAR(4), "mavenDeps" VARCHAR, CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS topology_editor_metadata ("topologyId" BIGINT NOT NULL, "versionId" BIGINT NOT NULL, "data" VARCHAR, "timestamp"  BIGINT, CONSTRAINT pk PRIMARY KEY ("topologyId", "versionId"))
+CREATE TABLE IF NOT EXISTS topology_editor_toolbar ("userId" BIGINT NOT NULL, "data" VARCHAR, "timestamp"  BIGINT, CONSTRAINT pk PRIMARY KEY ("userId"))
 CREATE TABLE IF NOT EXISTS tag ("id" BIGINT NOT NULL, "name" VARCHAR(256), "description" VARCHAR(256), "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS tag_storable_mapping ("tagId" BIGINT NOT NULL, "storableNamespace" VARCHAR(32) NOT NULL, "storableId" BIGINT NOT NULL, CONSTRAINT pk PRIMARY KEY ("tagId", "storableNamespace", "storableId"))
 CREATE TABLE IF NOT EXISTS notifier ("id" BIGINT  NOT NULL, "name" VARCHAR, "description" VARCHAR, "jarFileName" VARCHAR, "className" VARCHAR, "timestamp"  BIGINT, "properties" VARCHAR, "fieldValues" VARCHAR, CONSTRAINT pk PRIMARY KEY ("id"))
@@ -36,7 +37,7 @@ CREATE TABLE IF NOT EXISTS role ("id" BIGINT NOT NULL, "name" VARCHAR(256) NOT N
 CREATE TABLE IF NOT EXISTS role_hierarchy ("parentId" BIGINT NOT NULL, "childId" BIGINT NOT NULL, CONSTRAINT pk PRIMARY KEY ("parentId", "childId"))
 CREATE TABLE IF NOT EXISTS user_entry ("id" BIGINT NOT NULL, "name" VARCHAR(256) NOT NULL, "email" VARCHAR(256) NOT NULL, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS user_role ("userId" BIGINT NOT NULL, "roleId" BIGINT NOT NULL, CONSTRAINT pk PRIMARY KEY ("userId", "roleId"))
-CREATE TABLE IF NOT EXISTS sequence_table ("id" VARCHAR, "file" BIGINT, "topology_version" BIGINT, "topology" BIGINT, "topology_component_bundle" BIGINT,"topology_component" BIGINT, "tag" BIGINT,  "topology_stream" BIGINT, "notifier" BIGINT, "topology_source" BIGINT, "topology_sink" BIGINT, "topology_processor" BIGINT, "topology_edge" BIGINT,"topology_rule" BIGINT, "topology_window" BIGINT, "udf" BIGINT, "cluster" BIGINT, "service" BIGINT, "service_configuration" BIGINT,"topology_branchrule" BIGINT, "component" BIGINT, "dashboard" BIGINT, "widget" BIGINT, "datasource" BIGINT, "namespace" BIGINT, "ml_model" BIGINT, "topology_state" BIGINT, "service_bundle" BIGINT, "acl_entry" BIGINT, "role" BIGINT, "role_hierarchy" BIGINT, "user_entry" BIGINT, "user_role" BIGINT CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS sequence_table ("id" VARCHAR, "file" BIGINT, "topology_version" BIGINT, "topology" BIGINT, "topology_component_bundle" BIGINT,"topology_component" BIGINT, "tag" BIGINT,  "topology_stream" BIGINT, "notifier" BIGINT, "topology_source" BIGINT, "topology_sink" BIGINT, "topology_processor" BIGINT, "topology_edge" BIGINT,"topology_rule" BIGINT, "topology_window" BIGINT, "udf" BIGINT, "cluster" BIGINT, "service" BIGINT, "service_configuration" BIGINT,"topology_branchrule" BIGINT, "component" BIGINT, "dashboard" BIGINT, "widget" BIGINT, "datasource" BIGINT, "namespace" BIGINT, "ml_model" BIGINT, "topology_state" BIGINT, "service_bundle" BIGINT, "acl_entry" BIGINT, "role" BIGINT, "role_hierarchy" BIGINT, "user_entry" BIGINT, "user_role" BIGINT, "topology_editor_toolbar" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
 
 CREATE SEQUENCE IF NOT EXISTS topology_version_sequence
 CREATE SEQUENCE IF NOT EXISTS topology_sequence
@@ -70,3 +71,4 @@ CREATE SEQUENCE IF NOT EXISTS role_sequence
 CREATE SEQUENCE IF NOT EXISTS role_hierarchy_sequence
 CREATE SEQUENCE IF NOT EXISTS user_entry_sequence
 CREATE SEQUENCE IF NOT EXISTS user_role_sequence
+CREATE SEQUENCE IF NOT EXISTS topology_editor_toolbar_sequence
