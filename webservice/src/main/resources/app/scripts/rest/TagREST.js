@@ -21,6 +21,7 @@ const TagREST = {
   getAllTags(options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'tags', options)
       .then((response) => {
         return response.json();
@@ -29,6 +30,7 @@ const TagREST = {
   getTag(id, options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'tags/' + id, options)
       .then((response) => {
         return response.json();
@@ -41,6 +43,7 @@ const TagREST = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'tags', options)
       .then((response) => {
         return response.json();
@@ -53,6 +56,7 @@ const TagREST = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'tags/' + id, options)
       .then((response) => {
         return response.json();
@@ -61,6 +65,7 @@ const TagREST = {
   deleteTag(id, options) {
     options = options || {};
     options.method = options.method || 'DELETE';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'tags/' + id, options)
       .then((response) => {
         return response.json();

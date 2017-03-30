@@ -26,6 +26,7 @@ const ClusterREST = {
   getAllCluster(options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + clusterBaseURL + "?detail=true", options)
       .then((response) => {
         return response.json();
@@ -34,6 +35,7 @@ const ClusterREST = {
   getCluster(id, options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + clusterBaseURL + '/' + id + '?detail=true', options)
       .then((response) => {
         return response.json();
@@ -46,6 +48,7 @@ const ClusterREST = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
+    options.credentials = 'same-origin';
     return fetch(baseUrl + clusterBaseURL, options)
       .then((response) => {
         return response.json();
@@ -58,6 +61,7 @@ const ClusterREST = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
+    options.credentials = 'same-origin';
     return fetch(baseUrl + clusterBaseURL + '/' + id, options)
       .then((response) => {
         return response.json();
@@ -66,6 +70,7 @@ const ClusterREST = {
   deleteCluster(id, options) {
     options = options || {};
     options.method = options.method || 'DELETE';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + clusterBaseURL + '/' + id, options)
       .then((response) => {
         return response.json();
@@ -78,6 +83,7 @@ const ClusterREST = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
+    options.credentials = 'same-origin';
     return fetch(baseUrl + ambariBaseUrl, options)
       .then((response) => {
         return response.json();
@@ -86,6 +92,7 @@ const ClusterREST = {
   getStormViewUrl(clusterId, options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + clusterBaseURL + '/' + clusterId + '/services/storm/mainpage/url', options)
       .then((response) => {
         return response.json();
@@ -98,6 +105,7 @@ const ClusterREST = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
+    options.credentials = 'same-origin';
     return fetch(baseUrl + ambariBaseUrl + '/verify/url', options)
       .then((response) => {
         return response.json();
@@ -106,6 +114,7 @@ const ClusterREST = {
   getAllNotifier(options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + "notifiers", options)
       .then((response) => {
         return response.json();

@@ -79,6 +79,8 @@ export default class WindowingAggregateNodeForm extends Component {
           label: "Hours"
         }
       ],
+      tsField: '',
+      lagMs: '',
       outputFieldsArr: [
         {
           args: '',
@@ -170,11 +172,13 @@ export default class WindowingAggregateNodeForm extends Component {
       fields.push(...result.fields);
     });
     this.fieldsArr = ProcessorUtils.getSchemaFields(_.unionBy(fields,'name'), 0,false);
+    let tsFieldOptions =  this.fieldsArr.filter((f)=>{return f.type === 'LONG';});
 
     let stateObj = {
       parallelism: this.configFields.parallelism || 1,
       keysList: JSON.parse(JSON.stringify(this.fieldsArr)),
-      functionListArr: this.udfList
+      functionListArr: this.udfList,
+      tsFieldOptions: tsFieldOptions
     };
 
     if(this.windowsRuleId){
@@ -274,6 +278,10 @@ export default class WindowingAggregateNodeForm extends Component {
           stateObj.slidingNum = serverWindowObj.window.slidingInterval.count;
         }
       }
+      if(serverWindowObj.window.tsField) {
+        stateObj.tsField = serverWindowObj.window.tsField;
+        stateObj.lagMs = Utils.millisecondsToNumber(serverWindowObj.window.lagMs).number;
+      }
 
       // assign mainStreamObj value to "this.tempStreamContextData" make available for further methods
       this.tempStreamContextData = mainStreamObj;
@@ -315,10 +323,13 @@ export default class WindowingAggregateNodeForm extends Component {
      selectedKeys, windowNum, argumentError and outputFieldsArr array
   */
   validateData(){
-    let {selectedKeys, windowNum, outputFieldsArr, argumentError} = this.state;
+    let {selectedKeys, windowNum, outputFieldsArr, tsField, lagMs, argumentError} = this.state;
     let validData = true;
     if (argumentError) {return false;}
     if (selectedKeys.length === 0 || windowNum === '') {
+      validData = false;
+    }
+    if(tsField !== '' && lagMs === '') {
       validData = false;
     }
     outputFieldsArr.map((obj) => {
@@ -408,7 +419,9 @@ export default class WindowingAggregateNodeForm extends Component {
         slidingDurationType,
         intervalType,
         parallelism,
-        outputFieldsGroupKeys
+        outputFieldsGroupKeys,
+        tsField,
+        lagMs
       } = this.state;
       let tempArr = _.cloneDeep(this.state.outputFieldsArr);
       let {topologyId, versionId, nodeType, nodeData} = this.props;
@@ -450,6 +463,10 @@ export default class WindowingAggregateNodeForm extends Component {
             count: slidingNum
           };
         }
+      }
+      if(tsField !== ''){
+        this.windowRulesNode.window.tsField = tsField;
+        this.windowRulesNode.window.lagMs = Utils.numberToMilliseconds(lagMs, 'Seconds');
       }
       let promiseArr = [];
       const windowsNodeObj = this.updateProcessorNode(name, description);
@@ -514,6 +531,18 @@ export default class WindowingAggregateNodeForm extends Component {
       : keyName === "slidingDurationType"
         ? this.setState({slidingDurationType : obj.value})
         : this.setState({intervalType : obj.value});
+    }
+  }
+
+  /*
+    handleTimestampFieldChange method handles change of timestamp field
+    params@ obj selected option
+  */
+  handleTimestampFieldChange(obj) {
+    if(obj){
+      this.setState({tsField: obj.name});
+    } else {
+      this.setState({tsField: '', lagMs: ''});
     }
   }
 
@@ -697,6 +726,9 @@ export default class WindowingAggregateNodeForm extends Component {
       durationTypeArr,
       windowNum,
       slidingNum,
+      tsField,
+      tsFieldOptions,
+      lagMs,
       slidingDurationType,
       argumentError,
       outputFieldsArr,
@@ -757,6 +789,28 @@ export default class WindowingAggregateNodeForm extends Component {
                           <Select value={slidingDurationType} options={durationTypeArr} onChange={this.commonHandlerChange.bind(this,'slidingDurationType')} required={true} disabled={!editMode} clearable={false}/>
                         </div>
                       : null}
+                  </div>
+                </div>
+                <div className="form-group">
+                  <div className="row">
+                    <div className="col-sm-5">
+                      <label>Timestamp Field</label>
+                    </div>
+                    {tsField !== '' ?
+                    <div className="col-sm-5">
+                      <label>Lag in Seconds<span className="text-danger">*</span></label>
+                    </div>
+                    : ''}
+                  </div>
+                  <div className="row">
+                    <div className="col-sm-5">
+                      <Select value={tsField} options={tsFieldOptions} onChange={this.handleTimestampFieldChange.bind(this)} disabled={!editMode} valueKey="name" labelKey="name" />
+                    </div>
+                    {tsField !== '' ?
+                    <div className="col-sm-5">
+                      <input name="lagMs" value={lagMs} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={!editMode} min="0" inputMode="numeric"/>
+                    </div>
+                    : ''}
                   </div>
                 </div>
                 <fieldset className="fieldset-default">

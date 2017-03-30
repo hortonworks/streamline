@@ -21,7 +21,7 @@ import HTML5Backend from 'react-dnd-html5-backend';
 import BaseContainer from '../../BaseContainer';
 import {Link, withRouter} from 'react-router';
 import TopologyREST from '../../../rest/TopologyREST';
-import {OverlayTrigger, Tooltip, Accordion, Panel} from 'react-bootstrap';
+import {OverlayTrigger, Tooltip, Popover, Accordion, Panel} from 'react-bootstrap';
 import Switch from 'react-bootstrap-switch';
 import ComponentNodeContainer from './ComponentNodeContainer';
 import TopologyConfig from './TopologyConfigContainer';
@@ -1044,6 +1044,7 @@ class TopologyEditorContainer extends Component {
     let nodeType = this.node
       ? this.node.currentType
       : '';
+
     return (
       <BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" breadcrumbData={this.breadcrumbData} headerContent={this.getTopologyHeader()}>
         <div className="row">
@@ -1065,22 +1066,22 @@ class TopologyEditorContainer extends Component {
                         color: '#545454'
                       }}>{this.versionName}</span>
                     </span>
-                    <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip"> Zoom In </Tooltip>}>
+                    <OverlayTrigger placement="top" overlay={<Popover id = "tooltip-popover"><span className="editor-control-tooltip"> Zoom In </span></Popover>}>
                       <a href="javascript:void(0);" className="zoom-in" onClick={this.graphZoomAction.bind(this, 'zoom_in')}>
                         <i className="fa fa-search-plus"></i>
                       </a>
                     </OverlayTrigger>
-                    <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip"> Zoom Out </Tooltip>}>
+                    <OverlayTrigger placement="top" overlay={<Popover id = "tooltip-popover"><span className="editor-control-tooltip"> Zoom Out </span></Popover>}>
                       <a href="javascript:void(0);" className="zoom-out" onClick={this.graphZoomAction.bind(this, 'zoom_out')}>
                         <i className="fa fa-search-minus"></i>
                       </a>
                     </OverlayTrigger>
-                    <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip"> Configure </Tooltip>}>
+                    <OverlayTrigger placement="top" overlay={<Popover id = "tooltip-popover"><span className="editor-control-tooltip"> Configure </span></Popover>}>
                       <a href="javascript:void(0);" className="config" onClick={this.showConfig.bind(this)}>
                         <i className="fa fa-gear"></i>
                       </a>
                     </OverlayTrigger>
-                    <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip"><div>Spotlight Search show/hide</div><div>(Ctrl+Space/Esc)</div></Tooltip>}>
+                    <OverlayTrigger placement="top" overlay={<Popover id="tooltip-popover"><span className="editor-control-tooltip"><div>Search show/hide</div><div>(Ctrl+Space, Esc)</div></span></Popover>}>
                       <a href="javascript:void(0);" className="spotlight-search" onClick={()=>{state.showSpotlightSearch = !state.showSpotlightSearch;}}>
                         <i className="fa fa-search"></i>
                       </a>
