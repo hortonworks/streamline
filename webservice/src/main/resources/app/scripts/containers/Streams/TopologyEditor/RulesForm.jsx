@@ -303,7 +303,6 @@ class RuleFormula extends Component {
     this.validSQL = true;
     return (
       <pre className="query-preview" key={1}>
-				select * from {this.renderTableName(streamName)} <span className="text-danger">where</span>
 			{
           data.map((d,i)=>{
             let field1_name = '';
@@ -369,19 +368,13 @@ class RuleFormula extends Component {
 			</pre>
     );
   }
-  renderTableName(name, index) {
-    return (
-      <span key={index + '.1'} className="text-success">
-        {name}</span>
-    );
-  }
   renderFieldName(name, index) {
     if (!name) {
       return this.renderMissing(name, index + '.2', 'Field');
     }
     return (
       <span className="text-primary">
-        {name}</span>
+        {name} </span>
     );
   }
   renderOperator(name, index) {
@@ -390,14 +383,14 @@ class RuleFormula extends Component {
     }
     return (
       <span className="text-danger">
-        {name}</span>
+        {name} </span>
     );
   }
   renderMissing(name, index, type) {
     this.validSQL = false;
     return (
       <span className="text-muted">
-        Missing {type}</span>
+        Missing {type} </span>
     );
   }
   render() {

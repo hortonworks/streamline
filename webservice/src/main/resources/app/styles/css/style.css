@@ -2531,3 +2531,9 @@ input[type="checkbox"] {
     height: 14px;
     margin-right: 10px;
 }
+
+.editor-control-tooltip {
+  font-weight: bold;
+  margin: 0px;
+  padding: 0px;
+}
