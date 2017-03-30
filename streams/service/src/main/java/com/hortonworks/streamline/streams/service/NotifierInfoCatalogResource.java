@@ -237,7 +237,7 @@ public class NotifierInfoCatalogResource {
     private String uploadJar(InputStream is, String notifierName) throws IOException {
         String jarFileName;
         if (is != null) {
-            jarFileName = UUID.randomUUID().toString() + ".jar";
+            jarFileName = String.format("notifiers-%s.jar", UUID.randomUUID().toString());
             String uploadedPath = this.fileStorage.uploadFile(is, jarFileName);
             LOG.debug("Jar uploaded to {}", uploadedPath);
         } else {

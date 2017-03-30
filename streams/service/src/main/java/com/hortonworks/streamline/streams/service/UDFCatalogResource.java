@@ -394,7 +394,7 @@ public class UDFCatalogResource {
     private String uploadJar(InputStream is, String udfName) throws IOException {
         String jarFileName;
         if (is != null) {
-            jarFileName = UUID.randomUUID().toString() + ".jar";
+            jarFileName = String.format("streamline-functions-%s.jar", UUID.randomUUID().toString());
             String uploadedPath = this.fileStorage.uploadFile(is, jarFileName);
             LOG.debug("Jar uploaded to {}", uploadedPath);
         } else {
