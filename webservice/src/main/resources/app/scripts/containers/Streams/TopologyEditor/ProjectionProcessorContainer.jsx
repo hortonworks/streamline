@@ -177,12 +177,18 @@ export default class ProjectionProcessorContainer extends Component {
         outputStreams: []
       };
       TopologyREST.createNode(topologyId, versionId, "rules", {body: JSON.stringify(dummyProjectionObj)}).then((rulesNode) => {
-        this.projectionRulesNode = rulesNode;
-        this.projectionRuleId = rulesNode.id;
-        this.projectionNode.config.properties.rules = [this.projectionRuleId];
-        TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {
-          body: JSON.stringify(this.projectionNode)
-        });
+        if(rulesNode.responseMessage !== undefined){
+          stateObj.showLoading = true;
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={rulesNode.responseMessage}/>, '', toastOpt);
+        } else {
+          this.projectionRulesNode = rulesNode;
+          this.projectionRuleId = rulesNode.id;
+          this.projectionNode.config.properties.rules = [this.projectionRuleId];
+          TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {
+            body: JSON.stringify(this.projectionNode)
+          });
+        }
       });
     }
     this.setState(stateObj);
