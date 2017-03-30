@@ -21,7 +21,6 @@ const RulesREST = {
   getAllRules(options) {
     options = options || {};
     options.method = options.method || 'GET';
-    options.credentials = 'same-origin';
     return fetch(baseUrl + 'datasources', options)
       .then((response) => {
         return response.json();
@@ -30,7 +29,6 @@ const RulesREST = {
   getRule(id, options) {
     options = options || {};
     options.method = options.method || 'GET';
-    options.credentials = 'same-origin';
     return fetch(baseUrl + 'datasources/' + id, options)
       .then((response) => {
         return response.json();
@@ -43,7 +41,6 @@ const RulesREST = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
-    options.credentials = 'same-origin';
     return fetch(baseUrl + 'datasources', options)
       .then((response) => {
         return response.json();
@@ -56,7 +53,6 @@ const RulesREST = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
-    options.credentials = 'same-origin';
     return fetch(baseUrl + 'datasources/' + id, options)
       .then((response) => {
         return response.json();
@@ -65,7 +61,6 @@ const RulesREST = {
   deleteRule(id, options) {
     options = options || {};
     options.method = options.method || 'DELETE';
-    options.credentials = 'same-origin';
     return fetch(baseUrl + 'datasources/' + id, options)
       .then((response) => {
         return response.json();

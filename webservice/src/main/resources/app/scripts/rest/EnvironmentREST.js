@@ -25,7 +25,6 @@ const EnvironmentREST = {
   getAllNameSpaces(options) {
     options = options || {};
     options.method = options.method || 'GET';
-    options.credentials = 'same-origin';
     return fetch(baseUrl + nameSpaceBaseURL + "?detail=true", options)
       .then((response) => {
         return response.json();
@@ -34,7 +33,6 @@ const EnvironmentREST = {
   getNameSpace(id, options) {
     options = options || {};
     options.method = options.method || 'GET';
-    options.credentials = 'same-origin';
     return fetch(baseUrl + nameSpaceBaseURL + '/' + id + '?detail=true', options)
       .then((response) => {
         return response.json();
@@ -43,7 +41,6 @@ const EnvironmentREST = {
   postNameSpace(id, options) {
     options = options || {};
     options.method = options.method || 'POST';
-    options.credentials = 'same-origin';
     options.headers = options.headers || {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
@@ -64,7 +61,6 @@ const EnvironmentREST = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
-    options.credentials = 'same-origin';
     return fetch(baseUrl + nameSpaceBaseURL + '/' + id, options)
       .then((response) => {
         return response.json();
@@ -73,7 +69,6 @@ const EnvironmentREST = {
   deleteNameSpace(id, options) {
     options = options || {};
     options.method = options.method || 'DELETE';
-    options.credentials = 'same-origin';
     return fetch(baseUrl + nameSpaceBaseURL + '/' + id, options)
       .then((response) => {
         return response.json();

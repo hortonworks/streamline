@@ -137,20 +137,20 @@ export default class JoinNodeForm extends Component {
     let fields = [],joinStreams=[],unModifyList=[];
     inputStreamFromContext.map((stream, i) => {
       // modify fields if inputStreamFromContext >  1
-      // if(inputStreamFromContext.length > 1){
-        // const obj = {
-        //   name : inputStreamFromContext[i].streamId,
-        //   fields : stream.fields,
-        //   optional : false,
-        //   type : "NESTED"
-        // };
-      //   fields.push(obj);
-      // } else {
-      fields.push(...stream.fields);
-      // }
+      if(inputStreamFromContext.length > 1){
+        const obj = {
+          name : inputStreamFromContext[i].streamId,
+          fields : stream.fields,
+          optional : false,
+          type : "NESTED"
+        };
+        fields.push(obj);
+      } else {
+        fields.push(...stream.fields);
+      }
 
       // UnModify fieldsList
-      // unModifyList.push(...stream.fields);
+      unModifyList.push(...stream.fields);
 
       if (i < inputStreamFromContext.length - 1) {
         joinStreams.push({
@@ -166,15 +166,15 @@ export default class JoinNodeForm extends Component {
       }
     });
 
-    const {tempFieldsArr , fieldTempArr}  = ProcessorUtils.getSchemaFields(fields, 0,true);
+    const tempFieldsArr = ProcessorUtils.getSchemaFields(fields, 0,false);
     // create a uniqueID for select2 to support duplicate label in options
-    // _.map(tempFieldsArr, (f) => {
-    //   f.uniqueID = f.keyPath.split('.').join('-')+"_"+f.name;
-    // });
-    // const unModifyFieldList = ProcessorUtils.getSchemaFields(unModifyList, 0,false);
+    _.map(tempFieldsArr, (f) => {
+      f.uniqueID = f.keyPath.split('.').join('-')+"_"+f.name;
+    });
+    const unModifyFieldList = ProcessorUtils.getSchemaFields(unModifyList, 0,false);
 
     let stateObj = {
-      fieldList: tempFieldsArr,
+      fieldList: unModifyFieldList,
       parallelism: configFields.parallelism || 1,
       outputKeys: configFields.outputKeys
         ? configFields.outputKeys.map((key) => {
@@ -183,7 +183,7 @@ export default class JoinNodeForm extends Component {
         : undefined,
       inputStreamsArr: inputStreamFromContext,
       joinStreams: joinStreams,
-      outputFieldsList : fieldTempArr
+      outputFieldsList : tempFieldsArr
     };
 
     // prefetchValue is use to call the this.populateOutputStreamsFromServer() after state has been SET
@@ -278,7 +278,6 @@ export default class JoinNodeForm extends Component {
       return _.find(outputFieldsList, {name : k});
     });
 
-    stateObj.outputKeysObjArr = outputKeysObjArr;
     stateObj.outputStreamFields = ProcessorUtils.createSelectedKeysHierarchy(outputKeysObjArr,outputFieldsList);
     this.streamData = {
       streamId: this.joinProcessorNode.outputStreams[0].streamId,
@@ -344,11 +343,11 @@ export default class JoinNodeForm extends Component {
   handleFieldsChange(arr){
     let {outputFieldsList} = this.state;
     const keyData = ProcessorUtils.createSelectedKeysHierarchy(arr,outputFieldsList);
-    // let tempFieldsArr=[];
-    // _.map(keyData,(o) => {
-    //   tempFieldsArr = _.concat(tempFieldsArr, o.fields);
-    // });
-    this.streamData.fields = keyData;
+    let tempFieldsArr=[];
+    _.map(keyData,(o) => {
+      tempFieldsArr = _.concat(tempFieldsArr, o.fields);
+    });
+    this.streamData.fields = tempFieldsArr;
 
     const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey(arr);
     const groupKeysByDots = ProcessorUtils.modifyGroupKeyByDots(gKeys);
@@ -887,7 +886,7 @@ export default class JoinNodeForm extends Component {
                 </label>
                 <div className="row">
                   <div className="col-sm-12">
-                    <Select className="menu-outer-top" value={outputKeysObjArr} options={outputFieldsList} onChange={this.handleFieldsChange.bind(this)} multi={true} required={true} disabled={!editMode} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+                    <Select className="menu-outer-top" value={outputKeysObjArr} options={outputFieldsList} onChange={this.handleFieldsChange.bind(this)} multi={true} required={true} disabled={!editMode} valueKey="uniqueID" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
                   </div>
                 </div>
               </div>

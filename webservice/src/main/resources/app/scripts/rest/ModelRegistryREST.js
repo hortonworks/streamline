@@ -24,7 +24,6 @@ const ModelRegistryREST = {
   getAllModelRegistry(options) {
     options = options || {};
     options.method = options.method || 'GET';
-    options.credentials = 'same-origin';
     return fetch(baseUrl + modelsBaseURL, options)
       .then((response) => {
         return response.json();
@@ -33,7 +32,6 @@ const ModelRegistryREST = {
   getModelRegistry(id, options) {
     options = options || {};
     options.method = options.method || 'GET';
-    options.credentials = 'same-origin';
     return fetch(baseUrl + modelsBaseURL + '/' + id, options)
       .then((response) => {
         return response.json();
@@ -42,7 +40,6 @@ const ModelRegistryREST = {
   postModelRegistry(options) {
     options = options || {};
     options.method = options.method || 'POST';
-    options.credentials = 'same-origin';
     return fetch(baseUrl + modelsBaseURL, options)
       .then((response) => {
         return response.json();
@@ -51,7 +48,6 @@ const ModelRegistryREST = {
   putModelRegistry(id, options) {
     options = options || {};
     options.method = options.method || 'PUT';
-    options.credentials = 'same-origin';
     return fetch(baseUrl + modelsBaseURL + '/' + id, options)
       .then((response) => {
         return response.json();
@@ -60,7 +56,6 @@ const ModelRegistryREST = {
   deleteModelRegistry(id, options) {
     options = options || {};
     options.method = options.method || 'DELETE';
-    options.credentials = 'same-origin';
     return fetch(baseUrl + modelsBaseURL + '/' + id, options)
       .then((response) => {
         return response.json();
@@ -69,7 +64,6 @@ const ModelRegistryREST = {
   getModelRegistryOutputFields(id, options) {
     options = options || {};
     options.method = options.method || 'GET';
-    options.credentials = 'same-origin';
     return fetch(baseUrl + modelsBaseURL + '/' + id + '/fields/output', options)
       .then((response) => {
         return response.json();

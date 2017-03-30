@@ -24,7 +24,6 @@ const AggregateUdfREST = {
   getAllUdfs(options) {
     options = options || {};
     options.method = options.method || 'GET';
-    options.credentials = 'same-origin';
     return fetch(baseUrl + 'streams/udfs', options)
       .then((response) => {
         return response.json();
@@ -33,7 +32,6 @@ const AggregateUdfREST = {
   getUdf(id, options) {
     options = options || {};
     options.method = options.method || 'GET';
-    options.credentials = 'same-origin';
     return fetch(baseUrl + 'streams/udfs' + id, options)
       .then((response) => {
         return response.json();

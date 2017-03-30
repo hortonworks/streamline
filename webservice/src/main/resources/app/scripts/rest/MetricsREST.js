@@ -23,7 +23,6 @@ const MetricsREST = {
   getComponentMetrics(topologyId, options) {
     options = options || {};
     options.method = options.method || 'GET';
-    options.credentials = 'same-origin';
     return fetch(url + '/' + topologyId, options)
       .then((response) => {
         return response.json();
@@ -33,7 +32,6 @@ const MetricsREST = {
   getComponentStatsMetrics(topologyId, componentId, fromTime, toTime, options) {
     options = options || {};
     options.method = options.method || 'GET';
-    options.credentials = 'same-origin';
     return fetch(url + '/' + topologyId + '/components/' + componentId + '/component_stats?from=' + fromTime + '&to=' + toTime, options)
       .then((response) => {
         return response.json();
@@ -44,7 +42,6 @@ const MetricsREST = {
   getComponentLatencyMetrics(topologyId, componentId, fromTime, toTime, options) {
     options = options || {};
     options.method = options.method || 'GET';
-    options.credentials = 'same-origin';
     return fetch(url + '/' + topologyId + '/components/' + componentId + '/complete_latency?from=' + fromTime + '&to=' + toTime, options)
       .then((response) => {
         return response.json();
@@ -55,7 +52,6 @@ const MetricsREST = {
   getKafkaTopicOffsetMetrics(topologyId, componentId, fromTime, toTime, options) {
     options = options || {};
     options.method = options.method || 'GET';
-    options.credentials = 'same-origin';
     return fetch(url + '/' + topologyId + '/components/' + componentId + '/kafka_topic_offsets?from=' + fromTime + '&to=' + toTime, options)
       .then((response) => {
         return response.json();
@@ -64,7 +60,6 @@ const MetricsREST = {
   getTopologyMetrics(topologyId, fromTime, toTime, options) {
     options = options || {};
     options.method = options.method || 'GET';
-    options.credentials = 'same-origin';
     return fetch(url + '/' + topologyId + '/timeseries?from=' + fromTime + '&to=' + toTime, options)
       .then((response) => {
         return response.json();

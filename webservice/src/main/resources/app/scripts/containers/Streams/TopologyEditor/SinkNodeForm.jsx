@@ -115,7 +115,7 @@ export default class SinkNodeForm extends Component {
       if (results[2].responseMessage !== undefined) {
         this.setState({fetchLoader: false});
         FSReactToastr.error(
-          <CommonNotification flag="error" content={results[2].responseMessage}/>, '', toastOpt);
+          <CommonNotification flag="error" content={results[0].responseMessage}/>, '', toastOpt);
       } else {
         const clusters = results[2];
         _.keys(clusters).map((x) => {
