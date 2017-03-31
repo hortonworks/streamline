@@ -335,7 +335,7 @@ CREATE TABLE IF NOT EXISTS component (
 CREATE TABLE IF NOT EXISTS topology_state (
   "topologyId" BIGINT NOT NULL,
   "name" VARCHAR(255) NOT NULL,
-  "description" VARCHAR(255) NOT NULL,
+  "description" TEXT NOT NULL,
   PRIMARY KEY (topologyId)
 );
 
