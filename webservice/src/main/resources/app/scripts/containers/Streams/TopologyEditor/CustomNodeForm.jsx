@@ -16,7 +16,7 @@ import React, {Component, PropTypes} from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import Select from 'react-select';
-import {Tabs, Tab, Radio} from 'react-bootstrap';
+import {Tabs, Tab, Radio, OverlayTrigger, Popover} from 'react-bootstrap';
 import FSReactToastr from '../../../components/FSReactToastr';
 import TopologyREST from '../../../rest/TopologyREST';
 import CustomProcessorREST from '../../../rest/CustomProcessorREST';
@@ -276,7 +276,8 @@ export default class CustomNodeForm extends Component {
                         </Radio>
                       ]
                       : f.fieldName !== "parallelism"
-                        ? <input name={f.fieldName} value={this.state[f.fieldName]} onChange={this.handleValueChange.bind(this, f)} type={f.type} className={!f.isOptional && showError && f.isInvalid
+                        ? <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">{f.tooltip}</Popover>}>
+                          <input name={f.fieldName} value={this.state[f.fieldName]} onChange={this.handleValueChange.bind(this, f)} type={f.type} className={!f.isOptional && showError && f.isInvalid
                             ? "form-control invalidInput"
                             : "form-control"} required={f.isOptional
                             ? false
@@ -287,6 +288,7 @@ export default class CustomNodeForm extends Component {
                               : null} inputMode={f.type === "number"
                             ? "numeric"
                             : null}/>
+                          </OverlayTrigger>
                         : ''
 }
                   </div>

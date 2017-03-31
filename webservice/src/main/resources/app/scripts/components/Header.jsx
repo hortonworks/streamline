@@ -32,9 +32,11 @@ export default class Header extends Component {
       <header className="main-header">
         <Link to="/" className="logo">
           <span className="logo-mini">
-            <strong>S</strong>L</span>
+            <img src="/styles/img/SAM-logo-collapsed.png" width="85%"/>
+          </span>
           <span className="logo-lg">
-            <strong>STREAM</strong>LINE</span>
+            <img src="/styles/img/SAM-logo-expanded.png" width="85%"/>
+          </span>
         </Link>
         <nav className="navbar navbar-default navbar-static-top">
           <div>

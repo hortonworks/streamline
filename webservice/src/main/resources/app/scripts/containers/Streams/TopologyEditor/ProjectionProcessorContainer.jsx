@@ -20,6 +20,7 @@ import ReactDOM, {
   findDOMNode
 } from 'react-dom';
 import Select from 'react-select';
+import {OverlayTrigger, Popover} from 'react-bootstrap';
 import TopologyREST from '../../../rest/TopologyREST';
 import AggregateUdfREST from '../../../rest/AggregateUdfREST';
 import Utils from '../../../utils/Utils';
@@ -582,9 +583,11 @@ export default class ProjectionProcessorContainer extends Component {
                 <label>Projection Fields
                   <span className="text-danger">*</span>
                 </label>
+                <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Projection keys</Popover>}>
                 <div>
                   <Select  value={projectionKeys} options={fieldList} onChange={this.handleProjectionKeysChange.bind(this)} clearable={false} multi={true} required={true} disabled={!editMode} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
                 </div>
+                </OverlayTrigger>
               </div>
               <div className="form-group">
                 <div className="row">
@@ -609,18 +612,24 @@ export default class ProjectionProcessorContainer extends Component {
                 {outputFieldsArr.map((obj, i) => {
                   return (
                     <div key={i} className="row form-group">
+                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Function name</Popover>}>
                       <div className="col-sm-3">
                         <Select className={outputFieldsArr.length === i
                           ? "menu-outer-top"
                           : ''} value={obj.functionName} options={functionListArr} onChange={this.handleFieldChange.bind(this, i)} required={true} disabled={!editMode} valueKey="name" labelKey="name"/>
                       </div>
+                      </OverlayTrigger>
+                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Input field name</Popover>}>
                       <div className="col-sm-4">
                         <Select className={outputFieldsArr.length === i
                           ? "menu-outer-top"
                           : ''} value={obj.args} options={fieldList} onChange={this.handleFieldsKeyChange.bind(this, i)} clearable={false} multi={true} required={true} disabled={!editMode} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
                       </div>
+                      </OverlayTrigger>
                       <div className="col-sm-3">
+                        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Output field name</Popover>}>
                         <input name="outputFieldName" value={obj.outputFieldName} ref="outputFieldName" onChange={this.handleFieldNameChange.bind(this, i)} type="text" className={invalidInput ? "form-control invalidInput" : "form-control" }  required={true} disabled={!editMode}/>
+                        </OverlayTrigger>
                       </div>
                       {editMode
                         ? <div className="col-sm-2">

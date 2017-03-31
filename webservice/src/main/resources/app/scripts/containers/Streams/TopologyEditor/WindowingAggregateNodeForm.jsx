@@ -16,7 +16,7 @@ import React, {Component, PropTypes} from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import Select from 'react-select';
-import {Tabs, Tab} from 'react-bootstrap';
+import {Tabs, Tab, OverlayTrigger, Popover} from 'react-bootstrap';
 import FSReactToastr from '../../../components/FSReactToastr';
 import TopologyREST from '../../../rest/TopologyREST';
 import AggregateUdfREST from '../../../rest/AggregateUdfREST';
@@ -751,17 +751,21 @@ export default class WindowingAggregateNodeForm extends Component {
                   <label>Select Keys
                     <span className="text-danger">*</span>
                   </label>
+                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Group by keys</Popover>}>
                   <div>
                     <Select value={selectedKeys} options={keysList} onChange={this.handleKeysChange.bind(this)} multi={true} required={true} disabled={!editMode} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption}/>
                   </div>
+                  </OverlayTrigger>
                 </div>
                 <div className="form-group">
                   <label>Window Interval Type
                     <span className="text-danger">*</span>
                   </label>
+                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Window interval type</Popover>}>
                   <div>
                     <Select value={intervalType} options={intervalTypeArr} onChange={this.commonHandlerChange.bind(this,'intervalType')} required={true} disabled={!editMode} clearable={false}/>
                   </div>
+                  </OverlayTrigger>
                 </div>
                 <div className="form-group">
                   <label>Window Interval
@@ -769,12 +773,16 @@ export default class WindowingAggregateNodeForm extends Component {
                   </label>
                   <div className="row">
                     <div className="col-sm-5">
+                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Window interval duration</Popover>}>
                       <input name="windowNum" value={windowNum} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={!editMode} min="0" inputMode="numeric"/>
+                      </OverlayTrigger>
                     </div>
                     {intervalType === '.Window$Duration'
-                      ? <div className="col-sm-5">
+                      ? <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Duration type</Popover>}>
+                        <div className="col-sm-5">
                           <Select value={durationType} options={durationTypeArr} onChange={this.commonHandlerChange.bind(this,'durationType')} required={true} disabled={!editMode} clearable={false}/>
                         </div>
+                        </OverlayTrigger>
                       : null}
                   </div>
                 </div>
@@ -782,12 +790,16 @@ export default class WindowingAggregateNodeForm extends Component {
                   <label>Sliding Interval</label>
                   <div className="row">
                     <div className="col-sm-5">
+                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Sliding interval duration</Popover>}>
                       <input name="slidingNum" value={slidingNum} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={!editMode} min="0" inputMode="numeric"/>
+                      </OverlayTrigger>
                     </div>
                     {intervalType === '.Window$Duration'
-                      ? <div className="col-sm-5">
+                      ? <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Duration type</Popover>}>
+                        <div className="col-sm-5">
                           <Select value={slidingDurationType} options={durationTypeArr} onChange={this.commonHandlerChange.bind(this,'slidingDurationType')} required={true} disabled={!editMode} clearable={false}/>
                         </div>
+                        </OverlayTrigger>
                       : null}
                   </div>
                 </div>
@@ -803,12 +815,16 @@ export default class WindowingAggregateNodeForm extends Component {
                     : ''}
                   </div>
                   <div className="row">
+                    <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Timestamp field name</Popover>}>
                     <div className="col-sm-5">
                       <Select value={tsField} options={tsFieldOptions} onChange={this.handleTimestampFieldChange.bind(this)} disabled={!editMode} valueKey="name" labelKey="name" />
                     </div>
+                    </OverlayTrigger>
                     {tsField !== '' ?
                     <div className="col-sm-5">
+                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Lag duration</Popover>}>
                       <input name="lagMs" value={lagMs} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={!editMode} min="0" inputMode="numeric"/>
+                      </OverlayTrigger>
                     </div>
                     : ''}
                   </div>
@@ -834,18 +850,24 @@ export default class WindowingAggregateNodeForm extends Component {
                   {outputFieldsArr.map((obj, i) => {
                     return (
                       <div key={i} className="row form-group">
+                        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Input field name</Popover>}>
                         <div className="col-sm-3">
                           <Select className={outputFieldsArr.length - 1 === i
                             ? "menu-outer-top"
                             : ''} value={obj.args} options={keysList} onChange={this.handleFieldChange.bind(this,'args', i)} required={true} disabled={!editMode} valueKey="name" labelKey="name" clearable={false} optionRenderer={this.renderFieldOption.bind(this)}/>
                         </div>
+                        </OverlayTrigger>
+                        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Function name</Popover>}>
                         <div className="col-sm-3">
                           <Select className={outputFieldsArr.length - 1 === i
                             ? "menu-outer-top"
                             : ''} value={obj.functionName} options={functionListArr} onChange={this.handleFieldChange.bind(this,'functionName', i)} required={true} disabled={!editMode} valueKey="name" labelKey="displayName"/>
                         </div>
+                        </OverlayTrigger>
                         <div className="col-sm-3">
+                          <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Output field name</Popover>}>
                           <input name="outputFieldName" value={obj.outputFieldName} ref="outputFieldName" onChange={this.handleOutputFieldName.bind(this, i)} type="text" className="form-control" required={true} disabled={!editMode}/>
+                          </OverlayTrigger>
                         </div>
                         {editMode
                           ? <div className="col-sm-2">

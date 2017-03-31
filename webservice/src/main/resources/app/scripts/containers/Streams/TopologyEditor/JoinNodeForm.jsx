@@ -16,6 +16,7 @@ import React, {Component, PropTypes} from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import Select from 'react-select';
+import {OverlayTrigger, Popover} from 'react-bootstrap';
 import Utils from '../../../utils/Utils';
 import FSReactToastr from '../../../components/FSReactToastr';
 import TopologyREST from '../../../rest/TopologyREST';
@@ -778,7 +779,11 @@ export default class JoinNodeForm extends Component {
               <div className="form-group row">
                 <div className="col-sm-3">
                   <label>Select Stream</label>
-                  <Select value={joinFromStreamName} options={inputStreamsArr} onChange={this.handleJoinFromStreamChange.bind(this)} required={true} disabled={!editMode} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
+                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Name of input stream</Popover>}>
+                    <div>
+                      <Select value={joinFromStreamName} options={inputStreamsArr} onChange={this.handleJoinFromStreamChange.bind(this)} required={true} disabled={!editMode} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
+                    </div>
+                  </OverlayTrigger>
                 </div>
                 <div className="col-sm-3">
                   <label>Select Field {this.state.joinStreams.length
@@ -786,7 +791,11 @@ export default class JoinNodeForm extends Component {
                         <strong>with</strong>
                       )
                       : ''}</label>
-                  <Select value={joinFromStreamKey} options={this.state.joinFromStreamKeys} onChange={this.handleJoinFromKeyChange.bind(this)} required={true} disabled={!editMode || joinFromStreamName === ''} clearable={false} backspaceRemoves={false} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Field name</Popover>}>
+                  <div>
+                    <Select value={joinFromStreamKey} options={this.state.joinFromStreamKeys} onChange={this.handleJoinFromKeyChange.bind(this)} required={true} disabled={!editMode || joinFromStreamName === ''} clearable={false} backspaceRemoves={false} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+                  </div>
+                  </OverlayTrigger>
                 </div>
               </div>
               {this.state.joinStreams.length
@@ -802,7 +811,7 @@ export default class JoinNodeForm extends Component {
                     </div>
                     <div className="col-sm-3">
                       <label>
-                        <strong>With</strong>
+                        <strong>With </strong>
                         Stream</label>
                     </div>
                   </div>
@@ -811,18 +820,26 @@ export default class JoinNodeForm extends Component {
               {this.state.joinStreams.map((s, i) => {
                 return (
                   <div className="form-group row" key={i}>
-                    <div className="col-sm-3">
-                      <Select value={s.type} options={joinTypes} onChange={this.handleJoinTypeChange.bind(this, i)} required={true} disabled={!editMode} clearable={false} backspaceRemoves={false}/>
-                    </div>
-                    <div className="col-sm-3">
-                      <Select value={s.stream} options={s.streamOptions} onChange={this.handleJoinStreamChange.bind(this, i)} required={true} disabled={!editMode || s.streamOptions.length === 0} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
-                    </div>
-                    <div className="col-sm-3">
-                      <Select value={s.key} options={s.keyOptions} onChange={this.handleJoinKeyChange.bind(this, i)} required={true} disabled={!editMode || s.stream === '' || s.keyOptions.length === 0} clearable={false} backspaceRemoves={false} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
-                    </div>
-                    <div className="col-sm-3">
-                      <Select value={s.with} options={s.withOptions} onChange={this.handleJoinWithChange.bind(this, i)} required={true} disabled={!editMode || s.withOptions.length === 0} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
-                    </div>
+                    <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Type of join</Popover>}>
+                      <div className="col-sm-3">
+                        <Select value={s.type} options={joinTypes} onChange={this.handleJoinTypeChange.bind(this, i)} required={true} disabled={!editMode} clearable={false} backspaceRemoves={false}/>
+                      </div>
+                    </OverlayTrigger>
+                    <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Name of input stream</Popover>}>
+                      <div className="col-sm-3">
+                        <Select value={s.stream} options={s.streamOptions} onChange={this.handleJoinStreamChange.bind(this, i)} required={true} disabled={!editMode || s.streamOptions.length === 0} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
+                      </div>
+                    </OverlayTrigger>
+                    <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Field name</Popover>}>
+                      <div className="col-sm-3">
+                        <Select value={s.key} options={s.keyOptions} onChange={this.handleJoinKeyChange.bind(this, i)} required={true} disabled={!editMode || s.stream === '' || s.keyOptions.length === 0} clearable={false} backspaceRemoves={false} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+                      </div>
+                    </OverlayTrigger>
+                    <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Name of input stream</Popover>}>
+                      <div className="col-sm-3">
+                        <Select value={s.with} options={s.withOptions} onChange={this.handleJoinWithChange.bind(this, i)} required={true} disabled={!editMode || s.withOptions.length === 0} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
+                      </div>
+                    </OverlayTrigger>
                   </div>
                 );
               })
@@ -833,7 +850,11 @@ export default class JoinNodeForm extends Component {
                     <label>Window Interval Type
                       <span className="text-danger">*</span>
                     </label>
-                    <Select value={intervalType} options={intervalTypeArr} onChange={this.commonHandlerChange.bind(this,'intervalType')} required={true} disabled={!editMode} clearable={false}/>
+                    <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Window interval type</Popover>}>
+                      <div>
+                        <Select value={intervalType} options={intervalTypeArr} onChange={this.commonHandlerChange.bind(this,'intervalType')} required={true} disabled={!editMode} clearable={false}/>
+                      </div>
+                    </OverlayTrigger>
                   </div>
                   {/*<div className="col-sm-6">
                                                       <label>Parallelism</label>
@@ -858,12 +879,16 @@ export default class JoinNodeForm extends Component {
                   </label>
                   <div className="row">
                     <div className="col-sm-6">
+                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Window interval duration</Popover>}>
                       <input name="windowNum" value={windowNum} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={!editMode} min="0" inputMode="numeric"/>
+                      </OverlayTrigger>
                     </div>
                     {intervalType === '.Window$Duration'
-                      ? <div className="col-sm-6">
+                      ? <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Duration type</Popover>}>
+                        <div className="col-sm-6">
                           <Select value={durationType} options={durationTypeArr} onChange={this.commonHandlerChange.bind(this,'durationType')} required={true} disabled={!editMode} clearable={false}/>
                         </div>
+                        </OverlayTrigger>
                       : null}
                   </div>
                 </div>
@@ -871,12 +896,16 @@ export default class JoinNodeForm extends Component {
                   <label>Sliding Interval</label>
                   <div className="row">
                     <div className="col-sm-6">
+                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Sliding interval duration</Popover>}>
                       <input name="slidingNum" value={slidingNum} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={!editMode} min="0" inputMode="numeric"/>
+                      </OverlayTrigger>
                     </div>
                     {intervalType === '.Window$Duration'
-                      ? <div className="col-sm-6">
+                      ? <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Duration type</Popover>}>
+                        <div className="col-sm-6">
                           <Select value={slidingDurationType} options={durationTypeArr} onChange={this.commonHandlerChange.bind(this,'slidingDurationType')} required={true} disabled={!editMode} clearable={false}/>
                         </div>
+                        </OverlayTrigger>
                       : null}
                   </div>
                 </div>
@@ -886,9 +915,11 @@ export default class JoinNodeForm extends Component {
                   <span className="text-danger">*</span>
                 </label>
                 <div className="row">
+                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Output keys</Popover>}>
                   <div className="col-sm-12">
                     <Select className="menu-outer-top" value={outputKeysObjArr} options={outputFieldsList} onChange={this.handleFieldsChange.bind(this)} multi={true} required={true} disabled={!editMode} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
                   </div>
+                  </OverlayTrigger>
                 </div>
               </div>
             </form>
