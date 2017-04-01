@@ -60,7 +60,7 @@ public class WindowedQueryBolt_TestTopology {
         builder.setSpout("squares", squares, 1);
         builder.setSpout("cubes", cubes, 1);
 
-        BaseWindowedBolt joiner = new WindowedQueryBolt(WindowedQueryBolt.StreamSelector.SOURCE, "cubes", "number")
+        BaseWindowedBolt joiner = new WindowedQueryBolt("cubes", "number")
                 .leftJoin("squares", "number", "cubes")
                 .select("number,square,cube")
                 .withTumblingWindow(BaseWindowedBolt.Count.of(1000))
