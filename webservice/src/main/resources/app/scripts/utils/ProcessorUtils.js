@@ -248,12 +248,18 @@ const normalizationProjectionKeys = function(projectionsArr,fieldList){
   return {keyArrObj,argsFieldsArrObj};
 };
 
+/*
+  modifyGroupKeyByDots accept the groupArr return by getKeysAndGroupKey 'gKeys'
+  This is used for only JoinProcessor
+  And return like "streamId:address.city.ui"
+*/
 const modifyGroupKeyByDots = function(groupArr){
   let dottedKeys = [];
   _.map(groupArr, (k) => {
     let t = k.replace(/\']\['/g, '.').replace("['"," ").replace("']"," ").split(" ");
+    const streamId = t[0];
     t.length > 1 ? t.splice(0,1) : '';
-    dottedKeys.push(_.compact(t));
+    dottedKeys.push(streamId+':'+_.compact(t));
   });
   return dottedKeys;
 };

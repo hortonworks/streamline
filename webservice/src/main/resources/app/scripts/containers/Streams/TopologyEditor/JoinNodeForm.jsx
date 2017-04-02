@@ -138,20 +138,20 @@ export default class JoinNodeForm extends Component {
     let fields = [],joinStreams=[],unModifyList=[];
     inputStreamFromContext.map((stream, i) => {
       // modify fields if inputStreamFromContext >  1
-      // if(inputStreamFromContext.length > 1){
-        // const obj = {
-        //   name : inputStreamFromContext[i].streamId,
-        //   fields : stream.fields,
-        //   optional : false,
-        //   type : "NESTED"
-        // };
-      //   fields.push(obj);
-      // } else {
-      fields.push(...stream.fields);
-      // }
+      if(inputStreamFromContext.length > 1){
+        const obj = {
+          name : inputStreamFromContext[i].streamId,
+          fields : stream.fields,
+          optional : false,
+          type : "NESTED"
+        };
+        fields.push(obj);
+      } else {
+        fields.push(...stream.fields);
+      }
 
       // UnModify fieldsList
-      // unModifyList.push(...stream.fields);
+      unModifyList.push(...stream.fields);
 
       if (i < inputStreamFromContext.length - 1) {
         joinStreams.push({
@@ -167,15 +167,15 @@ export default class JoinNodeForm extends Component {
       }
     });
 
-    const {tempFieldsArr , fieldTempArr}  = ProcessorUtils.getSchemaFields(fields, 0,true);
+    const tempFieldsArr = ProcessorUtils.getSchemaFields(fields, 0,false);
     // create a uniqueID for select2 to support duplicate label in options
-    // _.map(tempFieldsArr, (f) => {
-    //   f.uniqueID = f.keyPath.split('.').join('-')+"_"+f.name;
-    // });
-    // const unModifyFieldList = ProcessorUtils.getSchemaFields(unModifyList, 0,false);
+    _.map(tempFieldsArr, (f) => {
+      f.uniqueID = f.keyPath.split('.').join('-')+"_"+f.name;
+    });
+    const unModifyFieldList = ProcessorUtils.getSchemaFields(unModifyList, 0,false);
 
     let stateObj = {
-      fieldList: tempFieldsArr,
+      fieldList: unModifyFieldList,
       parallelism: configFields.parallelism || 1,
       outputKeys: configFields.outputKeys
         ? configFields.outputKeys.map((key) => {
@@ -184,7 +184,7 @@ export default class JoinNodeForm extends Component {
         : undefined,
       inputStreamsArr: inputStreamFromContext,
       joinStreams: joinStreams,
-      outputFieldsList : fieldTempArr
+      outputFieldsList : tempFieldsArr
     };
 
     // prefetchValue is use to call the this.populateOutputStreamsFromServer() after state has been SET
@@ -203,6 +203,21 @@ export default class JoinNodeForm extends Component {
     }
     this.setState(stateObj, () => {
       prefetchValue ? this.populateOutputStreamsFromServer() : '';
+    });
+  }
+
+  createOutputFieldsObjArr(outputFieldsArr,outputFieldsList){
+    return _.map(outputFieldsArr, (k) => {
+      let keyPath = '', keyname = '';
+      if(k.includes('.')){
+        let kp = k.replace(':','.').split('.');
+        keyPath = kp.slice(0,kp.length-1).join('.');
+        keyname = kp[kp.length-1];
+      } else {
+        keyPath = k.split(':')[0];
+        keyname = k.split(':')[1];
+      }
+      return _.find(outputFieldsList, {keyPath : keyPath , name : keyname});
     });
   }
 
@@ -275,12 +290,16 @@ export default class JoinNodeForm extends Component {
     });
 
     // get the keyObj from the outputFieldsList for the particular key
-    const outputKeysObjArr = _.map(stateObj.outputKeys, (k) => {
-      return _.find(outputFieldsList, {name : k});
-    });
+    const outputKeysObjArr = this.createOutputFieldsObjArr(outputKeysAFormServer,outputFieldsList);
 
     stateObj.outputKeysObjArr = outputKeysObjArr;
-    stateObj.outputStreamFields = ProcessorUtils.createSelectedKeysHierarchy(outputKeysObjArr,outputFieldsList);
+
+    const keyData = ProcessorUtils.createSelectedKeysHierarchy(outputKeysObjArr,outputFieldsList);
+    stateObj.outputStreamFields=[];
+    _.map(keyData,(o) => {
+      stateObj.outputStreamFields = _.concat(stateObj.outputStreamFields, o.fields);
+    });
+
     this.streamData = {
       streamId: this.joinProcessorNode.outputStreams[0].streamId,
       fields: stateObj.outputStreamFields
@@ -311,7 +330,7 @@ export default class JoinNodeForm extends Component {
     and return last value of an array
   */
   splitNestedKey(key) {
-    const a = key.split('.');
+    const a = key.replace(':','.').split('.');
     if (a.length > 1) {
       return a[a.length - 1];
     } else {
@@ -345,11 +364,11 @@ export default class JoinNodeForm extends Component {
   handleFieldsChange(arr){
     let {outputFieldsList} = this.state;
     const keyData = ProcessorUtils.createSelectedKeysHierarchy(arr,outputFieldsList);
-    // let tempFieldsArr=[];
-    // _.map(keyData,(o) => {
-    //   tempFieldsArr = _.concat(tempFieldsArr, o.fields);
-    // });
-    this.streamData.fields = keyData;
+    let tempFieldsArr=[];
+    _.map(keyData,(o) => {
+      tempFieldsArr = _.concat(tempFieldsArr, o.fields);
+    });
+    this.streamData.fields = tempFieldsArr;
 
     const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey(arr);
     const groupKeysByDots = ProcessorUtils.modifyGroupKeyByDots(gKeys);
@@ -626,6 +645,28 @@ export default class JoinNodeForm extends Component {
   }
 
   /*
+    generateOutputStreams accept outputStreamFields
+    and Transform it to new streamObjArr by
+    attaching the streamId to each and every field name
+
+    return streamObjArr {name : "UI", type : "String", optional : false}
+  */
+  generateOutputStreams(fields,level){
+    return fields.map((field) => {
+      let obj = {
+        name: field.name,
+        type: field.type ,
+        optional : false
+      };
+
+      if (field.type === 'NESTED' && field.fields) {
+        obj.fields = this.generateOutputStreams(field.fields, level + 1);
+      }
+      return obj;
+    });
+  }
+
+  /*
     handleSave Method is responsible for joinProcessorNode
     config object is created with fields data example "fromKey = joinFromStreamKey"
     config.join objectArray is created with "type,stream,key,with".
@@ -709,9 +750,7 @@ export default class JoinNodeForm extends Component {
     }
 
     // outputStreams data is formated for the server
-    const streamFields  = outputStreamFields.map((f) => {
-      return {name: f.name, type: f.type, optional: f.optional};
-    });
+    const streamFields  = this.generateOutputStreams(outputStreamFields,0);
 
     if(this.joinProcessorNode.outputStreams.length > 0){
       this.joinProcessorNode.outputStreams[0].fields = streamFields;
@@ -917,7 +956,7 @@ export default class JoinNodeForm extends Component {
                 <div className="row">
                   <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Output keys</Popover>}>
                   <div className="col-sm-12">
-                    <Select className="menu-outer-top" value={outputKeysObjArr} options={outputFieldsList} onChange={this.handleFieldsChange.bind(this)} multi={true} required={true} disabled={!editMode} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+                    <Select className="menu-outer-top" value={outputKeysObjArr} options={outputFieldsList} onChange={this.handleFieldsChange.bind(this)} multi={true} required={true} disabled={!editMode} valueKey="uniqueID" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
                   </div>
                   </OverlayTrigger>
                 </div>
