@@ -484,9 +484,17 @@ export class arrayenumstring extends BaseField {
     });
     const {Form} = this.context;
     Form.setState(Form.state);
-    this.validate();
+    this.validate(val);
   }
-  validate() {
+  validate(val) {
+    if(this.props.fieldJson.hint && this.props.fieldJson.hint.indexOf("noNestedFields") !== -1) {
+      let nestedField = val.findIndex(v => {return v.type === 'NESTED';});
+      if(nestedField > -1) {
+        this.context.Form.state.Errors[this.props.valuePath] = 'Invalid!';
+        this.context.Form.setState(this.context.Form.state);
+        return false;
+      }
+    }
     return super.validate(this.props.data[this.props.value]);
   }
   getField = () => {

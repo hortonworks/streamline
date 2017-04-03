@@ -173,6 +173,8 @@ export default class WindowingAggregateNodeForm extends Component {
     });
     this.fieldsArr = ProcessorUtils.getSchemaFields(_.unionBy(fields,'name'), 0,false);
     let tsFieldOptions =  this.fieldsArr.filter((f)=>{return f.type === 'LONG';});
+    // tsFieldOptions should have a default options of processingTime
+    tsFieldOptions.push({name: "processingTime", value: "processingTime"});
 
     let stateObj = {
       parallelism: this.configFields.parallelism || 1,
@@ -287,6 +289,8 @@ export default class WindowingAggregateNodeForm extends Component {
       this.tempStreamContextData = mainStreamObj;
       this.setState(stateObj);
       this.context.ParentForm.setState({outputStreamObj: mainStreamObj});
+    } else {
+      this.setState({showLoading:false});
     }
   }
 
@@ -850,14 +854,14 @@ export default class WindowingAggregateNodeForm extends Component {
                   {outputFieldsArr.map((obj, i) => {
                     return (
                       <div key={i} className="row form-group">
-                        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Input field name</Popover>}>
+                        <OverlayTrigger trigger={['hover']} placement="bottom" overlay={<Popover id="popover-trigger-hover">Input field name</Popover>}>
                         <div className="col-sm-3">
                           <Select className={outputFieldsArr.length - 1 === i
                             ? "menu-outer-top"
                             : ''} value={obj.args} options={keysList} onChange={this.handleFieldChange.bind(this,'args', i)} required={true} disabled={!editMode} valueKey="name" labelKey="name" clearable={false} optionRenderer={this.renderFieldOption.bind(this)}/>
                         </div>
                         </OverlayTrigger>
-                        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Function name</Popover>}>
+                        <OverlayTrigger trigger={['hover']} placement="bottom" overlay={<Popover id="popover-trigger-hover">Function name</Popover>}>
                         <div className="col-sm-3">
                           <Select className={outputFieldsArr.length - 1 === i
                             ? "menu-outer-top"
@@ -865,7 +869,7 @@ export default class WindowingAggregateNodeForm extends Component {
                         </div>
                         </OverlayTrigger>
                         <div className="col-sm-3">
-                          <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Output field name</Popover>}>
+                          <OverlayTrigger trigger={['hover']} placement="bottom" overlay={<Popover id="popover-trigger-hover">Output field name</Popover>}>
                           <input name="outputFieldName" value={obj.outputFieldName} ref="outputFieldName" onChange={this.handleOutputFieldName.bind(this, i)} type="text" className="form-control" required={true} disabled={!editMode}/>
                           </OverlayTrigger>
                         </div>

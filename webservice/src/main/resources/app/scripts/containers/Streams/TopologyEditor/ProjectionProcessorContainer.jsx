@@ -238,6 +238,8 @@ export default class ProjectionProcessorContainer extends Component {
       this.tempStreamContextData = mainStreamObj;
       this.setState({outputFieldsArr :argsFieldsArrObj,outputStreamFields: outputFieldsObj,projectionKeys:keys,projectionSelectedKey:keyData,projectionGroupByKeys : gKeys,argumentKeysGroup :argsGroupKeys,showLoading : false});
       this.context.ParentForm.setState({outputStreamObj: mainStreamObj});
+    } else {
+      this.setState({showLoading : false});
     }
   }
 
@@ -612,14 +614,14 @@ export default class ProjectionProcessorContainer extends Component {
                 {outputFieldsArr.map((obj, i) => {
                   return (
                     <div key={i} className="row form-group">
-                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Function name</Popover>}>
+                      <OverlayTrigger trigger={['hover']} placement="top" overlay={<Popover id="popover-trigger-hover">Function name</Popover>}>
                       <div className="col-sm-3">
                         <Select className={outputFieldsArr.length === i
                           ? "menu-outer-top"
                           : ''} value={obj.functionName} options={functionListArr} onChange={this.handleFieldChange.bind(this, i)} required={true} disabled={!editMode} valueKey="name" labelKey="name"/>
                       </div>
                       </OverlayTrigger>
-                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Input field name</Popover>}>
+                      <OverlayTrigger trigger={['hover']} placement="top" overlay={<Popover id="popover-trigger-hover">Input field name</Popover>}>
                       <div className="col-sm-4">
                         <Select className={outputFieldsArr.length === i
                           ? "menu-outer-top"
@@ -627,7 +629,7 @@ export default class ProjectionProcessorContainer extends Component {
                       </div>
                       </OverlayTrigger>
                       <div className="col-sm-3">
-                        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Output field name</Popover>}>
+                        <OverlayTrigger trigger={['hover']} placement="top" overlay={<Popover id="popover-trigger-hover">Output field name</Popover>}>
                         <input name="outputFieldName" value={obj.outputFieldName} ref="outputFieldName" onChange={this.handleFieldNameChange.bind(this, i)} type="text" className={invalidInput ? "form-control invalidInput" : "form-control" }  required={true} disabled={!editMode}/>
                         </OverlayTrigger>
                       </div>

@@ -96,6 +96,15 @@ const TopologyREST = {
         return response.json();
       });
   },
+  deployTopologyState(id, options){
+    options = options || {};
+    options.method = options.method || 'GET';
+    let url = baseUrl + 'topologies/' + id + '/deploymentstate';
+    return fetch(url, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
   killTopology(id, versionId, options) {
     options = options || {};
     options.method = options.method || 'POST';

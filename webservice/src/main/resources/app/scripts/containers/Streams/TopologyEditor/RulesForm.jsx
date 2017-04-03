@@ -224,17 +224,17 @@ class RuleFormula extends Component {
             <span className="text-danger">*</span>
           </label>
         </div>
-        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Field name</Popover>}>
+        <OverlayTrigger trigger={['hover']} placement="top" overlay={<Popover id="popover-trigger-hover">Field name</Popover>}>
           <div className="col-sm-3">
             <Select value={d.field1} options={fields} onChange={this.handleChange.bind(this, 'field1', 0)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
           </div>
         </OverlayTrigger>
-        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Rule operations</Popover>}>
+        <OverlayTrigger trigger={['hover']} placement="top" overlay={<Popover id="popover-trigger-hover">Rule operations</Popover>}>
           <div className="col-sm-3">
            <Select value={d.operator} options={this.operators} onChange={this.handleChange.bind(this, 'operator', 0)} labelKey="label" valueKey="name"/>
           </div>
         </OverlayTrigger>
-        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Field name</Popover>}>
+        <OverlayTrigger trigger={['hover']} placement="top" overlay={<Popover id="popover-trigger-hover">Field name</Popover>}>
           <div className="col-sm-3">
             <Creatable value={d.field2} options={fields2Arr} onChange={this.handleChange.bind(this, 'field2', 0)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
           </div>

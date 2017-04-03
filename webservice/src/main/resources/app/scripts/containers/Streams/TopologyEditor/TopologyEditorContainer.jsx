@@ -226,7 +226,8 @@ class TopologyEditorContainer extends Component {
     fetchLoader: true,
     mapSlideInterval: [],
     topologyTimeSec: 0,
-    defaultTimeSec : 0
+    defaultTimeSec : 0,
+    deployStatus : 'DEPLOYING_TOPOLOGY'
   };
 
   fetchData(versionId) {
@@ -665,47 +666,76 @@ class TopologyEditorContainer extends Component {
               this.refs.deployLoadingModal.hide();
               this.setState({topologyStatus: status});
             } else {
-              this.refs.deployLoadingModal.hide();
-              FSReactToastr.success(
-                <strong>Topology Deployed Successfully</strong>
-              );
-              this.lastUpdatedTime = new Date(topology.timestamp);
-              this.setState({
-                altFlag: !this.state.altFlag
-              });
-              let versionData = {
-                name: 'V' + this.state.topologyVersion,
-                description: 'version description auto generated'
-              };
-              TopologyREST.saveTopologyVersion(this.topologyId, {body: JSON.stringify(versionData)}).then((versionResponse) => {
-                let versions = this.state.versionsArr;
-                let savedVersion = _.find(versions, {id: versionResponse.id});
-                savedVersion.name = versionResponse.name;
-
-                TopologyREST.getTopology(this.topologyId).then((result) => {
-                  let data = result;
-                  this.runtimeObj = data.runtime || {
-                    metric: (data.runtime === undefined)
-                      ? ''
-                      : data.runtime.metric
-                  };
-                  this.topologyMetric = this.runtimeObj.metric || {
-                    misc: (this.runtimeObj.metric === undefined)
-                      ? ''
-                      : this.runtimeObj.metric.misc
-                  };
-                  this.versionId = data.topology.versionId;
-                  versions.push({id: data.topology.versionId, topologyId: this.topologyId, name: "CURRENT", description: ""});
-                  let status = this.topologyMetric.status || '';
-                  this.setState({topologyMetric: this.topologyMetric, isAppRunning: true, topologyStatus: status, topologyVersion: data.topology.versionId, versionsArr: versions});
+              let interval = setInterval(() => {
+                TopologyREST.deployTopologyState(this.topologyId).then((topologyState) => {
+                  if(topologyState.responseMessage !== undefined){
+                    FSReactToastr.error(
+                      <CommonNotification flag="error" content={topologyState.responseMessage}/>, '', toastOpt);
+                  }else{
+                    if(topologyState.name.indexOf('TOPOLOGY_STATE_DEPLOYED')  !== -1){
+                      this.setState({deployStatus : topologyState.name}, () => {
+                        const clearTimer = setTimeout(() => {
+                          clearInterval(interval);
+                          this.refs.deployLoadingModal.hide();
+                          this.saveTopologyVersion(topology.timestamp);
+                        },1000);
+                      });
+                    } else if (topologyState.name.indexOf('TOPOLOGY_STATE_DEPLOYMENT_FAILED','TOPOLOGY_STATE_SUSPENDED') !== -1) {
+                      this.setState({deployStatus : topologyState.name}, () => {
+                        const clearTimer = setTimeout(() => {
+                          clearInterval(interval);
+                          this.refs.deployLoadingModal.hide();
+                          FSReactToastr.error(
+                            <CommonNotification flag="error" content={topologyState.name}/>, '', toastOpt);
+                        },1000);
+                      });
+                    }
+                    this.setState({deployStatus : topologyState.name});
+                  }
                 });
-              });
+              },3000);
             }
           });
         }
       });
       confirmBox.cancel();
     }, () => {});
+  }
+  saveTopologyVersion(timestamp){
+    FSReactToastr.success(
+      <strong>Topology Deployed Successfully</strong>
+    );
+    this.lastUpdatedTime = new Date(timestamp);
+    this.setState({
+      altFlag: !this.state.altFlag
+    });
+    let versionData = {
+      name: 'V' + this.state.topologyVersion,
+      description: 'version description auto generated'
+    };
+    TopologyREST.saveTopologyVersion(this.topologyId, {body: JSON.stringify(versionData)}).then((versionResponse) => {
+      let versions = this.state.versionsArr;
+      let savedVersion = _.find(versions, {id: versionResponse.id});
+      savedVersion.name = versionResponse.name;
+
+      TopologyREST.getTopology(this.topologyId).then((result) => {
+        let data = result;
+        this.runtimeObj = data.runtime || {
+          metric: (data.runtime === undefined)
+            ? ''
+            : data.runtime.metric
+        };
+        this.topologyMetric = this.runtimeObj.metric || {
+          misc: (this.runtimeObj.metric === undefined)
+            ? ''
+            : this.runtimeObj.metric.misc
+        };
+        this.versionId = data.topology.versionId;
+        versions.push({id: data.topology.versionId, topologyId: this.topologyId, name: "CURRENT", description: ""});
+        let status = this.topologyMetric.status || '';
+        this.setState({topologyMetric: this.topologyMetric, isAppRunning: true, topologyStatus: status, topologyVersion: data.topology.versionId, versionsArr: versions});
+      });
+    });
   }
   killTopology() {
     this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to kill this topology ?'}).then((confirmBox) => {
@@ -1040,7 +1070,7 @@ class TopologyEditorContainer extends Component {
     }
   }
   render() {
-    const {progressCount, progressBarColor, fetchLoader, mapTopologyConfig} = this.state;
+    const {progressCount, progressBarColor, fetchLoader, mapTopologyConfig,deployStatus} = this.state;
     let nodeType = this.node
       ? this.node.currentType
       : '';
@@ -1136,7 +1166,7 @@ class TopologyEditorContainer extends Component {
           <EdgeConfig ref="EdgeConfig" data={this.edgeConfigData}/>
         </Modal>
         <Modal ref="deployLoadingModal" hideHeader={true} hideFooter={true}>
-          <AnimatedLoader progressBar={progressCount} progressBarColor={progressBarColor}/>
+          <AnimatedLoader progressBar={progressCount} progressBarColor={progressBarColor} deployStatus={deployStatus}/>
         </Modal>
       </BaseContainer>
     );
