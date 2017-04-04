@@ -22,12 +22,14 @@ import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentUISpecification;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+@StorableEntity
 public class ServiceBundle implements Storable {
 
     public static final ObjectMapper mapper = new ObjectMapper();
