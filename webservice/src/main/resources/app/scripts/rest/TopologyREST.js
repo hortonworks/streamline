@@ -99,6 +99,7 @@ const TopologyREST = {
   deployTopologyState(id, options){
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     let url = baseUrl + 'topologies/' + id + '/deploymentstate';
     return fetch(url, options)
       .then((response) => {
@@ -423,6 +424,54 @@ const TopologyREST = {
     };
     options.credentials = 'same-origin';
     return fetch('/api/v1/schemas', options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  getTopologyEditorToolbar(options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'system/topologyeditortoolbar', options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  postTopologyEditorToolbar(options) {
+    options = options || {};
+    options.method = options.method || 'POST';
+    options.headers = options.headers || {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'system/topologyeditortoolbar', options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  putTopologyEditorToolbar(options) {
+    options = options || {};
+    options.method = options.method || 'PUT';
+    options.headers = options.headers || {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'system/topologyeditortoolbar', options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  deleteTopologyEditorToolbar(options) {
+    options = options || {};
+    options.method = options.method || 'DELETE';
+    options.headers = options.headers || {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'system/topologyeditortoolbar', options)
       .then((response) => {
         return response.json();
       });
