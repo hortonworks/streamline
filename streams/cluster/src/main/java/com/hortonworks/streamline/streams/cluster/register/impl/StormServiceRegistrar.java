@@ -113,8 +113,7 @@ public class StormServiceRegistrar extends AbstractServiceRegistrar {
 
         List<String> stormNimbusServerHosts;
         try {
-            String paramVal = config.getString(PARAM_NIMBUS_HOSTNAMES);
-            stormNimbusServerHosts = Arrays.stream(paramVal.split(",")).collect(toList());
+            stormNimbusServerHosts = config.getAny(PARAM_NIMBUS_HOSTNAMES);
         } catch (ClassCastException e) {
             throw new IllegalArgumentException("Required parameter " + PARAM_NIMBUS_HOSTNAMES + " should be list of string.");
         }

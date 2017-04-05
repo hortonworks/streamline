@@ -52,7 +52,7 @@ public class ZookeeperServiceRegistrarTest extends AbstractServiceRegistrarTest<
 
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(ZOO_CFG_FILE_PATH)) {
             Config config = new Config();
-            config.put(ZookeeperServiceRegistrar.PARAM_ZOOKEEPER_SERVER_HOSTNAMES, "zookeeper-1,zookeeper-2");
+            config.put(ZookeeperServiceRegistrar.PARAM_ZOOKEEPER_SERVER_HOSTNAMES, Lists.newArrayList("zookeeper-1", "zookeeper-2"));
             ManualServiceRegistrar.ConfigFileInfo zooCfg = new ManualServiceRegistrar.ConfigFileInfo(ZOO_CFG, is);
             registrar.register(cluster, config, Lists.newArrayList(zooCfg));
         }
@@ -71,7 +71,7 @@ public class ZookeeperServiceRegistrarTest extends AbstractServiceRegistrarTest<
 
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(ZOO_CFG_BADCASE_FILE_PATH)) {
             Config config = new Config();
-            config.put(ZookeeperServiceRegistrar.PARAM_ZOOKEEPER_SERVER_HOSTNAMES, "zookeeper-1,zookeeper-2");
+            config.put(ZookeeperServiceRegistrar.PARAM_ZOOKEEPER_SERVER_HOSTNAMES, Lists.newArrayList("zookeeper-1", "zookeeper-2"));
             ManualServiceRegistrar.ConfigFileInfo zooCfg = new ManualServiceRegistrar.ConfigFileInfo(ZOO_CFG, is);
             registrar.register(cluster, config, Lists.newArrayList(zooCfg));
             fail("Should throw IllegalArgumentException");
@@ -107,7 +107,7 @@ public class ZookeeperServiceRegistrarTest extends AbstractServiceRegistrarTest<
 
         try {
             Config config = new Config();
-            config.put(ZookeeperServiceRegistrar.PARAM_ZOOKEEPER_SERVER_HOSTNAMES, "zookeeper-1,zookeeper-2");
+            config.put(ZookeeperServiceRegistrar.PARAM_ZOOKEEPER_SERVER_HOSTNAMES, Lists.newArrayList("zookeeper-1", "zookeeper-2"));
             registrar.register(cluster, config, Lists.newArrayList());
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {

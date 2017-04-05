@@ -55,7 +55,7 @@ public class StormServiceRegistrarTest extends AbstractServiceRegistrarTest<Stor
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(STORM_YAML_FILE_PATH)) {
             Config config = new Config();
             config.put(StormServiceRegistrar.PARAM_STORM_UI_SERVER_HOSTNAME, "storm-1");
-            config.put(StormServiceRegistrar.PARAM_NIMBUS_HOSTNAMES, "storm-1,storm-2");
+            config.put(StormServiceRegistrar.PARAM_NIMBUS_HOSTNAMES, Lists.newArrayList("storm-1", "storm-2"));
             ManualServiceRegistrar.ConfigFileInfo stormYaml = new ManualServiceRegistrar.ConfigFileInfo(STORM_YAML, is);
             registrar.register(cluster, config, Lists.newArrayList(stormYaml));
         }
@@ -75,7 +75,7 @@ public class StormServiceRegistrarTest extends AbstractServiceRegistrarTest<Stor
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(STORM_YAML_BADCASE_FILE_PATH)) {
             Config config = new Config();
             config.put(StormServiceRegistrar.PARAM_STORM_UI_SERVER_HOSTNAME, "storm-1");
-            config.put(StormServiceRegistrar.PARAM_NIMBUS_HOSTNAMES, "storm-1,storm-2");
+            config.put(StormServiceRegistrar.PARAM_NIMBUS_HOSTNAMES, Lists.newArrayList("storm-1", "storm-2"));
             ManualServiceRegistrar.ConfigFileInfo stormYaml = new ManualServiceRegistrar.ConfigFileInfo(STORM_YAML, is);
             registrar.register(cluster, config, Lists.newArrayList(stormYaml));
             fail("Should throw IllegalArgumentException");

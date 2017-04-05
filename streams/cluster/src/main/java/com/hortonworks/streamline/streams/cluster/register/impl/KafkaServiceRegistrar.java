@@ -88,8 +88,7 @@ public class KafkaServiceRegistrar extends AbstractServiceRegistrar {
 
         List<String> kafkaBrokerHosts;
         try {
-            String paramVal = config.getString(PARAM_KAFKA_BROKER_HOSTNAMES);
-            kafkaBrokerHosts = Arrays.stream(paramVal.split(",")).collect(toList());
+            kafkaBrokerHosts = config.getAny(PARAM_KAFKA_BROKER_HOSTNAMES);
         } catch (ClassCastException e) {
             throw new IllegalArgumentException("Required parameter " + PARAM_KAFKA_BROKER_HOSTNAMES + " should be list of string.");
         }
