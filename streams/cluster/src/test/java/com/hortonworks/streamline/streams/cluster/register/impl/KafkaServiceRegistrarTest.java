@@ -53,7 +53,7 @@ public class KafkaServiceRegistrarTest extends AbstractServiceRegistrarTest<Kafk
 
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(SERVER_PROPERTIES_FILE_PATH)) {
             Config config = new Config();
-            config.put(KafkaServiceRegistrar.PARAM_KAFKA_BROKER_HOSTNAMES, "kafka-1,kafka-2");
+            config.put(KafkaServiceRegistrar.PARAM_KAFKA_BROKER_HOSTNAMES, Lists.newArrayList("kafka-1","kafka-2"));
             ManualServiceRegistrar.ConfigFileInfo serverProperties = new ManualServiceRegistrar.ConfigFileInfo(SERVER_PROPERTIES, is);
             registrar.register(cluster, config, Lists.newArrayList(serverProperties));
         }

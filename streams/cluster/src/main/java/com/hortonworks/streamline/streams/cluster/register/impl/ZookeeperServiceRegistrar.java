@@ -78,8 +78,7 @@ public class ZookeeperServiceRegistrar extends AbstractServiceRegistrar {
 
         List<String> zookeeperServerHosts;
         try {
-            String paramVal = config.getString(PARAM_ZOOKEEPER_SERVER_HOSTNAMES);
-            zookeeperServerHosts = Arrays.stream(paramVal.split(",")).collect(toList());
+            zookeeperServerHosts = config.getAny(PARAM_ZOOKEEPER_SERVER_HOSTNAMES);
         } catch (ClassCastException e) {
             throw new IllegalArgumentException("Required parameter " + PARAM_ZOOKEEPER_SERVER_HOSTNAMES + " should be list of string.");
         }
