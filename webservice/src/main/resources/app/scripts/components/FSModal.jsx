@@ -65,10 +65,10 @@ export default class FSModal extends Component {
   footer() {
     return (
       <Modal.Footer>
-        <Button bsStyle='default' onClick={this.cancel.bind(this)}>
+        <Button bsStyle='default' onClick={this.cancel.bind(this)} data-stest="cancelbtn">
           {this.state.btnCancelText || 'Cancel'}
         </Button>
-        <Button bsStyle='success' onClick={this.sure.bind(this)}>
+        <Button bsStyle='success' onClick={this.sure.bind(this)} data-stest="okbtn">
           {this.state.btnOkText || 'Ok'}
         </Button>
       </Modal.Footer>
@@ -125,10 +125,10 @@ export class Confirm extends FSModal {
   footer() {
     return (
       <Modal.Footer>
-        <Button bsStyle='danger' onClick={this.cancel.bind(this)}>
+        <Button bsStyle='danger' onClick={this.cancel.bind(this)} data-stest="confirmBoxCancelBtn">
           {this.state.btnCancelText || 'No'}
         </Button>
-        <Button bsStyle='success' onClick={this.sure.bind(this)}>
+        <Button bsStyle='success' onClick={this.sure.bind(this)} data-stest="confirmBoxOkBtn">
           {this.state.btnOkText || 'Yes'}
         </Button>
       </Modal.Footer>

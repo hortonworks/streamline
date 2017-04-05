@@ -686,7 +686,7 @@ class TopologyEditorContainer extends Component {
                           clearInterval(interval);
                           this.refs.deployLoadingModal.hide();
                           FSReactToastr.error(
-                            <CommonNotification flag="error" content={topologyState.name}/>, '', toastOpt);
+                            <CommonNotification flag="error" content={topologyState.description}/>, '', toastOpt);
                         },1000);
                       });
                     }

@@ -20,6 +20,7 @@
       {
         "uiName": "Storm config file (storm.yaml)",
         "fieldName": "storm.yaml",
+        "hint" : "yaml",
         "isOptional": false,
         "tooltip": "Upload storm.yaml file used by Storm cluster",
         "type": "file"

@@ -23,6 +23,7 @@ import {
   Radio,
   ControlLabel,
   Popover,
+  InputGroup,
   OverlayTrigger
 } from 'react-bootstrap';
 import Select, {Creatable} from 'react-select';
@@ -72,6 +73,81 @@ export class BaseField extends Component {
 BaseField.contextTypes = {
   Form: React.PropTypes.object
 };
+
+export class file extends BaseField {
+  handleChange = (e) => {
+    const {Form} = this.context,fileType = e.target.files[0].name;
+    let validDataFlag = false;
+    if(fileType.indexOf(this.props.fieldJson.hint) !== -1){
+      validDataFlag = true;
+      this.props.data[this.props.value] = fileType;
+      Form.setState(Form.state);
+      this.context.Form.props.fetchFileData(e.target.files[0],this.props.fieldJson.fieldName);
+    }
+  }
+
+  handleUpload = () => {
+    this.refs.fileName.click();
+  }
+
+  validate() {
+    return super.validate(this.props.data[this.props.value]);;
+  }
+
+  getField = () => {
+    const popoverContent = (
+      <Popover id="popover-trigger-hover-focus">
+        {this.props.fieldJson.tooltip}
+      </Popover>
+    );
+    const inputHint = this.props.fieldJson.hint || null;
+    let disabledField = this.context.Form.props.readOnly;
+    if (this.props.fieldJson.isUserInput !== undefined) {
+      disabledField = disabledField || !this.props.fieldJson.isUserInput;
+    }
+    return (inputHint !== null && inputHint.toLowerCase().indexOf("hidden") !== -1
+      ? ''
+      : <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
+        <div>
+          <input ref="fileName" accept={`.${this.props.fieldJson.hint}`}
+            type={this.props.fieldJson.hint !== undefined
+            ? this.props.fieldJson.hint.toLowerCase().indexOf("file") !== -1
+              ? "file"
+              : "file"
+            : "file"
+            } placeholder="Select file"  className="hidden-file-input"
+            onChange={(event) => {
+              this.handleChange.call(this, event);
+            }}
+            {...this.props.attrs}
+            required={true}/>
+          <div>
+            <InputGroup>
+              <InputGroup.Addon className="file-upload">
+                <Button
+                  type="button"
+                  className="browseBtn btn-primary"
+                  onClick={this.handleUpload.bind(this)}
+                >
+                  <i className="fa fa-folder-open-o"></i>&nbsp;Browse
+                </Button>
+              </InputGroup.Addon>
+              <FormControl
+                type="text"
+                placeholder="No file chosen"
+                disabled={disabledField}
+                value={this.props.data[this.props.value]}
+                className={this.context.Form.state.Errors[this.props.valuePath]
+                ? "form-control invalidInput"
+                : "form-control"}
+              />
+            </InputGroup>
+          </div>
+        </div>
+      </OverlayTrigger>);
+  }
+
+}
 
 export class string extends BaseField {
   handleChange = () => {

@@ -6,6 +6,7 @@
       {
         "uiName": "Hive config file (hive-site.xml)",
         "fieldName": "hive-site.xml",
+        "hint" : "xml",
         "isOptional": false,
         "tooltip": "Upload hive-site.xml file used by Hive cluster",
         "type": "file"

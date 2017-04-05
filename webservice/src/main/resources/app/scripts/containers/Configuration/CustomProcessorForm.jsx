@@ -427,7 +427,7 @@ class CustomProcessorForm extends Component {
               <div className="box-body">
                 <form className="form-horizontal">
                   <div className="form-group">
-                    <label className="col-sm-2 control-label">Streaming Engine
+                    <label className="col-sm-2 control-label" data-stest="streamEngineLabel">Streaming Engine
                       <span className="text-danger">*</span>
                     </label>
                     <div className="col-sm-5">
@@ -437,7 +437,7 @@ class CustomProcessorForm extends Component {
                     </div>
                   </div>
                   <div className="form-group">
-                    <label className="col-sm-2 control-label">Name
+                    <label className="col-sm-2 control-label" data-stest="nameLabel">Name
                       <span className="text-danger">*</span>
                     </label>
                     <div className="col-sm-5">
@@ -452,7 +452,7 @@ class CustomProcessorForm extends Component {
                       : ''}
                   </div>
                   <div className="form-group">
-                    <label className="col-sm-2 control-label">Description
+                    <label className="col-sm-2 control-label" data-stest="descriptionLabel">Description
                       <span className="text-danger">*</span>
                     </label>
                     <div className="col-sm-5">
@@ -462,7 +462,7 @@ class CustomProcessorForm extends Component {
                     </div>
                   </div>
                   <div className="form-group">
-                    <label className="col-sm-2 control-label">Classname
+                    <label className="col-sm-2 control-label" data-stest="classLabel">Classname
                       <span className="text-danger">*</span>
                     </label>
                     <div className="col-sm-5">
@@ -472,7 +472,7 @@ class CustomProcessorForm extends Component {
                     </div>
                   </div>
                   <div className="form-group">
-                    <label className="col-sm-2 control-label">Upload Jar
+                    <label className="col-sm-2 control-label" data-stest="uploadJarLabel">Upload Jar
                       <span className="text-danger">*</span>
                     </label>
                     <div className="col-sm-5">
@@ -504,7 +504,7 @@ class CustomProcessorForm extends Component {
                     </div>
                   </div>
                   <div className="form-group">
-                    <label className="col-sm-2 control-label">Config Fields
+                    <label className="col-sm-2 control-label" data-stest="configFieldLabel">Config Fields
                       <span className="text-danger">*</span>
                     </label>
                     <div className="col-sm-5">
@@ -556,7 +556,7 @@ class CustomProcessorForm extends Component {
                     </div>
                   </div>
                   <div className="form-group">
-                    <label className="col-sm-2 control-label">Input Schema
+                    <label className="col-sm-2 control-label" data-stest="inputSchemaLable">Input Schema
                       <span className="text-danger">*</span>
                     </label>
                     <div className="col-sm-6">
@@ -564,7 +564,7 @@ class CustomProcessorForm extends Component {
                     </div>
                   </div>
                   <div className="form-group">
-                    <label className="col-sm-2 control-label">Output Schema
+                    <label className="col-sm-2 control-label" data-stest="outputSchemaLable">Output Schema
                       <span className="text-danger">*</span>
                     </label>
                     <div className="col-sm-10">

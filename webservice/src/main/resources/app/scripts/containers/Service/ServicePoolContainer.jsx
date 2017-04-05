@@ -34,24 +34,47 @@ import CommonNotification from '../../utils/CommonNotification';
 import {toastOpt} from '../../utils/Constants';
 import Paginate from '../../components/Paginate';
 import CommonLoaderSign from '../../components/CommonLoaderSign';
+import AddManualCluster from '../ManualCluster/AddManualCluster';
+import AddManualService from '../ManualCluster/AddManualService';
 
+/*
+  ServiceItems is a stateless component to display a service image on UI
+  And
+  if Manual CLuster is created we Add plus button to UI for adding services manually
+*/
 const ServiceItems = (props) => {
   const {item} = props;
   let name = item.name.replace('_', ' ');
   return (
-    <li><img src={`styles/img/icon-${item.name.toLowerCase()}.png`}/>{name}</li>
+    item.manualClusterId
+    ? <li><img src="styles/img/plus.png" alt="plus button" onClick={props.addManualService} data-id={item.manualClusterId}/>Add New</li>
+    : <li><img src={`styles/img/icon-${item.name.toLowerCase()}.png`}/>{item.name}</li>
   );
 };
 
+/*
+  PoolItemsCard is a React Component with state
+  And contains single CARD item
+*/
 class PoolItemsCard extends Component {
   constructor(props) {
     super(props);
   }
 
+
+  /*
+    onActionClick accept eventKey example "refresh"
+    call this.props.poolActionClicked with params eventKey and fetch Id from the dataset
+  */
   onActionClick = (eventKey) => {
     this.props.poolActionClicked(eventKey, this.clusterRef.dataset.id);
   }
 
+  /*
+    checkRefId accept id
+    check the id in "this.props.refIdArr"
+    if yes return true else false
+  */
   checkRefId = (id) => {
     const index = this.props.refIdArr.findIndex((x) => {
       return x === id;
@@ -59,6 +82,17 @@ class PoolItemsCard extends Component {
     return index !== -1
       ? true
       : false;
+  }
+
+  /*
+    addManualService accept click event
+    check target node element
+    on the bases fetch id from the dataset
+    Add called props.addManualServiceHandler function
+  */
+  addManualService = (event) => {
+    const mClusterId = (event.target.nodeName !== 'I') ? parseInt(event.target.dataset.id) : parseInt(event.target.parentElement.dataset.id);
+    this.props.addManualServiceHandler(mClusterId);
   }
 
   render() {
@@ -80,20 +114,31 @@ class PoolItemsCard extends Component {
     });
     Array.prototype.push.apply(serviceWrap, t);
     const ellipseIcon = <i className="fa fa-ellipsis-v"></i>;
+    {/*
+      Add a button to serviceWrap for only Manually created cluster
+    */}
+    const manual_index = _.findIndex(serviceWrap, {name : 'addManualBtn'});
+    if(manual_index === -1 && clusterList.cluster.ambariImportUrl === ''){
+      serviceWrap.push({service :{name : 'addManualBtn', manualClusterId : clusterList.cluster.id}});
+    }
 
     return (
       <div className="col-md-4">
         <div className="service-box" data-id={cluster.id} ref={(ref) => this.clusterRef = ref}>
           <div className="service-head clearfix">
             <h4 className="pull-left no-margin">{cluster.name}<br/>
-              <span>{cluster.ambariImportUrl}</span>
+              <span>{cluster.ambariImportUrl ? cluster.ambariImportUrl : 'Not import from ambari'}</span>
             </h4>
             <div className="pull-right">
               <DropdownButton noCaret title={ellipseIcon} id="dropdown" bsStyle="link" className="dropdown-toggle" data-stest="service-pool-actions">
-                <MenuItem onClick={this.onActionClick.bind(this, "refresh/")} data-stest="edit-service-pool">
-                  <i className="fa fa-refresh"></i>
-                  &nbsp;Refresh
-                </MenuItem>
+                {
+                  cluster.ambariImportUrl
+                  ? <MenuItem onClick={this.onActionClick.bind(this, "refresh/")} data-stest="edit-service-pool">
+                      <i className="fa fa-refresh"></i>
+                      &nbsp;Refresh
+                    </MenuItem>
+                  : ''
+                }
                 <MenuItem onClick={this.onActionClick.bind(this, "delete/")} data-stest="delete-service-pool">
                   <i className="fa fa-trash"></i>
                   &nbsp;Delete
@@ -116,11 +161,12 @@ class PoolItemsCard extends Component {
                 <ul className="service-components ">
                   {serviceWrap.length !== 0
                     ? serviceWrap.map((items, i) => {
-                      return <ServiceItems key={i} item={items.service}/>;
+                      return <ServiceItems key={i} item={items.service} addManualService={this.addManualService}/>;
                     })
                     : <div className="col-sm-12 text-center">
-                      No Service
-                    </div>
+                          No Service
+                      </div>
+
 }
                 </ul>
               </Scrollbars>
@@ -148,11 +194,19 @@ class ServicePoolContainer extends Component {
       clusterData: {},
       fetchLoader: true,
       pageIndex: 0,
-      pageSize: 6
+      pageSize: 6,
+      mClusterId: '',
+      mClusterServiceUpdate : false,
+      mServiceNameList : []
     };
     this.fetchData();
   }
 
+  /*
+    fetchData is called from the constructor
+    To fetch the cluster entities through an API call
+    SET entities and pageIndex to "0"
+  */
   fetchData = () => {
     ClusterREST.getAllCluster().then((clusters) => {
       if (clusters.responseMessage !== undefined) {
@@ -170,20 +224,48 @@ class ServicePoolContainer extends Component {
     });
   }
 
-  componentDidUpdate() {
-    this.btnClassChange();
-  }
-  componentDidMount() {
-    this.btnClassChange();
-  }
+  /*
+    btnClassChange  method
+    container is select by using document.querySelector
+    to set a class on container
+  */
   btnClassChange = () => {
     const container = document.querySelector('.content-wrapper');
     container.setAttribute("class", "content-wrapper animated fadeIn ");
   }
-  componentWillUnmount() {
-    const container = document.querySelector('.content-wrapper');
-    container.setAttribute("class", "content-wrapper animated fadeIn ");
+
+  /*
+    componentDidUpdate method
+    this.btnClassChange is called to set a class on container
+  */
+  componentDidUpdate() {
+    this.btnClassChange();
   }
+
+  /*
+    componentDidMount method
+    this.btnClassChange is called to set a class on container
+  */
+  componentDidMount() {
+    this.btnClassChange();
+  }
+
+  /*
+    componentWillUnmount method
+    this.btnClassChange is called to set a class on container
+  */
+  componentWillUnmount() {
+    this.btnClassChange();
+  }
+
+  /*
+    addBtnClicked method
+    url value is fetch from UI using "this.refs.addURLInput.value"
+    And Utils.validateURL is called to check the url contain
+    "api/v1/catalog"
+    if true it SET state with clusterName and ambariUrl
+    else return false
+  */
   addBtnClicked = () => {
     const {showInputErr} = this.state;
     const val = this.refs.addURLInput.value.trim();
@@ -203,9 +285,21 @@ class ServicePoolContainer extends Component {
       this.setState({showInputErr: false});
     }
   }
+
+  /*
+    sliceClusterUrl accept url "http://localhost:8080/api/v1/catalog/clusters/demo"
+    url is substring by the last '/'
+    return demo from url
+  */
   sliceClusterUrl = (url) => {
     return url.substr((url.lastIndexOf('/') + 1), url.length);
   }
+
+  /*
+    poolActionClicked accept the eventKey and id exm "refresh" and "2"
+    poolActionClicked method is call on multiple button
+    And on the bases of eventKey futhere method is called
+  */
   poolActionClicked = (eventKey, id) => {
     const key = eventKey.split('/');
     switch (key[0].toString()) {
@@ -220,26 +314,49 @@ class ServicePoolContainer extends Component {
     }
   }
 
+  /*
+    handleUpdateCluster accept id
+    single cluster is updated through an API call using id
+
+    refIdArr is used to show loading on UI
+    Awaiting for ManualCluster changes from backend that's
+    why the else part is commented
+  */
   handleUpdateCluster = (ID) => {
     ClusterREST.getCluster(ID).then((entity) => {
       if (entity.responseMessage !== undefined) {
         FSReactToastr.error(
           <CommonNotification flag="error" content={entity.responseMessage}/>, '', toastOpt);
       } else {
-        const url = entity.cluster.ambariImportUrl;
-        const tempObj = Object.assign(this.state.clusterData, {ambariUrl: url});
-        this.setState({
-          showFields: true,
-          idCheck: + ID,
-          clusterData: tempObj
-        }, () => {
-          this.adminFormModel.show();
-        });
+        const url = entity.cluster.ambariImportUrl.trim();
+        if(url){
+          const tempObj = Object.assign(this.state.clusterData, {ambariUrl: url});
+          this.setState({
+            showFields: true,
+            idCheck: + ID,
+            clusterData: tempObj
+          }, () => {
+            this.adminFormModel.show();
+          });
+        } //else {
+          // this.setState({
+          //   showFields: true,
+          //   idCheck: + ID,
+          //   mClusterId : + ID,
+          //   mClusterServiceUpdate: true
+          // }, () => {
+          //   this.addManualServiceModal.show();
+          // });
+        //}
       }
     });
 
   }
 
+  /*
+    handleDeleteCluster accept the id as a Params
+    to delete a cluster through an API call by using id
+  */
   handleDeleteCluster = (id) => {
     this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete ?'}).then((confirmBox) => {
       ClusterREST.deleteCluster(id).then((cluster) => {
@@ -270,6 +387,11 @@ class ServicePoolContainer extends Component {
     });
   }
 
+  /*
+    validateForm method
+    It itreate all fields present in "this.refs.modelForm.children"
+    if the value is empty after focus the invalidInput class is added to particular node
+  */
   validateForm = () => {
     const formNodes = this.refs.modelForm.children;
     let errArr = [];
@@ -305,6 +427,11 @@ class ServicePoolContainer extends Component {
     return filter(formNodes);
   }
 
+  /*
+    fetchFormdata method
+    fields value is fetch from the form by using the refs
+    And SET to the state
+  */
   fetchFormdata = () => {
     let tempCluster = {},
       name = '';
@@ -326,6 +453,16 @@ class ServicePoolContainer extends Component {
     this.setState({clusterData: tempCluster});
   }
 
+  /*
+    fetchClusterDetail method
+    Is used to create a cluster by calling and API
+    using the data Object with fields
+    clusterName , description, ambariUrl
+
+    refIdArr array is used to show loading on UI
+    ON the API success we call this.importAmbariCluster(id) with cluster id as a Params
+    And fetchData to fetch the new data for UI
+  */
   fetchClusterDetail = () => {
     const {clusterData, refIdArr} = this.state;
     const {clusterName, ambariUrl} = clusterData;
@@ -355,6 +492,16 @@ class ServicePoolContainer extends Component {
     });
   }
 
+  /*
+    adminSaveClicked method
+    In this ambariUrl is verified through the API call for that
+    we created "urlVerificationData" Object with fields
+    ambariUrl, username, password
+
+    showFields fields is used to show Add and Edit Model
+    On Edit mode we call this.importAmbariCluster()
+    On Add mode we call this.fetchClusterDetail()
+  */
   adminSaveClicked = () => {
     if (this.validateForm()) {
       const {idCheck, showFields, clusterData} = this.state;
@@ -391,6 +538,14 @@ class ServicePoolContainer extends Component {
     }
   }
 
+  /*
+    importAmbariCluster accept id
+    And is call from the Two function "adminSaveClicked and fetchClusterDetail"
+    importClusterData Object is created with the fields
+    clusterID, ambariUrl, username, password
+    idCheck is push to tempArr for showing loader on a particular cluster on UI
+    POST method is call to save ambariCluster
+  */
   importAmbariCluster = (id) => {
     const {clusterData, idCheck, refIdArr} = this.state;
     const {ambariUrl, username, password} = clusterData;
@@ -413,6 +568,7 @@ class ServicePoolContainer extends Component {
           idCheck: ''
         }, () => {
           this.fetchData();
+          // setTimeout is used to delay the error notification on UI
           clearTimeout(clearTimer);
           const clearTimer = setTimeout(() => {
             FSReactToastr.error(
@@ -434,6 +590,7 @@ class ServicePoolContainer extends Component {
         } else {
           sucessMsg = "Cluster added successfully";
         }
+        // splice the id refIdArr
         const tempDataArray = this.spliceTempArr(clusterID || idCheck);
 
         this.setState({
@@ -448,6 +605,7 @@ class ServicePoolContainer extends Component {
           sucessMsg.indexOf("added") !== - 1
             ? this.fetchData()
             : '';
+          // setTimeout is used to delay the success notification on UI
           clearTimeout(clearTimer);
           const clearTimer = setTimeout(() => {
             FSReactToastr.success(
@@ -459,6 +617,11 @@ class ServicePoolContainer extends Component {
     });
   }
 
+  /*
+    spliceTempArr accept id
+    And check the id is present in refIdArr
+    if exist splice it from refIdArr and SET in state
+  */
   spliceTempArr = (id) => {
     const tempArr = this.state.refIdArr;
     const index = tempArr.findIndex((x) => {
@@ -470,6 +633,11 @@ class ServicePoolContainer extends Component {
     return tempArr;
   }
 
+  /*
+    adminCancelClicked method
+    idCheck, showFields and refIdArr are SET
+    adminFormModel is trigger to hide
+  */
   adminCancelClicked = () => {
     const {idCheck} = this.state;
     const tempDataArray = this.spliceTempArr(idCheck);
@@ -477,11 +645,20 @@ class ServicePoolContainer extends Component {
     this.adminFormModel.hide();
   }
 
+  /*
+    pagePosition accept the index from the pagination
+    And SET pageIndex
+  */
   pagePosition = (index) => {
     this.setState({
       pageIndex: index || 0
     });
   }
+
+  /*
+    getHeaderContent is used to show the component name
+    picked from the routes for UI
+  */
   getHeaderContent() {
     return (
       <span>
@@ -492,15 +669,111 @@ class ServicePoolContainer extends Component {
     );
   }
 
+  /*
+    handleKeyPress accept event
+    To catch Enter key from UI
+    And on the Modal showing bases we trigger the method
+  */
   handleKeyPress = (event) => {
     if (event.key === "Enter") {
-      if (event.target.placeholder.indexOf('http://ambari_host') !== -1) {
-        event.target.focus = false;
-        this.addBtnClicked();
+      if(!this.adminFormModel.state.show && !this.addManualClusterModal.state.show && !this.addManualServiceModal.state.show){
+        if (event.target.placeholder.indexOf('http://ambari_host') !== -1) {
+          event.target.focus = false;
+          this.addBtnClicked();
+        }
       }
       this.adminFormModel.state.show
         ? this.adminSaveClicked()
-        : '';
+        : this.addManualClusterModal.state.show
+          ? this.addManualClusterSave()
+          : this.addManualServiceModal.state.show
+            ? this.addManualServiceSave()
+            : '';
+    }
+  }
+
+  /*
+    addManualCluster
+    trigger this.addManualClusterModal.show
+  */
+  addManualCluster = () => {
+    this.addManualClusterModal.show();
+  }
+
+  /*
+    addManualClusterSave is used to call addManualClusterRef validate
+    And trigger the addManualClusterRef handleSave for completing the Process
+    creating cluster
+    And show the success on UI
+  */
+  addManualClusterSave = () => {
+    if(this.refs.addManualClusterRef.validateForm()){
+      this.addManualClusterModal.hide();
+      this.refs.addManualClusterRef.handleSave().then((manualCluster) => {
+        if(manualCluster.responseMessage !== undefined){
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={manualCluster.responseMessage}/>, '', toastOpt);
+        } else {
+          FSReactToastr.success(
+            <strong>{"Manual cluster add successfully"}</strong>);
+          this.fetchData();
+        }
+      });
+    }
+  }
+
+  /*
+    addManualCommonCancel method accept name "cluster" OR "service"
+    used the cancel the Modal
+  */
+  addManualCommonCancel = (name) => {
+    name === "cluster"
+    ? this.addManualClusterModal.hide()
+    : name === "service"
+      ? this.addManualServiceModal.hide()
+      : '';
+  }
+
+  /*
+  addManualServiceHandler accept cluster Id
+  cluster is filter from the entities using Id
+  from the cluster the existing services are pull in mServiceNameList
+  mServiceNameList is passed as props to addManualServiceRef
+  */
+  addManualServiceHandler = (Id) => {
+    let serviceArr = [];
+    const m_clusterIndex = _.findIndex(this.state.entities,(entity) => {
+      return entity.cluster.id === Id;
+    });
+    if(m_clusterIndex !== -1){
+      _.map(this.state.entities[m_clusterIndex].services, (serviceEntity) => {
+        serviceArr.push(serviceEntity.service);
+      });
+    }
+    this.setState({mClusterId : Id , mServiceNameList:serviceArr}, () => {
+      this.addManualServiceModal.show();
+    });
+  }
+
+  /*
+    addManualServiceSave is used to call addManualServiceRef validate
+    And trigger the addManualServiceRef handleSave for completing the Process
+    for register service
+    And show the success on UI
+  */
+  addManualServiceSave = () => {
+    if(this.refs.addManualServiceRef.validate()){
+      this.addManualServiceModal.hide();
+      this.refs.addManualServiceRef.handleSave().then((manualService) => {
+        if(manualService.responseMessage !== undefined){
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={manualService.responseMessage}/>, '', toastOpt);
+        } else {
+          FSReactToastr.success(
+            <strong>{"Manual service add successfully"}</strong>);
+          this.fetchData();
+        }
+      });
     }
   }
 
@@ -515,7 +788,10 @@ class ServicePoolContainer extends Component {
       pageIndex,
       refIdArr,
       loader,
-      clusterData
+      clusterData,
+      mClusterId,
+      mClusterServiceUpdate,
+      mServiceNameList
     } = this.state;
     const {ambariUrl} = clusterData;
     const splitData = _.chunk(entities, pageSize) || [];
@@ -525,23 +801,23 @@ class ServicePoolContainer extends Component {
           ? <div className="form-group">
               <label>Url<span className="text-danger">*</span>
               </label>
-              <input type="text" className="form-control" placeholder="http://ambari_host:port/api/v1/clusters/CLUSTER_NAME" ref="userUrl" autoFocus="true" disabled={true} value={ambariUrl}/>
+              <input data-stest="url" type="text" className="form-control" placeholder="http://ambari_host:port/api/v1/clusters/CLUSTER_NAME" ref="userUrl" autoFocus="true" disabled={true} value={ambariUrl}/>
               <p className="text-danger"></p>
             </div>
           : ''
 }
         <div className="form-group">
-          <label>UserName<span className="text-danger">*</span>
+          <label data-stest="usernamelabel">UserName<span className="text-danger">*</span>
           </label>
-          <input type="text" className="form-control" placeholder="Enter your Name" ref="username" autoFocus={showFields
+          <input data-stest="username" type="text" className="form-control" placeholder="Enter your Name" ref="username" autoFocus={showFields
             ? false
             : true}/>
           <p className="text-danger"></p>
         </div>
         <div className="form-group">
-          <label>Password<span className="text-danger">*</span>
+          <label data-stest="passwordLabel">Password<span className="text-danger">*</span>
           </label>
-          <input type="password" className="form-control" placeholder="Enter your Password" ref="userpass"/>
+          <input data-stest="password" type="password" className="form-control" placeholder="Enter your Password" ref="userpass"/>
           <p className="text-danger"></p>
         </div>
       </form>;
@@ -555,25 +831,30 @@ class ServicePoolContainer extends Component {
             <div className="row row-margin-bottom">
               <div className="col-md-8 col-md-offset-2">
                 <div className="input-group">
-                  <input type="text" ref="addURLInput" onKeyPress={this.handleKeyPress} className={`form-control ${showInputErr
+                  <input data-stest="url" type="text" ref="addURLInput" onKeyPress={this.handleKeyPress} className={`form-control ${showInputErr
                     ? ''
                     : 'invalidInput'}`} placeholder="http://ambari_host:port/api/v1/clusters/CLUSTER_NAME"/>
                   <span className="input-group-btn">
                     <button className="btn btn-success" type="button" onClick={this.addBtnClicked}>
-                      Add
+                      AUTO ADD
                     </button>
                   </span>
                 </div>
-                <lable className={`text-danger ${showInputErr
+                <lable data-stest="validationMsg" className={`text-danger ${showInputErr
                   ? 'hidden'
                   : ''}`}>This is not a valid Url</lable>
+              </div>
+              <div className="col-md-2">
+                <button className="btn btn-default" type="button" onClick={this.addManualCluster}>
+                  MANUAL
+                </button>
               </div>
             </div>
             <div className="row">
               {(splitData.length === 0)
                 ? <NoData imgName={"services"}/>
                 : splitData[pageIndex].map((list) => {
-                  return <PoolItemsCard key={list.cluster.id} clusterList={list} poolActionClicked={this.poolActionClicked} refIdArr={refIdArr} loader={loader}/>;
+                  return <PoolItemsCard key={list.cluster.id} clusterList={list} poolActionClicked={this.poolActionClicked} refIdArr={refIdArr} loader={loader} addManualServiceHandler={this.addManualServiceHandler}/>;
                 })
 }
             </div>
@@ -585,6 +866,12 @@ class ServicePoolContainer extends Component {
 }
         <Modal ref={(ref) => this.adminFormModel = ref} data-title="Credentials" onKeyPress={this.handleKeyPress} data-resolve={this.adminSaveClicked} data-reject={this.adminCancelClicked}>
           {adminFormFields()}
+        </Modal>
+        <Modal ref={(ref) => this.addManualClusterModal = ref} data-title="Add Manual Cluster" data-resolve={this.addManualClusterSave} data-reject={this.addManualCommonCancel.bind(this,'cluster')} onKeyPress={this.handleKeyPress}>
+          <AddManualCluster ref="addManualClusterRef"/>
+        </Modal>
+        <Modal ref={(ref) => this.addManualServiceModal = ref} data-title={mClusterServiceUpdate ? "Edit Manual Service" : "Add Manual Service"}  data-resolve={this.addManualServiceSave} data-reject={this.addManualCommonCancel.bind(this,'service')} onKeyPress={this.handleKeyPress}>
+          <AddManualService ref="addManualServiceRef" mClusterId={mClusterId} mClusterServiceUpdate={mClusterServiceUpdate} serviceNameList={mServiceNameList}/>
         </Modal>
       </BaseContainer>
     );

@@ -155,7 +155,7 @@ class AddTopology extends Component {
     return (
       <div className="modal-form config-modal-form">
         <div className="form-group">
-          <label>Name
+          <label data-stest="nameLabel">Name
             <span className="text-danger">*</span>
           </label>
           <div>
@@ -168,7 +168,7 @@ class AddTopology extends Component {
           </Form>
         </div>
         <div className="form-group">
-          <label>Environment
+          <label data-stest="selectEnvLabel">Environment
             <span className="text-danger">*</span>
           </label>
           <div>

@@ -664,7 +664,7 @@ class TopologyListingContainer extends Component {
                       <div className="col-md-3 col-md-offset-6 text-right">
                         <FormGroup>
                           <InputGroup>
-                          <FormControl type="text" placeholder="Search by name" onKeyUp={this.onFilterChange} className="" />
+                          <FormControl data-stest="searchBox" type="text" placeholder="Search by name" onKeyUp={this.onFilterChange} className="" />
                           <InputGroup.Addon>
                             <i className="fa fa-search"></i>
                           </InputGroup.Addon>

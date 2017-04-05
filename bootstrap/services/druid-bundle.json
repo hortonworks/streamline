@@ -6,6 +6,7 @@
       {
         "uiName": "Druid config file (common.runtime.properties)",
         "fieldName": "common.runtime.properties",
+        "hint" : "properties",
         "isOptional": false,
         "tooltip": "Upload common.runtime.properties file used by Druid cluster",
         "type": "file"

@@ -283,18 +283,18 @@ class AddEnvironment extends Component {
       <div>
         <div className="modal-form config-modal-form" ref="addEvtModelRef">
           <div className="form-group">
-            <label>Name
+            <label data-stest="nameLabel">Name
               <span className="text-danger">*</span>
             </label>
             <input type="text" ref={(ref) => this.nameRef = ref} name="environmentName" placeholder="Environment Name" required="true" className="form-control"/>
           </div>
           <div className="form-group">
-            <label>Description
+            <label data-stest="descLabel">Description
               <span className="text-danger">*</span>
             </label>
             <input type="text" ref={(ref) => this.descRef = ref} name="description" placeholder="Description" required="true" className="form-control"/>
           </div>
-          <h4 className="environment-modal-title">Select Services</h4>
+          <h4 className="environment-modal-title" data-stest="selectServicesLabel">Select Services</h4>
           {entities.length !== 0
             ? <small ref="missingStorm">
                 (Atleast one streaming engine (eg: STORM) must be selected.)</small>

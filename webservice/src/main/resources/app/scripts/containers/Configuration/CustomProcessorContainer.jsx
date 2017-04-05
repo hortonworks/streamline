@@ -172,7 +172,7 @@ export default class CustomProcessorContainer extends Component {
                         {((filterValue && filteredEntities.length === 0) || filteredEntities.length !== 0)
                           ? <FormGroup>
                               <InputGroup>
-                                <FormControl type="text" placeholder="Search by name" onKeyUp={this.onFilterChange} className=""/>
+                                <FormControl data-stest="searchBox" type="text" placeholder="Search by name" onKeyUp={this.onFilterChange} className=""/>
                                 <InputGroup.Addon>
                                   <i className="fa fa-search"></i>
                                 </InputGroup.Addon>
