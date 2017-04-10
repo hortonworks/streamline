@@ -104,6 +104,10 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>com.hortonworks.registries</groupId>
+            <artifactId>schema-registry-auth</artifactId>
+        </dependency>
+        <dependency>
           <groupId>io.dropwizard</groupId>
           <artifactId>dropwizard-core</artifactId>
         </dependency>
