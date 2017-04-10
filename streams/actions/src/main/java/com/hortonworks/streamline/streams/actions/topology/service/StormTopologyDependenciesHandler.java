@@ -64,9 +64,12 @@ public class StormTopologyDependenciesHandler extends TopologyDagVisitor {
             for (String udf : rule.getReferredUdfs()) {
                 Collection<UDF> udfs = catalogService.listUDFs(Collections.singletonList(new QueryParam(UDF.NAME, udf)));
                 if (udfs.size() > 1) {
-                    throw new IllegalArgumentException("Multiple UDF definitions with name:" + udf);
+                    throw new IllegalStateException("Multiple UDF definitions with name:" + udf);
                 } else if (udfs.size() == 1) {
                     udfsToShip.add(udfs.iterator().next());
+                } else {
+                    throw new IllegalStateException("No catalog entity for udf: '" + udf + "'. " +
+                            "May be the UDF information is not bootstrapped or got deleted.");
                 }
             }
             for (UDF udf : udfsToShip) {
