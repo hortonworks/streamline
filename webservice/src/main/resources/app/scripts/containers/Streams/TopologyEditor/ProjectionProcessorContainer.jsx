@@ -20,6 +20,7 @@ import ReactDOM, {
   findDOMNode
 } from 'react-dom';
 import Select from 'react-select';
+import {OverlayTrigger, Popover} from 'react-bootstrap';
 import TopologyREST from '../../../rest/TopologyREST';
 import AggregateUdfREST from '../../../rest/AggregateUdfREST';
 import Utils from '../../../utils/Utils';
@@ -177,12 +178,18 @@ export default class ProjectionProcessorContainer extends Component {
         outputStreams: []
       };
       TopologyREST.createNode(topologyId, versionId, "rules", {body: JSON.stringify(dummyProjectionObj)}).then((rulesNode) => {
-        this.projectionRulesNode = rulesNode;
-        this.projectionRuleId = rulesNode.id;
-        this.projectionNode.config.properties.rules = [this.projectionRuleId];
-        TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {
-          body: JSON.stringify(this.projectionNode)
-        });
+        if(rulesNode.responseMessage !== undefined){
+          stateObj.showLoading = true;
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={rulesNode.responseMessage}/>, '', toastOpt);
+        } else {
+          this.projectionRulesNode = rulesNode;
+          this.projectionRuleId = rulesNode.id;
+          this.projectionNode.config.properties.rules = [this.projectionRuleId];
+          TopologyREST.updateNode(topologyId, versionId, nodeType, nodeData.nodeId, {
+            body: JSON.stringify(this.projectionNode)
+          });
+        }
       });
     }
     this.setState(stateObj);
@@ -231,6 +238,8 @@ export default class ProjectionProcessorContainer extends Component {
       this.tempStreamContextData = mainStreamObj;
       this.setState({outputFieldsArr :argsFieldsArrObj,outputStreamFields: outputFieldsObj,projectionKeys:keys,projectionSelectedKey:keyData,projectionGroupByKeys : gKeys,argumentKeysGroup :argsGroupKeys,showLoading : false});
       this.context.ParentForm.setState({outputStreamObj: mainStreamObj});
+    } else {
+      this.setState({showLoading : false});
     }
   }
 
@@ -329,7 +338,7 @@ export default class ProjectionProcessorContainer extends Component {
       });
     }
     this.projectionNode.description = description;
-    return TopologyREST.updateNode(topologyId, versionId, nodeType, this.projectionNode.id, {body: JSON.stringify(this.projectionNode)});
+    return this.projectionNode;
   }
 
   /*
@@ -357,9 +366,15 @@ export default class ProjectionProcessorContainer extends Component {
         'projection_notifier_stream_'+this.projectionNode.id
       ];
       this.projectionRulesNode.outputStreams = this.outputStreamStringArr;
-      return TopologyREST.updateNode(topologyId, versionId, 'rules', this.projectionRuleId, {body: JSON.stringify(this.projectionRulesNode)}).then((processorResult) => {
-        return this.updateProcessorNode(name, description);
-      });
+
+      let promiseArr = [];
+
+      const projectionNodeData = this.updateProcessorNode(name, description);
+      promiseArr.push(TopologyREST.updateNode(topologyId, versionId, nodeType, projectionNodeData.id, {body: JSON.stringify(projectionNodeData)}));
+
+      promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'rules', this.projectionRuleId, {body: JSON.stringify(this.projectionRulesNode)}));
+
+      return Promise.all(promiseArr);
     }
   }
 
@@ -570,9 +585,11 @@ export default class ProjectionProcessorContainer extends Component {
                 <label>Projection Fields
                   <span className="text-danger">*</span>
                 </label>
+                <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Projection keys</Popover>}>
                 <div>
                   <Select  value={projectionKeys} options={fieldList} onChange={this.handleProjectionKeysChange.bind(this)} clearable={false} multi={true} required={true} disabled={!editMode} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
                 </div>
+                </OverlayTrigger>
               </div>
               <div className="form-group">
                 <div className="row">
@@ -597,18 +614,24 @@ export default class ProjectionProcessorContainer extends Component {
                 {outputFieldsArr.map((obj, i) => {
                   return (
                     <div key={i} className="row form-group">
+                      <OverlayTrigger trigger={['hover']} placement="top" overlay={<Popover id="popover-trigger-hover">Function name</Popover>}>
                       <div className="col-sm-3">
                         <Select className={outputFieldsArr.length === i
                           ? "menu-outer-top"
                           : ''} value={obj.functionName} options={functionListArr} onChange={this.handleFieldChange.bind(this, i)} required={true} disabled={!editMode} valueKey="name" labelKey="name"/>
                       </div>
+                      </OverlayTrigger>
+                      <OverlayTrigger trigger={['hover']} placement="top" overlay={<Popover id="popover-trigger-hover">Input field name</Popover>}>
                       <div className="col-sm-4">
                         <Select className={outputFieldsArr.length === i
                           ? "menu-outer-top"
                           : ''} value={obj.args} options={fieldList} onChange={this.handleFieldsKeyChange.bind(this, i)} clearable={false} multi={true} required={true} disabled={!editMode} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
                       </div>
+                      </OverlayTrigger>
                       <div className="col-sm-3">
+                        <OverlayTrigger trigger={['hover']} placement="top" overlay={<Popover id="popover-trigger-hover">Output field name</Popover>}>
                         <input name="outputFieldName" value={obj.outputFieldName} ref="outputFieldName" onChange={this.handleFieldNameChange.bind(this, i)} type="text" className={invalidInput ? "form-control invalidInput" : "form-control" }  required={true} disabled={!editMode}/>
+                        </OverlayTrigger>
                       </div>
                       {editMode
                         ? <div className="col-sm-2">

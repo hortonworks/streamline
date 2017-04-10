@@ -30,6 +30,9 @@ import com.hortonworks.registries.schemaregistry.errors.SchemaNotFoundException;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.streams.security.Roles;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,8 +41,10 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
 import java.io.IOException;
 
@@ -52,16 +57,20 @@ import static javax.ws.rs.core.Response.Status.OK;
 public class SchemaResource {
     private static final Logger LOG = LoggerFactory.getLogger(SchemaResource.class);
 
+    private final StreamlineAuthorizer authorizer;
     private final SchemaRegistryClient schemaRegistryClient;
 
-    public SchemaResource(SchemaRegistryClient schemaRegistryClient) {
+    public SchemaResource(StreamlineAuthorizer authorizer, SchemaRegistryClient schemaRegistryClient) {
+        this.authorizer = authorizer;
         this.schemaRegistryClient = schemaRegistryClient;
     }
 
     @POST
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
-    public Response postStreamsSchema(StreamsSchemaInfo streamsSchemaInfo) throws IOException {
+    public Response postStreamsSchema(StreamsSchemaInfo streamsSchemaInfo,
+                                      @Context SecurityContext securityContext) throws IOException {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_SCHEMA_ADMIN);
         Preconditions.checkNotNull(streamsSchemaInfo, "streamsSchemaInfo can not be null");
 
         SchemaIdVersion schemaIdVersion = null;
@@ -101,8 +110,9 @@ public class SchemaResource {
     @Path("/{topicName}")
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getKafkaSourceSchema(@PathParam("topicName") String topicName)
-        throws JsonProcessingException {
+    public Response getKafkaSourceSchema(@PathParam("topicName") String topicName,
+                                         @Context SecurityContext securityContext) throws JsonProcessingException {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_SCHEMA_USER);
         try {
             LOG.info("Received path: [{}]", topicName);
             // for now, takes care of kafka for topic values. We will enhance to work this to get schema for different

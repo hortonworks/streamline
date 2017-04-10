@@ -19,9 +19,10 @@ import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.exception.EntityNotFoundException;
-import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
-import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
-import com.hortonworks.streamline.streams.catalog.service.metadata.HBaseMetadataService;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+import com.hortonworks.streamline.streams.cluster.service.metadata.HBaseMetadataService;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,26 +30,32 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
+import static com.hortonworks.streamline.streams.security.Permission.READ;
 import static javax.ws.rs.core.Response.Status.OK;
 
 @Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class HBaseMetadataResource {
     private static final Logger LOG = LoggerFactory.getLogger(HBaseMetadataResource.class);
+    private final StreamlineAuthorizer authorizer;
     private final EnvironmentService environmentService;
 
-    public HBaseMetadataResource(EnvironmentService environmentService) {
+    public HBaseMetadataResource(StreamlineAuthorizer authorizer, EnvironmentService environmentService) {
+        this.authorizer = authorizer;
         this.environmentService = environmentService;
     }
 
     @GET
     @Path("/clusters/{clusterId}/services/hbase/namespaces")
     @Timed
-    public Response getNamespacesByClusterId(@PathParam("clusterId") Long clusterId)
-        throws Exception {
+    public Response getNamespacesByClusterId(@PathParam("clusterId") Long clusterId,
+                                             @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, clusterId, READ);
         try (HBaseMetadataService hbaseMetadataService = HBaseMetadataService.newInstance(environmentService, clusterId)) {
             return WSUtils.respondEntity(hbaseMetadataService.getHBaseNamespaces(), OK);
         } catch (EntityNotFoundException ex) {
@@ -61,7 +68,9 @@ public class HBaseMetadataResource {
     @GET
     @Path("/clusters/{clusterId}/services/hbase/tables")
     @Timed
-    public Response getTablesByClusterId(@PathParam("clusterId") Long clusterId) throws Exception {
+    public Response getTablesByClusterId(@PathParam("clusterId") Long clusterId,
+                                         @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, clusterId, READ);
         try (HBaseMetadataService hbaseMetadataService = HBaseMetadataService.newInstance(environmentService, clusterId)) {
             return WSUtils.respondEntity(hbaseMetadataService.getHBaseTables(), OK);
         } catch (EntityNotFoundException ex) {
@@ -74,8 +83,9 @@ public class HBaseMetadataResource {
     @GET
     @Path("/clusters/{clusterId}/services/hbase/namespaces/{namespace}/tables")
     @Timed
-    public Response getNamespaceTablesByClusterId(@PathParam("clusterId") Long clusterId, @PathParam("namespace") String namespace)
-        throws Exception {
+    public Response getNamespaceTablesByClusterId(@PathParam("clusterId") Long clusterId, @PathParam("namespace") String namespace,
+                                                  @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, clusterId, READ);
         try (HBaseMetadataService hbaseMetadataService = HBaseMetadataService.newInstance(environmentService, clusterId)) {
             return WSUtils.respondEntity(hbaseMetadataService.getHBaseTables(namespace), OK);
         } catch (EntityNotFoundException ex) {

@@ -28,16 +28,20 @@ import com.hortonworks.streamline.storage.StorageManagerAware;
 import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
 import com.hortonworks.streamline.streams.catalog.TopologyVersion;
 import com.hortonworks.streamline.streams.catalog.service.CatalogService;
-import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.metrics.topology.service.TopologyMetricsService;
 import com.hortonworks.streamline.streams.notification.service.NotificationServiceImpl;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
+import com.hortonworks.streamline.streams.security.service.SecurityCatalogResource;
+import com.hortonworks.streamline.streams.security.service.SecurityCatalogService;
 import com.hortonworks.streamline.streams.service.metadata.HBaseMetadataResource;
 import com.hortonworks.streamline.streams.service.metadata.HiveMetadataResource;
 import com.hortonworks.streamline.streams.service.metadata.KafkaMetadataResource;
 import com.hortonworks.streamline.streams.service.metadata.StormMetadataResource;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -72,19 +76,26 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         environmentService.addNamespaceAwareContainer(topologyActionsService);
         environmentService.addNamespaceAwareContainer(topologyMetricsService);
 
-        result.add(new MetricsResource(streamcatalogService, topologyMetricsService));
-        result.addAll(getClusterRelatedResources(environmentService));
-        result.add(new FileCatalogResource(catalogService));
-        result.addAll(getTopologyRelatedResources(streamcatalogService, environmentService, topologyActionsService,
-                topologyMetricsService));
-        result.add(new RuleCatalogResource(streamcatalogService));
-        result.add(new BranchRuleCatalogResource(streamcatalogService));
-        result.add(new UDFCatalogResource(streamcatalogService, fileStorage));
-        result.addAll(getNotificationsRelatedResources(streamcatalogService));
-        result.add(new WindowCatalogResource(streamcatalogService));
-        result.add(new SchemaResource(createSchemaRegistryClient()));
-        result.addAll(getServiceMetadataResources(environmentService));
-        result.add(new NamespaceCatalogResource(streamcatalogService, topologyActionsService, environmentService));
+        // authorizer
+        StreamlineAuthorizer authorizer = (StreamlineAuthorizer) config.get(Constants.CONFIG_AUTHORIZER);
+        if (authorizer == null) {
+            throw new IllegalStateException("Authorizer not set");
+        }
+        SecurityCatalogService securityCatalogService =
+                (SecurityCatalogService) config.get(Constants.CONFIG_SECURITY_CATALOG_SERVICE);
+        result.addAll(getAuthorizerResources(authorizer, securityCatalogService));
+        //
+
+        result.add(new MetricsResource(authorizer, streamcatalogService, topologyMetricsService));
+        result.addAll(getClusterRelatedResources(authorizer, environmentService));
+        result.add(new FileCatalogResource(authorizer, catalogService));
+        result.addAll(getTopologyRelatedResources(authorizer, streamcatalogService, environmentService, topologyActionsService,
+                topologyMetricsService, securityCatalogService));
+        result.add(new UDFCatalogResource(authorizer, streamcatalogService, fileStorage));
+        result.addAll(getNotificationsRelatedResources(authorizer, streamcatalogService));
+        result.add(new SchemaResource(authorizer, createSchemaRegistryClient()));
+        result.addAll(getServiceMetadataResources(authorizer, environmentService));
+        result.add(new NamespaceCatalogResource(authorizer, streamcatalogService, topologyActionsService, environmentService));
         watchFiles(streamcatalogService);
         setupPlaceholderEntities(streamcatalogService);
         return result;
@@ -101,60 +112,56 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         this.storageManager = storageManager;
     }
 
-    private List<Object> getTopologyRelatedResources(StreamCatalogService streamcatalogService, EnvironmentService environmentService,
-                                                     TopologyActionsService actionsService, TopologyMetricsService metricsService) {
-        List<Object> result = new ArrayList<>();
-        final TopologyCatalogResource topologyCatalogResource = new TopologyCatalogResource(streamcatalogService,
-                environmentService, actionsService, metricsService);
-        result.add(topologyCatalogResource);
-        final TopologyComponentBundleResource topologyComponentResource = new TopologyComponentBundleResource(streamcatalogService, environmentService);
-        result.add(topologyComponentResource);
-        final TopologyStreamCatalogResource topologyStreamCatalogResource = new TopologyStreamCatalogResource(streamcatalogService);
-        result.add(topologyStreamCatalogResource);
-        final TopologyEditorMetadataResource topologyEditorMetadataResource = new TopologyEditorMetadataResource(streamcatalogService);
-        result.add(topologyEditorMetadataResource);
-        final TopologySourceCatalogResource topologySourceCatalogResource = new TopologySourceCatalogResource(streamcatalogService);
-        result.add(topologySourceCatalogResource);
-        final TopologySinkCatalogResource topologySinkCatalogResource = new TopologySinkCatalogResource(streamcatalogService);
-        result.add(topologySinkCatalogResource);
-        final TopologyProcessorCatalogResource topologyProcessorCatalogResource = new TopologyProcessorCatalogResource(streamcatalogService);
-        result.add(topologyProcessorCatalogResource);
-        final TopologyEdgeCatalogResource topologyEdgeCatalogResource = new TopologyEdgeCatalogResource(streamcatalogService);
-        result.add(topologyEdgeCatalogResource);
-        return result;
+    private List<Object> getAuthorizerResources(StreamlineAuthorizer authorizer, SecurityCatalogService securityCatalogService) {
+        return Collections.singletonList(new SecurityCatalogResource(authorizer, securityCatalogService));
     }
 
-    private List<Object> getClusterRelatedResources(EnvironmentService environmentService) {
-        List<Object> result = new ArrayList<>();
-        final ClusterCatalogResource clusterCatalogResource = new ClusterCatalogResource(environmentService);
-        result.add(clusterCatalogResource);
-        final ServiceCatalogResource serviceCatalogResource = new ServiceCatalogResource(environmentService);
-        result.add(serviceCatalogResource);
-        final ServiceConfigurationCatalogResource serviceConfigurationCatalogResource = new ServiceConfigurationCatalogResource(environmentService);
-        result.add(serviceConfigurationCatalogResource);
-        final ComponentCatalogResource componentCatalogResource = new ComponentCatalogResource(environmentService);
-        result.add(componentCatalogResource);
-        return result;
+    private List<Object> getTopologyRelatedResources(StreamlineAuthorizer authorizer,
+                                                     StreamCatalogService streamcatalogService,
+                                                     EnvironmentService environmentService,
+                                                     TopologyActionsService actionsService,
+                                                     TopologyMetricsService metricsService,
+                                                     SecurityCatalogService securityCatalogService) {
+        return Arrays.asList(
+                new TopologyCatalogResource(authorizer, streamcatalogService, environmentService, actionsService, metricsService),
+                new TopologyComponentBundleResource(authorizer, streamcatalogService, environmentService),
+                new TopologyStreamCatalogResource(authorizer, streamcatalogService),
+                new TopologyEditorMetadataResource(authorizer, streamcatalogService),
+                new TopologySourceCatalogResource(authorizer, streamcatalogService),
+                new TopologySinkCatalogResource(authorizer, streamcatalogService),
+                new TopologyProcessorCatalogResource(authorizer, streamcatalogService),
+                new TopologyEdgeCatalogResource(authorizer, streamcatalogService),
+                new RuleCatalogResource(authorizer, streamcatalogService),
+                new BranchRuleCatalogResource(authorizer, streamcatalogService),
+                new WindowCatalogResource(authorizer, streamcatalogService),
+                new TopologyEditorToolbarResource(authorizer, streamcatalogService, securityCatalogService)
+        );
     }
 
-    private List<Object> getServiceMetadataResources(EnvironmentService environmentService) {
-        final List<Object> result = new ArrayList<>();
-        final KafkaMetadataResource kafkaMetadataResource = new KafkaMetadataResource(environmentService);
-        result.add(kafkaMetadataResource);
-        final StormMetadataResource stormMetadataResource = new StormMetadataResource(environmentService);
-        result.add(stormMetadataResource);
-        final HiveMetadataResource hiveMetadataResource = new HiveMetadataResource(environmentService);
-        result.add(hiveMetadataResource);
-        final HBaseMetadataResource hbaseMetadataResource = new HBaseMetadataResource(environmentService);
-        result.add(hbaseMetadataResource);
-        return result;
+    private List<Object> getClusterRelatedResources(StreamlineAuthorizer authorizer, EnvironmentService environmentService) {
+        return Arrays.asList(
+                new ClusterCatalogResource(authorizer, environmentService),
+                new ServiceCatalogResource(authorizer, environmentService),
+                new ServiceConfigurationCatalogResource(authorizer, environmentService),
+                new ComponentCatalogResource(authorizer, environmentService),
+                new ServiceBundleResource(environmentService)
+        );
     }
 
-    private List<Object> getNotificationsRelatedResources(StreamCatalogService streamcatalogService) {
-        List<Object> result = new ArrayList<>();
-        result.add(new NotifierInfoCatalogResource(streamcatalogService, fileStorage));
-        result.add(new NotificationsResource(new NotificationServiceImpl()));
-        return result;
+    private List<Object> getServiceMetadataResources(StreamlineAuthorizer authorizer, EnvironmentService environmentService) {
+        return Arrays.asList(
+                new KafkaMetadataResource(authorizer, environmentService),
+                new StormMetadataResource(authorizer, environmentService),
+                new HiveMetadataResource(authorizer, environmentService),
+                new HBaseMetadataResource(authorizer, environmentService)
+        );
+    }
+
+    private List<Object> getNotificationsRelatedResources(StreamlineAuthorizer authorizer, StreamCatalogService streamcatalogService) {
+        return Arrays.asList(
+                new NotifierInfoCatalogResource(authorizer, streamcatalogService, fileStorage),
+                new NotificationsResource(authorizer, new NotificationServiceImpl())
+        );
     }
 
     private void watchFiles(StreamCatalogService catalogService) {

@@ -18,23 +18,26 @@ package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.registries.common.Schema;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
+import com.hortonworks.streamline.common.exception.service.exception.request.CustomProcessorOnlyException;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.FileUtil;
 import com.hortonworks.streamline.common.util.ProxyUtil;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
-import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
-import org.apache.commons.lang3.StringUtils;
-import com.hortonworks.streamline.streams.catalog.topology.component.bundle.ComponentBundleHintProvider;
+import com.hortonworks.streamline.streams.cluster.bundle.ComponentBundleHintProvider;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
-import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
-import com.hortonworks.streamline.common.exception.service.exception.request.CustomProcessorOnlyException;
-import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.streams.runtime.CustomProcessorRuntime;
+import com.hortonworks.streamline.streams.security.Roles;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.slf4j.Logger;
@@ -53,6 +56,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 import java.io.ByteArrayInputStream;
@@ -79,11 +83,13 @@ public class TopologyComponentBundleResource {
     public static final String CP_INFO_PARAM_NAME = "customProcessorInfo";
     public static final String BUNDLE_JAR_FILE_PARAM_NAME = "bundleJar";
     public static final String TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME = "topologyComponentBundle";
+    private final StreamlineAuthorizer authorizer;
     private final StreamCatalogService catalogService;
     private final EnvironmentService environmentService;
     private final ProxyUtil<ComponentBundleHintProvider> hintProviderProxyUtil;
 
-    public TopologyComponentBundleResource(StreamCatalogService catalogService, EnvironmentService environmentService) {
+    public TopologyComponentBundleResource(StreamlineAuthorizer authorizer, StreamCatalogService catalogService, EnvironmentService environmentService) {
+        this.authorizer = authorizer;
         this.catalogService = catalogService;
         this.environmentService = environmentService;
         this.hintProviderProxyUtil = new ProxyUtil<>(ComponentBundleHintProvider.class);
@@ -101,7 +107,8 @@ public class TopologyComponentBundleResource {
     @GET
     @Path("/componentbundles")
     @Timed
-    public Response listTopologyComponentBundleTypes () {
+    public Response listTopologyComponentBundleTypes (@Context SecurityContext securityContext) {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_USER);
         Collection<TopologyComponentBundle.TopologyComponentType>
                 topologyComponents = catalogService.listTopologyComponentBundleTypes();
         if (topologyComponents != null) {
@@ -121,7 +128,9 @@ public class TopologyComponentBundleResource {
     @Path("/componentbundles/{component}")
     @Timed
     public Response listTopologyComponentBundlesForTypeWithFilter (@PathParam ("component") TopologyComponentBundle.TopologyComponentType componentType,
-                                                                   @Context UriInfo uriInfo) {
+                                                                   @Context UriInfo uriInfo,
+                                                                   @Context SecurityContext securityContext) {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_USER);
         List<QueryParam> queryParams;
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
         queryParams = WSUtils.buildQueryParameters(params);
@@ -144,8 +153,10 @@ public class TopologyComponentBundleResource {
     @Path("/componentbundles/{component}/{id}")
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTopologyComponentBundleById (@PathParam("component") TopologyComponentBundle.TopologyComponentType componentType, @PathParam ("id")
-    Long id) {
+    public Response getTopologyComponentBundleById (@PathParam("component") TopologyComponentBundle.TopologyComponentType componentType,
+                                                    @PathParam ("id") Long id,
+                                                    @Context SecurityContext securityContext) {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_USER);
         TopologyComponentBundle result = catalogService.getTopologyComponentBundle(id);
         if (result != null) {
             return WSUtils.respondEntity(result, OK);
@@ -163,7 +174,10 @@ public class TopologyComponentBundleResource {
     @POST
     @Path("/componentbundles/{component}")
     @Timed
-    public Response addTopologyComponentBundle (@PathParam("component") TopologyComponentBundle.TopologyComponentType componentType, FormDataMultiPart form) throws IOException, ComponentConfigException {
+    public Response addTopologyComponentBundle (@PathParam("component") TopologyComponentBundle.TopologyComponentType componentType,
+                                                FormDataMultiPart form,
+                                                @Context SecurityContext securityContext) throws IOException, ComponentConfigException {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN);
         InputStream bundleJar = null;
         try {
             String bundleJsonString = this.getFormDataFromMultiPartRequestAs(String.class, form,
@@ -218,9 +232,10 @@ public class TopologyComponentBundleResource {
     @PUT
     @Path("/componentbundles/{component}/{id}")
     @Timed
-    public Response addOrUpdateTopologyComponentBundleById (@PathParam("component")
-                                                        TopologyComponentBundle.TopologyComponentType componentType, @PathParam("id") Long id,
-                                                        FormDataMultiPart form) throws IOException, ComponentConfigException {
+    public Response addOrUpdateTopologyComponentBundleById (@PathParam("component") TopologyComponentBundle.TopologyComponentType componentType, @PathParam("id") Long id,
+                                                            FormDataMultiPart form,
+                                                            @Context SecurityContext securityContext) throws IOException, ComponentConfigException {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN);
         InputStream bundleJar = null;
         try {
             String bundleJsonString = this.getFormDataFromMultiPartRequestAs(String.class, form, TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME);
@@ -264,7 +279,9 @@ public class TopologyComponentBundleResource {
     @Path("/componentbundles/{component}")
     @Timed
     public Response addOrUpdateTopologyComponentBundle (@PathParam("component") TopologyComponentBundle.TopologyComponentType componentType,
-                                                        FormDataMultiPart form) throws IOException, ComponentConfigException {
+                                                        FormDataMultiPart form,
+                                                        @Context SecurityContext securityContext) throws IOException, ComponentConfigException {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN);
         InputStream bundleJar = null;
         try {
             String bundleJsonString = this.getFormDataFromMultiPartRequestAs(String.class, form, TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME);
@@ -322,8 +339,10 @@ public class TopologyComponentBundleResource {
     @DELETE
     @Path("/componentbundles/{component}/{id}")
     @Timed
-    public Response removeTopologyComponentBundle (@PathParam("component") TopologyComponentBundle.TopologyComponentType componentType, @PathParam ("id")
-    Long id) throws IOException {
+    public Response removeTopologyComponentBundle (@PathParam("component") TopologyComponentBundle.TopologyComponentType componentType,
+                                                   @PathParam ("id") Long id,
+                                                   @Context SecurityContext securityContext) throws IOException {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN);
         TopologyComponentBundle removedTopologyComponentBundle = catalogService.removeTopologyComponentBundle(id);
         if (removedTopologyComponentBundle != null) {
             return WSUtils.respondEntity(removedTopologyComponentBundle, OK);
@@ -336,8 +355,10 @@ public class TopologyComponentBundleResource {
     @GET
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @Path("/componentbundles/{processor}/custom/{fileName}")
-    public Response downloadCustomProcessorFile (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType, @PathParam
-            ("fileName") String fileName) throws IOException {
+    public Response downloadCustomProcessorFile (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType,
+                                                 @PathParam("fileName") String fileName,
+                                                 @Context SecurityContext securityContext) throws IOException {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_USER);
         if (!TopologyComponentBundle.TopologyComponentType.PROCESSOR.equals(componentType)) {
             throw new CustomProcessorOnlyException();
         }
@@ -356,7 +377,10 @@ public class TopologyComponentBundleResource {
     @GET
     @Path("/componentbundles/{processor}/custom")
     @Timed
-    public Response listCustomProcessorsWithFilters (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType, @Context UriInfo uriInfo) throws IOException {
+    public Response listCustomProcessorsWithFilters (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType,
+                                                     @Context UriInfo uriInfo,
+                                                     @Context SecurityContext securityContext) throws IOException {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_USER);
         if (!TopologyComponentBundle.TopologyComponentType.PROCESSOR.equals(componentType)) {
             throw new CustomProcessorOnlyException();
         }
@@ -375,7 +399,10 @@ public class TopologyComponentBundleResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/componentbundles/{processor}/custom")
     @Timed
-    public Response addCustomProcessor (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType, FormDataMultiPart form) throws IOException, ComponentConfigException {
+    public Response addCustomProcessor (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType,
+                                        FormDataMultiPart form,
+                                        @Context SecurityContext securityContext) throws IOException, ComponentConfigException {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN);
         if (!TopologyComponentBundle.TopologyComponentType.PROCESSOR.equals(componentType)) {
             throw new CustomProcessorOnlyException();
         }
@@ -417,8 +444,10 @@ public class TopologyComponentBundleResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/componentbundles/{processor}/custom")
     @Timed
-    public Response updateCustomProcessor (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType, FormDataMultiPart form)
-            throws IOException, ComponentConfigException {
+    public Response updateCustomProcessor (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType,
+                                           FormDataMultiPart form,
+                                           @Context SecurityContext securityContext) throws IOException, ComponentConfigException {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN);
         if (!TopologyComponentBundle.TopologyComponentType.PROCESSOR.equals(componentType)) {
             throw new CustomProcessorOnlyException();
         }
@@ -459,8 +488,10 @@ public class TopologyComponentBundleResource {
     @DELETE
     @Path("/componentbundles/{processor}/custom/{name}")
     @Timed
-    public Response removeCustomProcessorInfo (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType, @PathParam ("name") String
-            name) throws IOException {
+    public Response removeCustomProcessorInfo (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType,
+                                               @PathParam ("name") String name,
+                                               @Context SecurityContext securityContext) throws IOException {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN);
         if (!TopologyComponentBundle.TopologyComponentType.PROCESSOR.equals(componentType)) {
             throw new CustomProcessorOnlyException();
         }
@@ -476,7 +507,9 @@ public class TopologyComponentBundleResource {
     @Path("/componentbundles/{component}/{id}/hints/namespaces/{namespaceId}")
     @Timed
     public Response getFieldHints(@PathParam("component") TopologyComponentBundle.TopologyComponentType componentType,
-                                  @PathParam ("id") Long id, @PathParam("namespaceId") Long namespaceId) throws Exception {
+                                  @PathParam ("id") Long id, @PathParam("namespaceId") Long namespaceId,
+                                  @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_USER);
         TopologyComponentBundle bundle = catalogService.getTopologyComponentBundle(id);
         if (bundle == null || !bundle.getType().equals(componentType)) {
             throw EntityNotFoundException.byId("component bundle id: " + id + " with type: " + componentType);

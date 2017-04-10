@@ -16,7 +16,7 @@ import React, {Component, PropTypes} from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import Select from 'react-select';
-import {Tabs, Tab} from 'react-bootstrap';
+import {Tabs, Tab, OverlayTrigger, Popover} from 'react-bootstrap';
 import FSReactToastr from '../../../components/FSReactToastr';
 import TopologyREST from '../../../rest/TopologyREST';
 import AggregateUdfREST from '../../../rest/AggregateUdfREST';
@@ -79,6 +79,8 @@ export default class WindowingAggregateNodeForm extends Component {
           label: "Hours"
         }
       ],
+      tsField: '',
+      lagMs: '',
       outputFieldsArr: [
         {
           args: '',
@@ -170,11 +172,15 @@ export default class WindowingAggregateNodeForm extends Component {
       fields.push(...result.fields);
     });
     this.fieldsArr = ProcessorUtils.getSchemaFields(_.unionBy(fields,'name'), 0,false);
+    let tsFieldOptions =  this.fieldsArr.filter((f)=>{return f.type === 'LONG';});
+    // tsFieldOptions should have a default options of processingTime
+    tsFieldOptions.push({name: "processingTime", value: "processingTime"});
 
     let stateObj = {
       parallelism: this.configFields.parallelism || 1,
       keysList: JSON.parse(JSON.stringify(this.fieldsArr)),
-      functionListArr: this.udfList
+      functionListArr: this.udfList,
+      tsFieldOptions: tsFieldOptions
     };
 
     if(this.windowsRuleId){
@@ -274,11 +280,17 @@ export default class WindowingAggregateNodeForm extends Component {
           stateObj.slidingNum = serverWindowObj.window.slidingInterval.count;
         }
       }
+      if(serverWindowObj.window.tsField) {
+        stateObj.tsField = serverWindowObj.window.tsField;
+        stateObj.lagMs = Utils.millisecondsToNumber(serverWindowObj.window.lagMs).number;
+      }
 
       // assign mainStreamObj value to "this.tempStreamContextData" make available for further methods
       this.tempStreamContextData = mainStreamObj;
       this.setState(stateObj);
       this.context.ParentForm.setState({outputStreamObj: mainStreamObj});
+    } else {
+      this.setState({showLoading:false});
     }
   }
 
@@ -315,10 +327,13 @@ export default class WindowingAggregateNodeForm extends Component {
      selectedKeys, windowNum, argumentError and outputFieldsArr array
   */
   validateData(){
-    let {selectedKeys, windowNum, outputFieldsArr, argumentError} = this.state;
+    let {selectedKeys, windowNum, outputFieldsArr, tsField, lagMs, argumentError} = this.state;
     let validData = true;
     if (argumentError) {return false;}
     if (selectedKeys.length === 0 || windowNum === '') {
+      validData = false;
+    }
+    if(tsField !== '' && lagMs === '') {
       validData = false;
     }
     outputFieldsArr.map((obj) => {
@@ -356,7 +371,37 @@ export default class WindowingAggregateNodeForm extends Component {
     }
     this.windowsNode.config.properties.parallelism = parallelism;
     this.windowsNode.description = description;
-    return TopologyREST.updateNode(topologyId, versionId, nodeType, this.windowsNode.id, {body: JSON.stringify(this.windowsNode)});
+    return this.windowsNode;
+  }
+
+  /*
+    updateEdges Method update the edge
+    using inputStreamsArr id to filter the currentEdges.streamGrouping.streamId for the particular nodeType
+    And update with fields selected as a outputStreams
+  */
+  updateEdges(){
+    const {currentEdges} = this.props;
+    const {inputStreamOptions} = this.context.ParentForm.state;
+
+    const fields = this.windowRulesNode.groupbykeys.map((field) => {
+      return field.replace(/\[\'/g, ".").replace(/\'\]/g, "");
+    });
+    const edgeObj = _.filter(currentEdges, (edge) => {
+      return edge.streamGrouping.streamId === inputStreamOptions[0].id;
+    });
+    let edgeData = {
+      fromId: edgeObj[0].source.nodeId,
+      toId: edgeObj[0].target.nodeId,
+      streamGroupings: [
+        {
+          streamId: edgeObj[0].streamGrouping.streamId,
+          grouping: 'FIELDS',
+          fields: fields
+        }
+      ]
+    };
+    const edgeId = edgeObj[0].edgeId;
+    return {edgeId,edgeData};
   }
 
   /*
@@ -378,7 +423,9 @@ export default class WindowingAggregateNodeForm extends Component {
         slidingDurationType,
         intervalType,
         parallelism,
-        outputFieldsGroupKeys
+        outputFieldsGroupKeys,
+        tsField,
+        lagMs
       } = this.state;
       let tempArr = _.cloneDeep(this.state.outputFieldsArr);
       let {topologyId, versionId, nodeType, nodeData} = this.props;
@@ -421,9 +468,20 @@ export default class WindowingAggregateNodeForm extends Component {
           };
         }
       }
-      return TopologyREST.updateNode(topologyId, versionId, 'windows', this.windowsRuleId, {body: JSON.stringify(this.windowRulesNode)}).then((processorResult) => {
-        return this.updateProcessorNode(name, description);
-      });
+      if(tsField !== ''){
+        this.windowRulesNode.window.tsField = tsField;
+        this.windowRulesNode.window.lagMs = Utils.numberToMilliseconds(lagMs, 'Seconds');
+      }
+      let promiseArr = [];
+      const windowsNodeObj = this.updateProcessorNode(name, description);
+      promiseArr.push(TopologyREST.updateNode(topologyId, versionId, nodeType, windowsNodeObj.id, {body: JSON.stringify(windowsNodeObj)}));
+
+      promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'windows', this.windowsRuleId, {body: JSON.stringify(this.windowRulesNode)}));
+
+      const {edgeId , edgeData} = this.updateEdges();
+      promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'edges', edgeId, {body: JSON.stringify(edgeData)}));
+
+      return  Promise.all(promiseArr);
     }
   }
 
@@ -477,6 +535,18 @@ export default class WindowingAggregateNodeForm extends Component {
       : keyName === "slidingDurationType"
         ? this.setState({slidingDurationType : obj.value})
         : this.setState({intervalType : obj.value});
+    }
+  }
+
+  /*
+    handleTimestampFieldChange method handles change of timestamp field
+    params@ obj selected option
+  */
+  handleTimestampFieldChange(obj) {
+    if(obj){
+      this.setState({tsField: obj.name});
+    } else {
+      this.setState({tsField: '', lagMs: ''});
     }
   }
 
@@ -660,6 +730,9 @@ export default class WindowingAggregateNodeForm extends Component {
       durationTypeArr,
       windowNum,
       slidingNum,
+      tsField,
+      tsFieldOptions,
+      lagMs,
       slidingDurationType,
       argumentError,
       outputFieldsArr,
@@ -682,17 +755,21 @@ export default class WindowingAggregateNodeForm extends Component {
                   <label>Select Keys
                     <span className="text-danger">*</span>
                   </label>
+                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Group by keys</Popover>}>
                   <div>
                     <Select value={selectedKeys} options={keysList} onChange={this.handleKeysChange.bind(this)} multi={true} required={true} disabled={!editMode} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption}/>
                   </div>
+                  </OverlayTrigger>
                 </div>
                 <div className="form-group">
                   <label>Window Interval Type
                     <span className="text-danger">*</span>
                   </label>
+                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Window interval type</Popover>}>
                   <div>
                     <Select value={intervalType} options={intervalTypeArr} onChange={this.commonHandlerChange.bind(this,'intervalType')} required={true} disabled={!editMode} clearable={false}/>
                   </div>
+                  </OverlayTrigger>
                 </div>
                 <div className="form-group">
                   <label>Window Interval
@@ -700,12 +777,16 @@ export default class WindowingAggregateNodeForm extends Component {
                   </label>
                   <div className="row">
                     <div className="col-sm-5">
+                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Window interval duration</Popover>}>
                       <input name="windowNum" value={windowNum} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={!editMode} min="0" inputMode="numeric"/>
+                      </OverlayTrigger>
                     </div>
                     {intervalType === '.Window$Duration'
-                      ? <div className="col-sm-5">
+                      ? <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Duration type</Popover>}>
+                        <div className="col-sm-5">
                           <Select value={durationType} options={durationTypeArr} onChange={this.commonHandlerChange.bind(this,'durationType')} required={true} disabled={!editMode} clearable={false}/>
                         </div>
+                        </OverlayTrigger>
                       : null}
                   </div>
                 </div>
@@ -713,13 +794,43 @@ export default class WindowingAggregateNodeForm extends Component {
                   <label>Sliding Interval</label>
                   <div className="row">
                     <div className="col-sm-5">
+                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Sliding interval duration</Popover>}>
                       <input name="slidingNum" value={slidingNum} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={!editMode} min="0" inputMode="numeric"/>
+                      </OverlayTrigger>
                     </div>
                     {intervalType === '.Window$Duration'
-                      ? <div className="col-sm-5">
+                      ? <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Duration type</Popover>}>
+                        <div className="col-sm-5">
                           <Select value={slidingDurationType} options={durationTypeArr} onChange={this.commonHandlerChange.bind(this,'slidingDurationType')} required={true} disabled={!editMode} clearable={false}/>
                         </div>
+                        </OverlayTrigger>
                       : null}
+                  </div>
+                </div>
+                <div className="form-group">
+                  <div className="row">
+                    <div className="col-sm-5">
+                      <label>Timestamp Field</label>
+                    </div>
+                    {tsField !== '' ?
+                    <div className="col-sm-5">
+                      <label>Lag in Seconds<span className="text-danger">*</span></label>
+                    </div>
+                    : ''}
+                  </div>
+                  <div className="row">
+                    <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Timestamp field name</Popover>}>
+                    <div className="col-sm-5">
+                      <Select value={tsField} options={tsFieldOptions} onChange={this.handleTimestampFieldChange.bind(this)} disabled={!editMode} valueKey="name" labelKey="name" />
+                    </div>
+                    </OverlayTrigger>
+                    {tsField !== '' ?
+                    <div className="col-sm-5">
+                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Lag duration</Popover>}>
+                      <input name="lagMs" value={lagMs} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={!editMode} min="0" inputMode="numeric"/>
+                      </OverlayTrigger>
+                    </div>
+                    : ''}
                   </div>
                 </div>
                 <fieldset className="fieldset-default">
@@ -743,18 +854,24 @@ export default class WindowingAggregateNodeForm extends Component {
                   {outputFieldsArr.map((obj, i) => {
                     return (
                       <div key={i} className="row form-group">
+                        <OverlayTrigger trigger={['hover']} placement="bottom" overlay={<Popover id="popover-trigger-hover">Input field name</Popover>}>
                         <div className="col-sm-3">
                           <Select className={outputFieldsArr.length - 1 === i
                             ? "menu-outer-top"
                             : ''} value={obj.args} options={keysList} onChange={this.handleFieldChange.bind(this,'args', i)} required={true} disabled={!editMode} valueKey="name" labelKey="name" clearable={false} optionRenderer={this.renderFieldOption.bind(this)}/>
                         </div>
+                        </OverlayTrigger>
+                        <OverlayTrigger trigger={['hover']} placement="bottom" overlay={<Popover id="popover-trigger-hover">Function name</Popover>}>
                         <div className="col-sm-3">
                           <Select className={outputFieldsArr.length - 1 === i
                             ? "menu-outer-top"
                             : ''} value={obj.functionName} options={functionListArr} onChange={this.handleFieldChange.bind(this,'functionName', i)} required={true} disabled={!editMode} valueKey="name" labelKey="displayName"/>
                         </div>
+                        </OverlayTrigger>
                         <div className="col-sm-3">
+                          <OverlayTrigger trigger={['hover']} placement="bottom" overlay={<Popover id="popover-trigger-hover">Output field name</Popover>}>
                           <input name="outputFieldName" value={obj.outputFieldName} ref="outputFieldName" onChange={this.handleOutputFieldName.bind(this, i)} type="text" className="form-control" required={true} disabled={!editMode}/>
+                          </OverlayTrigger>
                         </div>
                         {editMode
                           ? <div className="col-sm-2">

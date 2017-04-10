@@ -45,6 +45,8 @@ const getSchemaFields = function(fields, level, initialFetch, keyPath = []) {
         obj.disabled = true;
         let _keypath = keyPath.slice();
         _keypath.push(field.name);
+        // level === 1 ? obj.keyPath = _keypath[0] : '';
+        obj.keyPath = keyPath.join('.');
         tempFieldsArr.push(obj);
         getSchemaNestedFields(field.fields, level + 1, _keypath);
       } else {
@@ -86,9 +88,18 @@ const createSelectedKeysHierarchy = function(arrKeys,fieldList){
         function find(_tempArr) {
           let fieldD;
           _.each(_tempArr, (_d) => {
-            if (_d.name == name) {
+            const tempkey = _d.keyPath ? _d.keyPath.split('.') : [];
+            tempkey.push(_d.name);
+            let flag = true;
+            _.each(tempkey, (k, ind) => {
+              if(k != key.split('.')[ind]){
+                flag = false;
+              }
+            });
+
+            if (_d.name == name && flag) {
               fieldD = _d;
-            } else if (_d.fields && _d.fields.length) {
+            } else if (_d.fields && _d.fields.length && flag) {
               fieldD = find(_d.fields);
             }
           });
@@ -99,7 +110,18 @@ const createSelectedKeysHierarchy = function(arrKeys,fieldList){
         if (fieldData) {
           _fieldData = fieldData;
         } else {
-          fieldData = _.find(fieldList, {name: name});
+          fieldData = _.find(fieldList, (fld) => {
+            // {name: name, keyPath: key}
+            const tempkey = fld.keyPath ? fld.keyPath.split('.') : [];
+            tempkey.push(fld.name);
+            let flag = true;
+            _.each(tempkey, (k, ind) => {
+              if(k != key.split('.')[ind]){
+                flag = false;
+              }
+            });
+            if(fld.name == name && flag) {return fld; }
+          });
           _fieldData = JSON.parse(JSON.stringify(fieldData));
         }
 
@@ -158,7 +180,7 @@ const getKeysAndGroupKey = function(arr){
         let parents = k.keyPath.split('.');
         let s = parents.splice(0, 1);
         parents.push(k.name);
-        t = s + "['" + parents.toString().replace(",", "']['") + "']";
+        t = s + "['" + parents.toString().replace(/,/g, "']['") + "']";
         gKeys.push(t);
       } else {
         gKeys.push(k.name);
@@ -226,11 +248,28 @@ const normalizationProjectionKeys = function(projectionsArr,fieldList){
   return {keyArrObj,argsFieldsArrObj};
 };
 
+/*
+  modifyGroupKeyByDots accept the groupArr return by getKeysAndGroupKey 'gKeys'
+  This is used for only JoinProcessor
+  And return like "streamId:address.city.ui"
+*/
+const modifyGroupKeyByDots = function(groupArr){
+  let dottedKeys = [];
+  _.map(groupArr, (k) => {
+    let t = k.replace(/\']\['/g, '.').replace("['"," ").replace("']"," ").split(" ");
+    const streamId = t[0];
+    t.length > 1 ? t.splice(0,1) : '';
+    dottedKeys.push(streamId+':'+_.compact(t));
+  });
+  return dottedKeys;
+};
+
 export default {
   getSchemaFields,
   createSelectedKeysHierarchy,
   populateFieldsArr,
   getKeysAndGroupKey,
   getKeyList,
-  normalizationProjectionKeys
+  normalizationProjectionKeys,
+  modifyGroupKeyByDots
 };

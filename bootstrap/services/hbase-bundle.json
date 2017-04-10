@@ -1,0 +1,16 @@
+{
+  "name": "HBASE",
+  "registerClass": "com.hortonworks.streamline.streams.cluster.register.impl.HBaseServiceRegistrar",
+  "serviceUISpecification": {
+    "fields": [
+      {
+        "uiName": "HBase config file (hbase-site.xml)",
+        "fieldName": "hbase-site.xml",
+        "hint" : "xml",
+        "isOptional": false,
+        "tooltip": "Upload hbase-site.xml file used by HBase cluster",
+        "type": "file"
+      }
+    ]
+  }
+}

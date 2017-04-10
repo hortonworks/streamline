@@ -26,17 +26,21 @@ public enum ConfigFilePattern {
   HBASE_SITE("hbase-site", "hbase-site.xml");
 
   private final String confType;
-  private final String actualFileName;
+  private final String originFileName;
 
-  ConfigFilePattern(String confType, String actualFileName) {
+  ConfigFilePattern(String confType, String originFileName) {
     this.confType = confType;
-    this.actualFileName = actualFileName;
+    this.originFileName = originFileName;
   }
 
-  public static String getActualFileName(String confType) {
+  public String getConfType() {
+    return confType;
+  }
+
+  public static String getOriginFileName(String confType) {
     ConfigFilePattern pattern = lookup(confType);
     if (pattern != null) {
-      return pattern.actualFileName;
+      return pattern.originFileName;
     }
 
     return null;

@@ -18,6 +18,8 @@
 package com.hortonworks.streamline.webservice;
 
 import com.google.common.cache.CacheBuilder;
+
+import com.hortonworks.registries.common.ServletFilterConfiguration;
 import com.hortonworks.streamline.cache.Cache;
 import com.hortonworks.streamline.common.Constants;
 import com.hortonworks.streamline.common.ModuleRegistration;
@@ -32,7 +34,29 @@ import com.hortonworks.streamline.storage.cache.impl.GuavaCache;
 import com.hortonworks.streamline.storage.cache.writer.StorageWriteThrough;
 import com.hortonworks.streamline.storage.cache.writer.StorageWriter;
 import com.hortonworks.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
+import com.hortonworks.streamline.streams.security.authentication.StreamlineBasicAuthorizationRequestFilter;
+import com.hortonworks.streamline.streams.security.impl.DefaultStreamlineAuthorizer;
+import com.hortonworks.streamline.streams.security.service.SecurityCatalogService;
 import com.hortonworks.streamline.streams.service.GenericExceptionMapper;
+
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jetty.servlets.CrossOriginFilter;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
+import javax.servlet.FilterRegistration;
+
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.jetty.HttpConnectorFactory;
@@ -40,19 +64,6 @@ import io.dropwizard.server.AbstractServerFactory;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jetty.servlets.CrossOriginFilter;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterRegistration;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
 
 import static com.hortonworks.streamline.storage.util.StorageUtils.getStreamlineEntities;
 
@@ -92,6 +103,29 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
         }
 
         setupCustomTrustStore(configuration);
+
+        addServletFilters(configuration, environment);
+    }
+
+    private void addServletFilters(StreamlineConfiguration configuration, Environment environment) {
+        List<ServletFilterConfiguration> servletFilterConfigurations = configuration.getServletFilters();
+        if (servletFilterConfigurations != null && !servletFilterConfigurations.isEmpty()) {
+            for (ServletFilterConfiguration servletFilterConfiguration: servletFilterConfigurations) {
+                try {
+                    FilterRegistration.Dynamic dynamic = environment.servlets()
+                            .addFilter(servletFilterConfiguration.getClassName(),
+                                (Class<? extends Filter>) Class.forName(servletFilterConfiguration.getClassName()));
+                    dynamic.setInitParameters(servletFilterConfiguration.getParams());
+                    dynamic.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, "/*");
+                    LOG.info("Added servlet filter with configuration {}", servletFilterConfiguration);
+                } catch (Exception e) {
+                    LOG.error("Error occurred while adding servlet filter {}", servletFilterConfiguration);
+                    throw new RuntimeException(e);
+                }
+            }
+        } else {
+            LOG.info("No servlet filters configured");
+        }
     }
 
     private void setupCustomTrustStore(StreamlineConfiguration configuration) {
@@ -183,6 +217,23 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
         resourcesToRegister.add(new StreamlineConfigurationResource(configuration));
 
 
+        // authorizer
+        StreamlineAuthorizer authorizer;
+        AuthorizerConfiguration authorizerConf = configuration.getAuthorizerConfiguration();
+        SecurityCatalogService securityCatalogService = new SecurityCatalogService(storageManager);
+        if (authorizerConf != null) {
+            authorizer = ((Class<StreamlineAuthorizer>) Class.forName(authorizerConf.getClassName())).newInstance();
+            Map<String, Object> authorizerConfig = new HashMap<>();
+            authorizerConfig.put(DefaultStreamlineAuthorizer.CONF_CATALOG_SERVICE, securityCatalogService);
+            authorizerConfig.put(DefaultStreamlineAuthorizer.CONF_ADMIN_PRINCIPALS, authorizerConf.getAdminPrincipals());
+            authorizer.init(authorizerConfig);
+            environment.jersey().register(new StreamlineBasicAuthorizationRequestFilter());
+        } else {
+            LOG.info("Authorizer config not set, setting noop authorizer");
+            String noopAuthorizerClassName = "com.hortonworks.streamline.streams.security.impl.NoopAuthorizer";
+            authorizer = ((Class<StreamlineAuthorizer>) Class.forName(noopAuthorizerClassName)).newInstance();
+        }
+        //
         for (ModuleConfiguration moduleConfiguration: modules) {
             String moduleName = moduleConfiguration.getName();
             String moduleClassName = moduleConfiguration.getClassName();
@@ -194,13 +245,17 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
             if (moduleName.equals(Constants.CONFIG_STREAMS_MODULE)) {
                 moduleConfiguration.getConfig().put(Constants.CONFIG_CATALOG_ROOT_URL, catalogRootUrl);
             }
-            moduleRegistration.init(moduleConfiguration.getConfig(), fileStorage);
+            Map<String, Object> initConfig = new HashMap<>(moduleConfiguration.getConfig());
+            initConfig.put(Constants.CONFIG_AUTHORIZER, authorizer);
+            initConfig.put(Constants.CONFIG_SECURITY_CATALOG_SERVICE, securityCatalogService);
+            moduleRegistration.init(initConfig, fileStorage);
             if (moduleRegistration instanceof StorageManagerAware) {
                 LOG.info("Module [{}] is StorageManagerAware and setting StorageManager.", moduleName);
                 StorageManagerAware storageManagerAware = (StorageManagerAware) moduleRegistration;
                 storageManagerAware.setStorageManager(storageManager);
             }
             resourcesToRegister.addAll(moduleRegistration.getResources());
+
         }
 
         LOG.info("Registering resources to Jersey environment: [{}]", resourcesToRegister);

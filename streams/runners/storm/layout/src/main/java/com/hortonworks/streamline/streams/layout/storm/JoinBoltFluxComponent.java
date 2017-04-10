@@ -36,7 +36,7 @@ import java.util.Map;
 
 /* ---- Sample Json of whats expected from UI  ---
 {
-"from" : {"stream": "stream1", "key": "k1"},
+"from" : {"stream": "s1", "key": "k1"},
 "joins" :
   [
     {"type" : "left",  "stream": "s2", "key":"k2", "with": "s1"},
@@ -63,7 +63,6 @@ public class JoinBoltFluxComponent extends AbstractFluxComponent {
         String firstStreamKey = fromSetting.get("key").toString();
 
         List<String> boltConstructorArgs = new ArrayList<>();
-        boltConstructorArgs.add("STREAM");
         boltConstructorArgs.add(firstStream);
         boltConstructorArgs.add(firstStreamKey);
 

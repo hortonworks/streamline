@@ -16,10 +16,12 @@ import React, {Component, PropTypes} from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import Select from 'react-select';
+import {OverlayTrigger, Popover} from 'react-bootstrap';
 import Utils from '../../../utils/Utils';
 import FSReactToastr from '../../../components/FSReactToastr';
 import TopologyREST from '../../../rest/TopologyREST';
 import {Scrollbars} from 'react-custom-scrollbars';
+import ProcessorUtils  from '../../../utils/ProcessorUtils';
 
 export default class JoinNodeForm extends Component {
   static propTypes = {
@@ -37,23 +39,7 @@ export default class JoinNodeForm extends Component {
 
   constructor(props) {
     super(props);
-    let {editMode, sourceNode} = props;
-    this.fetchTopologyConfig();
-    this.fetchData();
-
-    this.sourceNodesId = [];
-
-    sourceNode.map((n) => {
-      this.sourceNodesId.push(n.nodeId);
-    });
-
-    let configDataFields = props.configData.topologyComponentUISpecification.fields;
-    let joinOptions = _.find(configDataFields, {fieldName: 'jointype'}).options;
-    let joinTypes = [];
-    joinOptions.map((o) => {
-      joinTypes.push({value: o, label: o});
-    });
-
+    let {editMode} = props;
     var obj = {
       parallelism: 1,
       editMode: editMode,
@@ -89,54 +75,273 @@ export default class JoinNodeForm extends Component {
       joinFromStreamName: '',
       joinFromStreamKey: '',
       joinFromStreamKeys: [],
-      joinTypes: joinTypes,
+      joinTypes: this.getJoinTypeOptions(),
       joinStreams: [],
-      inputStreamsArr: []
+      inputStreamsArr: [],
+      outputFieldsList : [],
+      showLoading : true,
+      outputGroupByDotKeys : []
     };
     this.state = obj;
-    this.fieldTempArr = [];
+    this.streamData = {};
   }
 
-  fetchTopologyConfig() {
-    let {topologyId, versionId} = this.props;
-    TopologyREST.getTopologyWithoutMetrics(topologyId, versionId).then((result) => {
-      this.topologyConfigResponse = result;
-      this.topologyConfig = JSON.parse(result.config);
+  /*
+    componentWillUpdate has been call very frequently in react ecosystem
+    this.context.ParentForm.state has been SET through the API call in ProcessorNodeForm
+    And we need to call getDataFromParentFormContext after the Parent has set its state so that inputStreamOptions are available
+    to used.
+    And this condition save us from calling three API
+    1] get edge
+    2] get streams
+    3] get Node data with config.
+  */
+  componentWillUpdate() {
+    if(this.context.ParentForm.state.inputStreamOptions.length > 0 && !(this.fetchDataAgain)){
+      this.getDataFromParentFormContext();
+    }
+  }
+
+  /*
+    getJoinTypeOptions fetch the fields from the props.configData.topologyComponentUISpecification.fields
+    and return joinTypes fields array
+  */
+  getJoinTypeOptions(){
+    let configDataFields = this.props.configData.topologyComponentUISpecification.fields;
+    let joinOptions = _.find(configDataFields, {fieldName: 'jointype'}).options;
+    let joinTypes = [];
+    joinOptions.map((o) => {
+      joinTypes.push({value: o, label: o});
+    });
+    return joinTypes;
+  }
+
+
+  /*
+    getDataFromParentFormContext is called from componentWillUpdate
+    Depend upon the condition
+
+    Get the joinProcessorNode from the this.context.ParentForm.state.processorNode
+    Get the stream from the this.context.ParentForm.state.inputStreamOptions
+    And if joinProcessorNode has the config.properties more then 1
+    we call this.populateOutputStreamsFromServer to pre fill the value on UI
+  */
+  getDataFromParentFormContext(){
+    this.fetchDataAgain = true;
+
+    // get the ProcessorNode from parentForm Context
+    this.joinProcessorNode = this.context.ParentForm.state.processorNode;
+    let configFields = this.joinProcessorNode.config.properties;
+
+    // get the inputStream from parentForm Context
+    const inputStreamFromContext = this.context.ParentForm.state.inputStreamOptions;
+    let fields = [],joinStreams=[],unModifyList=[];
+    inputStreamFromContext.map((stream, i) => {
+      // modify fields if inputStreamFromContext >  1
+      if(inputStreamFromContext.length > 1){
+        const obj = {
+          name : inputStreamFromContext[i].streamId,
+          fields : stream.fields,
+          optional : false,
+          type : "NESTED"
+        };
+        fields.push(obj);
+      } else {
+        fields.push(...stream.fields);
+      }
+
+      // UnModify fieldsList
+      unModifyList.push(...stream.fields);
+
+      if (i < inputStreamFromContext.length - 1) {
+        joinStreams.push({
+          id: i,
+          type: '',
+          stream: '',
+          key: '',
+          with: '',
+          streamOptions: [],
+          keyOptions: [],
+          withOptions: []
+        });
+      }
+    });
+
+    const tempFieldsArr = ProcessorUtils.getSchemaFields(fields, 0,false);
+    // create a uniqueID for select2 to support duplicate label in options
+    _.map(tempFieldsArr, (f) => {
+      f.uniqueID = f.keyPath.split('.').join('-')+"_"+f.name;
+    });
+    const unModifyFieldList = ProcessorUtils.getSchemaFields(unModifyList, 0,false);
+
+    let stateObj = {
+      fieldList: unModifyFieldList,
+      parallelism: configFields.parallelism || 1,
+      outputKeys: configFields.outputKeys
+        ? configFields.outputKeys.map((key) => {
+          return this.splitNestedKey(key);
+        })
+        : undefined,
+      inputStreamsArr: inputStreamFromContext,
+      joinStreams: joinStreams,
+      outputFieldsList : tempFieldsArr
+    };
+
+    // prefetchValue is use to call the this.populateOutputStreamsFromServer() after state has been SET
+    let prefetchValue = false;
+    if(_.keys(configFields).length > 1){
+      prefetchValue = true;
+    } else {
+      stateObj.outputStreamId = 'join_processor_stream_' + this.joinProcessorNode.id;
+      stateObj.outputStreamFields = [];
+      this.streamData = {
+        streamId: stateObj.outputStreamId,
+        fields: stateObj.outputStreamFields
+      };
+      stateObj.showLoading = false;
+      this.context.ParentForm.setState({outputStreamObj: this.streamData});
+    }
+    this.setState(stateObj, () => {
+      prefetchValue ? this.populateOutputStreamsFromServer() : '';
     });
   }
 
-  getSchemaFields(fields, level, initialFetch, keyPath = []) {
-    const getSchemaNestedFields = (fields, level, keyPath) => {
-      fields.map((field) => {
-        let obj = {
-          name: field.name,
-          optional: field.optional,
-          type: field.type,
-          level: level,
-          keyPath: ''
-        };
-
-        if (field.type === 'NESTED') {
-          obj.disabled = true;
-          let _keypath = keyPath.slice();
-          _keypath.push(field.name);
-          this.tempFieldsArr.push(obj);
-          this.getSchemaNestedFields(field.fields, level + 1, _keypath);
-        } else {
-          obj.disabled = false;
-          obj.keyPath = keyPath.join('.');
-          this.tempFieldsArr.push(obj);
-        }
-      });
-      // To make a unique field array
-      // initialFetch is use to populate fields only for once
-      initialFetch
-        ? this.fieldTempArr = _.uniqBy(this.tempFieldsArr, 'name')
-        : '';
-    };
-    return getSchemaNestedFields(fields, level, keyPath);
+  createOutputFieldsObjArr(outputFieldsArr,outputFieldsList){
+    return _.map(outputFieldsArr, (k) => {
+      let keyPath = '', keyname = '';
+      if(k.includes('.')){
+        let kp = k.replace(':','.').split('.');
+        keyPath = kp.slice(0,kp.length-1).join('.');
+        keyname = kp[kp.length-1];
+      } else {
+        keyPath = k.split(':')[0];
+        keyname = k.split(':')[1];
+      }
+      return _.find(outputFieldsList, {keyPath : keyPath , name : keyname});
+    });
   }
 
+  /*
+    populateOutputStreamsFromServer Method accept the Object send from the getDataFromParentFormContext
+    When the JoinProcessor has been already configured
+    And we set all the defaultvalue, which we got from there joinProcessorNode
+
+    This include Nested fields spliting and populating the pre value for each and every fields on UI
+    And SET in state object
+  */
+  populateOutputStreamsFromServer(){
+    let stateObj = {};
+    const {inputStreamsArr,outputFieldsList} = this.state;
+    const fromObject = this.joinProcessorNode.config.properties.from;
+    stateObj.joinStreams = _.cloneDeep(this.state.joinStreams);
+
+    //set value for first row
+    if(fromObject){
+      stateObj.joinFromStreamName = fromObject.stream;
+      stateObj.joinFromStreamKey = this.splitNestedKey(fromObject.key);
+
+      let selectedStream = _.find(inputStreamsArr, {streamId: fromObject.stream});
+      stateObj.joinFromStreamKeys = ProcessorUtils.getSchemaFields(selectedStream.fields, 0, false);
+    }
+
+    //set values of joins Type
+    const configJoinFields = this.joinProcessorNode.config.properties.joins;
+    if(configJoinFields){
+      _.map(configJoinFields, (o , index) => {
+        let joinStreamOptions = this.getStreamObjArray(o.stream);
+        stateObj.joinStreams[index].type = o.type;
+        stateObj.joinStreams[index].stream = o.stream;
+        stateObj.joinStreams[index].streamOptions = joinStreamOptions;
+        stateObj.joinStreams[index].key = this.splitNestedKey(o.key);
+        stateObj.joinStreams[index].keyOptions = ProcessorUtils.getSchemaFields(joinStreamOptions[0].fields, 0, false);
+        stateObj.joinStreams[index].with = o.with;
+        stateObj.joinStreams[index].withOptions = this.getStreamObjArray(o.with);
+      });
+    }
+
+    //set values of windows fields
+    const configWindowObj = this.joinProcessorNode.config.properties.window;
+    if(configWindowObj){
+      if (configWindowObj.windowLength.class === '.Window$Duration') {
+        stateObj.intervalType = '.Window$Duration';
+        let obj = Utils.millisecondsToNumber(configWindowObj.windowLength.durationMs);
+        stateObj.windowNum = obj.number;
+        stateObj.durationType = obj.type;
+        if (configWindowObj.slidingInterval) {
+          let obj = Utils.millisecondsToNumber(configWindowObj.slidingInterval.durationMs);
+          stateObj.slidingNum = obj.number;
+          stateObj.slidingDurationType = obj.type;
+        }
+      } else if (configWindowObj.windowLength.class === '.Window$Count') {
+        stateObj.intervalType = '.Window$Count';
+        stateObj.windowNum = configWindowObj.windowLength.count;
+        if (configWindowObj.slidingInterval) {
+          stateObj.slidingNum = configWindowObj.slidingInterval.count;
+        }
+      }
+    }
+
+    // set the outputKeys And outputFieldsObj for parentContext
+    const outputKeysAFormServer = this.joinProcessorNode.config.properties.outputKeys;
+
+    // remove the dot from the keys
+    stateObj.outputKeys = _.map(outputKeysAFormServer, (key) => {
+      return this.splitNestedKey(key);
+    });
+
+    // get the keyObj from the outputFieldsList for the particular key
+    const outputKeysObjArr = this.createOutputFieldsObjArr(outputKeysAFormServer,outputFieldsList);
+
+    stateObj.outputKeysObjArr = outputKeysObjArr;
+
+    const keyData = ProcessorUtils.createSelectedKeysHierarchy(outputKeysObjArr,outputFieldsList);
+    stateObj.outputStreamFields=[];
+    _.map(keyData,(o) => {
+      stateObj.outputStreamFields = _.concat(stateObj.outputStreamFields, o.fields);
+    });
+
+    this.streamData = {
+      streamId: this.joinProcessorNode.outputStreams[0].streamId,
+      fields: stateObj.outputStreamFields
+    };
+
+    const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey(outputKeysObjArr);
+    stateObj.outputGroupByDotKeys = ProcessorUtils.modifyGroupKeyByDots(gKeys);
+    stateObj.showLoading = false;
+
+    this.setState(stateObj);
+    this.context.ParentForm.setState({outputStreamObj: this.streamData});
+  }
+
+  /*
+    getStreamObjArray Method accept the string of streams
+    return
+    streamsObj Array filter from inputStreamsArr
+  */
+  getStreamObjArray(string){
+    const {inputStreamsArr} = this.state;
+    return inputStreamsArr.filter((s) => {
+      return s.streamId === string;
+    });
+  }
+
+  /*
+    splitNestedKey accept string and split with dot ('.')
+    and return last value of an array
+  */
+  splitNestedKey(key) {
+    const a = key.replace(':','.').split('.');
+    if (a.length > 1) {
+      return a[a.length - 1];
+    } else {
+      return a[0];
+    }
+  }
+
+  /*
+    renderFieldOption Method accept the node from the select2
+    And modify the Select2 view list with nested look
+  */
   renderFieldOption(node) {
     let styleObj = {
       paddingLeft: (10 * node.level) + "px"
@@ -149,227 +354,48 @@ export default class JoinNodeForm extends Component {
     );
   }
 
-  fetchData() {
-    let {topologyId, versionId, nodeType, nodeData, currentEdges} = this.props;
-    let edgePromiseArr = [];
-    let promiseArr = [TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId)];
-    currentEdges.map(edge => {
-      if (edge.target.nodeId === nodeData.nodeId) {
-        edgePromiseArr.push(TopologyREST.getNode(topologyId, versionId, 'edges', edge.edgeId));
-      }
+  /*
+    handleFieldsChange Method accept arr of obj
+    And SET
+    outputKeys : key of arr used on UI for listing
+    outputGroupByDotKeys : group the outputKeys
+    outputStreamFields : store the obj of the outputKeys
+  */
+  handleFieldsChange(arr){
+    let {outputFieldsList} = this.state;
+    const keyData = ProcessorUtils.createSelectedKeysHierarchy(arr,outputFieldsList);
+    let tempFieldsArr=[];
+    _.map(keyData,(o) => {
+      tempFieldsArr = _.concat(tempFieldsArr, o.fields);
     });
+    this.streamData.fields = tempFieldsArr;
 
-    Promise.all(edgePromiseArr).then(edgeResults => {
-      edgeResults.map((edge) => {
-        if (edge.toId === nodeData.nodeId && this.sourceNodesId.indexOf(edge.fromId) !== -1) {
-          promiseArr.push(TopologyREST.getNode(topologyId, versionId, 'streams', edge.streamGroupings[0].streamId));
-        }
-      });
-      Promise.all(promiseArr).then((results) => {
-        this.nodeData = results[0];
-        let configFields = this.nodeData.config.properties;
-        let inputStreams = [],
-          joinStreams = [];
-        let fields = [];
-        results.map((result, i) => {
-          if (i > 0) {
-            inputStreams.push(result);
-            result.fields.map((f) => {
-              if (fields.indexOf(f) === -1){
-                fields.push(f);
-              }
-            });
-          }
-        });
-        //create rows for joins
-        inputStreams.map((s, i) => {
-          if (i > 0) {
-            joinStreams.push({
-              id: (i - 1),
-              type: '',
-              stream: '',
-              key: '',
-              with: '',
-              streamOptions: [],
-              keyOptions: [],
-              withOptions: []
-            });
-          }
-        });
-
-        this.tempFieldsArr = [];
-        this.getSchemaFields(fields, 0, true);
-
-        let stateObj = {
-          fieldList: fields,
-          parallelism: configFields.parallelism || 1,
-          outputKeys: configFields.outputKeys
-            ? configFields.outputKeys.map((key) => {
-              return this.splitNestedKey(key);
-            })
-            : undefined,
-          inputStreamsArr: inputStreams,
-          joinStreams: joinStreams
-        };
-        //set value for first row
-        if (configFields.from) {
-          let fromObject = configFields.from;
-          stateObj.joinFromStreamName = fromObject.stream
-            ? fromObject.stream
-            : '';
-          stateObj.joinFromStreamKey = fromObject.key
-            ? this.splitNestedKey(fromObject.key)
-            : '';
-          let selectedStream = _.find(inputStreams, {streamId: fromObject.stream});
-          if (selectedStream) {
-            this.tempFieldsArr = [];
-            this.getSchemaFields(selectedStream.fields, 0, false);
-            stateObj.joinFromStreamKeys = this.tempFieldsArr;
-          }
-          if (fromObject.stream) {
-            let joinStreamOptions = inputStreams.filter((s) => {
-              return s.streamId !== fromObject.stream;
-            });
-            let obj = inputStreams.find((s) => {
-              return s.streamId === fromObject.stream;
-            });
-            if (joinStreams.length) {
-              joinStreams[0].streamOptions = joinStreamOptions;
-              joinStreams[0].withOptions = [obj];
-              this.tempFieldsArr = [];
-              this.getSchemaFields(selectedStream.fields, 0, false);
-              joinStreams[0].keyOptions = this.tempFieldsArr;
-            }
-          }
-        }
-        //set values of joins if saved
-        if (configFields.joins) {
-          configFields.joins.map((o, id) => {
-            joinStreams[id].type = o.type;
-            joinStreams[id].stream = o.stream;
-            joinStreams[id].key = this.splitNestedKey(o.key);
-            joinStreams[id].with = o.with;
-            let streamObj = inputStreams.find((s) => {
-              return s.streamId !== o.stream;
-            });
-            let selectedStream = _.find(inputStreams, {streamId: o.stream});
-            let streamOptions = [];
-            let withOptions = [];
-            withOptions.push(streamObj);
-
-            configFields.joins.map((s, i) => {
-              if (i <= id) {
-                let obj = inputStreams.find((stream) => {
-                  return stream.streamId === s.stream;
-                });
-                withOptions.push(obj);
-              }
-            });
-            streamOptions = _.difference(inputStreams, [...withOptions]);
-            let nextStream = joinStreams[id + 1];
-            if (nextStream) {
-              nextStream.streamOptions = streamOptions;
-              nextStream.withOptions = withOptions;
-              this.tempFieldsArr = [];
-              this.getSchemaFields(selectedStream.fields, 0, false);
-              nextStream.keyOptions = this.tempFieldsArr;
-            }
-          });
-        }
-        if (configFields.window) {
-          if (configFields.window.windowLength.class === '.Window$Duration') {
-            stateObj.intervalType = '.Window$Duration';
-            let obj = Utils.millisecondsToNumber(configFields.window.windowLength.durationMs);
-            stateObj.windowNum = obj.number;
-            stateObj.durationType = obj.type;
-            if (configFields.window.slidingInterval) {
-              let obj = Utils.millisecondsToNumber(configFields.window.slidingInterval.durationMs);
-              stateObj.slidingNum = obj.number;
-              stateObj.slidingDurationType = obj.type;
-            }
-          } else if (configFields.window.windowLength.class === '.Window$Count') {
-            stateObj.intervalType = '.Window$Count';
-            stateObj.windowNum = configFields.window.windowLength.count;
-            if (configFields.window.slidingInterval) {
-              stateObj.slidingNum = configFields.window.slidingInterval.count;
-            }
-          }
-        }
-        if (this.nodeData.outputStreams && this.nodeData.outputStreams.length > 0) {
-          this.streamData = this.nodeData.outputStreams[0];
-          stateObj.outputStreamId = this.nodeData.outputStreams[0].streamId;
-          stateObj.outputStreamFields = JSON.parse(JSON.stringify(this.nodeData.outputStreams[0].fields));
-          this.context.ParentForm.setState({outputStreamObj: this.streamData});
-        } else {
-          stateObj.outputStreamId = 'join_processor_stream_' + this.nodeData.id;
-          stateObj.outputStreamFields = [];
-          this.streamData = {
-            streamId: stateObj.outputStreamId,
-            fields: stateObj.outputStreamFields
-          };
-          this.context.ParentForm.setState({outputStreamObj: this.streamData});
-        }
-        this.setState(stateObj);
-      });
-    });
-  }
-
-  splitNestedKey(key) {
-    const a = key.split('.');
-    if (a.length > 1) {
-      return a[a.length - 1];
-    } else {
-      return a[0];
-    }
-  }
-
-  handleFieldsChange(arr) {
-    let {outputKeys, outputStreamFields} = this.state;
-    let tempArr = [];
-    outputStreamFields.map(field => {
-      if (outputKeys.indexOf(field.name) === -1) {
-        tempArr.push(field);
-      }
-    });
-    tempArr.push(...arr);
-    this.streamData.fields = tempArr;
-    let keys = [];
-    if (arr && arr.length) {
-      for (let k of arr) {
-        keys.push(k.name);
-      }
-    }
-    this.setState({outputKeys: keys, outputStreamFields: tempArr});
+    const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey(arr);
+    const groupKeysByDots = ProcessorUtils.modifyGroupKeyByDots(gKeys);
+    this.setState({outputKeysObjArr : arr, outputKeys: keys, outputStreamFields: keyData,outputGroupByDotKeys : groupKeysByDots});
     this.context.ParentForm.setState({outputStreamObj: this.streamData});
   }
 
-  handleIntervalChange(obj) {
-    this.setState({
-      intervalType: obj
-        ? obj.value
-        : ""
-    });
+  /*
+    commonHandlerChange Method accept keyType, obj and it handles multiple event [durationType,slidingDurationType,intervalType]
+    params@ keyType = string 'durationType'
+    params@ obj = selected obj
+  */
+  commonHandlerChange(keyType,obj){
+    if(obj){
+      const keyName = keyType.trim();
+      keyName === "durationType"
+      ? this.setState({durationType : obj.value,slidingDurationType: obj.value})
+      : keyName === "slidingDurationType"
+        ? this.setState({slidingDurationType : obj.value})
+        : this.setState({intervalType : obj.value});
+    }
   }
 
-  handleDurationChange(obj) {
-    this.setState({
-      durationType: obj
-        ? obj.value
-        : "",
-      slidingDurationType: obj
-        ? obj.value
-        : ""
-    });
-  }
-
-  handleSlidingDurationChange(obj) {
-    this.setState({
-      slidingDurationType: obj
-        ? obj.value
-        : ""
-    });
-  }
-
+  /*
+    handleValueChange Method is handles to fields on UI
+    windowNum and slidingNum input value
+  */
   handleValueChange(e) {
     let obj = {};
     let name = e.target.name;
@@ -383,52 +409,58 @@ export default class JoinNodeForm extends Component {
     this.setState(obj);
   }
 
-  handleJoinFromStreamChange(obj) {
-    let {inputStreamsArr, joinStreams} = this.state;
-    if (obj) {
+  /*
+    handleJoinFromStreamChange Method accept arr selected from select2
+    Depend on selected key SET the value stream and streamOptions
+    And
+  */
+  handleJoinFromStreamChange(obj){
+    if(obj){
+      let {inputStreamsArr, joinStreams} = this.state;
       let joinStreamOptions = inputStreamsArr.filter((s) => {
         return s.streamId !== obj.streamId;
       });
-      if (joinStreams.length) {
-        joinStreams.map((s) => {
-          s.stream = '';
-          s.key = '';
-          s.with = '';
-          s.streamOptions = [];
-          s.keyOptions = [];
-          s.withOptions = [];
-        });
+
+      if(joinStreams.length){
         joinStreams[0].streamOptions = joinStreamOptions;
         joinStreams[0].withOptions = [obj];
         if (joinStreams.length === 1) {
           joinStreams[0].stream = joinStreamOptions[0].streamId;
           joinStreams[0].with = obj.streamId;
-          this.tempFieldsArr = [];
-          this.getSchemaFields(joinStreamOptions[0].fields, 0, false);
-          joinStreams[0].keyOptions = this.tempFieldsArr;
+          joinStreams[0].keyOptions = ProcessorUtils.getSchemaFields(joinStreamOptions[0].fields, 0, false);
         }
       }
-      this.tempFieldsArr = [];
-      this.getSchemaFields(obj.fields, 0, false);
+
+      const tempFieldsArr = ProcessorUtils.getSchemaFields(obj.fields, 0, false);
+      this.setState({
+        joinFromStreamName: obj ?
+          obj.streamId :
+          '',
+        joinFromStreamKeys: obj ?
+          tempFieldsArr :
+          [],
+        joinFromStreamKey: '',
+        joinStreams: joinStreams
+      });
     }
-    this.setState({
-      joinFromStreamName: obj
-        ? obj.streamId
-        : '',
-      joinFromStreamKeys: obj
-        ? this.tempFieldsArr
-        : [],
-      joinFromStreamKey: '',
-      joinStreams: joinStreams
-    });
   }
-  handleJoinFromKeyChange(obj) {
+
+  /*
+    handleJoinFromKeyChange accept the obj
+    SET STATE the joinFromStreamKey
+  */
+  handleJoinFromKeyChange(obj){
     this.setState({
       joinFromStreamKey: obj
         ? obj.name
         : ""
     });
   }
+
+  /*
+    handleJoinTypeChange accept the Key and obj
+    SET STATE the joinStreams for a particular key
+  */
   handleJoinTypeChange(key, obj) {
     let {joinStreams} = this.state;
     joinStreams[key].type = obj
@@ -436,13 +468,17 @@ export default class JoinNodeForm extends Component {
       : '';
     this.setState({joinStreams: joinStreams});
   }
+
+  /*
+    handleJoinStreamChange accept key and obj
+    SET the joinStreams[key].keyOptions with the selected obj.streamId
+  */
   handleJoinStreamChange(key, obj) {
     let {inputStreamsArr, joinStreams, joinFromStreamName} = this.state;
     if (obj) {
       joinStreams[key].stream = obj.streamId;
-      this.tempFieldsArr = [];
-      this.getSchemaFields(obj.fields, 0, false);
-      joinStreams[key].keyOptions = this.tempFieldsArr;
+      const tempFieldsArr = ProcessorUtils.getSchemaFields(obj.fields, 0, false);
+      joinStreams[key].keyOptions = tempFieldsArr;
       let streamOptions = [];
       let withOptions = [];
       let streamObj = inputStreamsArr.find((stream) => {
@@ -479,14 +515,24 @@ export default class JoinNodeForm extends Component {
     }
     this.setState({joinStreams: joinStreams});
   }
-  handleJoinKeyChange(key, obj) {
+
+  /*
+    handleJoinKeyChange accept the Key and obj
+    SET STATE the joinStreams for a particular key
+  */
+  handleJoinKeyChange(key, obj){
     let {joinStreams} = this.state;
     joinStreams[key].key = obj
       ? obj.name
       : '';
     this.setState({joinStreams: joinStreams});
   }
-  handleJoinWithChange(key, obj) {
+
+  /*
+    handleJoinWithChange accept the Key and obj
+    SET STATE the joinStreams for a particular key
+  */
+  handleJoinWithChange(key, obj){
     let {joinStreams} = this.state;
     joinStreams[key].with = obj
       ? obj.streamId
@@ -494,6 +540,10 @@ export default class JoinNodeForm extends Component {
     this.setState({joinStreams: joinStreams});
   }
 
+  /*
+    validateData check the validation of
+     outputKeys,windowNum and joinStreams array
+  */
   validateData() {
     let {outputKeys, windowNum, joinStreams} = this.state;
     let validData = true;
@@ -530,7 +580,98 @@ export default class JoinNodeForm extends Component {
     return name;
   }
 
-  handleSave(name, description) {
+  /*
+    updateEdges Method update the edge
+    using inputStreamsArr id to filter the currentEdges.streamGrouping.streamId for the particular nodeType
+    And update with fields selected as a outputStreams
+  */
+  updateEdgesForJoinTypeObject(){
+    const {inputStreamsArr} = this.state;
+    const {currentEdges,topologyId, versionId} = this.props;
+    let edgeDataArr = [],edgeIdArr = [];
+
+    this.joinProcessorNode.config.properties.joins.map((obj) => {
+      const streamObj = inputStreamsArr.find((s) => {
+        return s.streamId === obj.stream;
+      });
+      const edgeObj = currentEdges.find((e) => {
+        return streamObj.id === e.streamGrouping.streamId;
+      });
+      let edgeData = {
+        fromId: edgeObj.source.nodeId,
+        toId: edgeObj.target.nodeId,
+        streamGroupings: [
+          {
+            streamId: edgeObj.streamGrouping.streamId,
+            grouping: 'FIELDS',
+            fields: [obj.key]
+          }
+        ]
+      };
+      edgeIdArr.push(edgeObj.edgeId);
+      edgeDataArr.push(edgeData);
+    });
+    return {edgeIdArr,edgeDataArr};
+  }
+
+  /*
+    updateEdgesForSelectedStream update Stream Edges
+    Multiple JoinType Streams and fields
+  */
+  updateEdgesForSelectedStream(){
+    const {currentEdges,topologyId, versionId} = this.props;
+    const {inputStreamsArr} = this.state;
+
+    const streamObj = inputStreamsArr.find((s) => {
+      return s.streamId === this.joinProcessorNode.config.properties.from.stream;
+    });
+    const edgeObj = currentEdges.find((e) => {
+      return streamObj.id === e.streamGrouping.streamId;
+    });
+
+    let edgeDataWithFormKey = {
+      fromId: edgeObj.source.nodeId,
+      toId: edgeObj.target.nodeId,
+      streamGroupings: [
+        {
+          streamId: edgeObj.streamGrouping.streamId,
+          grouping: 'FIELDS',
+          fields: [this.joinProcessorNode.config.properties.from.key]
+        }
+      ]
+    };
+    const edgeId = edgeObj.edgeId;
+    return {edgeId,edgeDataWithFormKey};
+  }
+
+  /*
+    generateOutputStreams accept outputStreamFields
+    and Transform it to new streamObjArr by
+    attaching the streamId to each and every field name
+
+    return streamObjArr {name : "UI", type : "String", optional : false}
+  */
+  generateOutputStreams(fields,level){
+    return fields.map((field) => {
+      let obj = {
+        name: field.name,
+        type: field.type ,
+        optional : false
+      };
+
+      if (field.type === 'NESTED' && field.fields) {
+        obj.fields = this.generateOutputStreams(field.fields, level + 1);
+      }
+      return obj;
+    });
+  }
+
+  /*
+    handleSave Method is responsible for joinProcessorNode
+    config object is created with fields data example "fromKey = joinFromStreamKey"
+    config.join objectArray is created with "type,stream,key,with".
+  */
+  handleSave(name, description){
     let {topologyId, versionId, nodeType, currentEdges} = this.props;
     let {
       outputKeys,
@@ -544,25 +685,25 @@ export default class JoinNodeForm extends Component {
       joinFromStreamName,
       joinFromStreamKey,
       joinStreams,
-      inputStreamsArr
+      inputStreamsArr,
+      fieldList,
+      outputGroupByDotKeys
     } = this.state;
-    let fromStreamObj = this.tempFieldsArr.find((field) => {
+    let fromStreamObj = fieldList.find((field) => {
       return field.name === joinFromStreamKey;
     });
     let fromKey = joinFromStreamKey;
     if (fromStreamObj) {
       fromKey = this.formatNestedField(fromStreamObj);
     }
-    let outputKeysArr = outputStreamFields.map((o) => {
-      return this.formatNestedField(o);
-    });
+
     let configObj = {
       from: {
         stream: joinFromStreamName,
         key: fromKey
       },
       joins: [],
-      outputKeys: outputKeysArr,
+      outputKeys: _.flattenDeep(outputGroupByDotKeys),
       window: {
         windowLength: {
           class: intervalType
@@ -575,8 +716,9 @@ export default class JoinNodeForm extends Component {
       },
       outputStream: this.streamData.streamId
     };
-    let promiseArr = [];
 
+    // config.join objectArray is created from a joinStreams
+    // by getting a streamObj from a key
     joinStreams.map((s) => {
       let key = s.key;
       let streamObj = s.keyOptions.find((field) => {
@@ -588,6 +730,7 @@ export default class JoinNodeForm extends Component {
       configObj.joins.push({type: s.type, stream: s.stream, key: key, with: s.with});
     });
 
+    // interval and duration fields value are set here.
     if (intervalType === '.Window$Duration') {
       configObj.window.windowLength.durationMs = Utils.numberToMilliseconds(windowNum, durationType);
       if (slidingNum !== '') {
@@ -605,72 +748,38 @@ export default class JoinNodeForm extends Component {
         };
       }
     }
-    let nodeId = this.nodeData.id;
-    return TopologyREST.getNode(topologyId, versionId, nodeType, nodeId).then(data => {
-      data.config.properties = configObj;
-      data.config.properties.parallelism = parallelism;
-      let finalFields = outputStreamFields.map((f) => {
-        return {name: f.name, type: f.type, optional: f.optional};
-      });
-      if (data.outputStreams.length > 0) {
-        data.outputStreams[0].fields = finalFields;
-      } else {
-        data.outputStreams.push({fields: finalFields, streamId: this.streamData.streamId});
-      }
-      data.name = name;
-      data.description = description;
-      // let streamData = {
-      //         streamId: this.streamData.streamId,
-      //         fields: outputStreamFields
-      // };
-      let promiseArr = [
-        TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {body: JSON.stringify(data)})
-        // TopologyREST.updateNode(topologyId, versionId, 'streams', this.streamData.id, {body: JSON.stringify(streamData)})
-      ];
-      // update edges with fields grouping
-      var streamObj = inputStreamsArr.find((s) => {
-        return s.streamId === configObj.from.stream;
-      });
-      var edgeObj = currentEdges.find((e) => {
-        return streamObj.id === e.streamGrouping.streamId;
-      });
-      var edgeData = {
-        fromId: edgeObj.source.nodeId,
-        toId: edgeObj.target.nodeId,
-        streamGroupings: [
-          {
-            streamId: edgeObj.streamGrouping.streamId,
-            grouping: 'FIELDS',
-            fields: [configObj.from.key]
-          }
-        ]
-      };
-      promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'edges', edgeObj.edgeId, {body: JSON.stringify(edgeData)}));
-      configObj.joins.map((obj) => {
-        streamObj = inputStreamsArr.find((s) => {
-          return s.streamId === obj.stream;
-        });
-        edgeObj = currentEdges.find((e) => {
-          return streamObj.id === e.streamGrouping.streamId;
-        });
-        edgeData = {
-          fromId: edgeObj.source.nodeId,
-          toId: edgeObj.target.nodeId,
-          streamGroupings: [
-            {
-              streamId: edgeObj.streamGrouping.streamId,
-              grouping: 'FIELDS',
-              fields: [obj.key]
-            }
-          ]
-        };
-        promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'edges', edgeObj.edgeId, {body: JSON.stringify(edgeData)}));
-      });
-      return Promise.all(promiseArr);
+
+    // outputStreams data is formated for the server
+    const streamFields  = this.generateOutputStreams(outputStreamFields,0);
+
+    if(this.joinProcessorNode.outputStreams.length > 0){
+      this.joinProcessorNode.outputStreams[0].fields = streamFields;
+    } else {
+      this.joinProcessorNode.outputStreams.push({fields: streamFields, streamId: this.streamData.streamId});
+    }
+    //this.joinProcessorNode is update with the above data
+    this.joinProcessorNode.config.properties = configObj;
+    this.joinProcessorNode.config.properties.parallelism = parallelism;
+    this.joinProcessorNode.name = name;
+    this.joinProcessorNode.description = description;
+
+    let promiseArr = [];
+    // update joinProcessorNodeprocessorNode
+    promiseArr.push(TopologyREST.updateNode(topologyId, versionId, nodeType, this.joinProcessorNode.id, {body: JSON.stringify(this.joinProcessorNode)}));
+
+    // update edge with FROM KEY of selected Streams
+    const {edgeId,edgeDataWithFormKey} = this.updateEdgesForSelectedStream();
+    promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'edges', edgeId, {body: JSON.stringify(edgeDataWithFormKey)}));
+
+    // update edges with selected JoinTypes obj key with particular edgeId for multiple Join using Array of edgeDataArr;
+    const {edgeIdArr,edgeDataArr} = this.updateEdgesForJoinTypeObject();
+    _.map(edgeDataArr, (edgeObj,index) => {
+      promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'edges', edgeIdArr[index], {body: JSON.stringify(edgeObj)}));
     });
+    return Promise.all(promiseArr);
   }
 
-  render() {
+  render(){
     let {topologyId, nodeType, nodeData, targetNodes, linkShuffleOptions} = this.props;
     let {
       editMode,
@@ -688,131 +797,172 @@ export default class JoinNodeForm extends Component {
       joinFromStreamName,
       joinFromStreamKey,
       inputStreamsArr,
-      joinTypes
+      joinTypes,
+      showLoading,
+      outputFieldsList,
+      outputKeysObjArr
     } = this.state;
-    return (
+    return(
       <div className="modal-form processor-modal-form">
         <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
           display: "none"
         }}/>}>
-          <form className="customFormClass">
-            <div className="form-group row">
-              <div className="col-sm-3">
-                <label>Select Stream</label>
-                <Select value={joinFromStreamName} options={inputStreamsArr} onChange={this.handleJoinFromStreamChange.bind(this)} required={true} disabled={!editMode} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
-              </div>
-              <div className="col-sm-3">
-                <label>Select Field {this.state.joinStreams.length
-                    ? (
-                      <strong>with</strong>
-                    )
-                    : ''}</label>
-                <Select value={joinFromStreamKey} options={this.state.joinFromStreamKeys} onChange={this.handleJoinFromKeyChange.bind(this)} required={true} disabled={!editMode || joinFromStreamName === ''} clearable={false} backspaceRemoves={false} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
-              </div>
+        {
+          showLoading
+          ? <div className="loading-img text-center">
+              <img src="styles/img/start-loader.gif" alt="loading" style={{
+                marginTop: "140px"
+              }}/>
             </div>
-            {this.state.joinStreams.length
-              ? <div className="form-group row no-margin">
-                  <div className="col-sm-3">
-                    <label>Join Type</label>
-                  </div>
-                  <div className="col-sm-3">
-                    <label>Select Stream</label>
-                  </div>
-                  <div className="col-sm-3">
-                    <label>Select Field</label>
-                  </div>
-                  <div className="col-sm-3">
-                    <label>
-                      <strong>With</strong>
-                      Stream</label>
-                  </div>
+          :  <form className="customFormClass" style={{marginTop : '7px'}}>
+              <div className="form-group row">
+                <div className="col-sm-3">
+                  <label>Select Stream</label>
+                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Name of input stream</Popover>}>
+                    <div>
+                      <Select value={joinFromStreamName} options={inputStreamsArr} onChange={this.handleJoinFromStreamChange.bind(this)} required={true} disabled={!editMode} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
+                    </div>
+                  </OverlayTrigger>
                 </div>
-              : ''
-}
-            {this.state.joinStreams.map((s, i) => {
-              return (
-                <div className="form-group row" key={i}>
-                  <div className="col-sm-3">
-                    <Select value={s.type} options={joinTypes} onChange={this.handleJoinTypeChange.bind(this, i)} required={true} disabled={!editMode} clearable={false} backspaceRemoves={false}/>
+                <div className="col-sm-3">
+                  <label>Select Field {this.state.joinStreams.length
+                      ? (
+                        <strong>with</strong>
+                      )
+                      : ''}</label>
+                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Field name</Popover>}>
+                  <div>
+                    <Select value={joinFromStreamKey} options={this.state.joinFromStreamKeys} onChange={this.handleJoinFromKeyChange.bind(this)} required={true} disabled={!editMode || joinFromStreamName === ''} clearable={false} backspaceRemoves={false} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
                   </div>
-                  <div className="col-sm-3">
-                    <Select value={s.stream} options={s.streamOptions} onChange={this.handleJoinStreamChange.bind(this, i)} required={true} disabled={!editMode || s.streamOptions.length === 0} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
-                  </div>
-                  <div className="col-sm-3">
-                    <Select value={s.key} options={s.keyOptions} onChange={this.handleJoinKeyChange.bind(this, i)} required={true} disabled={!editMode || s.stream === '' || s.keyOptions.length === 0} clearable={false} backspaceRemoves={false} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
-                  </div>
-                  <div className="col-sm-3">
-                    <Select value={s.with} options={s.withOptions} onChange={this.handleJoinWithChange.bind(this, i)} required={true} disabled={!editMode || s.withOptions.length === 0} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
-                  </div>
+                  </OverlayTrigger>
                 </div>
-              );
-            })
-}
-            <div className="form-group">
-              <div className="row">
-                <div className="col-sm-12">
-                  <label>Window Interval Type
+              </div>
+              {this.state.joinStreams.length
+                ? <div className="form-group row no-margin">
+                    <div className="col-sm-3">
+                      <label>Join Type</label>
+                    </div>
+                    <div className="col-sm-3">
+                      <label>Select Stream</label>
+                    </div>
+                    <div className="col-sm-3">
+                      <label>Select Field</label>
+                    </div>
+                    <div className="col-sm-3">
+                      <label>
+                        <strong>With </strong>
+                        Stream</label>
+                    </div>
+                  </div>
+                : ''
+  }
+              {this.state.joinStreams.map((s, i) => {
+                return (
+                  <div className="form-group row" key={i}>
+                    <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Type of join</Popover>}>
+                      <div className="col-sm-3">
+                        <Select value={s.type} options={joinTypes} onChange={this.handleJoinTypeChange.bind(this, i)} required={true} disabled={!editMode} clearable={false} backspaceRemoves={false}/>
+                      </div>
+                    </OverlayTrigger>
+                    <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Name of input stream</Popover>}>
+                      <div className="col-sm-3">
+                        <Select value={s.stream} options={s.streamOptions} onChange={this.handleJoinStreamChange.bind(this, i)} required={true} disabled={!editMode || s.streamOptions.length === 0} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
+                      </div>
+                    </OverlayTrigger>
+                    <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Field name</Popover>}>
+                      <div className="col-sm-3">
+                        <Select value={s.key} options={s.keyOptions} onChange={this.handleJoinKeyChange.bind(this, i)} required={true} disabled={!editMode || s.stream === '' || s.keyOptions.length === 0} clearable={false} backspaceRemoves={false} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+                      </div>
+                    </OverlayTrigger>
+                    <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Name of input stream</Popover>}>
+                      <div className="col-sm-3">
+                        <Select value={s.with} options={s.withOptions} onChange={this.handleJoinWithChange.bind(this, i)} required={true} disabled={!editMode || s.withOptions.length === 0} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
+                      </div>
+                    </OverlayTrigger>
+                  </div>
+                );
+              })
+  }
+              <div className="form-group">
+                <div className="row">
+                  <div className="col-sm-12">
+                    <label>Window Interval Type
+                      <span className="text-danger">*</span>
+                    </label>
+                    <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Window interval type</Popover>}>
+                      <div>
+                        <Select value={intervalType} options={intervalTypeArr} onChange={this.commonHandlerChange.bind(this,'intervalType')} required={true} disabled={!editMode} clearable={false}/>
+                      </div>
+                    </OverlayTrigger>
+                  </div>
+                  {/*<div className="col-sm-6">
+                                                      <label>Parallelism</label>
+                                                      <input
+                                                          name="parallelism"
+                                                          value={parallelism}
+                                                          onChange={this.handleValueChange.bind(this)}
+                                                          type="number"
+                                                          className="form-control"
+                                                          required={true}
+                                                          disabled={!editMode}
+                                                          min="1"
+                                                          inputMode="numeric"
+                                                      />
+                                                  </div>*/}
+                </div>
+              </div>
+              <div className="form-group row">
+                <div className="col-sm-6">
+                  <label>Window Interval
                     <span className="text-danger">*</span>
                   </label>
-                  <Select value={intervalType} options={intervalTypeArr} onChange={this.handleIntervalChange.bind(this)} required={true} disabled={!editMode} clearable={false}/>
+                  <div className="row">
+                    <div className="col-sm-6">
+                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Window interval duration</Popover>}>
+                      <input name="windowNum" value={windowNum} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={!editMode} min="0" inputMode="numeric"/>
+                      </OverlayTrigger>
+                    </div>
+                    {intervalType === '.Window$Duration'
+                      ? <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Duration type</Popover>}>
+                        <div className="col-sm-6">
+                          <Select value={durationType} options={durationTypeArr} onChange={this.commonHandlerChange.bind(this,'durationType')} required={true} disabled={!editMode} clearable={false}/>
+                        </div>
+                        </OverlayTrigger>
+                      : null}
+                  </div>
                 </div>
-                {/*<div className="col-sm-6">
-                                                    <label>Parallelism</label>
-                                                    <input
-                                                        name="parallelism"
-                                                        value={parallelism}
-                                                        onChange={this.handleValueChange.bind(this)}
-                                                        type="number"
-                                                        className="form-control"
-                                                        required={true}
-                                                        disabled={!editMode}
-                                                        min="1"
-                                                        inputMode="numeric"
-                                                    />
-                                                </div>*/}
+                <div className="col-sm-6">
+                  <label>Sliding Interval</label>
+                  <div className="row">
+                    <div className="col-sm-6">
+                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Sliding interval duration</Popover>}>
+                      <input name="slidingNum" value={slidingNum} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={!editMode} min="0" inputMode="numeric"/>
+                      </OverlayTrigger>
+                    </div>
+                    {intervalType === '.Window$Duration'
+                      ? <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Duration type</Popover>}>
+                        <div className="col-sm-6">
+                          <Select value={slidingDurationType} options={durationTypeArr} onChange={this.commonHandlerChange.bind(this,'slidingDurationType')} required={true} disabled={!editMode} clearable={false}/>
+                        </div>
+                        </OverlayTrigger>
+                      : null}
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="form-group row">
-              <div className="col-sm-6">
-                <label>Window Interval
+              <div className="form-group">
+                <label>Output Fields
                   <span className="text-danger">*</span>
                 </label>
                 <div className="row">
-                  <div className="col-sm-6">
-                    <input name="windowNum" value={windowNum} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={!editMode} min="0" inputMode="numeric"/>
+                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Output keys</Popover>}>
+                  <div className="col-sm-12">
+                    <Select className="menu-outer-top" value={outputKeysObjArr} options={outputFieldsList} onChange={this.handleFieldsChange.bind(this)} multi={true} required={true} disabled={!editMode} valueKey="uniqueID" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
                   </div>
-                  {intervalType === '.Window$Duration'
-                    ? <div className="col-sm-6">
-                        <Select value={durationType} options={durationTypeArr} onChange={this.handleDurationChange.bind(this)} required={true} disabled={!editMode} clearable={false}/>
-                      </div>
-                    : null}
+                  </OverlayTrigger>
                 </div>
               </div>
-              <div className="col-sm-6">
-                <label>Sliding Interval</label>
-                <div className="row">
-                  <div className="col-sm-6">
-                    <input name="slidingNum" value={slidingNum} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={!editMode} min="0" inputMode="numeric"/>
-                  </div>
-                  {intervalType === '.Window$Duration'
-                    ? <div className="col-sm-6">
-                        <Select value={slidingDurationType} options={durationTypeArr} onChange={this.handleSlidingDurationChange.bind(this)} required={true} disabled={!editMode} clearable={false}/>
-                      </div>
-                    : null}
-                </div>
-              </div>
-            </div>
-            <div className="form-group">
-              <label>Output Fields
-                <span className="text-danger">*</span>
-              </label>
-              <div className="row">
-                <div className="col-sm-12">
-                  <Select className="menu-outer-top" value={outputKeys} options={this.fieldTempArr} onChange={this.handleFieldsChange.bind(this)} multi={true} required={true} disabled={!editMode} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
-                </div>
-              </div>
-            </div>
-          </form>
+            </form>
+        }
         </Scrollbars>
       </div>
     );

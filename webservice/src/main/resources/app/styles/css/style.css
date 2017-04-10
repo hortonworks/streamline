@@ -113,6 +113,10 @@ footer {
   height: 100vh;
 }
 
+.content-wrapper.environment-wrapper {
+  padding-top: 90px;
+}
+
 .contentEditor-wrapper {
   padding-left: 70px;
   padding-right: 10px;
@@ -926,11 +930,11 @@ label {
 .component-list>li {
   text-align: center;
   color: #60aec9;
-  margin-bottom: 10px;
-  font-size: 8px;
+  /*margin-bottom: 10px;*/
+  font-size: 10px;
 }
 
-.component-list>li>img {
+.component-list>li>div.nodeContainer>img {
   display: block;
   margin: 0 auto 4px;
   width: 22px;
@@ -1334,76 +1338,17 @@ label {
   color: #ef6062 !important;
 }
 
-.page-title-box input.inputAnimateIn {
-  position: absolute;
-  z-index: -1;
-  margin-left: 91%;
-  width: 0px;
-  float: Left;
-  -webkit-transition: all 1s ease-in-out;
-  -moz-transition: all 1s ease-in-out;
-  -o-transition: all 1s ease-in-out;
-  transition: all 1s ease-in-out;
-  background-color: #ececec;
-  border-color: #cacaca;
-}
-
-.inputAnimateIn:focus {
-  border-color: #cacaca;
-}
-
 
 /*.page-title-box .input-group{
   overflow: hidden;
 }
 */
 
-.page-title-box .input-group-addon {
-  padding: 0;
-  z-index: 10;
-  border: none;
-}
-
-.page-title-box input.inputAnimateOut {
-  margin-left: 0 !important;
-  z-index: 0;
-  cursor: text;
-  width: 90%;
-}
-
-
 /*.dropdown-toggle{
   font-size: 24px;
   color: #838383;
   padding-top: 0;
 }*/
-
-@media (min-width: 768px) {
-  .page-title-box input.inputAnimateIn {
-    margin-left: 87%;
-  }
-  .page-title-box input.inputAnimateOut {
-    width: 87%;
-  }
-}
-
-@media (min-width: 1023px) {
-  .page-title-box input.inputAnimateIn {
-    margin-left: 89%;
-  }
-  .page-title-box input.inputAnimateOut {
-    width: 89%;
-  }
-}
-
-@media (min-width: 1280px) {
-  .page-title-box input.inputAnimateIn {
-    margin-left: 91%;
-  }
-  .page-title-box input.inputAnimateOut {
-    width: 90%;
-  }
-}
 
 @media (min-width: 992px) {
   .modal-xl {
@@ -2175,6 +2120,7 @@ rect.extent {
     margin-left: -15px;
     margin-right: -15px;
     font-size: 18px;
+    text-align: left;
   }
   .sidebar-mini.sidebar-collapse .main-header .logo>.logo-lg {
     display: none;
@@ -2482,4 +2428,198 @@ input[type="checkbox"] {
   border-right: none;
   border-bottom-left-radius: 5px;
   border-top-left-radius: 5px;
+}
+
+.spotlight.spotlight-overlay {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    margin-left: -340px;
+    width: 680px;
+    z-index: 2147483647;
+    font-size: 12px;
+    letter-spacing: .3px;
+    border: 1px solid rgba(51,52,53,.1);
+    font-family: Verdana,"Lucida Sans Unicode",sans-serif;
+    box-shadow: 0 12px 15px 0 rgba(0,0,0,.24), 0 17px 50px 0 rgba(0,0,0,.19);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.spotlight.spotlight-overlay .spotlight-searchbar {
+    z-index: 10;
+    position: relative;
+    height: 45px;
+    background-color: #fff;
+}
+
+.spotlight.spotlight-overlay .spotlight-searchbar .spotlight-input {
+    background-color: transparent;
+    font-size: 1.33em;
+    margin: 0;
+    outline: 0!important;
+    height: 45px;
+    max-width: 100%!important;
+    border: none!important;
+    font-weight: 100;
+    box-sizing: border-box
+}
+
+.spotlight.spotlight-overlay .spotlight-searchbar .spotlight-input-after {
+  display: inline-block;
+  color: #606162;
+}
+
+.spotlight.spotlight-overlay .spotlight-searchbar .spotlight-icon {
+    color: #fff;
+    position: static;
+    float: left;
+    height: 22px;
+    width: 22px;
+    margin: 11.5px;
+}
+.spotlight.spotlight-overlay .spotlight-searchbar .spotlight-icon a {
+  font-size: 1.5em;
+  color: #635d5c;
+}
+.spotlight.spotlight-overlay .spotlight-searchbar {
+    box-shadow: 0 4px 1px -2px rgba(0,0,0,.14),0 2px 2px 0 rgba(0,0,0,.098),0 1px 5px 0 rgba(0,0,0,.084)
+}
+
+.spotlight.spotlight-overlay .spotlight-results-panel {
+    min-height: 375px;
+    background-color: #fff;
+}
+
+.spotlight.spotlight-overlay .spotlight-results-panel .spotlight-results-list {
+    position: absolute;
+    width: 100%;
+    height: calc(100% - 45px);
+    overflow: hidden;
+    overflow-y: auto;
+    user-select: none;
+}
+.spotlight.spotlight-overlay .spotlight-results-panel .spotlight-results-list .result-header {
+  padding: 10px 0px 6px 12px;
+  background-color: #e0e0e0;
+}
+.spotlight.spotlight-overlay .spotlight-results-panel .spotlight-results-list .result-list {
+    list-style: none;
+    padding: 0px;
+    margin-bottom: 0px;
+}
+
+.spotlight.spotlight-overlay .spotlight-results-panel .spotlight-results-list .result-list > li {
+    margin: 0px;
+    margin-bottom: 0px;
+    padding: 10px;
+    text-align: left;
+    font-size: 12px;
+    color: #60aec9;
+    cursor: pointer;
+}
+
+.spotlight.spotlight-overlay .spotlight-results-panel .spotlight-results-list .result-list li.activeItem {
+    color: #fff;
+    background-color: #337ef1;
+}
+
+.spotlight.spotlight-overlay .spotlight-results-panel .spotlight-results-list .result-list li.activeItem img {
+  filter: brightness(100);
+}
+
+.spotlight.spotlight-overlay .spotlight-results-panel .spotlight-results-list .result-list > li > img {
+    height: 14px;
+    margin-right: 10px;
+}
+
+.editor-control-tooltip {
+  font-weight: bold;
+  margin: 0px;
+  padding: 0px;
+}
+.nodeContainerFolder {
+  list-style: none;
+  padding: 2px;
+  text-align: left;
+  background: rgba(211, 211, 211, 0.45);
+  border: 1px solid rgba(169, 169, 169, 0.45);
+  -moz-border-radius: 7px;
+  -webkit-border-radius: 7px;
+  min-height: 40px;
+  margin: 5px;
+}
+
+.nodeContainerFolder > img {
+  width: 35%;
+  margin: 2px;
+}
+
+.blankNode {
+  width: 55px;
+  height: 37px;
+}
+
+.nodeContainerFolderPopover {
+  list-style: none;
+  padding: 2px;
+}
+
+.nodeContainerFolderPopover > li {
+  display: inline;
+  float: left;
+  width: 50px;
+  text-align: center;
+  color: #60aec9;
+  margin-bottom: 10px;
+  font-size: 8px;
+  margin-right: 3px;
+}
+
+.nodeContainerFolderPopover > li > div.nodeContainer > img {
+  display: block;
+  margin: 0 auto 4px;
+  width: 22px;
+}
+
+.component-list>li>div.nodeContainer {
+  height: 40px;
+  padding-top: 9px;
+  margin: 0px 5px 0 5px;
+}
+
+.highlight > div, .highlight .nodeContainerFolder {
+  border: 1px solid #60aec9;
+  -moz-border-radius: 7px;
+  -webkit-border-radius: 7px;
+}
+
+.toolbarButton {
+  background: white;
+  right: -6px;
+  top: 0px;
+  font-size: 12px;
+}
+
+.toolbarButton a {
+  display: inline-block;
+  width: 50%;
+  text-align: center;
+  height: 30px;
+  line-height: 36px;
+  background-color: #eef0ef;
+}
+
+.toolbarButton a > i {
+  font-weight: 600;
+}
+
+.popoverTitleEditable {
+  border-top: 0;
+  border-right: 0;
+  border-left: 0;
+  border-bottom-width: 1px;
+  border-bottom-color: #333333;
+  border-bottom-style: dashed;
+  background: #f7f7f7;
 }

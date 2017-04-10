@@ -14,28 +14,71 @@
 
 import React, {Component, PropTypes} from 'react';
 import ReactDOM, {findDOMNode} from 'react-dom';
-import {OverlayTrigger, Tooltip} from 'react-bootstrap';
+import {OverlayTrigger, Tooltip, Popover} from 'react-bootstrap';
 import {ItemTypes} from '../../../utils/Constants';
-import {DragSource} from 'react-dnd';
+import {DragSource, DropTarget} from 'react-dnd';
+import _ from 'lodash';
+
+const nodeTarget = {
+  hover(props, monitor, component) {
+    const dragIndex = monitor.getItem().index;
+    const hoverIndex = props.index;
+
+    // Don't replace items with themselves
+    if (dragIndex === hoverIndex && monitor.getItem().dataArr == props.dataArr) {
+      return;
+    }
+
+    // Determine rectangle on screen
+    const hoverBoundingRect = findDOMNode(component).getBoundingClientRect();
+
+    // Get vertical middle
+    const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+
+    // Determine mouse position
+    const clientOffset = monitor.getClientOffset();
+
+    // Get pixels to the top
+    const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+
+    // Only perform the move when the mouse has crossed half of the items height
+    // When dragging downwards, only move when the cursor is below 50%
+    // When dragging upwards, only move when the cursor is above 50%
+
+    // Dragging downwards
+    if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY && monitor.getItem().dataArr == props.dataArr) {
+      return;
+    }
+
+    // Dragging upwards
+    if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY && monitor.getItem().dataArr == props.dataArr) {
+      return;
+    }
+
+    // Time to actually perform the action
+    props.moveIcon(dragIndex, hoverIndex, ...arguments);
+
+    monitor.getItem().index = hoverIndex;
+  },
+  canDrop(props, monitor, component) {
+    let canDrop = false;
+    const item = monitor.getItem();
+    if(item.viewType != 'folder' && item.index != props.index){
+      canDrop = true;
+    }
+    return canDrop;
+  },
+  drop(props, monitor) {
+    props.onDrop(...arguments);
+  }
+};
 
 const nodeSource = {
+  canDrag(props) {
+    return true;
+  },
   beginDrag(props, monitor, component) {
-    const {
-      imgPath,
-      type,
-      name,
-      nodeType,
-      topologyComponentBundleId,
-      nodeLable
-    } = props;
-    return {
-      imgPath,
-      type,
-      name,
-      nodeType,
-      topologyComponentBundleId,
-      nodeLable
-    };
+    return _.clone(props);
   }
 };
 
@@ -43,7 +86,12 @@ function collect(connect, monitor) {
   return {connectDragSource: connect.dragSource(), isDragging: monitor.isDragging()};
 }
 
-@DragSource(ItemTypes.Nodes, nodeSource, collect)
+@DropTarget(props => {return (props.accepts == ItemTypes.Nodes || props.isChildren) ? 'noDrop' : props.accepts;}, nodeTarget, (connect, monitor) => ({
+  connectDropTarget: connect.dropTarget(),
+  isOver: monitor.isOver(),
+  canDrop: monitor.canDrop()
+}))
+@DragSource(props => props.accepts, nodeSource, collect)
 export default class NodeContainer extends Component {
   static propTypes = {
     connectDragSource: PropTypes.func.isRequired,
@@ -58,6 +106,16 @@ export default class NodeContainer extends Component {
     defaultImagePath: PropTypes.string.isRequired
   };
 
+  getPopover() {
+    const {name, children, editToolbar, onFolderNameChange, data} = this.props;
+    const popover = (
+      <Popover id="popover-positioned-right" title={editToolbar ? <input value={name} className="popoverTitleEditable" onChange={(e) => onFolderNameChange(e, data)}/> : name}>
+        <ul className="nodeContainerFolderPopover">{children}</ul>
+      </Popover>
+    );
+    return popover;
+  }
+
   getDragableNode(connectDragSource) {
     const {
       imgPath,
@@ -65,15 +123,33 @@ export default class NodeContainer extends Component {
       type,
       name,
       topologyComponentBundleId,
-      defaultImagePath
+      defaultImagePath,
+      canDrop,
+      isOver,
+      connectDropTarget,
+      viewType,
+      children
     } = this.props;
-    return connectDragSource(
-      <li>
-        <img src={imgPath} ref="img" onError={() => {
+    const showHighligh = canDrop && isOver;
+    return connectDragSource(connectDropTarget(
+      <li className={showHighligh ? "highlight" : ''}>
+        { viewType != 'folder'
+        ?
+        <div className="nodeContainer"><img src={imgPath} ref="img" onError={() => {
           this.refs.img.src = defaultImagePath;
-        }}/> {name}
+        }}/></div>
+        :
+        <OverlayTrigger trigger="click" rootClose placement="right" overlay={this.getPopover()}>
+          <div className={"nodeContainerFolder"}>
+            {children.map((child, i) => {
+              return <img src={child.props.imgPath} key={i}/>;
+            })}
+          </div>
+        </OverlayTrigger>
+        }
+        {name}
       </li>
-    );
+    ));
   }
 
   render() {

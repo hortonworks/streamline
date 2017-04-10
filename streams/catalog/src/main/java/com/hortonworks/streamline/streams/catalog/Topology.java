@@ -35,7 +35,7 @@ import java.util.Map;
 @StorableEntity
 public class Topology implements Storable {
 
-    public static final String NAME_SPACE = "topology";
+    public static final String NAMESPACE = "topology";
     public static final String ID = "id";
     public static final String VERSIONID = "versionId";
     public static final String NAME = "name";
@@ -112,7 +112,7 @@ public class Topology implements Storable {
 
     @JsonIgnore
     public String getNameSpace () {
-        return NAME_SPACE;
+        return NAMESPACE;
     }
 
     @JsonIgnore

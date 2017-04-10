@@ -14,7 +14,7 @@
 
 import React, {Component} from 'react';
 import Select, {Creatable} from 'react-select';
-import {Radio} from 'react-bootstrap';
+import {Radio, OverlayTrigger, Popover} from 'react-bootstrap';
 import TopologyREST from '../../../rest/TopologyREST';
 import FSReactToastr from '../../../components/FSReactToastr';
 import CommonNotification from '../../../utils/CommonNotification';
@@ -153,18 +153,26 @@ class RuleFormula extends Component {
     let {fields, fields2Arr} = this.state;
     return (
       <div key={i + 1} className="row form-group">
-        <div className="col-sm-2">
-          <Select value={d.logicalOp} options={this.logicalOperator} onChange={this.handleChange.bind(this, 'logicalOp', i)} labelKey="name" valueKey="name"/>
-        </div>
-        <div className="col-sm-3">
-          <Select value={d.field1} options={fields} onChange={this.handleChange.bind(this, 'field1', i)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
-        </div>
-        <div className="col-sm-3">
-          <Select value={d.operator} options={this.operators} onChange={this.handleChange.bind(this, 'operator', i)} labelKey="label" valueKey="name"/>
-        </div>
-        <div className="col-sm-3">
-          <Creatable value={d.field2} options={fields2Arr} onChange={this.handleChange.bind(this, 'field2', i)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
-        </div>
+        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Rule logical operators</Popover>}>
+          <div className="col-sm-2">
+            <Select value={d.logicalOp} options={this.logicalOperator} onChange={this.handleChange.bind(this, 'logicalOp', i)} labelKey="name" valueKey="name"/>
+          </div>
+        </OverlayTrigger>
+        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Field name</Popover>}>
+          <div className="col-sm-3">
+            <Select value={d.field1} options={fields} onChange={this.handleChange.bind(this, 'field1', i)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+          </div>
+        </OverlayTrigger>
+        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Rule operations</Popover>}>
+          <div className="col-sm-3">
+            <Select value={d.operator} options={this.operators} onChange={this.handleChange.bind(this, 'operator', i)} labelKey="label" valueKey="name"/>
+          </div>
+        </OverlayTrigger>
+        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Field name</Popover>}>
+          <div className="col-sm-3">
+            <Creatable value={d.field2} options={fields2Arr} onChange={this.handleChange.bind(this, 'field2', i)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+          </div>
+        </OverlayTrigger>
         <div className="col-sm-1">
           <button className="btn btn-danger btn-sm" type="button" onClick={this.handleRowDelete.bind(this, i)}>
             <i className="fa fa-times"></i>
@@ -182,15 +190,21 @@ class RuleFormula extends Component {
             <span className="text-danger">*</span>
           </label>
         </div>
-        <div className="col-sm-3">
-          <Select value={d.field1} options={fields} onChange={this.handleChange.bind(this, 'field1', 0)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
-        </div>
-        <div className="col-sm-3">
-          <Select value={d.operator} options={this.operators} onChange={this.handleChange.bind(this, 'operator', 0)} labelKey="label" valueKey="name"/>
-        </div>
-        <div className="col-sm-3">
-          <Creatable value={d.field2} options={fields2Arr} onChange={this.handleChange.bind(this, 'field2', 0)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
-        </div>
+        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Field name</Popover>}>
+          <div className="col-sm-3">
+            <Select value={d.field1} options={fields} onChange={this.handleChange.bind(this, 'field1', 0)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+          </div>
+        </OverlayTrigger>
+        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Rule operations</Popover>}>
+          <div className="col-sm-3">
+            <Select value={d.operator} options={this.operators} onChange={this.handleChange.bind(this, 'operator', 0)} labelKey="label" valueKey="name"/>
+          </div>
+        </OverlayTrigger>
+        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Field name</Popover>}>
+          <div className="col-sm-3">
+            <Creatable value={d.field2} options={fields2Arr} onChange={this.handleChange.bind(this, 'field2', 0)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+          </div>
+        </OverlayTrigger>
         <div className="col-sm-1">
           <button className="btn btn-success btn-sm" type="button" onClick={this.handleRowAdd.bind(this)}>
             <i className="fa fa-plus"></i>
@@ -269,8 +283,7 @@ class RuleFormula extends Component {
     this.validSQL = true;
     return (
       <pre className="query-preview" key={1}>
-        select * from {this.renderTableName(streamName)} <span className="text-danger">where</span>
-                                {
+        {
           data.map((d,i)=>{
             let field1_name = '';
             let field2_name = '';
@@ -335,19 +348,13 @@ class RuleFormula extends Component {
 			</pre>
     );
   }
-  renderTableName(name, index) {
-    return (
-      <span key={index + '.1'} className="text-success">
-        {name}</span>
-    );
-  }
   renderFieldName(name, index) {
     if (!name) {
       return this.renderMissing(name, index + '.2', 'Field');
     }
     return (
       <span className="text-primary">
-        {name}</span>
+        {name} </span>
     );
   }
   renderOperator(name, index) {
@@ -356,14 +363,14 @@ class RuleFormula extends Component {
     }
     return (
       <span className="text-danger">
-        {name}</span>
+        {name} </span>
     );
   }
   renderMissing(name, index, type) {
     this.validSQL = false;
     return (
       <span className="text-muted">
-        Missing {type}</span>
+        Missing {type} </span>
     );
   }
   render() {
@@ -609,9 +616,11 @@ export default class RulesForm extends Component {
             <span className="text-danger">*</span>
           </label>
           <div>
+            <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Name for rule</Popover>}>
             <input name="name" placeholder="Name" onChange={this.handleNameChange.bind(this)} type="text" className={this.state.showNameError
               ? "form-control invalidInput"
               : "form-control"} value={this.state.name} required={true}/>
+            </OverlayTrigger>
           </div>
           {this.state.showInvalidName
             ? <p className="text-danger">Name is already present.</p>
@@ -622,9 +631,11 @@ export default class RulesForm extends Component {
             <span className="text-danger">*</span>
           </label>
           <div>
+            <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Description for rule</Popover>}>
             <textArea name="description" className={this.state.showDescriptionError
               ? "form-control invalidInput"
               : "form-control"} onChange={this.handleValueChange.bind(this)} value={this.state.description} required={true}/>
+            </OverlayTrigger>
           </div>
         </div>
         <RuleFormula ref="RuleFormula" fields={this.props.parsedStream.fields} streamId={this.props.parsedStream.streamId} condition={this.state.condition}/>

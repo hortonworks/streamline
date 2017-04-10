@@ -17,6 +17,10 @@
 package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
+import com.hortonworks.streamline.streams.security.Permission;
+import com.hortonworks.streamline.streams.security.Roles;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import org.apache.commons.lang3.StringUtils;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.File;
@@ -39,13 +43,19 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.UUID;
 
+import static com.hortonworks.streamline.streams.security.Permission.EXECUTE;
+import static com.hortonworks.streamline.streams.security.Permission.READ;
+import static com.hortonworks.streamline.streams.security.Permission.WRITE;
+import static com.hortonworks.streamline.streams.security.Permission.DELETE;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -57,16 +67,19 @@ import static javax.ws.rs.core.Response.Status.OK;
 public class FileCatalogResource {
     private static final Logger log = LoggerFactory.getLogger(FileCatalogResource.class);
 
+    private final StreamlineAuthorizer authorizer;
     private final CatalogService catalogService;
 
-    public FileCatalogResource(CatalogService catalogService) {
+    public FileCatalogResource(StreamlineAuthorizer authorizer, CatalogService catalogService) {
+        this.authorizer = authorizer;
         this.catalogService = catalogService;
     }
 
     @GET
     @Path("/files")
     @Timed
-    public Response listFiles(@Context UriInfo uriInfo) {
+    public Response listFiles(@Context UriInfo uriInfo,
+                              @Context SecurityContext securityContext) {
         Collection<File> files = null;
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
         if (params == null || params.isEmpty()) {
@@ -74,7 +87,8 @@ public class FileCatalogResource {
         } else {
             files = catalogService.listFiles(WSUtils.buildQueryParameters(params));
         }
-        return WSUtils.respondEntities(files, OK);
+        Collection<File> result = SecurityUtil.filter(authorizer, securityContext, File.NAMESPACE, files, READ);
+        return WSUtils.respondEntities(result, OK);
     }
 
     /**
@@ -105,9 +119,12 @@ public class FileCatalogResource {
     @Path("/files")
     public Response addFile(@FormDataParam("file") final InputStream inputStream,
                             @FormDataParam("file") final FormDataContentDisposition contentDispositionHeader,
-                            @FormDataParam("fileInfo") final File file) throws IOException {
+                            @FormDataParam("fileInfo") final File file,
+                            @Context SecurityContext securityContext) throws IOException {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_FILE_ADMIN);
         log.info("Received fileInfo: [{}]", file);
         File updatedFile = addFile(inputStream, file);
+        SecurityUtil.addAcl(authorizer, securityContext, File.NAMESPACE, updatedFile.getId(), EnumSet.allOf(Permission.class));
         return WSUtils.respondEntity(updatedFile, CREATED);
     }
 
@@ -128,8 +145,9 @@ public class FileCatalogResource {
     public Response updateFile(@PathParam("id") Long fileId,
                                @FormDataParam("file") final InputStream inputStream,
                                @FormDataParam("file") final FormDataContentDisposition contentDispositionHeader,
-                               @FormDataParam("fileInfo") final File file)
-        throws IOException {
+                               @FormDataParam("fileInfo") final File file,
+                               @Context SecurityContext securityContext) throws IOException {
+        SecurityUtil.checkPermissions(authorizer, securityContext, File.NAMESPACE, fileId, WRITE);
         log.info("Received fileInfo: [{}]", file);
         String oldFileStorageName = null;
         final File existingFile = catalogService.getFile(fileId);
@@ -174,7 +192,8 @@ public class FileCatalogResource {
     @GET
     @Path("/files/{id}")
     @Timed
-    public Response getFile(@PathParam("id") Long fileId) {
+    public Response getFile(@PathParam("id") Long fileId, @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, File.NAMESPACE, fileId, READ);
         File result = catalogService.getFile(fileId);
         if (result != null) {
             return WSUtils.respondEntity(result, OK);
@@ -191,9 +210,11 @@ public class FileCatalogResource {
     @DELETE
     @Path("/files/{id}")
     @Timed
-    public Response removeFile(@PathParam("id") Long fileId) throws IOException {
+    public Response removeFile(@PathParam("id") Long fileId, @Context SecurityContext securityContext) throws IOException {
+        SecurityUtil.checkPermissions(authorizer, securityContext, File.NAMESPACE, fileId, DELETE);
         try {
             File removedFile = catalogService.removeFile(fileId);
+            SecurityUtil.removeAcl(authorizer, securityContext, File.NAMESPACE, fileId);
             log.info("Removed File entry is [{}]", removedFile);
             if (removedFile != null) {
                 boolean removed = catalogService.deleteFileFromStorage(removedFile.getStoredFileName());
@@ -222,7 +243,8 @@ public class FileCatalogResource {
     @GET
     @Produces({"application/octet-stream", "application/json"})
     @Path("/files/download/{fileId}")
-    public Response downloadFile(@PathParam("fileId") Long fileId) throws IOException {
+    public Response downloadFile(@PathParam("fileId") Long fileId, @Context SecurityContext securityContext) throws IOException {
+        SecurityUtil.checkPermissions(authorizer, securityContext, File.NAMESPACE, fileId, READ, EXECUTE);
         File file = catalogService.getFile(fileId);
         if (file != null) {
             StreamingOutput streamOutput = WSUtils.wrapWithStreamingOutput(catalogService.downloadFileFromStorage(file.getStoredFileName()));

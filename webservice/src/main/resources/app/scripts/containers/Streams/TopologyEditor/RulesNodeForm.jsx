@@ -308,7 +308,7 @@ export default class RulesNodeForm extends Component {
                   : 0} pageButtonLimit={5}>
                   <Thead>
                     <Th column="name">Name</Th>
-                    <Th column="sql">SQL Query</Th>
+                    <Th column="condition">Condition</Th>
                     <Th column="action" className={!editMode
                       ? 'displayNone'
                       : null}>Actions</Th>
@@ -317,7 +317,7 @@ export default class RulesNodeForm extends Component {
                     return (
                       <Tr key={i}>
                         <Td column="name">{rule.name}</Td>
-                        <Td column="sql">{rule.sql}</Td>
+                        <Td column="condition">{rule.condition}</Td>
                         <Td column="action" className={!editMode
                           ? 'displayNone'
                           : null}>

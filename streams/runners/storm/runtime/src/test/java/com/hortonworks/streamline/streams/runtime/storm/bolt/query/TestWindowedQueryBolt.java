@@ -51,29 +51,6 @@ public class TestWindowedQueryBolt {
             {10,"priyank","seattle" }
     };
 
-    String[] orderFields = {"orderId", "userId", "itemId", "price"};
-
-    Object[][] orders = {
-            {11, 2, 21, 7},
-            {12, 2, 22, 3},
-            {13, 3, 23, 4},
-            {14, 4, 24, 5},
-            {15, 5, 25, 2},
-            {16, 6, 26, 7},
-            {17, 6, 27, 4},
-            {18, 7, 28, 2},
-            {19, 8, 29, 9}
-    };
-
-    String[] storeFields = {"storeId", "storeName", "city"};
-    Object[][] stores = {
-            {1, "store1",  "san jose"},
-            {2, "store2",  "santa clara"},
-            {3, "store3",  "dublin" },
-            {4, "store4",  "san mateo" },
-            {5, "store5",  "bengaluru" },
-    };
-
     String [] cityFields = {"cityId","cityName","country"};
     Object[][] cities = {
             {1, "san jose", "US"},
@@ -89,29 +66,15 @@ public class TestWindowedQueryBolt {
 
 
     @Test
-    public void testTrivial() throws Exception {
-        ArrayList<Tuple> orderStream = makeStream("orders", orderFields, orders);
-        TupleWindow window = makeTupleWindow(orderStream);
-
-        WindowedQueryBolt bolt = new WindowedQueryBolt(WindowedQueryBolt.StreamSelector.STREAM, "orders", orderFields[0])
-                .select("orderId,userId,itemId,price");
-        MockCollector collector = new MockCollector();
-        bolt.prepare(null, null, collector);
-        bolt.execute(window);
-        printResults(collector);
-        Assert.assertEquals( orderStream.size(), collector.actualResults.size() );
-    }
-
-    @Test
     public void testNestedKeys_trivial() throws Exception {
         ArrayList<Tuple> userStream = makeStreamLineEventStream("users", userFields, users);
         TupleWindow window = makeTupleWindow(userStream);
-        WindowedQueryBolt bolt = new WindowedQueryBolt(WindowedQueryBolt.StreamSelector.STREAM, "users", SL_PREFIX + "userId")
-                .select("streamline-event.name, streamline-event.city");
+        WindowedQueryBolt bolt = new WindowedQueryBolt("users", SL_PREFIX + "userId")
+                .selectStreamLine("name,city");
         MockCollector collector = new MockCollector();
         bolt.prepare(null, null, collector);
         bolt.execute(window);
-        printResults(collector);
+        printResults_StreamLine(collector);
         Assert.assertEquals( userStream.size(), collector.actualResults.size() );
     }
 
@@ -121,142 +84,14 @@ public class TestWindowedQueryBolt {
         ArrayList<Tuple> userStream = makeStreamLineEventStream("users", userFields, users);
         ArrayList<Tuple> cityStream = makeStreamLineEventStream("city", cityFields, cities);
         TupleWindow window = makeTupleWindow(userStream, cityStream);
-        WindowedQueryBolt bolt = new WindowedQueryBolt(WindowedQueryBolt.StreamSelector.STREAM, "users", "city")
+        WindowedQueryBolt bolt = new WindowedQueryBolt("users", "city")
                 .join("city", "cityName", "users")
                 .selectStreamLine("name,city,country");
         MockCollector collector = new MockCollector();
         bolt.prepare(null, null, collector);
         bolt.execute(window);
-        printResults(collector);
+        printResults_StreamLine(collector);
         Assert.assertEquals( cityStream.size(), collector.actualResults.size() );
-    }
-
-    @Test
-    public void testInnerJoin() throws Exception {
-        ArrayList<Tuple> userStream = makeStream("users", userFields, users);
-        ArrayList<Tuple> orderStream = makeStream("orders", orderFields, orders);
-        TupleWindow window = makeTupleWindow(orderStream, userStream);
-
-        WindowedQueryBolt bolt = new WindowedQueryBolt(WindowedQueryBolt.StreamSelector.STREAM, "users", userFields[0])
-                .join("orders", "userId", "users")
-                .select("userId,name,price");
-
-        MockCollector collector = new MockCollector();
-        bolt.prepare(null, null, collector);
-        bolt.execute(window);
-        printResults(collector);
-        Assert.assertEquals( orders.length, collector.actualResults.size() );
-    }
-
-    @Test
-    public void testLeftJoin() throws Exception {
-        ArrayList<Tuple> userStream = makeStream("users", userFields, users);
-        ArrayList<Tuple> orderStream = makeStream("orders", orderFields, orders);
-        TupleWindow window = makeTupleWindow(orderStream, userStream);
-
-        WindowedQueryBolt bolt = new WindowedQueryBolt(WindowedQueryBolt.StreamSelector.STREAM, "users", userFields[0])
-                .leftJoin("orders", "userId", "users")
-                .select("userId,name,price");
-
-        MockCollector collector = new MockCollector();
-        bolt.prepare(null, null, collector);
-        bolt.execute(window);
-        printResults(collector);
-        Assert.assertEquals(12, collector.actualResults.size() );
-    }
-
-    @Test
-    public void testThreeStreamInnerJoin() throws Exception {
-        ArrayList<Tuple> userStream = makeStream("users", userFields, users);
-        ArrayList<Tuple> storesStream = makeStream("stores", storeFields, stores);
-        ArrayList<Tuple> cityStream = makeStream("cities", cityFields, cities);
-
-        TupleWindow window = makeTupleWindow(userStream, storesStream, cityStream);
-
-        WindowedQueryBolt bolt = new WindowedQueryBolt(WindowedQueryBolt.StreamSelector.STREAM, "users", userFields[2])
-                .join("stores", "city", "users")
-                .join("cities", "cityName", "stores")
-                .select("name,storeName,city,country");
-
-        MockCollector collector = new MockCollector();
-        bolt.prepare(null, null, collector);
-        bolt.execute(window);
-        printResults(collector);
-        Assert.assertEquals(6, collector.actualResults.size() );
-
-    }
-
-    @Test
-    public void testThreeStreamLeftJoin_1() throws Exception {
-        ArrayList<Tuple> userStream = makeStream("users", userFields, users);
-        ArrayList<Tuple> storesStream = makeStream("stores", storeFields, stores);
-        ArrayList<Tuple> cityStream = makeStream("cities", cityFields, cities);
-
-        TupleWindow window = makeTupleWindow(userStream,  cityStream, storesStream);
-
-        WindowedQueryBolt bolt = new WindowedQueryBolt(WindowedQueryBolt.StreamSelector.STREAM, "users", userFields[2])
-                .leftJoin("stores", "city", "users")
-                .leftJoin("cities", "cityName", "users")
-                .select("name,storeName,city,country");
-
-        MockCollector collector = new MockCollector();
-        bolt.prepare(null, null, collector);
-        bolt.execute(window);
-        printResults(collector);
-        Assert.assertEquals(users.length, collector.actualResults.size() );
-    }
-
-    @Test
-    public void testThreeStreamLeftJoin_2() throws Exception {
-        ArrayList<Tuple> userStream = makeStream("users", userFields, users);
-        ArrayList<Tuple> storesStream = makeStream("stores", storeFields, stores);
-        ArrayList<Tuple> cityStream = makeStream("cities", cityFields, cities);
-
-        TupleWindow window = makeTupleWindow(userStream, cityStream, storesStream);
-
-        WindowedQueryBolt bolt = new WindowedQueryBolt(WindowedQueryBolt.StreamSelector.STREAM, "users", "city")
-                .leftJoin("stores", "city", "users")
-                .leftJoin("cities", "cityName", "stores")  // join against diff stream compared to testThreeStreamLeftJoin_1
-                .select("name,storeName,city,country");
-
-        MockCollector collector = new MockCollector();
-        bolt.prepare(null, null, collector);
-        bolt.execute(window);
-        printResults(collector);
-        Assert.assertEquals(stores.length+1, collector.actualResults.size() ); // stores.length+1 as 2 users in Bengaluru
-    }
-
-
-
-    @Test
-    public void testThreeStreamMixedJoin() throws Exception {
-        ArrayList<Tuple> userStream = makeStream("users", userFields, users);
-        ArrayList<Tuple> storesStream = makeStream("stores", storeFields, stores);
-        ArrayList<Tuple> cityStream = makeStream("cities", cityFields, cities);
-
-        TupleWindow window = makeTupleWindow(userStream,  cityStream, storesStream);
-
-        WindowedQueryBolt bolt = new WindowedQueryBolt(WindowedQueryBolt.StreamSelector.STREAM, "users", userFields[2])
-                .join("stores", "city", "users")
-                .leftJoin("cities", "cityName", "users")
-                .select("name,storeName,city,country");
-
-        MockCollector collector = new MockCollector();
-        bolt.prepare(null, null, collector);
-        bolt.execute(window);
-        printResults(collector);
-        Assert.assertEquals(stores.length+1, collector.actualResults.size() ); // stores.length+1 as 2 users in Bengaluru
-    }
-
-    private static void printResults(MockCollector collector) {
-        int counter=0;
-        for (List<Object> rec : collector.actualResults) {
-            System.out.print(++counter +  ") ");
-            for (Object field : rec) {
-                System.out.print(field + ", ");
-            }
-            System.out.println("");
-        }
     }
 
     private static void printResults_StreamLine(MockCollector collector) {
@@ -293,17 +128,6 @@ public class TestWindowedQueryBolt {
     }
 
 
-    private static ArrayList<Tuple> makeStream(String streamName, String[] fieldNames, Object[][] data) {
-        ArrayList<Tuple> result = new ArrayList<>();
-        MockContext mockContext = new MockContext(fieldNames);
-
-        for (Object[] record : data) {
-            TupleImpl rec = new TupleImpl(mockContext, Arrays.asList(record), 0, streamName);
-            result.add( rec );
-        }
-
-        return result;
-    }
 
     private static ArrayList<Tuple> makeStreamLineEventStream (String streamName, String[] fieldNames, Object[][] records) {
 

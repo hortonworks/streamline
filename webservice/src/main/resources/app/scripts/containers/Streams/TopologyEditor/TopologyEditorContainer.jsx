@@ -21,7 +21,7 @@ import HTML5Backend from 'react-dnd-html5-backend';
 import BaseContainer from '../../BaseContainer';
 import {Link, withRouter} from 'react-router';
 import TopologyREST from '../../../rest/TopologyREST';
-import {OverlayTrigger, Tooltip, Accordion, Panel} from 'react-bootstrap';
+import {OverlayTrigger, Tooltip, Popover, Accordion, Panel} from 'react-bootstrap';
 import Switch from 'react-bootstrap-switch';
 import ComponentNodeContainer from './ComponentNodeContainer';
 import TopologyConfig from './TopologyConfigContainer';
@@ -39,6 +39,7 @@ import state from '../../../app_state';
 import CommonNotification from '../../../utils/CommonNotification';
 import AnimatedLoader from '../../../components/AnimatedLoader';
 import CommonLoaderSign from '../../../components/CommonLoaderSign';
+import SpotlightSearch from '../../../components/SpotlightSearch';
 
 const componentTarget = {
   drop(props, monitor, component) {
@@ -88,6 +89,29 @@ class EditorGraph extends Component {
       }
     }));
   }
+  /*
+    addComponent callback method accepts the component details from SpotlightSearch and
+    gets node name in case of custom processor
+    invokes method to add component in TopologyGraphComponent
+  */
+  addComponent(item) {
+    let obj = {
+      type: item.type,
+      imgPath: 'styles/img/icon-' + item.subType.toLowerCase() + '.png',
+      name: item.subType,
+      nodeLabel: item.subType,
+      nodeType: item.subType,
+      topologyComponentBundleId: item.id
+    };
+    if(item.subType === 'CUSTOM') {
+      let config = item.topologyComponentUISpecification.fields,
+        name = _.find(config, {fieldName: "name"});
+      obj.name = name ? name.defaultValue : 'Custom';
+      obj.nodeLabel = name ? name.defaultValue : 'Custom';
+      obj.nodeType = 'Custom';
+    }
+    this.refs.TopologyGraph.decoratedComponentInstance.addComponentToGraph(obj);
+  }
   render() {
     const actualHeight = (window.innerHeight - (this.props.viewMode
       ? 360
@@ -106,14 +130,16 @@ class EditorGraph extends Component {
       topologyConfigMessageCB
     } = this.props;
     const {boxes, bundleArr} = this.state;
+    const componentsBundle = [...bundleArr.sourceBundle, ...bundleArr.processorsBundle, ...bundleArr.sinksBundle];
     return connectDropTarget(
       <div>
         <div className="" style={{
           height: actualHeight
         }}>
-          <TopologyGraphComponent ref="TopologyGraph" height={parseInt(actualHeight, 10)} data={graphData} topologyId={topologyId} versionId={versionId} versionsArr={versionsArr} viewMode={viewMode} getModalScope={getModalScope} setModalContent={setModalContent} getEdgeConfigModal={getEdgeConfigModal} setLastChange={setLastChange} topologyConfigMessageCB={topologyConfigMessageCB}/> {state.showComponentNodeContainer
+          <TopologyGraphComponent ref="TopologyGraph" height={parseInt(actualHeight, 10)} data={graphData} topologyId={topologyId} versionId={versionId} versionsArr={versionsArr} viewMode={viewMode} getModalScope={getModalScope} setModalContent={setModalContent} getEdgeConfigModal={getEdgeConfigModal} setLastChange={setLastChange} topologyConfigMessageCB={topologyConfigMessageCB} /> {state.showComponentNodeContainer
             ? <ComponentNodeContainer left={boxes.left} top={boxes.top} hideSourceOnDrag={true} viewMode={viewMode} customProcessors={this.props.customProcessors} bundleArr={bundleArr}/>
             : null}
+            {state.showSpotlightSearch ? <SpotlightSearch viewMode={viewMode} componentsList={Utils.sortArray(componentsBundle, 'name', true)} addComponentCallback={this.addComponent.bind(this)}/> : ''}
         </div>
       </div>
     );
@@ -199,7 +225,9 @@ class TopologyEditorContainer extends Component {
     progressBarColor: 'green',
     fetchLoader: true,
     mapSlideInterval: [],
-    defaultTimeSec: 0
+    topologyTimeSec: 0,
+    defaultTimeSec : 0,
+    deployStatus : 'DEPLOYING_TOPOLOGY'
   };
 
   fetchData(versionId) {
@@ -226,12 +254,13 @@ class TopologyEditorContainer extends Component {
         promiseArr.push(TopologyREST.getAllNodes(this.topologyId, versionId, 'edges'));
         promiseArr.push(TopologyREST.getMetaInfo(this.topologyId, versionId));
         promiseArr.push(TopologyREST.getAllVersions(this.topologyId));
+        promiseArr.push(TopologyREST.getTopologyConfig());
 
         Promise.all(promiseArr).then((resultsArr) => {
           let allNodes = [];
           this.topologyName = data.topology.name;
           this.topologyConfig = JSON.parse(data.topology.config);
-          this.defaultTimeSec = this.topologyConfig["topology.message.timeout.secs"];
+          this.topologyTimeSec = this.topologyConfig["topology.message.timeout.secs"];
           this.runtimeObj = data.runtime || {
             metric: (data.runtime === undefined)
               ? ''
@@ -268,8 +297,11 @@ class TopologyEditorContainer extends Component {
           this.graphData.metaInfo = JSON.parse(resultsArr[8].data);
 
           let versions = resultsArr[9].entities || [];
-          Utils.sortArray(versions, 'name', true);
 
+          this.topologyConfigData = resultsArr[10].entities[0] || [];
+          let defaultTimeSecVal = this.getDefaultTimeSec(this.topologyConfigData);
+
+          Utils.sortArray(versions, 'name', true);
           this.graphData.nodes = TopologyUtils.syncNodeData(sourcesNode, processorsNode, sinksNode, this.graphData.metaInfo, this.sourceConfigArr, this.processorConfigArr, this.sinkConfigArr);
 
           this.graphData.uinamesList = [];
@@ -301,7 +333,8 @@ class TopologyEditorContainer extends Component {
             fetchLoader: false,
             unknown,
             mapTopologyConfig: this.topologyConfig,
-            defaultTimeSec: this.defaultTimeSec
+            topologyTimeSec: this.topologyTimeSec,
+            defaultTimeSec : defaultTimeSecVal
           });
           this.customProcessors = this.getCustomProcessors();
           this.processorSlideInterval(processorsNode);
@@ -327,15 +360,25 @@ class TopologyEditorContainer extends Component {
       }
     };
   }
+
+  // get the default time sec of topologyName
+  getDefaultTimeSec(data){
+    const fields = data.topologyComponentUISpecification.fields || [];
+    const obj = _.find(fields, (field) => {
+      return field.fieldName === "topology.message.timeout.secs";
+    });
+    return obj.defaultValue;
+  }
+
   // fetchProcessors on graph render
   fetchProcessors() {
-    const {topologyVersion, defaultTimeSec, topologyName} = this.state;
+    const {topologyVersion, topologyTimeSec, topologyName} = this.state;
     TopologyREST.getAllNodes(this.topologyId, topologyVersion, 'processors').then((processor) => {
       if (processor.responseMessage !== undefined) {
         FSReactToastr.error(
           <CommonNotification flag="error" content={processor.responseMessage}/>, '', toastOpt);
       } else {
-        this.topologyConfig["topology.message.timeout.secs"] = defaultTimeSec;
+        this.topologyConfig["topology.message.timeout.secs"] = topologyTimeSec;
         if (processor.entities.length > 0) {
           this.processorSlideInterval(processor.entities);
         } else {
@@ -363,7 +406,7 @@ class TopologyEditorContainer extends Component {
     });
   }
   processorSlideInterval(processors) {
-    const {defaultTimeSec, topologyName, topologyVersion} = this.state;
+    const {topologyTimeSec, topologyName, topologyVersion} = this.state;
     let tempIntervalArr = [];
     const p_String = "JOIN,AGGREGATE";
     const p_index = _.findIndex(processors, function(processor) {
@@ -374,7 +417,7 @@ class TopologyEditorContainer extends Component {
     });
     if (p_index === -1) {
       this.tempIntervalArr = [];
-      this.topologyConfig["topology.message.timeout.secs"] = defaultTimeSec;
+      this.topologyConfig["topology.message.timeout.secs"] = topologyTimeSec;
       this.setState({
         mapTopologyConfig: this.topologyConfig,
         mapSlideInterval: this.tempIntervalArr
@@ -399,6 +442,7 @@ class TopologyEditorContainer extends Component {
     }
   }
   mapSlideInterval(id, timeObj) {
+    const {defaultTimeSec} = this.state;
     this.tempIntervalArr = this.state.mapSlideInterval;
     let timeoutSec = this.topologyConfig["topology.message.timeout.secs"];
     let slideIntVal = 0,
@@ -418,11 +462,11 @@ class TopologyEditorContainer extends Component {
     if (index === -1) {
       this.tempIntervalArr.push({
         id: id,
-        value: slideIntVal + 5
+        value: slideIntVal + defaultTimeSec
       });
     } else {
-      timeoutSec = 30;
-      this.tempIntervalArr[index].value = slideIntVal + 5;
+      timeoutSec = defaultTimeSec;
+      this.tempIntervalArr[index].value = slideIntVal + defaultTimeSec;
     }
     const maxObj = _.maxBy(this.tempIntervalArr, "value");
     const maxVal = maxObj.value;
@@ -445,10 +489,10 @@ class TopologyEditorContainer extends Component {
     }
   }
   topologyConfigMessageCB(id) {
-    const {defaultTimeSec} = this.state;
+    const {topologyTimeSec} = this.state;
     this.tempIntervalArr = this.state.mapSlideInterval;
     if (id) {
-      this.topologyConfig["topology.message.timeout.secs"] = defaultTimeSec;
+      this.topologyConfig["topology.message.timeout.secs"] = topologyTimeSec;
       const index = this.tempIntervalArr.findIndex((x) => {
         return x.id === id;
       });
@@ -622,47 +666,76 @@ class TopologyEditorContainer extends Component {
               this.refs.deployLoadingModal.hide();
               this.setState({topologyStatus: status});
             } else {
-              this.refs.deployLoadingModal.hide();
-              FSReactToastr.success(
-                <strong>Topology Deployed Successfully</strong>
-              );
-              this.lastUpdatedTime = new Date(topology.timestamp);
-              this.setState({
-                altFlag: !this.state.altFlag
-              });
-              let versionData = {
-                name: 'V' + this.state.topologyVersion,
-                description: 'version description auto generated'
-              };
-              TopologyREST.saveTopologyVersion(this.topologyId, {body: JSON.stringify(versionData)}).then((versionResponse) => {
-                let versions = this.state.versionsArr;
-                let savedVersion = _.find(versions, {id: versionResponse.id});
-                savedVersion.name = versionResponse.name;
-
-                TopologyREST.getTopology(this.topologyId).then((result) => {
-                  let data = result;
-                  this.runtimeObj = data.runtime || {
-                    metric: (data.runtime === undefined)
-                      ? ''
-                      : data.runtime.metric
-                  };
-                  this.topologyMetric = this.runtimeObj.metric || {
-                    misc: (this.runtimeObj.metric === undefined)
-                      ? ''
-                      : this.runtimeObj.metric.misc
-                  };
-                  this.versionId = data.topology.versionId;
-                  versions.push({id: data.topology.versionId, topologyId: this.topologyId, name: "CURRENT", description: ""});
-                  let status = this.topologyMetric.status || '';
-                  this.setState({topologyMetric: this.topologyMetric, isAppRunning: true, topologyStatus: status, topologyVersion: data.topology.versionId, versionsArr: versions});
+              let interval = setInterval(() => {
+                TopologyREST.deployTopologyState(this.topologyId).then((topologyState) => {
+                  if(topologyState.responseMessage !== undefined){
+                    FSReactToastr.error(
+                      <CommonNotification flag="error" content={topologyState.responseMessage}/>, '', toastOpt);
+                  }else{
+                    if(topologyState.name.indexOf('TOPOLOGY_STATE_DEPLOYED')  !== -1){
+                      this.setState({deployStatus : topologyState.name}, () => {
+                        const clearTimer = setTimeout(() => {
+                          clearInterval(interval);
+                          this.refs.deployLoadingModal.hide();
+                          this.saveTopologyVersion(topology.timestamp);
+                        },1000);
+                      });
+                    } else if (topologyState.name.indexOf('TOPOLOGY_STATE_DEPLOYMENT_FAILED','TOPOLOGY_STATE_SUSPENDED') !== -1) {
+                      this.setState({deployStatus : topologyState.name}, () => {
+                        const clearTimer = setTimeout(() => {
+                          clearInterval(interval);
+                          this.refs.deployLoadingModal.hide();
+                          FSReactToastr.error(
+                            <CommonNotification flag="error" content={topologyState.description}/>, '', toastOpt);
+                        },1000);
+                      });
+                    }
+                    this.setState({deployStatus : topologyState.name});
+                  }
                 });
-              });
+              },3000);
             }
           });
         }
       });
       confirmBox.cancel();
     }, () => {});
+  }
+  saveTopologyVersion(timestamp){
+    FSReactToastr.success(
+      <strong>Topology Deployed Successfully</strong>
+    );
+    this.lastUpdatedTime = new Date(timestamp);
+    this.setState({
+      altFlag: !this.state.altFlag
+    });
+    let versionData = {
+      name: 'V' + this.state.topologyVersion,
+      description: 'version description auto generated'
+    };
+    TopologyREST.saveTopologyVersion(this.topologyId, {body: JSON.stringify(versionData)}).then((versionResponse) => {
+      let versions = this.state.versionsArr;
+      let savedVersion = _.find(versions, {id: versionResponse.id});
+      savedVersion.name = versionResponse.name;
+
+      TopologyREST.getTopology(this.topologyId).then((result) => {
+        let data = result;
+        this.runtimeObj = data.runtime || {
+          metric: (data.runtime === undefined)
+            ? ''
+            : data.runtime.metric
+        };
+        this.topologyMetric = this.runtimeObj.metric || {
+          misc: (this.runtimeObj.metric === undefined)
+            ? ''
+            : this.runtimeObj.metric.misc
+        };
+        this.versionId = data.topology.versionId;
+        versions.push({id: data.topology.versionId, topologyId: this.topologyId, name: "CURRENT", description: ""});
+        let status = this.topologyMetric.status || '';
+        this.setState({topologyMetric: this.topologyMetric, isAppRunning: true, topologyStatus: status, topologyVersion: data.topology.versionId, versionsArr: versions});
+      });
+    });
   }
   killTopology() {
     this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to kill this topology ?'}).then((confirmBox) => {
@@ -761,7 +834,7 @@ class TopologyEditorContainer extends Component {
             if (this.node.currentType.toLowerCase() === 'window' || this.node.currentType.toLowerCase() === 'join' || this.node.currentType.toLowerCase() === 'projection') {
               let updatedEdges = [];
               savedNode.map((n, i) => {
-                if (i > 0) {
+                if (i > 0 && n.streamGrouping) {
                   updatedEdges.push(n);
                 }
               });
@@ -997,10 +1070,11 @@ class TopologyEditorContainer extends Component {
     }
   }
   render() {
-    const {progressCount, progressBarColor, fetchLoader, mapTopologyConfig} = this.state;
+    const {progressCount, progressBarColor, fetchLoader, mapTopologyConfig,deployStatus} = this.state;
     let nodeType = this.node
       ? this.node.currentType
       : '';
+
     return (
       <BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" breadcrumbData={this.breadcrumbData} headerContent={this.getTopologyHeader()}>
         <div className="row">
@@ -1022,17 +1096,17 @@ class TopologyEditorContainer extends Component {
                         color: '#545454'
                       }}>{this.versionName}</span>
                     </span>
-                    <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip"> Zoom In </Tooltip>}>
+                    <OverlayTrigger placement="top" overlay={<Popover id = "tooltip-popover"><span className="editor-control-tooltip"> Zoom In </span></Popover>}>
                       <a href="javascript:void(0);" className="zoom-in" onClick={this.graphZoomAction.bind(this, 'zoom_in')}>
                         <i className="fa fa-search-plus"></i>
                       </a>
                     </OverlayTrigger>
-                    <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip"> Zoom Out </Tooltip>}>
+                    <OverlayTrigger placement="top" overlay={<Popover id = "tooltip-popover"><span className="editor-control-tooltip"> Zoom Out </span></Popover>}>
                       <a href="javascript:void(0);" className="zoom-out" onClick={this.graphZoomAction.bind(this, 'zoom_out')}>
                         <i className="fa fa-search-minus"></i>
                       </a>
                     </OverlayTrigger>
-                    <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip"> Configure </Tooltip>}>
+                    <OverlayTrigger placement="top" overlay={<Popover id = "tooltip-popover"><span className="editor-control-tooltip"> Configure </span></Popover>}>
                       <a href="javascript:void(0);" className="config" onClick={this.showConfig.bind(this)}>
                         <i className="fa fa-gear"></i>
                       </a>
@@ -1067,7 +1141,7 @@ class TopologyEditorContainer extends Component {
           </div>
         </div>
         <Modal ref="TopologyConfigModal" data-title="Topology Configuration" onKeyPress={this.handleKeyPress.bind(this)} data-resolve={this.handleSaveConfig.bind(this)}>
-          <TopologyConfig ref="topologyConfig" topologyId={this.topologyId} versionId={this.versionId} data={mapTopologyConfig} topologyName={this.state.topologyName} viewMode={this.viewMode}/>
+          <TopologyConfig ref="topologyConfig" topologyId={this.topologyId} versionId={this.versionId} data={mapTopologyConfig} topologyName={this.state.topologyName} viewMode={this.viewMode} uiConfigFields={this.topologyConfigData}/>
         </Modal>
         <Modal ref="NodeModal" onKeyPress={this.handleKeyPress.bind(this)} bsSize={this.processorNode && nodeType.toLowerCase() !== 'join'
           ? "large"
@@ -1087,7 +1161,7 @@ class TopologyEditorContainer extends Component {
           <EdgeConfig ref="EdgeConfig" data={this.edgeConfigData}/>
         </Modal>
         <Modal ref="deployLoadingModal" hideHeader={true} hideFooter={true}>
-          <AnimatedLoader progressBar={progressCount} progressBarColor={progressBarColor}/>
+          <AnimatedLoader progressBar={progressCount} progressBarColor={progressBarColor} deployStatus={deployStatus}/>
         </Modal>
       </BaseContainer>
     );

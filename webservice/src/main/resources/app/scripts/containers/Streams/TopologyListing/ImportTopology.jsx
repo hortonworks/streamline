@@ -114,7 +114,7 @@ class ImportTopology extends Component {
     return (
       <div className="modal-form config-modal-form">
         <div className="form-group">
-          <label>Select JSON File
+          <label data-stest="selectJsonLabel">Select JSON File
             <span className="text-danger">*</span>
           </label>
           <div>
@@ -124,14 +124,14 @@ class ImportTopology extends Component {
           </div>
         </div>
         <div className="form-group">
-          <label>Topology Name
+          <label data-stest="topologyNameLabel">Topology Name
           </label>
           <div>
             <input type="text" className="form-control" name="name" title="Topology Name" ref="topologyName"/>
           </div>
         </div>
         <div className="form-group">
-          <label>Environment
+          <label data-stest="environmentLabel">Environment
             <span className="text-danger">*</span>
           </label>
           <div>

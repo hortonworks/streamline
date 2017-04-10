@@ -17,11 +17,14 @@ package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyRule;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.layout.component.rule.Rule;
-import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -33,13 +36,16 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import java.util.Collection;
 import java.util.List;
 
+import static com.hortonworks.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
+import static com.hortonworks.streamline.streams.security.Permission.READ;
+import static com.hortonworks.streamline.streams.security.Permission.WRITE;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
-import static com.hortonworks.streamline.common.util.WSUtils.buildTopologyIdAndVersionIdAwareQueryParams;
 
 /**
  * REST resource for managing rules.
@@ -56,9 +62,11 @@ import static com.hortonworks.streamline.common.util.WSUtils.buildTopologyIdAndV
 @Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class RuleCatalogResource {
+    private final StreamlineAuthorizer authorizer;
     private final StreamCatalogService catalogService;
 
-    public RuleCatalogResource(StreamCatalogService catalogService) {
+    public RuleCatalogResource(StreamlineAuthorizer authorizer, StreamCatalogService catalogService) {
+        this.authorizer = authorizer;
         this.catalogService = catalogService;
     }
 
@@ -88,10 +96,13 @@ public class RuleCatalogResource {
     @GET
     @Path("/topologies/{topologyId}/rules")
     @Timed
-    public Response listTopologyRules(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo) throws Exception {
+    public Response listTopologyRules(@PathParam("topologyId") Long topologyId, @Context UriInfo uriInfo,
+                                      @Context SecurityContext securityContext) throws Exception {
         Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
         return listTopologyRules(
-                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo));
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo),
+                topologyId,
+                securityContext);
     }
 
     @GET
@@ -99,12 +110,16 @@ public class RuleCatalogResource {
     @Timed
     public Response listTopologySourcesForVersion(@PathParam("topologyId") Long topologyId,
                                                   @PathParam("versionId") Long versionId,
-                                                  @Context UriInfo uriInfo) throws Exception {
+                                                  @Context UriInfo uriInfo,
+                                                  @Context SecurityContext securityContext) throws Exception {
         return listTopologyRules(
-                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, versionId, uriInfo));
+                buildTopologyIdAndVersionIdAwareQueryParams(topologyId, versionId, uriInfo),
+                topologyId,
+                securityContext);
     }
 
-    private Response listTopologyRules(List<QueryParam> queryParams) throws Exception {
+    private Response listTopologyRules(List<QueryParam> queryParams, Long topologyId, SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
         Collection<TopologyRule> topologyRules = catalogService.listRules(queryParams);
         if (topologyRules != null) {
             return WSUtils.respondEntities(topologyRules, OK);
@@ -138,7 +153,9 @@ public class RuleCatalogResource {
     @GET
     @Path("/topologies/{topologyId}/rules/{id}")
     @Timed
-    public Response getTopologyRuleById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId) throws Exception {
+    public Response getTopologyRuleById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId,
+                                        @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
         TopologyRule topologyRule = catalogService.getRule(topologyId, ruleId);
         if (topologyRule != null) {
             return WSUtils.respondEntity(topologyRule, OK);
@@ -152,7 +169,9 @@ public class RuleCatalogResource {
     @Timed
     public Response getTopologyRuleByIdAndVersion(@PathParam("topologyId") Long topologyId,
                                                   @PathParam("id") Long ruleId,
-                                                  @PathParam("versionId") Long versionId) throws Exception {
+                                                  @PathParam("versionId") Long versionId,
+                                                  @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
         TopologyRule topologyRule = catalogService.getRule(topologyId, ruleId, versionId);
         if (topologyRule != null) {
             return WSUtils.respondEntity(topologyRule, OK);
@@ -203,8 +222,9 @@ public class RuleCatalogResource {
     @POST
     @Path("/topologies/{topologyId}/rules")
     @Timed
-    public Response addTopologyRule(@PathParam("topologyId") Long topologyId, TopologyRule topologyRule)
-        throws Exception {
+    public Response addTopologyRule(@PathParam("topologyId") Long topologyId, TopologyRule topologyRule,
+                                    @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
         TopologyRule createdTopologyRule = catalogService.addRule(topologyId, topologyRule);
         return WSUtils.respondEntity(createdTopologyRule, CREATED);
     }
@@ -242,7 +262,8 @@ public class RuleCatalogResource {
     @Path("/topologies/{topologyId}/rules/{id}")
     @Timed
     public Response addOrUpdateRule(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId,
-                                                 TopologyRule topologyRule) throws Exception {
+                                                 TopologyRule topologyRule, @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
         TopologyRule createdTopologyRule = catalogService.addOrUpdateRule(topologyId, ruleId, topologyRule);
         return WSUtils.respondEntity(createdTopologyRule, CREATED);
     }
@@ -272,7 +293,9 @@ public class RuleCatalogResource {
     @DELETE
     @Path("/topologies/{topologyId}/rules/{id}")
     @Timed
-    public Response removeRule(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId) throws Exception {
+    public Response removeRule(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId,
+                               @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
         TopologyRule topologyRule = catalogService.removeRule(topologyId, ruleId);
         if (topologyRule != null) {
             return WSUtils.respondEntity(topologyRule, OK);

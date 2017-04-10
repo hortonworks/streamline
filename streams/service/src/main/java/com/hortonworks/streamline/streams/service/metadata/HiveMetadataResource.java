@@ -18,35 +18,41 @@ package com.hortonworks.streamline.streams.service.metadata;
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.Cluster;
-import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
-import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
-
 import com.hortonworks.streamline.streams.catalog.exception.EntityNotFoundException;
-import com.hortonworks.streamline.streams.catalog.service.metadata.HiveMetadataService;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+import com.hortonworks.streamline.streams.cluster.service.metadata.HiveMetadataService;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
+import static com.hortonworks.streamline.streams.security.Permission.READ;
 import static javax.ws.rs.core.Response.Status.OK;
 
 @Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class HiveMetadataResource {
+    private final StreamlineAuthorizer authorizer;
     private final EnvironmentService environmentService;
 
-    public HiveMetadataResource(EnvironmentService environmentService) {
+    public HiveMetadataResource(StreamlineAuthorizer authorizer, EnvironmentService environmentService) {
+        this.authorizer = authorizer;
         this.environmentService = environmentService;
     }
 
     @GET
     @Path("/clusters/{clusterId}/services/hive/databases")
     @Timed
-    public Response getDatabasesByClusterId(@PathParam("clusterId") Long clusterId)
-        throws Exception {
+    public Response getDatabasesByClusterId(@PathParam("clusterId") Long clusterId,
+                                            @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, clusterId, READ);
         try(final HiveMetadataService hiveMetadataService = HiveMetadataService.newInstance(environmentService, clusterId)) {
             return WSUtils.respondEntity(hiveMetadataService.getHiveDatabases(), OK);
         } catch (EntityNotFoundException ex) {
@@ -57,8 +63,9 @@ public class HiveMetadataResource {
     @GET
     @Path("/clusters/{clusterId}/services/hive/databases/{dbName}/tables")
     @Timed
-    public Response getDatabaseTablesByClusterId(@PathParam("clusterId") Long clusterId, @PathParam("dbName") String dbName)
-        throws Exception {
+    public Response getDatabaseTablesByClusterId(@PathParam("clusterId") Long clusterId, @PathParam("dbName") String dbName,
+                                                 @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, clusterId, READ);
         try(final HiveMetadataService hiveMetadataService = HiveMetadataService.newInstance(environmentService, clusterId)) {
             return WSUtils.respondEntity(hiveMetadataService.getHiveTables(dbName), OK);
         } catch (EntityNotFoundException ex) {

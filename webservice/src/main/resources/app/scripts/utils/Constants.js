@@ -28,6 +28,15 @@ const toastOpt = {
 const PieChartColor = ["#006ea0", "#77b0bd", "#b7cfdb", "#9dd1e9"];
 let deleteNodeIdArr = [];
 
+const deployStatusText = {
+  DEPLOYING_TOPOLOGY : 'DEPLOYING TOPOLOGY',
+  TOPOLOGY_STATE_EXTRA_JARS_SETUP : 'TOPOLOGY STATE EXTRA JARS SETUP',
+  TOPOLOGY_STATE_CLUSTER_ARTIFACTS_SETUP : 'TOPOLOGY STATE CLUSTER ARTIFACTS SETUP',
+  TOPOLOGY_STATE_DEPLOYED : 'TOPOLOGY STATE DEPLOYED',
+  TOPOLOGY_STATE_SUSPENDED : 'TOPOLOGY STATE SUSPENDED',
+  TOPOLOGY_STATE_DEPLOYMENT_FAILED : 'TOPOLOGY STATE DEPLOYMENT FAILED'
+};
+
 export {
   baseUrl,
   pageSize,
@@ -35,5 +44,6 @@ export {
   notifyTextLimit,
   toastOpt,
   PieChartColor,
-  deleteNodeIdArr
+  deleteNodeIdArr,
+  deployStatusText
 };

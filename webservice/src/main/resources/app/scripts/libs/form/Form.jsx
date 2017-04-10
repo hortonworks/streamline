@@ -100,6 +100,8 @@ export default class FSForm extends Component {
               ? true
               : false;
           }
+        } else if(component.props.fieldJson.type === "file"){
+          isFieldValid = component.props.fieldJson.hint.indexOf(component.props.value.split('.')[component.props.value.split('.').length - 1]) !== -1 ? true : false;
         } else {
           isFieldValid = component.validate();
         }

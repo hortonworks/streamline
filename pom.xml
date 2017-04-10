@@ -179,6 +179,16 @@
                 <version>${schema-registry.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.hortonworks.registries</groupId>
+                <artifactId>registry-common</artifactId>
+                <version>${schema-registry.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hortonworks.registries</groupId>
+                <artifactId>schema-registry-auth</artifactId>
+                <version>${schema-registry.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.sun.mail</groupId>
                 <artifactId>javax.mail</artifactId>
                 <version>${javax.mail.version}</version>
@@ -600,6 +610,11 @@
                         <artifactId>mailapi</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.hortonworks.streamline</groupId>
+                <artifactId>streamline-authorizer</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hortonworks.streamline</groupId>

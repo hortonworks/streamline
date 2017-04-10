@@ -207,7 +207,7 @@ const eventTimeData = function(inputFields) {
 
 const inputFieldsData = function(inputFields) {
   const inputFieldsArr = inputFields.map(v => {
-    return {fieldName: v.name, uiName: v.name};
+    return {fieldName: v.name, uiName: v.name, fieldType: v.type};
   });
   return inputFieldsArr;
 };
@@ -279,7 +279,7 @@ const genFields = function(fieldsJSON, _fieldName = [], FormData = {}, inputFiel
           if (!_.isObject(d)) {
             options.push({value: d, label: d});
           } else {
-            options.push({value: d.fieldName, label: d.uiName});
+            options.push({value: d.fieldName, label: d.uiName, type: d.fieldType});
           }
         });
       }

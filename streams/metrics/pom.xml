@@ -23,5 +23,9 @@
             <groupId>com.hortonworks.streamline</groupId>
             <artifactId>streamline-catalog</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.hortonworks.streamline</groupId>
+            <artifactId>streamline-cluster</artifactId>
+        </dependency>
     </dependencies>
 </project>

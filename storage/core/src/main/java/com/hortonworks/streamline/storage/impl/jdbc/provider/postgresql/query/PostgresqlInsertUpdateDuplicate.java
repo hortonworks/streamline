@@ -50,7 +50,7 @@ public class PostgresqlInsertUpdateDuplicate extends AbstractStorableSqlQuery {
     @Override
     protected void setParameterizedSql() {
         Collection<String> columnNames = getColumnNames(columns, "\"%s\"");
-        sql = "INSERT INTO " + tableName + " ("
+        sql = "INSERT INTO \"" + tableName + "\" ("
                 + join(columnNames, ", ")
                 + ") VALUES(" + getBindVariables("?,", columnNames.size()) + ")"
                 + " ON CONFLICT ON CONSTRAINT " + tableName + "_pkey"

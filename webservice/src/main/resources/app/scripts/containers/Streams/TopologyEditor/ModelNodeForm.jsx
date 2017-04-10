@@ -16,6 +16,7 @@ import React, {Component, PropTypes} from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import Select from 'react-select';
+import {OverlayTrigger, Popover} from 'react-bootstrap';
 import Utils from '../../../utils/Utils';
 import {toastOpt} from '../../../utils/Constants';
 import FSReactToastr from '../../../components/FSReactToastr';
@@ -156,9 +157,13 @@ export default class ModelNodeForm extends Component {
                 <label>Model Name
                   <span className="text-danger">*</span>
                 </label>
+                <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Name of the model</Popover>}>
+                <div>
                 <Select ref={(ref) => {
                   this.modelNameRef = ref;
                 }} value={modelId} options={modelsNameArr} onChange={this.handleModelNameChange.bind(this)} required={true} disabled={!editMode} clearable={false}/>
+                </div>
+                </OverlayTrigger>
               </div>
               {/*<div className="col-sm-12">
                 <label>Parallelism</label>

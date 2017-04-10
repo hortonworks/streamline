@@ -13,13 +13,15 @@
 **/
 
 import React, {Component} from 'react';
+import {deployStatusText} from '../utils/Constants';
 
 export default class AnimatedLoader extends Component {
   constructor(props) {
     super(props);
     this.state = {
       progressBar: props.progressbar,
-      progressBarColor: props.progressBarColor
+      progressBarColor: props.progressBarColor,
+      statusText : deployStatusText
     };
   }
   componentDidMount() {
@@ -29,7 +31,7 @@ export default class AnimatedLoader extends Component {
     let {progressBar} = this.state;
     setTimeout(() => {
       this.setState({
-        progressBar: 61
+        progressBar: 31
       }, () => {
         setTimeout(() => {
           this.setState({progressBar: 81});
@@ -38,10 +40,11 @@ export default class AnimatedLoader extends Component {
     }, 3000);
   }
   render() {
-    let {progressBar, progressBarColor, stepText} = this.state;
+    let {progressBar, progressBarColor, stepText,statusText} = this.state;
     if (progressBar == undefined || progressBar == 0) {
       progressBar = 11;
     }
+    let textStatus = statusText[this.props.deployStatus];
     return (
       <div className="wizard-card" data-color={progressBarColor}>
         <div className="wizard-navigation">
@@ -88,10 +91,10 @@ export default class AnimatedLoader extends Component {
         </div>
         <div className="wizard-body">
           <div className="loading">{progressBar > 80
-              ? "Deploying Topology"
+              ? textStatus
               : progressBar > 60
-                ? "Preparing Topology Jar"
-                : "Fetching Cluster Resources"}</div>
+                ? textStatus
+                : textStatus}</div>
         </div>
       </div>
     );

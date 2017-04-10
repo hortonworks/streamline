@@ -178,6 +178,16 @@ class EnvironmentContainer extends Component {
     this.fetchData();
   }
 
+  componentDidMount() {
+    const container = document.querySelector('.content-wrapper');
+    container.setAttribute("class", "content-wrapper environment-wrapper");
+  }
+
+  componentWillUnmount() {
+    const container = document.querySelector('.content-wrapper');
+    container.setAttribute("class", "content-wrapper");
+  }
+
   customMapping = (dataset) => {
     let list = [];
     dataset.map((x, i) => {

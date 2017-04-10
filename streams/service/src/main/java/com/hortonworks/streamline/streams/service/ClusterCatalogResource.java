@@ -17,10 +17,12 @@ package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
 import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.exception.WrappedWebApplicationException;
+import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
+import com.hortonworks.streamline.common.exception.service.exception.request.ClusterImportAlreadyInProgressException;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityAlreadyExistsException;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Component;
@@ -28,15 +30,17 @@ import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
-import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
-import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
-import com.hortonworks.streamline.streams.catalog.service.metadata.StormMetadataService;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.AmbariServiceNodeDiscoverer;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
-import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
-import com.hortonworks.streamline.common.exception.service.exception.request.ClusterImportAlreadyInProgressException;
-import com.hortonworks.streamline.common.exception.service.exception.request.EntityAlreadyExistsException;
-import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.streams.cluster.model.ServiceWithComponents;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+import com.hortonworks.streamline.streams.cluster.service.metadata.StormMetadataService;
+import com.hortonworks.streamline.streams.security.Permission;
+import com.hortonworks.streamline.streams.security.Roles;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,12 +57,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +71,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.hortonworks.streamline.streams.catalog.Cluster.NAMESPACE;
+import static com.hortonworks.streamline.streams.security.Permission.DELETE;
+import static com.hortonworks.streamline.streams.security.Permission.EXECUTE;
+import static com.hortonworks.streamline.streams.security.Permission.READ;
+import static com.hortonworks.streamline.streams.security.Permission.WRITE;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -76,11 +86,13 @@ public class ClusterCatalogResource {
     public static final String RESPONSE_MESSAGE_BAD_INPUT_NOT_VALID_AMBARI_CLUSTER_REST_API_URL = "Bad input: Not valid Ambari cluster Rest API URL";
     public static final String RESPONSE_MESSAGE = "responseMessage";
     public static final String VERIFIED = "verified";
+    private final StreamlineAuthorizer authorizer;
     private final EnvironmentService environmentService;
     private static final Set<Long> importInProgressCluster = new HashSet<>();
 
-    public ClusterCatalogResource(EnvironmentService environmentService) {
+    public ClusterCatalogResource(StreamlineAuthorizer authorizer, EnvironmentService environmentService) {
         this.environmentService = environmentService;
+        this.authorizer = authorizer;
     }
 
     /**
@@ -89,7 +101,7 @@ public class ClusterCatalogResource {
     @GET
     @Path("/clusters")
     @Timed
-    public Response listClusters(@Context UriInfo uriInfo) {
+    public Response listClusters(@Context UriInfo uriInfo, @Context SecurityContext securityContext) {
         List<QueryParam> queryParams = new ArrayList<>();
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
         Collection<Cluster> clusters;
@@ -110,6 +122,7 @@ public class ClusterCatalogResource {
         }
 
         if (clusters != null) {
+            clusters = SecurityUtil.filter(authorizer, securityContext, NAMESPACE, clusters, READ);
             return buildClustersGetResponse(clusters, detail);
         }
 
@@ -120,7 +133,9 @@ public class ClusterCatalogResource {
     @Path("/clusters/{id}")
     @Timed
     public Response getClusterById(@PathParam("id") Long clusterId,
-                                   @javax.ws.rs.QueryParam("detail") Boolean detail) {
+                                   @javax.ws.rs.QueryParam("detail") Boolean detail,
+                                   @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, clusterId, READ);
         Cluster result = environmentService.getCluster(clusterId);
         if (result != null) {
             return buildClusterGetResponse(result, detail);
@@ -132,7 +147,8 @@ public class ClusterCatalogResource {
     @Timed
     @POST
     @Path("/clusters")
-    public Response addCluster(Cluster cluster) {
+    public Response addCluster(Cluster cluster, @Context SecurityContext securityContext) {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_CLUSTER_ADMIN);
         String clusterName = cluster.getName();
         String ambariImportUrl = cluster.getAmbariImportUrl();
         Cluster result = environmentService.getClusterByNameAndImportUrl(clusterName, ambariImportUrl);
@@ -141,17 +157,20 @@ public class ClusterCatalogResource {
         }
 
         Cluster createdCluster = environmentService.addCluster(cluster);
+        SecurityUtil.addAcl(authorizer, securityContext, NAMESPACE, createdCluster.getId(),
+                EnumSet.allOf(Permission.class));
         return WSUtils.respondEntity(createdCluster, CREATED);
     }
 
     @DELETE
     @Path("/clusters/{id}")
     @Timed
-    public Response removeCluster(@PathParam("id") Long clusterId) {
+    public Response removeCluster(@PathParam("id") Long clusterId, @Context SecurityContext securityContext) {
         assertNoNamespaceRefersCluster(clusterId);
-
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, clusterId, DELETE);
         Cluster removedCluster = environmentService.removeCluster(clusterId);
         if (removedCluster != null) {
+            SecurityUtil.removeAcl(authorizer, securityContext, NAMESPACE, clusterId);
             return WSUtils.respondEntity(removedCluster, OK);
         }
 
@@ -162,7 +181,9 @@ public class ClusterCatalogResource {
     @Path("/clusters/{id}")
     @Timed
     public Response addOrUpdateCluster(@PathParam("id") Long clusterId,
-                                       Cluster cluster) {
+                                       Cluster cluster,
+                                       @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, clusterId, WRITE);
         Cluster newCluster = environmentService.addOrUpdateCluster(clusterId, cluster);
         return WSUtils.respondEntity(newCluster, CREATED);
     }
@@ -170,7 +191,9 @@ public class ClusterCatalogResource {
     @POST
     @Path("/cluster/import/ambari/verify/url")
     @Timed
-    public Response verifyAmbariUrl(AmbariClusterImportParams params) {
+    public Response verifyAmbariUrl(AmbariClusterImportParams params,
+                                    @Context SecurityContext securityContext) {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_CLUSTER_ADMIN);
         // Not assigning to interface to apply a hack
         AmbariServiceNodeDiscoverer discoverer = new AmbariServiceNodeDiscoverer(params.getAmbariRestApiRootUrl(),
                 params.getUsername(), params.getPassword());
@@ -199,12 +222,13 @@ public class ClusterCatalogResource {
     @POST
     @Path("/cluster/import/ambari")
     @Timed
-    public Response importServicesFromAmbari(AmbariClusterImportParams params) throws Exception {
+    public Response importServicesFromAmbari(AmbariClusterImportParams params,
+                                             @Context SecurityContext securityContext) throws Exception {
         Long clusterId = params.getClusterId();
         if (clusterId == null) {
             throw BadRequestException.missingParameter("clusterId");
         }
-
+        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, clusterId, WRITE, EXECUTE);
         Cluster retrievedCluster = environmentService.getCluster(clusterId);
         if (retrievedCluster == null) {
             throw EntityNotFoundException.byId(String.valueOf(clusterId));
@@ -269,8 +293,7 @@ public class ClusterCatalogResource {
             Collection<ServiceConfiguration> configurations = environmentService.listServiceConfigurations(service.getId());
             Collection<Component> components = environmentService.listComponents(service.getId());
 
-            ClusterServicesImportResult.ServiceWithComponents s =
-                new ClusterServicesImportResult.ServiceWithComponents(service);
+            ServiceWithComponents s = new ServiceWithComponents(service);
             s.setComponents(components);
             s.setConfigurations(configurations);
 
@@ -384,36 +407,6 @@ public class ClusterCatalogResource {
     private static class ClusterServicesImportResult {
         private Cluster cluster;
         private Collection<ServiceWithComponents> services = new ArrayList<>();
-
-        static class ServiceWithComponents {
-            private Service service;
-            private Collection<ServiceConfiguration> configurations;
-            private Collection<Component> components;
-
-            public ServiceWithComponents(Service service) {
-                this.service = service;
-            }
-
-            public Service getService() {
-                return service;
-            }
-
-            public Collection<Component> getComponents() {
-                return components;
-            }
-
-            public void setComponents(Collection<Component> components) {
-                this.components = components;
-            }
-
-            public Collection<ServiceConfiguration> getConfigurations() {
-                return configurations;
-            }
-
-            public void setConfigurations(Collection<ServiceConfiguration> configurations) {
-                this.configurations = configurations;
-            }
-        }
 
         public ClusterServicesImportResult(Cluster cluster) {
             this.cluster = cluster;

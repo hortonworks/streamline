@@ -25,6 +25,7 @@ const TopologyREST = {
   getAllTopology(sort, options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'topologies?detail=true&sort=' + sort + '&latencyTopN=3', options)
       .then((response) => {
         return response.json();
@@ -33,6 +34,7 @@ const TopologyREST = {
   getTopology(id, versionId, options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     let url = baseUrl + 'topologies/' + id + "?detail=true&latencyTopN=3";
     if (versionId) {
       url = baseUrl + 'topologies/' + id + "/versions/" + versionId + "?detail=true&latencyTopN=3";
@@ -49,6 +51,7 @@ const TopologyREST = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'topologies', options)
       .then((response) => {
         return response.json();
@@ -61,6 +64,7 @@ const TopologyREST = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
+    options.credentials = 'same-origin';
     let url = baseUrl + 'topologies/' + id;
     // if(versionId){
     // 	url = baseUrl+'topologies/'+id+"/versions/"+versionId;
@@ -73,6 +77,7 @@ const TopologyREST = {
   deleteTopology(id, options) {
     options = options || {};
     options.method = options.method || 'DELETE';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'topologies/' + id, options)
       .then((response) => {
         return response.json();
@@ -81,6 +86,7 @@ const TopologyREST = {
   deployTopology(id, versionId, options) {
     options = options || {};
     options.method = options.method || 'POST';
+    options.credentials = 'same-origin';
     let url = baseUrl + 'topologies/' + id + '/actions/deploy';
     if (versionId) {
       url = baseUrl + 'topologies/' + id + "/versions/" + versionId + '/actions/deploy';
@@ -90,9 +96,20 @@ const TopologyREST = {
         return response.json();
       });
   },
+  deployTopologyState(id, options){
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    let url = baseUrl + 'topologies/' + id + '/deploymentstate';
+    return fetch(url, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
   killTopology(id, versionId, options) {
     options = options || {};
     options.method = options.method || 'POST';
+    options.credentials = 'same-origin';
     let url = baseUrl + 'topologies/' + id + '/actions/kill';
     if (versionId) {
       url = baseUrl + 'topologies/' + id + "/versions/" + versionId + '/actions/kill';
@@ -105,6 +122,7 @@ const TopologyREST = {
   validateTopology(id, versionId, options) {
     options = options || {};
     options.method = options.method || 'POST';
+    options.credentials = 'same-origin';
     let url = baseUrl + 'topologies/' + id + '/actions/validate';
     if (versionId) {
       url = baseUrl + 'topologies/' + id + "/versions/" + versionId + '/actions/validate';
@@ -117,6 +135,7 @@ const TopologyREST = {
   getTopologyWithoutMetrics(id, versionId, options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     let url = baseUrl + 'topologies/' + id;
     if (versionId) {
       url = baseUrl + 'topologies/' + id + "/versions/" + versionId;
@@ -129,6 +148,7 @@ const TopologyREST = {
   getSourceComponent(options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'streams/componentbundles/SOURCE', options)
       .then((response) => {
         return response.json();
@@ -137,6 +157,7 @@ const TopologyREST = {
   getProcessorComponent(options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'streams/componentbundles/PROCESSOR', options)
       .then((response) => {
         return response.json();
@@ -145,6 +166,7 @@ const TopologyREST = {
   getSinkComponent(options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'streams/componentbundles/SINK', options)
       .then((response) => {
         return response.json();
@@ -153,6 +175,7 @@ const TopologyREST = {
   getLinkComponent(options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'streams/componentbundles/LINK', options)
       .then((response) => {
         return response.json();
@@ -161,6 +184,7 @@ const TopologyREST = {
   getMetaInfo(id, versionId, options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     let url = baseUrl + 'system/topologyeditormetadata/' + id;
     if (versionId) {
       url = baseUrl + 'system/versions/' + versionId + '/topologyeditormetadata/' + id;
@@ -177,6 +201,7 @@ const TopologyREST = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'system/topologyeditormetadata', options)
       .then((response) => {
         return response.json();
@@ -189,6 +214,7 @@ const TopologyREST = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
+    options.credentials = 'same-origin';
     let url = baseUrl + 'system/topologyeditormetadata/' + id;
     // if(versionId){
     // 	url = baseUrl+'system/versions/'+versionId+'/topologyeditormetadata/'+id;
@@ -201,6 +227,7 @@ const TopologyREST = {
   deleteMetaInfo(id, options) {
     options = options || {};
     options.method = options.method || 'DELETE';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'system/topologyeditormetadata/' + id, options)
       .then((response) => {
         return response.json();
@@ -213,6 +240,7 @@ const TopologyREST = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
+    options.credentials = 'same-origin';
     let url = baseUrl + 'topologies/' + topologyId + '/' + nodeType;
     // if(versionId){
     // 	url = baseUrl+'topologies/'+topologyId+'/versions/'+versionId+'/'+nodeType;
@@ -229,6 +257,7 @@ const TopologyREST = {
     if (versionId) {
       url = baseUrl + 'topologies/' + topologyId + '/versions/' + versionId + '/' + nodeType + '/' + nodeId;
     }
+    options.credentials = 'same-origin';
     return fetch(url, options)
       .then((response) => {
         return response.json();
@@ -241,6 +270,7 @@ const TopologyREST = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
+    options.credentials = 'same-origin';
     let url = baseUrl + 'topologies/' + topologyId + '/' + nodeType + '/' + nodeId;
     // if(versionId){
     // 	url = baseUrl+'topologies/'+topologyId+'/versions/'+versionId+'/'+nodeType+'/'+nodeId;
@@ -253,6 +283,7 @@ const TopologyREST = {
   deleteNode(topologyId, nodeType, nodeId, options) {
     options = options || {};
     options.method = options.method || 'DELETE';
+    options.credentials = 'same-origin';
     const argStr = 'sources,processors,sinks';
     let removeEdges = argStr.indexOf(nodeType) !== -1 ?
       '?removeEdges=true' :
@@ -266,6 +297,7 @@ const TopologyREST = {
   getAllNodes(id, versionId, nodeType, options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     let url = baseUrl + 'topologies/' + id + '/' + nodeType;
     if (versionId) {
       url = baseUrl + 'topologies/' + id + '/versions/' + versionId + '/' + nodeType;
@@ -278,6 +310,7 @@ const TopologyREST = {
   getSchemaForKafka(topicName, options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     topicName = encodeURIComponent(topicName);
     return fetch('/api/v1/schemas/' + topicName, options)
       .then((response) => {
@@ -287,6 +320,7 @@ const TopologyREST = {
   getAllVersions(id, options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'topologies/' + id + '/versions', options)
       .then((response) => {
         return response.json();
@@ -299,6 +333,7 @@ const TopologyREST = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'topologies/' + id + '/versions/save', options)
       .then((response) => {
         return response.json();
@@ -311,6 +346,7 @@ const TopologyREST = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'topologies/' + topologyId + '/versions/' + versionId + '/activate', options)
       .then((response) => {
         return response.json();
@@ -319,6 +355,7 @@ const TopologyREST = {
   getTopologyConfig(options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'streams/componentbundles/TOPOLOGY', options)
       .then((response) => {
         return response.json();
@@ -327,6 +364,7 @@ const TopologyREST = {
   cloneTopology(id, namespaceId, options) {
     options = options || {};
     options.method = options.method || 'POST';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'topologies/' + id + '/actions/clone?namespaceId=' + namespaceId, options)
       .then((response) => {
         return response.json();
@@ -338,6 +376,7 @@ const TopologyREST = {
   getExportTopology(id, options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'topologies/' + id + '/actions/export', options)
       .then((response) => {
         return response.json();
@@ -346,6 +385,7 @@ const TopologyREST = {
   importTopology(options) {
     options = options || {};
     options.method = options.method || 'POST';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'topologies/actions/import', options)
       .then((response) => {
         return response.json();
@@ -359,6 +399,7 @@ const TopologyREST = {
   getSourceComponentClusters(source, nameSpaceId, options) {
     options = options || {};
     options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
     return fetch(baseUrl + 'streams/componentbundles/' + source + '/hints/namespaces/' + nameSpaceId, options)
       .then((response) => {
         return response.json();
@@ -367,6 +408,7 @@ const TopologyREST = {
   putComponentDefination(type, id, options) {
     options = options || {};
     options.method = options.method || 'PUT';
+    options.credentials = 'same-origin';
     let url = baseUrl + 'streams/componentbundles/' + type + '/' + id;
     return fetch(url, options)
       .then((response) => {
@@ -380,7 +422,56 @@ const TopologyREST = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
+    options.credentials = 'same-origin';
     return fetch('/api/v1/schemas', options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  getTopologyEditorToolbar(options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'system/topologyeditortoolbar', options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  postTopologyEditorToolbar(options) {
+    options = options || {};
+    options.method = options.method || 'POST';
+    options.headers = options.headers || {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'system/topologyeditortoolbar', options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  putTopologyEditorToolbar(options) {
+    options = options || {};
+    options.method = options.method || 'PUT';
+    options.headers = options.headers || {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'system/topologyeditortoolbar', options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  deleteTopologyEditorToolbar(options) {
+    options = options || {};
+    options.method = options.method || 'DELETE';
+    options.headers = options.headers || {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'system/topologyeditortoolbar', options)
       .then((response) => {
         return response.json();
       });

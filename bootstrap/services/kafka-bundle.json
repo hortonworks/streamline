@@ -1,0 +1,23 @@
+{
+  "name": "KAFKA",
+  "registerClass": "com.hortonworks.streamline.streams.cluster.register.impl.KafkaServiceRegistrar",
+  "serviceUISpecification": {
+    "fields": [
+      {
+        "uiName": "Kafka brokers hostnames",
+        "fieldName": "brokersHostnames",
+        "isOptional": false,
+        "tooltip": "Hostnames of Kafka Brokers",
+        "type": "array.string"
+      },
+      {
+        "uiName": "Kafka config file (server.properties)",
+        "fieldName": "server.properties",
+        "hint" : "properties",
+        "isOptional": false,
+        "tooltip": "Upload server.properties file used by Kafka cluster",
+        "type": "file"
+      }
+    ]
+  }
+}

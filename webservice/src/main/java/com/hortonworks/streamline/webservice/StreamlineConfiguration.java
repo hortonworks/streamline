@@ -17,11 +17,15 @@
 package com.hortonworks.streamline.webservice;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.dropwizard.Configuration;
+import com.hortonworks.registries.common.ServletFilterConfiguration;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
-import javax.validation.constraints.NotNull;
 import java.util.List;
+
+import javax.validation.constraints.NotNull;
+
+import io.dropwizard.Configuration;
 
 public class StreamlineConfiguration extends Configuration {
 
@@ -39,6 +43,8 @@ public class StreamlineConfiguration extends Configuration {
 
     @NotNull
     private DashboardConfiguration dashboardConfiguration;
+
+    private AuthorizerConfiguration authorizerConfiguration;
 
 
     @JsonProperty
@@ -62,6 +68,8 @@ public class StreamlineConfiguration extends Configuration {
 
     @JsonProperty
     private String trustStorePassword;
+
+    private List<ServletFilterConfiguration> servletFilters;
 
     public String getCatalogRootUrl () {
         return catalogRootUrl;
@@ -124,4 +132,19 @@ public class StreamlineConfiguration extends Configuration {
     public void setDashboardConfiguration (DashboardConfiguration dashboardConfiguration) { this.dashboardConfiguration = dashboardConfiguration; }
 
 
+    public AuthorizerConfiguration getAuthorizerConfiguration() {
+        return authorizerConfiguration;
+    }
+
+    public void setAuthorizerConfiguration(AuthorizerConfiguration authorizerConfiguration) {
+        this.authorizerConfiguration = authorizerConfiguration;
+    }
+
+    public List<ServletFilterConfiguration> getServletFilters() {
+        return servletFilters;
+    }
+
+    public void setServletFilters(List<ServletFilterConfiguration> servletFilters) {
+        this.servletFilters = servletFilters;
+    }
 }

@@ -22,12 +22,12 @@ import com.google.common.io.Files;
  * @see ConfigFileWriter
  */
 public enum ConfigFileType {
-  HADOOP_XML, PROPERTIES, YAML;
+  HADOOP_XML, PROPERTIES, YAML, ZOOKEEPER_CFG;
 
   public static ConfigFileType getFileTypeFromFileName(String fileName) {
     String fileExt = Files.getFileExtension(fileName);
     if (fileExt.isEmpty()) {
-      return null;
+      throw new IllegalArgumentException("Not supported config file extension: " + fileExt);
     }
 
     switch (fileExt) {
@@ -39,8 +39,12 @@ public enum ConfigFileType {
       return HADOOP_XML;
     case "yaml":
       return YAML;
+    case "cfg":
+      // NOTE: If there're other types of cfg rather than Zookeeper-configuration-like,
+      // we shouldn't guess it only based on extension.
+      return ZOOKEEPER_CFG;
     }
 
-    return null;
+    throw new IllegalArgumentException("Not supported config file extension: " + fileExt);
   }
 }

@@ -19,33 +19,41 @@ import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.exception.EntityNotFoundException;
-import com.hortonworks.streamline.streams.catalog.service.EnvironmentService;
-import com.hortonworks.streamline.streams.catalog.service.metadata.StormMetadataService;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+import com.hortonworks.streamline.streams.cluster.service.metadata.StormMetadataService;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
+import javax.ws.rs.core.SecurityContext;
 import java.util.Collections;
 
+import static com.hortonworks.streamline.streams.security.Permission.READ;
 import static javax.ws.rs.core.Response.Status.OK;
 
 @Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class StormMetadataResource {
+    private final StreamlineAuthorizer authorizer;
     private final EnvironmentService environmentService;
 
-    public StormMetadataResource(EnvironmentService environmentService) {
+    public StormMetadataResource(StreamlineAuthorizer authorizer, EnvironmentService environmentService) {
+        this.authorizer = authorizer;
         this.environmentService = environmentService;
     }
 
     @GET
     @Path("/clusters/{clusterId}/services/storm/topologies")
     @Timed
-    public Response getTopologiesByClusterId(@PathParam("clusterId") Long clusterId) {
+    public Response getTopologiesByClusterId(@PathParam("clusterId") Long clusterId,
+                                             @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, clusterId, READ);
         try {
             StormMetadataService stormMetadataService = new StormMetadataService.Builder(environmentService, clusterId).build();
             return WSUtils.respondEntity(stormMetadataService.getTopologies(), OK);
@@ -57,7 +65,9 @@ public class StormMetadataResource {
     @GET
     @Path("/clusters/{clusterId}/services/storm/mainpage/url")
     @Timed
-    public Response getMainPageByClusterId(@PathParam("clusterId") Long clusterId) {
+    public Response getMainPageByClusterId(@PathParam("clusterId") Long clusterId,
+                                           @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, clusterId, READ);
         try {
             StormMetadataService stormMetadataService = new StormMetadataService.Builder(environmentService, clusterId).build();
             return WSUtils.respondEntity(Collections.singletonMap("url", stormMetadataService.getMainPageUrl()), OK);

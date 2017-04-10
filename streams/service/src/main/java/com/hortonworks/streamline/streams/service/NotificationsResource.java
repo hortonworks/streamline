@@ -25,9 +25,15 @@ import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.catalog.Topology;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
 import com.hortonworks.streamline.streams.notification.Notification;
 import com.hortonworks.streamline.streams.notification.service.NotificationService;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.streams.security.Roles;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,11 +46,13 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static com.hortonworks.streamline.streams.security.Permission.READ;
 import static javax.ws.rs.core.Response.Status.OK;
 
 /**
@@ -55,16 +63,22 @@ import static javax.ws.rs.core.Response.Status.OK;
 public class NotificationsResource {
     private static final Logger LOG = LoggerFactory.getLogger(NotificationsResource.class);
 
+    private final StreamlineAuthorizer authorizer;
     private final NotificationService notificationService;
 
-    public NotificationsResource(NotificationService service) {
+    public NotificationsResource(StreamlineAuthorizer authorizer, NotificationService service) {
+        this.authorizer = authorizer;
         this.notificationService = service;
     }
 
     @GET
     @Path("/notifications/{id}")
     @Timed
-    public Response getNotificationById(@PathParam("id") String id) {
+    public Response getNotificationById(@PathParam("id") String id,
+                                        @Context SecurityContext securityContext) {
+        // We do a role based authorization since the notifications does not have object permissions right now.
+        // It can be enhanced later if required.
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_NOTIFICATION_USER);
         Notification result = notificationService.getNotification(id);
         if (result != null) {
             return WSUtils.respondEntity(result, OK);
@@ -76,7 +90,8 @@ public class NotificationsResource {
     @GET
     @Path("/notifications/")
     @Timed
-    public Response listNotifications(@Context UriInfo uriInfo) {
+    public Response listNotifications(@Context UriInfo uriInfo, @Context SecurityContext securityContext) {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_NOTIFICATION_USER);
         List<QueryParam> queryParams = new ArrayList<>();
         MultivaluedMap<String, String> uriInfoParams = uriInfo.getQueryParameters();
         Collection<Notification> notifications = null;
@@ -97,7 +112,9 @@ public class NotificationsResource {
     @Path("/notifications/{id}/{status}")
     @Timed
     public Response updateNotificationStatus(@PathParam("id") String notificationId,
-                                             @PathParam("status") Notification.Status status) {
+                                             @PathParam("status") Notification.Status status,
+                                             @Context SecurityContext securityContext) {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_NOTIFICATION_USER);
         Notification updateNotification = notificationService.updateNotificationStatus(notificationId, status);
         return WSUtils.respondEntity(updateNotification, OK);
     }
@@ -105,7 +122,9 @@ public class NotificationsResource {
     @GET
     @Path("/events/{id}")
     @Timed
-    public Response getEventById(@PathParam("id") String id) {
+    public Response getEventById(@PathParam("id") String id,
+                                 @Context SecurityContext securityContext) {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_NOTIFICATION_USER);
         StreamlineEvent result = notificationService.getEvent(id);
         if (result != null) {
             return WSUtils.respondEntity(result, OK);

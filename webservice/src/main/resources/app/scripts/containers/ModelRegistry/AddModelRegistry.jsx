@@ -89,20 +89,20 @@ class AddModelRegistry extends Component {
     return (
       <div className="modal-form config-modal-form">
         <div className="form-group">
-          <label>Model Name<span className="text-danger">*</span>
+          <label data-stest="modelNameLabel">Model Name<span className="text-danger">*</span>
           </label>
           <div>
-            <input type="text" value={modelName} className={nameValid
+            <input data-stest="modelName" type="text" value={modelName} className={nameValid
               ? "form-control"
               : "form-control invalidInput"} onChange={this.handleNameChange} placeholder="Model Name"/>
           </div>
         </div>
         <div className="form-group">
-          <label>Upload PMML File
+          <label data-stest="uploadPmmlLabel">Upload PMML File
             <span className="text-danger">*</span>
           </label>
           <div>
-            <input type="text" value={pmmlFileName} className={hideInput
+            <input data-stest="uploadPmml" type="text" value={pmmlFileName} className={hideInput
               ? "displayNone"
               : "form-control"} onClick={this.handlePmmlFileChange}/>
             <input type="file" ref="fileUpload" className={hideInput
