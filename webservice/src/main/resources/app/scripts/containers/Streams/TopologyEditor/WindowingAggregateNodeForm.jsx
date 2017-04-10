@@ -371,6 +371,7 @@ export default class WindowingAggregateNodeForm extends Component {
     }
     this.windowsNode.config.properties.parallelism = parallelism;
     this.windowsNode.description = description;
+    this.windowsNode.name = name;
     return this.windowsNode;
   }
 
