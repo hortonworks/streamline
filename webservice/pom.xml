@@ -105,7 +105,7 @@
         </dependency>
         <dependency>
             <groupId>com.hortonworks.registries</groupId>
-            <artifactId>schema-registry-auth</artifactId>
+            <artifactId>common-auth</artifactId>
         </dependency>
         <dependency>
           <groupId>io.dropwizard</groupId>
