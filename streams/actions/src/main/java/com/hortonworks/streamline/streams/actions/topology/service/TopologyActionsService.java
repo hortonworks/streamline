@@ -104,7 +104,7 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
 
         this.topologyActionsContainer = new TopologyActionsContainer(environmentService, conf);
         this.stateFactory = TopologyStateFactory.getInstance();
-        this.topologyTestRunner = new TopologyTestRunner(catalogService, topologyTestRunResultDir);
+        this.topologyTestRunner = new TopologyTestRunner(catalogService, this, topologyTestRunResultDir);
     }
 
     public Void deployTopology(Topology topology) throws Exception {
@@ -123,10 +123,7 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
         ensureValid(dag);
         TopologyActions topologyActions = getTopologyActionsInstance(topology);
         LOG.debug("Running topology {} in test mode", topology);
-        setUpClusterArtifacts(topology, topologyActions);
-        String mavenArtifacts = setUpExtraJars(topology, topologyActions);
-
-        return topologyTestRunner.runTest(topologyActions, topology, mavenArtifacts, testRunInputJson);
+        return topologyTestRunner.runTest(topologyActions, topology, testRunInputJson);
     }
 
     public void killTopology(Topology topology) throws Exception {
