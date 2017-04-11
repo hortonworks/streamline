@@ -873,8 +873,7 @@ class TopologyEditorContainer extends Component {
 
             //Show notifications from the view
             FSReactToastr.success(
-              <strong>{this.node.uiname}
-                updated successfully.</strong>
+              <strong>{this.node.uiname} updated successfully.</strong>
             );
             //render graph again
             this.updateGraphMethod();

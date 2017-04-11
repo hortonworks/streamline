@@ -563,7 +563,7 @@ export class arrayenumstring extends BaseField {
     this.validate(val);
   }
   validate(val) {
-    if(this.props.fieldJson.hint && this.props.fieldJson.hint.indexOf("noNestedFields") !== -1) {
+    if(val && this.props.fieldJson.hint && this.props.fieldJson.hint.indexOf("noNestedFields") !== -1) {
       let nestedField = val.findIndex(v => {return v.type === 'NESTED';});
       if(nestedField > -1) {
         this.context.Form.state.Errors[this.props.valuePath] = 'Invalid!';
