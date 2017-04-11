@@ -61,10 +61,10 @@ public class AvroKafkaSpoutScheme implements KafkaSourceScheme {
     }
 
     @Override
-    public void init(Map<String, Object> conf) {
-        this.dataSourceId = (String) conf.get(KafkaSourceScheme.DATASOURCE_ID_KEY);
-        this.schemaRegistryUrl = (String) conf.get(KafkaSourceScheme.SCHEMA_REGISTRY_URL_KEY);
-        String topicName = (String) conf.get(KafkaSourceScheme.TOPIC_KEY);
+    public void init(KafkaSourceScheme.Config config) {
+        dataSourceId = config.getDataSourceId();
+        schemaRegistryUrl = config.getSchemaRegistryUrl();
+        String topicName = config.getTopicName();
         schemaMetadata = createSchemaMetadata(topicName);
     }
 
@@ -130,6 +130,11 @@ public class AvroKafkaSpoutScheme implements KafkaSourceScheme {
             buf.get(bytes, off, end);
             return end;
         }
+    }
+
+    public static void main(String[] args) throws Exception {
+        System.out.println("Config.class.getClass().getName() = " + Config.class.getClass().getName());
+        Class.forName("com.hortonworks.streamline.streams.layout.storm.KafkaSourceScheme$Config").newInstance();
     }
 
 }

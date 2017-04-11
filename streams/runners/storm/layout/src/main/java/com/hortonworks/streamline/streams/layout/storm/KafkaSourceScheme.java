@@ -19,7 +19,7 @@ package com.hortonworks.streamline.streams.layout.storm;
 
 import org.apache.storm.spout.MultiScheme;
 
-import java.util.Map;
+import java.io.Serializable;
 
 /**
  * Scheme to be implemented for Kafka sources to deserialize bytebuffer record into tuples.
@@ -27,25 +27,35 @@ import java.util.Map;
 public interface KafkaSourceScheme extends MultiScheme {
 
     /**
-     * Key for topic property.
-     */
-    String TOPIC_KEY = "topic";
-
-    /**
-     * Key for schema registry url property.
-     */
-    String SCHEMA_REGISTRY_URL_KEY = "schemaRegistryUrl";
-
-    /**
-     * Key for dataSourceId property.
-     */
-    String DATASOURCE_ID_KEY = "dataSourceId";
-
-    /**
-     * Initializes with the given {@code conf}
+     * Initializes with the given {@code config}
      *
-     * @param conf configuration instance which can include values for keys like {@link #TOPIC_KEY},
-     *             {@link #SCHEMA_REGISTRY_URL_KEY}, {@link #DATASOURCE_ID_KEY}
+     * @param config configuration instance
      */
-    void init(Map<String, Object> conf);
+    void init(Config config);
+
+    class Config implements Serializable {
+        private String topicName;
+        private String schemaRegistryUrl;
+        private String dataSourceId;
+
+        public Config(String topicName, String schemaRegistryUrl, String dataSourceId) {
+            this.topicName = topicName;
+            this.schemaRegistryUrl = schemaRegistryUrl;
+            this.dataSourceId = dataSourceId;
+        }
+
+        public String getTopicName() {
+            return topicName;
+        }
+
+        public String getSchemaRegistryUrl() {
+            return schemaRegistryUrl;
+        }
+
+        public String getDataSourceId() {
+            return dataSourceId;
+        }
+
+    }
+
 }

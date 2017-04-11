@@ -20,12 +20,10 @@ import com.hortonworks.streamline.streams.layout.ConfigFieldValidation;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.streamline.streams.layout.component.impl.KafkaSource;
 import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -124,7 +122,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         }
 
         Map<String, Object> configMethod = getConfigMethodWithRefArgs("init",
-                                                                      Collections.singletonList(addConfigMapInstance()));
+                                                                      Collections.singletonList(addConfigInstance()));
         addToComponents(createComponent(streamsSchemeId,
                                         schemeClassName,
                                         null,
@@ -134,29 +132,18 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         return streamsSchemeId;
     }
 
-    private String addConfigMapInstance() {
-        String mapClassId = "map-" + UUID_FOR_COMPONENTS;
-        List<Pair<String, Object>> entries =
-                Lists.newArrayList(Pair.of(KafkaSourceScheme.TOPIC_KEY,
-                                           conf.get(TopologyLayoutConstants.JSON_KEY_TOPIC)),
-                                   Pair.of(KafkaSourceScheme.SCHEMA_REGISTRY_URL_KEY,
-                                           conf.get(TopologyLayoutConstants.SCHEMA_REGISTRY_URL)),
-                                   Pair.of(KafkaSourceScheme.DATASOURCE_ID_KEY,
-                                           kafkaSource != null ? kafkaSource.getId() : ""));
-        List<Map<String, Object>> configMethods = new ArrayList<>();
-        for (Map.Entry<String, Object> entry : entries) {
-            Map<String, Object> configMethod = new LinkedHashMap<>();
-            configMethod.put(StormTopologyLayoutConstants.YAML_KEY_NAME, "put");
-            configMethod.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, Arrays.asList(entry.getKey(), entry.getValue()));
-            configMethods.add(configMethod);
-        }
-        addToComponents(createComponent(mapClassId,
+    private String addConfigInstance() {
+        String configInstanceId = "config-" + UUID_FOR_COMPONENTS;
+        List<String> constructorArgs = Lists.newArrayList((String) conf.get(TopologyLayoutConstants.JSON_KEY_TOPIC),
+                                                          (String) conf.get(TopologyLayoutConstants.SCHEMA_REGISTRY_URL_KEY),
+                                                          kafkaSource != null ? kafkaSource.getId() : "");
+        addToComponents(createComponent(configInstanceId,
                                         "java.util.HashMap",
                                         null,
-                                        null,
-                                        configMethods));
+                                        constructorArgs,
+                                        null));
 
-        return mapClassId;
+        return configInstanceId;
     }
 
     // Add BrokerHosts yaml component and return its yaml id to further use
