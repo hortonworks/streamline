@@ -68,7 +68,7 @@ export default class FSModal extends Component {
         <Button bsStyle='default' onClick={this.cancel.bind(this)} data-stest="cancelbtn">
           {this.state.btnCancelText || 'Cancel'}
         </Button>
-        <Button bsStyle='success' onClick={this.sure.bind(this)} data-stest="okbtn">
+        <Button bsStyle='success' onClick={this.sure.bind(this)}  data-stest="okbtn" disabled={this.props.btnOkDisabled}>
           {this.state.btnOkText || 'Ok'}
         </Button>
       </Modal.Footer>

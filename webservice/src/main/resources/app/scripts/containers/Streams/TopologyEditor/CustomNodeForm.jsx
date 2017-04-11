@@ -230,6 +230,7 @@ export default class CustomNodeForm extends Component {
       linkShuffleOptions
     } = this.props;
     let {showSchema, showError, showErrorLabel} = this.state;
+    const disabledFields = this.props.testRunActivated ? true : !editMode;
     return (
       <div className="modal-form processor-modal-form">
         <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
@@ -263,7 +264,7 @@ export default class CustomNodeForm extends Component {
                             : false
                         }
                         disabled = {
-                          !this.state.editMode
+                          disabledFields
                         }> true </Radio>,
                         <Radio
                             key="2"
@@ -272,7 +273,7 @@ export default class CustomNodeForm extends Component {
                             data-name={f.name}
                             onChange={this.handleRadioBtn.bind(this)}
                             checked={this.state[f.fieldName] ? false : true}
-                            disabled={!this.state.editMode}>false
+                            disabled={disabledFields}>false
                         </Radio>
                       ]
                       : f.fieldName !== "parallelism"
@@ -281,7 +282,7 @@ export default class CustomNodeForm extends Component {
                             ? "form-control invalidInput"
                             : "form-control"} required={f.isOptional
                             ? false
-                            : true} disabled={!this.state.editMode} min={(f.type === "number" && f.fieldName === "parallelism")
+                            : true} disabled={disabledFields} min={(f.type === "number" && f.fieldName === "parallelism")
                             ? 1
                             : f.type === "number"
                               ? 0

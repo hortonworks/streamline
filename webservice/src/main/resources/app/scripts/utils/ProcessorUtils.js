@@ -173,7 +173,7 @@ const populateFieldsArr = function(arr,string){
 const getKeysAndGroupKey = function(arr){
   let keys = [];
   let gKeys = [];
-  if (arr && arr.length) {
+  if (arr && arr.length > 0) {
     for (let k of arr) {
       if (k.level !== 0) {
         let t = '';
@@ -228,7 +228,10 @@ const normalizationProjectionKeys = function(projectionsArr,fieldList){
         let a = _.compact(n);
         o.expr = a[a.length - 1];
       }
-      keyArrObj.push(this.getKeyList(o.expr,fieldList));
+      const obj = this.getKeyList(o.expr,fieldList);
+      if(obj){
+        keyArrObj.push(obj);
+      }
     } else {
       let argsArr = [];
       if(_.isArray(o.args)){
@@ -252,6 +255,10 @@ const normalizationProjectionKeys = function(projectionsArr,fieldList){
   modifyGroupKeyByDots accept the groupArr return by getKeysAndGroupKey 'gKeys'
   This is used for only JoinProcessor
   And return like "streamId:address.city.ui"
+
+  modifyGroupKeyByDots accept the groupArr with pattern "streams['address']['city']"
+  And replce it with dots example "streams.address.city"
+  return the array
 */
 const modifyGroupKeyByDots = function(groupArr){
   let dottedKeys = [];
@@ -263,6 +270,8 @@ const modifyGroupKeyByDots = function(groupArr){
   });
   return dottedKeys;
 };
+
+
 
 export default {
   getSchemaFields,

@@ -43,7 +43,8 @@ export default class ProjectionProcessorContainer extends Component {
     sourceNode: PropTypes.object.isRequired,
     targetNodes: PropTypes.array.isRequired,
     linkShuffleOptions: PropTypes.array.isRequired,
-    currentEdges: PropTypes.array.isRequired
+    currentEdges: PropTypes.array.isRequired,
+    testRunActivated : PropTypes.bool.isRequired
   };
 
   constructor(props) {
@@ -217,7 +218,9 @@ export default class ProjectionProcessorContainer extends Component {
           let _arr = [];
           _.map(obj.args , (o) => {
             const fieldObj = ProcessorUtils.getKeyList(o,fieldList);
-            _arr.push(fieldObj);
+            if(fieldObj){
+              _arr.push(fieldObj);
+            }
           });
           const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey(_arr);
           argsGroupKeys[index] = gKeys;
@@ -350,7 +353,7 @@ export default class ProjectionProcessorContainer extends Component {
     updateProcessorNode Method is a callback
   */
   handleSave(name, description){
-    if(this.projectionRuleId){
+    if(this.projectionRuleId && !this.props.testRunActivated){
       const {projectionSelectedKey,argumentKeysGroup,projectionGroupByKeys} = this.state;
       let tempArr = _.cloneDeep(this.state.outputFieldsArr);
       const {topologyId, versionId,nodeType,nodeData} = this.props;
@@ -393,13 +396,11 @@ export default class ProjectionProcessorContainer extends Component {
       return o.name === functionName;
     });
     if (obj) {
-      if (obj.argTypes) {
-        if (fieldObj) {
-          let argList = obj.argTypes.toString().includes(fieldObj.type);
-          (argList)
-            ? this.checkArgumentError(false,fieldObj.name,index)
-            : this.checkArgumentError(true,fieldObj.name,index);
-        }
+      if (obj.argTypes && fieldObj) {
+        let argList = obj.argTypes.toString().includes(fieldObj.type);
+        (argList)
+          ? this.checkArgumentError(false,fieldObj.name,index)
+          : this.checkArgumentError(true,fieldObj.name,index);
         return obj.returnType || fieldObj.type;
       }
     } else if (fieldObj) {
@@ -567,7 +568,7 @@ export default class ProjectionProcessorContainer extends Component {
       projectionKeys,
       showLoading
     } = this.state;
-
+    const disabledFields = this.props.testRunActivated ? true : !editMode;
     return (
       <div className="modal-form processor-modal-form">
         <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
@@ -587,7 +588,7 @@ export default class ProjectionProcessorContainer extends Component {
                 </label>
                 <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Projection keys</Popover>}>
                 <div>
-                  <Select  value={projectionKeys} options={fieldList} onChange={this.handleProjectionKeysChange.bind(this)} clearable={false} multi={true} required={true} disabled={!editMode} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+                  <Select  value={projectionKeys} options={fieldList} onChange={this.handleProjectionKeysChange.bind(this)} clearable={false} multi={true} required={true} disabled={disabledFields} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
                 </div>
                 </OverlayTrigger>
               </div>
@@ -618,24 +619,24 @@ export default class ProjectionProcessorContainer extends Component {
                       <div className="col-sm-3">
                         <Select className={outputFieldsArr.length === i
                           ? "menu-outer-top"
-                          : ''} value={obj.functionName} options={functionListArr} onChange={this.handleFieldChange.bind(this, i)} required={true} disabled={!editMode} valueKey="name" labelKey="name"/>
+                          : ''} value={obj.functionName} options={functionListArr} onChange={this.handleFieldChange.bind(this, i)} required={true} disabled={disabledFields} valueKey="name" labelKey="name"/>
                       </div>
                       </OverlayTrigger>
                       <OverlayTrigger trigger={['hover']} placement="top" overlay={<Popover id="popover-trigger-hover">Input field name</Popover>}>
                       <div className="col-sm-4">
                         <Select className={outputFieldsArr.length === i
                           ? "menu-outer-top"
-                          : ''} value={obj.args} options={fieldList} onChange={this.handleFieldsKeyChange.bind(this, i)} clearable={false} multi={true} required={true} disabled={!editMode} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+                          : ''} value={obj.args} options={fieldList} onChange={this.handleFieldsKeyChange.bind(this, i)} clearable={false} multi={true} required={true} disabled={disabledFields} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
                       </div>
                       </OverlayTrigger>
                       <div className="col-sm-3">
                         <OverlayTrigger trigger={['hover']} placement="top" overlay={<Popover id="popover-trigger-hover">Output field name</Popover>}>
-                        <input name="outputFieldName" value={obj.outputFieldName} ref="outputFieldName" onChange={this.handleFieldNameChange.bind(this, i)} type="text" className={invalidInput ? "form-control invalidInput" : "form-control" }  required={true} disabled={!editMode}/>
+                        <input name="outputFieldName" value={obj.outputFieldName} ref="outputFieldName" onChange={this.handleFieldNameChange.bind(this, i)} type="text" className={invalidInput ? "form-control invalidInput" : "form-control" }  required={true} disabled={disabledFields}/>
                         </OverlayTrigger>
                       </div>
                       {editMode
                         ? <div className="col-sm-2">
-                            <button className="btn btn-default btn-sm" type="button" onClick={this.addProjectionOutputFields.bind(this)}>
+                            <button className="btn btn-default btn-sm" type="button" disabled={disabledFields} onClick={this.addProjectionOutputFields.bind(this)}>
                               <i className="fa fa-plus"></i>
                             </button>&nbsp; {i > 0
                               ? <button className="btn btn-sm btn-danger" type="button" onClick={this.deleteProjectionRow.bind(this, i)}>

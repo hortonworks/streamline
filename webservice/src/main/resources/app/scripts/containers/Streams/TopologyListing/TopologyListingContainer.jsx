@@ -45,6 +45,8 @@ import AddTopology from './AddTopology';
 import ImportTopology from './ImportTopology';
 import CloneTopology from './CloneTopology';
 import CommonLoaderSign from '../../../components/CommonLoaderSign';
+import app_state from '../../../app_state';
+import {observer} from 'mobx-react';
 
 class CustPieChart extends PieChart {
   drawPie() {
@@ -75,6 +77,7 @@ class CustPieChart extends PieChart {
   }
 }
 
+@observer
 class TopologyItems extends Component {
   constructor(props) {
     super(props);
@@ -143,7 +146,7 @@ class TopologyItems extends Component {
                     : (metricWrap.status || 'NOTRUNNING') === "NOTRUNNING"
                       ? 'triangle NOTRUNNING'
                       : ''}`}></i>{window.outerWidth < 1440
-                    ? Utils.ellipses(topology.name, 15)
+                    ? Utils.ellipses(topology.name, !app_state.sidebar_isCollapsed ? 10 : 15)
                     : topology.name}
                   <small>{namespaceName}</small>
                 </h4>
@@ -674,13 +677,13 @@ class TopologyListingContainer extends Component {
 
                       <div className="col-md-2 text-center">
                         <DropdownButton title={sortTitle} id="sortDropdown" className="sortDropdown ">
-                          <MenuItem onClick={this.onSortByClicked.bind(this, "name")}>
+                          <MenuItem active={this.state.sorted.key === "name" ? true : false } onClick={this.onSortByClicked.bind(this, "name")}>
                             &nbsp;Name
                           </MenuItem>
-                          <MenuItem active onClick={this.onSortByClicked.bind(this, "last_updated")}>
+                          <MenuItem active={this.state.sorted.key === "last_updated" ? true : false } onClick={this.onSortByClicked.bind(this, "last_updated")}>
                             &nbsp;Last Update
                           </MenuItem>
-                          <MenuItem onClick={this.onSortByClicked.bind(this, "status")}>
+                          <MenuItem active={this.state.sorted.key === "status" ? true : false } onClick={this.onSortByClicked.bind(this, "status")}>
                             &nbsp;Status
                           </MenuItem>
                         </DropdownButton>

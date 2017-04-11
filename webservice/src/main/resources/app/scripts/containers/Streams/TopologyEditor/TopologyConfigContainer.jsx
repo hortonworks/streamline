@@ -89,7 +89,7 @@ export default class TopologyConfigContainer extends Component {
                 <img src="styles/img/start-loader.gif" alt="loading"/>
               </div>
             </div>
-          : <Form ref="Form" FormData={formData} showRequired={null} className="modal-form config-modal-form">
+          : <Form ref="Form" FormData={formData} readOnly={this.props.testRunActivated} showRequired={null} className="modal-form config-modal-form">
             {fields}
           </Form>
 }

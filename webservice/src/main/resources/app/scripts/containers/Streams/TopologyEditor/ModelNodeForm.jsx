@@ -145,7 +145,7 @@ export default class ModelNodeForm extends Component {
 
   render() {
     const {parallelism, modelsNameArr, modelId} = this.state;
-    const {editMode} = this.props;
+    const disabledFields = this.props.testRunActivated ? true : !this.props.editMode;
     return (
       <div className="modal-form processor-modal-form">
         <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
@@ -161,7 +161,7 @@ export default class ModelNodeForm extends Component {
                 <div>
                 <Select ref={(ref) => {
                   this.modelNameRef = ref;
-                }} value={modelId} options={modelsNameArr} onChange={this.handleModelNameChange.bind(this)} required={true} disabled={!editMode} clearable={false}/>
+                }} value={modelId} options={modelsNameArr} onChange={this.handleModelNameChange.bind(this)} required={true} disabled={disabledFields} clearable={false}/>
                 </div>
                 </OverlayTrigger>
               </div>

@@ -2623,3 +2623,24 @@ input[type="checkbox"] {
   border-bottom-style: dashed;
   background: #f7f7f7;
 }
+
+.testCustomFormClass{
+  position: relative;
+  height: 395px;
+}
+.testResultCaption{
+  width: 100%;
+  height: 50px;
+  padding: 0 5px;
+  background-color: #ececec;
+  color: #262626;
+}
+.testResultCaption h4{
+  line-height: 50px;
+}
+.testSourceBg{
+  fill: #d1ffcf !important;
+}
+.testSinkBg{
+  fill: #ffedcd !important;
+}

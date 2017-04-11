@@ -74,8 +74,8 @@ const nodeTarget = {
 };
 
 const nodeSource = {
-  canDrag(props) {
-    return true;
+  canDrag(props , monitor){
+    return !props.testRunActivated;
   },
   beginDrag(props, monitor, component) {
     return _.clone(props);
@@ -103,7 +103,8 @@ export default class NodeContainer extends Component {
     children: PropTypes.node,
     nodeType: PropTypes.string.isRequired,
     topologyComponentBundleId: PropTypes.number.isRequired,
-    defaultImagePath: PropTypes.string.isRequired
+    defaultImagePath: PropTypes.string.isRequired,
+    testRunActivated : PropTypes.bool.isRequired
   };
 
   getPopover() {

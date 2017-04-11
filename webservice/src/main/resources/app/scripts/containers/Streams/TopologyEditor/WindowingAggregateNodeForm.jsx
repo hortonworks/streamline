@@ -36,7 +36,8 @@ export default class WindowingAggregateNodeForm extends Component {
     sourceNode: PropTypes.object.isRequired,
     targetNodes: PropTypes.array.isRequired,
     linkShuffleOptions: PropTypes.array.isRequired,
-    currentEdges: PropTypes.array.isRequired
+    currentEdges: PropTypes.array.isRequired,
+    testRunActivated : PropTypes.bool.isRequired
   };
 
   constructor(props) {
@@ -232,7 +233,9 @@ export default class WindowingAggregateNodeForm extends Component {
         if(_.isArray(obj.args)){
           let _arr = [],argsVal = obj.args[0];
           const fieldObj = ProcessorUtils.getKeyList(argsVal,keysList);
-          _arr.push(fieldObj);
+          if(fieldObj){
+            _arr.push(fieldObj);
+          }
           const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey(_arr);
           argsGroupKeys[index] = gKeys;
 
@@ -610,13 +613,11 @@ export default class WindowingAggregateNodeForm extends Component {
       return o.name === functionName;
     });
     if (obj) {
-      if (obj.argTypes) {
-        if (fieldObj) {
-          let argList = obj.argTypes.toString().includes(fieldObj.type);
-          (argList)
-            ? this.setState({argumentError: false})
-            : this.setState({argumentError: true});
-        }
+      if (obj.argTypes && fieldObj) {
+        let argList = obj.argTypes.toString().includes(fieldObj.type);
+        (argList)
+          ? this.setState({argumentError: false})
+          : this.setState({argumentError: true});
         return obj.returnType || fieldObj.type;
       }
     } else if (fieldObj) {
@@ -739,6 +740,7 @@ export default class WindowingAggregateNodeForm extends Component {
       outputFieldsArr,
       functionListArr
     } = this.state;
+    const disabledFields = this.props.testRunActivated ? true : !editMode;
     return(
       <div className="modal-form processor-modal-form">
         <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
@@ -758,7 +760,7 @@ export default class WindowingAggregateNodeForm extends Component {
                   </label>
                   <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Group by keys</Popover>}>
                   <div>
-                    <Select value={selectedKeys} options={keysList} onChange={this.handleKeysChange.bind(this)} multi={true} required={true} disabled={!editMode} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption}/>
+                    <Select value={selectedKeys} options={keysList} onChange={this.handleKeysChange.bind(this)} multi={true} required={true} disabled={disabledFields} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption}/>
                   </div>
                   </OverlayTrigger>
                 </div>
@@ -768,7 +770,7 @@ export default class WindowingAggregateNodeForm extends Component {
                   </label>
                   <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Window interval type</Popover>}>
                   <div>
-                    <Select value={intervalType} options={intervalTypeArr} onChange={this.commonHandlerChange.bind(this,'intervalType')} required={true} disabled={!editMode} clearable={false}/>
+                    <Select value={intervalType} options={intervalTypeArr} onChange={this.commonHandlerChange.bind(this,'intervalType')} required={true} disabled={disabledFields} clearable={false}/>
                   </div>
                   </OverlayTrigger>
                 </div>
@@ -779,13 +781,13 @@ export default class WindowingAggregateNodeForm extends Component {
                   <div className="row">
                     <div className="col-sm-5">
                       <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Window interval duration</Popover>}>
-                      <input name="windowNum" value={windowNum} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={!editMode} min="0" inputMode="numeric"/>
+                      <input name="windowNum" value={windowNum} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={disabledFields} min="0" inputMode="numeric"/>
                       </OverlayTrigger>
                     </div>
                     {intervalType === '.Window$Duration'
                       ? <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Duration type</Popover>}>
                         <div className="col-sm-5">
-                          <Select value={durationType} options={durationTypeArr} onChange={this.commonHandlerChange.bind(this,'durationType')} required={true} disabled={!editMode} clearable={false}/>
+                          <Select value={durationType} options={durationTypeArr} onChange={this.commonHandlerChange.bind(this,'durationType')} required={true} disabled={disabledFields} clearable={false}/>
                         </div>
                         </OverlayTrigger>
                       : null}
@@ -796,13 +798,13 @@ export default class WindowingAggregateNodeForm extends Component {
                   <div className="row">
                     <div className="col-sm-5">
                       <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Sliding interval duration</Popover>}>
-                      <input name="slidingNum" value={slidingNum} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={!editMode} min="0" inputMode="numeric"/>
+                      <input name="slidingNum" value={slidingNum} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={disabledFields} min="0" inputMode="numeric"/>
                       </OverlayTrigger>
                     </div>
                     {intervalType === '.Window$Duration'
                       ? <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Duration type</Popover>}>
                         <div className="col-sm-5">
-                          <Select value={slidingDurationType} options={durationTypeArr} onChange={this.commonHandlerChange.bind(this,'slidingDurationType')} required={true} disabled={!editMode} clearable={false}/>
+                          <Select value={slidingDurationType} options={durationTypeArr} onChange={this.commonHandlerChange.bind(this,'slidingDurationType')} required={true} disabled={disabledFields} clearable={false}/>
                         </div>
                         </OverlayTrigger>
                       : null}
@@ -822,13 +824,13 @@ export default class WindowingAggregateNodeForm extends Component {
                   <div className="row">
                     <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Timestamp field name</Popover>}>
                     <div className="col-sm-5">
-                      <Select value={tsField} options={tsFieldOptions} onChange={this.handleTimestampFieldChange.bind(this)} disabled={!editMode} valueKey="name" labelKey="name" />
+                      <Select value={tsField} options={tsFieldOptions} onChange={this.handleTimestampFieldChange.bind(this)} disabled={disabledFields} valueKey="name" labelKey="name" />
                     </div>
                     </OverlayTrigger>
                     {tsField !== '' ?
                     <div className="col-sm-5">
                       <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Lag duration</Popover>}>
-                      <input name="lagMs" value={lagMs} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={!editMode} min="0" inputMode="numeric"/>
+                      <input name="lagMs" value={lagMs} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={disabledFields} min="0" inputMode="numeric"/>
                       </OverlayTrigger>
                     </div>
                     : ''}
@@ -859,24 +861,24 @@ export default class WindowingAggregateNodeForm extends Component {
                         <div className="col-sm-3">
                           <Select className={outputFieldsArr.length - 1 === i
                             ? "menu-outer-top"
-                            : ''} value={obj.args} options={keysList} onChange={this.handleFieldChange.bind(this,'args', i)} required={true} disabled={!editMode} valueKey="name" labelKey="name" clearable={false} optionRenderer={this.renderFieldOption.bind(this)}/>
+                            : ''} value={obj.args} options={keysList} onChange={this.handleFieldChange.bind(this,'args', i)} required={true} disabled={disabledFields} valueKey="name" labelKey="name" clearable={false} optionRenderer={this.renderFieldOption.bind(this)}/>
                         </div>
                         </OverlayTrigger>
                         <OverlayTrigger trigger={['hover']} placement="bottom" overlay={<Popover id="popover-trigger-hover">Function name</Popover>}>
                         <div className="col-sm-3">
                           <Select className={outputFieldsArr.length - 1 === i
                             ? "menu-outer-top"
-                            : ''} value={obj.functionName} options={functionListArr} onChange={this.handleFieldChange.bind(this,'functionName', i)} required={true} disabled={!editMode} valueKey="name" labelKey="displayName"/>
+                            : ''} value={obj.functionName} options={functionListArr} onChange={this.handleFieldChange.bind(this,'functionName', i)} required={true} disabled={disabledFields} valueKey="name" labelKey="displayName"/>
                         </div>
                         </OverlayTrigger>
                         <div className="col-sm-3">
                           <OverlayTrigger trigger={['hover']} placement="bottom" overlay={<Popover id="popover-trigger-hover">Output field name</Popover>}>
-                          <input name="outputFieldName" value={obj.outputFieldName} ref="outputFieldName" onChange={this.handleOutputFieldName.bind(this, i)} type="text" className="form-control" required={true} disabled={!editMode}/>
+                          <input name="outputFieldName" value={obj.outputFieldName} ref="outputFieldName" onChange={this.handleOutputFieldName.bind(this, i)} type="text" className="form-control" required={true} disabled={disabledFields}/>
                           </OverlayTrigger>
                         </div>
                         {editMode
                           ? <div className="col-sm-2">
-                              <button className="btn btn-default btn-sm" type="button" onClick={this.addOutputFields.bind(this)}>
+                              <button className="btn btn-default btn-sm" disabled={disabledFields} type="button" onClick={this.addOutputFields.bind(this)}>
                                 <i className="fa fa-plus"></i>
                               </button>&nbsp; {i > 0
                                 ? <button className="btn btn-sm btn-danger" type="button" onClick={this.deleteFieldRow.bind(this, i)}>

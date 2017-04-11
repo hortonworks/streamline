@@ -44,7 +44,8 @@ export default class BranchNodeForm extends Component {
     targetNodes: PropTypes.array.isRequired,
     linkShuffleOptions: PropTypes.array.isRequired,
     graphEdges: PropTypes.array.isRequired,
-    updateGraphMethod: PropTypes.func.isRequired
+    updateGraphMethod: PropTypes.func.isRequired,
+    testRunActivated : PropTypes.bool.isRequired
   };
 
   constructor(props) {
@@ -283,12 +284,13 @@ export default class BranchNodeForm extends Component {
       linkShuffleOptions
     } = this.props;
     let {rules, processAll} = this.state;
+    const disabledFields = this.props.testRunActivated ? true : !editMode;
     return (
       <div className="modal-form processor-modal-form">
         <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
           display: "none"
         }}/>}>
-          {editMode
+          {!this.props.testRunActivated && editMode
             ? <div className="clearfix row-margin-bottom customFormClass">
                 <button type="button" onClick={this.handleAddRule.bind(this)} className="btn btn-success pull-left">
                   <i className="fa fa-plus"></i>
@@ -308,7 +310,7 @@ export default class BranchNodeForm extends Component {
                 <Thead>
                   <Th column="name">Name</Th>
                   <Th column="condition">Condition</Th>
-                  <Th column="action" className={!editMode
+                  <Th column="action" className={disabledFields
                     ? 'displayNone'
                     : null}>Actions</Th>
                 </Thead>
@@ -317,7 +319,7 @@ export default class BranchNodeForm extends Component {
                     <Tr key={i}>
                       <Td column="name">{rule.name}</Td>
                       <Td column="condition">{rule.condition}</Td>
-                      <Td column="action" className={!editMode
+                      <Td column="action" className={disabledFields
                         ? 'displayNone'
                         : null}>
                         <div className="btn-action">

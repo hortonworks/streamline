@@ -116,7 +116,7 @@ export default class ProcessorNodeForm extends Component {
           <StreamsSidebar ref="StreamSidebarOutput" streamObj={this.state.outputStreamObj} streamType="output"/>
         </Tab>
         <Tab eventKey={2} title="NOTES">
-          <NotesForm ref="NotesForm" description={this.state.description} onChangeDescription={this.handleNotesChange.bind(this)}/>
+          <NotesForm ref="NotesForm" testRunActivated={this.props.testRunActivated} description={this.state.description} onChangeDescription={this.handleNotesChange.bind(this)}/>
         </Tab>
       </Tabs>
     );

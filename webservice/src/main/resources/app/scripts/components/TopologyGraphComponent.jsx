@@ -57,12 +57,19 @@ export default class TopologyGraphComponent extends Component {
     viewMode: PropTypes.bool.isRequired,
     getModalScope: PropTypes.func.isRequired,
     setModalContent: PropTypes.func.isRequired,
-    getEdgeConfigModal: PropTypes.func
+    getEdgeConfigModal: PropTypes.func,
+    testRunActivated : PropTypes.bool.isRequired
   };
 
   constructor(props) {
     super(props);
     this.renderFlag = false;
+  }
+
+  componentWillUpdate(){
+    if(this.props.testRunActivated){
+      this.updateGraph();
+    }
   }
 
   componentWillUnmount() {
@@ -219,7 +226,7 @@ export default class TopologyGraphComponent extends Component {
           let versionName = versionsArr.find((o) => {
             return o.id == versionId;
           }).name;
-          if (versionName.toLowerCase() == 'current' && editMode) {
+          if (versionName.toLowerCase() == 'current' && editMode && !thisGraph.props.testRunActivated) {
             TopologyUtils.saveMetaInfo(topologyId, versionId, null, metaInfo, null);
           }
         }
@@ -303,7 +310,7 @@ export default class TopologyGraphComponent extends Component {
             let versionName = versionsArr.find((o) => {
               return o.id == versionId;
             }).name;
-            if (versionName.toLowerCase() == 'current' && editMode) {
+            if (versionName.toLowerCase() == 'current' && editMode && !thisGraph.props.testRunActivated) {
               TopologyUtils.saveMetaInfo(topologyId, versionId, null, metaInfo, null);
             }
           }
@@ -328,25 +335,27 @@ export default class TopologyGraphComponent extends Component {
   }
 
   pathMouseDown(d3path, d) {
-    let {internalFlags, constants, paths, rectangles} = this;
-    d3.event.stopPropagation();
-    internalFlags.mouseDownLink = d;
+    if(!this.props.testRunActivated){
+      let {internalFlags, constants, paths, rectangles} = this;
+      d3.event.stopPropagation();
+      internalFlags.mouseDownLink = d;
 
-    if (internalFlags.selectedNode) {
-      TopologyUtils.removeSelectFromNode(rectangles, constants, internalFlags);
-    }
+      if (internalFlags.selectedNode) {
+        TopologyUtils.removeSelectFromNode(rectangles, constants, internalFlags);
+      }
 
-    let prevEdge = internalFlags.selectedEdge;
-    if (!prevEdge || prevEdge !== d) {
-      TopologyUtils.replaceSelectEdge(d3, d3path, d, constants, internalFlags, paths);
-      this.main_edgestream.style('display', 'block');
-      d3.select('.edge-stream').attr('x', this.getBoundingBoxCenter(d3path)[0] - 100);
-      d3.select('.edge-stream').attr('y', this.getBoundingBoxCenter(d3path)[1]);
-      TopologyUtils.getEdgeData(d, this.topologyId, this.versionId, this.setEdgeData.bind(this));
-    } else {
-      TopologyUtils.removeSelectFromEdge(d3, paths, constants, internalFlags);
-      this.edgeStream.style('display', 'none');
-      this.main_edgestream.style('display', 'none');
+      let prevEdge = internalFlags.selectedEdge;
+      if (!prevEdge || prevEdge !== d) {
+        TopologyUtils.replaceSelectEdge(d3, d3path, d, constants, internalFlags, paths);
+        this.main_edgestream.style('display', 'block');
+        d3.select('.edge-stream').attr('x', this.getBoundingBoxCenter(d3path)[0] - 100);
+        d3.select('.edge-stream').attr('y', this.getBoundingBoxCenter(d3path)[1]);
+        TopologyUtils.getEdgeData(d, this.topologyId, this.versionId, this.setEdgeData.bind(this));
+      } else {
+        TopologyUtils.removeSelectFromEdge(d3, paths, constants, internalFlags);
+        this.edgeStream.style('display', 'none');
+        this.main_edgestream.style('display', 'none');
+      }
     }
   }
 
@@ -416,27 +425,29 @@ export default class TopologyGraphComponent extends Component {
 
   //mousedown on circle
   circleMouseDown(d3node, d) {
-    let {internalFlags, constants, paths} = this;
-    d3.event.stopPropagation();
-    internalFlags.mouseDownNode = d;
-    this.edgeStream.style('display', 'none');
-    this.main_edgestream.style('display', 'none');
-    if (internalFlags.selectedEdge) {
-      TopologyUtils.removeSelectFromEdge(d3, paths, constants, internalFlags);
-    }
-    internalFlags.failedTupleDrag = false;
-    if (d3.event.currentTarget.getAttribute('data-failedTuple') === 'true') {
-      internalFlags.failedTupleDrag = true;
-    }
-    internalFlags.shiftNodeDrag = true;
-    if (!d.isConfigured) {
-      this.dragLine.classed('hidden', true);
-      internalFlags.addEdgeFromNode = false;
+    if(!this.props.testRunActivated){
+      let {internalFlags, constants, paths} = this;
+      d3.event.stopPropagation();
+      internalFlags.mouseDownNode = d;
+      this.edgeStream.style('display', 'none');
+      this.main_edgestream.style('display', 'none');
+      if (internalFlags.selectedEdge) {
+        TopologyUtils.removeSelectFromEdge(d3, paths, constants, internalFlags);
+      }
+      internalFlags.failedTupleDrag = false;
+      if (d3.event.currentTarget.getAttribute('data-failedTuple') === 'true') {
+        internalFlags.failedTupleDrag = true;
+      }
+      internalFlags.shiftNodeDrag = true;
+      if (!d.isConfigured) {
+        this.dragLine.classed('hidden', true);
+        internalFlags.addEdgeFromNode = false;
+        return;
+      }
+      // reposition dragged directed edge
+      this.dragLine.classed('hidden', false).attr('d', 'M' + d.x + Math.round(constants.rectangleWidth / 2) + ',' + d.y + constants.rectangleHeight + 'L' + d.x + Math.round(constants.rectangleWidth / 2) + ',' + d.y + constants.rectangleHeight);
       return;
     }
-    // reposition dragged directed edge
-    this.dragLine.classed('hidden', false).attr('d', 'M' + d.x + Math.round(constants.rectangleWidth / 2) + ',' + d.y + constants.rectangleHeight + 'L' + d.x + Math.round(constants.rectangleWidth / 2) + ',' + d.y + constants.rectangleHeight);
-    return;
   }
 
   // mouseup on nodes
@@ -749,7 +760,17 @@ export default class TopologyGraphComponent extends Component {
       return "translate(" + d.x + "," + d.y + ")";
     });
 
-    thisGraph.rectangles.selectAll('rect').attr("filter", function(d) {
+    thisGraph.rectangles.selectAll('rect').attr('class', function(d){
+      let classStr = 'node-rectangle ' + TopologyUtils.getNodeRectClass(d);
+      if(thisGraph.props.testRunActivated){
+        classStr +=  d.parentType.toLowerCase() === "source"
+                    ?  ' testSourceBg'
+                    : d.parentType.toLowerCase() === "sink"
+                      ? ' testSinkBg'
+                      : '';
+      }
+      return classStr;
+    }).attr("filter", function(d) {
       if (!d.isConfigured) {
         return "url(#grayscale)";
       } else {
@@ -775,10 +796,13 @@ export default class TopologyGraphComponent extends Component {
       }
     });
     thisGraph.rectangles.selectAll('text.node-title').text(function(d) {
-      if (d.uiname.length > 11) {
-        return d.uiname.slice(0, 10) + '...';
+      // append "Test" if testRunActivated is true for source and sink
+      const titleNode = TopologyUtils.getNodeRectClass(d);
+      let title = thisGraph.props.testRunActivated ? (titleNode === "source" || titleNode === "datasink") ? `TEST-${d.parentType}` : d.uiname : d.uiname;
+      if (title.length > 11) {
+        return title.slice(0, 10) + '...';
       } else {
-        return d.uiname;
+        return title;
       };
     }).attr("filter", function(d) {
       if (!d.isConfigured) {
@@ -801,7 +825,15 @@ export default class TopologyGraphComponent extends Component {
 
     //Outer Rectangle
     newGs.append("rect").attr("width", constants.rectangleWidth + constants.rectangleHeight).attr("height", constants.rectangleHeight - 1).attr("class", function(d) {
-      return 'node-rectangle ' + TopologyUtils.getNodeRectClass(d);
+      let classStr = 'node-rectangle ' + TopologyUtils.getNodeRectClass(d);
+      if(thisGraph.props.testRunActivated){
+        classStr +=  d.parentType.toLowerCase() === "source"
+                    ?  ' testSourceBg'
+                    : d.parentType.toLowerCase() === "sink"
+                      ? ' testSinkBg'
+                      : '';
+      }
+      return classStr;
     }).attr("filter", function(d) {
       if (!d.isConfigured) {
         return "url(#grayscale)";
@@ -812,7 +844,7 @@ export default class TopologyGraphComponent extends Component {
       return "url(#dropshadow)";
     }).on("mouseover", function(d) {
       if (thisGraph.editMode) {
-        d3.select(this.parentElement).select('text.fa.fa-times').style('display', 'block');
+        d3.select(this.parentElement).select('text.fa.fa-times').style('display', thisGraph.props.testRunActivated ? 'none' : 'block');
       } else {
         TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, this));
       }
@@ -843,7 +875,7 @@ export default class TopologyGraphComponent extends Component {
       return "url(#grayscale)";
     }).on("mouseover", function(d) {
       if (thisGraph.editMode) {
-        d3.select(this.parentElement).select('text.fa.fa-times').style('display', 'block');
+        d3.select(this.parentElement).select('text.fa.fa-times').style('display', thisGraph.props.testRunActivated ? 'none' : 'block');
       } else {
         TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, d3.select(this.parentElement).select('rect')));
       }
@@ -870,7 +902,7 @@ export default class TopologyGraphComponent extends Component {
     newGs.append("text").attr("class", "fa fa-caret-right").attr("x", "173px").attr("y", "26px").text(function(d) {
       return '\uf0da';
     }).on("click", function(d) {
-      if (thisGraph.editMode) {
+      if (thisGraph.editMode && !thisGraph.props.testRunActivated) {
         let value = parseInt(d.parallelismCount, 10) + 1;
         d.parallelismCount = value <= 1
           ? 1
@@ -885,7 +917,7 @@ export default class TopologyGraphComponent extends Component {
     newGs.append("text").attr("class", "fa fa-caret-left").attr("x", "143px").attr("y", "26px").text(function(d) {
       return '\uf0d9';
     }).on("click", function(d) {
-      if (thisGraph.editMode) {
+      if (thisGraph.editMode && !thisGraph.props.testRunActivated) {
         let value = parseInt(d.parallelismCount, 10) - 1;
         d.parallelismCount = value <= 1
           ? 1
@@ -964,8 +996,10 @@ export default class TopologyGraphComponent extends Component {
 
     //Label Text
     newGs.each(function(d) {
+      // append "Test" if testRunActivated is true for source and sink
+      const titleNode = TopologyUtils.getNodeRectClass(d);
       let gEl = d3.select(this),
-        title = d.uiname,
+        title = thisGraph.props.testRunActivated ? (titleNode === "source" || titleNode === "datasink") ? `TEST-${d.parentType}` : d.uiname : d.uiname,
         words = title.split(/\s+/g),
         nwords = words.length,
         nodeTitle = '';
@@ -983,7 +1017,7 @@ export default class TopologyGraphComponent extends Component {
         return ((constants.rectangleHeight / 2) - 2);
       }).on("mouseover", function(d) {
         if (thisGraph.editMode) {
-          d3.select(this.parentElement).select('text.fa.fa-times').style('display', 'block');
+          d3.select(this.parentElement).select('text.fa.fa-times').style('display', thisGraph.props.testRunActivated ? 'none' : 'block');
         } else {
           TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, d3.select(this.parentElement).select('rect')));
         }
@@ -1034,7 +1068,7 @@ export default class TopologyGraphComponent extends Component {
         return ((constants.rectangleHeight - 7));
       }).on("mouseover", function(d) {
         if (thisGraph.editMode) {
-          d3.select(this.parentElement).select('text.fa.fa-times').style('display', 'block');
+          d3.select(this.parentElement).select('text.fa.fa-times').style('display', thisGraph.props.testRunActivated ? 'none' : 'block');
         } else {
           TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, d3.select(this.parentElement).select('rect')));
         }
@@ -1062,7 +1096,7 @@ export default class TopologyGraphComponent extends Component {
       return '\uf00d';
     }).style("display", "none").on("mouseover", function(d) {
       if (thisGraph.editMode) {
-        this.style.display = 'block';
+        this.style.display = thisGraph.props.testRunActivated ? 'none' : 'block';
       }
     }).on("mouseout", function(d) {
       if (thisGraph.editMode) {
@@ -1128,3 +1162,6 @@ export default class TopologyGraphComponent extends Component {
     );
   }
 }
+TopologyGraphComponent.defaultProps = {
+  testRunActivated : false
+};

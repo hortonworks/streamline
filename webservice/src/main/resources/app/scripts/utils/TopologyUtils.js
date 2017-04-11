@@ -689,10 +689,10 @@ const defineLinePath = function(p1, p2, flag) {
 const showNodeModal = function(ModalScope, setModalContent, node, updateGraphMethod, allNodes, edges, linkShuffleOptions) {
   let currentEdges = this.getEdges(edges, node);
   let scope = ModalScope(node);
-  setModalContent(node, updateGraphMethod, this.getConfigContainer(node, scope.configData, scope.editMode, scope.topologyId, scope.versionId, scope.namespaceId, currentEdges, allNodes, linkShuffleOptions, edges, updateGraphMethod));
+  setModalContent(node, updateGraphMethod, this.getConfigContainer(node, scope.configData, scope.editMode, scope.topologyId, scope.versionId, scope.namespaceId, currentEdges, allNodes, linkShuffleOptions, edges, updateGraphMethod,scope.testRunActivated),currentEdges);
 };
 
-const getConfigContainer = function(node, configData, editMode, topologyId, versionId, namespaceId, currentEdges, allNodes, linkShuffleOptions, edges, updateGraphMethod) {
+const getConfigContainer = function(node, configData, editMode, topologyId, versionId, namespaceId, currentEdges, allNodes, linkShuffleOptions, edges, updateGraphMethod,testRunActivated) {
   let nodeType = this.getNodeType(node.parentType);
   let sourceNodes = [],
     targetNodes = [];
@@ -707,68 +707,68 @@ const getConfigContainer = function(node, configData, editMode, topologyId, vers
   });
   if (node.parentType === 'SOURCE') {
     return () => {
-      return <SourceNodeForm ref="ConfigModal" nodeData={node} configData={configData} editMode={editMode} nodeType={nodeType} topologyId={topologyId} versionId={versionId} namespaceId={namespaceId} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions}/>;
+      return <SourceNodeForm ref="ConfigModal" nodeData={node} configData={configData} editMode={editMode} testRunActivated={testRunActivated} nodeType={nodeType} topologyId={topologyId} versionId={versionId} namespaceId={namespaceId} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions}/>;
     };
   } else if (node.parentType === 'SINK') {
     return () => {
-      return <SinkNodeForm ref="ConfigModal" nodeData={node} configData={configData} editMode={editMode} nodeType={nodeType} topologyId={topologyId} versionId={versionId} namespaceId={namespaceId} sourceNodes={sourceNodes}/>;
+      return <SinkNodeForm ref="ConfigModal" nodeData={node} configData={configData} editMode={editMode} testRunActivated={testRunActivated} nodeType={nodeType} topologyId={topologyId} versionId={versionId} namespaceId={namespaceId} sourceNodes={sourceNodes}/>;
     };
   } else if (node.parentType === 'PROCESSOR') {
     let childElement = null;
     switch (node.currentType.toUpperCase()) {
     case 'RULE': //Rule
       childElement = () => {
-        return <RulesNodeForm ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNode={sourceNodes} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions} graphEdges={edges} updateGraphMethod={updateGraphMethod}/>;
+        return <RulesNodeForm ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} testRunActivated={testRunActivated} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNode={sourceNodes} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions} graphEdges={edges} updateGraphMethod={updateGraphMethod}/>;
       };
       break;
     case 'CUSTOM': //Custom
       childElement = () => {
-        return <CustomNodeForm ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNode={sourceNodes[0]} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions}/>;
+        return <CustomNodeForm ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} testRunActivated={testRunActivated} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNode={sourceNodes[0]} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions}/>;
       };
       break;
     case 'NORMALIZATION': //Normalization
       childElement = () => {
-        return <NormalizationNodeForm ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} nodeType={nodeType} topologyId={topologyId} versionId={versionId} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions} currentEdges={currentEdges}/>;
+        return <NormalizationNodeForm ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} testRunActivated={testRunActivated} nodeType={nodeType} topologyId={topologyId} versionId={versionId} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions} currentEdges={currentEdges}/>;
       };
       break;
     case 'SPLIT': //Split
       childElement = () => {
-        return <SplitNodeForm ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNode={sourceNodes[0]} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions}/>;
+        return <SplitNodeForm ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} testRunActivated={testRunActivated} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNode={sourceNodes[0]} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions}/>;
       };
       break;
     case 'STAGE': //Stage
       childElement = () => {
-        return <StageNodeForm ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} nodeType={nodeType} topologyId={topologyId} versionId={versionId} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions} currentEdges={currentEdges}/>;
+        return <StageNodeForm ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} testRunActivated={testRunActivated} nodeType={nodeType} topologyId={topologyId} versionId={versionId} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions} currentEdges={currentEdges}/>;
       };
       break;
     case 'JOIN': //Join
       childElement = () => {
-        return <JoinNodeForm ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNode={sourceNodes} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions} currentEdges={currentEdges} graphEdges={edges}/>;
+        return <JoinNodeForm ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} testRunActivated={testRunActivated} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNode={sourceNodes} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions} currentEdges={currentEdges} graphEdges={edges}/>;
       };
       break;
     case 'WINDOW': //Windowing
       childElement = () => {
-        return <WindowingAggregateNodeForm ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNode={sourceNodes[0]} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions} currentEdges={currentEdges}/>;
+        return <WindowingAggregateNodeForm ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} testRunActivated={testRunActivated} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNode={sourceNodes[0]} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions} currentEdges={currentEdges}/>;
       };
       break;
     case 'BRANCH': //Branch
       childElement = () => {
-        return <BranchNodeForm ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNode={sourceNodes} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions} graphEdges={edges} updateGraphMethod={updateGraphMethod}/>;
+        return <BranchNodeForm ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} testRunActivated={testRunActivated} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNode={sourceNodes} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions} graphEdges={edges} updateGraphMethod={updateGraphMethod}/>;
       };
       break;
     case 'PMML': //Pmml
       childElement = () => {
-        return <ModelNodeForm ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} nodeType={nodeType} topologyId={topologyId} versionId={versionId}/>;
+        return <ModelNodeForm ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} testRunActivated={testRunActivated} nodeType={nodeType} topologyId={topologyId} versionId={versionId}/>;
       };
       break;
     case 'PROJECTION': //Projection
       childElement = () => {
-        return <ProjectionProcessorContainer  ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNode={sourceNodes[0]} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions} currentEdges={currentEdges}/>;
+        return <ProjectionProcessorContainer  ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} testRunActivated={testRunActivated} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNode={sourceNodes[0]} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions} currentEdges={currentEdges}/>;
       };
       break;
     }
     return () => {
-      return <ProcessorNodeForm ref="ConfigModal" nodeData={node} editMode={editMode} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNodes={sourceNodes} getChildElement={childElement}/>;
+      return <ProcessorNodeForm ref="ConfigModal" nodeData={node} editMode={editMode} testRunActivated={testRunActivated} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNodes={sourceNodes} getChildElement={childElement}/>;
     };
   }
 };

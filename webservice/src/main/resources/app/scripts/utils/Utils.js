@@ -334,6 +334,16 @@ const convertMillsecondsToSecond = function(milliSec) {
   return Math.round(milliSec / 1000);
 };
 
+const validateJSON = function(json){
+  let validFlag = true;
+  try{
+    const data = JSON.parse(json);
+  }catch(err){
+    validFlag = false;
+  }
+  return validFlag;
+};
+
 export default {
   sortArray,
   numberToMilliseconds,
@@ -349,5 +359,6 @@ export default {
   kFormatter,
   scrollMe,
   validateURL,
-  convertMillsecondsToSecond
+  convertMillsecondsToSecond,
+  validateJSON
 };
