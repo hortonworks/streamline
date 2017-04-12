@@ -4,6 +4,17 @@ public final class Constants {
     private Constants() {
     }
 
+    public static class Email {
+        public static final String SERVICE_NAME = "EMAIL";
+        public static final String CONF_TYPE_PROPERTIES = "properties";
+        public static final String PROPERTY_KEY_HOST = "host";
+        public static final String PROPERTY_KEY_PORT = "port";
+        public static final String PROPERTY_KEY_SSL = "ssl";
+        public static final String PROPERTY_KEY_STARTTLS = "starttls";
+        public static final String PROPERTY_KEY_PROTOCOL = "protocol";
+        public static final String PROPERTY_KEY_AUTH = "auth";
+    }
+
     public static class Zookeeper {
         public static final String SERVICE_NAME = "ZOOKEEPER";
     }

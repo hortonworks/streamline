@@ -46,6 +46,11 @@ public class ZookeeperServiceRegistrar extends AbstractServiceRegistrar {
     }
 
     @Override
+    protected List<ServiceConfiguration> createServiceConfigurations(Config config) {
+        return Collections.emptyList();
+    }
+
+    @Override
     protected boolean validateComponents(List<Component> components) {
         // requirements
         // 1. ZOOKEEPER_SERVER should be available, and it should have one or more hosts and one port

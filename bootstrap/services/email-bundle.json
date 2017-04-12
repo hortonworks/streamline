@@ -1,0 +1,54 @@
+{
+  "name": "EMAIL",
+  "registerClass": "com.hortonworks.streamline.streams.cluster.register.impl.EmailServiceRegistrar",
+  "serviceUISpecification": {
+    "fields": [
+      {
+        "uiName": "Host",
+        "fieldName": "host",
+        "isOptional": false,
+        "tooltip": "Hostname for email server",
+        "type": "string"
+      },
+      {
+        "uiName": "Port",
+        "fieldName": "port",
+        "isOptional": false,
+        "tooltip": "Port for email server",
+        "type": "number"
+      },
+      {
+        "uiName": "SSL?",
+        "fieldName": "ssl",
+        "isOptional": true,
+        "tooltip": "Flag to indicate it connection should be over SSL",
+        "type": "boolean",
+        "defaultValue": false
+      },
+      {
+        "uiName": "Start tls?",
+        "fieldName": "starttls",
+        "isOptional": true,
+        "tooltip": "Flag to indicate TLS setting",
+        "type": "boolean",
+        "defaultValue": false
+      },
+      {
+        "uiName": "Email server protocol",
+        "fieldName": "protocol",
+        "isOptional": true,
+        "tooltip": "Email server protocol",
+        "type": "string",
+        "defaultValue": "smtp"
+      },
+      {
+        "uiName": "Authenticate?",
+        "fieldName": "auth",
+        "isOptional": true,
+        "tooltip": "Flag to indicate if authentication to be performed",
+        "type": "boolean",
+        "defaultValue": true
+      }
+    ]
+  }
+}

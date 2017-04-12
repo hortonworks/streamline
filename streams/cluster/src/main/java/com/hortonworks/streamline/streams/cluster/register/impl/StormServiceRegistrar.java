@@ -49,6 +49,11 @@ public class StormServiceRegistrar extends AbstractServiceRegistrar {
     }
 
     @Override
+    protected List<ServiceConfiguration> createServiceConfigurations(Config config) {
+        return Collections.emptyList();
+    }
+
+    @Override
     protected boolean validateComponents(List<Component> components) {
         // requirements
         // 1. STORM_UI_SERVER should be available, and it should have one host and one port
