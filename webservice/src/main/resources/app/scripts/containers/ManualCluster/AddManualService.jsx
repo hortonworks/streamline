@@ -151,7 +151,7 @@ class AddManualService extends Component{
               </div>
               {
                 serviceFormFields.length > 0
-                ? <Form ref="Form" className="customFormClass" FormData={formData} fetchFileData={this.fetchFileData}>
+                ? <Form ref="Form" className="customFormClass" FormData={formData} fetchFileData={this.fetchFileData} showRequired={null}>
                     {fields}
                   </Form>
                 : ''

@@ -104,9 +104,10 @@ export default class ComponentNodeContainer extends Component {
 
     let newSourceAdded = this.isNewComponentAdded(this.state.datasources, sourceBundlesId, data.sources);
     let newProcessorAdded = this.isNewComponentAdded(this.state.processors, processorsBundlesId, data.processors);
+    let processorDeleted = this.isComponentDeleted(this.state.processors, processorsBundlesId, data.processors);
     let newSinkAdded = this.isNewComponentAdded(this.state.sinks, sinksBundlesId, data.processors);
 
-    if(newSourceAdded || newProcessorAdded || newSinkAdded) {
+    if(newSourceAdded || newProcessorAdded || processorDeleted || newSinkAdded) {
       TopologyREST.putTopologyEditorToolbar({body: JSON.stringify({data: JSON.stringify(data), userId: userId})})
       .then((resultData)=>{
         this.setState({toolbar: JSON.parse(resultData.data), userId: userId});
@@ -142,6 +143,26 @@ export default class ComponentNodeContainer extends Component {
       }
     });
     return newComponentAdded;
+  }
+
+  //Utility to find out if a component was deleted
+  //and if so, remove from dataArr
+  isComponentDeleted(componentArr, bundleIdArr, dataArr) {
+    let componentDeleted = false;
+    bundleIdArr.map((id)=>{
+      let bundleObj = _.find(componentArr, {id: id});
+      if(bundleObj === undefined){
+        componentDeleted = true;
+        dataArr.map((f, i)=>{
+          if(f.children && _.findIndex(f.children, {bundleId: id}) !== -1) {
+            f.children.splice(_.findIndex(f.children, {bundleId: id}), 1);
+          } else if(f.bundleId === id) {
+            dataArr.splice(i, 1);
+          }
+        });
+      }
+    });
+    return componentDeleted;
   }
 
   componentWillReceiveProps(nextProps, oldProps) {

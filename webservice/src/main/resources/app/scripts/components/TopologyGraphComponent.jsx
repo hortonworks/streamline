@@ -23,6 +23,7 @@ import $ from 'jquery';
 import jQuery from 'jquery';
 import TopologyUtils from '../utils/TopologyUtils';
 import state from '../app_state';
+import Utils from '../utils/Utils';
 
 window.$ = $;
 window.jQuery = jQuery;
@@ -88,6 +89,7 @@ export default class TopologyGraphComponent extends Component {
     selectedEdge: null,
     mouseDownNode: null,
     mouseDownLink: null,
+    keyDownNode: null,
     justDragged: false,
     justScaleTransGraph: false,
     lastKeyDown: -1,
@@ -105,6 +107,8 @@ export default class TopologyGraphComponent extends Component {
     DELETE_KEY: 46,
     SPACE_KEY: 32,
     ESCAPE_KEY: 27,
+    TAB_KEY: 9,
+    ENTER_KEY: 13,
     rectangleWidth: 145,
     rectangleHeight: 40
   };
@@ -472,6 +476,21 @@ export default class TopologyGraphComponent extends Component {
     return TopologyUtils.MouseUpAction(topologyId, versionId, d3node, d, metaInfo, internalFlags, constants, dragLine, paths, nodes, edges, linkShuffleOptions, this.updateGraph.bind(this), 'rectangle', getModalScope, setModalContent, rectangles, getEdgeConfigModal, setLastChange);
   }
 
+  // keydown on selected node
+  rectangleKeyDown(d3node, d) {
+    let {
+      internalFlags,
+      edges,
+      getModalScope,
+      setModalContent,
+      nodes,
+      linkShuffleOptions,
+      rectangles,
+      constants
+    } = this;
+    return TopologyUtils.KeyDownAction(d, internalFlags, nodes, edges, linkShuffleOptions, this.updateGraph.bind(this), getModalScope, setModalContent, rectangles, constants);
+  }
+
   // mouseup on circle
   circleMouseUp(d3node, d) {
     let {
@@ -596,14 +615,14 @@ export default class TopologyGraphComponent extends Component {
 
   // keydown on main svg
   svgKeyDown() {
-    let {internalFlags, constants} = this;
+    let {internalFlags, constants, rectangles} = this;
     // make sure repeated key presses don't register for each keydown
     if (internalFlags.lastKeyDown !== -1)
       {return;}
 
     internalFlags.lastKeyDown = d3.event.keyCode;
     var selectedEdge = internalFlags.selectedEdge;
-    // var selectedNode = internalFlags.selectedNode;
+    var selectedNode = internalFlags.selectedNode;
 
     switch (d3.event.keyCode) {
     case constants.BACKSPACE_KEY:
@@ -611,8 +630,44 @@ export default class TopologyGraphComponent extends Component {
       d3.event.preventDefault();
       if (selectedEdge) {
         this.deleteEdge(selectedEdge);
-        // } else if (selectedNode){
-        // 	this.deleteNode(selectedNode);
+      } else if(selectedNode) {
+        this.deleteNode(selectedNode);
+      }
+      break;
+    case constants.TAB_KEY:
+      d3.event.preventDefault();
+      if(selectedNode) {
+        let nodesArr = Utils.sortArray(Utils.sortArray(JSON.parse(JSON.stringify(this.nodes)), 'y', true), 'x', true);
+        let i = _.findIndex(nodesArr, {nodeId: selectedNode.nodeId});
+        if(i < nodesArr.length - 1){
+          selectedNode = nodesArr[i + 1];
+        } else {
+          selectedNode = nodesArr[0];
+        }
+        let d3node = rectangles.filter(function(cd) {
+          return cd.nodeId === selectedNode.nodeId;
+        });
+        TopologyUtils.replaceSelectNode(d3node, selectedNode, constants, internalFlags, rectangles);
+      } else {
+        let nodesArr = Utils.sortArray(Utils.sortArray(JSON.parse(JSON.stringify(this.nodes)), 'y', true), 'x', true);
+        if(nodesArr.length > 0){
+          selectedNode = nodesArr[0];
+          let node = rectangles.filter(function(cd) {
+            return cd.nodeId === selectedNode.nodeId;
+          });
+          TopologyUtils.replaceSelectNode(node, selectedNode, constants, internalFlags, rectangles);
+        }
+      }
+      break;
+    case constants.ENTER_KEY:
+      d3.event.preventDefault();
+      if(selectedNode) {
+        let d3Node = rectangles.filter(function(cd) {
+          return cd.nodeId === selectedNode.nodeId;
+        });
+        internalFlags.keyDownNode = selectedNode;
+        internalFlags.lastKeyDown = -1;
+        this.rectangleKeyDown(d3Node, selectedNode);
       }
       break;
     }

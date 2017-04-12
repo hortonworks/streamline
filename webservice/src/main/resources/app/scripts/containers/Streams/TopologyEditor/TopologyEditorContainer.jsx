@@ -964,7 +964,7 @@ class TopologyEditorContainer extends Component {
   }
   handleKeyPress(event) {
     const that = this;
-    if (event.key === "Enter" && event.target.nodeName.toLowerCase() != "textarea") {
+    if (event.key === "Enter" && event.target.nodeName.toLowerCase() != "textarea" && event.target.nodeName.toLowerCase() != 'button') {
       this.refs.TopologyConfigModal.state.show
         ? this.handleSaveConfig(this)
         : '';
@@ -1277,7 +1277,7 @@ class TopologyEditorContainer extends Component {
           ? "modal-xl"
           : "modal-fixed-height"} btnOkDisabled={this.state.testRunActivated} data-title={<Editable ref="editableNodeName" inline={true}
         resolve={this.handleSaveNodeName.bind(this)}
-        reject={this.handleRejectNodeName.bind(this)}>
+        reject={this.handleRejectNodeName.bind(this)} enforceFocus={true}>
         <input defaultValue={this.modalTitle} onChange={this.handleNodeNameChange.bind(this)}/></Editable>} data-resolve={this.handleSaveNodeModal.bind(this)}>
           {this.modalContent()}
         </Modal>

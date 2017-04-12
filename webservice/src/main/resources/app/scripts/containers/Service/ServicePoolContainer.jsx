@@ -48,7 +48,7 @@ const ServiceItems = (props) => {
   return (
     item.manualClusterId
     ? <li><img src="styles/img/plus.png" alt="plus button" onClick={props.addManualService} data-id={item.manualClusterId}/>Add New</li>
-    : <li><img src={`styles/img/icon-${item.name.toLowerCase()}.png`}/>{item.name}</li>
+    : <li><img src={`styles/img/icon-${item.name.toLowerCase()}.png`}/>{name}</li>
   );
 };
 

@@ -267,7 +267,7 @@ export default class BranchNodeForm extends Component {
     });
   }
   handleKeyPress = (event) => {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" && event.target.nodeName.toLowerCase() != "textarea" && event.target.nodeName.toLowerCase() != 'button') {
       this.refs.BranchRuleModal.state.show
         ? this.handleSaveRule()
         : '';

@@ -270,7 +270,7 @@ export default class RulesNodeForm extends Component {
     }
   }
   handleKeyPress = (event) => {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" && event.target.nodeName.toLowerCase() != "textarea" && event.target.nodeName.toLowerCase() != 'button') {
       this.refs.RuleModal.state.show
         ? this.handleSaveRule()
         : '';

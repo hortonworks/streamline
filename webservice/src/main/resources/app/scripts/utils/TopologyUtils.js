@@ -496,7 +496,7 @@ const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, in
 
 const getEdges = function(allEdges, currentNode) {
   return allEdges.filter((l) => {
-    return (l.source === currentNode || l.target === currentNode);
+    return (l.source.nodeId === currentNode.nodeId || l.target.nodeId === currentNode.nodeId);
   });
 };
 
@@ -854,6 +854,27 @@ const MouseUpAction = function(topologyId, versionId, d3node, d, metaInfo, inter
   return;
 };
 
+const KeyDownAction = function(d, internalFlags, allNodes, edges, linkShuffleOptions, updateGraphMethod, getModalScope, setModalContent, rectangles, constants) {
+
+  var keyDownNode = internalFlags.keyDownNode;
+  var hasSource = edges.filter((e) => {
+    return e.target.nodeId === d.nodeId;
+  });
+  if (d.parentType === 'SOURCE' || hasSource.length) {
+    this.showNodeModal(getModalScope, setModalContent, d, updateGraphMethod, allNodes, edges, linkShuffleOptions);
+    if (internalFlags.selectedNode) {
+      this.removeSelectFromNode(rectangles, constants, internalFlags);
+    }
+  } else {
+    FSReactToastr.warning(
+      <strong>Connect and configure a source component</strong>
+    );
+  }
+  internalFlags.keyDownNode = null;
+  internalFlags.lastKeyDown = -1;
+  return;
+};
+
 const setShuffleOptions = function(linkConfigArr) {
   let options = [];
   linkConfigArr.map((o) => {
@@ -1086,6 +1107,7 @@ export default {
   showNodeModal,
   getConfigContainer,
   MouseUpAction,
+  KeyDownAction,
   setShuffleOptions,
   syncNodeData,
   capitalizeFirstLetter,

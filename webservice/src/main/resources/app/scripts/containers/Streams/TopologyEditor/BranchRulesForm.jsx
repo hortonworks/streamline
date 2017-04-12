@@ -302,7 +302,7 @@ class RuleFormula extends Component {
                 field1_name += d.keyPath1 + "['" + d.field1 + "']";
               }
             } else {
-              field1_name += d.field1;
+              field1_name += d.field1 == null ? '' : d.field1;
             }
             if(d.keyPath2 && d.keyPath2.length > 0) {
               var keysArr2 = d.keyPath2.split(".");
@@ -319,7 +319,7 @@ class RuleFormula extends Component {
                 field2_name += d.keyPath2 + "['" + d.field2 + "']";
               }
             } else {
-              field2_name += d.field2;
+              field2_name += d.field2 == null ? '' : d.field2;
             }
             let field1 = d.keyPath1 && d.keyPath1.length > 0 ? (d.keyPath1 + '.' + d.field1) : d.field1;
             let field2 = d.keyPath2 && d.keyPath2.length > 0 ? (d.keyPath2 + '.' + d.field2) : d.field2;
