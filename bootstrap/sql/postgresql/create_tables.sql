@@ -398,3 +398,52 @@ CREATE TABLE IF NOT EXISTS topology_editor_toolbar (
   "timestamp" BIGINT,
   PRIMARY KEY ("userId")
 );
+
+CREATE TABLE IF NOT EXISTS topology_test_run_case (
+  "id" SERIAL NOT NULL,
+  "name" VARCHAR(256) NOT NULL,
+  "topologyId" BIGINT NOT NULL,
+  "timestamp" BIGINT,
+  PRIMARY KEY (id),
+  FOREIGN KEY (topologyId) REFERENCES topology(id)
+);
+
+CREATE TABLE IF NOT EXISTS topology_test_run_case_source (
+  "id" SERIAL NOT NULL,
+  "testCaseId" BIGINT NOT NULL,
+  "sourceId" BIGINT NOT NULL,
+  "records" TEXT NOT NULL,
+  "timestamp" BIGINT,
+  PRIMARY KEY (id),
+  FOREIGN KEY (testCaseId) REFERENCES topology_test_run_case(id),
+  FOREIGN KEY (sourceId) REFERENCES topology_source(id)
+);
+
+CREATE TABLE IF NOT EXISTS topology_test_run_case_sink (
+  id SERIAL NOT NULL,
+  testCaseId BIGINT NOT NULL,
+  sinkId BIGINT NOT NULL,
+  records TEXT NOT NULL,
+  timestamp BIGINT,
+  PRIMARY KEY (id),
+  FOREIGN KEY (testCaseId) REFERENCES topology_test_run_case(id),
+  FOREIGN KEY (sinkId) REFERENCES topology_sink(id)
+);
+
+CREATE TABLE IF NOT EXISTS topology_test_run_histories (
+  "id" SERIAL NOT NULL,
+  "topologyId" BIGINT NOT NULL,
+  "versionId" BIGINT,
+  "testRecords" TEXT NOT NULL,
+  "finished" CHAR(5) NOT NULL,
+  "success" CHAR(5) NOT NULL,
+  "expectedOutputRecords" TEXT,
+  "actualOutputRecords" TEXT,
+  "matched" CHAR(5),
+  "startTime" BIGINT,
+  "finishTime" BIGINT,
+  "timestamp" BIGINT,
+  PRIMARY KEY (id),
+  FOREIGN KEY (topologyId) REFERENCES topology(id),
+  FOREIGN KEY (versionId) REFERENCES topology_version(id)
+);

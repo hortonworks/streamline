@@ -37,7 +37,11 @@ CREATE TABLE IF NOT EXISTS role ("id" BIGINT NOT NULL, "name" VARCHAR(256) NOT N
 CREATE TABLE IF NOT EXISTS role_hierarchy ("parentId" BIGINT NOT NULL, "childId" BIGINT NOT NULL, CONSTRAINT pk PRIMARY KEY ("parentId", "childId"))
 CREATE TABLE IF NOT EXISTS user_entry ("id" BIGINT NOT NULL, "name" VARCHAR(256) NOT NULL, "email" VARCHAR(256) NOT NULL, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
 CREATE TABLE IF NOT EXISTS user_role ("userId" BIGINT NOT NULL, "roleId" BIGINT NOT NULL, CONSTRAINT pk PRIMARY KEY ("userId", "roleId"))
-CREATE TABLE IF NOT EXISTS sequence_table ("id" VARCHAR, "file" BIGINT, "topology_version" BIGINT, "topology" BIGINT, "topology_component_bundle" BIGINT,"topology_component" BIGINT, "tag" BIGINT,  "topology_stream" BIGINT, "notifier" BIGINT, "topology_source" BIGINT, "topology_sink" BIGINT, "topology_processor" BIGINT, "topology_edge" BIGINT,"topology_rule" BIGINT, "topology_window" BIGINT, "udf" BIGINT, "cluster" BIGINT, "service" BIGINT, "service_configuration" BIGINT,"topology_branchrule" BIGINT, "component" BIGINT, "dashboard" BIGINT, "widget" BIGINT, "datasource" BIGINT, "namespace" BIGINT, "ml_model" BIGINT, "topology_state" BIGINT, "service_bundle" BIGINT, "acl_entry" BIGINT, "role" BIGINT, "role_hierarchy" BIGINT, "user_entry" BIGINT, "user_role" BIGINT, "topology_editor_toolbar" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS topology_test_run_case ("id" BIGINT NOT NULL, "name" VARCHAR(256) NOT NULL, "topologyId" BIGINT NOT NULL, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS topology_test_run_case_source ("id" BIGINT NOT NULL, "testCaseId" BIGINT NOT NULL, "sourceId" BIGINT NOT NULL, "records" VARCHAR NOT NULL, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS topology_test_run_case_sink ("id" BIGINT NOT NULL, "testCaseId" BIGINT NOT NULL, "sinkId" BIGINT NOT NULL, "records" VARCHAR NOT NULL, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS topology_test_run_histories ("id" BIGINT NOT NULL, "topologyId" BIGINT NOT NULL, "versionId" BIGINT, "testRecords" TEXT NOT NULL, "finished" CHAR(5) NOT NULL, "success" CHAR(5) NOT NULL, "expectedOutputRecords" VARCHAR, "actualOutputRecords" VARCHAR, "matched" CHAR(5), "startTime" BIGINT, "finishTime" BIGINT, "timestamp" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
+CREATE TABLE IF NOT EXISTS sequence_table ("id" VARCHAR, "file" BIGINT, "topology_version" BIGINT, "topology" BIGINT, "topology_component_bundle" BIGINT,"topology_component" BIGINT, "tag" BIGINT,  "topology_stream" BIGINT, "notifier" BIGINT, "topology_source" BIGINT, "topology_sink" BIGINT, "topology_processor" BIGINT, "topology_edge" BIGINT,"topology_rule" BIGINT, "topology_window" BIGINT, "udf" BIGINT, "cluster" BIGINT, "service" BIGINT, "service_configuration" BIGINT,"topology_branchrule" BIGINT, "component" BIGINT, "dashboard" BIGINT, "widget" BIGINT, "datasource" BIGINT, "namespace" BIGINT, "ml_model" BIGINT, "topology_state" BIGINT, "service_bundle" BIGINT, "acl_entry" BIGINT, "role" BIGINT, "role_hierarchy" BIGINT, "user_entry" BIGINT, "user_role" BIGINT, "topology_editor_toolbar" BIGINT, "topology_test_run_case" BIGINT, "topology_test_run_case_source" BIGINT, "topology_test_run_case_sink" BIGINT, "topology_test_run_histories" BIGINT, CONSTRAINT pk PRIMARY KEY ("id"))
 
 CREATE SEQUENCE IF NOT EXISTS topology_version_sequence
 CREATE SEQUENCE IF NOT EXISTS topology_sequence
@@ -72,3 +76,7 @@ CREATE SEQUENCE IF NOT EXISTS role_hierarchy_sequence
 CREATE SEQUENCE IF NOT EXISTS user_entry_sequence
 CREATE SEQUENCE IF NOT EXISTS user_role_sequence
 CREATE SEQUENCE IF NOT EXISTS topology_editor_toolbar_sequence
+CREATE SEQUENCE IF NOT EXISTS topology_test_run_case_sequence
+CREATE SEQUENCE IF NOT EXISTS topology_test_run_case_source_sequence
+CREATE SEQUENCE IF NOT EXISTS topology_test_run_case_sink_sequence
+CREATE SEQUENCE IF NOT EXISTS topology_test_run_histories_sequence
