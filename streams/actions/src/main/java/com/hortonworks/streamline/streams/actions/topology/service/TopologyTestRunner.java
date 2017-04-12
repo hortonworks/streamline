@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.actions.topology.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.streamline.common.util.ParallelStreamUtil;
 import com.hortonworks.streamline.streams.actions.TopologyActions;
 import com.hortonworks.streamline.streams.catalog.CatalogToLayoutConverter;
 import com.hortonworks.streamline.streams.catalog.Topology;
@@ -45,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ForkJoinPool;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -57,14 +59,19 @@ public class TopologyTestRunner {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final StreamCatalogService catalogService;
+    private final TopologyActionsService topologyActionsService;
     private final String topologyTestRunResultDir;
 
-    public TopologyTestRunner(StreamCatalogService catalogService, String topologyTestRunResultDir) {
+    private static final int FORK_JOIN_POOL_PARALLELISM = 10;
+    private final ForkJoinPool forkJoinPool = new ForkJoinPool(FORK_JOIN_POOL_PARALLELISM);
+
+    public TopologyTestRunner(StreamCatalogService catalogService, TopologyActionsService topologyActionsService, String topologyTestRunResultDir) {
         this.catalogService = catalogService;
+        this.topologyActionsService = topologyActionsService;
         this.topologyTestRunResultDir = topologyTestRunResultDir;
     }
 
-    public TopologyTestRunHistory runTest(TopologyActions topologyActions, Topology topology, String mavenArtifacts,
+    public TopologyTestRunHistory runTest(TopologyActions topologyActions, Topology topology,
                                           String testRunInputJson) throws IOException {
         Map<String, Object> testRunInputMap = objectMapper.readValue(testRunInputJson, Map.class);
 
@@ -119,8 +126,22 @@ public class TopologyTestRunner {
         TopologyTestRunHistory history = initializeTopologyTestRunHistory(topology, testRecordsForEachSources, expectedOutputRecordsMap);
         catalogService.addTopologyTestRunHistory(history);
 
+        ParallelStreamUtil.runAsync(() -> runTestInBackground(topologyActions, topology, history,
+                testRunSourceMap, testRunSinkMap, expectedOutputRecordsMap), forkJoinPool);
+
+        return history;
+    }
+
+    private Void runTestInBackground(TopologyActions topologyActions, Topology topology,
+                                     TopologyTestRunHistory history,
+                                     Map<String, TestRunSource> testRunSourceMap,
+                                     Map<String, TestRunSink> testRunSinkMap,
+                                     Map<String, List<Map<String, Object>>> expectedOutputRecordsMap) throws IOException {
         TopologyLayout topologyLayout = CatalogToLayoutConverter.getTopologyLayout(topology, topology.getTopologyDag());
         try {
+            topologyActionsService.setUpClusterArtifacts(topology, topologyActions);
+            String mavenArtifacts = topologyActionsService.setUpExtraJars(topology, topologyActions);
+
             topologyActions.testRun(topologyLayout, mavenArtifacts, testRunSourceMap, testRunSinkMap);
 
             history.finishSuccessfully();
@@ -139,12 +160,13 @@ public class TopologyTestRunner {
         }
 
         catalogService.addOrUpdateTopologyTestRunHistory(history.getId(), history);
-        return history;
+
+        return null;
     }
 
     private Map<Long, Map<String, List<Map<String, Object>>>> readTestRecordsFromTestCaseSources(List<TopologyTestRunCaseSource> testRunCaseSources) {
         return testRunCaseSources.stream()
-                    .collect(toMap(s -> s.getId(), s -> {
+                    .collect(toMap(s -> s.getSourceId(), s -> {
                         try {
                             return objectMapper.readValue(s.getRecords(),
                                     new TypeReference<Map<String, List<Map<String, Object>>>>() {

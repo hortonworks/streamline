@@ -27,6 +27,7 @@ import com.hortonworks.streamline.streams.catalog.TopologyTestRunCaseSink;
 import com.hortonworks.streamline.streams.catalog.TopologyTestRunCaseSource;
 import com.hortonworks.streamline.streams.catalog.TopologyTestRunHistory;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +81,7 @@ public class TopologyTestRunResource {
     }
 
     @GET
-    @Path("/topologies/{topologyId}/actions/testrun/histories")
+    @Path("/topologies/{topologyId}/testhistories")
     @Timed
     public Response getHistoriesOfTestRunTopology (@Context UriInfo urlInfo,
                                                    @PathParam("topologyId") Long topologyId,
@@ -95,7 +96,7 @@ public class TopologyTestRunResource {
     }
 
     @GET
-    @Path("/topologies/{topologyId}/versions/{versionId}/actions/testrun/histories")
+    @Path("/topologies/{topologyId}/versions/{versionId}/testhistories")
     @Timed
     public Response getHistoriesOfTestRunTopology (@Context UriInfo urlInfo,
                                                    @PathParam("topologyId") Long topologyId,
@@ -108,6 +109,30 @@ public class TopologyTestRunResource {
 
         List<TopologyTestRunHistory> filteredHistories = filterHistories(limit, histories);
         return WSUtils.respondEntities(filteredHistories, OK);
+    }
+
+    @GET
+    @Path("/topologies/{topologyId}/testhistories/{historyId}")
+    @Timed
+    public Response getHistoryOfTestRunTopology (@Context UriInfo urlInfo,
+                                                 @PathParam("topologyId") Long topologyId,
+                                                 @PathParam("historyId") Long historyId,
+                                                 @QueryParam("simplify") Boolean simplify) throws Exception {
+        TopologyTestRunHistory history = catalogService.getTopologyTestRunHistory(historyId);
+
+        if (history == null) {
+            throw EntityNotFoundException.byId(String.valueOf(historyId));
+        }
+
+        if (!history.getTopologyId().equals(topologyId)) {
+            throw BadRequestException.message("Test history " + historyId + " is not belong to topology " + topologyId);
+        }
+
+        if (BooleanUtils.isTrue(simplify)) {
+            return WSUtils.respondEntity(new SimplifiedTopologyTestRunHistory(history), OK);
+        } else {
+            return WSUtils.respondEntity(history, OK);
+        }
     }
 
     private List<TopologyTestRunHistory> filterHistories(Integer limit, Collection<TopologyTestRunHistory> histories) {
@@ -322,6 +347,67 @@ public class TopologyTestRunResource {
         }
 
         return WSUtils.respondEntities(sources, OK);
+    }
+
+
+    private static class SimplifiedTopologyTestRunHistory {
+        private Long id;
+        private Long topologyId;
+        private Long versionId;
+        private Boolean finished = false;
+        private Boolean success = false;
+        private Boolean matched = false;
+        private Long startTime;
+        private Long finishTime;
+        private Long timestamp;
+
+        SimplifiedTopologyTestRunHistory(TopologyTestRunHistory history) {
+            id = history.getId();
+            topologyId = history.getTopologyId();
+            versionId = history.getVersionId();
+            finished = history.getFinished();
+            success = history.getSuccess();
+            matched = history.getMatched();
+            startTime = history.getStartTime();
+            finishTime = history.getFinishTime();
+            timestamp = history.getTimestamp();
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        public Long getTopologyId() {
+            return topologyId;
+        }
+
+        public Long getVersionId() {
+            return versionId;
+        }
+
+        public Boolean getFinished() {
+            return finished;
+        }
+
+        public Boolean getSuccess() {
+            return success;
+        }
+
+        public Boolean getMatched() {
+            return matched;
+        }
+
+        public Long getStartTime() {
+            return startTime;
+        }
+
+        public Long getFinishTime() {
+            return finishTime;
+        }
+
+        public Long getTimestamp() {
+            return timestamp;
+        }
     }
 
 }

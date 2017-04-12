@@ -67,10 +67,15 @@ import static org.junit.Assert.assertTrue;
 @RunWith(JMockit.class)
 public class TopologyTestRunnerTest {
 
+    private static final int MAX_TOPOLOGY_TEST_RUN_FINISH_WAIT_SECS = 5;
+
     private static String topologyTestRunResultDir;
 
     @Injectable
     private StreamCatalogService catalogService;
+
+    @Injectable
+    private TopologyActionsService topologyActionsService;
 
     @Injectable
     private TopologyActions topologyActions;
@@ -88,7 +93,7 @@ public class TopologyTestRunnerTest {
 
     @Before
     public void setUp() throws Exception {
-        topologyTestRunner = new TopologyTestRunner(catalogService, topologyTestRunResultDir);
+        topologyTestRunner = new TopologyTestRunner(catalogService, topologyActionsService, topologyTestRunResultDir);
     }
 
     @Test
@@ -119,8 +124,10 @@ public class TopologyTestRunnerTest {
                 .filter(c -> c instanceof StreamlineSink)
                 .count();
 
-        TopologyTestRunHistory resultHistory = topologyTestRunner.runTest(topologyActions, topology, "",
+        TopologyTestRunHistory resultHistory = topologyTestRunner.runTest(topologyActions, topology,
                 objectMapper.writeValueAsString(testRunInputMap));
+
+        waitForTopologyTestRunToFinish(resultHistory);
 
         assertNotNull(resultHistory);
         assertTrue(resultHistory.getFinished());
@@ -170,7 +177,7 @@ public class TopologyTestRunnerTest {
             result = null;
         }};
 
-        topologyTestRunner.runTest(topologyActions, topology, "",
+        topologyTestRunner.runTest(topologyActions, topology,
                 objectMapper.writeValueAsString(testRunInputMap));
     }
 
@@ -202,10 +209,12 @@ public class TopologyTestRunnerTest {
                 .filter(c -> c instanceof StreamlineSink)
                 .count();
 
-        TopologyTestRunHistory resultHistory = topologyTestRunner.runTest(topologyActions, topology, "",
+        TopologyTestRunHistory resultHistory = topologyTestRunner.runTest(topologyActions, topology,
                 objectMapper.writeValueAsString(testRunInputMap));
 
         assertNotNull(resultHistory);
+
+        waitForTopologyTestRunToFinish(resultHistory);
 
         new VerificationsInOrder() {{
             catalogService.getTopologyTestRunCase(topologyId, testCaseId);
@@ -262,10 +271,12 @@ public class TopologyTestRunnerTest {
         setTopologyTestRunHistoryExpectations();
         setSucceedTopologyActionsExpectations();
 
-        TopologyTestRunHistory resultHistory = topologyTestRunner.runTest(topologyActions, topology, "",
+        TopologyTestRunHistory resultHistory = topologyTestRunner.runTest(topologyActions, topology,
                 objectMapper.writeValueAsString(testRunInputMap));
 
         assertNotNull(resultHistory);
+
+        waitForTopologyTestRunToFinish(resultHistory);
 
         new VerificationsInOrder() {{
             TopologyTestRunHistory runHistory;
@@ -307,10 +318,12 @@ public class TopologyTestRunnerTest {
         setTopologyTestRunHistoryExpectations();
         setSucceedTopologyActionsExpectations();
 
-        TopologyTestRunHistory resultHistory = topologyTestRunner.runTest(topologyActions, topology, "",
+        TopologyTestRunHistory resultHistory = topologyTestRunner.runTest(topologyActions, topology,
                 objectMapper.writeValueAsString(testRunInputMap));
 
         assertNotNull(resultHistory);
+
+        waitForTopologyTestRunToFinish(resultHistory);
 
         new VerificationsInOrder() {{
             TopologyTestRunHistory runHistory;
@@ -558,4 +571,20 @@ public class TopologyTestRunnerTest {
     private boolean isNotEmptyJson(String expectedOutputRecords) {
         return !isEmptyJson(expectedOutputRecords);
     }
+
+
+    private void waitForTopologyTestRunToFinish(TopologyTestRunHistory resultHistory) throws InterruptedException {
+        int waitingCount = 0;
+        int maxWaitCount = MAX_TOPOLOGY_TEST_RUN_FINISH_WAIT_SECS * 10; // 100 ms
+
+        while (!resultHistory.getFinished() && waitingCount < maxWaitCount) {
+            Thread.sleep(100);
+            waitingCount++;
+        }
+
+        if (waitingCount == maxWaitCount) {
+            throw new RuntimeException("Topology Test Run doesn't end in expected time");
+        }
+    }
+
 }

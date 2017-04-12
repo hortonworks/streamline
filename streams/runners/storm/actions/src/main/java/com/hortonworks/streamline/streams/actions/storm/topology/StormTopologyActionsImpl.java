@@ -186,10 +186,6 @@ public class StormTopologyActionsImpl implements TopologyActions {
         commands.addAll(getExtraJarsArg(testTopology));
         commands.addAll(getMavenArtifactsRelatedArgs(mavenArtifacts));
         commands.addAll(getNimbusConf());
-        // FIXME: debug
-        commands.add("-c");
-        commands.add("topology.debug=true");
-        // FIXME: debug
         commands.add("org.apache.storm.flux.Flux");
         commands.add("--local");
         commands.add("-s");

@@ -438,7 +438,8 @@ CREATE TABLE IF NOT EXISTS topology_test_run_case_source (
   timestamp BIGINT,
   PRIMARY KEY (id),
   FOREIGN KEY (testCaseId) REFERENCES topology_test_run_case(id),
-  FOREIGN KEY (sourceId) REFERENCES topology_source(id)
+  FOREIGN KEY (sourceId) REFERENCES topology_source(id),
+  UNIQUE KEY `testcase_source` (testCaseId, sourceId)
 );
 
 CREATE TABLE IF NOT EXISTS topology_test_run_case_sink (
@@ -449,7 +450,8 @@ CREATE TABLE IF NOT EXISTS topology_test_run_case_sink (
   timestamp BIGINT,
   PRIMARY KEY (id),
   FOREIGN KEY (testCaseId) REFERENCES topology_test_run_case(id),
-  FOREIGN KEY (sinkId) REFERENCES topology_sink(id)
+  FOREIGN KEY (sinkId) REFERENCES topology_sink(id),
+  UNIQUE KEY `testcase_sink` (testCaseId, sinkId)
 );
 
 CREATE TABLE IF NOT EXISTS topology_test_run_histories (
