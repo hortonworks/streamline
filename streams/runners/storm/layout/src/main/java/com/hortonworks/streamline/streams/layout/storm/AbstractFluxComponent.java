@@ -244,6 +244,34 @@ public abstract class AbstractFluxComponent implements FluxComponent {
         return ref;
     }
 
+    protected Map<String, Object> getConfigMethodWithRefArgs(String configMethodName, List<String> refIds) {
+        Map<String, Object> configMethod = new LinkedHashMap<>();
+        configMethod.put(StormTopologyLayoutConstants.YAML_KEY_NAME, configMethodName);
+
+        List<Map<String, Object>> methodArgs = new ArrayList<>();
+        for (String refId : refIds) {
+            Map<String, Object> refMap = new HashMap<>();
+            refMap.put(StormTopologyLayoutConstants.YAML_KEY_REF, refId);
+            methodArgs.add(refMap);
+        }
+        configMethod.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, methodArgs);
+
+        return configMethod;
+    }
+
+    protected Map<String, Object> getConfigMethodWithRefListArg(String configMethodName, List<String> refIds) {
+        Map<String, Object> configMethod = new LinkedHashMap<>();
+        configMethod.put(StormTopologyLayoutConstants.YAML_KEY_NAME, configMethodName);
+
+        List<Map<String, Object>> methodArgs = new ArrayList<>();
+        Map<String, Object> refMap = new HashMap<>();
+        refMap.put(StormTopologyLayoutConstants.YAML_KEY_REF_LIST, refIds);
+        methodArgs.add(refMap);
+        configMethod.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, methodArgs);
+
+        return configMethod;
+    }
+
     protected List<Map<String, Object>> getConfigMethodWithRefArg (String[] configMethodNames,
                                                                    String[] refIds) {
         List<Map<String, Object>> configMethods = new ArrayList<>();

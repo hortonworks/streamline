@@ -128,34 +128,6 @@ public class CassandraBoltFluxComponent extends AbstractFluxComponent {
         return mapperClassId;
     }
 
-    private Map<String, Object> getConfigMethodWithRefArgs(String configMethodName, List<String> refIds) {
-        Map<String, Object> configMethod = new LinkedHashMap<>();
-        configMethod.put(StormTopologyLayoutConstants.YAML_KEY_NAME, configMethodName);
-
-        List<Map<String, Object>> methodArgs = new ArrayList<>();
-        for (String refId : refIds) {
-            Map<String, Object> refMap = new HashMap<>();
-            refMap.put(StormTopologyLayoutConstants.YAML_KEY_REF, refId);
-            methodArgs.add(refMap);
-        }
-        configMethod.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, methodArgs);
-
-        return configMethod;
-    }
-
-    private Map<String, Object> getConfigMethodWithRefListArg(String configMethodName, List<String> refIds) {
-        Map<String, Object> configMethod = new LinkedHashMap<>();
-        configMethod.put(StormTopologyLayoutConstants.YAML_KEY_NAME, configMethodName);
-
-        List<Map<String, Object>> methodArgs = new ArrayList<>();
-        Map<String, Object> refMap = new HashMap<>();
-        refMap.put(StormTopologyLayoutConstants.YAML_KEY_REF_LIST, refIds);
-        methodArgs.add(refMap);
-        configMethod.put(StormTopologyLayoutConstants.YAML_KEY_ARGS, methodArgs);
-
-        return configMethod;
-    }
-
     private String createInsertToCql(String tableName, List<String> columnNames) {
         return String.format("INSERT INTO %s (%s) VALUES (%s)",
                              tableName,
