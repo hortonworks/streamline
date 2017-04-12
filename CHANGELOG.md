@@ -1,5 +1,6 @@
 ## 0.1.4
- * STREAMLINE-750 Change comma separated string into an array for serviceBundle API having type as array.string
+ * STREAMLINE-472: Scheme class customization for kafka sources 
+ * STREAMLINE-750: Change comma separated string into an array for serviceBundle API having type as array.string
  * STREAMLINE-721: Topology deployment should be a state machine
  * STREAMLINE-734: Document latest rest API
  * STREAMLINE-728: Ambari cluster import should work when Ambari is on SSL or Kerberos
