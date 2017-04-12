@@ -57,7 +57,7 @@ public class StorageProviderConfigurationReader {
         }
 
         Map<String, Object> dbProps =  (Map<String, Object>) properties.get(DB_PROPERTIES);
-        switch (dbType) {
+        switch (dbType.toLowerCase()) {
             case PHOENIX:
                 return readPhoenixProperties(dbProps);
 
