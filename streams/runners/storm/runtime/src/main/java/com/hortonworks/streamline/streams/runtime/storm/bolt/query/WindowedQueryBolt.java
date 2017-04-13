@@ -42,7 +42,7 @@ public class WindowedQueryBolt extends JoinBolt {
     final static String EVENT_PREFIX = StreamlineEvent.STREAMLINE_EVENT + ".";
 
     public WindowedQueryBolt(String streamId, String key) {
-        super(Selector.STREAM, streamId, key);
+        super(Selector.STREAM, streamId, EVENT_PREFIX + key);
     }
 
     @Override
@@ -75,10 +75,23 @@ public class WindowedQueryBolt extends JoinBolt {
     }
 
 
-    // prefixes each key with 'streamline-event.'
+    // Prefixes each key with 'streamline-event.' Example:
+    //   arg = "stream1:key1, key2, stream2:key3.key4, key5"
+    //   result  = "stream1:streamline-event.key1, streamline-event.key2, stream2:streamline-event.key3.key4, streamline-event.key5"
     private static String convertToStreamLineKeys(String commaSeparatedKeys) {
         String[] keyNames = commaSeparatedKeys.replaceAll("\\s+","").split(",");
-        return EVENT_PREFIX + String.join("," + EVENT_PREFIX, keyNames);
+
+        String[] prefixedKeys = new String[keyNames.length];
+
+        for (int i = 0; i < keyNames.length; i++) {
+            FieldSelector fs = new FieldSelector(keyNames[i]);
+            if (fs.getStreamName()==null)
+                prefixedKeys[i] =  EVENT_PREFIX + String.join(".", fs.getField());
+            else
+                prefixedKeys[i] =  fs.getStreamName() + ":" + EVENT_PREFIX + String.join(".", fs.getField());
+        }
+
+        return String.join(", ", prefixedKeys);
     }
 
     // Performs projection on the tuples based on the 'projectionKeys'

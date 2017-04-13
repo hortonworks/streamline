@@ -29,11 +29,7 @@ import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TestWindowedQueryBolt {
     private static final String SL_PREFIX = StreamlineEvent.STREAMLINE_EVENT + ".";
@@ -70,7 +66,7 @@ public class TestWindowedQueryBolt {
         ArrayList<Tuple> userStream = makeStreamLineEventStream("users", userFields, users);
         TupleWindow window = makeTupleWindow(userStream);
         WindowedQueryBolt bolt = new WindowedQueryBolt("users", SL_PREFIX + "userId")
-                .selectStreamLine("name,city");
+                .selectStreamLine("name,users:city");
         MockCollector collector = new MockCollector();
         bolt.prepare(null, null, collector);
         bolt.execute(window);
@@ -86,7 +82,7 @@ public class TestWindowedQueryBolt {
         TupleWindow window = makeTupleWindow(userStream, cityStream);
         WindowedQueryBolt bolt = new WindowedQueryBolt("users", "city")
                 .join("city", "cityName", "users")
-                .selectStreamLine("name,city,country");
+                .selectStreamLine("name,users:city,cities:country");
         MockCollector collector = new MockCollector();
         bolt.prepare(null, null, collector);
         bolt.execute(window);
@@ -158,9 +154,14 @@ public class TestWindowedQueryBolt {
         }
 
         @Override
-        public List<Integer> emit(List<Object> tuple) {
+        public List<Integer> emit(Collection<Tuple> anchors, List<Object> tuple) {
             actualResults.add(tuple);
             return null;
+        }
+
+        @Override
+        public List<Integer> emit(String streamId, Collection<Tuple> anchors, List<Object> tuple) {
+            return emit(anchors, tuple);
         }
 
     } // class MockCollector
