@@ -40,6 +40,7 @@ public class TestRunSourceSpout extends BaseRichSpout {
 
     private final TestRunSource testRunSource;
     private final Map<String, Queue<Map<String, Object>>> testRecordsQueueMap;
+    private transient TestRunEventLogger eventLogger;
 
     public TestRunSourceSpout(String testRunSourceJson) {
         this(Utils.createObjectFromJson(testRunSourceJson, TestRunSource.class));
@@ -51,7 +52,15 @@ public class TestRunSourceSpout extends BaseRichSpout {
         if (testRunSource != null) {
             Map<String, List<Map<String, Object>>> testRecords = testRunSource.getTestRecordsForEachStream();
             for (Map.Entry<String, List<Map<String, Object>>> entry : testRecords.entrySet()) {
-                testRecordsQueueMap.put(entry.getKey(), new LinkedList<>(entry.getValue()));
+                Queue<Map<String, Object>> queue = new LinkedList<>();
+
+                int occurrence = testRunSource.getOccurrence();
+                LOG.info("Occurrence: " + occurrence);
+                for (int i = 0 ; i < occurrence ; i++) {
+                    queue.addAll(entry.getValue());
+                }
+
+                testRecordsQueueMap.put(entry.getKey(), queue);
             }
         }
     }
@@ -62,6 +71,8 @@ public class TestRunSourceSpout extends BaseRichSpout {
             throw new RuntimeException("testRunSource cannot be null");
         }
         _collector = collector;
+
+        eventLogger = TestRunEventLogger.getEventLogger(testRunSource.getEventLogFilePath());
     }
 
     @Override
@@ -76,8 +87,10 @@ public class TestRunSourceSpout extends BaseRichSpout {
             Map<String, Object> record = queue.poll();
             if (record != null) {
                 StreamlineEventImpl streamlineEvent = new StreamlineEventImpl(record, testRunSource.getId());
-                LOG.info("Emitting event {} to stream {}", streamlineEvent, outputStream);
+                LOG.debug("Emitting event {} to stream {}", streamlineEvent, outputStream);
                 _collector.emit(outputStream, new Values(streamlineEvent), streamlineEvent.getId());
+
+                eventLogger.writeEvent(System.currentTimeMillis(), testRunSource.getName(), streamlineEvent);
 
                 emitCount++;
             }

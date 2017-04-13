@@ -34,6 +34,7 @@ import com.hortonworks.streamline.streams.layout.component.StreamlineSink;
 import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
 import com.hortonworks.streamline.streams.layout.component.TopologyDag;
 import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
+import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
 import mockit.Delegate;
@@ -41,7 +42,6 @@ import mockit.Expectations;
 import mockit.Injectable;
 import mockit.VerificationsInOrder;
 import mockit.integration.junit4.JMockit;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -371,10 +371,11 @@ public class TopologyTestRunnerTest {
     private void setSucceedTopologyActionsExpectations() throws Exception {
         new Expectations() {{
             topologyActions.testRun(withInstanceOf(TopologyLayout.class), anyString, withInstanceOf(Map.class),
-                    withInstanceOf(Map.class));
+                    withInstanceOf(Map.class), withInstanceOf(Map.class));
             result = new Delegate<Object>() {
                 Object delegate(TopologyLayout topology, String mavenArtifacts,
                                 Map<String, TestRunSource> testRunSourcesForEachSource,
+                                Map<String, TestRunProcessor> testRunProcessorsForEachProcessor,
                                 Map<String, TestRunSink> testRunSinksForEachSink) throws Exception {
                     Map<String, List<Map<String, Object>>> testOutputRecords =
                             TopologyTestHelper.createTestOutputRecords(testRunSinksForEachSink.keySet());
@@ -402,7 +403,7 @@ public class TopologyTestRunnerTest {
     private void setTopologyActionsThrowingExceptionExpectations() throws Exception {
         new Expectations() {{
             topologyActions.testRun(withInstanceOf(TopologyLayout.class), anyString, withInstanceOf(Map.class),
-                    withInstanceOf(Map.class));
+                    withInstanceOf(Map.class), withInstanceOf(Map.class));
             result = new RuntimeException("Topology test run failed!");
         }};
     }
@@ -479,6 +480,7 @@ public class TopologyTestRunnerTest {
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Can't serialize test records map into JSON");
         }
+        testRunSource.setOccurrence(1);
 
         testRunSource.setTimestamp(System.currentTimeMillis());
 

@@ -37,13 +37,13 @@ public class TestRunSinkBoltFluxComponent extends AbstractFluxComponent {
         String boltClassName = "com.hortonworks.streamline.streams.runtime.storm.testing.TestRunSinkBolt";
         List<Object> constructorArgs = new ArrayList<>();
         ObjectMapper mapper = new ObjectMapper();
-        String testRunSourceJson = null;
+        String testRunSinkJson = null;
         try {
-            testRunSourceJson = mapper.writeValueAsString(testRunSink);
+            testRunSinkJson = mapper.writeValueAsString(testRunSink);
         } catch (JsonProcessingException e) {
             log.error("Error creating json config string for TestRunSink", e);
         }
-        constructorArgs.add(testRunSourceJson);
+        constructorArgs.add(testRunSinkJson);
         component = createComponent(boltId, boltClassName, null, constructorArgs, null);
         addParallelismToComponent();
     }

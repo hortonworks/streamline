@@ -28,9 +28,11 @@ import java.util.Set;
  */
 public class TestRunSource extends StreamlineSource {
     private final Map<String, List<Map<String, Object>>> testRecordsForEachStream;
+    private final int occurrence;
+    private final String eventLogFilePath;
 
     public TestRunSource() {
-        this(Collections.EMPTY_SET, Collections.EMPTY_MAP);
+        this(Collections.emptySet(), Collections.emptyMap(), 0, "");
     }
 
     /**
@@ -38,14 +40,28 @@ public class TestRunSource extends StreamlineSource {
      *
      * @param outputStreams output streams.
      * @param testRecordsForEachStream (output stream name) -> list of test record (each map represents a record)
+     * @param occurrence
+     * @param eventLogFilePath
      */
-    public TestRunSource(Set<Stream> outputStreams, Map<String, List<Map<String, Object>>> testRecordsForEachStream) {
+    public TestRunSource(Set<Stream> outputStreams,
+                         Map<String, List<Map<String, Object>>> testRecordsForEachStream,
+                         Integer occurrence, String eventLogFilePath) {
         super(outputStreams);
         this.testRecordsForEachStream = testRecordsForEachStream;
+        this.occurrence =  (occurrence != null) ? occurrence : 1;
+        this.eventLogFilePath = eventLogFilePath;
     }
 
     public Map<String, List<Map<String, Object>>> getTestRecordsForEachStream() {
         return testRecordsForEachStream;
+    }
+
+    public int getOccurrence() {
+        return occurrence;
+    }
+
+    public String getEventLogFilePath() {
+        return eventLogFilePath;
     }
 
     @Override
@@ -56,15 +72,18 @@ public class TestRunSource extends StreamlineSource {
 
         TestRunSource that = (TestRunSource) o;
 
-        return getTestRecordsForEachStream() != null ?
-                getTestRecordsForEachStream().equals(that.getTestRecordsForEachStream()) :
-                that.getTestRecordsForEachStream() == null;
+        if (getOccurrence() != that.getOccurrence()) return false;
+        if (getTestRecordsForEachStream() != null ? !getTestRecordsForEachStream().equals(that.getTestRecordsForEachStream()) : that.getTestRecordsForEachStream() != null)
+            return false;
+        return getEventLogFilePath() != null ? getEventLogFilePath().equals(that.getEventLogFilePath()) : that.getEventLogFilePath() == null;
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + (getTestRecordsForEachStream() != null ? getTestRecordsForEachStream().hashCode() : 0);
+        result = 31 * result + getOccurrence();
+        result = 31 * result + (getEventLogFilePath() != null ? getEventLogFilePath().hashCode() : 0);
         return result;
     }
 
@@ -72,6 +91,8 @@ public class TestRunSource extends StreamlineSource {
     public String toString() {
         return "TestRunSource{" +
                 "testRecordsForEachStream=" + testRecordsForEachStream +
-                '}' + super.toString();
+                ", occurrence=" + occurrence +
+                ", eventLogFilePath='" + eventLogFilePath + '\'' +
+                '}';
     }
 }

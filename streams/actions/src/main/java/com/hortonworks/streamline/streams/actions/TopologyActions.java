@@ -16,11 +16,11 @@
 package com.hortonworks.streamline.streams.actions;
 
 import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
+import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
 
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,6 +40,7 @@ public interface TopologyActions {
     // Please refer the javadoc of TestRunSource and also TestRunSink to see which information this method requires.
     void testRun(TopologyLayout topology, String mavenArtifacts,
                  Map<String, TestRunSource> testRunSourcesForEachSource,
+                 Map<String, TestRunProcessor> testRunProcessorsForEachProcessor,
                  Map<String, TestRunSink> testRunSinksForEachSink) throws Exception;
 
     //Kill the artifact that was deployed using deploy

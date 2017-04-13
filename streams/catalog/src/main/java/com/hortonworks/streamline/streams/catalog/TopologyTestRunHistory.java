@@ -27,6 +27,10 @@ public class TopologyTestRunHistory extends AbstractStorable {
     private static final String EXPECTED_OUTPUT_RECORDS = "expectedOutputRecords";
     private static final String ACTUAL_OUTPUT_RECORDS = "actualOutputRecords";
     private static final String MATCHED = "matched";
+
+    // Intentionally hidden to the REST API, getter method should be hidden to @JsonIgnore
+    private static final String EVENT_LOG_FILE_PATH = "eventLogFilePath";
+
     private static final String START_TIME = "startTime";
     private static final String FINISH_TIME = "finishTime";
     private static final String TIMESTAMP = "timestamp";
@@ -40,6 +44,7 @@ public class TopologyTestRunHistory extends AbstractStorable {
     private String expectedOutputRecords;
     private String actualOutputRecords;
     private Boolean matched = false;
+    private String eventLogFilePath;
     private Long startTime;
     private Long finishTime;
     private Long timestamp;
@@ -160,6 +165,19 @@ public class TopologyTestRunHistory extends AbstractStorable {
     }
 
     /**
+     * The path of file which event log is (or will be) written.
+     * Intentionally hidden to the REST API, getter method should be hidden to @JsonIgnore.
+     */
+    @JsonIgnore
+    public String getEventLogFilePath() {
+        return eventLogFilePath;
+    }
+
+    public void setEventLogFilePath(String eventLogFilePath) {
+        this.eventLogFilePath = eventLogFilePath;
+    }
+
+    /**
      * The timestamp of start time of test run.
      */
     public Long getStartTime() {
@@ -223,6 +241,7 @@ public class TopologyTestRunHistory extends AbstractStorable {
                 Schema.Field.optional(EXPECTED_OUTPUT_RECORDS, Schema.Type.STRING),
                 Schema.Field.optional(ACTUAL_OUTPUT_RECORDS, Schema.Type.STRING),
                 Schema.Field.optional(MATCHED, Schema.Type.STRING),
+                new Schema.Field(EVENT_LOG_FILE_PATH, Schema.Type.STRING),
                 new Schema.Field(START_TIME, Schema.Type.LONG),
                 Schema.Field.optional(FINISH_TIME, Schema.Type.LONG),
                 new Schema.Field(TIMESTAMP, Schema.Type.LONG)
@@ -263,6 +282,8 @@ public class TopologyTestRunHistory extends AbstractStorable {
             map.put(MATCHED, null);
         }
 
+        map.put(EVENT_LOG_FILE_PATH, eventLogFilePath);
+
         map.put(START_TIME, startTime);
         map.put(FINISH_TIME, finishTime);
         map.put(TIMESTAMP, timestamp);
@@ -297,6 +318,8 @@ public class TopologyTestRunHistory extends AbstractStorable {
             matched = null;
         }
 
+        eventLogFilePath = (String) map.get(EVENT_LOG_FILE_PATH);
+
         startTime = (Long) map.get(START_TIME);
         finishTime = (Long) map.get(FINISH_TIME);
         timestamp = (Long) map.get(TIMESTAMP);
@@ -326,6 +349,8 @@ public class TopologyTestRunHistory extends AbstractStorable {
         if (getActualOutputRecords() != null ? !getActualOutputRecords().equals(that.getActualOutputRecords()) : that.getActualOutputRecords() != null)
             return false;
         if (getMatched() != null ? !getMatched().equals(that.getMatched()) : that.getMatched() != null) return false;
+        if (getEventLogFilePath() != null ? !getEventLogFilePath().equals(that.getEventLogFilePath()) : that.getEventLogFilePath() != null)
+            return false;
         if (getStartTime() != null ? !getStartTime().equals(that.getStartTime()) : that.getStartTime() != null)
             return false;
         if (getFinishTime() != null ? !getFinishTime().equals(that.getFinishTime()) : that.getFinishTime() != null)
@@ -344,6 +369,7 @@ public class TopologyTestRunHistory extends AbstractStorable {
         result = 31 * result + (getExpectedOutputRecords() != null ? getExpectedOutputRecords().hashCode() : 0);
         result = 31 * result + (getActualOutputRecords() != null ? getActualOutputRecords().hashCode() : 0);
         result = 31 * result + (getMatched() != null ? getMatched().hashCode() : 0);
+        result = 31 * result + (getEventLogFilePath() != null ? getEventLogFilePath().hashCode() : 0);
         result = 31 * result + (getStartTime() != null ? getStartTime().hashCode() : 0);
         result = 31 * result + (getFinishTime() != null ? getFinishTime().hashCode() : 0);
         result = 31 * result + (getTimestamp() != null ? getTimestamp().hashCode() : 0);
@@ -356,12 +382,13 @@ public class TopologyTestRunHistory extends AbstractStorable {
                 "id=" + id +
                 ", topologyId=" + topologyId +
                 ", versionId=" + versionId +
-                ", testRecords=" + testRecords +
+                ", testRecords='" + testRecords + '\'' +
                 ", finished=" + finished +
                 ", success=" + success +
                 ", expectedOutputRecords='" + expectedOutputRecords + '\'' +
                 ", actualOutputRecords='" + actualOutputRecords + '\'' +
                 ", matched=" + matched +
+                ", eventLogFilePath='" + eventLogFilePath + '\'' +
                 ", startTime=" + startTime +
                 ", finishTime=" + finishTime +
                 ", timestamp=" + timestamp +

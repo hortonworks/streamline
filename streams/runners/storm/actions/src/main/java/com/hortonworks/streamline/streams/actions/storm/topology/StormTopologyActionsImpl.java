@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.actions.storm.topology;
 import com.google.common.base.Joiner;
 import com.hortonworks.streamline.common.exception.service.exception.request.TopologyAlreadyExistsOnCluster;
 import com.hortonworks.streamline.streams.actions.TopologyActionContext;
+import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
 import org.apache.commons.io.FileUtils;
@@ -165,11 +166,12 @@ public class StormTopologyActionsImpl implements TopologyActions {
     @Override
     public void testRun(TopologyLayout topology, String mavenArtifacts,
                         Map<String, TestRunSource> testRunSourcesForEachSource,
+                        Map<String, TestRunProcessor> testRunProcessorsForEachProcessor,
                         Map<String, TestRunSink> testRunSinksForEachSink) throws Exception {
         TopologyDag originalTopologyDag = topology.getTopologyDag();
 
         TestTopologyDagCreatingVisitor visitor = new TestTopologyDagCreatingVisitor(originalTopologyDag,
-                testRunSourcesForEachSource, testRunSinksForEachSink);
+                testRunSourcesForEachSource, testRunProcessorsForEachProcessor, testRunSinksForEachSink);
         originalTopologyDag.traverse(visitor);
         TopologyDag testTopologyDag = visitor.getTestTopologyDag();
 

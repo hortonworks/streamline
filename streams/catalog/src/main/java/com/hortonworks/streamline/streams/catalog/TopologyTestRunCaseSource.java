@@ -35,6 +35,7 @@ public class TopologyTestRunCaseSource extends AbstractStorable {
     private Long testCaseId;
     private Long sourceId;
     private String records;
+    private Integer occurrence;
     private Long timestamp;
 
     @JsonIgnore
@@ -95,6 +96,18 @@ public class TopologyTestRunCaseSource extends AbstractStorable {
 
     public void setRecords(String records) {
         this.records = records;
+    }
+
+    /**
+     * The occurrence of test records. For example, if there're two test records and occurrence is set to 2,
+     * test source will emit four records.
+     */
+    public Integer getOccurrence() {
+        return occurrence;
+    }
+
+    public void setOccurrence(Integer occurrence) {
+        this.occurrence = occurrence;
     }
 
     public Long getTimestamp() {

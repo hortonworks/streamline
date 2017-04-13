@@ -25,8 +25,10 @@ import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
 import com.hortonworks.streamline.streams.layout.component.TopologyDag;
 import com.hortonworks.streamline.streams.layout.component.TopologyDagVisitor;
 import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
+import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
+import com.hortonworks.streamline.streams.layout.storm.TestRunProcessorBoltFluxComponent;
 import com.hortonworks.streamline.streams.layout.storm.TestRunSinkBoltFluxComponent;
 import com.hortonworks.streamline.streams.layout.storm.TestRunSourceSpoutFluxComponent;
 
@@ -37,8 +39,10 @@ import java.util.Map;
 public class TestTopologyDagCreatingVisitor extends TopologyDagVisitor {
 
     private final Map<String, StreamlineSource> sourceToReplacedTestSourceMap;
+    private final Map<String, StreamlineProcessor> processorToReplacedTestProcessorMap;
     private final Map<String, StreamlineSink> sinkToReplacedTestSinkMap;
     private final Map<String, TestRunSource> testRunSourcesForEachSource;
+    private final Map<String, TestRunProcessor> testRunProcessorsForEachProcessor;
     private final Map<String, TestRunSink> testRunSinksForEachSink;
     private final TopologyDag originTopologyDag;
 
@@ -46,13 +50,16 @@ public class TestTopologyDagCreatingVisitor extends TopologyDagVisitor {
 
     public TestTopologyDagCreatingVisitor(TopologyDag originTopologyDag,
                                           Map<String, TestRunSource> testRunSourcesForEachSource,
+                                          Map<String, TestRunProcessor> testRunProcessorsForEachProcessor,
                                           Map<String, TestRunSink> testRunSinksForEachSink) {
         this.originTopologyDag = originTopologyDag;
         this.testRunSourcesForEachSource = testRunSourcesForEachSource;
+        this.testRunProcessorsForEachProcessor = testRunProcessorsForEachProcessor;
         this.testRunSinksForEachSink = testRunSinksForEachSink;
 
         this.testTopologyDag = new TopologyDag();
         this.sourceToReplacedTestSourceMap = new HashMap<>();
+        this.processorToReplacedTestProcessorMap = new HashMap<>();
         this.sinkToReplacedTestSinkMap = new HashMap<>();
     }
 
@@ -109,7 +116,24 @@ public class TestTopologyDagCreatingVisitor extends TopologyDagVisitor {
 
     @Override
     public void visit(StreamlineProcessor processor) {
-        testTopologyDag.add(processor);
+        String id = processor.getId();
+        String processorName = processor.getName();
+
+        if (!testRunProcessorsForEachProcessor.containsKey(processorName)) {
+            throw new IllegalStateException("Not all processors have corresponding TestRunProcessor instance. processor name: " + processorName);
+        }
+
+        Config config = new Config(processor.getConfig());
+
+        TestRunProcessor testRunProcessor = testRunProcessorsForEachProcessor.get(processorName);
+
+        testRunProcessor.setId(id);
+        testRunProcessor.setName(processorName);
+        testRunProcessor.setConfig(config);
+        testRunProcessor.setTransformationClass(TestRunProcessorBoltFluxComponent.class.getName());
+
+        testTopologyDag.add(testRunProcessor);
+        processorToReplacedTestProcessorMap.put(processorName, testRunProcessor);
 
         copyEdges(processor);
     }
@@ -122,14 +146,21 @@ public class TestTopologyDagCreatingVisitor extends TopologyDagVisitor {
             Edge newEdge = new Edge(e.getId(), e.getFrom(), e.getTo(), e.getStreamGroupings());
 
             StreamlineSource replacedSource = sourceToReplacedTestSourceMap.get(from.getName());
+            StreamlineProcessor replacedProcessorSource = processorToReplacedTestProcessorMap.get(from.getName());
+
             StreamlineSink replacedSink = sinkToReplacedTestSinkMap.get(to.getName());
+            StreamlineProcessor replacedProcessorSink = processorToReplacedTestProcessorMap.get(to.getName());
 
             if (replacedSource != null) {
                 newEdge.setFrom(replacedSource);
+            } else if (replacedProcessorSource != null) {
+                newEdge.setFrom(replacedProcessorSource);
             }
 
             if (replacedSink != null) {
                 newEdge.setTo(replacedSink);
+            } else if (replacedProcessorSink != null) {
+                newEdge.setTo(replacedProcessorSink);
             }
 
             testTopologyDag.addEdge(newEdge);

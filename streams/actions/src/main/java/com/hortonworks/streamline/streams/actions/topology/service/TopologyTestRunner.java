@@ -27,11 +27,16 @@ import com.hortonworks.streamline.streams.catalog.TopologyTestRunCaseSink;
 import com.hortonworks.streamline.streams.catalog.TopologyTestRunCaseSource;
 import com.hortonworks.streamline.streams.catalog.TopologyTestRunHistory;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
 import com.hortonworks.streamline.streams.layout.component.StreamlineSink;
 import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
 import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
+import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
+import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.JoinProcessor;
+import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
+import com.hortonworks.streamline.streams.layout.component.rule.Rule;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,6 +101,11 @@ public class TopologyTestRunner {
                 .map(c -> (StreamlineSink) c)
                 .collect(toList());
 
+        List<StreamlineProcessor> processors = topology.getTopologyDag().getOutputComponents().stream()
+                .filter(c -> c instanceof StreamlineProcessor)
+                .map(c -> (StreamlineProcessor) c)
+                .collect(toList());
+
         // load test case sources for all sources
         List<TopologyTestRunCaseSource> testRunCaseSources = sources.stream()
                 .map(s -> catalogService.getTopologyTestRunCaseSourceBySourceId(testCaseId, Long.valueOf(s.getId())))
@@ -111,23 +121,54 @@ public class TopologyTestRunner {
                 .collect(toList());
 
         Map<Long, Map<String, List<Map<String, Object>>>> testRecordsForEachSources = readTestRecordsFromTestCaseSources(testRunCaseSources);
+        Map<Long, Integer> occurrenceForEachSources = readOccurrenceFromTestCaseSources(testRunCaseSources);
         Map<String, List<Map<String, Object>>> expectedOutputRecordsMap = readExpectedRecordsFromTestCaseSinks(sinks, testRunCaseSinks);
+
+        String eventLogFilePath = getTopologyTestRunEventLog(topology);
 
         Map<String, TestRunSource> testRunSourceMap = sources.stream()
                 .collect(toMap(s -> s.getName(),
-                        s -> new TestRunSource(s.getOutputStreams(), testRecordsForEachSources.get(Long.valueOf(s.getId())))));
+                        s -> {
+                            TestRunSource testRunSource = new TestRunSource(s.getOutputStreams(),
+                                    testRecordsForEachSources.get(Long.valueOf(s.getId())),
+                                    occurrenceForEachSources.get(Long.valueOf(s.getId())),
+                                    eventLogFilePath);
+                            testRunSource.setName(s.getName());
+                            return testRunSource;
+                        }
+                ));
 
         Map<String, TestRunSink> testRunSinkMap = sinks.stream()
                 .collect(toMap(s -> s.getName(), s -> {
                     String uuid = UUID.randomUUID().toString();
-                    return new TestRunSink(getTopologyTestRunResult(uuid));
+                    TestRunSink testRunSink = new TestRunSink(getTopologyTestRunResult(uuid), eventLogFilePath);
+                    testRunSink.setName(s.getName());
+                    return testRunSink;
                 }));
 
-        TopologyTestRunHistory history = initializeTopologyTestRunHistory(topology, testRecordsForEachSources, expectedOutputRecordsMap);
+        Map<String, TestRunProcessor> testRunProcessorMap = processors.stream()
+                .collect(toMap(s -> s.getName(), s -> {
+                    // currently only RulesProcessor and successors are candidates for windowing
+                    if (s instanceof RulesProcessor) {
+                        RulesProcessor rulesProcessor = (RulesProcessor) s;
+
+                        boolean windowed = rulesProcessor.getRules().stream().anyMatch(r -> r.getWindow() != null);
+                        TestRunProcessor testRunProcessor = new TestRunProcessor(s, windowed, eventLogFilePath);
+                        testRunProcessor.setName(s.getName());
+                        return testRunProcessor;
+                    } else {
+                        TestRunProcessor testRunProcessor = new TestRunProcessor(s, false, eventLogFilePath);
+                        testRunProcessor.setName(s.getName());
+                        return testRunProcessor;
+                    }
+                }));
+
+        TopologyTestRunHistory history = initializeTopologyTestRunHistory(topology, testRecordsForEachSources,
+                expectedOutputRecordsMap, eventLogFilePath);
         catalogService.addTopologyTestRunHistory(history);
 
         ParallelStreamUtil.runAsync(() -> runTestInBackground(topologyActions, topology, history,
-                testRunSourceMap, testRunSinkMap, expectedOutputRecordsMap), forkJoinPool);
+                testRunSourceMap, testRunProcessorMap, testRunSinkMap, expectedOutputRecordsMap), forkJoinPool);
 
         return history;
     }
@@ -135,6 +176,7 @@ public class TopologyTestRunner {
     private Void runTestInBackground(TopologyActions topologyActions, Topology topology,
                                      TopologyTestRunHistory history,
                                      Map<String, TestRunSource> testRunSourceMap,
+                                     Map<String, TestRunProcessor> testRunProcessorMap,
                                      Map<String, TestRunSink> testRunSinkMap,
                                      Map<String, List<Map<String, Object>>> expectedOutputRecordsMap) throws IOException {
         TopologyLayout topologyLayout = CatalogToLayoutConverter.getTopologyLayout(topology, topology.getTopologyDag());
@@ -142,7 +184,7 @@ public class TopologyTestRunner {
             topologyActionsService.setUpClusterArtifacts(topology, topologyActions);
             String mavenArtifacts = topologyActionsService.setUpExtraJars(topology, topologyActions);
 
-            topologyActions.testRun(topologyLayout, mavenArtifacts, testRunSourceMap, testRunSinkMap);
+            topologyActions.testRun(topologyLayout, mavenArtifacts, testRunSourceMap, testRunProcessorMap, testRunSinkMap);
 
             history.finishSuccessfully();
 
@@ -175,6 +217,11 @@ public class TopologyTestRunner {
                             throw new RuntimeException(e);
                         }
                     }));
+    }
+
+    private Map<Long, Integer> readOccurrenceFromTestCaseSources(List<TopologyTestRunCaseSource> testRunCaseSources) {
+        return testRunCaseSources.stream()
+                .collect(toMap(s -> s.getSourceId(), s -> s.getOccurrence()));
     }
 
     private Map<String, List<Map<String, Object>>> readExpectedRecordsFromTestCaseSinks(List<StreamlineSink> sinks,
@@ -210,7 +257,8 @@ public class TopologyTestRunner {
 
     private TopologyTestRunHistory initializeTopologyTestRunHistory(Topology topology,
                                                                     Map<Long, Map<String, List<Map<String, Object>>>> collectedTestRecords,
-                                                                    Map<String, List<Map<String, Object>>> expectedOutputRecords)
+                                                                    Map<String, List<Map<String, Object>>> expectedOutputRecords,
+                                                                    String eventLogFilePath)
             throws JsonProcessingException {
         TopologyTestRunHistory history = new TopologyTestRunHistory();
         history.setTopologyId(topology.getId());
@@ -223,11 +271,17 @@ public class TopologyTestRunner {
 
         history.setFinished(false);
         history.setStartTime(System.currentTimeMillis());
+        history.setEventLogFilePath(eventLogFilePath);
         return history;
     }
 
     private String getTopologyTestRunResult(String uuid) {
         return topologyTestRunResultDir + File.separator + uuid;
+    }
+
+    private String getTopologyTestRunEventLog(Topology topology) {
+        return topologyTestRunResultDir + File.separator + "topology-test-run-event-topology-" + topology.getId() +
+                "-" + UUID.randomUUID().toString() + ".log";
     }
 
     private Map<String, List<Map<String, Object>>> parseTestRunOutputFiles(Map<String, TestRunSink> testRunSinkMap) {

@@ -17,8 +17,11 @@
 package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.common.exception.service.exception.server.UnhandledServerException;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
 import com.hortonworks.streamline.streams.catalog.Topology;
@@ -27,7 +30,9 @@ import com.hortonworks.streamline.streams.catalog.TopologyTestRunCaseSink;
 import com.hortonworks.streamline.streams.catalog.TopologyTestRunCaseSource;
 import com.hortonworks.streamline.streams.catalog.TopologyTestRunHistory;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.BooleanUtils;
+import org.datanucleus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,8 +48,16 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -56,13 +69,16 @@ public class TopologyTestRunResource {
     private static final Logger LOG = LoggerFactory.getLogger(TopologyTestRunResource.class);
 
     private static final Integer DEFAULT_LIST_ENTITIES_COUNT = 5;
+    public static final Charset ENCODING_UTF_8 = Charset.forName("UTF-8");
 
     private final StreamCatalogService catalogService;
     private final TopologyActionsService actionsService;
+    private final ObjectMapper objectMapper;
 
     public TopologyTestRunResource(StreamCatalogService catalogService, TopologyActionsService actionsService) {
         this.catalogService = catalogService;
         this.actionsService = actionsService;
+        this.objectMapper = new ObjectMapper();
     }
 
     @POST
@@ -133,6 +149,82 @@ public class TopologyTestRunResource {
         } else {
             return WSUtils.respondEntity(history, OK);
         }
+    }
+
+    @GET
+    @Path("/topologies/{topologyId}/testhistories/{historyId}/events")
+    public Response getEventsOfTestRunTopologyHistory(@Context UriInfo urlInfo,
+                                                      @PathParam("topologyId") Long topologyId,
+                                                      @PathParam("historyId") Long historyId) throws Exception {
+        return getEventsOfTestRunTopologyHistory(topologyId, historyId, null);
+    }
+
+    @GET
+    @Path("/topologies/{topologyId}/testhistories/{historyId}/events/{componentName}")
+    public Response getEventsOfTestRunTopologyHistory(@Context UriInfo urlInfo,
+                                                      @PathParam("topologyId") Long topologyId,
+                                                      @PathParam("historyId") Long historyId,
+                                                      @PathParam("componentName") String componentName) throws Exception {
+        return getEventsOfTestRunTopologyHistory(topologyId, historyId, componentName);
+    }
+
+    @GET
+    @Path("/topologies/{topologyId}/testhistories/{historyId}/events/download")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response downloadEventsOfTestRunTopologyHistory(@Context UriInfo urlInfo,
+                                                           @PathParam("topologyId") Long topologyId,
+                                                           @PathParam("historyId") Long historyId) throws Exception {
+        File eventLogFile = getEventLogFile(topologyId, historyId);
+        String content = FileUtils.readFileToString(eventLogFile, ENCODING_UTF_8);
+
+        InputStream is = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
+        String fileName = String.format("events-topology-%d-history-%d.log", topologyId, historyId);
+        return Response.status(OK)
+                .entity(is)
+                .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                .build();
+    }
+
+    private Response getEventsOfTestRunTopologyHistory(Long topologyId, Long historyId, String componentName) throws IOException {
+        File eventLogFile = getEventLogFile(topologyId, historyId);
+
+        List<String> lines = FileUtils.readLines(eventLogFile, ENCODING_UTF_8);
+        Stream<Map<String, Object>> eventsStream = lines.stream().map(line -> {
+            try {
+                return objectMapper.readValue(line, new TypeReference<Map<String, Object>>() {});
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        if (!StringUtils.isEmpty(componentName)) {
+            eventsStream = eventsStream.filter(event -> {
+                String eventComponentName = (String) event.get("componentName");
+                return eventComponentName != null && eventComponentName.equals(componentName);
+            });
+        }
+
+        return WSUtils.respondEntities(eventsStream.collect(toList()), OK);
+    }
+
+    private File getEventLogFile(Long topologyId, Long historyId) {
+        TopologyTestRunHistory history = catalogService.getTopologyTestRunHistory(historyId);
+
+        if (history == null) {
+            throw EntityNotFoundException.byId(String.valueOf(historyId));
+        }
+
+        if (!history.getTopologyId().equals(topologyId)) {
+            throw BadRequestException.message("Test history " + historyId + " is not belong to topology " + topologyId);
+        }
+
+        String eventLogFilePath = history.getEventLogFilePath();
+        File eventLogFile = new File(eventLogFilePath);
+
+        if (!eventLogFile.exists() || eventLogFile.isDirectory() || !eventLogFile.canRead()) {
+            throw BadRequestException.message("Event log file of history " + historyId + " does not exist or is not readable.");
+        }
+        return eventLogFile;
     }
 
     private List<TopologyTestRunHistory> filterHistories(Integer limit, Collection<TopologyTestRunHistory> histories) {
