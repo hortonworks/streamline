@@ -25,7 +25,7 @@ import lint from 'codemirror/addon/lint/lint';
 import TopologyREST from '../../../rest/TopologyREST';
 import _ from 'lodash';
 import TestRunREST from '../../../rest/TestRunREST';
-import {Tabs, Tab} from 'react-bootstrap';
+import {Tabs, Tab ,InputGroup,Button,FormControl} from 'react-bootstrap';
 import StreamsSidebar from '../../../components/StreamSidebar';
 import CommonNotification from '../../../utils/CommonNotification';
 
@@ -55,12 +55,15 @@ class TestSourceNodeModal extends Component{
     super(props);
     let obj = {
       showLoading : true,
+      fileName : '',
+      inputFile : '',
       inputData : '',
       streamIdList : [],
       selectedTestCase : {},
       streamObj :{},
       activeTabKey:1,
-      entity : {}
+      entity : {},
+      showFileError : false
     };
     this.state = obj;
     this.fetchData();
@@ -116,7 +119,7 @@ class TestSourceNodeModal extends Component{
         });
         checkConfigureTestCase(entity.sourceId,'Source');
       }
-      this.setState({entity ,  streamIdList : streamList,streamObj : outputStream[0], showLoading: false,inputData : tempInput.length > 0 ? JSON.stringify(tempInput,null,"  ")  : ''});
+      this.setState({entity ,  streamIdList : streamList,streamObj : outputStream[0], showLoading: false,inputData : ! _.isEmpty(tempInput) ? JSON.stringify(tempInput,null,"  ") : ''});
     });
   }
 
@@ -134,7 +137,7 @@ class TestSourceNodeModal extends Component{
   validateData = () => {
     const {inputData} = this.state;
     let validate = false;
-    if(Utils.validateJSON(inputData) && _.isArray(JSON.parse(inputData)) && JSON.parse(inputData).length > 0){
+    if(Utils.validateJSON(inputData)){
       validate = true;
     }
     return validate;
@@ -163,6 +166,25 @@ class TestSourceNodeModal extends Component{
             : TestRunREST.postTestRunNode(topologyId, entityId,'sources',{body : JSON.stringify(obj)});
   }
 
+  handleFileChange = (e) => {
+    if (e.target.files.length) {
+      let file = e.target.files[0];
+      const fileName = e.target.files[0].name;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        if(Utils.validateJSON(reader.result)) {
+          this.setState({showFileError: false, inputFile: file, inputData: reader.result,fileName});
+        } else {
+          this.setState({showFileError: true});
+        }
+      }.bind(this);
+      reader.readAsText(file);
+    }
+  }
+
+  handleFileUpload = () => {
+    this.refs.fileName.click();
+  }
   /*
     onSelectTab accept eventKey
     to SET the TAB active
@@ -181,7 +203,7 @@ class TestSourceNodeModal extends Component{
       gutters: ["CodeMirror-lint-markers"],
       lint: true
     };
-    const {showLoading,inputData,entities,selectedTestCase,streamObj,activeTabKey} = this.state;
+    const {showLoading,inputData,entities,selectedTestCase,streamObj,activeTabKey,showFileError,fileName} = this.state;
     const outputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={streamObj} streamType="output"/>;
     return(
       <Tabs id="TestSourceForm" activeKey={activeTabKey} className="modal-tabs" onSelect={this.onSelectTab}>
@@ -201,13 +223,52 @@ class TestSourceNodeModal extends Component{
                 <div className="customFormClass">
                     <form>
                       <div className="form-group">
-                        <div className="col-md-12">
-                          <label>Input Records
+                        <div className="col-md-12" style={{marginTop:"10px",marginBottom:"10px"}}>
+                          <label>Upload Schema from file
                             <span className="text-danger">*</span>
                           </label>
-                          <ReactCodemirror ref="JSONCodemirror" value={inputData} onChange={this.handleInputDataChange.bind(this)} options={jsonoptions}/>
+                          <input ref="fileName" accept=".json"
+                            type="file"
+                            placeholder="Select file"  className="hidden-file-input"
+                            onChange={(event) => {
+                              this.handleFileChange.call(this, event);
+                            }}
+                            required={true}/>
+                          <div>
+                            <InputGroup>
+                              <InputGroup.Addon className="file-upload">
+                                <Button
+                                  type="button"
+                                  className="browseBtn btn-primary"
+                                  onClick={this.handleFileUpload.bind(this)}
+                                >
+                                  <i className="fa fa-folder-open-o"></i>&nbsp;Browse
+                                </Button>
+                              </InputGroup.Addon>
+                              <FormControl
+                                type="text"
+                                placeholder="No file chosen"
+                                value={fileName}
+                                className={showFileError
+                                ? "form-control invalidInput"
+                                : "form-control"}
+                              />
+                            </InputGroup>
+                          </div>
                         </div>
                       </div>
+                      {
+                        fileName || ! _.isEmpty(inputData)
+                        ? <div className="form-group">
+                            <div className="col-md-12">
+                              <label>Input Records
+                                <span className="text-danger">*</span>
+                              </label>
+                              <ReactCodemirror ref="JSONCodemirror" value={inputData} onChange={this.handleInputDataChange.bind(this)} options={jsonoptions}/>
+                            </div>
+                          </div>
+                        : ''
+                      }
                     </form>
                 </div>
               </Scrollbars>

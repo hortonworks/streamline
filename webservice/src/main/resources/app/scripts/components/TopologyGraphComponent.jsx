@@ -165,12 +165,12 @@ export default class TopologyGraphComponent extends Component {
     this.drag = d3.behavior.drag().origin(function(d) {
       return {x: d.x, y: d.y};
     }).on("drag", function(args) {
-      if (thisGraph.editMode) {
+      if (thisGraph.editMode && !thisGraph.props.testRunActivated) {
         thisGraph.internalFlags.justDragged = true;
         thisGraph.dragMove.call(thisGraph, args);
       }
     }).on("dragend", function(node) {
-      if (thisGraph.editMode) {
+      if (thisGraph.editMode && !thisGraph.props.testRunActivated) {
         let {topologyId, versionId, versionsArr, metaInfo} = thisGraph;
         if (versionId) {
           let versionName = versionsArr.find((o) => {

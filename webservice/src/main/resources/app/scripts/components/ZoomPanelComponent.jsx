@@ -21,7 +21,7 @@ import {observer} from 'mobx-react';
 @observer
 class  ZoomPanelComponent extends Component {
   render(){
-    const {lastUpdatedTime,versionName,zoomInAction,zoomOutAction,showConfig,runTestCall,testRunActivated} = this.props;
+    const {lastUpdatedTime,versionName,zoomInAction,zoomOutAction,showConfig,confirmMode,testRunActivated} = this.props;
     return (
       <div className="zoomWrap clearfix">
         <div className="topology-editor-controls pull-right">
@@ -37,6 +37,20 @@ class  ZoomPanelComponent extends Component {
               color: '#545454'
             }}>{versionName}</span>
           </span>
+          <span className="version">
+            Test Mode: &nbsp;
+            <span className="SwitchWrapper">
+              <span className={`Switch Round ${testRunActivated ? 'On' : 'Off'}`} onClick={confirmMode}>
+                <span className="Toggle"></span>
+                {
+                  testRunActivated
+                  ? <span className="OnActive">On</span>
+                  :  <span className="OffActive">Off</span>
+                }
+              </span>
+            </span>
+          </span>
+
           <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip"> Zoom In </Tooltip>}>
             <a href="javascript:void(0);" className="zoom-in" onClick={zoomInAction}>
               <i className="fa fa-search-plus"></i>
@@ -50,11 +64,6 @@ class  ZoomPanelComponent extends Component {
           <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip"> Configure </Tooltip>}>
             <a href="javascript:void(0);" className="config" onClick={showConfig}>
               <i className="fa fa-gear"></i>
-            </a>
-          </OverlayTrigger>
-          <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip"> Test Run </Tooltip>}>
-            <a href="javascript:void(0);" className="config" onClick={runTestCall}>
-              <i className="fa fa-flask"></i>
             </a>
           </OverlayTrigger>
         </div>

@@ -48,32 +48,14 @@ class TestRunResult extends Component{
   constructor(props){
     super(props);
     this.state = {
-      showLoading : true,
       expOutputData : '',
       actualOutputData : '',
       activeTabKey:1
     };
   }
 
-  componentDidMount = () => {
-    this.fetchData();
-  }
-
   componentWillUnmount = () => {
     this.props.cancelTestResultApiCB(true);
-  }
-
-  fetchData = () => {
-    const {testResult} = this.props;
-    const {showLoading} = this.state;
-    if(_.keys(testResult).length > 0){
-      const obj = {
-        actualOutputData : _.isEmpty(JSON.parse(testResult.actualOutputRecords)) ?  '' : JSON.stringify(testResult.actualOutputRecords,null," "),
-        expOutputData : _.isEmpty(JSON.parse(testResult.expectedOutputRecords)) ? '' : JSON.stringify(testResult.expectedOutputRecords,null," "),
-        showLoading: testResult.finished
-      };
-      this.setState(obj);
-    }
   }
 
   onSelectTab = (eventKey) => {
@@ -83,7 +65,11 @@ class TestRunResult extends Component{
   }
 
   render(){
-    const {showLoading,expOutputData,actualOutputData,activeTabKey,interactive} = this.state;
+    const {activeTabKey,interactive} = this.state;
+    const {testResult} = this.props;
+    const { expectedOutputRecords ,actualOutputRecords } = testResult;
+    const expOutputData =  !_.isUndefined(expectedOutputRecords) && !_.isEmpty(JSON.parse(expectedOutputRecords)) ? JSON.stringify(JSON.parse(expectedOutputRecords),null," ") : '';
+    const actualOutputData =  !_.isUndefined(actualOutputRecords) && !_.isEmpty(JSON.parse(actualOutputRecords)) ? JSON.stringify(JSON.parse(actualOutputRecords),null," ") : '';
     const jsonoptions = {
       lineNumbers: true,
       mode: "application/json",
@@ -93,7 +79,7 @@ class TestRunResult extends Component{
       readOnly : 'nocursor'
     };
     const textResult =  <div className="testResultCaption">
-                          <h4 className={showLoading ? "loading" : "" } >{showLoading ? "Test Running" : 'Results'}</h4>
+                          <h4 className={!testResult.finished ? "loading" : "" } >{!testResult.finished ? "Test Running" : 'Results'}</h4>
                         </div>;
     return(
       <div className="testCustomFormClass">
@@ -112,14 +98,14 @@ class TestRunResult extends Component{
                 </div>
                 <div className="form-group">
                   <div className="row">
-                    <div className={expOutputData || showLoading ? "col-md-6" : "col-md-12"}>
+                    <div className={expOutputData || !testResult.finished ? "col-md-6" : "col-md-12"}>
                       <label>Actual Output Records
                         <span className="text-danger">*</span>
                       </label>
                       <ReactCodemirror ref="JSONCodemirror" value={actualOutputData} options={jsonoptions}/>
                     </div>
                     {
-                      expOutputData || showLoading
+                      expOutputData || !testResult.finished
                       ? <div className="col-md-6">
                           <label>Expected Output Records
                             <span className="text-danger">*</span>

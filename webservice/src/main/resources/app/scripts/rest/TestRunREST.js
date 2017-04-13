@@ -116,6 +116,20 @@ const TestRunREST = {
       .then((response) => {
         return response.json();
       });
+  },
+  runTestCaseHistory(id,testId,options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    options.headers = options.headers || {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    let url = baseUrl + 'topologies/' + id+ "/testhistories/"+testId;
+    return fetch(url, options)
+      .then((response) => {
+        return response.json();
+      });
   }
 };
 

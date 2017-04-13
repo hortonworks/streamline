@@ -15,7 +15,7 @@
 import React, {Component, PropTypes} from 'react';
 import update from 'react/lib/update';
 import ReactDOM, {findDOMNode} from 'react-dom';
-import {OverlayTrigger, Popover, Tooltip, Accordion, Panel, PanelGroup} from 'react-bootstrap';
+import {OverlayTrigger, Popover, Tooltip, Accordion, Panel, PanelGroup,Button} from 'react-bootstrap';
 import {ItemTypes, Components} from '../../../utils/Constants';
 import {DragSource} from 'react-dnd';
 import NodeContainer from './NodeContainer';
@@ -24,6 +24,7 @@ import _ from 'lodash';
 import Utils from '../../../utils/Utils';
 import {Scrollbars} from 'react-custom-scrollbars';
 import TopologyREST from '../../../rest/TopologyREST';
+import {observer} from 'mobx-react';
 
 const nodeSource = {
   beginDrag(props, monitor, component) {
@@ -37,6 +38,7 @@ function collect(connect, monitor) {
 }
 
 @DragSource(ItemTypes.ComponentNodes, nodeSource, collect)
+@observer
 export default class ComponentNodeContainer extends Component {
   static propTypes = {
     connectDragSource: PropTypes.func.isRequired,
@@ -302,57 +304,89 @@ export default class ComponentNodeContainer extends Component {
   editToolbar(){
     this.setState({editToolbar: true});
   }
+  testListItemClicked = (obj) => {
+    this.props.testItemSelected(obj);
+  }
+  handleButtonClicked = (flag) => {
+    this.props.addTestCase(flag);
+  }
   render() {
-    const {hideSourceOnDrag, left, top, isDragging} = this.props;
+    const {hideSourceOnDrag, left, top, isDragging,testRunActivated,testCaseList,selectedTestObj} = this.props;
     if (isDragging && hideSourceOnDrag) {
       return null;
     }
     return (
-      <div className="component-panel right" style={{
-        height: window.innerHeight - 60
-      }}>
-        <div className="toolbarButton">
-          { this.state.editToolbar ?
-          <OverlayTrigger placement="top" overlay={<Popover id="tooltip-popover"><span className="editor-control-tooltip">Save Toolbar</span></Popover>}>
-          <a href="javascript:void(0);" onClick={this.doneEditToolbar.bind(this)} style={{width: '100%'}}><i className="fa fa-check" aria-hidden="true"></i></a>
-          </OverlayTrigger>
-          :
-          <div>
-            <OverlayTrigger placement="top" overlay={<Popover id="tooltip-popover"><span className="editor-control-tooltip"><div>Search show/hide</div><div>(Ctrl+Space, Esc)</div></span></Popover>}>
-              <a href="javascript:void(0);" className="spotlight-search" onClick={()=>{state.showSpotlightSearch = !state.showSpotlightSearch;}}><i className="fa fa-search"></i></a>
-            </OverlayTrigger>
-            <OverlayTrigger placement="top" overlay={<Popover id="tooltip-popover"><span className="editor-control-tooltip">Edit Toolbar</span></Popover>}>
-             <a href="javascript:void(0);" onClick={this.editToolbar.bind(this)}><i className="fa fa-pencil-square-o" aria-hidden="true"></i></a>
-            </OverlayTrigger>
+      <div className={`${!testRunActivated ? 'component-panel' : 'testComponent-panel'} right`} style={{height: window.innerHeight - 60}}>
+      {
+        !testRunActivated
+        ? <div>
+            <div className="toolbarButton">
+                {
+                  this.state.editToolbar
+                  ? <OverlayTrigger placement="top" overlay={<Popover id="tooltip-popover"><span className="editor-control-tooltip">Save Toolbar</span></Popover>}>
+                      <a href="javascript:void(0);" onClick={this.doneEditToolbar.bind(this)} style={{width: '100%'}}><i className="fa fa-check" aria-hidden="true"></i></a>
+                    </OverlayTrigger>
+                  : <div>
+                      <OverlayTrigger placement="top" overlay={<Popover id="tooltip-popover"><span className="editor-control-tooltip"><div>Search show/hide</div><div>(Ctrl+Space, Esc)</div></span></Popover>}>
+                        <a href="javascript:void(0);" className="spotlight-search" onClick={()=>{state.showSpotlightSearch = !state.showSpotlightSearch;}}><i className="fa fa-search"></i></a>
+                      </OverlayTrigger>
+                      <OverlayTrigger placement="top" overlay={<Popover id="tooltip-popover"><span className="editor-control-tooltip">Edit Toolbar</span></Popover>}>
+                       <a href="javascript:void(0);" onClick={this.editToolbar.bind(this)}><i className="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                      </OverlayTrigger>
+                    </div>
+                }
+              </div>
+              <div className="panel-wrapper" style={{
+                height: window.innerHeight - 90
+              }}>
+                <Scrollbars autoHide autoHeightMin={452} renderThumbHorizontal= { props => <div style = { { display: "none" } } />}>
+                  <div className="inner-panel">
+                    <h6 className="component-title">
+                      Source
+                    </h6>
+                    <ul className="component-list" key="source-ul">
+                      {this.getNodeContainer("sources")}
+                    </ul>
+                    <h6 className="component-title">
+                      Processor
+                    </h6>
+                    <ul className="component-list" key="processor-ul">
+                      {this.getNodeContainer("processors")}
+                    </ul>
+                    <h6 className="component-title">
+                      Sink
+                    </h6>
+                    <ul className="component-list" key="sink-ul">
+                      {this.getNodeContainer("sinks")}
+                    </ul>
+                  </div>
+                </Scrollbars>
+              </div>
           </div>
-          }
-        </div>
-        <div className="panel-wrapper" style={{
-          height: window.innerHeight - 90
-        }}>
-          <Scrollbars autoHide autoHeightMin={452} renderThumbHorizontal= { props => <div style = { { display: "none" } } />}>
-            <div className="inner-panel">
-              <h6 className="component-title">
-                Source
-              </h6>
-              <ul className="component-list" key="source-ul">
-                {this.getNodeContainer("sources")}
-              </ul>
-              <h6 className="component-title">
-                Processor
-              </h6>
-              <ul className="component-list" key="processor-ul">
-                {this.getNodeContainer("processors")}
-              </ul>
-              <h6 className="component-title">
-                Sink
-              </h6>
-              <ul className="component-list" key="sink-ul">
-                {this.getNodeContainer("sinks")}
-              </ul>
-            </div>
-          </Scrollbars>
-        </div>
+        : <div className="panel-wrapper" style={{height: window.innerHeight - 90}}>
+            <Scrollbars autoHide autoHeightMin={452} renderThumbHorizontal= { props => <div style = { { display: "none" } } />}>
+              <div className="testInner-panel">
+                <Button className="btn-xs" bsStyle="success" onClick={this.handleButtonClicked.bind(this,true)}>
+                  <i className="fa fa-plus"></i> Add New Test
+                </Button>
+                {
+                  testCaseList.length > 0
+                  ? <h6 className="testComponent-title">
+                      Test Cases List
+                    </h6>
+                  : ''
+                }
+                <ul className="testComponent-list">
+                  {
+                    _.map(testCaseList , (list) => {
+                      return <li key={list.id} className={selectedTestObj.id === list.id ? 'active' : ''} onClick={this.testListItemClicked.bind(this,list)}>{list.name}</li>;
+                    })
+                  }
+                </ul>
+              </div>
+            </Scrollbars>
+          </div>
+      }
       </div>
     );
   }

@@ -25,7 +25,7 @@ import lint from 'codemirror/addon/lint/lint';
 import TopologyREST from '../../../rest/TopologyREST';
 import _ from 'lodash';
 import TestRunREST from '../../../rest/TestRunREST';
-import {Tabs, Tab} from 'react-bootstrap';
+import {Tabs, Tab ,InputGroup,Button,FormControl} from 'react-bootstrap';
 import StreamsSidebar from '../../../components/StreamSidebar';
 import CommonNotification from '../../../utils/CommonNotification';
 import TopologyUtils from '../../../utils/TopologyUtils';
@@ -57,6 +57,9 @@ class TestSinkNodeModal extends Component{
     let obj = {
       showLoading : false,
       expectedOutputData : '',
+      expectedOutputFile : '',
+      showFileError : false,
+      fileName : '',
       entity : {},
       activeTabKey:1,
       streamObjArr:[]
@@ -112,7 +115,7 @@ class TestSinkNodeModal extends Component{
         tempInput = JSON.parse(entity.records);
         checkConfigureTestCase(entity.sinkId,'Sink');
       }
-      this.setState({entity , streamObj : inputStreams[0], streamObjArr : inputStreams.length > 1 ? inputStreams : [], expectedOutputData : tempInput.length > 0 ? JSON.stringify(tempInput,null,"  ") : '' });
+      this.setState({entity , streamObj : inputStreams[0], streamObjArr : inputStreams.length > 1 ? inputStreams : [], expectedOutputData : ! _.isEmpty(tempInput) ? JSON.stringify(tempInput,null,"  ") : ''});
     });
   }
 
@@ -130,7 +133,7 @@ class TestSinkNodeModal extends Component{
   validateData = () => {
     const {expectedOutputData} = this.state;
     let validate = false;
-    if(Utils.validateJSON(expectedOutputData) && _.isArray(JSON.parse(expectedOutputData)) && JSON.parse(expectedOutputData).length > 0){
+    if(Utils.validateJSON(expectedOutputData)){
       validate = true ;
     }
     return validate;
@@ -158,6 +161,26 @@ class TestSinkNodeModal extends Component{
           : TestRunREST.postTestRunNode(topologyId, entityId,'sinks',{body : JSON.stringify(obj)});
   }
 
+  handleFileChange = (e) => {
+    if (e.target.files.length) {
+      let file = e.target.files[0];
+      const fileName = e.target.files[0].name;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        if(Utils.validateJSON(reader.result)) {
+          this.setState({showFileError: false, expectedOutputFile: file, expectedOutputData: reader.result,fileName});
+        } else {
+          this.setState({showFileError: true});
+        }
+      }.bind(this);
+      reader.readAsText(file);
+    }
+  }
+
+  handleFileUpload = () => {
+    this.refs.fileName.click();
+  }
+
   /*
     onSelectTab accept eventKey
     to SET the TAB active
@@ -176,7 +199,7 @@ class TestSinkNodeModal extends Component{
       gutters: ["CodeMirror-lint-markers"],
       lint: true
     };
-    const {showLoading,expectedOutputData,activeTabKey,streamObjArr,streamObj} = this.state;
+    const {showLoading,expectedOutputData,activeTabKey,streamObjArr,streamObj,showFileError,fileName} = this.state;
     const inputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={streamObj || []} inputStreamOptions={streamObjArr} streamType="input"/>;
     return(
       <div>
@@ -198,13 +221,52 @@ class TestSinkNodeModal extends Component{
                       <div className="customFormClass">
                           <form>
                             <div className="form-group">
-                              <div className="col-md-12">
-                                <label>Expected Output Records
+                              <div className="col-md-12" style={{marginTop:"10px",marginBottom:"10px"}}>
+                                <label>Upload Schema from file
                                   <span className="text-danger">*</span>
                                 </label>
-                                <ReactCodemirror ref="JSONCodemirror" value={expectedOutputData} onChange={this.handleOutputDataChange.bind(this)} options={jsonoptions}/>
+                                <input ref="fileName" accept=".json"
+                                  type="file"
+                                  placeholder="Select file"  className="hidden-file-input"
+                                  onChange={(event) => {
+                                    this.handleFileChange.call(this, event);
+                                  }}
+                                  required={true}/>
+                                <div>
+                                  <InputGroup>
+                                    <InputGroup.Addon className="file-upload">
+                                      <Button
+                                        type="button"
+                                        className="browseBtn btn-primary"
+                                        onClick={this.handleFileUpload.bind(this)}
+                                      >
+                                        <i className="fa fa-folder-open-o"></i>&nbsp;Browse
+                                      </Button>
+                                    </InputGroup.Addon>
+                                    <FormControl
+                                      type="text"
+                                      placeholder="No file chosen"
+                                      value={fileName}
+                                      className={showFileError
+                                      ? "form-control invalidInput"
+                                      : "form-control"}
+                                    />
+                                  </InputGroup>
+                                </div>
                               </div>
                             </div>
+                            {
+                              fileName || ! _.isEmpty(expectedOutputData)
+                              ? <div className="form-group">
+                                    <div className="col-md-12">
+                                      <label>Expected Output Records
+                                        <span className="text-danger">*</span>
+                                      </label>
+                                      <ReactCodemirror ref="JSONCodemirror" value={expectedOutputData} onChange={this.handleOutputDataChange.bind(this)} options={jsonoptions}/>
+                                    </div>
+                                  </div>
+                              : ''
+                            }
                           </form>
                       </div>
                     </Scrollbars>

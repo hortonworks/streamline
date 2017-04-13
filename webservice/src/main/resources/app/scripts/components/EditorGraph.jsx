@@ -113,7 +113,11 @@ class EditorGraph extends Component {
       getEdgeConfigModal,
       setLastChange,
       topologyConfigMessageCB,
-      testRunActivated
+      testRunActivated,
+      testItemSelected,
+      testCaseList,
+      selectedTestObj,
+      addTestCase
     } = this.props;
     const {boxes, bundleArr} = this.state;
     const componentsBundle = [...bundleArr.sourceBundle, ...bundleArr.processorsBundle, ...bundleArr.sinksBundle];
@@ -124,7 +128,7 @@ class EditorGraph extends Component {
         }}>
           <TopologyGraphComponent ref="TopologyGraph" height={parseInt(actualHeight, 10)} data={graphData} topologyId={topologyId} versionId={versionId} versionsArr={versionsArr} viewMode={viewMode} getModalScope={getModalScope} setModalContent={setModalContent} getEdgeConfigModal={getEdgeConfigModal} setLastChange={setLastChange} topologyConfigMessageCB={topologyConfigMessageCB} testRunActivated={testRunActivated}/>
           {state.showComponentNodeContainer
-            ? <ComponentNodeContainer left={boxes.left} top={boxes.top} hideSourceOnDrag={true} viewMode={viewMode} customProcessors={this.props.customProcessors} bundleArr={bundleArr} testRunActivated={testRunActivated}/>
+            ? <ComponentNodeContainer left={boxes.left} top={boxes.top} hideSourceOnDrag={true} viewMode={viewMode} customProcessors={this.props.customProcessors} bundleArr={bundleArr} testRunActivated={testRunActivated} testItemSelected={testItemSelected} testCaseList={testCaseList} selectedTestObj={selectedTestObj} addTestCase={addTestCase}/>
             : null
           }
           {state.showSpotlightSearch ? <SpotlightSearch viewMode={viewMode} componentsList={Utils.sortArray(componentsBundle, 'name', true)} addComponentCallback={this.addComponent.bind(this)}/> : ''}

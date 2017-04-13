@@ -69,9 +69,13 @@ class Paginate extends Component {
 
     return (
       <div className="row">
-        <div className={`stream-pagination ${ (list[index].length < pagesize)
+        <div className={`stream-pagination ${ window.outerWidth > 1440
           ? 'navbar-fixed-bottom'
-          : ''}`}>
+          : window.outerWidth <=  1440 && window.outerHeight > 900
+            ? 'navbar-fixed-bottom'
+            : window.outerWidth <=  1440 && (list[index].length < pagesize)
+              ? 'navbar-fixed-bottom'
+              : ''}`}>
           {(list.length > 0)
             ? <span>
                 <a href="javascript:void(0)" onClick={this.prev}>
@@ -80,12 +84,12 @@ class Paginate extends Component {
                 <span>{(pastVal === 0
                     ? 1
                     : pastVal) + " - " + (index === (list.length)
-                    ? fullList
+                    ? fullList+' '
                     : index === (list.length - 1)
-                      ? fullList
-                      : ((pagesize * index) + pagesize))
+                      ? fullList+' '
+                      : ((pagesize * index) + pagesize))+' '
 }
-                  of {fullList}</span>
+                   of {fullList}</span>
                 <a href="javascript:void(0)" onClick={this.next}>
                   <i className="fa fa-chevron-right" aria-hidden="true"></i>
                 </a>

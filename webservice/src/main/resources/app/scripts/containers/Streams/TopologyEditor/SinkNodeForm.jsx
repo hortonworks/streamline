@@ -249,7 +249,7 @@ export default class SinkNodeForm extends Component {
         uiFields.map(x => {
           if (x.fieldName === "jarFileName") {
             x.defaultValue = obj[0].jarFileName;
-            if (x.hint !== undefined) {
+            if (x.hint !== undefined && x.hint.indexOf('hidden') === -1) {
               x.hint = x.hint + ',hidden';
             } else {
               x.hint = "hidden";

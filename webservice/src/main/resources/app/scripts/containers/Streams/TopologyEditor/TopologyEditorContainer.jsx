@@ -132,7 +132,8 @@ class TopologyEditorContainer extends Component {
     testSourceConfigure : [],
     testSinkConfigure : [],
     testResult : {},
-    testName : ''
+    testName : '',
+    showError : false
   };
 
   fetchData(versionId) {
@@ -575,6 +576,7 @@ class TopologyEditorContainer extends Component {
               let interval = setInterval(() => {
                 TopologyREST.deployTopologyState(this.topologyId).then((topologyState) => {
                   if(topologyState.responseMessage !== undefined){
+                    clearInterval(interval);
                     FSReactToastr.error(
                       <CommonNotification flag="error" content={topologyState.responseMessage}/>, '', toastOpt);
                   }else{
@@ -695,8 +697,19 @@ class TopologyEditorContainer extends Component {
         const nodeText = node.parentType.toLowerCase();
         this.node = node;
         this.modalTitle = this.state.testRunActivated ? (nodeText === "source" || nodeText === "sink") ? `TEST-${this.node.parentType}`  : this.node.uiname : this.node.uiname;
+        /*
+          On the bases of nodeText and testCaseList.length
+          we show the Modal || info notification on UI
+        */
         this.state.testRunActivated
-        ? nodeText === "source" ? this.refs.TestSourceNodeModal.show() : nodeText === "sink" ? this.refs.TestSinkNodeModal.show() : this.refs.NodeModal.show()
+        ? nodeText === "source" && this.state.testCaseList.length
+          ? this.refs.TestSourceNodeModal.show()
+          : nodeText === "sink" && this.state.testCaseList.length
+            ? this.refs.TestSinkNodeModal.show()
+            : nodeText === "source" || nodeText === "sink"
+              ? FSReactToastr.info(
+                <CommonNotification flag="error" content={`Please create atleast one Test Case to configure ${nodeText}`}/>, '', toastOpt)
+              : this.refs.NodeModal.show()
         : this.refs.NodeModal.show();
         this.updateGraphMethod = updateGraphMethod;
       });
@@ -986,24 +999,25 @@ class TopologyEditorContainer extends Component {
       this.refs.TestSinkNodeModal.state.show
         ? this.handleSaveTestSinkNodeModal()
         : '';
+      this.refs.modeChangeModal.state.show
+        ? this.modeChangeConfirmModal(this,true)
+        : '';
     }
   }
 
   /*
     runTestClicked fetch all the testCaseList from the server
-    And push the "Add New Case" on the top of array as a default options
+    And if the result is not empty then entities[0] is make selectedTestObj by default
   */
   runTestClicked(){
     if(!this.state.testRunActivated){
-      this.refs.TestCaseListModel.show();
       TestRunREST.getAllTestRun(this.topologyId).then((testList) => {
         if(testList.responseMessage !== undefined){
           FSReactToastr.error(
             <CommonNotification flag="error" content={testList.responseMessage}/>, '', toastOpt);
         } else {
-          const defaultOptions = {name : "Add New Case"};
-          testList.entities.unshift(defaultOptions);
-          this.setState({testCaseLoader : false,testCaseList:testList.entities});
+          const entities = testList.entities;
+          this.setState({testCaseLoader : false,testCaseList:entities,testRunActivated : true,selectedTestObj : entities.length > 0 ? entities[0] : ''});
         }
       });
     } else {
@@ -1025,8 +1039,12 @@ class TopologyEditorContainer extends Component {
           FSReactToastr.error(
             <CommonNotification flag="error" content={testRun.responseMessage}/>, '', toastOpt);
         } else {
-          const {testSourceConfigure} = this.state;
-          const poolIndex = _.findIndex(testSourceConfigure, {id : testRun.sourceId});
+          let tempSourceConfig = _.cloneDeep(this.state.testSourceConfigure);
+          const poolIndex = _.findIndex(tempSourceConfig, {id : testRun.sourceId});
+          if(poolIndex === -1){
+            tempSourceConfig.push({id :  testRun.sourceId});
+            this.setState({testSourceConfigure :tempSourceConfig});
+          }
           const  msg =  <strong>{`Test source ${poolIndex !== -1 ? "update" : "configure"} successfully`}</strong>;
           FSReactToastr.success(
             msg
@@ -1050,8 +1068,12 @@ class TopologyEditorContainer extends Component {
           FSReactToastr.error(
             <CommonNotification flag="error" content={testRun.responseMessage}/>, '', toastOpt);
         } else {
-          const {testSinkConfigure} = this.state;
-          const poolIndex = _.findIndex(testSinkConfigure, {id : testRun.sinkId});
+          let tempSinkConfig = _.cloneDeep(this.state.testSinkConfigure);
+          const poolIndex = _.findIndex(tempSinkConfig, {id : testRun.sinkId});
+          if(poolIndex === -1){
+            tempSinkConfig.push({id : testRun.sinkId});
+            this.setState({testSinkConfigure : tempSinkConfig});
+          }
           const  msg =  <strong>{`Test sink ${poolIndex !== -1 ? "update" : "configure"} successfully`}</strong>;
           FSReactToastr.success(
             msg
@@ -1087,13 +1109,21 @@ class TopologyEditorContainer extends Component {
         FSReactToastr.error(
           <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
       } else {
-        this.setState({selectedTestObj : result,testRunActivated : true}, () => {
+        const entities = _.cloneDeep(this.state.testCaseList);
+        entities.push(result);
+        this.setState({selectedTestObj : result, testCaseList : entities}, () => {
           FSReactToastr.success(
-            <strong>Test mode is active</strong>
+            <strong>New TestCase created successfully</strong>
           );
         });
       }
     });
+  }
+
+  addTestCaseHandler = (showAddTestModel) => {
+    if(showAddTestModel){
+      this.refs.TestCaseListModel.show();
+    }
   }
 
   /*
@@ -1104,6 +1134,8 @@ class TopologyEditorContainer extends Component {
     let testName = event.target.value;
     if(testName !== ''){
       this.setState({testName});
+    }else {
+      this.setState({showError : true ,testName});
     }
   }
 
@@ -1113,16 +1145,11 @@ class TopologyEditorContainer extends Component {
     else SET testRunActivated to true
   */
   testCaseListSave = () => {
-    const {selectedTestObj,testName} = this.state;
-    this.refs.TestCaseListModel.hide();
-    if(!selectedTestObj.id){
+    const {testName} = this.state;
+    if(testName !== ''){
+      this.refs.TestCaseListModel.hide();
+      state.showTestCaseModel = false;
       this.createTestCase(testName);
-    } else {
-      this.setState({testRunActivated : true}, () => {
-        FSReactToastr.success(
-          <strong>Test mode is active</strong>
-        );
-      });
     }
   }
 
@@ -1148,6 +1175,7 @@ class TopologyEditorContainer extends Component {
     testCaseListCancel hide the TestCaseListModel modal
   */
   testCaseListCancel = () => {
+    state.showTestCaseModel = false;
     this.refs.TestCaseListModel.hide();
   }
 
@@ -1169,6 +1197,7 @@ class TopologyEditorContainer extends Component {
     testRunResultModal hide the TestRunResultModal modal
   */
   testRunResultModal = () => {
+    this.setState({testResult : {}});
     this.refs.TestRunResultModal.hide();
   }
 
@@ -1179,24 +1208,32 @@ class TopologyEditorContainer extends Component {
   confirmRunTest = (confirm) => {
     this.refs.confirmRunTestModal.hide();
     if(confirm){
-      this.refs.TestRunResultModal.show();
       const {selectedTestObj} = this.state;
-      this.interval = setInterval(() => {
-        TestRunREST.runTestCase(this.topologyId,{body : JSON.stringify({topologyId : this.topologyId , testCaseId : selectedTestObj.id })}).then((testResult) => {
-          if(testResult.responseMessage !== undefined){
-            clearInterval(this.interval);
-            const msg = testResult.responseMessage.indexOf('Not every source register') !== -1 ? "please configure all test source" : testResult.responseMessage;
-            FSReactToastr.info(
-              <CommonNotification flag="error" content={msg}/>, '', toastOpt);
-          } else {
-            if(testResult.finished){
-              this.setState({testResult : testResult}, () => {
+      TestRunREST.runTestCase(this.topologyId,{body : JSON.stringify({topologyId : this.topologyId , testCaseId : selectedTestObj.id })}).then((testResult) => {
+        if(testResult.responseMessage !== undefined){
+          const msg = testResult.responseMessage.indexOf('Not every source register') !== -1 ? "please configure all test source" : testResult.responseMessage;
+          FSReactToastr.info(
+            <CommonNotification flag="error" content={msg}/>, '', toastOpt);
+        } else {
+          this.refs.TestRunResultModal.show();
+          this.interval = setInterval(() => {
+            TestRunREST.runTestCaseHistory(this.topologyId,testResult.id).then((testHistory) => {
+              if(testHistory.responseMessage !== undefined){
                 clearInterval(this.interval);
-              });
-            }
-          }
-        });
-      },3000);
+                this.refs.TestRunResultModal.hide();
+                FSReactToastr.info(
+                  <CommonNotification flag="error" content={testHistory.responseMessage}/>, '', toastOpt);
+              } else {
+                if(testHistory.finished){
+                  this.setState({testResult : testHistory}, () => {
+                    clearInterval(this.interval);
+                  });
+                }
+              }
+            });
+          },3000);
+        }
+      });
     }
   }
 
@@ -1211,11 +1248,30 @@ class TopologyEditorContainer extends Component {
     }
   }
 
+  /*
+    modeChangeConfirmModal accept true Or false
+    to change the mode to Dev || Test
+  */
+  modeChangeConfirmModal = (flag) => {
+    if(flag){
+      this.runTestClicked();
+    }
+    this.refs.modeChangeModal.hide();
+  }
+
+  /*
+    confirmMode method show the modeChangeModal
+  */
+  confirmMode = () => {
+    this.refs.modeChangeModal.show();
+  }
+
   render() {
-    const {progressCount, progressBarColor, fetchLoader, mapTopologyConfig,deployStatus,testRunActivated,testCaseList,selectedTestObj,testCaseLoader,testRunCurrentEdges,testResult,nodeData,testName} = this.state;
+    const {progressCount, progressBarColor, fetchLoader, mapTopologyConfig,deployStatus,testRunActivated,testCaseList,selectedTestObj,testCaseLoader,testRunCurrentEdges,testResult,nodeData,testName,showError} = this.state;
     let nodeType = this.node
       ? this.node.currentType
       : '';
+
     return (
       <BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" breadcrumbData={this.breadcrumbData} headerContent={this.getTopologyHeader()}>
         <div className="row">
@@ -1223,24 +1279,24 @@ class TopologyEditorContainer extends Component {
             {fetchLoader
               ? <CommonLoaderSign imgName={"viewMode"}/>
               : <div className="graph-region">
-                <ZoomPanelComponent lastUpdatedTime={this.lastUpdatedTime} versionName={this.versionName} zoomInAction={this.graphZoomAction.bind(this, 'zoom_in')} zoomOutAction={this.graphZoomAction.bind(this, 'zoom_out')} showConfig={this.showConfig.bind(this)} runTestCall={this.runTestClicked.bind(this)} testRunActivated={testRunActivated}/>
-                <EditorGraph ref="EditorGraph" graphData={this.graphData} viewMode={this.viewMode} topologyId={this.topologyId} versionId={this.versionId} versionsArr={this.state.versionsArr} getModalScope={this.getModalScope.bind(this)} setModalContent={this.setModalContent.bind(this)} customProcessors={this.customProcessors} bundleArr={this.state.bundleArr} getEdgeConfigModal={this.showEdgeConfigModal.bind(this)} setLastChange={this.setLastChange.bind(this)} topologyConfigMessageCB={this.topologyConfigMessageCB.bind(this)} showComponentNodeContainer={state.showComponentNodeContainer} testRunActivated={this.state.testRunActivated}/>
+                <ZoomPanelComponent lastUpdatedTime={this.lastUpdatedTime} versionName={this.versionName} zoomInAction={this.graphZoomAction.bind(this, 'zoom_in')} zoomOutAction={this.graphZoomAction.bind(this, 'zoom_out')} showConfig={this.showConfig.bind(this)} confirmMode={this.confirmMode.bind(this)} testRunActivated={testRunActivated}/>
+                <EditorGraph ref="EditorGraph" addTestCase={this.addTestCaseHandler} selectedTestObj={selectedTestObj || {}} testItemSelected={this.testCaseListChange} testCaseList={testCaseList} graphData={this.graphData} viewMode={this.viewMode} topologyId={this.topologyId} versionId={this.versionId} versionsArr={this.state.versionsArr} getModalScope={this.getModalScope.bind(this)} setModalContent={this.setModalContent.bind(this)} customProcessors={this.customProcessors} bundleArr={this.state.bundleArr} getEdgeConfigModal={this.showEdgeConfigModal.bind(this)} setLastChange={this.setLastChange.bind(this)} topologyConfigMessageCB={this.topologyConfigMessageCB.bind(this)} showComponentNodeContainer={state.showComponentNodeContainer} testRunActivated={this.state.testRunActivated}/>
                 <div className="topology-footer">
                   {testRunActivated
                   ? <OverlayTrigger key={4} placement="top" overlay={<Tooltip id = "tooltip"> Run Test </Tooltip>}>
-                      <a href="javascript:void(0);" className="hb lg success pull-right" onClick={this.runTestCase.bind(this)}>
-                        <i className="fa fa-paper-plane"></i>
+                      <a href="javascript:void(0);" className="hb lg default pull-right" onClick={this.runTestCase.bind(this)}>
+                        <i className="fa fa-flask"></i>
                       </a>
                     </OverlayTrigger>
                   : this.state.isAppRunning
                     ? <OverlayTrigger key={2} placement="top" overlay={<Tooltip id = "tooltip" > Kill </Tooltip>}>
-                        <a href="javascript:void(0);" className="hb lg danger pull-right" onClick={this.killTopology.bind(this)}>
+                        <a href="javascript:void(0);" className="hb xl danger pull-right" onClick={this.killTopology.bind(this)}>
                           <i className="fa fa-times"></i>
                         </a>
                       </OverlayTrigger>
                     : (this.state.unknown !== "UNKNOWN")
                       ? <OverlayTrigger key={3} placement="top" overlay={<Tooltip id = "tooltip" > Run </Tooltip>}>
-                          <a href="javascript:void(0);" className="hb lg success pull-right" onClick={ testRunActivated ? this.runTestCase : this.deployTopology.bind(this)}>
+                          <a href="javascript:void(0);" className="hb xl success pull-right" onClick={ testRunActivated ? this.runTestCase : this.deployTopology.bind(this)}>
                             <i className="fa fa-paper-plane"></i>
                           </a>
                         </OverlayTrigger>
@@ -1284,34 +1340,16 @@ class TopologyEditorContainer extends Component {
 
         {/* Show TestCaseList Model to Select*/}
         <Modal ref="TestCaseListModel" onKeyPress={this.handleKeyPress.bind(this)} dialogClassName="modal-fixed-height" data-title="Test Case List" data-resolve={this.testCaseListSave} data-reject={this.testCaseListCancel}>
-          {
-            testCaseLoader
-            ? <div className="loading-img text-center">
-                <img src="styles/img/start-loader.gif" alt="loading"/>
+          <div className="customFormClass">
+            <div  className="form-group">
+              <div className="col-md-12"  style={{bottom : "10px"}}>
+                <label>New Test
+                  <span className="text-danger">*</span>
+                </label>
+                <input placeholder="Enter TestCase Name" value={testName} type="text" ref="testCaseName" className={`${showError ? 'invalidInput' : 'form-control'}`} onChange={this.testInputChange} />
               </div>
-            : <div className="customFormClass">
-                <div className="form-group">
-                  <div className="col-md-12" style={{bottom : "15px"}}>
-                    <label>Select Test
-                      <span className="text-danger">*</span>
-                    </label>
-                    <Select placeholder={"Select Test Case"} value={selectedTestObj} required={true} options={testCaseList} onChange={this.testCaseListChange.bind(this)} valueKey="name" labelKey="name" clearable={false}/>
-                  </div>
-                </div>
-                {
-                  selectedTestObj.name === 'Add New Case'
-                  ? <div  className="form-group">
-                      <div className="col-md-12"  style={{bottom : "10px"}}>
-                        <label>New Test
-                          <span className="text-danger">*</span>
-                        </label>
-                        <input placeholder="Enter TestCase Name" value={testName} type="text" ref="testCaseName" className="form-control" onChange={this.testInputChange} />
-                      </div>
-                    </div>
-                  : ''
-                }
-              </div>
-          }
+            </div>
+          </div>
         </Modal>
 
         {/* TestNodeModel for TestRun Mode for source */}
@@ -1328,14 +1366,18 @@ class TopologyEditorContainer extends Component {
 
         {/*TestRun Results*/}
         <Modal ref="TestRunResultModal" onKeyPress={this.handleKeyPress.bind(this)} dialogClassName="modal-xl" data-title="Test Case"
-          data-resolve={this.testRunResultModal.bind(this)} hideFooter={true}>
+          data-reject={this.testRunResultModal.bind(this)} hideFooter={true}>
           <TestRunResult testResult={testResult} cancelTestResultApiCB={this.cancelTestResultApiCB}/>
+        </Modal>
+
+        {/*ConfirmBox to Change Mode to Dev || Test*/}
+        <Modal ref="modeChangeModal" data-title="Confirm Box" dialogClassName="confirm-box" data-resolve={this.modeChangeConfirmModal.bind(this, true)} data-reject={this.modeChangeConfirmModal.bind(this, false)}>
+          {<p> Are you sure you want change mode ?</p>}
         </Modal>
 
         {/*ConfirmBox to Run TestCase*/}
         <Modal ref="confirmRunTestModal" data-title="Confirm Box" dialogClassName="confirm-box" data-resolve={this.confirmRunTest.bind(this, true)} data-reject={this.confirmRunTest.bind(this, false)}>
-          {<p> Are you sure you want to run the test case ?
-            </p>}
+          {<p> Are you sure you want to run the test case ?</p>}
         </Modal>
 
         <Modal ref="leaveEditable" onKeyPress={this.handleKeyPress.bind(this)} data-title="Confirm Box" dialogClassName="confirm-box" data-resolve={this.confirmLeave.bind(this, true)} data-reject={this.confirmLeave.bind(this, false)}>

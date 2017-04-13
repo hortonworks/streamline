@@ -775,8 +775,27 @@ label {
   border-right: 1px solid #288432;
 }
 
-.hb.lg {
-  /*line-height: 38px;*/
+.hb.default, .hb.default:before, .hb.default:after {
+  background-color: #fff;
+  color: #1892c1;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+}
+
+.hb.default:hover, .hb.default:hover:before, .hb.default:hover:after{
+  background: #fff;
+  color: #0b78a2;
+  border-left: 1px solid #797979;
+  border-right: 1px solid #797979;
+}
+
+.hb.xl, .hb.xl:before, .hb.xl:after {
+  height: 31px;
+  width: 55px;
+}
+
+.hb.xl i {
+  font-size: 26px;
 }
 
 .hb.lg, .hb.lg:before, .hb.lg:after {
@@ -2632,7 +2651,7 @@ input[type="checkbox"]:focus {
 
 .testCustomFormClass{
   position: relative;
-  height: 395px;
+  height: 410px;
 }
 .testResultCaption{
   width: 100%;
@@ -2650,3 +2669,129 @@ input[type="checkbox"]:focus {
 .testSinkBg{
   fill: #ffedcd !important;
 }
+.testComponent-panel {
+  position: fixed;
+  height: auto;
+  width: 170px;
+  top: 60px;
+  margin-left: -70px;
+  background-color: #fff;
+  /*padding: 0 10px;*/
+  font-size: 0.875em;
+  border-radius: 0px 10px 10px 0px;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
+  border-radius: 0px;
+}
+.testInner-panel {
+  width: 150px;
+  overflow-x: hidden;
+  text-align: center;
+  padding-top: 15px;
+
+}
+.testComponent-title{
+  font-size: 12px;
+  color: #323133;
+  text-align: center;
+  text-transform: uppercase;
+  background-color: #dedede;
+  padding: 8px;
+
+}
+.testComponent-list{
+  list-style: none;
+  padding: 0px;
+  margin-bottom: 15px;
+}
+.testComponent-list>li {
+  text-align: center;
+  color: #60aec9;
+  font-size: 12px;
+  padding: 5px;
+  border: 1px #afe4f7 solid;
+  margin-bottom: 5px;
+  cursor: pointer;
+}
+.testComponent-list>li.active{
+  background-color: #1e71a5;
+  color: #fff;
+}
+
+/*------------------------------------------------*/
+/* Switch SECTION START*/
+/*------------------------------------------------*/
+.Switch {
+position: relative;
+display: inline-block;
+font-size: 12px;
+font-weight: bold;
+color: #ccc;
+text-shadow: 0px 1px 1px rgba(255,255,255,0.8);
+height: 18px;
+padding: 6px 6px 5px 6px;
+border: 1px solid #ccc;
+border: 1px solid rgba(0,0,0,0.2);
+border-radius: 4px;
+background: #ececec;
+box-shadow: 0px 0px 4px rgba(0,0,0,0.1), inset 0px 1px 3px 0px rgba(0,0,0,0.1);
+cursor: pointer;
+}
+
+body.IE7 .Switch { width: 78px; }
+
+.Switch span:first-child { display: inline-block; width: 35px; }
+.Switch span.On { color: #33d2da; }
+
+.Switch .Toggle {
+position: absolute;
+top: 1px;
+width: 37px;
+height: 25px;
+border: 1px solid #ccc;
+border: 1px solid rgba(0,0,0,0.3);
+border-radius: 4px;
+background: #fff;
+background: -moz-linear-gradient(top,  #ececec 0%, #ffffff 100%);
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ececec), color-stop(100%,#ffffff));
+background: -webkit-linear-gradient(top,  #ececec 0%,#ffffff 100%);
+background: -o-linear-gradient(top,  #ececec 0%,#ffffff 100%);
+background: -ms-linear-gradient(top,  #ececec 0%,#ffffff 100%);
+background: linear-gradient(top,  #ececec 0%,#ffffff 100%);
+box-shadow: inset 0px 1px 0px 0px rgba(255,255,255,0.5);
+z-index: 999;
+-webkit-transition: all 0.15s ease-in-out;
+-moz-transition: all 0.15s ease-in-out;
+-o-transition: all 0.15s ease-in-out;
+-ms-transition: all 0.15s ease-in-out;
+}
+
+.Switch.On .Toggle { left: 2%; }
+.Switch.Off .Toggle { left: 54%; }
+span.OnActive{
+  color: #9e9d9d;
+  margin-left: 13px;
+}
+span.OffActive{
+  margin-right: 13px;
+  color: #9e9d9d;
+}
+
+/* Round Switch */
+.Switch.Round {
+padding: 0px 2px;
+border-radius: 40px;
+}
+
+body.IE7 .Switch.Round { width: 1px; }
+
+.Switch.Round .Toggle {
+border-radius: 40px;
+width: 14px;
+height: 14px;
+}
+
+.Switch.Round.On .Toggle { left: 3%; background: #33d2da; }
+.Switch.Round.Off .Toggle { left: 58%; }
+/*------------------------------------------------*/
+/* Switch SECTION END*/
+/*------------------------------------------------*/

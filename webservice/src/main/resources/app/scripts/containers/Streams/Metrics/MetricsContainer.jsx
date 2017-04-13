@@ -360,6 +360,26 @@ export default class MetricsContainer extends Component {
     if (start === end) {
       label = start;
     }
+    const recordPanelHeader = <div>
+                                <h5 style={{marginTop : 0, marginBottom : 0}}>
+                                  {
+                                    selectedComponentName.length > 0
+                                      ? "Record (" + selectedComponentName + ")"
+                                      : "Record (" + this.props.topologyName + ")"
+                                  }
+                                  <i className={`fa ${this.state.expandRecord ? 'fa-angle-down' : 'fa-angle-right' } pull-right`}></i>
+                                </h5>
+                              </div>;
+    const timePanelHeader = <div>
+                              <h5 style={{marginTop : 0, marginBottom : 0}}>
+                                {
+                                  selectedComponentName.length > 0
+                                  ? "Latency / Queue (" + selectedComponentName + ")"
+                                  : "Processed Time / Queue "
+                                }
+                                <i className={`fa ${this.state.expandLatencyQueue ? 'fa-angle-down' : 'fa-angle-right' } pull-right`}></i>
+                              </h5>
+                        </div>;
     return (
       <div>
         <div className="form-horizontal">
@@ -384,9 +404,7 @@ export default class MetricsContainer extends Component {
           </div>
         </div>
         <PanelGroup>
-          <Panel header={selectedComponentName.length > 0
-            ? "Record (" + selectedComponentName + ")"
-            : "Record (" + this.props.topologyName + ")"} eventKey="Record" collapsible expanded={this.state.expandRecord} onSelect={this.onPanelSelect}>
+          <Panel header={recordPanelHeader} eventKey="Record" collapsible expanded={this.state.expandRecord} onSelect={this.onPanelSelect}>
             <div className="row col-md-4" style={{
               'textAlign': 'center'
             }}>
@@ -426,9 +444,7 @@ export default class MetricsContainer extends Component {
               </div>
             </div>
           </Panel>
-          <Panel header={selectedComponentName.length > 0
-            ? "Latency / Queue (" + selectedComponentName + ")"
-            : "Processed Time / Queue"} eventKey="LatencyQueue" collapsible expanded={this.state.expandLatencyQueue} onSelect={this.onPanelSelect}>
+          <Panel header={timePanelHeader} eventKey="LatencyQueue" collapsible expanded={this.state.expandLatencyQueue} onSelect={this.onPanelSelect}>
             <div className="row col-md-6" style={{
               'textAlign': 'center'
             }}>

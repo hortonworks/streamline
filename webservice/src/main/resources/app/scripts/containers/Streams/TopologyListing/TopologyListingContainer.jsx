@@ -179,6 +179,10 @@ class TopologyItems extends Component {
                     <i className="fa fa-share-square-o"></i>
                     &nbsp;Export
                   </MenuItem>
+                  <MenuItem title="Delete" onClick={this.onActionClick.bind(this, "delete/" + topology.id)}>
+                    <i className="fa fa-trash"></i>
+                    &nbsp;Delete
+                  </MenuItem>
                 </DropdownButton>
                 <a href="javascript:void(0)" title="Delete" className="close" onClick={this.onActionClick.bind(this, "delete/" + topology.id)}>
                   <i className="fa fa-times-circle"></i>
