@@ -286,6 +286,8 @@ export default class WindowingAggregateNodeForm extends Component {
       if(serverWindowObj.window.tsField) {
         stateObj.tsField = serverWindowObj.window.tsField;
         stateObj.lagMs = Utils.millisecondsToNumber(serverWindowObj.window.lagMs).number;
+      } else {
+        stateObj.tsField = 'processingTime';
       }
 
       // assign mainStreamObj value to "this.tempStreamContextData" make available for further methods
@@ -336,7 +338,7 @@ export default class WindowingAggregateNodeForm extends Component {
     if (selectedKeys.length === 0 || windowNum === '') {
       validData = false;
     }
-    if(tsField !== '' && lagMs === '') {
+    if(tsField !== '' && tsField !== 'processingTime' && lagMs === '') {
       validData = false;
     }
     outputFieldsArr.map((obj) => {
@@ -472,7 +474,7 @@ export default class WindowingAggregateNodeForm extends Component {
           };
         }
       }
-      if(tsField !== ''){
+      if(tsField !== '' && tsField !== 'processingTime'){
         this.windowRulesNode.window.tsField = tsField;
         this.windowRulesNode.window.lagMs = Utils.numberToMilliseconds(lagMs, 'Seconds');
       }
@@ -815,7 +817,7 @@ export default class WindowingAggregateNodeForm extends Component {
                     <div className="col-sm-5">
                       <label>Timestamp Field</label>
                     </div>
-                    {tsField !== '' ?
+                    {tsField !== '' && tsField !== 'processingTime' ?
                     <div className="col-sm-5">
                       <label>Lag in Seconds<span className="text-danger">*</span></label>
                     </div>
@@ -827,7 +829,7 @@ export default class WindowingAggregateNodeForm extends Component {
                       <Select value={tsField} options={tsFieldOptions} onChange={this.handleTimestampFieldChange.bind(this)} disabled={disabledFields} valueKey="name" labelKey="name" />
                     </div>
                     </OverlayTrigger>
-                    {tsField !== '' ?
+                    {tsField !== '' && tsField !== 'processingTime' ?
                     <div className="col-sm-5">
                       <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Lag duration</Popover>}>
                       <input name="lagMs" value={lagMs} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={disabledFields} min="0" inputMode="numeric"/>
