@@ -129,11 +129,19 @@ export default class NodeContainer extends Component {
       isOver,
       connectDropTarget,
       viewType,
-      children
+      children,
+      accepts
     } = this.props;
-    const showHighligh = canDrop && isOver;
+    const showHighlight = canDrop && isOver;
+    let className = [];
+    if(showHighlight){
+      className.push('highlight');
+    }
+    if((!viewType && accepts != ItemTypes.Nodes) || (viewType == 'folder' && accepts != '')){
+      className.push.apply(className, ['pulse', 'animated', 'infinite']);
+    }
     return connectDragSource(connectDropTarget(
-      <li className={showHighligh ? "highlight" : ''}>
+      <li className={className.join(' ')}>
         { viewType != 'folder'
         ?
         <div className="nodeContainer"><img src={imgPath} ref="img" onError={() => {

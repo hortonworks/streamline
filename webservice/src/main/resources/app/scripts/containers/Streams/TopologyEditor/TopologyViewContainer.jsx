@@ -394,7 +394,7 @@ class TopologyViewContainer extends Component {
       ? this.node.currentType
       : '';
     return (
-      <BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" breadcrumbData={this.breadcrumbData} headerContent={this.getTopologyHeader()}>
+      <BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" headerContent={this.getTopologyHeader()}>
         <div>
           {fetchLoader
             ? <CommonLoaderSign imgName={"viewMode"}/>

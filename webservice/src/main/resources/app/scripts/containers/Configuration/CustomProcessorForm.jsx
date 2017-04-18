@@ -140,7 +140,7 @@ class CustomProcessorForm extends Component {
   }
 
   componentDidMount() {
-    this.props.router.setRouteLeaveHook(this.props.route, this.routerWillLeave);
+    //this.props.router.setRouteLeaveHook(this.props.route, this.routerWillLeave);
   }
   componentWillUnmount() {
     this.props.popUpFlag(false);

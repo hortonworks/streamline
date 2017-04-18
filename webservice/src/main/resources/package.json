@@ -104,11 +104,12 @@
     "eslint-config-airbnb": "^14.1.0",
     "eslint-friendly-formatter": "^2.0.7",
     "eslint-loader": "^1.6.1",
+    "eslint-plugin-header": "^1.0.0",
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-jsx-a11y": "^4.0.0",
     "eslint-plugin-react": "^6.9.0",
     "path": "^0.12.7",
-    "eslint-plugin-header": "^1.0.0",
+    "react-click-outside": "^2.3.0",
     "react-tools": "^0.13.3",
     "react-transform": "0.0.3"
   }

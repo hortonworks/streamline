@@ -714,13 +714,13 @@ class TopologyListingContainer extends Component {
           ? <Paginate len={filteredEntities.length} splitData={splitData} pagesize={pageSize} pagePosition={this.pagePosition}/>
           : ''
 }
-        <Modal ref={(ref) => this.AddTopologyModelRef = ref} data-title="Add Stream" onKeyPress={this.handleKeyPress} data-resolve={this.handleSaveClicked}>
+        <Modal ref={(ref) => this.AddTopologyModelRef = ref} data-title="Add Application" onKeyPress={this.handleKeyPress} data-resolve={this.handleSaveClicked}>
           <AddTopology ref={(ref) => this.addTopologyRef = ref}/>
         </Modal>
-        <Modal ref={(ref) => this.ImportTopologyModelRef = ref} data-title="Import Stream" onKeyPress={this.handleKeyPress} data-resolve={this.handleImportSave}>
+        <Modal ref={(ref) => this.ImportTopologyModelRef = ref} data-title="Import Application" onKeyPress={this.handleKeyPress} data-resolve={this.handleImportSave}>
           <ImportTopology ref={(ref) => this.importTopologyRef = ref}/>
         </Modal>
-        <Modal ref={(ref) => this.CloneTopologyModelRef = ref} data-title="Clone Stream" onKeyPress={this.handleKeyPress} data-resolve={this.handleCloneSave}>
+        <Modal ref={(ref) => this.CloneTopologyModelRef = ref} data-title="Clone Application" onKeyPress={this.handleKeyPress} data-resolve={this.handleCloneSave}>
           <CloneTopology topologyId={this.state.cloneFromId} ref={(ref) => this.cloneTopologyRef = ref}/>
         </Modal>
         <a className="btn-download" ref="ExportTopology" hidden download href=""></a>

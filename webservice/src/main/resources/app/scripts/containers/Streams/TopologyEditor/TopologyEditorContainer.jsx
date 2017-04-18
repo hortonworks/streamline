@@ -47,16 +47,6 @@ import TestRunResult from '../TestRunComponents/TestRunResult';
 class TopologyEditorContainer extends Component {
   constructor(props) {
     super(props);
-    this.breadcrumbData = {
-      title: 'Topology Editor',
-      linkArr: [
-        {
-          title: 'Streams'
-        }, {
-          title: 'Topology Editor'
-        }
-      ]
-    };
     this.topologyId = this.props.params.id;
     this.versionId = 1;
     this.versionName = '';
@@ -960,7 +950,7 @@ class TopologyEditorContainer extends Component {
     return (
       <span>
         <Link to="/">My Applications</Link>
-        /&nbsp;
+        &nbsp;/&nbsp;
         <Editable id="applicationName" ref="topologyNameEditable" inline={true} resolve={this.saveTopologyName.bind(this)} reject={this.handleRejectTopologyName.bind(this)}>
           <input ref={this.focusInput} defaultValue={this.state.topologyName} onChange={this.handleNameChange.bind(this)}/>
         </Editable>
@@ -1276,7 +1266,7 @@ class TopologyEditorContainer extends Component {
       : '';
 
     return (
-      <BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" breadcrumbData={this.breadcrumbData} headerContent={this.getTopologyHeader()}>
+      <BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" headerContent={this.getTopologyHeader()}>
         <div className="row">
           <div className="col-sm-12">
             {fetchLoader

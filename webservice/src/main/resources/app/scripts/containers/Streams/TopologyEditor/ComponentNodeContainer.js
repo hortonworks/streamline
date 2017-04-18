@@ -25,6 +25,7 @@ import Utils from '../../../utils/Utils';
 import {Scrollbars} from 'react-custom-scrollbars';
 import TopologyREST from '../../../rest/TopologyREST';
 import {observer} from 'mobx-react';
+import enhanceWithClickOutside from 'react-click-outside';
 
 const nodeSource = {
   beginDrag(props, monitor, component) {
@@ -39,6 +40,7 @@ function collect(connect, monitor) {
 
 @DragSource(ItemTypes.ComponentNodes, nodeSource, collect)
 @observer
+@enhanceWithClickOutside
 export default class ComponentNodeContainer extends Component {
   static propTypes = {
     connectDragSource: PropTypes.func.isRequired,
@@ -294,6 +296,11 @@ export default class ComponentNodeContainer extends Component {
       }
     });
     return nodeContainer;
+  }
+  handleClickOutside(){
+    if(this.state.editToolbar){
+      this.doneEditToolbar();
+    }
   }
   doneEditToolbar(){
     TopologyREST.putTopologyEditorToolbar({body: JSON.stringify({data: JSON.stringify(this.state.toolbar), userId: this.state.userId})})

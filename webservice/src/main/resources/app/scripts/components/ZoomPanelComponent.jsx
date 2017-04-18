@@ -38,14 +38,13 @@ class  ZoomPanelComponent extends Component {
             }}>{versionName}</span>
           </span>
           <span className="version">
-            Test Mode: &nbsp;
             <span className="SwitchWrapper">
               <span className={`Switch Round ${testRunActivated ? 'On' : 'Off'}`} onClick={confirmMode}>
                 <span className="Toggle"></span>
                 {
                   testRunActivated
-                  ? <span className="OnActive">On</span>
-                  :  <span className="OffActive">Off</span>
+                  ? <span className="OnActive">TEST</span>
+                  :  <span className="OffActive">DEV</span>
                 }
               </span>
             </span>

@@ -31,7 +31,6 @@ import CustomProcessorREST from '../../rest/CustomProcessorREST';
 import FSReactToastr from '../../components/FSReactToastr';
 import {pageSize} from '../../utils/Constants';
 import Utils from '../../utils/Utils';
-import BaseContainer from '../../containers/BaseContainer';
 import CommonNotification from '../../utils/CommonNotification';
 import {toastOpt} from '../../utils/Constants';
 import NoData from '../../components/NoData';
@@ -105,7 +104,7 @@ export default class CustomProcessorContainer extends Component {
   }
 
   handleDelete(id) {
-    let BaseContainer = this.refs.BaseContainer;
+    let BaseContainer = this.props.callbackHandler();
     BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete this processor?'}).then((confirmBox) => {
       CustomProcessorREST.deleteProcessor(id).then((processor) => {
         this.fetchData();
@@ -160,7 +159,7 @@ export default class CustomProcessorContainer extends Component {
     const filteredEntities = Utils.filterByName(entities, filterValue);
 
     return (
-      <BaseContainer ref="BaseContainer" routes={this.props.routes} headerContent={this.getHeaderContent()}>
+      <div>
         {fetchLoader
           ? <CommonLoaderSign imgName={"default"}/>
           : <div>
@@ -168,7 +167,7 @@ export default class CustomProcessorContainer extends Component {
               ? <div>
                   <div className="row">
                     <div className="page-title-box clearfix">
-                      <div className="col-md-3 col-md-offset-8 text-right">
+                      <div className="pull-left col-md-3">
                         {((filterValue && filteredEntities.length === 0) || filteredEntities.length !== 0)
                           ? <FormGroup>
                               <InputGroup>
@@ -179,9 +178,9 @@ export default class CustomProcessorContainer extends Component {
                               </InputGroup>
                             </FormGroup>
                           : ''
-}
+                        }
                       </div>
-                      <div id="add-environment">
+                      <div id="add-custom" className="pull-right">
                         <a href="javascript:void(0);" className="hb lg success actionDropdown" data-target="#addEnvironment" onClick={this.handleAdd.bind(this)}>
                           <i className="fa fa-plus"></i>
                         </a>
@@ -189,49 +188,44 @@ export default class CustomProcessorContainer extends Component {
                     </div>
                   </div>
                   {filteredEntities.length === 0
-                    ? <NoData imgName={"default"} searchVal={filterValue}/>
+                    ? <div className="row"><NoData imgName={"default-white"} searchVal={filterValue}/></div>
                     : <div className="row">
                       <div className="col-sm-12">
-                        <div className="box">
-                          <div className="box-body">
-                            <Table className="table table-hover table-bordered" noDataText="No records found." currentPage={0} itemsPerPage={filteredEntities.length > pageSize
-                              ? pageSize
-                              : 0} pageButtonLimit={5}>
-                              <Thead>
-                                <Th column="name">Name</Th>
-                                <Th column="description">Description</Th>
-                                <Th column="jarFileName">Jar File Name</Th>
-                                <Th column="action">Actions</Th>
-                              </Thead>
-                              {filteredEntities.map((obj, i) => {
-                                return (
-                                  <Tr key={`${obj.name}${i}`}>
-                                    <Td column="name">{obj.name}</Td>
-                                    <Td column="description">{obj.description}</Td>
-                                    <Td column="jarFileName">{obj.jarFileName}</Td>
-                                    <Td column="action">
-                                      <div className="btn-action">
-                                        <BtnEdit callback={this.handleEdit.bind(this, obj.name)}/>
-                                        <BtnDelete callback={this.handleDelete.bind(this, obj.name)}/>
-                                      </div>
-                                    </Td>
-                                  </Tr>
-                                );
-                              })
-}
-                            </Table>
-                          </div>
-                        </div>
+                        <Table className="table table-hover table-bordered" noDataText="No records found." currentPage={0} itemsPerPage={filteredEntities.length > pageSize
+                          ? pageSize
+                          : 0} pageButtonLimit={5}>
+                          <Thead>
+                            <Th column="name">Name</Th>
+                            <Th column="description">Description</Th>
+                            <Th column="jarFileName">Jar File Name</Th>
+                            <Th column="action">Actions</Th>
+                          </Thead>
+                          {filteredEntities.map((obj, i) => {
+                            return (
+                              <Tr key={`${obj.name}${i}`}>
+                                <Td column="name">{obj.name}</Td>
+                                <Td column="description">{obj.description}</Td>
+                                <Td column="jarFileName">{obj.jarFileName}</Td>
+                                <Td column="action">
+                                  <div className="btn-action">
+                                    <BtnEdit callback={this.handleEdit.bind(this, obj.name)}/>
+                                    <BtnDelete callback={this.handleDelete.bind(this, obj.name)}/>
+                                  </div>
+                                </Td>
+                              </Tr>
+                            );
+                          })
+                        }
+                        </Table>
                       </div>
                     </div>
-}
+                  }
                 </div>
               : <CustomProcessorForm ref="CustomProcessorForm" onCancel={this.handleCancel.bind(this)} onSave={this.handleSave.bind(this)} id={this.state.processorId} route={this.props.route} processors={this.state.entities} popUpFlag={this.childPopUpFlag}/>
-}
+          }
           </div>
-}
-
-      </BaseContainer>
+        }
+      </div>
     );
   }
 }

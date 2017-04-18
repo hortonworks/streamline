@@ -159,7 +159,7 @@ class AddTopology extends Component {
             <span className="text-danger">*</span>
           </label>
           <div>
-            <input type="text" ref={(ref) => this.nameRef = ref} name="topologyName" placeholder="Topology name" required="true" className={validInput
+            <input type="text" ref={(ref) => this.nameRef = ref} name="topologyName" placeholder="Application name" required="true" className={validInput
               ? "form-control"
               : "form-control invalidInput"} onKeyUp={this.handleOnChange} autoFocus="true"/>
           </div>

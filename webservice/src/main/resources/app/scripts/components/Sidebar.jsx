@@ -153,11 +153,7 @@ export default class Sidebar extends Component {
                 ? "treeview-menu menu-open"
                 : "treeview-menu"}>
                 <li onClick={this.handleClick.bind(this, 3)}>
-                  <Link to="/custom-processor">Custom Processor</Link>
-                </li>
-                {/*<li onClick={this.handleClick.bind(this, 3)}><Link to="/tags">Tags</Link></li>*/}
-                <li onClick={this.handleClick.bind(this, 3)}>
-                  <Link to="/files">Files</Link>
+                  <Link to="/application-resources">Application Resources</Link>
                 </li>
                 <li onClick={this.handleClick.bind(this, 3)}>
                   <Link to="/service-pool">Service Pool</Link>
@@ -165,9 +161,9 @@ export default class Sidebar extends Component {
                 <li onClick={this.handleClick.bind(this, 3)}>
                   <Link to="/environments">Environments</Link>
                 </li>
-                <li onClick={this.handleClick.bind(this, 3)}>
+                {/*<li onClick={this.handleClick.bind(this, 3)}>
                   <Link to="/component-definition">Component Definition</Link>
-                </li>
+                </li>*/}
               </ul>
             </li>
           </ul>

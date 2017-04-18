@@ -224,8 +224,10 @@ export default class OutputSchemaContainer extends Component {
             {this.state.streamData.map((obj, i) => {
               return (
                 <Tab.Pane eventKey={i + 1} key={i + 1}>
+                  <div className="row">
                   <div className="col-sm-6">
                     <ReactCodemirror ref="JSONCodemirror" value={obj.fields} onChange={this.handleSchemaChange.bind(this)} options={jsonoptions}/>
+                  </div>
                   </div>
                 </Tab.Pane>
               );

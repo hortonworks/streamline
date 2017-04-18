@@ -384,7 +384,7 @@ label {
   padding-top: 5px !important;
 }
 
-.cp-modal-form, .edge-modal-form, .rule-modal-form, .config-modal-form, .note-modal-form {
+.cp-modal-form, .edge-modal-form, .rule-modal-form, .config-modal-form, .note-modal-form, .udf-modal-form, .notifier-modal-form {
   margin: 0px 10px;
 }
 
@@ -821,8 +821,8 @@ label {
   margin: 20px 0;
 }
 
-.table-stream>tbody>tr>td {
-  word-break: break-all;
+.table-stream>tbody>tr>td>.wordBreak {
+  word-break: break-word;
 }
 
 .schema-stats>i.fa, .schema-stats>div {
@@ -1758,11 +1758,15 @@ h5.environment-title span, .service-box .service-head h4 span {
   width: 52px;
 }
 
-#add-environment {
+#add-environment, #add-custom, #add-udf, #add-notifier {
   position: absolute;
   right: 90px;
   z-index: 1050;
   top: 50px;
+}
+
+#add-udf, #add-notifier, #add-custom {
+ top: 20px;
 }
 
 #addEnvironment .modal-footer {
@@ -2766,13 +2770,16 @@ z-index: 999;
 }
 
 .Switch.On .Toggle { left: 2%; }
-.Switch.Off .Toggle { left: 54%; }
+.Switch.Off .Toggle { left: 66%; }
 span.OnActive{
+  margin-right:3px;
   color: #9e9d9d;
-  margin-left: 13px;
+  margin-left: 17px;
 }
 span.OffActive{
-  margin-right: 13px;
+  margin-left: 3px;
+  padding-right: 3px;
+  margin-right: 17px;
   color: #9e9d9d;
 }
 
@@ -2791,7 +2798,39 @@ height: 14px;
 }
 
 .Switch.Round.On .Toggle { left: 3%; background: #33d2da; }
-.Switch.Round.Off .Toggle { left: 58%; }
+.Switch.Round.Off .Toggle { left: 66%; }
 /*------------------------------------------------*/
 /* Switch SECTION END*/
 /*------------------------------------------------*/
+/* User Roles */
+.user-tabs .nav > li > a {
+  color: #555;
+  padding: 10px 50px;
+  border-radius: 0px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.user-tabs .nav-tabs > li > a:hover {
+  border-color: transparent;
+  color: #3fb046;
+}
+.user-tabs .nav-tabs > li.active > a,
+.user-tabs .nav-tabs > li.active > a:hover,
+.user-tabs .nav-tabs > li.active > a:focus {
+  color: #3fb046;
+  cursor: default;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-top: 2px #3fb046 solid;
+  border-bottom-color: transparent;
+}
+.user-tabs .tab-content {
+  background-color: #fff;
+  padding: 25px;
+  border: 1px #ddd solid;
+  border-top: none;
+}
+.user-tabs .hb {
+  top: 10px;
+  right: 10px;
+}

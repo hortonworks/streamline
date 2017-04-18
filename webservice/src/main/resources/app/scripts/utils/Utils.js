@@ -304,8 +304,8 @@ const scrollMe = function(element, to, duration) {
   if (duration <= 0) {
     return;
   }
-  var difference = to - element.scrollTop;
-  var perTick = difference / duration * 10;
+  let difference = to - element.scrollTop;
+  let perTick = difference / duration * 10;
 
   const timer = setTimeout(function() {
     element.scrollTop = element.scrollTop + perTick;
@@ -344,6 +344,133 @@ const validateJSON = function(json){
   return validFlag;
 };
 
+const isMergeableObject = function (val) {
+  let nonNullObject = val && typeof val === 'object';
+
+  return nonNullObject
+    && Object.prototype.toString.call(val) !== '[object RegExp]'
+    && Object.prototype.toString.call(val) !== '[object Date]';
+};
+
+const emptyTarget = function (val) {
+  return Array.isArray(val) ? [] : {};
+};
+
+const cloneIfNecessary = function (value, optionsArgument) {
+  let clone = optionsArgument && optionsArgument.clone === true;
+  return (clone && isMergeableObject(value)) ? deepmerge(emptyTarget(value), value, optionsArgument) : value;
+};
+
+const defaultArrayMerge = function (target, source, optionsArgument) {
+  let destination = target.slice();
+  source.forEach(function(e, i) {
+    if (typeof destination[i] === 'undefined') {
+      destination[i] = cloneIfNecessary(e, optionsArgument);
+    } else if (isMergeableObject(e)) {
+      destination[i] = deepmerge(target[i], e, optionsArgument);
+    } else if (target.indexOf(e) === -1) {
+      destination.push(cloneIfNecessary(e, optionsArgument));
+    }
+  });
+  return destination;
+};
+
+const mergeObject = function (target, source, optionsArgument) {
+  let destination = {};
+  if (isMergeableObject(target)) {
+    Object.keys(target).forEach(function (key) {
+      destination[key] = cloneIfNecessary(target[key], optionsArgument);
+    });
+  }
+  Object.keys(source).forEach(function (key) {
+    if (!isMergeableObject(source[key]) || !target[key]) {
+      destination[key] = cloneIfNecessary(source[key], optionsArgument);
+    } else {
+      destination[key] = deepmerge(target[key], source[key], optionsArgument);
+    }
+  });
+  return destination;
+};
+
+const deepmerge = function (target, source, optionsArgument) {
+  let array = Array.isArray(source);
+  let options = optionsArgument || { arrayMerge: defaultArrayMerge };
+  let arrayMerge = options.arrayMerge || defaultArrayMerge;
+
+  if (array) {
+    return Array.isArray(target) ? arrayMerge(target, source, optionsArgument) : cloneIfNecessary(source, optionsArgument);
+  } else {
+    return mergeObject(target, source, optionsArgument);
+  }
+};
+
+const deepmergeAll = function deepmergeAll(array, optionsArgument) {
+  if (!Array.isArray(array) || array.length < 2) {
+    throw new Error('first argument should be an array with at least two elements');
+  }
+
+  // we are sure there are at least 2 values, so it is safe to have no initial value
+  return array.reduce(function(prev, next) {
+    return deepmerge(prev, next, optionsArgument);
+  });
+};
+
+const mergeFormDataFields = function(name, clusterArr,clusterName,formData,uiSpecification){
+  let data = {},
+    obj = [];
+  let config = uiSpecification;
+  _.keys(clusterArr).map((x) => {
+    if (name || clusterName === x) {
+      const nestedFields = function(configList){
+        obj = configList.map((list) => {
+          if(list.fields){
+            nestedFields(list.fields);
+          }
+          _.keys(clusterArr[x].hints).map(k => {
+            const nestedKeys = function(pk){
+              if (pk.indexOf('.') !== -1) {
+                let mk = pk.split('.');
+                mk.length > 1 ? mk.splice(0, 1) : '' ;
+                nestedKeys(mk.join('.'));
+              } else if (list.fieldName === pk) {
+                if (_.isArray(clusterArr[x].hints[k]) && (name || clusterName) === x) {
+                  list.options = clusterArr[x].hints[k].map(v => {
+                    return {fieldName: v, uiName: v};
+                  });
+                  if (list.hint && list.hint.toLowerCase().indexOf("override") !== -1) {
+                    if (formData[k]) {
+                      if (list.options.findIndex((o) => {
+                        return o.fieldName == formData[k];
+                      }) == -1) {
+                        list.options.push({fieldName: formData[k], uiName: formData[k]});
+                      }
+                    }
+                  }
+                } else {
+                  if (!_.isArray(clusterArr[x].hints[k])) {
+                    // if (!formData[k]) this means it has come first time
+                    // OR
+                    // if (!name) this means user had change the cluster name
+                    if (!formData[k] || !name) {
+                      _.set(data,k,_.get(formData,k,clusterArr[x].hints[k]));
+                    }
+                  }
+                }
+              }
+            };
+            nestedKeys(k);
+          });
+          data.clusters = clusterArr[name || clusterName].cluster.name;
+          return list;
+        });
+      };
+      nestedFields(config);
+    }
+  });
+  const tempData = this.deepmerge(formData,data);
+  return {obj,tempData};
+};
+
 export default {
   sortArray,
   numberToMilliseconds,
@@ -360,5 +487,13 @@ export default {
   scrollMe,
   validateURL,
   convertMillsecondsToSecond,
-  validateJSON
+  validateJSON,
+  isMergeableObject,
+  emptyTarget,
+  cloneIfNecessary,
+  defaultArrayMerge,
+  mergeObject,
+  deepmerge,
+  deepmergeAll,
+  mergeFormDataFields
 };

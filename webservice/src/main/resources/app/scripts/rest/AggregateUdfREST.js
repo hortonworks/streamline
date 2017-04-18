@@ -34,7 +34,34 @@ const AggregateUdfREST = {
     options = options || {};
     options.method = options.method || 'GET';
     options.credentials = 'same-origin';
-    return fetch(baseUrl + 'streams/udfs' + id, options)
+    return fetch(baseUrl + 'streams/udfs/' + id, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  postUdf(options) {
+    options = options || {};
+    options.method = options.method || 'POST';
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'streams/udfs', options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  putUdf(id, options) {
+    options = options || {};
+    options.method = options.method || 'PUT';
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'streams/udfs/' + id, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  deleteUdf(id, options) {
+    options = options || {};
+    options.method = options.method || 'DELETE';
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'streams/udfs/' + id, options)
       .then((response) => {
         return response.json();
       });

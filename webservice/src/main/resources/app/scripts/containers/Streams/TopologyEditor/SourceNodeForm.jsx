@@ -173,46 +173,21 @@ export default class SourceNodeForm extends Component {
   }
 
   updateClusterFields(name) {
-    const {clusterArr, clusterName, streamObj, formData} = this.state;
-    let data = {},
-      obj = [];
-    let config = this.state.configJSON;
-    _.keys(clusterArr).map((x) => {
-      if (name || clusterName === x) {
-        obj = config.map((list) => {
-          _.keys(clusterArr[x].hints).map(k => {
-            if (list.fieldName === k) {
-              if (_.isArray(clusterArr[x].hints[k]) && (name || clusterName) === x) {
-                list.options = clusterArr[x].hints[k].map(v => {
-                  return {fieldName: v, uiName: v};
-                });
-                if (list.hint && list.hint.toLowerCase().indexOf("override") !== -1) {
-                  if (formData[k]) {
-                    if (list.options.findIndex((o) => {
-                      return o.fieldName == formData[k];
-                    }) == -1) {
-                      list.options.push({fieldName: formData[k], uiName: formData[k]});
-                    }
-                  }
-                }
-              } else {
-                if (!_.isArray(clusterArr[x].hints[k])) {
-                  // if (!formData[k]) this means it has come first time
-                  // OR
-                  // if (!name) this means user had change the cluster name
-                  if (!formData[k] || !name) {
-                    data[k] = clusterArr[x].hints[k];
-                  }
-                }
-              }
-            }
-          });
-          data.clusters = clusterArr[name || clusterName].cluster.name;
-          return list;
-        });
-      }
-    });
-    const tempData = Object.assign({}, this.state.formData, data);
+    const {clusterArr, clusterName, streamObj, formData,configJSON} = this.state;
+    let tempFormData = _.cloneDeep(formData);
+
+    /*
+      Utils.mergeFormDataFields method accept params
+      name =  name of cluster
+      clusterArr = clusterArr array
+      tempFormData = formData is fields of form
+      configJSON = fields shown on ui depends on there options
+
+      This method is responsible for showing default value of form fields
+      and prefetch the value if its already configure
+    */
+    const {obj,tempData} = Utils.mergeFormDataFields(name,clusterArr, clusterName, tempFormData, configJSON);
+
     this.setState({configJSON: obj, formData: tempData});
   }
 

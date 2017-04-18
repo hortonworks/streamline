@@ -124,10 +124,10 @@ class ImportTopology extends Component {
           </div>
         </div>
         <div className="form-group">
-          <label data-stest="topologyNameLabel">Topology Name
+          <label data-stest="topologyNameLabel">Application Name
           </label>
           <div>
-            <input type="text" className="form-control" name="name" title="Topology Name" ref="topologyName"/>
+            <input type="text" className="form-control" name="name" title="Application Name" ref="topologyName"/>
           </div>
         </div>
         <div className="form-group">

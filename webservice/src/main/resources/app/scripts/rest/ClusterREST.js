@@ -119,6 +119,33 @@ const ClusterREST = {
       .then((response) => {
         return response.json();
       });
+  },
+  postNotifier(options) {
+    options = options || {};
+    options.method = options.method || 'POST';
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'notifiers', options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  putNotifier(id, options) {
+    options = options || {};
+    options.method = options.method || 'PUT';
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'notifiers/' + id, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  deleteNotifier(id, options) {
+    options = options || {};
+    options.method = options.method || 'DELETE';
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'notifiers/' + id, options)
+      .then((response) => {
+        return response.json();
+      });
   }
 };
 
