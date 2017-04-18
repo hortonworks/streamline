@@ -123,7 +123,12 @@ public class WindowedQueryBolt extends JoinBolt {
     }
 
     private static String dropStreamLineEventPrefix(String flattenedKey) {
-        return flattenedKey.substring(flattenedKey.indexOf('.')+1);
+        int pos = flattenedKey.indexOf(EVENT_PREFIX);
+        if (pos==0)
+            return flattenedKey.substring(EVENT_PREFIX.length());
+        if (pos>0)
+            return flattenedKey.substring(0,pos) + flattenedKey.substring(pos+EVENT_PREFIX.length());
+        return flattenedKey;
     }
 
     public void withWindowConfig(Window windowConfig) throws IOException {
