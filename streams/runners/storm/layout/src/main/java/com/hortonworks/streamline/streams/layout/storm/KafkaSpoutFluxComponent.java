@@ -138,7 +138,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
                                                           (String) conf.get(TopologyLayoutConstants.SCHEMA_REGISTRY_URL_KEY),
                                                           kafkaSource != null ? kafkaSource.getId() : "");
         addToComponents(createComponent(configInstanceId,
-                                        "java.util.HashMap",
+                                        "com.hortonworks.streamline.streams.layout.storm.KafkaSourceScheme$Config",
                                         null,
                                         constructorArgs,
                                         null));
