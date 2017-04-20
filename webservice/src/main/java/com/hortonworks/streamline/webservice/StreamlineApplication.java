@@ -23,6 +23,7 @@ import com.hortonworks.registries.common.ServletFilterConfiguration;
 import com.hortonworks.streamline.cache.Cache;
 import com.hortonworks.streamline.common.Constants;
 import com.hortonworks.streamline.common.ModuleRegistration;
+import com.hortonworks.streamline.common.security.authenticator.Login;
 import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.common.util.ReflectionHelper;
 import com.hortonworks.streamline.storage.CacheBackedStorageManager;
@@ -53,6 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.security.auth.login.LoginException;
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
@@ -105,6 +107,8 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
         setupCustomTrustStore(configuration);
 
         addServletFilters(configuration, environment);
+
+        Login login = getLoginImpl(configuration);
     }
 
     private void addServletFilters(StreamlineConfiguration configuration, Environment environment) {
@@ -125,6 +129,28 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
             }
         } else {
             LOG.info("No servlet filters configured");
+        }
+    }
+
+    private Login getLoginImpl (StreamlineConfiguration streamlineConfiguration) {
+        LoginConfiguration loginConfiguration = streamlineConfiguration.getLoginConfiguration();
+        Login login = null;
+        if (loginConfiguration == null) {
+            return login;
+        }
+        try {
+            login = (Login) Class.forName(loginConfiguration.getClassName()).newInstance();
+            login.configure(loginConfiguration.getParams() != null ? loginConfiguration.getParams() : new HashMap<String, Object>(), "StreamlineServer");
+            try {
+                login.login();
+                return login;
+            } catch (LoginException e) {
+                LOG.error("Unable to login using login configuration {}", loginConfiguration);
+                throw new RuntimeException(e);
+            }
+        } catch (InstantiationException|IllegalAccessException|ClassNotFoundException e) {
+            LOG.error("Unable to instantiate loginImpl using login configuration {}", loginConfiguration);
+            throw new RuntimeException(e);
         }
     }
 

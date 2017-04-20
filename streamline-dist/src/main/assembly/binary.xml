@@ -144,6 +144,11 @@
             <destName>streamline-env.sh</destName>
         </file>
         <file>
+            <source>${project.basedir}./conf/streamline_jaas.conf</source>
+            <outputDirectory>/conf</outputDirectory>
+            <destName>streamline_jaas.conf</destName>
+        </file>
+        <file>
             <source>${project.basedir}./LICENSE</source>
             <outputDirectory>/</outputDirectory>
         </file>

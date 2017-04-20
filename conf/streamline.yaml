@@ -84,6 +84,14 @@ logging:
       timeZone: UTC
       maxFileSize: 50MB
 
+#loginConfiguration:
+#  className: "com.hortonworks.streamline.common.security.authenticator.KerberosLogin"
+#  params:
+#      kinit.cmd: "/usr/local/bin/kinit"
+#      ticket.renew.window.factor: "0.8"
+#      ticket.renew.jitter: "0.05"
+#      min.time.before.relogin: "60000"
+
 #servletFilters:
 # - className: "com.hortonworks.registries.auth.server.AuthenticationFilter"
 #   params:

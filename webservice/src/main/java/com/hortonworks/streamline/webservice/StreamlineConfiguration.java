@@ -71,6 +71,8 @@ public class StreamlineConfiguration extends Configuration {
 
     private List<ServletFilterConfiguration> servletFilters;
 
+    private LoginConfiguration loginConfiguration;
+
     public String getCatalogRootUrl () {
         return catalogRootUrl;
     }
@@ -147,4 +149,13 @@ public class StreamlineConfiguration extends Configuration {
     public void setServletFilters(List<ServletFilterConfiguration> servletFilters) {
         this.servletFilters = servletFilters;
     }
+
+    public LoginConfiguration getLoginConfiguration () {
+        return loginConfiguration;
+    }
+
+    public void setLoginConfiguration (LoginConfiguration loginConfiguration) {
+        this.loginConfiguration = loginConfiguration;
+    }
+
 }
