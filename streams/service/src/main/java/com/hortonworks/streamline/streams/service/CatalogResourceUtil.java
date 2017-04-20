@@ -115,6 +115,7 @@ public final class CatalogResourceUtil {
     }
 
     static TopologyDetailedResponse enrichTopology(Topology topology,
+                                                   String asUser,
                                                    Integer latencyTopN,
                                                    EnvironmentService environmentService,
                                                    TopologyActionsService actionsService,
@@ -137,9 +138,9 @@ public final class CatalogResourceUtil {
             }
 
             try {
-                String runtimeTopologyId = actionsService.getRuntimeTopologyId(topology);
-                TopologyMetrics.TopologyMetric topologyMetric = metricsService.getTopologyMetric(topology);
-                List<Pair<String, Double>> latenciesTopN = metricsService.getTopNAndOtherComponentsLatency(topology, latencyTopN);
+                String runtimeTopologyId = actionsService.getRuntimeTopologyId(topology, asUser);
+                TopologyMetrics.TopologyMetric topologyMetric = metricsService.getTopologyMetric(topology, asUser);
+                List<Pair<String, Double>> latenciesTopN = metricsService.getTopNAndOtherComponentsLatency(topology, asUser, latencyTopN);
 
                 detailedResponse = new TopologyDetailedResponse(topology, TopologyRunningStatus.RUNNING, namespaceName);
                 detailedResponse.setRuntime(new TopologyRuntimeResponse(runtimeTopologyId, topologyMetric, latenciesTopN));
@@ -151,7 +152,7 @@ public final class CatalogResourceUtil {
                             if (TopologyStateFactory.getInstance().getTopologyState(state.getName()) == TopologyStates.TOPOLOGY_STATE_DEPLOYED) {
                                 try {
                                     LOG.info("Force killing streamline topology since its not alive in the cluster");
-                                    actionsService.killTopology(topology);
+                                    actionsService.killTopology(topology, asUser);
                                 } catch (Exception ex) {
                                     LOG.error("Error trying to kill topology", ex);
                                 }

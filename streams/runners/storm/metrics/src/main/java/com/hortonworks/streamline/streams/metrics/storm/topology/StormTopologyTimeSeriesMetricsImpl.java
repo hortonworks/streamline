@@ -68,20 +68,20 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
     }
 
     @Override
-    public Map<Long, Double> getCompleteLatency(TopologyLayout topology, Component component, long from, long to) {
+    public Map<Long, Double> getCompleteLatency(TopologyLayout topology, Component component, long from, long to, String asUser) {
         assertTimeSeriesQuerierIsSet();
 
-        String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology.getId(), topology.getName());
+        String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology.getId(), topology.getName(), asUser);
         String stormComponentName = getComponentName(component);
 
         return queryComponentMetrics(stormTopologyName, stormComponentName, StormMappedMetric.completeLatency, from, to);
     }
 
     @Override
-    public Map<String, Map<Long, Double>> getkafkaTopicOffsets(TopologyLayout topology, Component component, long from, long to) {
+    public Map<String, Map<Long, Double>> getkafkaTopicOffsets(TopologyLayout topology, Component component, long from, long to, String asUser) {
         assertTimeSeriesQuerierIsSet();
 
-        String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology.getId(), topology.getName());
+        String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology.getId(), topology.getName(), asUser);
         String stormComponentName = getComponentName(component);
 
         String topicName = findKafkaTopicName(topology, component);
@@ -101,10 +101,10 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
     }
 
     @Override
-    public TimeSeriesComponentMetric getTopologyStats(TopologyLayout topology, long from, long to) {
+    public TimeSeriesComponentMetric getTopologyStats(TopologyLayout topology, long from, long to, String asUser) {
         assertTimeSeriesQuerierIsSet();
 
-        String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology.getId(), topology.getName());
+        String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology.getId(), topology.getName(), asUser);
 
         Map<String, Map<Long, Double>> stats = ParallelStreamUtil.execute(() ->
                 Arrays.asList(STATS_METRICS)
@@ -116,10 +116,10 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
     }
 
     @Override
-    public TimeSeriesComponentMetric getComponentStats(TopologyLayout topology, Component component, long from, long to) {
+    public TimeSeriesComponentMetric getComponentStats(TopologyLayout topology, Component component, long from, long to, String asUser) {
         assertTimeSeriesQuerierIsSet();
 
-        String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology.getId(), topology.getName());
+        String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology.getId(), topology.getName(), asUser);
         String stormComponentName = getComponentName(component);
 
         Map<String, Map<Long, Double>> componentStats = ParallelStreamUtil.execute(() ->

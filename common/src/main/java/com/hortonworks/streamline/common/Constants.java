@@ -32,4 +32,5 @@ public class Constants {
     public static final String CONFIG_STREAMS_MODULE = "streams";
     public static final String CONFIG_SUBJECT = "subject";
 
+    public static final String JAAS_STREAMLINE_APP_CONFIG_ENTRY_NAME = "StreamlineServer";
 }

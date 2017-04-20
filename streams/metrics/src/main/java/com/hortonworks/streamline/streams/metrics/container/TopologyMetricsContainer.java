@@ -112,7 +112,8 @@ public class TopologyMetricsContainer extends NamespaceAwareContainer<TopologyMe
                     namespace.getName() + "(" + namespace.getId() + ")");
         }
 
-        Component uiServer = getComponent(streamingEngineService, COMPONENT_NAME_STORM_UI_SERVER);
+        Component uiServer = getComponent(streamingEngineService, COMPONENT_NAME_STORM_UI_SERVER)
+                .orElseThrow(() -> new RuntimeException(streamingEngine + " doesn't have " + COMPONENT_NAME_STORM_UI_SERVER + " as component"));
         String uiHost = uiServer.getHosts().get(0);
         Integer uiPort = uiServer.getPort();
 
@@ -131,7 +132,8 @@ public class TopologyMetricsContainer extends NamespaceAwareContainer<TopologyMe
                     namespace.getName() + "(" + namespace.getId() + ")");
         }
 
-        Component metricsCollector = getComponent(timeSeriesDBService, COMPONENT_NAME_METRICS_COLLECTOR);
+        Component metricsCollector = getComponent(timeSeriesDBService, COMPONENT_NAME_METRICS_COLLECTOR)
+                .orElseThrow(() -> new RuntimeException(timeSeriesDB + " doesn't have " + COMPONENT_NAME_METRICS_COLLECTOR + " as component"));
         String metricsCollectorHost = metricsCollector.getHosts().get(0);
         Integer metricsCollectorPort = metricsCollector.getPort();
 

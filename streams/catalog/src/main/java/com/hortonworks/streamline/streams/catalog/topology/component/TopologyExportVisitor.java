@@ -98,7 +98,7 @@ public final class TopologyExportVisitor extends TopologyDagVisitor {
             }
         } catch (Exception e) {
             throw new RuntimeException(
-                    String.format("Unexpected exception thrown while trying to add the rule %d",
+                    String.format("Unexpected exception thrown while trying to add the rule %s",
                             rulesProcessor.getId()),
                     e);
         }

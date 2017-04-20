@@ -44,40 +44,40 @@ public class TopologyMetricsService implements ContainingNamespaceAwareContainer
         this.topologyMetricsContainer = new TopologyMetricsContainer(environmentService);
     }
 
-    public Map<String, TopologyMetrics.ComponentMetric> getTopologyMetrics(Topology topology) throws IOException {
+    public Map<String, TopologyMetrics.ComponentMetric> getTopologyMetrics(Topology topology, String asUser) throws IOException {
         TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
-        return topologyMetrics.getMetricsForTopology(CatalogToLayoutConverter.getTopologyLayout(topology));
+        return topologyMetrics.getMetricsForTopology(CatalogToLayoutConverter.getTopologyLayout(topology), asUser);
     }
 
-    public Map<Long, Double> getCompleteLatency(Topology topology, TopologyComponent component, long from, long to) throws Exception {
+    public Map<Long, Double> getCompleteLatency(Topology topology, TopologyComponent component, long from, long to, String asUser) throws Exception {
         TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
-        return topologyMetrics.getCompleteLatency(CatalogToLayoutConverter.getTopologyLayout(topology), CatalogToLayoutConverter.getComponentLayout(component), from, to);
+        return topologyMetrics.getCompleteLatency(CatalogToLayoutConverter.getTopologyLayout(topology), CatalogToLayoutConverter.getComponentLayout(component), from, to, asUser);
     }
 
-    public TopologyTimeSeriesMetrics.TimeSeriesComponentMetric getTopologyStats(Topology topology, Long from, Long to) throws IOException {
+    public TopologyTimeSeriesMetrics.TimeSeriesComponentMetric getTopologyStats(Topology topology, Long from, Long to, String asUser) throws IOException {
         TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
-        return topologyMetrics.getTopologyStats(CatalogToLayoutConverter.getTopologyLayout(topology), from, to);
+        return topologyMetrics.getTopologyStats(CatalogToLayoutConverter.getTopologyLayout(topology), from, to, asUser);
     }
 
-    public TopologyTimeSeriesMetrics.TimeSeriesComponentMetric getComponentStats(Topology topology, TopologyComponent component, Long from, Long to) throws IOException {
+    public TopologyTimeSeriesMetrics.TimeSeriesComponentMetric getComponentStats(Topology topology, TopologyComponent component, Long from, Long to, String asUser) throws IOException {
         TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
-        return topologyMetrics.getComponentStats(CatalogToLayoutConverter.getTopologyLayout(topology), CatalogToLayoutConverter.getComponentLayout(component), from, to);
+        return topologyMetrics.getComponentStats(CatalogToLayoutConverter.getTopologyLayout(topology), CatalogToLayoutConverter.getComponentLayout(component), from, to, asUser);
     }
 
-    public Map<String, Map<Long, Double>> getKafkaTopicOffsets(Topology topology, TopologyComponent component, Long from, Long to) throws IOException {
+    public Map<String, Map<Long, Double>> getKafkaTopicOffsets(Topology topology, TopologyComponent component, Long from, Long to, String asUser) throws IOException {
         TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
-        return topologyMetrics.getkafkaTopicOffsets(CatalogToLayoutConverter.getTopologyLayout(topology), CatalogToLayoutConverter.getComponentLayout(component), from, to);
+        return topologyMetrics.getkafkaTopicOffsets(CatalogToLayoutConverter.getTopologyLayout(topology), CatalogToLayoutConverter.getComponentLayout(component), from, to, asUser);
     }
 
-    public TopologyMetrics.TopologyMetric getTopologyMetric(Topology topology) throws IOException {
+    public TopologyMetrics.TopologyMetric getTopologyMetric(Topology topology, String asUser) throws IOException {
         TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
-        return topologyMetrics.getTopologyMetric(CatalogToLayoutConverter.getTopologyLayout(topology));
+        return topologyMetrics.getTopologyMetric(CatalogToLayoutConverter.getTopologyLayout(topology), asUser);
     }
 
-    public List<Pair<String, Double>> getTopNAndOtherComponentsLatency(Topology topology, int nOfTopN) throws IOException {
+    public List<Pair<String, Double>> getTopNAndOtherComponentsLatency(Topology topology, String asUser, int nOfTopN) throws IOException {
         TopologyMetrics topologyMetrics = getTopologyMetricsInstance(topology);
         Map<String, TopologyMetrics.ComponentMetric> metricsForTopology = topologyMetrics
-                .getMetricsForTopology(CatalogToLayoutConverter.getTopologyLayout(topology));
+                .getMetricsForTopology(CatalogToLayoutConverter.getTopologyLayout(topology), asUser);
 
         List<Pair<String, Double>> topNAndOther = new ArrayList<>();
 

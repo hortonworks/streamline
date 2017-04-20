@@ -20,6 +20,7 @@ import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
 import com.hortonworks.streamline.streams.catalog.Service;
+import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -96,15 +98,27 @@ public abstract class NamespaceAwareContainer<T> {
         return services;
     }
 
-    protected Component getComponent(Service service, String componentName) {
+    protected Optional<Component> getComponent(Service service, String componentName) {
         Collection<Component> allComponents = environmentService.listComponents(service.getId());
 
         List<Component> components = allComponents.stream().filter(x -> x.getName().equals(componentName)).collect(toList());
         if (components == null || components.isEmpty()) {
-            throw new RuntimeException(service.getName() + " doesn't have " + componentName + " as component");
+            return Optional.empty();
         }
 
-        return components.get(0);
+        return Optional.of(components.get(0));
+    }
+
+    protected Optional<ServiceConfiguration> getServiceConfiguration(Service service, String serviceConfigurationName) {
+        Collection<ServiceConfiguration> allServiceConfigurations = environmentService.listServiceConfigurations(service.getId());
+
+        List<ServiceConfiguration> configurations = allServiceConfigurations.stream()
+                .filter(x -> x.getName().equals(serviceConfigurationName)).collect(toList());
+        if (configurations == null || configurations.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(configurations.get(0));
     }
 
     protected T instantiate(String className) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
