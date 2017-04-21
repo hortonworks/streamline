@@ -710,7 +710,10 @@ class TopologyEditorContainer extends Component {
               ? FSReactToastr.info(
                 <CommonNotification flag="error" content={`Please create atleast one Test Case to configure ${nodeText}`}/>, '', toastOpt)
               : this.refs.NodeModal.show()
-        : this.refs.NodeModal.show();
+        : (this.node.currentType.toLowerCase() === 'rt-join' && currentEdges.length !== 2)
+          ? FSReactToastr.info(
+            <CommonNotification flag="error" content={`Please connected atleast two streams for configuring ${this.node.uiname} processor`}/>, '', toastOpt)
+          :  this.refs.NodeModal.show();
         this.updateGraphMethod = updateGraphMethod;
       });
     }
@@ -1329,7 +1332,7 @@ class TopologyEditorContainer extends Component {
         {/* NodeModal for Development Mode for source*/}
         <Modal ref="NodeModal" onKeyPress={this.handleKeyPress.bind(this)} bsSize={this.processorNode && nodeType.toLowerCase() !== 'join'
           ? "large"
-          : null} dialogClassName={nodeType.toLowerCase() === 'join' || nodeType.toLowerCase() === 'window' || nodeType.toLowerCase() === 'projection'
+          : null} dialogClassName={nodeType.toLowerCase() === 'join' || nodeType.toLowerCase() === 'window' || nodeType.toLowerCase() === 'projection' || nodeType.toLowerCase() === 'rt-join'
           ? "modal-xl"
           : "modal-fixed-height"} btnOkDisabled={this.state.testRunActivated} data-title={<Editable ref="editableNodeName" inline={true}
         resolve={this.handleSaveNodeName.bind(this)}

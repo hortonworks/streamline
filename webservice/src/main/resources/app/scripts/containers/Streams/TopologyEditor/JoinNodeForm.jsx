@@ -208,21 +208,6 @@ export default class JoinNodeForm extends Component {
     });
   }
 
-  createOutputFieldsObjArr(outputFieldsArr,outputFieldsList){
-    return _.map(outputFieldsArr, (k) => {
-      let keyPath = '', keyname = '';
-      if(k.includes('.')){
-        let kp = k.replace(':','.').split('.');
-        keyPath = kp.slice(0,kp.length-1).join('.');
-        keyname = kp[kp.length-1];
-      } else {
-        keyPath = k.split(':')[0];
-        keyname = k.split(':')[1];
-      }
-      return _.find(outputFieldsList, {keyPath : keyPath , name : keyname});
-    });
-  }
-
   /*
     populateOutputStreamsFromServer Method accept the Object send from the getDataFromParentFormContext
     When the JoinProcessor has been already configured
@@ -292,7 +277,7 @@ export default class JoinNodeForm extends Component {
     });
 
     // get the keyObj from the outputFieldsList for the particular key
-    const outputKeysObjArr = this.createOutputFieldsObjArr(outputKeysAFormServer,outputFieldsList);
+    const outputKeysObjArr = ProcessorUtils.createOutputFieldsObjArr(outputKeysAFormServer,outputFieldsList);
 
     stateObj.outputKeysObjArr = outputKeysObjArr;
 
@@ -735,13 +720,17 @@ export default class JoinNodeForm extends Component {
       fromKey = this.formatNestedField(fromStreamObj);
     }
 
+    const tempGroupData = _.cloneDeep(outputGroupByDotKeys);
+    const tempStreamArr = _.cloneDeep(inputStreamsArr);
+    const modifyGroup = ProcessorUtils.modifyGroupArrKeys(tempGroupData,tempStreamArr);
+
     let configObj = {
       from: {
         stream: joinFromStreamName,
         key: fromKey
       },
       joins: [],
-      outputKeys: _.flattenDeep(outputGroupByDotKeys),
+      outputKeys: modifyGroup,
       window: {
         windowLength: {
           class: intervalType
@@ -788,7 +777,7 @@ export default class JoinNodeForm extends Component {
     }
 
     // outputStreams data is formated for the server
-    const streamFields  = this.generateOutputStreams(outputStreamFields,0);
+    const streamFields  = this.generateOutputStreams(this.streamData.fields,0);
 
     if(this.joinProcessorNode.outputStreams.length > 0){
       this.joinProcessorNode.outputStreams[0].fields = streamFields;

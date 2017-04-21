@@ -260,17 +260,86 @@ const normalizationProjectionKeys = function(projectionsArr,fieldList){
   And replce it with dots example "streams.address.city"
   return the array
 */
-const modifyGroupKeyByDots = function(groupArr){
+const modifyGroupKeyByDots = function(groupArr,string){
   let dottedKeys = [];
   _.map(groupArr, (k) => {
     let t = k.replace(/\']\['/g, '.').replace("['"," ").replace("']"," ").split(" ");
     const streamId = t[0];
     t.length > 1 ? t.splice(0,1) : '';
-    dottedKeys.push(streamId+':'+_.compact(t));
+    dottedKeys.push(string ?  t.length > 1 ? streamId+'.'+_.compact(t) : _.compact(t)[0] : streamId+':'+_.compact(t));
   });
   return dottedKeys;
 };
 
+const modifyGroupArrKeys = function(tempGroupData,tempStreamArr){
+  let tempGroupArr = [],tempGroup = _.cloneDeep(tempGroupData);
+  _.map(tempGroup, (groupKey,i) => {
+    const pStreamName = groupKey.substr(0 ,groupKey.indexOf(':'));
+    const cStreamArr = groupKey.substr(groupKey.indexOf(':') + 1,groupKey.length).split('.');
+    const nestedFieldCheck = function(streamList,streamName){
+      _.map(streamList, (list) => {
+        if(list.fields){
+          nestedFieldCheck(list.fields,streamName);
+        } else {
+          if(list.name === streamName){
+            tempGroupArr.push(streamName+'_'+i);
+          }
+        }
+      });
+    };
+    if(tempGroupArr.length){
+      if(tempGroupArr.length === 1 ){
+        const {dataVal,_index} = _splitString(tempGroupArr[0]);
+        tempGroup[_index] = dataVal;
+      }
+      tempGroupArr = [];
+    }
+    nestedFieldCheck(tempStreamArr,cStreamArr[cStreamArr.length-1]);
+  });
+  if(tempGroupArr.length === 1 ){
+    const {dataVal,_index} = _splitString(tempGroupArr[0]);
+    tempGroup[_index] = dataVal;
+  }
+  return tempGroup;
+};
+
+const _splitString = function(string){
+  const _index = string.substr(string.lastIndexOf('_')+1,string.length);
+  const dataVal = string.substr(0,string.lastIndexOf('_'));
+  return {dataVal,_index};
+};
+
+const findNestedObj = function(streamList,streamName){
+  let obj={};
+  const nestedObj = function(streamArr,str){
+    _.find(streamArr, (stream) => {
+      if(stream.fields){
+        nestedObj(stream.fields,str);
+      } else {
+        stream.name === str ? obj = stream : '';
+      }
+    });
+  };
+  nestedObj(streamList,streamName);
+  return obj;
+};
+
+const createOutputFieldsObjArr=  function(outputFieldsArr,outputFieldsList){
+  return _.map(outputFieldsArr, (k) => {
+    let keyPath = '', keyname = '';
+    if(k.includes('.')){
+      let kp = k.replace(':','.').split('.');
+      keyPath = kp.slice(0,kp.length-1).join('.');
+      keyname = kp[kp.length-1];
+    } else {
+      if(k.split(':').length > 1){
+        keyPath = k.split(':')[0];
+        keyname = k.split(':')[1];
+      }
+    }
+    return k.split(':').length > 1 ? _.find(outputFieldsList, {keyPath : keyPath , name : keyname}) : _.find(outputFieldsList, {name : k});
+  });
+};
 
 
 export default {
@@ -280,5 +349,8 @@ export default {
   getKeysAndGroupKey,
   getKeyList,
   normalizationProjectionKeys,
-  modifyGroupKeyByDots
+  modifyGroupKeyByDots,
+  modifyGroupArrKeys,
+  findNestedObj,
+  createOutputFieldsObjArr
 };
