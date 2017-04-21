@@ -39,8 +39,10 @@ public final class Constants {
     public static class Druid {
         public static final String SERVICE_NAME = "DRUID";
         public static final String CONF_TYPE_COMMON_RUNTIME = "common.runtime"; // common.runtime.properties
+        public static final String CONF_TYPE_DRUID_OVERLOAD = "druid-overlord";
         public static final String PROPERTY_KEY_ZK_SERVICE_HOSTS = "druid.zk.service.host";
         public static final String PROPERTY_KEY_INDEXING_SERVICE_NAME = "druid.selectors.indexing.serviceName";
         public static final String PROPERTY_KEY_DISCOVERY_CURATOR_PATH = "druid.discovery.curator.path";
+        public static final String PROPERTY_KEY_SERVICE_NAME = "druid.service";
     }
 }
