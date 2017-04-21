@@ -95,18 +95,29 @@ public class SecurityCatalogService {
     }
 
     public Role removeRole(Long roleId) {
-        Set<Role> childRoles = getChildRoles(roleId);
-        if (!childRoles.isEmpty()) {
-            throw new IllegalStateException("Role has child roles: " + childRoles);
+        // check if role is part of any parent roles, if so parent role should be deleted first.
+        Set<Role> parentRoles = getParentRoles(roleId);
+        if (!parentRoles.isEmpty()) {
+            throw new IllegalStateException("Role is a child role of the following parent role(s): " + parentRoles +
+                    ". Parent roles must be deleted first.");
         }
+
+        // check if role has any users
         List<QueryParam> qps = QueryParam.params(UserRole.ROLE_ID, String.valueOf(roleId));
         Collection<UserRole> userRoles = listUserRoles(qps);
         if (!userRoles.isEmpty()) {
             throw new IllegalStateException("Role has users");
         }
+
+        // remove child role associations
+        qps = QueryParam.params(RoleHierarchy.PARENT_ID, String.valueOf(roleId));
+        Collection<RoleHierarchy> roleHierarchies = dao.find(RoleHierarchy.NAMESPACE, qps);
+        LOG.info("Removing child role association for role id {}", roleId);
+        roleHierarchies.forEach(rh -> removeChildRole(roleId, rh.getChildId()));
+
         // remove permissions assigned to role
         qps = QueryParam.params(AclEntry.SID_ID, String.valueOf(roleId), AclEntry.SID_TYPE, AclEntry.SidType.ROLE.toString());
-        LOG.debug("Removing ACL entries for role id {}", roleId);
+        LOG.info("Removing ACL entries for role id {}", roleId);
         listAcls(qps).forEach(aclEntry -> removeAcl(aclEntry.getId()));
         Role role = new Role();
         role.setId(roleId);
@@ -200,6 +211,16 @@ public class SecurityCatalogService {
             return dao.remove(new StorableKey(User.NAMESPACE, userToRemove.getPrimaryKey()));
         }
         throw new IllegalArgumentException("No user with id: " + userId);
+    }
+
+    private Set<Role> getParentRoles(Long childRoleId) {
+        List<QueryParam> qps = QueryParam.params(RoleHierarchy.CHILD_ID, String.valueOf(childRoleId));
+        Collection<RoleHierarchy> roleHierarchies = dao.find(RoleHierarchy.NAMESPACE, qps);
+        Set<Role> res = new HashSet<>();
+        roleHierarchies.forEach(rh -> {
+            res.add(getRole(rh.getParentId()));
+        });
+        return res;
     }
 
     public Set<Role> getChildRoles(Long parentRoleId) {
