@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS topology_component_bundle (
     transformationClass TEXT,
     timestamp  BIGINT,
     bundleJar TEXT,
-    builtin CHAR(4),
+    builtin CHAR(5),
     mavenDeps TEXT,
     PRIMARY KEY (id)
 );
@@ -169,6 +169,7 @@ CREATE TABLE IF NOT EXISTS notifier (
      timestamp  BIGINT,
      properties TEXT,
      fieldValues TEXT,
+     builtin CHAR(5),
      PRIMARY KEY (id)
 );
 
@@ -310,6 +311,7 @@ CREATE TABLE IF NOT EXISTS udf (
     digest VARCHAR(256) NOT NULL,
     argTypes VARCHAR(256) NOT NULL,
     returnType VARCHAR(256) NOT NULL,
+    builtin CHAR(5),
     PRIMARY KEY (id)
 );
 
