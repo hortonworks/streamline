@@ -66,7 +66,7 @@ public class TestWindowedQueryBolt {
         ArrayList<Tuple> userStream = makeStreamLineEventStream("users", userFields, users);
         TupleWindow window = makeTupleWindow(userStream);
         WindowedQueryBolt bolt = new WindowedQueryBolt("users", SL_PREFIX + "userId")
-                .selectStreamLine("name,users:city");
+                .selectStreamLine("name,users:city, users:city as cityagain");
         MockCollector collector = new MockCollector();
         bolt.prepare(null, null, collector);
         bolt.execute(window);
@@ -78,11 +78,11 @@ public class TestWindowedQueryBolt {
     @Test
     public void testNestedKeys_StreamLine() throws Exception {
         ArrayList<Tuple> userStream = makeStreamLineEventStream("users", userFields, users);
-        ArrayList<Tuple> cityStream = makeStreamLineEventStream("city", cityFields, cities);
+        ArrayList<Tuple> cityStream = makeStreamLineEventStream("cities", cityFields, cities);
         TupleWindow window = makeTupleWindow(userStream, cityStream);
         WindowedQueryBolt bolt = new WindowedQueryBolt("users", "city")
-                .join("city", "cityName", "users")
-                .selectStreamLine("name,users:city,cities:country");
+                .join("cities", "cityName", "users")
+                .selectStreamLine("name, users:city as city, cities:country");
         MockCollector collector = new MockCollector();
         bolt.prepare(null, null, collector);
         bolt.execute(window);
@@ -97,7 +97,7 @@ public class TestWindowedQueryBolt {
             for (Object field : rec) {
                 Map<String, Object> data = ((StreamlineEvent)field);
                 data.forEach((k,v)-> {
-                    System.out.print(k + ":" + v + ", ");
+                    System.out.print(k + "=" + v + ", ");
                 } );
                 System.out.println();
             }
