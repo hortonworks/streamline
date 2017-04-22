@@ -29,6 +29,8 @@ import org.apache.storm.bolt.JoinBolt;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /* This class adapts Storm's JoinBolt for StreamLine.
@@ -38,8 +40,10 @@ import java.util.concurrent.TimeUnit;
  *     - The 'streamline-event.' prefix is hidden from appearing in names of output fields (of projection)
  */
 public class WindowedQueryBolt extends JoinBolt {
+    protected String[] aliasedOutputFieldNames;
 
     final static String EVENT_PREFIX = StreamlineEvent.STREAMLINE_EVENT + ".";
+    private String[] rawCommaSeparatedOutputKeys;
 
     public WindowedQueryBolt(String streamId, String key) {
         super(Selector.STREAM, streamId, EVENT_PREFIX + key);
@@ -60,10 +64,16 @@ public class WindowedQueryBolt extends JoinBolt {
         return (WindowedQueryBolt) super.leftJoin(newStream, EVENT_PREFIX + key, priorStream);
     }
 
+    // aliasedOutputFieldNames
     public WindowedQueryBolt selectStreamLine(String commaSeparatedKeys) {
-        // prefix each key with "streamline-event."
-        String prefixedKeyNames = convertToStreamLineKeys(commaSeparatedKeys);
+        this.rawCommaSeparatedOutputKeys = commaSeparatedKeys.split(",");
+        String noAlias = stripAliases(commaSeparatedKeys);
+        String prefixedKeyNames = convertToStreamLineKeys(noAlias); // prefix each key with "streamline-event."
         return (WindowedQueryBolt) select(prefixedKeyNames);
+    }
+
+    private static String stripAliases(String commaSeparatedKeys) {
+        return  commaSeparatedKeys.replaceAll(" +as +[\\w-]+", "");
     }
 
     /**
@@ -75,20 +85,22 @@ public class WindowedQueryBolt extends JoinBolt {
     }
 
 
-    // Prefixes each key with 'streamline-event.' Example:
-    //   arg = "stream1:key1, key2, stream2:key3.key4, key5"
+    // Prefixes each key with 'streamline-event.' and strips out aliases. Example:
+    //   arg = "stream1:key1 as k1, key2 as k2, stream2:key3.key4, key5"
     //   result  = "stream1:streamline-event.key1, streamline-event.key2, stream2:streamline-event.key3.key4, streamline-event.key5"
-    private static String convertToStreamLineKeys(String commaSeparatedKeys) {
+    private String convertToStreamLineKeys(String commaSeparatedKeys) {
         String[] keyNames = commaSeparatedKeys.replaceAll("\\s+","").split(",");
 
         String[] prefixedKeys = new String[keyNames.length];
 
         for (int i = 0; i < keyNames.length; i++) {
             FieldSelector fs = new FieldSelector(keyNames[i]);
-            if (fs.getStreamName()==null)
-                prefixedKeys[i] =  EVENT_PREFIX + String.join(".", fs.getField());
-            else
-                prefixedKeys[i] =  fs.getStreamName() + ":" + EVENT_PREFIX + String.join(".", fs.getField());
+            if (fs.getStreamName()==null) {
+                prefixedKeys[i] = EVENT_PREFIX + String.join(".", fs.getField());
+            }
+            else {
+                prefixedKeys[i] = fs.getStreamName() + ":" + EVENT_PREFIX + String.join(".", fs.getField());
+            }
         }
 
         return String.join(", ", prefixedKeys);
@@ -102,16 +114,18 @@ public class WindowedQueryBolt extends JoinBolt {
 
     // Overrides projection behavior to customize for handling of "streamline-event." prefix
     protected ArrayList<Object> doProjectionStreamLine(ArrayList<Tuple> tuplesRow, FieldSelector[] projectionKeys) {
+        String finalOutputFieldNames[] = new String[rawCommaSeparatedOutputKeys.length];
+        for ( int i = 0; i < rawCommaSeparatedOutputKeys.length; ++i) {
+            finalOutputFieldNames[i] = getAliasOrKeyName(rawCommaSeparatedOutputKeys[i]);
+        }
 
         StreamlineEventImpl.Builder eventBuilder = StreamlineEventImpl.builder();
         // Todo: note to self: may be able to optimize this ... perhaps inner loop can be outside to avoid rescanning tuples
         for ( int i = 0; i < projectionKeys.length; i++ ) {
-            String flattenedKey = projectionKeys[i].getOutputName();
-            String outputKeyName = dropStreamLineEventPrefix(flattenedKey); // drops the "streamline-event." prefix
             for ( Tuple cell : tuplesRow ) {
                 Object field = lookupField(projectionKeys[i], cell) ;
                 if (field != null) {
-                    eventBuilder.put(outputKeyName, field);
+                    eventBuilder.put(finalOutputFieldNames[i], field);
                     break;
                 }
             }
@@ -122,6 +136,21 @@ public class WindowedQueryBolt extends JoinBolt {
         return resultRow;
     }
 
+    // Return the alias if any, or else the unaliased keyname
+    // Examples:
+    //      "stream1:key1.innerkey as  inner"  => "inner"
+    //      "stream1:key1 "  => "stream1:key1"
+    //      "key1 "  => "key1"
+    private static String getAliasOrKeyName(String keySpec) {
+        Pattern pattern =  Pattern.compile(" +as +(\\w+)");
+        Matcher result = pattern.matcher(keySpec);
+        if(result.find())
+            return result.group(1);
+        else  if (keySpec.matches(".* +as\\b.*"))
+            throw new IllegalArgumentException(" 'as' clause missing the field alias: " + keySpec);
+        return keySpec;
+    }
+
     private static String dropStreamLineEventPrefix(String flattenedKey) {
         int pos = flattenedKey.indexOf(EVENT_PREFIX);
         if (pos==0)
@@ -130,6 +159,7 @@ public class WindowedQueryBolt extends JoinBolt {
             return flattenedKey.substring(0,pos) + flattenedKey.substring(pos+EVENT_PREFIX.length());
         return flattenedKey;
     }
+
 
     public void withWindowConfig(Window windowConfig) throws IOException {
         if (windowConfig.getWindowLength() instanceof Window.Duration) {

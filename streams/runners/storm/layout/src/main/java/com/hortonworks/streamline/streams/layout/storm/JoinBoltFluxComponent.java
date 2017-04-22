@@ -43,7 +43,7 @@ import java.util.Map;
     {"type" : "left",  "stream": "s3", "key":"k3", "with": "s1"},
     {"type" : "inner", "stream": "s4", "key":"k4", "with": "s2"}
   ],
-  "outputKeys" : [ "k1", "k2" ],
+  "outputKeys" : [ "k1", "k2 as key2" ],
   "window" : {"windowLength" : {"class":".Window$Count", "count":100}, "slidingInterval":{"class":".Window$Count", "count":100}, "tsField":null, "lagMs":0},
   "outputStream" : "joinedStream1"
 }
