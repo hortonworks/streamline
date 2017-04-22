@@ -227,7 +227,7 @@ export default class RealTimeJoinNodeProcessor extends Component{
     }
 
     // set the outputKeys And outputFieldsObj for parentContext
-    const outputKeysAFormServer = this.rtJoinProcessorNode.config.properties.outputKeys;
+    const outputKeysAFormServer = this.rtJoinProcessorNode.config.properties.outputKeys.map((fieldName)=>{return fieldName.split(' as ')[0];});
 
     // remove the dot from the keys
     stateObj.outputKeys = _.map(outputKeysAFormServer, (key) => {
@@ -279,6 +279,9 @@ export default class RealTimeJoinNodeProcessor extends Component{
     and return last value of an array
   */
   splitNestedKey(key) {
+    if(key.search(' as ') !== -1){
+      key = key.split(' as ')[0];
+    }
     const a = key.replace(':','.').split('.');
     if (a.length > 1) {
       return a[a.length - 1];
@@ -535,6 +538,15 @@ export default class RealTimeJoinNodeProcessor extends Component{
     const tempStreamArr = _.cloneDeep(inputStreamsArr);
     const modifyGroup = ProcessorUtils.modifyGroupArrKeys(tempGroupData,tempStreamArr);
 
+    let finalOutputKeys = modifyGroup.map((keyName)=>{
+      if(keyName.search(':') === -1){
+        return keyName;
+      } else {
+        let fieldName = keyName.split(':')[1];
+        return keyName +' as ' + fieldName;
+      }
+    });
+
     let configObj = {
       from :  {"stream": rtJoinStreamObj.streamId},
       join : {
@@ -543,7 +555,7 @@ export default class RealTimeJoinNodeProcessor extends Component{
         dropDuplicates : dropDuplicate
       },
       equal : equalTemp,
-      outputKeys : modifyGroup,
+      outputKeys : finalOutputKeys,
       outputStream : this.streamData.streamId
     };
 
