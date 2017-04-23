@@ -48,14 +48,6 @@
         "tooltip": "A unique string that identifies the consumer group this source belongs to. It is used to keep track of consumer offset",
         "type": "string"
       },
-//      {
-//        "uiName": "Scheme class",
-//        "fieldName": "schemeClassName",
-//        "isOptional": false,
-//        "tooltip": "Class name of MultiScheme implementation which is used in deserializing ByteBuffer record into tuples.",
-//        "type": "string",
-//        "defaultValue": "com.hortonworks.streamline.streams.runtime.storm.spout.AvroKafkaSpoutScheme"
-//      },
       {
         "uiName": "Kafka fetch size",
         "fieldName": "fetchSizeBytes",
