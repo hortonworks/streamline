@@ -6,7 +6,7 @@ Documentation and tutorials can be found on the Streaming Analytics Manager docs
 
 ## Getting Help
 
-Registry users or devs should send a message to [Registry Google Group] (https://groups.google.com/forum/#!forum/streamline-users)
+SAM users or devs should send a message to [Registry Google Group] (https://groups.google.com/forum/#!forum/streamline-users)
 
 ## License
 
