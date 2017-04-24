@@ -2,7 +2,7 @@
 Develop and deploy Streaming Analytics applications visually with bindings for streaming engine and multiple source/sinks, rich set of streaming operators and operational lifecycle management. Streaming Analytics Manager makes it easy to develop, monitor streaming applications and also provides analytics of data thats being processed by streaming application.
 
 ## Documentation
-Documentation and tutorials can be found on the Registry docs [ReadMeDocs] (http://streamline.readthedocs.io/en/latest/	)
+Documentation and tutorials can be found on the Streaming Analytics Manager docs [ReadMeDocs] (http://streamline.readthedocs.io/en/latest/	)
 
 ## Getting Help
 
