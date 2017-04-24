@@ -38,10 +38,12 @@ import java.util.Map;
  */
 public class AvroStreamsSnapshotDeserializer extends AvroSnapshotDeserializer {
 
-    @Override
-    protected Object doDeserialize(InputStream payloadInputStream, SchemaMetadata schemaMetadata,
-                                   Integer writerSchemaVersion, Integer readerSchemaVersion) throws SerDesException {
-        Object deserializedObj = super.doDeserialize(payloadInputStream, schemaMetadata, writerSchemaVersion, readerSchemaVersion);
+    protected Object doDeserialize(InputStream payloadInputStream,
+                                   byte protocolId,
+                                   SchemaMetadata schemaMetadata,
+                                   Integer writerSchemaVersion,
+                                   Integer readerSchemaVersion) throws SerDesException {
+        Object deserializedObj = super.doDeserialize(payloadInputStream, protocolId, schemaMetadata, writerSchemaVersion, readerSchemaVersion);
 
         ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
         Object values = convertValue(deserializedObj);

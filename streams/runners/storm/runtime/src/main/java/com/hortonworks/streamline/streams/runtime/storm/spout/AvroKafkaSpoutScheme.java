@@ -86,9 +86,7 @@ public class AvroKafkaSpoutScheme implements KafkaSourceScheme {
     @Override
     public Iterable<List<Object>> deserialize(ByteBuffer byteBuffer) {
         Map<String, Object> keyValues = (Map<String, Object>) deserializer()
-                .deserialize(new ByteBufferInputStream(byteBuffer),
-                             schemaMetadata,
-                             null);
+                .deserialize(new ByteBufferInputStream(byteBuffer),null);
 
         StreamlineEvent streamlineEvent = StreamlineEventImpl.builder().putAll(keyValues).dataSourceId(dataSourceId).build();
         return Collections.<List<Object>>singletonList(new Values(streamlineEvent));

@@ -18,11 +18,14 @@ package com.hortonworks.streamline.streams.runtime;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.registries.schemaregistry.SchemaIdVersion;
-import com.hortonworks.streamline.streams.runtime.storm.spout.AvroStreamsSnapshotDeserializer;
 import com.hortonworks.registries.schemaregistry.SchemaMetadata;
+import com.hortonworks.registries.schemaregistry.SchemaMetadataInfo;
 import com.hortonworks.registries.schemaregistry.SchemaVersionKey;
-import com.hortonworks.registries.schemaregistry.serdes.avro.AvroSnapshotSerializer;
 import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
+import com.hortonworks.registries.schemaregistry.serdes.avro.AvroSnapshotSerializer;
+import com.hortonworks.streamline.streams.runtime.storm.spout.AvroStreamsSnapshotDeserializer;
+import mockit.Expectations;
+import mockit.Mocked;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
@@ -42,8 +45,14 @@ import java.util.Map;
 public class AvroStreamsSnapshotDeserializerTest {
     private static final Logger LOG = LoggerFactory.getLogger(AvroStreamsSnapshotDeserializerTest.class);
 
+
+    @Mocked
+    SchemaRegistryClient mockSchemaRegistryClient;
+
     @Test
     public void testAvroPayloadConversions() throws Exception {
+
+
 
         try (InputStream schemaStream = AvroStreamsSnapshotDeserializerTest.class.getResourceAsStream("/avro/complex.avsc")) {
 
@@ -53,18 +62,27 @@ public class AvroStreamsSnapshotDeserializerTest {
             LOG.info("Generated record [{}]", inputRecord);
             byte[] serializedBytes = customAvroSerializer.customSerialize(inputRecord);
 
+            SchemaMetadata schemaMetadata = new SchemaMetadata.Builder("topic-1").type("avro").schemaGroup("kafka").build();
+
+            new Expectations() {
+                {
+                    mockSchemaRegistryClient.getSchemaMetadataInfo(anyLong);
+                    result = new SchemaMetadataInfo(schemaMetadata);
+                }
+            };
+
             AvroStreamsSnapshotDeserializer avroStreamsSnapshotDeserializer = new AvroStreamsSnapshotDeserializer() {
                 @Override
                 protected Schema getSchema(SchemaVersionKey schemaVersionKey) {
                     return schema;
                 }
             };
+
             Map<String, String> config = Collections.singletonMap(SchemaRegistryClient.Configuration.SCHEMA_REGISTRY_URL.name(),
                                                                   "http://localhost:8080/api/v1");
             avroStreamsSnapshotDeserializer.init(config);
 
-            SchemaMetadata schemaMetadata = new SchemaMetadata.Builder("topic-1").type("avro").schemaGroup("kafka").build();
-            Object deserializedObject = avroStreamsSnapshotDeserializer.deserialize(new ByteArrayInputStream(serializedBytes), schemaMetadata, 1);
+            Object deserializedObject = avroStreamsSnapshotDeserializer.deserialize(new ByteArrayInputStream(serializedBytes), 1);
 
             Map<Object, Object> map = (Map<Object, Object>) deserializedObject;
             String deserializedJson = new ObjectMapper().writeValueAsString(map);
