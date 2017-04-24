@@ -5,6 +5,7 @@
   "builtin": true,
   "streamingEngine": "STORM",
   "transformationClass": "com.hortonworks.streamline.streams.layout.storm.NotificationBoltFluxComponent",
+  "fieldHintProviderClass": "com.hortonworks.streamline.streams.cluster.bundle.impl.NotificationSinkBundleHintProvider",
   "topologyComponentUISpecification": {
     "fields": [
       {

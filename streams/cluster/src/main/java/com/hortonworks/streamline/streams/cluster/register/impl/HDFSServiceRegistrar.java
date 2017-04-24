@@ -42,6 +42,11 @@ public class HDFSServiceRegistrar extends AbstractServiceRegistrar {
     }
 
     @Override
+    protected List<ServiceConfiguration> createServiceConfigurations(Config config) {
+        return Collections.emptyList();
+    }
+
+    @Override
     protected boolean validateComponents(List<Component> components) {
         // no need to check components
         return true;

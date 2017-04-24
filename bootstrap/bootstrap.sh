@@ -166,6 +166,7 @@ function add_all_bundles {
     post /servicebundles ${service_dir}/hdfs-bundle.json
     post /servicebundles ${service_dir}/hbase-bundle.json
     post /servicebundles ${service_dir}/hive-bundle.json
+    post /servicebundles ${service_dir}/email-bundle.json
 
     # === anonymous user ===
     post /users ${user_role_dir}/user_anon.json

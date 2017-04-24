@@ -41,6 +41,8 @@ public abstract class AbstractServiceRegistrar implements ManualServiceRegistrar
 
     protected abstract List<Component> createComponents(Config config, Map<String, String> flattenConfigMap);
 
+    protected abstract List<ServiceConfiguration> createServiceConfigurations(Config config);
+
     protected abstract boolean validateComponents(List<Component> components);
 
     protected abstract boolean validateServiceConfigurations(List<ServiceConfiguration> serviceConfigurations);
@@ -59,6 +61,17 @@ public abstract class AbstractServiceRegistrar implements ManualServiceRegistrar
         List<ServiceConfiguration> configurations = new ArrayList<>();
         Map<String, String> flattenConfigMap = new HashMap<>();
 
+        List<ServiceConfiguration> serviceConfigurations = createServiceConfigurations(config);
+        if (serviceConfigurations != null && !serviceConfigurations.isEmpty()) {
+            serviceConfigurations.forEach(sc -> {
+                configurations.add(sc);
+                try {
+                    flattenConfigMap.putAll(sc.getConfigurationMap());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
 
         for (ConfigFileInfo configFileInfo : configFileInfos) {
             Map<String, String> configMap = readConfigFile(configFileInfo);
@@ -103,6 +116,9 @@ public abstract class AbstractServiceRegistrar implements ManualServiceRegistrar
 
         return service;
     }
+
+
+
 
     private String getConfType(String fileName) {
         // treat confType as the file name without extension
