@@ -26,7 +26,6 @@ import {
 import {BtnEdit, BtnDelete} from '../../components/ActionButtons';
 import FSReactToastr from '../../components/FSReactToastr';
 import Modal from '../../components/FSModal';
-import {pageSize} from '../../utils/Constants';
 import {FormGroup, InputGroup, FormControl, Button} from 'react-bootstrap';
 import Utils from '../../utils/Utils';
 import CommonNotification from '../../utils/CommonNotification';
@@ -84,7 +83,7 @@ export default class UDFContainer extends Component {
             <CommonNotification flag="error" content={udf.responseMessage}/>, '', toastOpt);
         } else {
           FSReactToastr.success(
-            <strong>Udf deleted successfully</strong>
+            <strong>UDF deleted successfully</strong>
           );
         }
       }).catch((err) => {
@@ -119,11 +118,15 @@ export default class UDFContainer extends Component {
   render() {
     let {entities, filterValue, editData, fetchLoader} = this.state;
     const filteredEntities = Utils.filterByName(entities, filterValue);
+    const pageSize = 8;
     return (
       <div>
         {fetchLoader
           ? <CommonLoaderSign imgName={"default"}/>
           : <div>
+            <a href="javascript:void(0);" className="hb pull-right success actionDropdown" data-target="" onClick={this.handleAdd}>
+              <i className="fa fa-plus"></i>
+            </a>
             <div className="row">
               <div className="page-title-box clearfix">
                 {((filterValue && filteredEntities.length === 0) || filteredEntities !== 0)
@@ -140,11 +143,6 @@ export default class UDFContainer extends Component {
                 </div>
                 : ''
                 }
-                {/*<div id="add-udf" className="pull-right">
-                <a href="javascript:void(0);" className="hb lg success actionDropdown" data-target="" onClick={this.handleAdd}>
-                  <i className="fa fa-plus"></i>
-                </a>
-                </div>*/}
               </div>
             </div>
             {filteredEntities.length === 0
@@ -162,7 +160,7 @@ export default class UDFContainer extends Component {
                           <Th column="className">Class Name</Th>
                           <Th column="argTypes">Argument Types</Th>
                           <Th column="returnType">Return Type</Th>
-                          {/*<Th column="actions">Actions</Th>*/}
+                          <Th column="actions">Actions</Th>
                         </Thead>
                         {filteredEntities.map((obj, i) => {
                           return (
@@ -182,8 +180,8 @@ export default class UDFContainer extends Component {
                                 </div>
                               </Td>
                               <Td column="returnType">{obj.returnType ? obj.returnType : '-'}</Td>
-                              {/*<Td column="actions">
-                                {obj.className === "builtin" ?
+                              <Td column="actions">
+                                {obj.builtin === true ?
                                 ''
                                 :
                                 <div className="btn-action">
@@ -191,7 +189,7 @@ export default class UDFContainer extends Component {
                                   <BtnDelete callback={this.handleDeleteUDF.bind(this, obj.id)}/>
                                 </div>
                                 }
-                              </Td>*/}
+                              </Td>
                             </Tr>
                           );
                         })}

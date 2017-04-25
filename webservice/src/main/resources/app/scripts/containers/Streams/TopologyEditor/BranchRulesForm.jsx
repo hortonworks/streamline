@@ -153,26 +153,18 @@ class RuleFormula extends Component {
     let {fields, fields2Arr} = this.state;
     return (
       <div key={i + 1} className="row form-group">
-        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Rule logical operators</Popover>}>
-          <div className="col-sm-2">
-            <Select value={d.logicalOp} options={this.logicalOperator} onChange={this.handleChange.bind(this, 'logicalOp', i)} labelKey="name" valueKey="name"/>
-          </div>
-        </OverlayTrigger>
-        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Field name</Popover>}>
-          <div className="col-sm-3">
-            <Select value={d.field1} options={fields} onChange={this.handleChange.bind(this, 'field1', i)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
-          </div>
-        </OverlayTrigger>
-        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Rule operations</Popover>}>
-          <div className="col-sm-3">
-            <Select value={d.operator} options={this.operators} onChange={this.handleChange.bind(this, 'operator', i)} labelKey="label" valueKey="name"/>
-          </div>
-        </OverlayTrigger>
-        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Field name</Popover>}>
-          <div className="col-sm-3">
-            <Creatable value={d.field2} options={fields2Arr} onChange={this.handleChange.bind(this, 'field2', i)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
-          </div>
-        </OverlayTrigger>
+        <div className="col-sm-2">
+          <Select placeholder="Logical operators" value={d.logicalOp} options={this.logicalOperator} onChange={this.handleChange.bind(this, 'logicalOp', i)} labelKey="name" valueKey="name"/>
+        </div>
+        <div className="col-sm-3">
+          <Select placeholder="Field name" value={d.field1} options={fields} onChange={this.handleChange.bind(this, 'field1', i)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+        </div>
+        <div className="col-sm-3">
+          <Select placeholder="Rule operations" value={d.operator} options={this.operators} onChange={this.handleChange.bind(this, 'operator', i)} labelKey="label" valueKey="name"/>
+        </div>
+        <div className="col-sm-3">
+          <Creatable placeholder="Field name" value={d.field2} options={fields2Arr} onChange={this.handleChange.bind(this, 'field2', i)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+        </div>
         <div className="col-sm-1">
           <button className="btn btn-danger btn-sm" type="button" onClick={this.handleRowDelete.bind(this, i)}>
             <i className="fa fa-times"></i>
@@ -186,25 +178,21 @@ class RuleFormula extends Component {
     return (
       <div key={1} className="row form-group">
         <div className="col-sm-2">
-          <label>Create
-            <span className="text-danger">*</span>
-          </label>
+          <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Create</Popover>}>
+            <label>Create
+              <span className="text-danger">*</span>
+            </label>
+          </OverlayTrigger>
         </div>
-        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Field name</Popover>}>
-          <div className="col-sm-3">
-            <Select value={d.field1} options={fields} onChange={this.handleChange.bind(this, 'field1', 0)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
-          </div>
-        </OverlayTrigger>
-        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Rule operations</Popover>}>
-          <div className="col-sm-3">
-            <Select value={d.operator} options={this.operators} onChange={this.handleChange.bind(this, 'operator', 0)} labelKey="label" valueKey="name"/>
-          </div>
-        </OverlayTrigger>
-        <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Field name</Popover>}>
-          <div className="col-sm-3">
-            <Creatable value={d.field2} options={fields2Arr} onChange={this.handleChange.bind(this, 'field2', 0)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
-          </div>
-        </OverlayTrigger>
+        <div className="col-sm-3">
+          <Select placeholder="Field name" value={d.field1} options={fields} onChange={this.handleChange.bind(this, 'field1', 0)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+        </div>
+        <div className="col-sm-3">
+          <Select placeholder="Rule operations" value={d.operator} options={this.operators} onChange={this.handleChange.bind(this, 'operator', 0)} labelKey="label" valueKey="name"/>
+        </div>
+        <div className="col-sm-3">
+          <Creatable placeholder="Field name" value={d.field2} options={fields2Arr} onChange={this.handleChange.bind(this, 'field2', 0)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+        </div>
         <div className="col-sm-1">
           <button className="btn btn-success btn-sm" type="button" onClick={this.handleRowAdd.bind(this)}>
             <i className="fa fa-plus"></i>
@@ -612,30 +600,30 @@ export default class RulesForm extends Component {
     return (
       <form className="modal-form rule-modal-form form-overflow">
         <div className="form-group">
-          <label>Rule Name
-            <span className="text-danger">*</span>
-          </label>
+          <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Name for rule</Popover>}>
+            <label>Rule Name
+              <span className="text-danger">*</span>
+            </label>
+          </OverlayTrigger>
           <div>
-            <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Name for rule</Popover>}>
             <input name="name" placeholder="Name" onChange={this.handleNameChange.bind(this)} type="text" className={this.state.showNameError
               ? "form-control invalidInput"
               : "form-control"} value={this.state.name} required={true}/>
-            </OverlayTrigger>
           </div>
           {this.state.showInvalidName
             ? <p className="text-danger">Name is already present.</p>
             : ''}
         </div>
         <div className="form-group">
-          <label>Description
-            <span className="text-danger">*</span>
-          </label>
+          <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Description for rule</Popover>}>
+            <label>Description
+              <span className="text-danger">*</span>
+            </label>
+          </OverlayTrigger>
           <div>
-            <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Description for rule</Popover>}>
             <textArea name="description" className={this.state.showDescriptionError
               ? "form-control invalidInput"
               : "form-control"} onChange={this.handleValueChange.bind(this)} value={this.state.description} required={true}/>
-            </OverlayTrigger>
           </div>
         </div>
         <RuleFormula ref="RuleFormula" fields={this.props.parsedStream.fields} streamId={this.props.parsedStream.streamId} condition={this.state.condition}/>

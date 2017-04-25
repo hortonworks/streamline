@@ -84,7 +84,8 @@ export default class EdgeConfigContainer extends Component {
       sourceNode: {},
       isEdit: data.edge.edgeId
         ? true
-        : false
+        : false,
+      rulesObjArr : []
     };
     this.state = obj;
     this.setData();
@@ -173,6 +174,7 @@ export default class EdgeConfigContainer extends Component {
                 ? this.state.streamId
                 : streamName;
               this.setState({
+                rulesObjArr :  results,
                 showRules: showRules,
                 rulesArr: rulesArr,
                 rules: ruleObject
@@ -192,7 +194,7 @@ export default class EdgeConfigContainer extends Component {
             streamId = this.state.isEdit
               ? this.state.streamId
               : streamName;
-            this.setState({streamId: streamId});
+            this.setState({rulesObjArr : results,streamId: streamId});
           }
         });
       }
@@ -328,11 +330,13 @@ export default class EdgeConfigContainer extends Component {
       rules,
       sourceNode,
       grouping,
-      groupingFields
+      groupingFields,
+      rulesObjArr
     } = this.state;
     let {topologyId, versionId} = this.props.data;
     let streamObj = _.find(streamsArr, {value: streamId});
     let nodeType = this.props.data.edge.source.currentType.toLowerCase();
+    const edgeArr = this.props.data.edges;
     let edgeData = {
       fromId: this.props.data.edge.source.nodeId,
       toId: this.props.data.edge.target.nodeId,
@@ -348,98 +352,106 @@ export default class EdgeConfigContainer extends Component {
     }
     if (nodeType === 'window' || nodeType === 'rule' || nodeType === 'branch') {
       if (sourceNode.config.properties.rules && sourceNode.config.properties.rules.length > 0) {
-        let rulesPromiseArr = [];
         let saveRulesPromiseArr = [];
         let type = nodeType === 'window'
           ? 'windows'
           : (nodeType === 'rule'
             ? 'rules'
             : 'branchrules');
-        sourceNode.config.properties.rules.map((id) => {
-          rulesPromiseArr.push(TopologyREST.getNode(topologyId, versionId, type, id));
-        });
-        Promise.all(rulesPromiseArr).then((results) => {
-          results.map((result) => {
-            let data = result;
-            if (type === 'rules' || type === 'branchrules') {
-              let actionObj = {
-                outputStreams: [streamObj.value]
-              };
-              if (this.props.data.edge.target.currentType.toLowerCase() === 'notification') {
-                actionObj.outputFieldsAndDefaults = sourceNode.config.properties.fieldValues || {};
-                actionObj.notifierName = sourceNode.config.properties.notifierName || '';
-                actionObj.name = 'notifierAction';
-                actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction";
-              } else {
-                actionObj.name = 'transformAction';
-                actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction";
-                actionObj.transforms = [];
-              }
-              let actionName = actionObj.name == 'transformAction'
-                ? 'transform'
-                : 'notifier';
-              let streamID = nodeType + '_' + actionName + '_stream_' + data.id;
-              if (data.name === rules) {
-                let hasActionType = false;
-                let obj = _.find(data.actions, (a) => {
-                  return a.__type === actionObj.__type;
-                });
-                if (obj) {
-                  hasActionType = true;
-                } else if (!hasActionType) {
-                  actionObj.outputStreams = [streamID];
-                  data.actions.push(actionObj);
-                  saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, type, data.id, {body: JSON.stringify(data)}));
-                }
-              } else {
-                let obj = _.find(data.actions, (a) => {
-                  return a.__type === actionObj.__type;
-                });
-                let currentNodeEdges = [];
-                if (obj && this.ruleChanged && this.ruleChanged === data.name) {
-                  data.actions = _.filter(data.actions, (a) => {
-                    return actionObj.__type !== a.__type;
-                  });
-                  saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, type, data.id, {body: JSON.stringify(data)}));
-                }
-              }
-            } else if (type === 'windows') {
-              let actionObj = {
-                outputStreams: [streamObj.value]
-              };
-              if (this.props.data.edge.target.currentType.toLowerCase() === 'notification') {
-                actionObj.outputFieldsAndDefaults = sourceNode.config.properties.fieldValues || {};
-                actionObj.notifierName = sourceNode.config.properties.notifierName || '';
-                actionObj.name = 'notifierAction';
-                actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction";
-              } else {
-                actionObj.name = 'transformAction';
-                actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction";
-                actionObj.transforms = [];
-              }
 
-              let obj = _.find(data.actions, (a) => {
-                return a.outputStreams[0] === streamObj.value && a.__type === actionObj.__type;
-              });
-              let hasActionType = false;
-              if (data.actions.length > 0) {
-                data.actions.map((a) => {
-                  if (a.__type === actionObj.__type) {
-                    hasActionType = true;
-                  }
-                });
-              }
-              if (obj) {
-                obj.outputStreams = [streamObj.value];
-              }
-              if (!obj && !hasActionType) {
-                data.actions.push(actionObj);
-              }
-              saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, type, data.id, {body: JSON.stringify(data)}));
+        _.map(rulesObjArr, (ruleData) => {
+          if(type === 'rules' || type === 'branchrules'){
+            let actionObj = {
+              outputStreams: [streamObj.value]
+            };
+            if (this.props.data.edge.target.currentType.toLowerCase() === 'notification') {
+              actionObj.outputFieldsAndDefaults = sourceNode.config.properties.fieldValues || {};
+              actionObj.notifierName = sourceNode.config.properties.notifierName || '';
+              actionObj.name = 'notifierAction';
+              actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction";
+            } else {
+              actionObj.name = 'transformAction';
+              actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction";
+              actionObj.transforms = [];
             }
-          });
-          Promise.all(saveRulesPromiseArr).then(() => {});
+            let actionName = actionObj.name == 'transformAction'
+              ? 'transform'
+              : 'notifier';
+            let streamID = nodeType + '_' + actionName + '_stream_' + ruleData.id;
+
+            var _obj = _.find(ruleData.actions, (a) => {
+              return a.__type === actionObj.__type;
+            });
+
+            if (ruleData.name === rules) {
+              let hasActionType = false;
+              if (_obj) {
+                hasActionType = true;
+              } else if (!hasActionType) {
+                actionObj.outputStreams = [streamID];
+                ruleData.actions.push(actionObj);
+                saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, type, ruleData.id, {body: JSON.stringify(ruleData)}));
+              }
+            } else {
+              /*
+                when the user change the rules in selection
+                And the ruleData.name !== rules
+                we fetch an tempStreamObj from the streamsArr using streamID
+              */
+              const tempStreamObj = _.find(streamsArr,(stream) => {
+                return stream.value === streamID;
+              });
+              /*
+                we check all the edges of the parentNode
+                which uses the same rules
+                so if the multiStream.length === 1
+                we update the ruleData.action
+              */
+              const multiStream = _.filter(edgeArr, (field) => {return field.streamGrouping.streamId === tempStreamObj.id;});
+              let currentNodeEdges = [];
+              if (_obj && this.ruleChanged && this.ruleChanged === ruleData.name && multiStream.length === 1) {
+                ruleData.actions = _.filter(ruleData.actions, (a) => {
+                  return actionObj.__type !== a.__type;
+                });
+                saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, type, ruleData.id, {body: JSON.stringify(ruleData)}));
+              }
+            }
+          } else if (type === 'windows'){
+            let actionObj = {
+              outputStreams: [streamObj.value]
+            };
+            if (this.props.data.edge.target.currentType.toLowerCase() === 'notification') {
+              actionObj.outputFieldsAndDefaults = sourceNode.config.properties.fieldValues || {};
+              actionObj.notifierName = sourceNode.config.properties.notifierName || '';
+              actionObj.name = 'notifierAction';
+              actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction";
+            } else {
+              actionObj.name = 'transformAction';
+              actionObj.__type = "com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction";
+              actionObj.transforms = [];
+            }
+
+            let obj = _.find(ruleData.actions, (a) => {
+              return a.outputStreams[0] === streamObj.value && a.__type === actionObj.__type;
+            });
+            let hasActionType = false;
+            if (ruleData.actions.length > 0) {
+              ruleData.actions.map((a) => {
+                if (a.__type === actionObj.__type) {
+                  hasActionType = true;
+                }
+              });
+            }
+            if (obj) {
+              obj.outputStreams = [streamObj.value];
+            }
+            if (!obj && !hasActionType) {
+              ruleData.actions.push(actionObj);
+            }
+            saveRulesPromiseArr.push(TopologyREST.updateNode(topologyId, versionId, type, ruleData.id, {body: JSON.stringify(ruleData)}));
+          }
         });
+        Promise.all(saveRulesPromiseArr).then(() => {});
       }
     }
     if (this.state.isEdit) {

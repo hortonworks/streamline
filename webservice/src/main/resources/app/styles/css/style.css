@@ -1766,15 +1766,11 @@ h5.environment-title span, .service-box .service-head h4 span {
   width: 52px;
 }
 
-#add-environment, #add-custom, #add-udf, #add-notifier {
+#add-environment {
   position: absolute;
   right: 90px;
   z-index: 1050;
   top: 50px;
-}
-
-#add-udf, #add-notifier, #add-custom {
- top: 20px;
 }
 
 #addEnvironment .modal-footer {
@@ -2863,4 +2859,7 @@ height: 14px;
     border-color: #3fb046;
     color: #3fb046;
     cursor: pointer;
+}
+.reactable-pagination > tr > td > a{
+  margin-right: 2px;
 }

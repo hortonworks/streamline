@@ -65,6 +65,16 @@ const AggregateUdfREST = {
       .then((response) => {
         return response.json();
       });
+  },
+  getUDFJar(id, options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    options.responseType = 'blob';
+    return fetch(baseUrl + 'streams/udfs/download/' + id, options)
+      .then((response) => {
+        return response.blob();
+      });
   }
 };
 

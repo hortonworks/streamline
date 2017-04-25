@@ -15,6 +15,7 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
+import {FormGroup,InputGroup,FormControl,Button} from 'react-bootstrap';
 import FSReactToastr from '../../components/FSReactToastr';
 import CommonNotification from '../../utils/CommonNotification';
 import {toastOpt} from '../../utils/Constants';
@@ -24,23 +25,41 @@ export default class NotifierForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      'name': props.editData.name || '',
-      'description': props.editData.description || '',
-      'className': props.editData.className || '',
-      'notifierJarFile': null
+      name: props.editData.name || '',
+      description: props.editData.description || '',
+      className: props.editData.className || '',
+      notifierJarFile: null,
+      fileName: props.editData.jarFileName || ''
     };
+    this.fetchData();
+  }
+  fetchData() {
+    let obj = this.state;
+    if(this.props.id) {
+      ClusterREST.getNotifierJar(this.props.id)
+          .then((response)=>{
+            let f = new File([response], this.props.editData.jarFileName);
+            obj.notifierJarFile = f;
+            obj.fileName = this.props.editData.jarFileName;
+            this.setState(obj);
+          });
+    }
   }
   handleValueChange = (e) => {
     let obj = {};
     obj[e.target.name] = e.target.value;
     this.setState(obj);
   }
-  handleOnJarFileChange = (e) => {
-    if (!e.target.files.length || (e.target.files.length && e.target.files[0].name.indexOf('.jar') < 0)) {
-      this.setState({notifierJarFile: null});
-    } else {
-      this.setState({notifierJarFile: e.target.files[0]});
+  handleJarUpload(event) {
+    if (!event.target.files.length || (event.target.files.length && event.target.files[0].name.indexOf('.jar') < 0)) {
+      this.setState(this.state);
+      return;
     }
+    let fileObj = event.target.files[0];
+    this.setState({notifierJarFile: fileObj, fileName: fileObj.name});
+  }
+  handleUpload(e) {
+    this.refs.notifierJarFile.click();
   }
   validateData = () => {
     let validDataFlag = true;
@@ -65,6 +84,7 @@ export default class NotifierForm extends Component {
       description,
       className
     };
+    notifierConfig.builtin = false;
     let formData = new FormData();
     formData.append('notifierJarFile', notifierJarFile);
     formData.append('notifierConfig', new Blob([JSON.stringify(notifierConfig)], {type: 'application/json'}));
@@ -115,7 +135,31 @@ export default class NotifierForm extends Component {
             <span className="text-danger">*</span>
           </label>
           <div>
-            <input type="file" ref="fileUpload" className="form-control" accept=".jar" name="notifierJarFile" title="Upload jar" onChange={this.handleOnJarFileChange}/>
+            <input type="file" name="notifierJarFile" placeholder="Select Jar" accept=".jar" className="hidden-file-input" ref="notifierJarFile"
+              onChange={(event) => {
+                this.handleJarUpload.call(this, event);
+              }}
+              required={true}/>
+            <div>
+              <InputGroup>
+                <InputGroup.Addon className="file-upload">
+                  <Button
+                    type="button"
+                    className="browseBtn btn-primary"
+                    onClick={this.handleUpload.bind(this)}
+                  >
+                    <i className="fa fa-folder-open-o"></i>&nbsp;Browse
+                  </Button>
+                </InputGroup.Addon>
+                <FormControl
+                  type="text"
+                  placeholder="No file chosen"
+                  disabled={true}
+                  value={this.state.fileName}
+                  className={this.state.notifierJarFile == "" ? "form-control invalidInput" : "form-control"}
+                />
+              </InputGroup>
+            </div>
           </div>
         </div>
       </form>

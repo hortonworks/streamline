@@ -16,6 +16,7 @@ import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import Select from 'react-select';
+import {FormGroup,InputGroup,FormControl,Button} from 'react-bootstrap';
 import FSReactToastr from '../../components/FSReactToastr';
 import CommonNotification from '../../utils/CommonNotification';
 import {toastOpt} from '../../utils/Constants';
@@ -25,17 +26,32 @@ export default class UDFForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      'name': props.editData.name || '',
-      'displayName': props.editData.displayName || '',
-      'type': props.editData.type || '',
-      'typeOptions': [{label: 'FUNCTION', value: 'FUNCTION'},
+      name: props.editData.name || '',
+      displayName: props.editData.displayName || '',
+      type: props.editData.type || '',
+      typeOptions: [{label: 'FUNCTION', value: 'FUNCTION'},
         {label: 'AGGREGATE', value: 'AGGREGATE'}
       ],
-      'description': props.editData.description || '',
-      'className': props.editData.className || '',
-      udfJarFile: null
+      description: props.editData.description || '',
+      className: props.editData.className || '',
+      udfJarFile: null,
+      fileName: props.id ? 'UDFFile.jar' : ''
     };
+    this.fetchData();
   }
+
+  fetchData() {
+    let obj = this.state;
+    if(this.props.id) {
+      AggregateUdfREST.getUDFJar(this.props.id)
+          .then((response)=>{
+            let f = new File([response], this.state.fileName);
+            obj.udfJarFile = f;
+            this.setState(obj);
+          });
+    }
+  }
+
   handleValueChange = (e) => {
     let obj = {};
     obj[e.target.name] = e.target.value;
@@ -49,12 +65,18 @@ export default class UDFForm extends Component {
     }
     this.setState(obj);
   }
-  handleOnJarFileChange = (e) => {
-    if (!e.target.files.length || (e.target.files.length && e.target.files[0].name.indexOf('.jar') < 0)) {
-      this.setState({udfJarFile: null});
-    } else {
-      this.setState({udfJarFile: e.target.files[0]});
+
+  handleJarUpload(event) {
+    if (!event.target.files.length || (event.target.files.length && event.target.files[0].name.indexOf('.jar') < 0)) {
+      this.setState(this.state);
+      return;
     }
+    let fileObj = event.target.files[0];
+    this.setState({udfJarFile: fileObj, fileName: fileObj.name});
+  }
+
+  handleUpload(e) {
+    this.refs.udfJarFile.click();
   }
   validateData = () => {
     let validDataFlag = true;
@@ -84,6 +106,7 @@ export default class UDFForm extends Component {
       type,
       className
     };
+    udfConfig.builtin = false;
     let formData = new FormData();
     formData.append('udfJarFile', udfJarFile);
     formData.append('udfConfig', new Blob([JSON.stringify(udfConfig)], {type: 'application/json'}));
@@ -152,7 +175,31 @@ export default class UDFForm extends Component {
             <span className="text-danger">*</span>
           </label>
           <div>
-            <input type="file" ref="fileUpload" className="form-control" accept=".jar" name="udfJarFile" title="Upload jar" onChange={this.handleOnJarFileChange}/>
+            <input type="file" name="udfJarFile" placeholder="Select Jar" accept=".jar" className="hidden-file-input" ref="udfJarFile"
+              onChange={(event) => {
+                this.handleJarUpload.call(this, event);
+              }}
+              required={true}/>
+            <div>
+              <InputGroup>
+                <InputGroup.Addon className="file-upload">
+                  <Button
+                    type="button"
+                    className="browseBtn btn-primary"
+                    onClick={this.handleUpload.bind(this)}
+                  >
+                    <i className="fa fa-folder-open-o"></i>&nbsp;Browse
+                  </Button>
+                </InputGroup.Addon>
+                <FormControl
+                  type="text"
+                  placeholder="No file chosen"
+                  disabled={true}
+                  value={this.state.fileName}
+                  className={this.state.udfJarFile == "" ? "form-control invalidInput" : "form-control"}
+                />
+              </InputGroup>
+            </div>
           </div>
         </div>
       </form>

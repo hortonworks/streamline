@@ -146,6 +146,16 @@ const ClusterREST = {
       .then((response) => {
         return response.json();
       });
+  },
+  getNotifierJar(id, options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    options.responseType = 'blob';
+    return fetch(baseUrl + 'notifiers/download/' + id, options)
+      .then((response) => {
+        return response.blob();
+      });
   }
 };
 

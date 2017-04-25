@@ -26,7 +26,6 @@ import {
 import {BtnEdit, BtnDelete} from '../../components/ActionButtons';
 import FSReactToastr from '../../components/FSReactToastr';
 import Modal from '../../components/FSModal';
-import {pageSize} from '../../utils/Constants';
 import {FormGroup, InputGroup, FormControl, Button} from 'react-bootstrap';
 import Utils from '../../utils/Utils';
 import CommonNotification from '../../utils/CommonNotification';
@@ -119,11 +118,15 @@ export default class NotifierContainer extends Component {
   render() {
     let {entities, filterValue, editData, fetchLoader} = this.state;
     const filteredEntities = Utils.filterByName(entities, filterValue);
+    const pageSize = 8;
     return (
       <div>
         {fetchLoader
           ? <CommonLoaderSign imgName={"default"}/>
           : <div>
+            <a href="javascript:void(0);" className="hb pull-right success actionDropdown" onClick={this.handleAdd}>
+              <i className="fa fa-plus"></i>
+            </a>
             <div className="row">
               <div className="page-title-box clearfix">
                 {((filterValue && filteredEntities.length === 0) || filteredEntities !== 0)
@@ -140,11 +143,6 @@ export default class NotifierContainer extends Component {
                 </div>
                 : ''
                 }
-                {/*<div id="add-notifier" className="pull-right">
-                  <a href="javascript:void(0);" className="hb lg success actionDropdown" onClick={this.handleAdd}>
-                    <i className="fa fa-plus"></i>
-                  </a>
-                </div>*/}
               </div>
             </div>
             {filteredEntities.length === 0
@@ -159,7 +157,7 @@ export default class NotifierContainer extends Component {
                           <Th column="description">Description</Th>
                           <Th column="jarFileName">Jar File Name</Th>
                           <Th column="className">Class Name</Th>
-                          {/*<Th column="actions">Actions</Th>*/}
+                          <Th column="actions">Actions</Th>
                         </Thead>
                         {filteredEntities.map((obj, i) => {
                           return (
@@ -168,12 +166,16 @@ export default class NotifierContainer extends Component {
                               <Td column="description">{obj.description}</Td>
                               <Td column="jarFileName">{obj.jarFileName}</Td>
                               <Td column="className"><div className="wordBreak">{obj.className}</div></Td>
-                              {/*<Td column="actions">
+                              <Td column="actions">
+                              {obj.builtin === true ?
+                                ''
+                                :
                                 <div className="btn-action">
                                   <BtnEdit callback={this.handleEditNotifier.bind(this, obj.id)}/>
                                   <BtnDelete callback={this.handleDeleteNotifier.bind(this, obj.id)}/>
                                 </div>
-                              </Td>*/}
+                              }
+                              </Td>
                             </Tr>
                           );
                         })}

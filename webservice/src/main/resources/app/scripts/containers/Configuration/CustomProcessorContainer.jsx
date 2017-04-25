@@ -165,6 +165,9 @@ export default class CustomProcessorContainer extends Component {
           : <div>
             {this.state.showListing
               ? <div>
+                  <a href="javascript:void(0);" className="hb success pull-right" data-target="#addEnvironment" onClick={this.handleAdd.bind(this)}>
+                    <i className="fa fa-plus"></i>
+                  </a>
                   <div className="row">
                     <div className="page-title-box clearfix">
                       <div className="pull-left col-md-3">
@@ -179,11 +182,6 @@ export default class CustomProcessorContainer extends Component {
                             </FormGroup>
                           : ''
                         }
-                      </div>
-                      <div id="add-custom" className="pull-right">
-                        <a href="javascript:void(0);" className="hb lg success actionDropdown" data-target="#addEnvironment" onClick={this.handleAdd.bind(this)}>
-                          <i className="fa fa-plus"></i>
-                        </a>
                       </div>
                     </div>
                   </div>
