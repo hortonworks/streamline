@@ -40,6 +40,7 @@ import com.hortonworks.streamline.streams.service.metadata.HiveMetadataResource;
 import com.hortonworks.streamline.streams.service.metadata.KafkaMetadataResource;
 import com.hortonworks.streamline.streams.service.metadata.StormMetadataResource;
 
+import javax.security.auth.Subject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -93,7 +94,8 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
                 topologyMetricsService, securityCatalogService));
         result.add(new UDFCatalogResource(authorizer, streamcatalogService, fileStorage));
         result.addAll(getNotificationsRelatedResources(authorizer, streamcatalogService));
-        result.add(new SchemaResource(authorizer, createSchemaRegistryClient()));
+        SchemaRegistryClient schemaRegistryClient = createSchemaRegistryClient();
+        result.add(new SchemaResource(authorizer, schemaRegistryClient, (Subject) config.get(Constants.CONFIG_SUBJECT)));
         result.addAll(getServiceMetadataResources(authorizer, environmentService));
         result.add(new NamespaceCatalogResource(authorizer, streamcatalogService, topologyActionsService, environmentService));
         watchFiles(streamcatalogService);

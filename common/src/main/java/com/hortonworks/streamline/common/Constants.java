@@ -30,5 +30,6 @@ public class Constants {
     public static final String CONFIG_MODULES = "modules";
     public static final String CONFIG_SCHEMA_REGISTRY_URL = "schemaRegistryUrl";
     public static final String CONFIG_STREAMS_MODULE = "streams";
+    public static final String CONFIG_SUBJECT = "subject";
 
 }

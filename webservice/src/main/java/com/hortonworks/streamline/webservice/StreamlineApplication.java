@@ -54,6 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
@@ -95,7 +96,7 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
 
         environment.jersey().register(GenericExceptionMapper.class);
 
-        registerResources(configuration, environment);
+        registerResources(configuration, environment, getSubjectFromLoginImpl(configuration));
 
         if (configuration.isEnableCors()) {
             List<String> urlPatterns = configuration.getCorsUrlPatterns();
@@ -108,7 +109,6 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
 
         addServletFilters(configuration, environment);
 
-        Login login = getLoginImpl(configuration);
     }
 
     private void addServletFilters(StreamlineConfiguration configuration, Environment environment) {
@@ -132,18 +132,16 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
         }
     }
 
-    private Login getLoginImpl (StreamlineConfiguration streamlineConfiguration) {
+    private Subject getSubjectFromLoginImpl (StreamlineConfiguration streamlineConfiguration) {
         LoginConfiguration loginConfiguration = streamlineConfiguration.getLoginConfiguration();
-        Login login = null;
         if (loginConfiguration == null) {
-            return login;
+            return null;
         }
         try {
-            login = (Login) Class.forName(loginConfiguration.getClassName()).newInstance();
+            Login login = (Login) Class.forName(loginConfiguration.getClassName()).newInstance();
             login.configure(loginConfiguration.getParams() != null ? loginConfiguration.getParams() : new HashMap<String, Object>(), "StreamlineServer");
             try {
-                login.login();
-                return login;
+                return login.login().getSubject();
             } catch (LoginException e) {
                 LOG.error("Unable to login using login configuration {}", loginConfiguration);
                 throw new RuntimeException(e);
@@ -228,7 +226,8 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
         return fileStorage;
     }
 
-    private void registerResources(StreamlineConfiguration configuration, Environment environment) throws ConfigException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    private void registerResources(StreamlineConfiguration configuration, Environment environment, Subject subject) throws ConfigException,
+            ClassNotFoundException, IllegalAccessException, InstantiationException {
         StorageManager storageManager = getCacheBackedDao(configuration);
         Collection<Class<? extends Storable>> streamlineEntities = getStreamlineEntities();
         storageManager.registerStorables(streamlineEntities);
@@ -274,6 +273,7 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
             Map<String, Object> initConfig = new HashMap<>(moduleConfiguration.getConfig());
             initConfig.put(Constants.CONFIG_AUTHORIZER, authorizer);
             initConfig.put(Constants.CONFIG_SECURITY_CATALOG_SERVICE, securityCatalogService);
+            initConfig.put(Constants.CONFIG_SUBJECT, subject);
             moduleRegistration.init(initConfig, fileStorage);
             if (moduleRegistration instanceof StorageManagerAware) {
                 LOG.info("Module [{}] is StorageManagerAware and setting StorageManager.", moduleName);
