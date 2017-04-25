@@ -56,21 +56,18 @@ public class KerberosLogin extends AbstractLogin {
      * Percentage of random jitter added to the renewal time
      */
     private double ticketRenewJitter = 0.05;
-    // Regardless of ticketRenewWindowFactor setting above and the ticket expiry time,
-    // thread will not sleep between refresh attempts any less than 1 minute (60*1000 milliseconds = 1 minute).
+    // Regardless of ticketRenewWindowFactor setting above, thread will not sleep between refresh
+    // attempts any less than 1 minute (60*1000 milliseconds = 1 minute) unless it causes expiration.
     // Change the '1' to e.g. 5, to change this to 5 minutes.
     private long minTimeBeforeRelogin = 1 * 60 * 1000;
     private String kinitCmd = "/usr/bin/kinit";
 
     /**
-     * Login constructor. The constructor starts the thread used
-     * to periodically re-login to the Kerberos Authentication Server.
+     * Method to configure this instance with specific properties
      * @param loginContextName
      *               name of section in JAAS file that will be used to login.
      *               Passed as first param to javax.security.auth.login.LoginContext().
      * @param configs configure Login with the given key-value pairs.
-     * @throws javax.security.auth.login.LoginException
-     *               Thrown if authentication fails.
      */
     public void configure(Map<String, ?> configs, final String loginContextName) {
         super.configure(configs, loginContextName);
@@ -88,6 +85,12 @@ public class KerberosLogin extends AbstractLogin {
         }
     }
 
+    /**
+     * Method called once initially to login. It also starts the thread used
+     * to periodically re-login to the Kerberos Authentication Server.
+     * @return
+     * @throws LoginException if login fails
+     */
     @Override
     public LoginContext login() throws LoginException {
         super.login();
@@ -253,7 +256,7 @@ public class KerberosLogin extends AbstractLogin {
         //the Java kerberos login module code, only the kerberos credentials
         //are cleared
         loginContext.logout();
-        //login and also update the subject field of the origin LoginContext to
+        //login and also update the subject field of the original LoginContext to
         //have the new credentials (pass it to the LoginContext constructor)
         loginContext = new LoginContext(loginContextName, loginContext.getSubject());
         log.info("Initiating re-login for {}", principal);
