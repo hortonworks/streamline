@@ -23,6 +23,8 @@ import com.google.common.base.Stopwatch;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.exception.service.exception.request.TopologyAlreadyExistsOnCluster;
+import com.hortonworks.streamline.streams.actions.topology.state.TopologyStateFactory;
+import com.hortonworks.streamline.streams.actions.topology.state.TopologyStates;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import com.hortonworks.streamline.common.util.ParallelStreamUtil;
@@ -35,7 +37,7 @@ import com.hortonworks.streamline.streams.catalog.TopologyVersion;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyData;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
-import com.hortonworks.streamline.streams.storm.common.TopologyNotAliveException;
+import com.hortonworks.streamline.streams.exception.TopologyNotAliveException;
 import com.hortonworks.streamline.streams.metrics.topology.TopologyMetrics;
 import com.hortonworks.streamline.streams.metrics.topology.service.TopologyMetricsService;
 import com.hortonworks.streamline.streams.security.Permission;
@@ -694,6 +696,18 @@ public class TopologyCatalogResource {
             } catch (TopologyNotAliveException e) {
                 LOG.debug("Topology {} is not alive", topology.getId());
                 detailedResponse = new TopologyDetailedResponse(topology, TopologyRunningStatus.NOT_RUNNING, namespaceName);
+                catalogService.getTopologyState(topology.getId())
+                        .ifPresent(state -> {
+                            if (TopologyStateFactory.getInstance().getTopologyState(state.getName()) == TopologyStates.TOPOLOGY_STATE_DEPLOYED) {
+                                try {
+                                    LOG.info("Force killing streamline topology since its not alive in the cluster");
+                                    actionsService.killTopology(topology);
+                                } catch (Exception ex) {
+                                    LOG.error("Error trying to kill topology", ex);
+                                }
+
+                            }
+                        });
             } catch (StormNotReachableException | IOException e) {
                 LOG.error("Storm is not reachable or fail to operate", e);
                 detailedResponse = new TopologyDetailedResponse(topology, TopologyRunningStatus.UNKNOWN, namespaceName);

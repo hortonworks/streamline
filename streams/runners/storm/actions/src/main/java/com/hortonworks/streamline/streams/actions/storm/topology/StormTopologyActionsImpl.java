@@ -34,7 +34,7 @@ import com.hortonworks.streamline.streams.layout.storm.StormTopologyLayoutConsta
 import com.hortonworks.streamline.streams.layout.storm.StormTopologyValidator;
 import com.hortonworks.streamline.streams.storm.common.StormRestAPIClient;
 import com.hortonworks.streamline.streams.storm.common.StormTopologyUtil;
-import com.hortonworks.streamline.streams.storm.common.TopologyNotAliveException;
+import com.hortonworks.streamline.streams.exception.TopologyNotAliveException;
 import org.glassfish.jersey.client.ClientConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,13 +52,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;

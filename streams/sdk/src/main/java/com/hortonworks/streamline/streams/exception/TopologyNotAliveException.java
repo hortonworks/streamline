@@ -13,7 +13,7 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
  **/
-package com.hortonworks.streamline.streams.storm.common;
+package com.hortonworks.streamline.streams.exception;
 
 public class TopologyNotAliveException extends RuntimeException {
   public TopologyNotAliveException(String msg) {

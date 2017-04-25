@@ -17,8 +17,6 @@ package com.hortonworks.streamline.streams.service;
 
 import com.google.common.collect.Lists;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
-import com.hortonworks.streamline.streams.security.StreamlinePrincipal;
-import com.hortonworks.streamline.streams.security.authentication.StreamlineSecurityContext;
 import com.hortonworks.streamline.streams.security.impl.NoopAuthorizer;
 import mockit.Expectations;
 import mockit.Injectable;
@@ -32,7 +30,7 @@ import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
-import com.hortonworks.streamline.streams.storm.common.TopologyNotAliveException;
+import com.hortonworks.streamline.streams.exception.TopologyNotAliveException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
