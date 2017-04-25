@@ -181,7 +181,7 @@ export default class JoinNodeForm extends Component {
       parallelism: configFields.parallelism || 1,
       outputKeys: configFields.outputKeys
         ? configFields.outputKeys.map((key) => {
-          return this.splitNestedKey(key);
+          return ProcessorUtils.splitNestedKey(key);
         })
         : undefined,
       inputStreamsArr: inputStreamFromContext,
@@ -225,7 +225,7 @@ export default class JoinNodeForm extends Component {
     //set value for first row
     if(!_.isEmpty(fromObject)){
       stateObj.joinFromStreamName = fromObject.stream;
-      stateObj.joinFromStreamKey = this.splitNestedKey(fromObject.key);
+      stateObj.joinFromStreamKey = ProcessorUtils.splitNestedKey(fromObject.key);
 
       let selectedStream = _.find(inputStreamsArr, {streamId: fromObject.stream});
       stateObj.joinFromStreamKeys = ProcessorUtils.getSchemaFields(selectedStream.fields, 0, false);
@@ -239,7 +239,7 @@ export default class JoinNodeForm extends Component {
         stateObj.joinStreams[index].type = o.type;
         stateObj.joinStreams[index].stream = o.stream;
         stateObj.joinStreams[index].streamOptions = joinStreamOptions;
-        stateObj.joinStreams[index].key = this.splitNestedKey(o.key);
+        stateObj.joinStreams[index].key = ProcessorUtils.splitNestedKey(o.key);
         stateObj.joinStreams[index].keyOptions = ProcessorUtils.getSchemaFields(joinStreamOptions[0].fields, 0, false);
         stateObj.joinStreams[index].with = o.with;
         stateObj.joinStreams[index].withOptions = this.getStreamObjArray(o.with);
@@ -273,7 +273,7 @@ export default class JoinNodeForm extends Component {
 
     // remove the dot from the keys
     stateObj.outputKeys = _.map(outputKeysAFormServer, (key) => {
-      return this.splitNestedKey(key);
+      return ProcessorUtils.splitNestedKey(key);
     });
 
     // get the keyObj from the outputFieldsList for the particular key
@@ -284,7 +284,7 @@ export default class JoinNodeForm extends Component {
     const keyData = ProcessorUtils.createSelectedKeysHierarchy(outputKeysObjArr,outputFieldsList);
     stateObj.outputStreamFields=[];
     _.map(keyData,(o) => {
-      stateObj.outputStreamFields = _.concat(stateObj.outputStreamFields, o.fields);
+      stateObj.outputStreamFields = _.concat(stateObj.outputStreamFields, o.fields ? o.fields : o);
     });
 
     this.streamData = {
@@ -329,22 +329,6 @@ export default class JoinNodeForm extends Component {
   }
 
   /*
-    splitNestedKey accept string and split with dot ('.')
-    and return last value of an array
-  */
-  splitNestedKey(key) {
-    if(key.search(' as ') !== -1){
-      key = key.split(' as ')[0];
-    }
-    const a = key.replace(':','.').split('.');
-    if (a.length > 1) {
-      return a[a.length - 1];
-    } else {
-      return a[0];
-    }
-  }
-
-  /*
     handleFieldsChange Method accept arr of obj
     And SET
     outputKeys : key of arr used on UI for listing
@@ -367,24 +351,10 @@ export default class JoinNodeForm extends Component {
     }
   }
 
-  selectAllOutputFields = () => {
-    let tempAllFields = [],tempFields = _.cloneDeep(this.fieldsArr);
-    _.map(tempFields, (field ,i) => {
-      if(i === 0){
-        const fd  = ProcessorUtils.getSchemaFields([field], 0,false);
-        tempAllFields = _.filter(fd , (f) => {return f.name !== field.name;});
-      }
-      else {
-        const data = _.filter(field.fields, (obj) => {
-          return _.findIndex(tempAllFields, {name : obj.name}) === -1;
-        });
-        field.fields = data;
-        const fd  = ProcessorUtils.getSchemaFields([field], 0,false);
-        const mergeData = _.filter(fd , (f) => {return f.name !== field.name;});
-        tempAllFields = _.concat(tempAllFields ,mergeData );
-      }
-    });
-    this.setOutputFields(tempAllFields);
+  handleSelectAllOutputFields = () => {
+    let tempFields = _.cloneDeep(this.state.outputFieldsList);
+    const allOutPutFields = ProcessorUtils.selectAllOutputFields(tempFields);
+    this.setOutputFields(allOutPutFields);
   }
 
   setOutputFields = (arr) => {
@@ -392,7 +362,7 @@ export default class JoinNodeForm extends Component {
     const keyData = ProcessorUtils.createSelectedKeysHierarchy(arr,outputFieldsList);
     let tempFieldsArr=[];
     _.map(keyData,(o) => {
-      tempFieldsArr = _.concat(tempFieldsArr, o.fields);
+      tempFieldsArr = _.concat(tempFieldsArr, o.fields ? o.fields : o);
     });
     this.streamData.fields = tempFieldsArr;
 
@@ -671,28 +641,6 @@ export default class JoinNodeForm extends Component {
   }
 
   /*
-    generateOutputStreams accept outputStreamFields
-    and Transform it to new streamObjArr by
-    attaching the streamId to each and every field name
-
-    return streamObjArr {name : "UI", type : "String", optional : false}
-  */
-  generateOutputStreams(fields,level){
-    return fields.map((field) => {
-      let obj = {
-        name: field.name,
-        type: field.type ,
-        optional : false
-      };
-
-      if (field.type === 'NESTED' && field.fields) {
-        obj.fields = this.generateOutputStreams(field.fields, level + 1);
-      }
-      return obj;
-    });
-  }
-
-  /*
     handleSave Method is responsible for joinProcessorNode
     config object is created with fields data example "fromKey = joinFromStreamKey"
     config.join objectArray is created with "type,stream,key,with".
@@ -789,7 +737,7 @@ export default class JoinNodeForm extends Component {
     }
 
     // outputStreams data is formated for the server
-    const streamFields  = this.generateOutputStreams(this.streamData.fields,0);
+    const streamFields  = ProcessorUtils.generateOutputStreamsArr(this.streamData.fields,0);
 
     if(this.joinProcessorNode.outputStreams.length > 0){
       this.joinProcessorNode.outputStreams[0].fields = streamFields;
@@ -999,7 +947,7 @@ export default class JoinNodeForm extends Component {
                 </div>
                 <div className="col-sm-6">
                   <label className="pull-right">
-                    <a href="javascript:void(0)" onClick={this.selectAllOutputFields}>Select All</a>
+                    <a href="javascript:void(0)" onClick={this.handleSelectAllOutputFields}>Select All</a>
                   </label>
                 </div>
                 <div className="row">

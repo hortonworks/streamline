@@ -52,14 +52,37 @@ export default class RulesNodeForm extends Component {
   constructor(props) {
     super(props);
     let {editMode} = props;
+    this.fetchDataAgain = false;
     this.state = {
       parallelism: 1,
       editMode: editMode,
       rules: [],
       ruleObj: {},
-      modalTitle: ''
+      modalTitle: '',
+      showLoading : true
     };
     this.fetchData();
+  }
+
+  componentWillUpdate() {
+    if(this.context.ParentForm.state.inputStreamOptions.length > 0 && !(this.fetchDataAgain)){
+      this.setParentContextOutputStream();
+    }
+  }
+
+  setParentContextOutputStream() {
+    this.contextInputStream = this.context.ParentForm.state.inputStreamOptions;
+    this.fetchDataAgain = true;
+    if(this.nodeData.outputStreams.length){
+      this.streamData = this.nodeData.outputStreams[0];
+      this.streamData.fields = this.contextInputStream[0].fields;
+      this.setState({showLoading : false}, () => {
+        _.map(this.nodeData.outputStreams,(stream) => {
+          stream.fields = this.contextInputStream[0].fields;
+        });
+      });
+      this.context.ParentForm.setState({outputStreamObj: this.streamData});
+    }
   }
 
   fetchData() {
@@ -119,9 +142,11 @@ export default class RulesNodeForm extends Component {
       });
       if (this.nodeData.outputStreams.length === 0) {
         this.context.ParentForm.setState({outputStreamObj: {}});
+        stateObj.showLoading =  false;
       } else {
-        this.streamData = this.nodeData.outputStreams[0];
-        this.context.ParentForm.setState({outputStreamObj: this.streamData});
+        if(this.context.ParentForm.state.inputStreamOptions.length){
+          this.setParentContextOutputStream();
+        }
       }
 
       this.setState(stateObj);
@@ -136,16 +161,12 @@ export default class RulesNodeForm extends Component {
 
   handleSave(name, description) {
     let {topologyId, versionId, nodeType} = this.props;
-    let promiseArr = [TopologyREST.getNode(topologyId, versionId, nodeType, this.nodeData.id)];
-    return Promise.all(promiseArr).then(results => {
-      this.nodeData = results[0];
-      this.nodeData.name = name;
-      this.nodeData.description = description;
-      //Update rule processor
-      return TopologyREST.updateNode(topologyId, versionId, nodeType, this.nodeData.id, {
-        body: JSON.stringify(this.nodeData)
-      });
-    });
+    this.nodeData.name = name;
+    this.nodeData.description = description;
+    let promiseArr = [
+      TopologyREST.updateNode(topologyId, versionId, nodeType, this.nodeData.id, {body: JSON.stringify(this.nodeData)})
+    ];
+    return Promise.all(promiseArr);
   }
 
   handleAddRule(id) {
@@ -286,7 +307,7 @@ export default class RulesNodeForm extends Component {
       targetNodes,
       linkShuffleOptions
     } = this.props;
-    let {rules} = this.state;
+    let {rules,showLoading} = this.state;
     const disabledFields = this.props.testRunActivated ? true : !editMode;
     return (
       <div>
@@ -294,45 +315,55 @@ export default class RulesNodeForm extends Component {
           <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
             display: "none"
           }}/>}>
-            {!this.props.testRunActivated && editMode
-              ? <div className="clearfix row-margin-bottom customFormClass">
-                  <button type="button" onClick={this.handleAddRule.bind(this)} className="btn btn-success pull-left">
-                    <i className="fa fa-plus"></i>
-                    Add New Rules
-                  </button>
-                </div>
-              : null}
-            <div className="row customFormClass">
-              <div className="col-sm-12">
-                <Table className="table table-hover table-bordered" noDataText="No records found." currentPage={0} itemsPerPage={rules.length > pageSize
-                  ? pageSize
-                  : 0} pageButtonLimit={5}>
-                  <Thead>
-                    <Th column="name">Name</Th>
-                    <Th column="condition">Condition</Th>
-                    <Th column="action" className={disabledFields
-                      ? 'displayNone'
-                      : null}>Actions</Th>
-                  </Thead>
-                  {rules.map((rule, i) => {
-                    return (
-                      <Tr key={i}>
-                        <Td column="name">{rule.name}</Td>
-                        <Td column="condition">{rule.condition}</Td>
-                        <Td column="action" className={disabledFields
-                          ? 'displayNone'
-                          : null}>
-                          <div className="btn-action">
-                            <BtnEdit callback={this.handleAddRule.bind(this, rule.id)}/>
-                            <BtnDelete callback={this.handleDeleteRule.bind(this, rule.id)}/>
-                          </div>
-                        </Td>
-                      </Tr>
-                    );
-                  })}
-                </Table>
+          {
+            showLoading
+            ? <div className="loading-img text-center">
+                <img src="styles/img/start-loader.gif" alt="loading" style={{
+                  marginTop: "140px"
+                }}/>
               </div>
-            </div>
+            : <div>
+                {!this.props.testRunActivated && editMode
+                    ? <div className="clearfix row-margin-bottom customFormClass">
+                        <button type="button" onClick={this.handleAddRule.bind(this)} className="btn btn-success pull-left">
+                          <i className="fa fa-plus"></i>
+                          Add New Rules
+                        </button>
+                      </div>
+                    : null}
+                <div className="row customFormClass">
+                  <div className="col-sm-12">
+                    <Table className="table table-hover table-bordered" noDataText="No records found." currentPage={0} itemsPerPage={rules.length > pageSize
+                      ? pageSize
+                      : 0} pageButtonLimit={5}>
+                      <Thead>
+                        <Th column="name">Name</Th>
+                        <Th column="condition">Condition</Th>
+                        <Th column="action" className={disabledFields
+                          ? 'displayNone'
+                          : null}>Actions</Th>
+                      </Thead>
+                      {rules.map((rule, i) => {
+                        return (
+                          <Tr key={i}>
+                            <Td column="name">{rule.name}</Td>
+                            <Td column="condition">{rule.condition}</Td>
+                            <Td column="action" className={disabledFields
+                              ? 'displayNone'
+                              : null}>
+                              <div className="btn-action">
+                                <BtnEdit callback={this.handleAddRule.bind(this, rule.id)}/>
+                                <BtnDelete callback={this.handleDeleteRule.bind(this, rule.id)}/>
+                              </div>
+                            </Td>
+                          </Tr>
+                        );
+                      })}
+                    </Table>
+                  </div>
+                </div>
+              </div>
+          }
           </Scrollbars>
         </div>
         <Modal ref="RuleModal" onKeyPress={this.handleKeyPress} dialogClassName="rule-modal-fixed-height" bsSize="large" data-title={this.state.modalTitle} data-resolve={this.handleSaveRule.bind(this)}>

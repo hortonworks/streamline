@@ -196,6 +196,10 @@ a.dropdown-toggle~ul.dropdown-menu {
   background-color: #fff;
 }
 
+.main-header .nav>li {
+  display: inline-block;
+}
+
 .main-header .nav>li>a {
   padding-top: 20px;
   padding-bottom: 20px;
@@ -384,7 +388,7 @@ label {
   padding-top: 5px !important;
 }
 
-.cp-modal-form, .edge-modal-form, .rule-modal-form, .config-modal-form, .note-modal-form, .udf-modal-form, .notifier-modal-form {
+.cp-modal-form, .edge-modal-form, .rule-modal-form, .config-modal-form, .note-modal-form, .udf-modal-form, .notifier-modal-form, .user-modal-form {
   margin: 0px 10px;
 }
 
@@ -823,6 +827,10 @@ label {
 
 .table-stream>tbody>tr>td>.wordBreak {
   word-break: break-word;
+}
+
+.table > tbody > tr > td span.label {
+  margin-right: 3px;
 }
 
 .schema-stats>i.fa, .schema-stats>div {
@@ -2831,6 +2839,28 @@ height: 14px;
   border-top: none;
 }
 .user-tabs .hb {
-  top: 10px;
+  top: -60px;
   right: 10px;
+}
+.header-green {
+    font-size: 16px;
+    border-bottom: 1px #3fb046 solid;
+    padding-bottom: 8px;
+    margin-top: 0px;
+}
+.predefined-rules-list {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+}
+.predefined-rules-list li {
+    padding: 5px;
+    border: 1px #CCC solid;
+    margin-bottom: 5px;
+    font-size: 12px;
+}
+.predefined-rules-list li:hover, .predefined-rules-list li.current {
+    border-color: #3fb046;
+    color: #3fb046;
+    cursor: pointer;
 }

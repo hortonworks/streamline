@@ -22,7 +22,8 @@ class app_state {
   @observable sidebar_toggleFlag = false
   @observable streamline_config = {
     registry: {},
-    dashboard: {}
+    dashboard: {},
+    secureMode: false
   }
   @observable showComponentNodeContainer = true
   @observable showSpotlightSearch = false

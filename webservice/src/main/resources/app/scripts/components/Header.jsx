@@ -14,9 +14,11 @@
 
 import React, {Component} from 'react';
 import {Link} from 'react-router';
-import state from '../app_state';
+import app_state from '../app_state';
+import {observer} from 'mobx-react';
 import {Nav, Navbar, NavItem, NavDropdown, MenuItem} from 'react-bootstrap';
 
+@observer
 export default class Header extends Component {
 
   constructor(props) {
@@ -27,6 +29,7 @@ export default class Header extends Component {
     const userIcon = <i className="fa fa-user"></i>;
     const bigIcon = <i className="fa fa-caret-down"></i>;
     const config = <i className="fa fa-cog"></i>;
+    const users = <i className="fa fa-users"></i>;
 
     return (
       <header className="main-header">
@@ -44,6 +47,15 @@ export default class Header extends Component {
               {this.props.headerContent}
             </div>
             <ul className="nav pull-right">
+              {app_state.streamline_config.secureMode ?
+                <li>
+                  <Link to="/user-roles" role="button">
+                    {users}
+                  </Link>
+                </li>
+                :
+                null
+              }
               <li>
                 <a role="button" href="javascript:void(0);">
                   {userIcon}

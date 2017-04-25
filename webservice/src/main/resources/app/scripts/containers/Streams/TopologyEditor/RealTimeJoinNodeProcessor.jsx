@@ -142,7 +142,7 @@ export default class RealTimeJoinNodeProcessor extends Component{
       parallelism: configFields.parallelism || 1,
       outputKeys: configFields.outputKeys
         ? configFields.outputKeys.map((key) => {
-          return this.splitNestedKey(key);
+          return ProcessorUtils.splitNestedKey(key);
         })
         : undefined,
       inputStreamsArr: inputStreamFromContext,
@@ -231,7 +231,7 @@ export default class RealTimeJoinNodeProcessor extends Component{
 
     // remove the dot from the keys
     stateObj.outputKeys = _.map(outputKeysAFormServer, (key) => {
-      return this.splitNestedKey(key);
+      return ProcessorUtils.splitNestedKey(key);
     });
 
     // get the keyObj from the outputFieldsList for the particular key
@@ -272,22 +272,6 @@ export default class RealTimeJoinNodeProcessor extends Component{
     return (
       <span style={styleObj}>{node.name}</span>
     );
-  }
-
-  /*
-    splitNestedKey accept string and split with dot ('.')
-    and return last value of an array
-  */
-  splitNestedKey(key) {
-    if(key.search(' as ') !== -1){
-      key = key.split(' as ')[0];
-    }
-    const a = key.replace(':','.').split('.');
-    if (a.length > 1) {
-      return a[a.length - 1];
-    } else {
-      return a[0];
-    }
   }
 
   filterStreamSelected = (obj) => {
@@ -394,24 +378,10 @@ export default class RealTimeJoinNodeProcessor extends Component{
     this.context.ParentForm.setState({outputStreamObj: this.streamData});
   }
 
-  selectAllOutputFields = () => {
-    let tempAllFields = [],tempFields = _.cloneDeep(this.fieldsArr);
-    _.map(tempFields, (field ,i) => {
-      if(i === 0){
-        const fd  = ProcessorUtils.getSchemaFields([field], 0,false);
-        tempAllFields = _.filter(fd , (f) => {return f.name !== field.name;});
-      }
-      else {
-        const data = _.filter(field.fields, (obj) => {
-          return _.findIndex(tempAllFields, {name : obj.name}) === -1;
-        });
-        field.fields = data;
-        const fd  = ProcessorUtils.getSchemaFields([field], 0,false);
-        const mergeData = _.filter(fd , (f) => {return f.name !== field.name;});
-        tempAllFields = _.concat(tempAllFields ,mergeData );
-      }
-    });
-    this.setOutputFields(tempAllFields);
+  handleSelectAllOutputFields = () => {
+    let tempFields = _.cloneDeep(this.state.outputFieldsList);
+    const allOutPutFields = ProcessorUtils.selectAllOutputFields(tempFields);
+    this.setOutputFields(allOutPutFields);
   }
 
   checkBoxChange = (event) => {
@@ -430,21 +400,6 @@ export default class RealTimeJoinNodeProcessor extends Component{
       validation = true;
     }
     return validation;
-  }
-
-  generateOutputStreams(fields,level){
-    return fields.map((field) => {
-      let obj = {
-        name: field.name,
-        type: field.type ,
-        optional : false
-      };
-
-      if (field.type === 'NESTED' && field.fields) {
-        obj.fields = this.generateOutputStreams(field.fields, level + 1);
-      }
-      return obj;
-    });
   }
 
   updateEdgesForSelectedStream = () => {
@@ -526,7 +481,7 @@ export default class RealTimeJoinNodeProcessor extends Component{
     });
 
     // outputStreams data is formated for the server
-    const streamFields  = this.generateOutputStreams(this.streamData.fields,0);
+    const streamFields  = ProcessorUtils.generateOutputStreamsArr(this.streamData.fields,0);
 
     if(this.rtJoinProcessorNode.outputStreams.length > 0){
       this.rtJoinProcessorNode.outputStreams[0].fields = streamFields;
@@ -743,7 +698,7 @@ export default class RealTimeJoinNodeProcessor extends Component{
                 </div>
                 <div className="col-sm-6">
                   <label className="pull-right">
-                    <a href="javascript:void(0)" onClick={this.selectAllOutputFields}>Select All</a>
+                    <a href="javascript:void(0)" onClick={this.handleSelectAllOutputFields}>Select All</a>
                   </label>
                 </div>
                 <div className="row">

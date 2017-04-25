@@ -342,6 +342,66 @@ const createOutputFieldsObjArr=  function(outputFieldsArr,outputFieldsList){
 };
 
 
+/*
+  selectAllOutputFields accept the array of outputFieldsList
+  and return array of unique fields
+*/
+const selectAllOutputFields = function(tempFields){
+  let tempAllFields = [];
+  _.map(tempFields, (field, i ) => {
+    if(field.type !== 'NESTED'){
+      const data = _.findIndex(tempAllFields, (temp) => {return temp.name === field.name;});
+      if(data === -1){
+        tempAllFields = _.concat(tempAllFields ,field);
+      }
+    }
+  });
+  return tempAllFields;
+};
+
+/*
+  splitNestedKey accept string and split with dot ('.')
+  and return last value of an array
+*/
+const splitNestedKey = function(key) {
+  if(key.search(' as ') !== -1){
+    key = key.split(' as ')[0];
+  }
+  const a = key.replace(':','.').split('.');
+  if (a.length > 1) {
+    return a[a.length - 1];
+  } else {
+    return a[0];
+  }
+};
+
+
+/*
+  generateOutputStreamsArr accept outputStreamFields
+  and Transform it to new streamObjArr by
+  attaching the streamId to each and every field name
+
+  return streamObjArr {name : "UI", type : "String", optional : false}
+*/
+const generateOutputStreamsArr = function(fieldList,_level){
+  const generateOutputStreams = function(fields,level){
+    return fields.map((field) => {
+      let obj = {
+        name: field.name,
+        type: field.type ,
+        optional : false
+      };
+
+      if (field.type === 'NESTED' && field.fields) {
+        obj.fields = generateOutputStreams(field.fields, level + 1);
+      }
+      return obj;
+    });
+  };
+  return generateOutputStreams(fieldList,_level);
+};
+
+
 export default {
   getSchemaFields,
   createSelectedKeysHierarchy,
@@ -352,5 +412,8 @@ export default {
   modifyGroupKeyByDots,
   modifyGroupArrKeys,
   findNestedObj,
-  createOutputFieldsObjArr
+  createOutputFieldsObjArr,
+  selectAllOutputFields,
+  splitNestedKey,
+  generateOutputStreamsArr
 };

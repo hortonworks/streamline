@@ -949,7 +949,7 @@ class TopologyEditorContainer extends Component {
   getTopologyHeader() {
     return (
       <span>
-        <Link to="/">My Applications</Link>
+        <Link to="/">My Applications </Link>
         &nbsp;/&nbsp;
         <Editable id="applicationName" ref="topologyNameEditable" inline={true} resolve={this.saveTopologyName.bind(this)} reject={this.handleRejectTopologyName.bind(this)}>
           <input ref={this.focusInput} defaultValue={this.state.topologyName} onChange={this.handleNameChange.bind(this)}/>

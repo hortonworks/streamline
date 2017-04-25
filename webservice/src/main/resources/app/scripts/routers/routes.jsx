@@ -27,6 +27,7 @@ import EnvironmentContainer from '../containers/Environment/EnvironmentContainer
 import ModelRegistryContainer from '../containers/ModelRegistry/ModelRegistryContainer';
 import ComponentDefinition from '../containers/Configuration/ComponentDefinition';
 import AppResourcesContainer from '../containers/Configuration/AppResourcesContainer';
+import UserRolesContainer from '../containers/Configuration/UserRolesContainer';
 
 const onEnter = (nextState, replace, callback) => {
   var sidebarRoute = nextState.routes[1];
@@ -63,6 +64,7 @@ export default (
     <Route path="model-registry" name="Model Registry" component={ModelRegistryContainer} onEnter={onEnter}/>
     <Route path="component-definition" name="Component Definition" component={ComponentDefinition} onEnter={onEnter}/>
     <Route path="application-resources" name="Application Resources" component={AppResourcesContainer} onEnter={onEnter}/>
+    <Route path="user-roles" name="User Roles" component={UserRolesContainer} onEnter={onEnter}/>
   </Route>
 
 );

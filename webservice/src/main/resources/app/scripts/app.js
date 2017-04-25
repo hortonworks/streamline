@@ -37,7 +37,8 @@ class App extends Component {
         } else {
           app_state.streamline_config = {
             registry: results[0].registry,
-            dashboard: results[0].dashboard
+            dashboard: results[0].dashboard,
+            secureMode: results[0].authorizerConfiguration ? true : false
           };
         }
       });

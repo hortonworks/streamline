@@ -28,7 +28,7 @@ class AddManualService extends Component{
       formData: {},
       entities : [],
       fetchLoader : true,
-      selectedObj: {},
+      selectedObj: '',
       serviceFormFields : [],
       fileCollection : [],
       fileNameArr :[]
@@ -146,7 +146,7 @@ class AddManualService extends Component{
                   <label>Select Service
                     <span className="text-danger">*</span>
                   </label>
-                  <Select value={selectedObj} options={entities} required={true} valueKey="name" labelKey="name" onChange={this.handleServiceChange} />
+                  <Select placeholder="Select service" value={selectedObj} options={entities} required={true} valueKey="name" labelKey="name" onChange={this.handleServiceChange} />
                 </div>
               </div>
               {
