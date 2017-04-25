@@ -1,4 +1,5 @@
 ## 0.1.4
+ * STREAMLINE-778: Roles API updates
  * STREAMLINE-776: Bug fix in WindowedQueryBolt's handling of streamline event prefix in outputfields
  * STREAMLINE-472: Scheme class customization for kafka sources 
  * STREAMLINE-750: Change comma separated string into an array for serviceBundle API having type as array.string
