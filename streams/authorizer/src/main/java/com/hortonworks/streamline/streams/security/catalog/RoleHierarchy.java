@@ -35,6 +35,14 @@ public class RoleHierarchy extends AbstractStorable {
     private Long parentId;
     private Long childId;
 
+    public RoleHierarchy() {
+    }
+
+    public RoleHierarchy(Long parentId, Long childId) {
+        this.parentId = parentId;
+        this.childId = childId;
+    }
+
     @JsonIgnore
     @Override
     public String getNameSpace() {

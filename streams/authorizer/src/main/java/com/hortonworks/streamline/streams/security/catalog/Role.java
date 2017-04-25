@@ -31,9 +31,13 @@ public class Role extends AbstractStorable {
     public static final String NAMESPACE = "role";
     public static final String ID = "id";
     public static final String NAME = "name";
+    public static final String DESCRIPTION = "description";
 
     private Long id;
     private String name;
+    private String description;
+    // if this is a system or user defined role.
+    private boolean system;
     private Long timestamp;
 
     @JsonIgnore
@@ -68,6 +72,32 @@ public class Role extends AbstractStorable {
         this.name = name;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    /**
+     * Returns if this is a system or user defined role.
+     *
+     * @return if this is a system or user defined role.
+     */
+    public boolean isSystem() {
+        return system;
+    }
+
+    // needed for storage manager
+    public boolean getSystem() {
+        return isSystem();
+    }
+
+    public void setSystem(Boolean system) {
+        this.system = system;
+    }
+
     public Long getTimestamp() {
         return timestamp;
     }
@@ -99,6 +129,6 @@ public class Role extends AbstractStorable {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", timestamp=" + timestamp +
-                "} " + super.toString();
+                "}";
     }
 }

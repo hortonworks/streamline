@@ -16,6 +16,7 @@
 package com.hortonworks.streamline.streams.security.service;
 
 import com.codahale.metrics.annotation.Timed;
+import com.google.common.collect.Sets;
 import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
@@ -39,9 +40,10 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
-
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.hortonworks.streamline.streams.security.Roles.ROLE_SECURITY_ADMIN;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -136,12 +138,23 @@ public class SecurityCatalogResource {
         throw EntityNotFoundException.byId(roleId.toString());
     }
 
+    private Long getIdFromRoleName(String roleName) {
+        return catalogService.getRole(roleName)
+                .map(Role::getId)
+                .orElseThrow(() -> EntityNotFoundException.byName(roleName));
+    }
+
     @POST
-    @Path("/roles/{parentId}/children/{childId}")
+    @Path("/roles/{parentRoleName}/children/{childRoleName}")
     @Timed
-    public Response addChildRole(@PathParam("parentId") Long parentId, @PathParam("childId") Long childId,
+    public Response addChildRole(@PathParam("parentRoleName") String parentRoleName, @PathParam("childRoleName") String childRoleName,
                                  @Context SecurityContext securityContext) throws Exception {
         SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
+        if (childRoleName.equals(parentRoleName)) {
+            throw new IllegalArgumentException("Child role is same as parent role");
+        }
+        Long parentId = getIdFromRoleName(parentRoleName);
+        Long childId = getIdFromRoleName(childRoleName);
         Role childRole = catalogService.getRole(childId);
         if (childRole != null) {
             RoleHierarchy roleHierarchy = catalogService.addChildRole(parentId, childId);
@@ -150,6 +163,50 @@ public class SecurityCatalogResource {
             }
         }
         throw EntityNotFoundException.byId(childId.toString());
+    }
+
+    @POST
+    @Path("/roles/{parentRoleName}/children")
+    @Timed
+    public Response addChildRoles(@PathParam("parentRoleName") String parentRoleName, Set<String> childRoleNames,
+                                  @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
+        Long parentId = getIdFromRoleName(parentRoleName);
+        Set<Long> childIds = new HashSet<>();
+        childRoleNames.forEach(childRoleName -> {
+            if (childRoleName.equals(parentRoleName)) {
+                throw new IllegalArgumentException("Child role(s) contain parent role");
+            }
+            childIds.add(getIdFromRoleName(childRoleName));
+        });
+        Set<RoleHierarchy> res = new HashSet<>();
+        childIds.forEach(childId -> res.add(catalogService.addChildRole(parentId, childId)));
+        return WSUtils.respondEntities(res, OK);
+    }
+
+    @PUT
+    @Path("/roles/{parentRoleName}/children")
+    @Timed
+    public Response addOrUpdateChildRoles(@PathParam("parentRoleName") String parentRoleName, Set<String> childRoleNames,
+                                          @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
+        Long parentId = getIdFromRoleName(parentRoleName);
+        Set<Long> currentChildIds = new HashSet<>();
+        catalogService.getChildRoles(parentId).forEach(role -> currentChildIds.add(role.getId()));
+        Set<Long> updatedChildIds = new HashSet<>();
+        childRoleNames.forEach(childRoleName -> {
+            if (childRoleName.equals(parentRoleName)) {
+                throw new IllegalArgumentException("Child role(s) contain parent role");
+            }
+            updatedChildIds.add(getIdFromRoleName(childRoleName));
+        });
+        Set<Long> childIdsToAdd = Sets.difference(updatedChildIds, currentChildIds);
+        Set<Long> childIdsToRemove = Sets.difference(currentChildIds, updatedChildIds);
+        childIdsToRemove.forEach(childId -> catalogService.removeChildRole(parentId, childId));
+        Set<RoleHierarchy> res = new HashSet<>();
+        Sets.intersection(currentChildIds, updatedChildIds).forEach(childId -> res.add(new RoleHierarchy(parentId, childId)));
+        childIdsToAdd.forEach(childId -> res.add(catalogService.addChildRole(parentId, childId)));
+        return WSUtils.respondEntities(res, OK);
     }
 
     @DELETE
