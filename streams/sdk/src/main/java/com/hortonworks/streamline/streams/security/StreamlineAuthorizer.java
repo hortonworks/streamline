@@ -17,6 +17,7 @@ package com.hortonworks.streamline.streams.security;
 
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 
 public interface StreamlineAuthorizer {
     /**
@@ -44,4 +45,9 @@ public interface StreamlineAuthorizer {
      * Remove permissions for the currently authenticated user on the target entity
      */
     void removeAcl(AuthenticationContext ctx, String targetEntityNamespace, Long targetEntityId);
+
+    /**
+     * Return the set of users that are the super-users.
+     */
+    Set<String> getAdminUsers();
 }

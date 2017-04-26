@@ -47,6 +47,9 @@ public class User extends AbstractStorable {
     private Long timestamp;
 
     @SchemaIgnore
+    private Boolean admin;
+
+    @SchemaIgnore
     private Set<String> roles;
 
 
@@ -63,6 +66,18 @@ public class User extends AbstractStorable {
         }
         this.metadata = other.getMetadata();
         this.timestamp = other.getTimestamp();
+    }
+
+    public Boolean isAdmin() {
+        return admin;
+    }
+
+    public Boolean getAdmin() {
+        return isAdmin();
+    }
+
+    public void setAdmin(Boolean admin) {
+        this.admin = admin;
     }
 
     @JsonIgnore

@@ -21,8 +21,10 @@ import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 
 public class NoopAuthorizer implements StreamlineAuthorizer {
     private static final Logger LOG = LoggerFactory.getLogger(NoopAuthorizer.class);
@@ -54,5 +56,10 @@ public class NoopAuthorizer implements StreamlineAuthorizer {
     public void removeAcl(AuthenticationContext ctx, String targetEntityNamespace, Long targetEntityId) {
         LOG.debug("NoopAuthorizer removeAcl, AuthenticationContext: {}, targetEntityNamespace: {}, targetEntityId: {}",
                 ctx, targetEntityNamespace, targetEntityId);
+    }
+
+    @Override
+    public Set<String> getAdminUsers() {
+        return Collections.emptySet();
     }
 }

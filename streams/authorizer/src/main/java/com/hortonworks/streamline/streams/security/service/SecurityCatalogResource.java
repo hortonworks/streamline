@@ -42,6 +42,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -315,6 +316,31 @@ public class SecurityCatalogResource {
     }
 
     // user
+
+    @GET
+    @Path("/users/current")
+    @Timed
+    public Response getCurrentUser(@Context UriInfo uriInfo,
+                                   @Context SecurityContext securityContext) throws Exception {
+        Principal principal = securityContext.getUserPrincipal();
+        if (principal == null) {
+            throw EntityNotFoundException.byMessage("No principal in security context");
+        }
+        String userName = SecurityUtil.getUserName(principal.getName());
+        if (userName == null || userName.isEmpty()) {
+            throw EntityNotFoundException.byMessage("Empty user name for principal " + principal);
+        }
+        User user = catalogService.getUser(userName);
+        if (user == null) {
+            throw EntityNotFoundException.byMessage("User '" + userName + "' is not in the user database.");
+        }
+        if (authorizer.getAdminUsers().contains(userName)) {
+            user.setAdmin(true);
+        } else {
+            user.setAdmin(false);
+        }
+        return WSUtils.respondEntity(user, OK);
+    }
 
     @GET
     @Path("/users")

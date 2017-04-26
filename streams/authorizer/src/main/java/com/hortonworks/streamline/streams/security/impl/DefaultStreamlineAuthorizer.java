@@ -123,6 +123,11 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
         });
     }
 
+    @Override
+    public Set<String> getAdminUsers() {
+        return adminUsers;
+    }
+
     private boolean checkPermissions(AuthenticationContext ctx, String targetEntityNamespace, Long targetEntityId, EnumSet<Permission> permissions) {
         validateAuthenticationContext(ctx);
         String userName = SecurityUtil.getUserName(ctx);

@@ -42,6 +42,10 @@ public class EntityNotFoundException extends WebServiceException {
     return new EntityNotFoundException(buildMessageByID(id), cause);
   }
 
+  public static EntityNotFoundException byMessage(String msg) {
+    return new EntityNotFoundException(msg);
+  }
+
   public static EntityNotFoundException byName(String name) {
     return new EntityNotFoundException(buildMessageByName(name));
   }
