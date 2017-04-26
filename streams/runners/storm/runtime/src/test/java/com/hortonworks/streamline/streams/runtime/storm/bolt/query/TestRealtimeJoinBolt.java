@@ -72,7 +72,7 @@ public class TestRealtimeJoinBolt {
                 .equal(orderFields[1], adImpressionFields[1] )
                 .select("orders:id,ads:userId,ads:product,orders:product,price");
 
-        MockCollector collector = new MockCollector();
+        MockCollector collector = new MockCollector(bolt.getOutputFields());
         bolt.prepare(null, null, collector);
 
         for (Tuple tuple : adImpressionStream) {
@@ -97,7 +97,7 @@ public class TestRealtimeJoinBolt {
                 .equal(orderFields[1], adImpressionFields[1] )
                 .select("orders:id,ads:userId,product,price");
 
-        MockCollector collector = new MockCollector();
+        MockCollector collector = new MockCollector(bolt.getOutputFields());
         bolt.prepare(null, null, collector);
 
         for (Tuple tuple : adImpressionStream) {
@@ -122,7 +122,7 @@ public class TestRealtimeJoinBolt {
                 .equal(adImpressionFields[1],orderFields[1] )
                 .select("orders:id,ads:userId,ads:product,orders:product,price");
 
-        MockCollector collector = new MockCollector();
+        MockCollector collector = new MockCollector(bolt.getOutputFields());
         bolt.prepare(null, null, collector);
 
         for (Tuple tuple : orderStream) {
@@ -148,7 +148,7 @@ public class TestRealtimeJoinBolt {
                 .equal(adImpressionFields[1], orderFields[1])
                 .select("orders:id,ads:userId,ads:product,orders:product,price");
 
-        MockCollector collector = new MockCollector();
+        MockCollector collector = new MockCollector(bolt.getOutputFields());
         bolt.prepare(null, null, collector);
 
         for (Tuple tuple : orderStream) {
@@ -178,9 +178,9 @@ public class TestRealtimeJoinBolt {
                 .dataStream("ads")
                 .outerJoin("orders", new BaseWindowedBolt.Duration(1, TimeUnit.SECONDS), false)
                 .equal(adImpressionFields[1], orderFields[1])
-                .select("orders:id,ads:userId,ads:product,orders:product,price");
+                .select(" orders:id as orderId, ads:userId  as  userId ,ads:product, orders:product, price"); // extra spaces are to test FieldDescriptor
 
-        MockCollector collector = new MockCollector();
+        MockCollector collector = new MockCollector(bolt.getOutputFields());
         bolt.prepare(null, null, collector);
 
         for (Tuple tuple : orderStream) {
@@ -212,7 +212,7 @@ public class TestRealtimeJoinBolt {
                 .equal(orderFields[2], adImpressionFields[2] )
                 .select("orders:id,ads:userId,ads:product,orders:product,price");
 
-        MockCollector collector = new MockCollector();
+        MockCollector collector = new MockCollector(bolt.getOutputFields());
         bolt.prepare(null, null, collector);
 
         for (Tuple tuple : adImpressionStream) {
@@ -239,7 +239,7 @@ public class TestRealtimeJoinBolt {
                 .streamlineEqual(orderFields[2], adImpressionFields[2] )
                 .streamlineSelect("orders:id,ads:userId,product,price");
 
-        MockCollector collector = new MockCollector();
+        MockCollector collector = new MockCollector(bolt.getOutputFields());
         bolt.prepare(null, null, collector);
 
         for (Tuple tuple : adImpressionStream) {
@@ -290,6 +290,8 @@ public class TestRealtimeJoinBolt {
 
 
     private static void printResults(MockCollector collector) {
+        System.out.println( String.join(",", collector.outputFields) );
+        System.out.println("--------------------------------------------------");
         int counter=0;
         for (List<Object> rec : collector.actualResults) {
             System.out.print(++counter +  ") ");
@@ -302,6 +304,8 @@ public class TestRealtimeJoinBolt {
 
     private static void printResults_StreamLine(MockCollector collector) {
         int counter=0;
+        System.out.println( String.join(",", collector.outputFields) );
+        System.out.println("--------------------------------------------------");
         for (List<Object> rec : collector.actualResults) {
             System.out.print(++counter +  ") ");
             for (Object field : rec) {
@@ -316,11 +320,15 @@ public class TestRealtimeJoinBolt {
     }
 
     static class MockCollector extends OutputCollector {
+        private final String[] outputFields;
+
         public ArrayList<List<Object>> actualResults = new ArrayList<>();
 
-        public MockCollector() {
+        public MockCollector(String[] outputFields) {
             super(null);
+            this.outputFields = outputFields;
         }
+
 
         @Override
         public List<Integer> emit(Collection<Tuple> anchors, List<Object> tuple) {

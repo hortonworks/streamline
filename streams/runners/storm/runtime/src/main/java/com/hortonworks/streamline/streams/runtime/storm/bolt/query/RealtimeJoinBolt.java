@@ -18,6 +18,7 @@
 
 package com.hortonworks.streamline.streams.runtime.storm.bolt.query;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.LinkedListMultimap;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
@@ -33,6 +34,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class RealtimeJoinBolt extends BaseRichBolt  {
@@ -43,6 +46,7 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
     private String lookupStream;
 
     protected FieldSelector[] outputFields = null;  // specified via bolt.select() ... used in declaring Output fields
+
     private String outputStream;
     private int retentionTime;
     private int retentionCount;
@@ -65,7 +69,7 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
         String[] outputFieldNames = new String[outputFields.length];
         for( int i=0; i<outputFields.length; ++i ) {
-            outputFieldNames[i] = outputFields[i].getOutputName() ;
+            outputFieldNames[i] = outputFields[i].outputName ;
         }
         if (outputStream !=null) {
             declarer.declareStream(outputStream, new Fields(outputFieldNames));
@@ -118,7 +122,7 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
         FieldSelector lookupField = new FieldSelector(lookupStream, lookupStreamField);
 
         if( dataField.equals(lookupField) ) {
-            throw new IllegalArgumentException("Both field selectors refer to same field: " + dataField.getOutputName());
+            throw new IllegalArgumentException("Both field selectors refer to same field: " + dataField.outputName);
         }
         joinCriteria.add(new JoinInfo(lookupField, dataField));
         return this;
@@ -296,6 +300,15 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
         return this;
     }
 
+    @VisibleForTesting
+    public String[] getOutputFields() {
+        String[] result = new String[outputFields.length];
+        for (int i = 0; i < outputFields.length; i++) {
+            result[i] = outputFields[i].outputName;
+        }
+        return result;
+    }
+
     @Override
     public void execute(Tuple tuple) {
         if (timeBasedRetention) {
@@ -358,10 +371,10 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
     private String makeLookupTupleKey(Tuple tuple) throws InvalidTuple {
         StringBuilder key = new StringBuilder();
         for (JoinInfo ji : joinCriteria) {
-            String partialKey = findField(ji.lookupField, tuple).toString();
+            Object partialKey = findField(ji.lookupField, tuple);
             if (partialKey==null)
-                throw new InvalidTuple("'" +ji.lookupField + "' field is is missing in the tuple", tuple);
-            key.append( partialKey );
+                throw new InvalidTuple("'" +ji.lookupField + "' field is missing in the tuple", tuple);
+            key.append( partialKey.toString() );
             key.append(".");
         }
         return key.toString();
@@ -370,10 +383,10 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
     private String makeDataTupleKey(Tuple tuple)  throws InvalidTuple  {
         StringBuilder key = new StringBuilder();
         for (JoinInfo ji : joinCriteria) {
-            String partialKey = findField(ji.dataField, tuple).toString();
+            Object partialKey = findField(ji.dataField, tuple);
             if (partialKey==null)
                 throw new InvalidTuple("'" + ji.dataField + " field is is missing in the tuple", tuple);
-            key.append( partialKey );
+            key.append( partialKey.toString() );
             key.append(".");
         }
         return key.toString();
@@ -435,7 +448,7 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
         return streamId.equals(lookupStream);
     }
 
-    // Returns either the source component name or the stream name for the tuple
+    // Returns either the source component Id or the stream Id for the tuple
     private String getStreamSelector(Tuple ti) {
         switch (selectorType) {
             case STREAM:
@@ -508,16 +521,12 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
             Object field = findField(outField, tuple1) ;
             if (field==null)
                 field = findField(outField, tuple2);
-            String outputKeyName = dropStreamLineEventPrefix(outField.getOutputName() );
+            String outputKeyName = dropStreamLineEventPrefix(outField.outputName );
             eventBuilder.put(outputKeyName, field); // adds null if field is not found in both tuples
         }
 
-        ArrayList<Object> resultRow = new ArrayList<>();
         StreamlineEventImpl slEvent = eventBuilder.dataSourceId("multiple sources").build();
-        resultRow.add(slEvent);
-        Collections.singletonList();
-        return resultRow;
-
+        return Collections.singletonList(slEvent);
     }
 
 
@@ -532,9 +541,9 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
         for (int i = 0; i < keyNames.length; i++) {
             FieldSelector fs = new FieldSelector(keyNames[i]);
             if (fs.streamName==null)
-                prefixedKeys[i] =  EVENT_PREFIX + String.join(".", fs.getField());
+                prefixedKeys[i] =  EVENT_PREFIX +  fs.getFieldName();
             else
-                prefixedKeys[i] =  fs.streamName + ":" + EVENT_PREFIX + String.join(".", fs.getField());
+                prefixedKeys[i] =  fs.streamName + ":" + EVENT_PREFIX + fs.getFieldName();
         }
 
         return String.join(", ", prefixedKeys);
@@ -552,30 +561,32 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
 
 class FieldSelector implements Serializable {
     final static long serialVersionUID = 2L;
+    static Pattern fieldDescrPattern = Pattern.compile("(?:([\\w-]+?):)?([\\w.-]+)(?: +as +([\\w.-]+))? *");
 
-    String streamName;    // can be null;
-    String[] field;       // nested field "x.y.z"  becomes => String["x","y","z"]
-    String outputName;    // either "stream1:x.y.z" or "x.y.z" depending on whether stream name is present.
+    String streamName;     // can be null;. Stream name can have '-' & '_'
+    String[] field;        // nested field "x.y.z"  becomes => String["x","y","z"]. Field names can contain '-' & '_'
+    private String alias;  // 'x.y.z as z' here z is the alias (alias can contain '-',  '_' '.')
+    String outputName;     // either "stream1:x.y.z" or "x.y.z" (if stream unspecified) or just alias.
 
-    public FieldSelector(String fieldDescriptor)  {  // sample fieldDescriptor = "stream1:x.y.z"
+    public FieldSelector(String fieldDescriptor)  {   // sample fieldDescriptor = "stream1:x.y.z"
         int pos = fieldDescriptor.indexOf(':');
+        Matcher matcher = fieldDescrPattern.matcher(fieldDescriptor);
+        if (!matcher.find( ))
+            throw new IllegalArgumentException("'" +fieldDescriptor + "' is not a valid field descriptor. Correct Format: [streamid:]nested.field [as anAlias]");
+        this.streamName = matcher.group(1);
+        String fieldDesc = matcher.group(2);
+        if (fieldDesc==null)
+            throw new IllegalArgumentException("'" +fieldDescriptor + "' is not a valid field descriptor. Correct Format: [streamid:]nested.field [as anAlias]");
+        this.field = fieldDesc.split("\\.");
+        this.alias = matcher.group(3);
 
-        if (pos>0) {  // stream name is specified
-            streamName = fieldDescriptor.substring(0,pos).trim();
-            outputName = fieldDescriptor.trim();
-            field =  fieldDescriptor.substring(pos+1, fieldDescriptor.length()).split("\\.");
-            return;
-        }
+        if (alias!=null)
+            outputName = alias;
+        else
+            outputName = (streamName==null) ? fieldDesc :  streamName+":"+fieldDesc ;
 
         // stream name unspecified
         streamName = null;
-        if(pos==0) {
-            outputName = fieldDescriptor.substring(1, fieldDescriptor.length() ).trim();
-
-        } else if (pos<0) {
-            outputName = fieldDescriptor.trim();
-        }
-        field =  outputName.split("\\.");
     }
 
     /**
@@ -586,7 +597,7 @@ class FieldSelector implements Serializable {
         this(stream + ":" + fieldDescriptor);
         if(fieldDescriptor.indexOf(":")>=0) {
             throw new IllegalArgumentException("Not expecting stream qualifier ':' in '" + fieldDescriptor
-                    + "'. Stream name '" + stream +  "' is implicit in this context");
+                    + "'. Stream name '" + stream +  "' is separately provided in this context");
         }
         this.streamName = stream;
     }
@@ -596,15 +607,9 @@ class FieldSelector implements Serializable {
     }
 
     public String getFieldName() {
-        if(streamName!=null)
-            return streamName + ":" + field;
-        return getOutputName();
+        return String.join(".", field);
     }
 
-
-    public String getOutputName() {
-        return outputName;
-    }
 
     @Override
     public String toString() {
