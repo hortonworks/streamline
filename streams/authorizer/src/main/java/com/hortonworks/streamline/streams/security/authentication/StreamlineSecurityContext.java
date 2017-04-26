@@ -70,6 +70,7 @@ public class StreamlineSecurityContext implements SecurityContext {
                 "principal=" + principal +
                 ", scheme='" + scheme + '\'' +
                 ", authenticationScheme='" + authenticationScheme + '\'' +
+                ", isSecure=" + isSecure() +
                 '}';
     }
 }

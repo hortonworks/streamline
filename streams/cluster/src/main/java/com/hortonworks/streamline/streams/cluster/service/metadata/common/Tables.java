@@ -15,23 +15,44 @@
  **/
 package com.hortonworks.streamline.streams.cluster.service.metadata.common;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+
 import org.apache.hadoop.hbase.TableName;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.ws.rs.core.SecurityContext;
+
 /**
  * Wrapper used to show proper JSON formatting
  */
 public class Tables {
+    public static final String AUTHRZ_MSG =
+            "Authorization not enforced. Every authenticated user has access to all metadata info";
+
     private List<String> tables;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String msg;
 
     public Tables(List<String> tables) {
+        this(tables, null);
+    }
+
+    public Tables(List<String> tables, SecurityContext securityContext) {
         this.tables = tables;
+        if (SecurityUtil.isKerberosAuthenticated(securityContext)) {
+            msg = Tables.AUTHRZ_MSG;
+        }
     }
 
     public static Tables newInstance(TableName[] tableNames) {
+        return newInstance(tableNames, null);
+    }
+
+    public static Tables newInstance(TableName[] tableNames, SecurityContext securityContext) {
         List<String> fqTableNames = Collections.emptyList();
         if (tableNames != null) {
             fqTableNames = new ArrayList<>(tableNames.length);
@@ -39,14 +60,23 @@ public class Tables {
                 fqTableNames.add(tableName.getNameWithNamespaceInclAsString());
             }
         }
-        return new Tables(fqTableNames);
+        return new Tables(fqTableNames, securityContext);
     }
 
-    public static Tables newInstance(List<String> tables) {
-        return tables == null ? new Tables(Collections.<String>emptyList()) : new Tables(tables);
+    public static Tables newInstance(List<String> tables, SecurityContext securityContext) {
+        return tables == null ? new Tables(Collections.<String>emptyList(), securityContext) : new Tables(tables, securityContext);
     }
 
     public List<String> getTables() {
         return tables;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    @Override
+    public String toString() {
+        return "{tables=" + tables + '}';
     }
 }
