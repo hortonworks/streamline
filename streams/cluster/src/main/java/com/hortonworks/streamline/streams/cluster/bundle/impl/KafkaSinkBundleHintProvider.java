@@ -15,14 +15,17 @@
  **/
 package com.hortonworks.streamline.streams.cluster.bundle.impl;
 
-import com.hortonworks.streamline.streams.cluster.Constants;
-import org.apache.commons.lang.StringUtils;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
+import com.hortonworks.streamline.streams.cluster.Constants;
+import com.hortonworks.streamline.streams.cluster.bundle.AbstractBundleHintProvider;
 import com.hortonworks.streamline.streams.cluster.service.metadata.KafkaMetadataService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
-import com.hortonworks.streamline.streams.cluster.bundle.AbstractBundleHintProvider;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaBrokersInfo;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaTopics;
+
+import org.apache.commons.lang.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -39,11 +42,11 @@ public class KafkaSinkBundleHintProvider extends AbstractBundleHintProvider {
     public Map<String, Object> getHintsOnCluster(Cluster cluster) {
         Map<String, Object> hintClusterMap = new HashMap<>();
         try (KafkaMetadataService kafkaMetadataService = KafkaMetadataService.newInstance(environmentService, cluster.getId())) {
-            KafkaMetadataService.Topics topics = kafkaMetadataService.getTopicsFromZk();
-            hintClusterMap.put(FIELD_NAME_TOPIC, topics.getTopics());
+            KafkaTopics topics = kafkaMetadataService.getTopicsFromZk();
+            hintClusterMap.put(FIELD_NAME_TOPIC, topics.list());
 
-            KafkaMetadataService.BrokersInfo<HostPort> brokerHosts = kafkaMetadataService.getBrokerHostPortFromStreamsJson(cluster.getId());
-            List<HostPort> hosts = brokerHosts.getInfo();
+            KafkaBrokersInfo<HostPort> brokerHosts = kafkaMetadataService.getBrokerHostPortFromStreamsJson(cluster.getId());
+            List<HostPort> hosts = brokerHosts.getBrokers();
             if (hosts != null && !hosts.isEmpty()) {
                 List<String> bootstrapServerList = hosts.stream()
                         .map(hostPort -> String.format("%s:%d", hostPort.getHost(), hostPort.getPort()))

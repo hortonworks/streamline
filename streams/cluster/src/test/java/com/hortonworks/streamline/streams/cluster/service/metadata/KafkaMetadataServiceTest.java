@@ -17,12 +17,13 @@ package com.hortonworks.streamline.streams.cluster.service.metadata;
 
 import com.google.common.collect.Lists;
 
-
-import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
-import org.apache.curator.test.TestingServer;
 import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.exception.ZookeeperClientException;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaBrokersInfo;
+
+import org.apache.curator.test.TestingServer;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,6 +37,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import javax.ws.rs.core.SecurityContext;
+
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Tested;
@@ -43,6 +46,7 @@ import mockit.integration.junit4.JMockit;
 
 import static com.hortonworks.streamline.streams.cluster.service.metadata.KafkaMetadataService.KAFKA_BROKERS_IDS_ZK_RELATIVE_PATH;
 import static com.hortonworks.streamline.streams.cluster.service.metadata.KafkaMetadataService.KAFKA_TOPICS_ZK_RELATIVE_PATH;
+import static com.hortonworks.streamline.streams.security.authentication.StreamlineSecurityContext.AUTHENTICATION_SCHEME_NOT_KERBEROS;
 
 @RunWith(JMockit.class)
 public class KafkaMetadataServiceTest {
@@ -67,6 +71,8 @@ public class KafkaMetadataServiceTest {
     private ZookeeperClient zkCli;
     @Injectable
     private KafkaMetadataService.KafkaZkConnection kafkaZkConnection;
+    @Injectable
+    private SecurityContext securityContext;
 
     // === Test Methods ===
 
@@ -105,15 +111,17 @@ public class KafkaMetadataServiceTest {
             component.getHosts(); result = expectedHosts;
             component.getPort(); result = expectedPort;
             environmentService.getComponentByName(anyLong, anyString); result = component;
+            // Means test run in insecure mode as they did before adding security
+            securityContext.getAuthenticationScheme(); result = AUTHENTICATION_SCHEME_NOT_KERBEROS;
         }};
 
-        final KafkaMetadataService.BrokersInfo<HostPort> brokerHostPort = kafkaMetadataService.getBrokerHostPortFromStreamsJson(1L);
+        final KafkaBrokersInfo<HostPort> brokerHostPort = kafkaMetadataService.getBrokerHostPortFromStreamsJson(1L);
         // verify host
-        Assert.assertEquals(expectedHosts.get(0), brokerHostPort.getInfo().get(0).getHost());
-        Assert.assertEquals(expectedHosts.get(1), brokerHostPort.getInfo().get(1).getHost());
+        Assert.assertEquals(expectedHosts.get(0), brokerHostPort.getBrokers().get(0).getHost());
+        Assert.assertEquals(expectedHosts.get(1), brokerHostPort.getBrokers().get(1).getHost());
         // verify port
-        Assert.assertEquals(expectedPort, brokerHostPort.getInfo().get(0).getPort());
-        Assert.assertEquals(expectedPort, brokerHostPort.getInfo().get(1).getPort());
+        Assert.assertEquals(expectedPort, brokerHostPort.getBrokers().get(0).getPort());
+        Assert.assertEquals(expectedPort, brokerHostPort.getBrokers().get(1).getPort());
     }
 
     @Test
@@ -127,13 +135,13 @@ public class KafkaMetadataServiceTest {
                 brokerIdZkLeaves,
                 this::getActualBrokerData,
                 p -> Assert.assertEquals(brokerZkData, p),
-                brokerZkData);
+                brokerZkData, true);
     }
 
     private List<String> getActualBrokerData() {
         try {
-            final KafkaMetadataService.BrokersInfo<String> brokerInfo= kafkaMetadataService.getBrokerInfoFromZk();
-            return brokerInfo.getInfo().stream()
+            final KafkaBrokersInfo<String> brokerInfo= kafkaMetadataService.getBrokerInfoFromZk();
+            return brokerInfo.getBrokers().stream()
                     .sorted(String::compareTo)
                     .collect(Collectors.toList());
         } catch (ZookeeperClientException e) {
@@ -148,14 +156,14 @@ public class KafkaMetadataServiceTest {
                 brokerIdZkLeaves,
                 this::getActualBrokerIds,
                 p -> Assert.assertEquals(brokerIdZkLeaves, p),
-                null);
+                null, true);
     }
 
     private List<String> getActualBrokerIds() {
         try {
-            final List<KafkaMetadataService.BrokersInfo.BrokerId> brokers = kafkaMetadataService.getBrokerIdsFromZk().getInfo();
+            final List<KafkaBrokersInfo.BrokerId> brokers = kafkaMetadataService.getBrokerIdsFromZk().getBrokers();
             return brokers.stream()
-                    .map(KafkaMetadataService.BrokersInfo.BrokerId::getId)
+                    .map(KafkaBrokersInfo.BrokerId::getId)
                     .sorted(String::compareTo)
                     .collect(Collectors.toList());
         } catch (ZookeeperClientException e) {
@@ -170,12 +178,12 @@ public class KafkaMetadataServiceTest {
                 componentZkLeaves,
                 this::getActualTopics,
                 p -> Assert.assertEquals(componentZkLeaves, p),
-                null);
+                null, true);
     }
 
     private List<String> getActualTopics() {
         try {
-            final List<String> actualTopics = kafkaMetadataService.getTopicsFromZk().getTopics();
+            final List<String> actualTopics = kafkaMetadataService.getTopicsFromZk().list();
             Collections.sort(actualTopics);
             return actualTopics;
         } catch (ZookeeperClientException e) {
@@ -188,7 +196,6 @@ public class KafkaMetadataServiceTest {
         final String connectionString = server.getConnectString();
         zkCli = ZookeeperClient.newInstance(connectionString);
         zkCli.start();
-//        kafkaMetadataService = new KafkaMetadataService(environmentService, zkCli, kafkaZkConnection);
     }
 
     public void stopZk() {
@@ -196,12 +203,13 @@ public class KafkaMetadataServiceTest {
     }
 
     private <T> void testZkCode(String componentZkPath, List<String> componentZkLeaves,
-            Supplier<T> executionCode, Consumer<T> verificationCode, List<String> zkNodeData) throws Exception {
+                                Supplier<T> executionCode, Consumer<T> verificationCode, List<String> zkNodeData,
+                                boolean setSecurityExpectation) throws Exception {
 
         startZk();
 
         // pass started zk to class under test
-        kafkaMetadataService = new KafkaMetadataService(environmentService, zkCli, kafkaZkConnection);
+        kafkaMetadataService = new KafkaMetadataService(environmentService, zkCli, kafkaZkConnection, securityContext);
 
         try {
             if (zkNodeData != null) {
@@ -226,6 +234,14 @@ public class KafkaMetadataServiceTest {
                     kafkaZkConnection.buildZkRootPath(anyString);
                     result = zkRootPath;
                 }};
+
+                if (setSecurityExpectation) {
+                    new Expectations() {{
+                        // Means test run in insecure mode as they did before adding security
+                        securityContext.getAuthenticationScheme();
+                        result = AUTHENTICATION_SCHEME_NOT_KERBEROS;
+                    }};
+                }
 
                 // Executes the code to test and returns the actual result
                 T actual = executionCode.get();

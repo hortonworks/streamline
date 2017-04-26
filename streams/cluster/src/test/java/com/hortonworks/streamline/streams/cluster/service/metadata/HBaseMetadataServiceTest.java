@@ -19,10 +19,11 @@ import com.google.common.collect.ImmutableList;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
-import com.hortonworks.streamline.streams.cluster.service.metadata.common.Tables;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.HBaseNamespaces;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.Tables;
+
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -52,7 +53,7 @@ public class HBaseMetadataServiceTest {
     @Mocked
     private ServiceConfiguration serviceConfiguration;
 
-    private void setUp() throws Exception {
+    private void setup() throws Exception {
         new Expectations() {{
             serviceConfiguration.getConfigurationMap();
             result = getHBaseSiteConfig();
@@ -85,7 +86,7 @@ public class HBaseMetadataServiceTest {
      */
     @Test
     public void test_getNamespace_getTables() throws Exception {
-        setUp();
+        setup();
         try {
             test_getHBaseNamespaces();
             test_getHBaseTables();
@@ -113,7 +114,7 @@ public class HBaseMetadataServiceTest {
     }
 
     private void test_getHBaseNamespaces() throws Exception {
-        final HBaseMetadataService.Namespaces hBaseNamespaces = hbaseService.getHBaseNamespaces();
+        final HBaseNamespaces hBaseNamespaces = hbaseService.getHBaseNamespaces();
         Assert.assertTrue(hBaseNamespaces.getNamespaces().containsAll(HBASE_TEST_NAMESPACES));
     }
 

@@ -16,15 +16,18 @@
 package com.hortonworks.streamline.streams.cluster.bundle.impl;
 
 import com.google.common.collect.Lists;
-import mockit.Expectations;
-import mockit.Mocked;
-import mockit.Verifications;
-import mockit.integration.junit4.JMockit;
+
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.metadata.KafkaMetadataService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
-import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.Authentication;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.Authorizer;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaBrokersInfo;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaTopics;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.Security;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,8 +35,17 @@ import org.junit.runner.RunWith;
 import java.util.List;
 import java.util.Map;
 
+import javax.ws.rs.core.SecurityContext;
+
+import mockit.Expectations;
+import mockit.Injectable;
+import mockit.Mocked;
+import mockit.Verifications;
+import mockit.integration.junit4.JMockit;
+
 @RunWith(JMockit.class)
 public class KafkaSinkBundleHintProviderTest {
+    private static final String AUTHENTICATION_SCHEME_NOT_KERBEROS = "NOT_KERBEROS";
     private KafkaSinkBundleHintProvider provider = new KafkaSinkBundleHintProvider();
 
     @Mocked
@@ -42,17 +54,33 @@ public class KafkaSinkBundleHintProviderTest {
     @Mocked
     private KafkaMetadataService kafkaMetadataService;
 
+    @Injectable
+    private SecurityContext securityContext;
+
+    @Mocked
+    private Authentication authentication;
+
+    @Mocked
+    private Authorizer authorizer;
+
+    @Mocked
+    private Security security;
+
     @Test
     public void getHintsOnCluster() throws Exception {
+        new Expectations() {{
+            securityContext.getAuthenticationScheme(); result = AUTHENTICATION_SCHEME_NOT_KERBEROS;
+        }};
+
         List<String> topics = Lists.newArrayList("test1", "test2", "test3");
 
         List<String> hosts = Lists.newArrayList("svr1", "svr2");
-        KafkaMetadataService.BrokersInfo<HostPort> brokersInfo = KafkaMetadataService.BrokersInfo.hostPort(hosts, 6667);
+        KafkaBrokersInfo<HostPort> brokersInfo = KafkaBrokersInfo.hostPort(hosts, 6667, securityContext);
         String protocol = "SASL_PLAINTEXT";
 
         new Expectations() {{
             kafkaMetadataService.getTopicsFromZk();
-            result = new KafkaMetadataService.Topics(topics);
+            result = new KafkaTopics(topics, security);
 
             kafkaMetadataService.getBrokerHostPortFromStreamsJson(1L);
             result = brokersInfo;
