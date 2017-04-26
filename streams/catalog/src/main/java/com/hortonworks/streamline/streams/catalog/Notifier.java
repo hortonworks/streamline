@@ -48,6 +48,7 @@ public class Notifier extends AbstractStorable {
     public static final String PROPERTIES = "properties";
     public static final String FIELD_VALUES = "fieldValues";
     public static final String TIMESTAMP = "timestamp";
+    public static final String BUILTIN = "builtin";
 
     private Long id;
     private String name;
@@ -57,6 +58,7 @@ public class Notifier extends AbstractStorable {
     private Map<String, String> properties;
     private Map<String, String> fieldValues;
     private Long timestamp;
+    private Boolean builtin = false;
 
     /**
      * The primary key
@@ -194,12 +196,21 @@ public class Notifier extends AbstractStorable {
         this.description = description;
     }
 
+    public Boolean getBuiltin() {
+        return builtin;
+    }
+
+    public void setBuiltin(Boolean builtin) {
+        this.builtin = builtin;
+    }
+
     @Override
     public Map<String, Object> toMap() {
         Map<String, Object> result = super.toMap();
         try {
             result.put(PROPERTIES, this.getMapAsString(properties));
             result.put(FIELD_VALUES, this.getMapAsString(fieldValues));
+            result.put(BUILTIN, builtin.toString());
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -214,6 +225,8 @@ public class Notifier extends AbstractStorable {
         this.setJarFileName((String) map.get(JARFILE_NAME));
         this.setClassName((String) map.get(CLASS_NAME));
         this.setTimestamp((Long) map.get(TIMESTAMP));
+        this.setBuiltin(Boolean.valueOf((String) map.get(BUILTIN)));
+
         try {
             this.setProperties(this.getStringAsMap((String) map.get(PROPERTIES)));
             this.setFieldValues(this.getStringAsMap((String) map.get(FIELD_VALUES)));
@@ -234,6 +247,7 @@ public class Notifier extends AbstractStorable {
         fields.add(new Schema.Field(TIMESTAMP, Schema.Type.LONG));
         fields.add(new Schema.Field(PROPERTIES, Schema.Type.STRING));
         fields.add(new Schema.Field(FIELD_VALUES, Schema.Type.STRING));
+        fields.add(new Schema.Field(BUILTIN, Schema.Type.STRING));
         return Schema.of(fields);
     }
 
@@ -255,15 +269,17 @@ public class Notifier extends AbstractStorable {
 
     @Override
     public String toString() {
-        return "NotifierInfo{" +
+        return "Notifier{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
                 ", jarFileName='" + jarFileName + '\'' +
                 ", className='" + className + '\'' +
                 ", properties=" + properties +
                 ", fieldValues=" + fieldValues +
                 ", timestamp=" + timestamp +
-                "} " + super.toString();
+                ", builtin=" + builtin +
+                '}';
     }
 
     private String getMapAsString (Map<String, String> map) throws JsonProcessingException {

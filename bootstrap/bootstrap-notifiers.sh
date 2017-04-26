@@ -35,6 +35,7 @@ curl -X POST "${CATALOG_ROOT_URL}/notifiers" -F notifierJarFile=@${jarFile} -F n
   "name": "email_notifier.json",
   "description": "testing",
   "className": "com.hortonworks.streamline.streams.notifiers.EmailNotifier",
+  "builtin": true,
   "properties": {
     "username": "hwemailtest@gmail.com",
     "password": "testing12",
@@ -58,7 +59,8 @@ echo "Adding Console notifier"
 curl -X POST "${CATALOG_ROOT_URL}/notifiers" -F notifierJarFile=@${jarFile} -F notifierConfig='{
   "name": "console_notifier",
   "description": "testing",
-  "className": "com.hortonworks.streamline.streams.notifiers.ConsoleNotifier"
+  "className": "com.hortonworks.streamline.streams.notifiers.ConsoleNotifier",
+  "builtin": true
 };type=application/json'
 
 echo

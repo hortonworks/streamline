@@ -50,6 +50,7 @@ public class UDF extends AbstractStorable {
     public static final String DIGEST = "digest";
     public static final String ARGTYPES = "argTypes";
     public static final String RETURNTYPE = "returnType";
+    public static final String BUILTIN = "builtin";
 
     private Long id;
     private String name;
@@ -60,6 +61,8 @@ public class UDF extends AbstractStorable {
     private String jarStoragePath;
     private List<String> argTypes;
     private Schema.Type returnType;
+    private Boolean builtin = false;
+
     /**
      * The jar file digest which can be used to de-dup jar files.
      * If a newly submitted jar's digest matches with that of an already
@@ -175,6 +178,14 @@ public class UDF extends AbstractStorable {
         this.returnType = returnType;
     }
 
+    public Boolean getBuiltin() {
+        return builtin;
+    }
+
+    public void setBuiltin(Boolean builtin) {
+        this.builtin = builtin;
+    }
+
     @JsonIgnore
     @Override
     public Schema getSchema() {
@@ -188,8 +199,9 @@ public class UDF extends AbstractStorable {
                 Schema.Field.of(JARSTORAGEPATH, Schema.Type.STRING),
                 Schema.Field.of(DIGEST, Schema.Type.STRING),
                 Schema.Field.of(ARGTYPES, Schema.Type.STRING),
-                Schema.Field.of(RETURNTYPE, Schema.Type.STRING)
-        );
+                Schema.Field.of(RETURNTYPE, Schema.Type.STRING),
+                Schema.Field.of(BUILTIN, Schema.Type.STRING)
+                );
     }
 
     @Override
@@ -201,6 +213,7 @@ public class UDF extends AbstractStorable {
             map.put(ARGTYPES, argTypes != null ? mapper.writerFor(new TypeReference<List<String>>() {
             }).writeValueAsString(argTypes) : "");
             map.put(RETURNTYPE, returnType != null ? returnType.toString() : "");
+            map.put(BUILTIN, builtin.toString());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -217,6 +230,8 @@ public class UDF extends AbstractStorable {
         setClassName((String) map.get(CLASSNAME));
         setJarStoragePath((String) map.get(JARSTORAGEPATH));
         setDigest((String) map.get(DIGEST));
+        setBuiltin(Boolean.valueOf((String) map.get(BUILTIN)));
+
         String typeStr = (String) map.get(TYPE);
         try {
             if (!StringUtils.isEmpty(typeStr)) {
@@ -258,7 +273,7 @@ public class UDF extends AbstractStorable {
 
     @Override
     public String toString() {
-        return "UDFInfo{" +
+        return "UDF{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", displayName='" + displayName + '\'' +
@@ -268,7 +283,8 @@ public class UDF extends AbstractStorable {
                 ", jarStoragePath='" + jarStoragePath + '\'' +
                 ", argTypes=" + argTypes +
                 ", returnType=" + returnType +
+                ", builtin=" + builtin +
                 ", digest='" + digest + '\'' +
-                "} " + super.toString();
+                '}';
     }
 }
