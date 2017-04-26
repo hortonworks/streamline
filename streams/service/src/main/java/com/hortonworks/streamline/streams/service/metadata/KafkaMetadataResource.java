@@ -18,12 +18,12 @@ package com.hortonworks.streamline.streams.service.metadata;
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.Cluster;
-import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
-
 import com.hortonworks.streamline.streams.catalog.exception.EntityNotFoundException;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.KafkaMetadataService;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +57,8 @@ public class KafkaMetadataResource {
     public Response getBrokersByClusterId(@PathParam("clusterId") Long clusterId,
                                           @Context SecurityContext securityContext) throws Exception {
         SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, clusterId, READ);
-        try(final KafkaMetadataService kafkaMetadataService = KafkaMetadataService.newInstance(environmentService, clusterId)) {
+        try(final KafkaMetadataService kafkaMetadataService = KafkaMetadataService
+                .newInstance(environmentService, clusterId, securityContext)) {
             return WSUtils.respondEntity(kafkaMetadataService.getBrokerHostPortFromStreamsJson(clusterId), OK);
         } catch (EntityNotFoundException ex) {
             throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
@@ -70,7 +71,8 @@ public class KafkaMetadataResource {
     public Response getTopicsByClusterId(@PathParam("clusterId") Long clusterId,
                                          @Context SecurityContext securityContext) throws Exception {
         SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, clusterId, READ);
-        try(final KafkaMetadataService kafkaMetadataService = KafkaMetadataService.newInstance(environmentService, clusterId)) {
+        try(final KafkaMetadataService kafkaMetadataService = KafkaMetadataService
+                .newInstance(environmentService, clusterId, securityContext)) {
             return WSUtils.respondEntity(kafkaMetadataService.getTopicsFromZk(), OK);
         } catch (EntityNotFoundException ex) {
             throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());

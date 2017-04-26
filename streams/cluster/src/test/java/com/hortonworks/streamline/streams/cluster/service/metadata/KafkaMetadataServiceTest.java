@@ -17,12 +17,12 @@ package com.hortonworks.streamline.streams.cluster.service.metadata;
 
 import com.google.common.collect.Lists;
 
-
-import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
-import org.apache.curator.test.TestingServer;
 import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.exception.ZookeeperClientException;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
+
+import org.apache.curator.test.TestingServer;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,8 +36,11 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import javax.ws.rs.core.SecurityContext;
+
 import mockit.Expectations;
 import mockit.Injectable;
+import mockit.Mocked;
 import mockit.Tested;
 import mockit.integration.junit4.JMockit;
 
@@ -67,6 +70,8 @@ public class KafkaMetadataServiceTest {
     private ZookeeperClient zkCli;
     @Injectable
     private KafkaMetadataService.KafkaZkConnection kafkaZkConnection;
+    @Mocked
+    private SecurityContext securityContext;
 
     // === Test Methods ===
 
@@ -201,7 +206,7 @@ public class KafkaMetadataServiceTest {
         startZk();
 
         // pass started zk to class under test
-        kafkaMetadataService = new KafkaMetadataService(environmentService, zkCli, kafkaZkConnection);
+        kafkaMetadataService = new KafkaMetadataService(environmentService, zkCli, kafkaZkConnection, securityContext);
 
         try {
             if (zkNodeData != null) {

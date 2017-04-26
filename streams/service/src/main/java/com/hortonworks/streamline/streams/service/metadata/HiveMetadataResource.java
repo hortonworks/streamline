@@ -24,6 +24,7 @@ import com.hortonworks.streamline.streams.cluster.service.metadata.HiveMetadataS
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 
+import javax.security.auth.Subject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -41,10 +42,12 @@ import static javax.ws.rs.core.Response.Status.OK;
 public class HiveMetadataResource {
     private final StreamlineAuthorizer authorizer;
     private final EnvironmentService environmentService;
+    private Subject subject;
 
-    public HiveMetadataResource(StreamlineAuthorizer authorizer, EnvironmentService environmentService) {
+    public HiveMetadataResource(StreamlineAuthorizer authorizer, EnvironmentService environmentService, Subject subject) {
         this.authorizer = authorizer;
         this.environmentService = environmentService;
+        this.subject = subject;
     }
 
     @GET
@@ -53,7 +56,7 @@ public class HiveMetadataResource {
     public Response getDatabasesByClusterId(@PathParam("clusterId") Long clusterId,
                                             @Context SecurityContext securityContext) throws Exception {
         SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, clusterId, READ);
-        try(final HiveMetadataService hiveMetadataService = HiveMetadataService.newInstance(environmentService, clusterId)) {
+        try(final HiveMetadataService hiveMetadataService = HiveMetadataService.newInstance(environmentService, clusterId, securityContext, subject)) {
             return WSUtils.respondEntity(hiveMetadataService.getHiveDatabases(), OK);
         } catch (EntityNotFoundException ex) {
             throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
@@ -66,7 +69,7 @@ public class HiveMetadataResource {
     public Response getDatabaseTablesByClusterId(@PathParam("clusterId") Long clusterId, @PathParam("dbName") String dbName,
                                                  @Context SecurityContext securityContext) throws Exception {
         SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, clusterId, READ);
-        try(final HiveMetadataService hiveMetadataService = HiveMetadataService.newInstance(environmentService, clusterId)) {
+        try(final HiveMetadataService hiveMetadataService = HiveMetadataService.newInstance(environmentService, clusterId, securityContext, subject)) {
             return WSUtils.respondEntity(hiveMetadataService.getHiveTables(dbName), OK);
         } catch (EntityNotFoundException ex) {
             throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());

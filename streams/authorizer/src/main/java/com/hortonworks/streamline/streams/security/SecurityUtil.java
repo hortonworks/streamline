@@ -16,16 +16,28 @@
 package com.hortonworks.streamline.streams.security;
 
 import com.hortonworks.streamline.common.exception.service.exception.request.WebserviceAuthorizationException;
+import com.hortonworks.streamline.common.function.SupplierException;
 import com.hortonworks.streamline.storage.Storable;
 
-import javax.ws.rs.core.SecurityContext;
+import org.apache.hadoop.hbase.security.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.security.AccessController;
 import java.security.Principal;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.security.auth.Subject;
+import javax.ws.rs.core.SecurityContext;
+
 public final class SecurityUtil {
+    private static final Logger LOG = LoggerFactory.getLogger(SecurityUtil.class);
 
     public static void checkRole(StreamlineAuthorizer authorizer, SecurityContext securityContext, String... roles) {
         Principal principal = securityContext.getUserPrincipal();
@@ -98,5 +110,44 @@ public final class SecurityUtil {
         AuthenticationContext context = new AuthenticationContext();
         context.setPrincipal(principal);
         return context;
+    }
+
+    /**
+     * Executes the supplied action. If {@code securityContext.isSecure() == true}, it wraps the action execution
+     * with Subject.doAs(subject, action) where subject is created for every call by {@link SecurityUtil#getSubject}
+     */
+    public static <T, E extends Exception> T execute(SupplierException<T, E> action, SecurityContext securityContext)
+            throws E, PrivilegedActionException {
+        return execute(action, securityContext, getSubject());
+    }
+
+    /**
+     * Executes the supplied action. If {@code securityContext.isSecure() == true}, it wraps the
+     * action execution with Subject.doAs(subject, action) with the provided subject
+     */
+    public static <T, E extends Exception> T execute(SupplierException<T, E> action, SecurityContext securityContext, Subject subject)
+            throws E, PrivilegedActionException {
+        if (subject != null && securityContext != null && securityContext.isSecure()) {
+            LOG.debug("Executing secure action [{}] for subject [{}] with security context [{}]", action, securityContext, subject);
+            return Subject.doAs(subject, (PrivilegedExceptionAction<T>) action::get);
+        } else {
+            LOG.debug("Executing insecure action [{}] for subject [{}] with security context [{}]", action, securityContext, subject);
+            return action.get();
+        }
+    }
+
+    public static <T, E extends Exception> T execute(SupplierException<T, E> action, SecurityContext securityContext, User user)
+            throws E, PrivilegedActionException, IOException, InterruptedException {
+        if (user != null && securityContext != null && securityContext.isSecure()) {
+            LOG.debug("Executing secure action [{}] for user [{}] with security context [{}]", action, securityContext, user);
+            return user.runAs((PrivilegedExceptionAction<T>) action::get);
+        } else {
+            LOG.debug("Executing insecure action [{}] for user [{}] with security context [{}]", action, securityContext, user);
+            return action.get();
+        }
+    }
+
+    public static Subject getSubject() {
+        return Subject.getSubject(AccessController.getContext());
     }
 }

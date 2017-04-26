@@ -17,6 +17,8 @@ package com.hortonworks.streamline.streams.cluster.service.metadata;
 
 import com.google.common.collect.Lists;
 
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,9 +31,11 @@ import java.util.List;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Invocation;
+import javax.ws.rs.core.SecurityContext;
 
 import mockit.Expectations;
 import mockit.Injectable;
+import mockit.MockUp;
 import mockit.Tested;
 import mockit.integration.junit4.JMockit;
 
@@ -50,6 +54,11 @@ public class StormMetadataServiceTest {
     String mainPageUrl;
     @Injectable
     Invocation.Builder builder;
+    @Injectable
+    EnvironmentService environmentService;
+    @Injectable
+    SecurityContext securityContext;
+
 
     @Test
     public void getTopologies() throws Exception {
@@ -57,7 +66,7 @@ public class StormMetadataServiceTest {
             builder.get(String.class); result = getTopologiesSummary();
         }};
 
-        final List<String> actualTopologies = stormService.getTopologies().asList();
+        final List<String> actualTopologies = stormService.getTopologies().list();
         Collections.sort(actualTopologies);
 
         final List<String> expectedTopologies = Lists.newArrayList("kafka-topology-2-1474413185",
@@ -69,5 +78,32 @@ public class StormMetadataServiceTest {
     private String getTopologiesSummary() throws IOException {
         return IOUtils.toString(Thread.currentThread().getContextClassLoader()
                         .getResourceAsStream(STORM_TOPOLOGIES_SUMMARY_JSON), Charset.forName("UTF-8"));
+    }
+
+
+    @Test
+    public void buildUrl_secureMode_noQueryParam() throws Exception {
+        new Expectations() {{
+            securityContext.getUserPrincipal(); result = "user@REALM";
+            securityContext.isSecure(); result = false;
+        }};
+
+        StormMetadataService stormMetadataService = new StormMetadataService.Builder(environmentService, 1L, securityContext).build();
+        String tpSumUrl = stormMetadataService.getTopologySummaryUrl();
+
+//        Assert.assertTrue(tpSumUrl.concat());
+
+        //TODO WIP
+
+
+    }
+
+    class MyBuilder extends MockUp<StormMetadataService.Builder> {
+
+    }
+
+    @Test
+    public void buildUrl_insecureMode_doAsUserQueryParam() {
+        //TODO WIP
     }
 }

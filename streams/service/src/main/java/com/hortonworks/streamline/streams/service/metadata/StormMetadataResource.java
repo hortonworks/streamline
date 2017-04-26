@@ -24,6 +24,8 @@ import com.hortonworks.streamline.streams.cluster.service.metadata.StormMetadata
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 
+import java.util.Collections;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -32,7 +34,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import java.util.Collections;
 
 import static com.hortonworks.streamline.streams.security.Permission.READ;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -55,7 +56,8 @@ public class StormMetadataResource {
                                              @Context SecurityContext securityContext) {
         SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, clusterId, READ);
         try {
-            StormMetadataService stormMetadataService = new StormMetadataService.Builder(environmentService, clusterId).build();
+            StormMetadataService stormMetadataService = new StormMetadataService
+                    .Builder(environmentService, clusterId, securityContext).build();
             return WSUtils.respondEntity(stormMetadataService.getTopologies(), OK);
         } catch (EntityNotFoundException ex) {
             throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
@@ -69,7 +71,8 @@ public class StormMetadataResource {
                                            @Context SecurityContext securityContext) {
         SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, clusterId, READ);
         try {
-            StormMetadataService stormMetadataService = new StormMetadataService.Builder(environmentService, clusterId).build();
+            StormMetadataService stormMetadataService = new StormMetadataService
+                    .Builder(environmentService, clusterId, securityContext).build();
             return WSUtils.respondEntity(Collections.singletonMap("url", stormMetadataService.getMainPageUrl()), OK);
         } catch (EntityNotFoundException ex) {
             throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());

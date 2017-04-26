@@ -16,17 +16,19 @@
 package com.hortonworks.streamline.streams.cluster.service.metadata;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
-
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hortonworks.streamline.common.JsonClientUtil;
 import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceComponentNotFoundException;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
-import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
-import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
+import com.hortonworks.streamline.streams.cluster.service.metadata.common.Tables;
+
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 
@@ -38,6 +40,7 @@ import java.util.Map;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.SecurityContext;
 
 public class StormMetadataService {
     private static final String STREAMS_JSON_SCHEMA_SERVICE_STORM = ServiceConfigurations.STORM.name();
@@ -46,31 +49,42 @@ public class StormMetadataService {
     private static final String STORM_REST_API_TOPOLOGIES_DEFAULT_RELATIVE_PATH = "/api/v1/topology/summary";
     private static final String STORM_REST_API_TOPOLOGIES_KEY = "topologies";
     private static final String STORM_REST_API_TOPOLOGY_ID_KEY = "id";
+    private static final String STORM_REST_API_DO_AS_USER_QUERY_PARAM = "doAsUser";
 
     // used to hack adding / getting Storm View
     public static final String SERVICE_STORM_VIEW = "STORM_VIEW";
     public static final String STORM_VIEW_CONFIGURATION_KEY_STORM_VIEW_URL = "storm.view.url";
 
+    private SecurityContext securityContext;
     private Client httpClient;
-    private String url;
-    private String mainPageUrl;
+    private String tplgySumUrl;     // http://cn067.l42scl.hortonworks.com:8744/api/v1/topology/summary
+    private String mainPageUrl;     // Views: http://172.12.128.67:8080/main/views/Storm_Monitoring/0.1.0/STORM_CLUSTER_INSTANCE
+                                    // UI:    http://pm-eng1-cluster1.field.hortonworks.com:8744
 
-    public StormMetadataService(Client httpClient, String url, String mainPageUrl) {
+
+    public StormMetadataService(Client httpClient, String tplgySumUrl, String mainPageUrl) {
+        this(httpClient, tplgySumUrl, mainPageUrl, null);
+    }
+
+    public StormMetadataService(Client httpClient, String tplgySumUrl, String mainPageUrl, SecurityContext securityContext) {
         this.httpClient = httpClient;
-        this.url = url;
+        this.tplgySumUrl = tplgySumUrl;
         this.mainPageUrl = mainPageUrl;
+        this.securityContext = securityContext;
     }
 
     public static class Builder {
         private EnvironmentService environmentService;
         private Long clusterId;
+        private SecurityContext securityContext;
         private String urlRelativePath = STORM_REST_API_TOPOLOGIES_DEFAULT_RELATIVE_PATH;
         private String username = "";
         private String password = "";
 
-        public Builder(EnvironmentService environmentService, Long clusterId) {
+        public Builder(EnvironmentService environmentService, Long clusterId, SecurityContext securityContext) {
             this.environmentService = environmentService;
             this.clusterId = clusterId;
+            this.securityContext = securityContext;
         }
 
         Builder setUrlRelativePath(String urlRelativePath) {
@@ -89,9 +103,12 @@ public class StormMetadataService {
         }
 
         public StormMetadataService build() throws ServiceNotFoundException, ServiceComponentNotFoundException {
-            return new StormMetadataService(newHttpClient(), getTopologySummaryRestUrl(), getMainPageUrl());
+            return new StormMetadataService(newHttpClient(), getTopologySummaryRestUrl(), getMainPageUrl(), securityContext);
         }
 
+        /**
+         * @return If storm view is configured it returns its URL, otherwise it returns the URL of the Storm UI
+         */
         private String getMainPageUrl() throws ServiceNotFoundException, ServiceComponentNotFoundException {
             Service stormService = environmentService.getServiceByName(clusterId, STREAMS_JSON_SCHEMA_SERVICE_STORM);
             if (stormService == null) {
@@ -127,8 +144,12 @@ public class StormMetadataService {
         }
 
         private String getTopologySummaryRestUrl() throws ServiceNotFoundException, ServiceComponentNotFoundException {
-            HostPort hostPort = getHostPort();
-            return "http://" + hostPort.toString() + (urlRelativePath.startsWith("/") ? urlRelativePath : "/" + urlRelativePath);
+            final HostPort hostPort = getHostPort();
+            String url = "http://" + hostPort.toString() + (urlRelativePath.startsWith("/") ? urlRelativePath : "/" + urlRelativePath);
+            if (securityContext.isSecure()) {
+                url += "?" + STORM_REST_API_DO_AS_USER_QUERY_PARAM + "=" + securityContext.getUserPrincipal().getName();
+            }
+            return url;
         }
 
         private HostPort getHostPort() throws ServiceNotFoundException, ServiceComponentNotFoundException {
@@ -151,7 +172,7 @@ public class StormMetadataService {
      * @return List of storm topologies as returned by Storm's REST API
      */
     public Topologies getTopologies() {
-        final Map<String, ?> jsonAsMap = JsonClientUtil.getEntity(httpClient.target(url), Map.class);
+        final Map<String, ?> jsonAsMap = JsonClientUtil.getEntity(httpClient.target(tplgySumUrl), Map.class);
         List<String> topologies = Collections.emptyList();
         if (jsonAsMap != null) {
             final List<Map<String, String>> topologiesSummary = (List<Map<String, String>>) jsonAsMap.get(STORM_REST_API_TOPOLOGIES_KEY);
@@ -162,14 +183,21 @@ public class StormMetadataService {
                 }
             }
         }
-        return new Topologies(topologies);
+        return new Topologies(topologies, securityContext);
     }
 
     /**
-     * @return The URL of main page for Storm UI
+     * @return The URL of main page for the Storm UI, or if storm view is configured it returns its URL
      */
     public String getMainPageUrl() {
         return mainPageUrl;
+    }
+
+    /**
+     * @return the URL to retrieve the summary of deployed topologies from the storm UI
+     */
+    public String getTopologySummaryUrl() {
+        return tplgySumUrl;
     }
 
     /** Wrapper used to show proper JSON formatting
@@ -181,14 +209,27 @@ public class StormMetadataService {
      * */
     public static class Topologies {
         private List<String> topologies;
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String msg;
 
         public Topologies(List<String> topologies) {
+            this(topologies, null);
+        }
+
+        public Topologies(List<String> topologies, SecurityContext securityContext) {
             this.topologies = topologies;
+            if (securityContext != null && securityContext.isSecure()) {
+                msg = Tables.AUTHRZ_MSG;
+            }
         }
 
         @JsonGetter("topologies")
-        public List<String> asList() {
+        public List<String> list() {
             return topologies;
+        }
+
+        public String getMsg() {
+            return msg;
         }
     }
 }

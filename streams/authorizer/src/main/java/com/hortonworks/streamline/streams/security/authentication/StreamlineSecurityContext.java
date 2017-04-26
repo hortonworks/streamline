@@ -18,8 +18,9 @@ package com.hortonworks.streamline.streams.security.authentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.SecurityContext;
 import java.security.Principal;
+
+import javax.ws.rs.core.SecurityContext;
 
 /**
  * Holds authenticated principal and security context which gets passed to the JAX-RS request methods
@@ -60,6 +61,7 @@ public class StreamlineSecurityContext implements SecurityContext {
         return "StreamlineSecurityContext{" +
                 "principal=" + principal +
                 ", scheme='" + scheme + '\'' +
+                ", isSecure=" + isSecure() +
                 '}';
     }
 }
