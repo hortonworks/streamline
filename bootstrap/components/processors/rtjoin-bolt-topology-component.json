@@ -1,7 +1,7 @@
 {
   "type": "PROCESSOR",
-  "name": "Join",
-  "subType": "JOIN",
+  "name": "Realtime Join",
+  "subType": "RT-JOIN",
   "builtin": true,
   "streamingEngine": "STORM",
   "transformationClass": "com.hortonworks.streamline.streams.layout.storm.RealtimeJoinBoltFluxComponent",

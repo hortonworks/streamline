@@ -152,6 +152,7 @@ function add_all_bundles {
     add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/window-topology-component.json
     add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/branch-topology-component.json
     add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/join-bolt-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/rtjoin-bolt-topology-component.json
     add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/model-topology-component.json
     add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/projection-topology-component.json
     # === Sink ===

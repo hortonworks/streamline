@@ -32,11 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Arrays;
+import java.util.*;
 
 
 public class RealtimeJoinBolt extends BaseRichBolt  {
@@ -89,8 +85,9 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
         }
     }
 
-    // Use streamId, source component name OR field in tuple to distinguish incoming tuple streams
+
     public enum Selector { STREAM, SOURCE }
+    // Indicates if we are using streamId or source component name to distinguish incoming tuple streams
     protected final Selector selectorType;
 
     /**
@@ -143,6 +140,7 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
      * Introduces the buffered 'LookupStream' for inner join and retention policy
      * @param lookupStream   Name of the stream (or source component Id) to be treated as a buffered 'LookupStream'
      * @param retentionCount How many records to retain.
+     * @param dropOlderDuplicates if records should be de-duped when buffered in order to retain the latest data
      * @return
      */
     public RealtimeJoinBolt innerJoin(String lookupStream, BaseWindowedBolt.Count retentionCount, boolean dropOlderDuplicates) {
@@ -304,60 +302,77 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
             expireAndAckTimedOutEntries(lookupBuffer);
         }
 
-        String streamId = getStreamSelector(tuple);
-        if ( isLookupStream(streamId) ) {
-            String key = makeLookupTupleKey(tuple);
-            if(dropOlderDuplicates)
-                lookupBuffer.removeAll(key);
-            lookupBuffer.put(key, new TupleInfo(tuple) );
-
-            if(timeBasedRetention) {
-                timeTracker.add(System.currentTimeMillis());
-            } else {  // count based Rotation
-                if (lookupBuffer.size() > retentionCount) {
-                    TupleInfo expired = removeHead(lookupBuffer);
-                    if( (joinType==JoinType.RIGHT) || (joinType==JoinType.OUTER)  ) {
-                        emitUnMatchedTuples(expired);
-                    }
-                    collector.ack(expired.tuple);
-                }
+        try {
+            String streamId = getStreamSelector(tuple);
+            if ( isLookupStream(streamId) ) {
+                processLookupStreamTuple(tuple);
+            } else if (isDataStream(streamId) ) {
+                processDataStreamTuple(tuple);
+            } else {
+                throw new InvalidTuple("Received tuple from unexpected stream/source : " + streamId, tuple);
             }
-        } else if (isDataStream(streamId) ) {
-            List<TupleInfo> matches = matchWithLookupStream(tuple);
-            if (matches==null || matches.isEmpty() ) {  // no match
-                if (joinType==JoinType.LEFT ||  joinType==JoinType.OUTER ) {
-                    ArrayList<Object> outputTuple = doProjection(tuple, null);
-                    emit(outputTuple, tuple);
-                    return;
-                }
-                collector.ack(tuple);
-            }
-
-            for (TupleInfo lookupTuple : matches) { // match found
-                lookupTuple.unmatched = false;
-                ArrayList<Object> outputTuple = doProjection(lookupTuple.tuple, tuple);
-                emit(outputTuple, tuple, lookupTuple.tuple);
-            }
+        } catch (InvalidTuple e) {
             collector.ack(tuple);
-        } else {
-            LOG.warn("Received tuple from unexpected stream/source : {}. Tuple will be dropped.", streamId);
+            LOG.warn("{}. Tuple will be dropped.",  e.toString());
         }
     }
 
-    private String makeLookupTupleKey(Tuple tuple) {
-        StringBuffer key = new StringBuffer();
+    private void processDataStreamTuple(Tuple tuple) throws InvalidTuple {
+        List<TupleInfo> matches = matchWithLookupStream(tuple);
+        if (matches==null || matches.isEmpty() ) {  // no match
+            if (joinType== JoinType.LEFT ||  joinType== JoinType.OUTER ) {
+                List<Object> outputTuple = doProjection(tuple, null);
+                emit(outputTuple, tuple);
+                return;
+            }
+            collector.ack(tuple);
+        }  else {
+            for (TupleInfo lookupTuple : matches) { // match found
+                lookupTuple.unmatched = false;
+                List<Object> outputTuple = doProjection(lookupTuple.tuple, tuple);
+                emit(outputTuple, tuple, lookupTuple.tuple);
+            }
+            collector.ack(tuple);
+        }
+    }
+
+    private void processLookupStreamTuple(Tuple tuple) throws InvalidTuple {
+        String key = makeLookupTupleKey(tuple);
+        if(dropOlderDuplicates)
+            lookupBuffer.removeAll(key);
+        lookupBuffer.put(key, new TupleInfo(tuple) );
+
+        if(timeBasedRetention) {
+            timeTracker.add(System.currentTimeMillis());
+        } else {  // count based Rotation
+            if (lookupBuffer.size() > retentionCount) {
+                TupleInfo expired = removeHead(lookupBuffer);
+                if( (joinType== JoinType.RIGHT) || (joinType== JoinType.OUTER)  ) {
+                    emitUnMatchedTuples(expired);
+                }
+                collector.ack(expired.tuple);
+            }
+        }
+    }
+
+    private String makeLookupTupleKey(Tuple tuple) throws InvalidTuple {
+        StringBuilder key = new StringBuilder();
         for (JoinInfo ji : joinCriteria) {
             String partialKey = findField(ji.lookupField, tuple).toString();
+            if (partialKey==null)
+                throw new InvalidTuple("'" +ji.lookupField + "' field is is missing in the tuple", tuple);
             key.append( partialKey );
             key.append(".");
         }
         return key.toString();
     }
 
-    private String makeDataTupleKey(Tuple tuple) {
-        StringBuffer key = new StringBuffer();
+    private String makeDataTupleKey(Tuple tuple)  throws InvalidTuple  {
+        StringBuilder key = new StringBuilder();
         for (JoinInfo ji : joinCriteria) {
             String partialKey = findField(ji.dataField, tuple).toString();
+            if (partialKey==null)
+                throw new InvalidTuple("'" + ji.dataField + " field is is missing in the tuple", tuple);
             key.append( partialKey );
             key.append(".");
         }
@@ -365,7 +380,7 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
     }
 
     // returns null if no match
-    private List<TupleInfo> matchWithLookupStream(Tuple lookupTuple) {
+    private List<TupleInfo> matchWithLookupStream(Tuple lookupTuple) throws InvalidTuple {
         String key = makeDataTupleKey(lookupTuple);
         return lookupBuffer.get(key);
     }
@@ -374,7 +389,7 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
     private void expireAndAckTimedOutEntries(LinkedListMultimap<String, TupleInfo> lookupBuffer) {
         Long expirationTime = System.currentTimeMillis() - retentionTime;
         Long  insertionTime = timeTracker.peek();
-        while ( insertionTime!=null && expirationTime.compareTo(insertionTime) > 0) {
+        while ( insertionTime!=null  &&   expirationTime > insertionTime ) {
             TupleInfo expired = removeHead(lookupBuffer);
             timeTracker.pop();
             if ( joinType == JoinType.RIGHT || joinType == JoinType.OUTER )
@@ -386,7 +401,7 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
 
     private void emitUnMatchedTuples(TupleInfo expired) {
         if(expired.unmatched) {
-            ArrayList<Object> outputTuple = doProjection(expired.tuple, null);
+            List<Object> outputTuple = doProjection(expired.tuple, null);
             emit(outputTuple, expired.tuple);
         }
     }
@@ -397,14 +412,14 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
     }
 
 
-    private void emit(ArrayList<Object> outputTuple, Tuple anchor) {
+    private void emit(List<Object> outputTuple, Tuple anchor) {
         if ( outputStream ==null )
             collector.emit(anchor, outputTuple);
         else
             collector.emit(outputStream, anchor, outputTuple);
     }
 
-    private void emit(ArrayList<Object> outputTuple, Tuple dataTupleAnchor, Tuple lookupTupleAnchor) {
+    private void emit(List<Object> outputTuple, Tuple dataTupleAnchor, Tuple lookupTupleAnchor) {
         List<Tuple> anchors = Arrays.asList(dataTupleAnchor, lookupTupleAnchor);
         if ( outputStream ==null )
             collector.emit(anchors, outputTuple);
@@ -432,7 +447,8 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
         }
     }
 
-    // Extract the field from tuple. Field may be nested field (x.y.z)
+    // Extract the field from tuple. Can be a nested field (x.y.z)
+    // returns null if not found
     protected Object findField(FieldSelector fieldSelector, Tuple tuple) {
         if (tuple==null) {
             return null;
@@ -465,8 +481,7 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
      * @param tuple2   can be null
      * @return   project fields
      */
-
-    protected ArrayList<Object> doProjection(Tuple tuple1, Tuple tuple2) {
+    protected List<Object> doProjection(Tuple tuple1, Tuple tuple2) {
         if(streamLineProjection)
             return doStreamlineProjection(tuple1, tuple2);
 
@@ -482,12 +497,11 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
     }
 
     // NOTE: Streamline specific convenience method. Creates output tuple as a StreamlineEvent
-    protected ArrayList<Object> doStreamlineProjection(Tuple tuple1, Tuple tuple2) {
+    protected List<Object> doStreamlineProjection(Tuple tuple1, Tuple tuple2) {
 //        String flattenedKey = projectionKeys[i].getOutputName();
 //        String outputKeyName = dropStreamLineEventPrefix(flattenedKey); // drops the "streamline-event." prefix
         StreamlineEventImpl.Builder eventBuilder = StreamlineEventImpl.builder();
 
-        ArrayList<Object> result = new ArrayList<>(outputFields.length);
         for ( int i = 0; i < outputFields.length; i++ ) {
             FieldSelector outField = outputFields[i];
 
@@ -501,6 +515,7 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
         ArrayList<Object> resultRow = new ArrayList<>();
         StreamlineEventImpl slEvent = eventBuilder.dataSourceId("multiple sources").build();
         resultRow.add(slEvent);
+        Collections.singletonList();
         return resultRow;
 
     }
@@ -633,6 +648,15 @@ class TupleInfo {
     Tuple tuple;
 
     public TupleInfo(Tuple tuple) {
+        this.tuple = tuple;
+    }
+}
+
+class InvalidTuple extends Exception {
+    Tuple tuple;
+
+    public InvalidTuple(String errMsg, Tuple tuple) {
+        super(errMsg);
         this.tuple = tuple;
     }
 }
