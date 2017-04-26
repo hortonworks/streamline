@@ -40,6 +40,14 @@ public class DruidSinkBundleHintProvider extends AbstractBundleHintProvider {
             putToHintMapIfAvailable(configurationMap, hintMap, Constants.Druid.PROPERTY_KEY_ZK_SERVICE_HOSTS, FIELD_NAME_ZK_CONNECT);
             putToHintMapIfAvailable(configurationMap, hintMap, Constants.Druid.PROPERTY_KEY_INDEXING_SERVICE_NAME, FIELD_NAME_INDEX_SERVICE);
             putToHintMapIfAvailable(configurationMap, hintMap, Constants.Druid.PROPERTY_KEY_DISCOVERY_CURATOR_PATH, FIELD_NAME_DISCOVERY_PATH);
+
+            // exceptional case for Ambari import
+            if (!hintMap.containsKey(FIELD_NAME_INDEX_SERVICE)) {
+                ServiceConfiguration druidOverload = environmentService.getServiceConfigurationByName(druid.getId(), Constants.Druid.CONF_TYPE_DRUID_OVERLOAD);
+                if (druidOverload != null) {
+                    putToHintMapIfAvailable(druidOverload.getConfigurationMap(), hintMap, Constants.Druid.PROPERTY_KEY_SERVICE_NAME, FIELD_NAME_INDEX_SERVICE);
+                }
+            }
         } catch (ServiceNotFoundException e) {
             // we access it from mapping information so shouldn't be here
             throw new IllegalStateException("Service " + Constants.Druid.SERVICE_NAME + " in cluster " + cluster.getName() +

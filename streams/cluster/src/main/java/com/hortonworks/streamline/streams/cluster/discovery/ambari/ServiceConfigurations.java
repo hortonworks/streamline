@@ -31,7 +31,8 @@ public enum ServiceConfigurations {
   HIVE("hive-env", "hive-interactive-env", "hive-interactive-site",
       "hivemetastore-site", "hiveserver2-interactive-site",
       "hiveserver2-site","hive-site"),
-  AMBARI_METRICS("ams-env", "ams-site");
+  AMBARI_METRICS("ams-env", "ams-site"),
+  DRUID("druid-common", "druid-overlord");
 
   private final String[] confNames;
 

@@ -26,7 +26,9 @@ public enum ServiceConfigTypeAmbariToOriginalPattern {
     // 'storm': storm.yaml
     STORM_SITE("storm-site", "storm"),
     // 'server': server.properties
-    KAFKA_BROKER("kafka-broker", "server");
+    KAFKA_BROKER("kafka-broker", "server"),
+    // 'druid-common': common.runtime.properties
+    DRUID("druid-common", "common.runtime");
 
     private final String ambariConfType;
     private final String originalConfType;
