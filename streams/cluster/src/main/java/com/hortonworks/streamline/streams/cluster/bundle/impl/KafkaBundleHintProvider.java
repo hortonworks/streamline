@@ -15,15 +15,17 @@
  **/
 package com.hortonworks.streamline.streams.cluster.bundle.impl;
 
-import com.hortonworks.streamline.streams.cluster.Constants;
-import org.apache.commons.lang3.StringUtils;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
+import com.hortonworks.streamline.streams.cluster.Constants;
+import com.hortonworks.streamline.streams.cluster.bundle.AbstractBundleHintProvider;
 import com.hortonworks.streamline.streams.cluster.service.metadata.KafkaMetadataService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.ZookeeperMetadataService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
-import com.hortonworks.streamline.streams.cluster.bundle.AbstractBundleHintProvider;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaTopics;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -45,7 +47,7 @@ public class KafkaBundleHintProvider extends AbstractBundleHintProvider {
         Map<String, Object> hintClusterMap = new HashMap<>();
         try (KafkaMetadataService kafkaMetadataService = KafkaMetadataService.newInstance(environmentService, cluster.getId())) {
             KafkaMetadataService.KafkaZkConnection zkConnection = kafkaMetadataService.getKafkaZkConnection();
-            KafkaMetadataService.Topics topics = kafkaMetadataService.getTopicsFromZk();
+            KafkaTopics topics = kafkaMetadataService.getTopicsFromZk();
 
             String zkUrl = zkConnection.createZkConnString();
             String brokerPath = DEFAULT_BROKER_ZK_PATH;
@@ -59,7 +61,7 @@ public class KafkaBundleHintProvider extends AbstractBundleHintProvider {
             }
 
             hintClusterMap.put(FIELD_NAME_ZK_URL, zkUrl);
-            hintClusterMap.put(FIELD_NAME_TOPIC, topics.getTopics());
+            hintClusterMap.put(FIELD_NAME_TOPIC, topics.list());
             hintClusterMap.put(FIELD_NAME_BROKER_ZK_PATH, brokerPath);
 
             fillZookeeperHints(cluster, hintClusterMap);
