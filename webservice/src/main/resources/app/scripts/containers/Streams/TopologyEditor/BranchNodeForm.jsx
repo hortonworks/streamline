@@ -51,6 +51,7 @@ export default class BranchNodeForm extends Component {
   constructor(props) {
     super(props);
     let {editMode} = props;
+    this.fetchDataAgain = false;
     this.state = {
       parallelism: 1,
       editMode: editMode,
@@ -62,49 +63,25 @@ export default class BranchNodeForm extends Component {
     this.fetchData();
   }
 
+  componentWillUpdate() {
+    if(this.context.ParentForm.state.inputStreamOptions.length > 0 && !(this.fetchDataAgain)){
+      this.getDataFromParentFormContext();
+    }
+  }
+
   fetchData() {
     let {topologyId, versionId, nodeType, nodeData} = this.props;
     let promiseArr = [
-      TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId),
       TopologyREST.getAllNodes(topologyId, versionId, 'edges'),
       TopologyREST.getAllNodes(topologyId, versionId, 'streams')
     ];
 
     Promise.all(promiseArr).then((results) => {
-      this.nodeData = results[0];
-      let configFields = results[0].config.properties;
-      let {
-        rules = [],
-        parallelism = 1
-      } = configFields;
-
-      let promise = [];
-      rules.map(id => {
-        promise.push(TopologyREST.getNode(topologyId, versionId, 'branchrules', id));
-      });
-
-      Promise.all(promise).then(results => {
-        let ruleArr = [];
-        results.map(result => {
-          ruleArr.push(result);
-        });
-        this.setState({rules: ruleArr});
-      });
-
-      let stateObj = {
-        parallelism: parallelism
-          ? parallelism
-          : 1,
-        processAll: configFields.processAll
-          ? true
-          : false
-      };
-
       //Found the edge connected to current node
-      let allEdges = results[1].entities;
+      let allEdges = results[0].entities;
       this.allEdges = allEdges;
 
-      let allStreams = results[2].entities;
+      let allStreams = results[1].entities;
       this.allStreams = allStreams;
 
       //find the input stream from connected edge
@@ -113,15 +90,53 @@ export default class BranchNodeForm extends Component {
       });
       this.parsedStream = '';
       this.parsedStream = _.find(allStreams, {id: this.edgeToNode[0].streamGroupings[0].streamId});
-      if (this.nodeData.outputStreams.length > 0) {
-        this.streamData = this.nodeData.outputStreams[0];
-        this.context.ParentForm.setState({outputStreamObj: this.streamData});
-      } else {
-        this.context.ParentForm.setState({outputStreamObj: {}});
+      if(this.context.ParentForm.state.inputStreamOptions.length){
+        this.getDataFromParentFormContext();
       }
-      this.setState(stateObj);
     });
   }
+
+  getDataFromParentFormContext = () => {
+    let {topologyId, versionId, nodeType, nodeData} = this.props;
+    this.fetchDataAgain = true;
+    this.nodeData = this.context.ParentForm.state.processorNode;
+    let configFields = this.nodeData.config.properties;
+    let {
+      rules = [],
+      parallelism = 1
+    } = configFields;
+
+    let promise = [];
+    rules.map(id => {
+      promise.push(TopologyREST.getNode(topologyId, versionId, 'branchrules', id));
+    });
+
+    Promise.all(promise).then(results => {
+      let ruleArr = [];
+      results.map(result => {
+        ruleArr.push(result);
+      });
+      this.setState({rules: ruleArr});
+    });
+
+    let stateObj = {
+      parallelism: parallelism
+        ? parallelism
+        : 1,
+      processAll: configFields.processAll
+        ? true
+        : false
+    };
+
+    if (this.nodeData.outputStreams.length > 0) {
+      this.streamData = this.context.ParentForm.state.inputStreamOptions[0];
+      this.context.ParentForm.setState({outputStreamObj: this.streamData});
+    } else {
+      this.context.ParentForm.setState({outputStreamObj: {}});
+    }
+    this.setState(stateObj);
+  }
+
 
   validateData() {
     return true;

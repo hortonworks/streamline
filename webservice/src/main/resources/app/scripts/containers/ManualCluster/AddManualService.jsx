@@ -66,7 +66,8 @@ class AddManualService extends Component{
   */
   handleServiceChange = (obj) => {
     if(obj){
-      this.setState({selectedObj : obj, serviceFormFields: obj.serviceUISpecification.fields});
+      const tempData = Utils.handleNestedFormDataEmptyObj(this.state.formData);
+      this.setState({selectedObj : obj, serviceFormFields: obj.serviceUISpecification.fields,formData : tempData});
     }
   }
 
@@ -146,7 +147,7 @@ class AddManualService extends Component{
                   <label>Select Service
                     <span className="text-danger">*</span>
                   </label>
-                  <Select placeholder="Select service" value={selectedObj} options={entities} required={true} valueKey="name" labelKey="name" onChange={this.handleServiceChange} />
+                  <Select placeholder="Select service" value={selectedObj} options={entities} required={true} valueKey="name" labelKey="name" onChange={this.handleServiceChange.bind(this)} />
                 </div>
               </div>
               {

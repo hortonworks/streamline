@@ -98,14 +98,14 @@ class TestRunResult extends Component{
                 </div>
                 <div className="form-group">
                   <div className="row">
-                    <div className={expOutputData || !testResult.finished ? "col-md-6" : "col-md-12"}>
+                    <div className={this.props.testSinkConfigure.length !== 0 ? "col-md-6" : "col-md-12"}>
                       <label>Actual Output Records
                         <span className="text-danger">*</span>
                       </label>
                       <ReactCodemirror ref="JSONCodemirror" value={actualOutputData} options={jsonoptions}/>
                     </div>
                     {
-                      expOutputData || !testResult.finished
+                      this.props.testSinkConfigure.length !== 0
                       ? <div className="col-md-6">
                           <label>Expected Output Records
                             <span className="text-danger">*</span>

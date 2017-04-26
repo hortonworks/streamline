@@ -471,6 +471,25 @@ const mergeFormDataFields = function(name, clusterArr,clusterName,formData,uiSpe
   return {obj,tempData};
 };
 
+const handleNestedFormDataEmptyObj = (formData) => {
+  const nestedObj = function(data){
+    return _.map(_.keys(data), (key) => {
+      if(_.isObject(data[key])){
+        nestedObj(data[key]);
+      } else if (_.isArray(data[key])){
+        if(data[key].length === 0){
+          delete data[key];
+        }
+      } else {
+        if(data[key] === undefined || data[key] === ''){
+          delete data[key];
+        }
+      }
+    });
+  };
+  return nestedObj(formData);
+};
+
 export default {
   sortArray,
   numberToMilliseconds,
@@ -495,5 +514,6 @@ export default {
   mergeObject,
   deepmerge,
   deepmergeAll,
-  mergeFormDataFields
+  mergeFormDataFields,
+  handleNestedFormDataEmptyObj
 };

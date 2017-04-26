@@ -1260,7 +1260,7 @@ class TopologyEditorContainer extends Component {
   }
 
   render() {
-    const {progressCount, progressBarColor, fetchLoader, mapTopologyConfig,deployStatus,testRunActivated,testCaseList,selectedTestObj,testCaseLoader,testRunCurrentEdges,testResult,nodeData,testName,showError} = this.state;
+    const {progressCount, progressBarColor, fetchLoader, mapTopologyConfig,deployStatus,testRunActivated,testCaseList,selectedTestObj,testCaseLoader,testRunCurrentEdges,testResult,nodeData,testName,showError,testSinkConfigure} = this.state;
     let nodeType = this.node
       ? this.node.currentType
       : '';
@@ -1360,7 +1360,7 @@ class TopologyEditorContainer extends Component {
         {/*TestRun Results*/}
         <Modal ref="TestRunResultModal" onKeyPress={this.handleKeyPress.bind(this)} dialogClassName="modal-xl" data-title="Test Case"
           data-reject={this.testRunResultModal.bind(this)} hideFooter={true}>
-          <TestRunResult testResult={testResult} cancelTestResultApiCB={this.cancelTestResultApiCB}/>
+          <TestRunResult testResult={testResult} testSinkConfigure={testSinkConfigure} cancelTestResultApiCB={this.cancelTestResultApiCB}/>
         </Modal>
 
         {/*ConfirmBox to Change Mode to Dev || Test*/}

@@ -55,13 +55,21 @@ export class BaseField extends Component {
   render() {
     const {className} = this.props;
     const labelHint = this.props.fieldJson.hint || null;
+    const popoverContent = (
+      <Popover id="popover-trigger-hover-focus">
+        {this.props.fieldJson.tooltip}
+      </Popover>
+    );
     return (
       <FormGroup className={className}>
         {labelHint !== null && labelHint.toLowerCase().indexOf("hidden") !== -1
           ? ''
-          : <label>{this.props.label} {this.props.validation && this.props.validation.indexOf('required') !== -1
-              ? <span className="text-danger">*</span>
-              : null}</label>
+          : <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
+              <label>{this.props.label} {this.props.validation && this.props.validation.indexOf('required') !== -1
+                ? <span className="text-danger">*</span>
+                : null}
+              </label>
+            </OverlayTrigger>
 }
         {this.getField()}
         <p className="text-danger">{this.context.Form.state.Errors[this.props.valuePath]}</p>
@@ -95,11 +103,6 @@ export class file extends BaseField {
   }
 
   getField = () => {
-    const popoverContent = (
-      <Popover id="popover-trigger-hover-focus">
-        {this.props.fieldJson.tooltip}
-      </Popover>
-    );
     const inputHint = this.props.fieldJson.hint || null;
     let disabledField = this.context.Form.props.readOnly;
     if (this.props.fieldJson.isUserInput !== undefined) {
@@ -107,8 +110,7 @@ export class file extends BaseField {
     }
     return (inputHint !== null && inputHint.toLowerCase().indexOf("hidden") !== -1
       ? ''
-      : <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
-        <div>
+      : <div>
           <input ref="fileName" accept={`.${this.props.fieldJson.hint}`}
             type={this.props.fieldJson.hint !== undefined
             ? this.props.fieldJson.hint.toLowerCase().indexOf("file") !== -1
@@ -143,8 +145,7 @@ export class file extends BaseField {
               />
             </InputGroup>
           </div>
-        </div>
-      </OverlayTrigger>);
+        </div>);
   }
 
 }
@@ -197,11 +198,6 @@ export class string extends BaseField {
   }
 
   getField = () => {
-    const popoverContent = (
-      <Popover id="popover-trigger-hover-focus">
-        {this.props.fieldJson.tooltip}
-      </Popover>
-    );
     const inputHint = this.props.fieldJson.hint || null;
     let disabledField = this.context.Form.props.readOnly;
     if (this.props.fieldJson.isUserInput !== undefined) {
@@ -209,8 +205,7 @@ export class string extends BaseField {
     }
     return (inputHint !== null && inputHint.toLowerCase().indexOf("hidden") !== -1
       ? ''
-      : <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
-        {this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase().indexOf("textarea") !== -1
+      : this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase().indexOf("textarea") !== -1
           ? <textarea className={this.context.Form.state.Errors[this.props.valuePath]
               ? "form-control invalidInput"
               : "form-control"} ref="input" disabled={disabledField} value={this.props.data[this.props.value] || ''} {...this.props.attrs} onChange={this.handleChange}/>
@@ -223,8 +218,7 @@ export class string extends BaseField {
             : "text"} className={this.context.Form.state.Errors[this.props.valuePath]
             ? "form-control invalidInput"
             : "form-control"} ref="input" value={this.props.data[this.props.value] || ''} disabled={disabledField} {...this.props.attrs} onChange={this.handleChange}/>
-}
-      </OverlayTrigger>);
+    );
   }
 }
 
@@ -247,22 +241,16 @@ export class number extends BaseField {
     const max = this.props.fieldJson.max !== undefined
       ? this.props.fieldJson.max
       : Number.MAX_SAFE_INTEGER;
-    const popoverContent = (
-      <Popover id="popover-trigger-hover-focus">
-        {this.props.fieldJson.tooltip}
-      </Popover>
-    );
     let disabledField = this.context.Form.props.readOnly;
     if (this.props.fieldJson.isUserInput !== undefined) {
       disabledField = disabledField || !this.props.fieldJson.isUserInput;
     }
     return (numberHint !== null && numberHint.toLowerCase().indexOf("hidden") !== -1
       ? ''
-      : <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
-        <input type="number" className={this.context.Form.state.Errors[this.props.valuePath]
+      :<input type="number" className={this.context.Form.state.Errors[this.props.valuePath]
           ? "form-control invalidInput"
           : "form-control"} ref="input" value={this.props.data[this.props.value]} disabled={disabledField} {...this.props.attrs} min={min} max={max} onChange={this.handleChange}/>
-      </OverlayTrigger>);
+    );
   }
 }
 
@@ -292,19 +280,19 @@ export class boolean extends BaseField {
     return (booleanHint !== null && booleanHint.toLowerCase().indexOf("hidden") !== -1
       ? null
       : <FormGroup className={className}>
-        <label>
           <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
-            <input type="checkbox" ref="input" checked={this.props.data[this.props.value]} disabled={disabledField} {...this.props.attrs} onChange={this.handleChange} style={{
-              marginRight: '10px'
-            }} className={this.context.Form.state.Errors[this.props.valuePath]
-              ? "invalidInput"
-              : ""}/>
+            <label>
+              <input type="checkbox" ref="input" checked={this.props.data[this.props.value]} disabled={disabledField} {...this.props.attrs} onChange={this.handleChange} style={{
+                marginRight: '10px'
+              }} className={this.context.Form.state.Errors[this.props.valuePath]
+                ? "invalidInput"
+                : ""}/>
+              {this.props.label}
+              {this.props.validation && this.props.validation.indexOf('required') !== -1
+                ? <span className="text-danger">*</span>
+                : null}
+            </label>
           </OverlayTrigger>
-          {this.props.label}
-          {this.props.validation && this.props.validation.indexOf('required') !== -1
-            ? <span className="text-danger">*</span>
-            : null}
-        </label>
       </FormGroup>);
   }
 }
@@ -355,11 +343,6 @@ export class enumstring extends BaseField {
     return super.validate(this.props.data[this.props.value]);
   }
   getField = () => {
-    const popoverContent = (
-      <Popover id="popover-trigger-hover-focus">
-        {this.props.fieldJson.tooltip}
-      </Popover>
-    );
     const enumStringHint = this.props.fieldJson.hint || null;
     const fieldsShown = _.filter(this.context.Form.props.children, (x) => {
       return x.props.fieldJson.isOptional == false;
@@ -371,15 +354,13 @@ export class enumstring extends BaseField {
     }
     return (enumStringHint !== null && enumStringHint.toLowerCase().indexOf("hidden") !== -1
       ? ''
-      : <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
-        <div>
+      : <div>
         <Select ref="select2" clearable={false} onChange={this.handleChange} {...this.props.fieldAttr} disabled={disabledField} value={this.props.data[this.props.value]} className={`${lastChild.props.label === this.props.fieldJson.uiName && fieldsShown.length > 4
         ? "menu-outer-top"
         : ''}${this.context.Form.state.Errors[this.props.valuePath]
           ? "invalidSelect"
           : ""}`}/>
-        </div>
-        </OverlayTrigger>);
+        </div>);
   }
 }
 
@@ -419,11 +400,6 @@ export class CustomEnumstring extends BaseField {
     return nameObj;
   }
   getField = () => {
-    const popoverContent = (
-      <Popover id="popover-trigger-hover-focus">
-        {this.props.fieldJson.tooltip}
-      </Popover>
-    );
     const customEnumHint = this.props.fieldJson.hint || null;
     let disabledField = this.context.Form.props.readOnly;
     if (this.props.fieldJson.isUserInput !== undefined) {
@@ -434,13 +410,11 @@ export class CustomEnumstring extends BaseField {
     });
     return (customEnumHint !== null && customEnumHint.toLowerCase().indexOf("hidden") !== -1
       ? ''
-      : <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
-        <div>
-        <Select clearable={false} onChange={this.handleChange} {...this.props.fieldAttr} disabled={disabledField} value={selectedValue} className={this.context.Form.state.Errors[this.props.valuePath]
+      : <div>
+        <Select placeholder="Select.." clearable={false} onChange={this.handleChange} {...this.props.fieldAttr} disabled={disabledField} value={selectedValue || ''} className={this.context.Form.state.Errors[this.props.valuePath]
         ? "invalidSelect"
         : ""} optionRenderer={this.renderFieldOption.bind(this)}/>
-        </div>
-        </OverlayTrigger>);
+        </div>);
   }
 }
 
@@ -545,11 +519,11 @@ export class creatableField extends BaseField {
     }
     return (creatableHint !== null && creatableHint.toLowerCase().indexOf("hidden") !== -1
       ? ''
-      : <Creatable ref="CustomCreatable" clearable={false} onChange={this.handleChange} multi={false} disabled={disabledField} {...this.props.fieldAttr} className={`${lastChild.props.label === this.props.fieldJson.uiName && fieldsShown.length > 4
+      : <Creatable placeholder="Select.." ref="CustomCreatable" clearable={false} onChange={this.handleChange} multi={false} disabled={disabledField} {...this.props.fieldAttr} className={`${lastChild.props.label === this.props.fieldJson.uiName && fieldsShown.length > 4
         ? "menu-outer-top"
         : ''}${this.context.Form.state.Errors[this.props.valuePath]
           ? "invalidSelect"
-          : ""}`} valueKey="value" labelKey="value" value={val}/>);
+          : ""}`} valueKey="value" labelKey="value" value={val.value ? val : ''}/>);
   }
 }
 
@@ -574,11 +548,6 @@ export class arrayenumstring extends BaseField {
     return super.validate(this.props.data[this.props.value]);
   }
   getField = () => {
-    const popoverContent = (
-      <Popover id="popover-trigger-hover-focus">
-        {this.props.fieldJson.tooltip}
-      </Popover>
-    );
     const arrayEnumHint = this.props.fieldJson.hint || null;
     const fieldsShown = _.filter(this.context.Form.props.children, (x) => {
       return x.props.fieldJson.isOptional == false;
@@ -590,15 +559,13 @@ export class arrayenumstring extends BaseField {
     }
     return (arrayEnumHint !== null && arrayEnumHint.toLowerCase().indexOf("hidden") !== -1
       ? ''
-      : <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
-        <div>
+      : <div>
         <Select onChange={this.handleChange} multi={true} disabled={disabledField} {...this.props.fieldAttr} value={this.props.data[this.props.value]} className={`${lastChild.props.label === this.props.fieldJson.uiName && fieldsShown.length > 4
         ? "menu-outer-top"
         : ''}${this.context.Form.state.Errors[this.props.valuePath]
           ? "invalidSelect"
           : ""}`}/>
-        </div>
-        </OverlayTrigger>);
+        </div>);
   }
 }
 
@@ -721,20 +688,13 @@ export class enumobject extends BaseField {
     return Form.validate.call(this);
   }
   getField = () => {
-    const popoverContent = (
-      <Popover id="popover-trigger-hover-focus">
-        {this.props.fieldJson.tooltip}
-      </Popover>
-    );
     const enumObjectHint = this.props.fieldJson.hint || null;
     const value = Object.keys(this.data)[0];
     return (enumObjectHint !== null && enumObjectHint.toLowerCase().indexOf("hidden") !== -1
       ? ''
-      : <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
-        <div>
+      : <div>
         <Select clearable={false} onChange={this.handleChange} {...this.props.fieldAttr} value={value}/>
-        </div>
-        </OverlayTrigger>);
+        </div>);
   }
   render() {
     const value = Object.keys(this.data)[0];

@@ -37,6 +37,9 @@ export default class FSForm extends Component {
       Errors: props.Errors
     };
   }
+  componentDidMount = () => {
+    this.setState({Errors : {}});
+  }
   componentWillReceiveProps = (nextProps) => {
     if (this.props.FormData != nextProps.FormData) {
       this.updateFormData(nextProps.FormData);

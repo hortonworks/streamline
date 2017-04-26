@@ -83,6 +83,7 @@ export default class JoinNodeForm extends Component {
       outputGroupByDotKeys : []
     };
     this.state = obj;
+    this.fetchDataAgain = false;
     this.streamData = {};
   }
 
@@ -277,7 +278,10 @@ export default class JoinNodeForm extends Component {
     });
 
     // get the keyObj from the outputFieldsList for the particular key
-    const outputKeysObjArr = ProcessorUtils.createOutputFieldsObjArr(outputKeysAFormServer,outputFieldsList);
+    const outputKeysObjArray = ProcessorUtils.createOutputFieldsObjArr(outputKeysAFormServer,outputFieldsList);
+
+    // To remove the undefined if the schemsa get change from the source Node
+    const outputKeysObjArr = _.compact(outputKeysObjArray);
 
     stateObj.outputKeysObjArr = outputKeysObjArr;
 
