@@ -38,6 +38,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.security.auth.Subject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import java.util.ArrayList;
@@ -96,13 +97,15 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
      * {@inheritDoc}
      */
     @Override
-    public void init(Map<String, String> conf) throws ConfigException {
+    public void init(Map<String, Object> conf) throws ConfigException {
         String stormApiRootUrl = null;
+        Subject subject = null;
         if (conf != null) {
-            stormApiRootUrl = conf.get(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY);
+            stormApiRootUrl = (String) conf.get(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY);
+            subject = (Subject) conf.get(TopologyLayoutConstants.SUBJECT_OBJECT);
         }
         Client restClient = ClientBuilder.newClient(new ClientConfig());
-        this.client = new StormRestAPIClient(restClient, stormApiRootUrl);
+        this.client = new StormRestAPIClient(restClient, stormApiRootUrl, subject);
         timeSeriesMetrics = new StormTopologyTimeSeriesMetricsImpl(client);
         topologyRetrieveCache = CacheBuilder.newBuilder()
                 .maximumSize(MAX_SIZE_TOPOLOGY_CACHE)

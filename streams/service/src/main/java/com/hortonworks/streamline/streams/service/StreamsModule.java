@@ -65,14 +65,15 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
     public List<Object> getResources() {
         List<Object> result = new ArrayList<>();
         String catalogRootUrl = (String) config.get(Constants.CONFIG_CATALOG_ROOT_URL);
+        Subject subject = (Subject) config.get(Constants.CONFIG_SUBJECT);
         MLModelRegistryClient modelRegistryClient = new MLModelRegistryClient(catalogRootUrl);
         final StreamCatalogService streamcatalogService = new StreamCatalogService(storageManager, fileStorage, modelRegistryClient);
         final EnvironmentService environmentService = new EnvironmentService(storageManager);
         TagClient tagClient = new TagClient(catalogRootUrl);
         final CatalogService catalogService = new CatalogService(storageManager, fileStorage, tagClient);
         final TopologyActionsService topologyActionsService = new TopologyActionsService(streamcatalogService,
-                environmentService, fileStorage, modelRegistryClient, config);
-        final TopologyMetricsService topologyMetricsService = new TopologyMetricsService(environmentService);
+                environmentService, fileStorage, modelRegistryClient, config, subject);
+        final TopologyMetricsService topologyMetricsService = new TopologyMetricsService(environmentService, subject);
 
         environmentService.addNamespaceAwareContainer(topologyActionsService);
         environmentService.addNamespaceAwareContainer(topologyMetricsService);

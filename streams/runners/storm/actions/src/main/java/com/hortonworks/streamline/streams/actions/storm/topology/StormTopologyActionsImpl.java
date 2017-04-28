@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
+import javax.security.auth.Subject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import java.io.File;
@@ -88,7 +89,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     private StormRestAPIClient client;
     private String nimbusSeeds;
     private Integer nimbusPort;
-    private Map<String, String> conf;
+    private Map<String, Object> conf;
 
     private String thriftTransport;
     private Optional<String> jaasFilePath;
@@ -98,22 +99,22 @@ public class StormTopologyActionsImpl implements TopologyActions {
     }
 
     @Override
-    public void init (Map<String, String> conf) {
+    public void init (Map<String, Object> conf) {
         this.conf = conf;
         if (conf != null) {
             if (conf.containsKey(StormTopologyLayoutConstants.STORM_ARTIFACTS_LOCATION_KEY)) {
-                stormArtifactsLocation = conf.get(StormTopologyLayoutConstants.STORM_ARTIFACTS_LOCATION_KEY);
+                stormArtifactsLocation = (String) conf.get(StormTopologyLayoutConstants.STORM_ARTIFACTS_LOCATION_KEY);
             }
             if (conf.containsKey(StormTopologyLayoutConstants.STORM_HOME_DIR)) {
-                String stormHomeDir = conf.get(StormTopologyLayoutConstants.STORM_HOME_DIR);
+                String stormHomeDir = (String) conf.get(StormTopologyLayoutConstants.STORM_HOME_DIR);
                 if (!stormHomeDir.endsWith(File.separator)) {
                     stormHomeDir += File.separator;
                 }
                 stormCliPath = stormHomeDir + "bin" + File.separator + "storm";
             }
-            this.stormJarLocation = conf.get(StormTopologyLayoutConstants.STORM_JAR_LOCATION_KEY);
+            this.stormJarLocation = (String) conf.get(StormTopologyLayoutConstants.STORM_JAR_LOCATION_KEY);
 
-            catalogRootUrl = conf.get(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL);
+            catalogRootUrl = (String) conf.get(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL);
 
             Map<String, String> env = System.getenv();
             String javaHomeStr = env.get("JAVA_HOME");
@@ -127,13 +128,15 @@ public class StormTopologyActionsImpl implements TopologyActions {
             }
 
             String stormApiRootUrl = null;
+            Subject subject = null;
             if (conf != null) {
-                stormApiRootUrl = conf.get(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY);
+                stormApiRootUrl = (String) conf.get(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY);
+                subject = (Subject) conf.get(TopologyLayoutConstants.SUBJECT_OBJECT);
             }
             Client restClient = ClientBuilder.newClient(new ClientConfig());
-            this.client = new StormRestAPIClient(restClient, stormApiRootUrl);
-            nimbusSeeds = conf.get(NIMBUS_SEEDS);
-            nimbusPort = Integer.valueOf(conf.get(NIMBUS_PORT));
+            this.client = new StormRestAPIClient(restClient, stormApiRootUrl, subject);
+            nimbusSeeds = (String) conf.get(NIMBUS_SEEDS);
+            nimbusPort = Integer.valueOf((String) conf.get(NIMBUS_PORT));
         }
         File f = new File (stormArtifactsLocation);
         f.mkdirs();
@@ -141,24 +144,24 @@ public class StormTopologyActionsImpl implements TopologyActions {
         setupSecuredStormCluster(conf);
     }
 
-    private void setupSecuredStormCluster(Map<String, String> conf) {
-        thriftTransport = conf.get(TopologyLayoutConstants.STORM_THRIFT_TRANSPORT);
+    private void setupSecuredStormCluster(Map<String, Object> conf) {
+        thriftTransport = (String) conf.get(TopologyLayoutConstants.STORM_THRIFT_TRANSPORT);
 
         if (conf.containsKey(TopologyLayoutConstants.STORM_NIMBUS_PRINCIPAL_NAME)) {
-            String nimbusPrincipal = conf.get(TopologyLayoutConstants.STORM_NIMBUS_PRINCIPAL_NAME);
+            String nimbusPrincipal = (String) conf.get(TopologyLayoutConstants.STORM_NIMBUS_PRINCIPAL_NAME);
             String kerberizedNimbusServiceName = nimbusPrincipal.split("/")[0];
             jaasFilePath = Optional.of(createJaasFile(kerberizedNimbusServiceName));
         } else {
             jaasFilePath = Optional.empty();
         }
 
-        principalToLocal = conf.getOrDefault(TopologyLayoutConstants.STORM_PRINCIPAL_TO_LOCAL, DEFAULT_PRINCIPAL_TO_LOCAL);
+        principalToLocal = (String) conf.getOrDefault(TopologyLayoutConstants.STORM_PRINCIPAL_TO_LOCAL, DEFAULT_PRINCIPAL_TO_LOCAL);
 
         if (thriftTransport == null) {
             if (jaasFilePath.isPresent()) {
-                thriftTransport = conf.get(TopologyLayoutConstants.STORM_SECURED_THRIFT_TRANSPORT);
+                thriftTransport = (String) conf.get(TopologyLayoutConstants.STORM_SECURED_THRIFT_TRANSPORT);
             } else {
-                thriftTransport = conf.get(TopologyLayoutConstants.STORM_NONSECURED_THRIFT_TRANSPORT);
+                thriftTransport = (String) conf.get(TopologyLayoutConstants.STORM_NONSECURED_THRIFT_TRANSPORT);
             }
         }
 
@@ -338,7 +341,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
             args.add("--artifacts");
             args.add(mavenArtifacts);
             args.add("--artifactRepositories");
-            args.add(conf.get("mavenRepoUrl"));
+            args.add((String) conf.get("mavenRepoUrl"));
         }
         return args;
     }

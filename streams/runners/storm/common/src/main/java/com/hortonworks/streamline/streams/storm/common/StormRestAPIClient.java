@@ -21,11 +21,13 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.security.auth.Subject;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import java.io.IOException;
+import java.security.PrivilegedAction;
 import java.util.Map;
 
 public class StormRestAPIClient {
@@ -33,11 +35,13 @@ public class StormRestAPIClient {
 
     public static final MediaType STORM_REST_API_MEDIA_TYPE = MediaType.APPLICATION_JSON_TYPE;
     private final String stormApiRootUrl;
+    private final Subject subject;
     private final Client client;
 
-    public StormRestAPIClient(Client client, String stormApiRootUrl) {
+    public StormRestAPIClient(Client client, String stormApiRootUrl, Subject subject) {
         this.client = client;
         this.stormApiRootUrl = stormApiRootUrl;
+        this.subject = subject;
     }
 
     public Map getTopologySummary(String asUser) {
@@ -70,7 +74,12 @@ public class StormRestAPIClient {
     private Map doGetRequest(String requestUrl) {
         try {
             LOG.debug("GET request to Storm cluster: " + requestUrl);
-            return JsonClientUtil.getEntity(client.target(requestUrl), STORM_REST_API_MEDIA_TYPE, Map.class);
+            return Subject.doAs(subject, new PrivilegedAction<Map>() {
+                @Override
+                public Map run() {
+                    return JsonClientUtil.getEntity(client.target(requestUrl), STORM_REST_API_MEDIA_TYPE, Map.class);
+                }
+            });
         } catch (javax.ws.rs.ProcessingException e) {
             if (e.getCause() instanceof IOException) {
                 throw new StormNotReachableException("Exception while requesting " + requestUrl, e);
@@ -85,7 +94,13 @@ public class StormRestAPIClient {
     private Map doPostRequestWithEmptyBody(String requestUrl) {
         try {
             LOG.debug("POST request to Storm cluster: " + requestUrl);
-            return JsonClientUtil.postForm(client.target(requestUrl), new MultivaluedHashMap<>(), STORM_REST_API_MEDIA_TYPE, Map.class);
+            return Subject.doAs(subject, new PrivilegedAction<Map>() {
+                @Override
+                public Map run() {
+                    return JsonClientUtil.postForm(client.target(requestUrl), new MultivaluedHashMap<>(),
+                            STORM_REST_API_MEDIA_TYPE, Map.class);
+                }
+            });
         } catch (javax.ws.rs.ProcessingException e) {
             if (e.getCause() instanceof IOException) {
                 throw new StormNotReachableException("Exception while requesting " + requestUrl, e);

@@ -15,11 +15,9 @@
  **/
 package com.hortonworks.streamline.streams.metrics.topology;
 
-import org.apache.commons.lang3.tuple.Pair;
 import com.hortonworks.streamline.streams.exception.ConfigException;
 import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,7 +34,7 @@ public interface TopologyMetrics extends TopologyTimeSeriesMetrics {
      * @param conf Configuration for implementation of TopologyMetrics.
      * @throws ConfigException throw when instance can't be initialized with this configuration (misconfigured).
      */
-    void init (Map<String, String> conf) throws ConfigException;
+    void init (Map<String, Object> conf) throws ConfigException;
 
     /**
      * Retrieves topology metric for Streamline topology/

@@ -195,4 +195,6 @@ public final class TopologyLayoutConstants {
     public static final String ERR_MSG_CP_CONFIG_EXCEPTION = "Custom processor %s threw exception while validating the custom config fields.";
     public final static String ZK_ROOT_NODE = "/streamline/kafka-source";
 
+    public static final String SUBJECT_OBJECT = "subjectObj";
+
 }
