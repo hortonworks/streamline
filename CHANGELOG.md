@@ -1,4 +1,5 @@
-## 0.1.4
+## 0.4
+ * STREAMLINE-763: Topology should be able to deployed on Secured Storm cluster
  * STREAMLINE-778: Roles API updates
  * STREAMLINE-776: Bug fix in WindowedQueryBolt's handling of streamline event prefix in outputfields
  * STREAMLINE-472: Scheme class customization for kafka sources 
@@ -131,7 +132,7 @@
  * STREAMLINE-161: REST api for source, sink, processor and edge
  * STREAMLINE-119: STREAMLINE Cache Requirements
  
-## 0.1.3
+## 0.3
  * STREAMLINE-269: Normalization processor runtime and UI integration
  * STREAMLINE-239: TP-3 release bug fixes
  * STREAMLINE-247: Add integration test for tagging
@@ -149,7 +150,7 @@
  * STREAMLINE-250: REST api for output streams
  * STREAMLINE-158: UI should provide functionality to select a shuffle
  
-## 0.1.2
+## 0.2
  * STREAMLINE-226: Create file resource(including jars) utility to be used in any component of a topology
  * STREAMLINE-238: Fixed Tag and TagStorableMapping to be created as Storables in JDBC/Phoenix storgae providers
  * STREAMLINE-196: Phoenix storage provider support in webservices modules.
@@ -179,7 +180,7 @@
  * STREAMLINE-64:  Added normalization processor for bulk/field level normalization with groovy scripts.
  * STREAMLINE-171: Normalization processor/bolt contract
 
-## 0.1.1
+## 0.1
  * STREAMLINE-135: Implement Custom Processors.
  * STREAMLINE-131: Added common Config object.
  * STREAMLINE-128: Refactored design time entities.
