@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.actions.topology.state;
 import com.hortonworks.streamline.streams.actions.TopologyActions;
 import com.hortonworks.streamline.streams.catalog.CatalogToLayoutConverter;
 import com.hortonworks.streamline.streams.catalog.Topology;
+import com.hortonworks.streamline.streams.exception.TopologyNotAliveException;
 import com.hortonworks.streamline.streams.layout.component.TopologyDag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -191,6 +192,11 @@ public final class TopologyStates {
             topologyActions.kill(CatalogToLayoutConverter.getTopologyLayout(topology));
             context.setState(TOPOLOGY_STATE_INITIAL);
             context.setCurrentAction("Topology killed");
+        } catch (TopologyNotAliveException ex) {
+            LOG.warn("Got TopologyNotAliveException while trying to kill topology, " +
+                    "probably the topology was killed externally.");
+            context.setState(TOPOLOGY_STATE_INITIAL);
+            context.setCurrentAction("Setting topology to initial state since its not alive in the cluster");
         } catch (Exception ex) {
             LOG.error("Error while trying to kill the topology", ex);
             context.setCurrentAction("Killing the topology failed due to: " + ex);

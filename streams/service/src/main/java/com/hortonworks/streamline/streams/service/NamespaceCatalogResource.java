@@ -33,7 +33,7 @@ import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
-import com.hortonworks.streamline.streams.storm.common.TopologyNotAliveException;
+import com.hortonworks.streamline.streams.exception.TopologyNotAliveException;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
