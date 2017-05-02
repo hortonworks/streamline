@@ -1,0 +1,5 @@
+{
+  "name": "ROLE_TOPOLOGY_ADMIN",
+  "description": "Topology administrator who can create and manage topologies",
+  "system": true
+}

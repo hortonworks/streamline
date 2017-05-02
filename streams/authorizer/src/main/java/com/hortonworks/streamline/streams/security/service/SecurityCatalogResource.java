@@ -26,6 +26,7 @@ import com.hortonworks.streamline.streams.security.catalog.AclEntry;
 import com.hortonworks.streamline.streams.security.catalog.Role;
 import com.hortonworks.streamline.streams.security.catalog.RoleHierarchy;
 import com.hortonworks.streamline.streams.security.catalog.User;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -44,6 +45,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.hortonworks.streamline.streams.security.Roles.ROLE_SECURITY_ADMIN;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -93,6 +95,27 @@ public class SecurityCatalogResource {
         throw EntityNotFoundException.byId(roleId.toString());
     }
 
+    @GET
+    @Path("/roles/{roleNameOrId}/users")
+    @Timed
+    public Response getRoleUsers(@PathParam("roleNameOrId") String roleNameOrId, @Context SecurityContext securityContext) {
+        SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
+        Long roleId = StringUtils.isNumeric(roleNameOrId) ? Long.parseLong(roleNameOrId) : getIdFromRoleName(roleNameOrId);
+        return getRoleUsers(roleId, securityContext);
+    }
+
+    private Response getRoleUsers(Long roleId, @Context SecurityContext securityContext) {
+        Role role = catalogService.getRole(roleId);
+        Set<Role> rolesToQuery = new HashSet<>();
+        if (role != null) {
+            rolesToQuery.add(role);
+            rolesToQuery.addAll(catalogService.getChildRoles(roleId));
+            Set<User> res = rolesToQuery.stream().flatMap(r -> catalogService.listUsers(r).stream()).collect(Collectors.toSet());
+            return WSUtils.respondEntities(res, OK);
+        }
+        throw EntityNotFoundException.byId(roleId.toString());
+    }
+
     @POST
     @Path("/roles")
     @Timed
@@ -126,17 +149,22 @@ public class SecurityCatalogResource {
     // role hierarchy
 
     @GET
-    @Path("/roles/{id}/children")
+    @Path("/roles/{roleIdOrName}/children")
     @Timed
-    public Response listChildRoles(@PathParam("id") Long roleId, @Context SecurityContext securityContext) throws Exception {
+    public Response listChildRoles(@PathParam("roleIdOrName") String roleIdOrName, @Context SecurityContext securityContext) throws Exception {
         SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
-        Collection<Role> roles;
-        roles = catalogService.getChildRoles(roleId);
+        Long roleId = StringUtils.isNumeric(roleIdOrName) ? Long.parseLong(roleIdOrName) : getIdFromRoleName(roleIdOrName);
+        return listChildRoles(roleId, securityContext);
+    }
+
+    public Response listChildRoles(Long roleId, @Context SecurityContext securityContext) throws Exception {
+        Collection<Role> roles = catalogService.getChildRoles(roleId);
         if (roles != null) {
             return WSUtils.respondEntities(roles, OK);
         }
         throw EntityNotFoundException.byId(roleId.toString());
     }
+
 
     private Long getIdFromRoleName(String roleName) {
         return catalogService.getRole(roleName)

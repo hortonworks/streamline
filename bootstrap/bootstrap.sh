@@ -171,6 +171,21 @@ function add_all_bundles {
     # === anonymous user ===
     post /users ${user_role_dir}/user_anon.json
 
+    # === system roles ===
+    for i in ${user_role_dir}/role_*
+    do
+     echo "Adding $(basename $i)"
+     post /roles $i
+    done
+
+    # === role hierarchy  ===
+    for i in ${user_role_dir}/children_*
+    do
+     role_name=$(basename $i | cut -d'_' -f2-)
+     echo "Adding child roles for $role_name"
+     post /roles/$role_name/children $i
+    done
+
     #----------------------------------
     # Execute other bootstrap scripts
     #----------------------------------
@@ -185,7 +200,7 @@ function add_all_bundles {
 function main {
     echo ""
     echo "===================================================================================="
-    echo "Running bootstrap.sh will create streamline default components, notifiers and udfs."
+    echo "Running bootstrap.sh will create streamline default components, notifiers, udfs and roles"
     add_all_bundles
 }
 

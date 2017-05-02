@@ -1,0 +1,5 @@
+{
+  "name": "ROLE_UDF_ADMIN",
+  "description": "Role that can upload and manage UDFs and UDAFs",
+  "system": true
+}

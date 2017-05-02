@@ -387,6 +387,7 @@ CREATE TABLE IF NOT EXISTS role (
   name      VARCHAR(255)          NOT NULL,
   description TEXT NOT NULL,
   system BOOLEAN NOT NULL,
+  metadata TEXT,
   timestamp BIGINT,
   UNIQUE KEY `UK_name` (name),
   PRIMARY KEY (id)

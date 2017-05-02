@@ -1,0 +1,5 @@
+{
+  "name": "ROLE_NOTIFIER_ADMIN",
+  "description": "Role that can upload and manage Notifiers",
+  "system": true
+}

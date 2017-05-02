@@ -1,0 +1,5 @@
+{
+  "name": "ROLE_FILE_ADMIN",
+  "description": "Role that can upload and manage files",
+  "system": true
+}

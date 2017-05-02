@@ -1,0 +1,5 @@
+{
+  "name": "ROLE_CLUSTER_ADMIN",
+  "description": "Role that can create and manage service pool and environments",
+  "system": true
+}

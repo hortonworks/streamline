@@ -132,6 +132,12 @@ public class SecurityCatalogService {
         return fillRoles(dao.find(User.NAMESPACE, params));
     }
 
+    // list of users that have the given role
+    public Collection<User> listUsers(Role role) {
+        List<QueryParam> qps = QueryParam.params(UserRole.ROLE_ID, role.getId().toString());
+        return listUserRoles(qps).stream().map(ur -> getUser(ur.getUserId())).collect(Collectors.toSet());
+    }
+
     public User getUser(String name) {
         List<QueryParam> qps = QueryParam.params(User.NAME, name);
         Collection<User> users = listUsers(qps);

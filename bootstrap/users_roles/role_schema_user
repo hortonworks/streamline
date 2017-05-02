@@ -1,0 +1,5 @@
+{
+  "name": "ROLE_SCHEMA_USER",
+  "description": "Role that can use schema registry schemas",
+  "system": true
+}
