@@ -63,12 +63,10 @@ import static javax.ws.rs.core.Response.Status.OK;
 public class SchemaResource {
     private static final Logger LOG = LoggerFactory.getLogger(SchemaResource.class);
 
-    private final StreamlineAuthorizer authorizer;
     private final SchemaRegistryClient schemaRegistryClient;
     private final Subject subject;
 
-    public SchemaResource(StreamlineAuthorizer authorizer, SchemaRegistryClient schemaRegistryClient, Subject subject) {
-        this.authorizer = authorizer;
+    public SchemaResource(SchemaRegistryClient schemaRegistryClient, Subject subject) {
         this.schemaRegistryClient = schemaRegistryClient;
         this.subject = subject;
     }
@@ -78,7 +76,6 @@ public class SchemaResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response postStreamsSchema(StreamsSchemaInfo streamsSchemaInfo,
                                       @Context SecurityContext securityContext) throws IOException {
-        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_SCHEMA_ADMIN);
         Preconditions.checkNotNull(streamsSchemaInfo, "streamsSchemaInfo can not be null");
 
         SchemaIdVersion schemaIdVersion = null;
@@ -132,7 +129,6 @@ public class SchemaResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getKafkaSourceSchema(@PathParam("topicName") String topicName,
                                          @Context SecurityContext securityContext) throws JsonProcessingException {
-        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_SCHEMA_USER);
         try {
             LOG.info("Received path: [{}]", topicName);
             // for now, takes care of kafka for topic values. We will enhance to work this to get schema for different

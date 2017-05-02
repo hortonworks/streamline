@@ -385,6 +385,7 @@ CREATE TABLE IF NOT EXISTS user_entry (
   "id"        SERIAL       NOT NULL,
   "name"      VARCHAR(255) NOT NULL,
   "email"     VARCHAR(255) NOT NULL,
+  "metadata" TEXT,
   "timestamp" BIGINT,
   CONSTRAINT UK_name_user UNIQUE ("name"),
   PRIMARY KEY (id)

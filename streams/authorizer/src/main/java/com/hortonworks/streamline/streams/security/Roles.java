@@ -26,6 +26,4 @@ public class Roles {
     public static final String ROLE_UDF_ADMIN = "ROLE_UDF_ADMIN";
     public static final String ROLE_NOTIFIER_ADMIN = "ROLE_NOTIFIER_ADMIN";
     public static final String ROLE_NOTIFICATION_USER = "ROLE_NOTIFICATION_USER";
-    public static final String ROLE_SCHEMA_USER = "ROLE_SCHEMA_USER";
-    public static final String ROLE_SCHEMA_ADMIN = "ROLE_SCHEMA_ADMIN";
 }

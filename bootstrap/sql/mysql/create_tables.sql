@@ -406,6 +406,7 @@ CREATE TABLE IF NOT EXISTS user_entry (
   id    BIGINT AUTO_INCREMENT NOT NULL,
   name  VARCHAR(255)          NOT NULL,
   email VARCHAR(255)          NOT NULL,
+  metadata TEXT,
   timestamp BIGINT,
   UNIQUE KEY `UK_name` (name),
   PRIMARY KEY (id)

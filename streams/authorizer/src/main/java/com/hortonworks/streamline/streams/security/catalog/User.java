@@ -41,6 +41,9 @@ public class User extends AbstractStorable {
     private Long id;
     private String name;
     private String email;
+    // any metadata that needs to be associated with the role
+    // (e.g UI wants to associate some color and icon with each role)
+    private String metadata;
     private Long timestamp;
 
     @SchemaIgnore
@@ -58,6 +61,8 @@ public class User extends AbstractStorable {
         if (other.getRoles() != null) {
             this.roles = new HashSet<>(other.getRoles());
         }
+        this.metadata = other.getMetadata();
+        this.timestamp = other.getTimestamp();
     }
 
     @JsonIgnore
@@ -123,6 +128,14 @@ public class User extends AbstractStorable {
         this.roles.add(roleName);
     }
 
+    public String getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -145,6 +158,7 @@ public class User extends AbstractStorable {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
+                ", metadata='" + metadata + '\'' +
                 ", timestamp=" + timestamp +
                 ", roles=" + roles +
                 "} " + super.toString();
