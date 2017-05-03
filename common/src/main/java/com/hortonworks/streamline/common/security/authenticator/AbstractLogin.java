@@ -47,7 +47,7 @@ public abstract class AbstractLogin implements Login {
     public LoginContext login() throws LoginException {
         String jaasConfigFile = System.getProperty(JAAS_CONFIG_SYSTEM_PROPERTY);
         if (jaasConfigFile == null) {
-            log.debug("System property " + JAAS_CONFIG_SYSTEM_PROPERTY + " for jaas config file is not set, using default JAAS configuration.");
+            log.error("System property " + JAAS_CONFIG_SYSTEM_PROPERTY + " for jaas config file is not set, using default JAAS configuration.");
         }
         loginContext = new LoginContext(loginContextName, new LoginCallbackHandler());
         loginContext.login();
