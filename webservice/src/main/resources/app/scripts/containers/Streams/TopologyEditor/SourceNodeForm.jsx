@@ -338,7 +338,7 @@ export default class SourceNodeForm extends Component {
           </Form>
         </Scrollbars>
       </div>;
-    const outputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={this.state.streamObj} streamType="output"/>;
+    const outputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={this.state.streamObj} streamKind="output"/>;
     return (
       <Tabs id="SinkForm" activeKey={this.state.activeTabKey} className="modal-tabs" onSelect={this.onSelectTab}>
         <Tab eventKey={1} title="REQUIRED">

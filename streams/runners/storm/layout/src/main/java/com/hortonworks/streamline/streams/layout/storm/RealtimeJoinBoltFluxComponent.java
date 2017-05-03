@@ -18,27 +18,29 @@
 
 package com.hortonworks.streamline.streams.layout.storm;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 
 /* ---- Sample Json of whats expected from UI  ---
 {
-"from" : {"stream": "orders"},
-"join" : {"type" : "inner", "stream" : "adImpressions", "count" : 10, "dropDuplicates" : false},  # here we can have:  count/seconds/minutes/milliseconds
-"equal" :
-  [
-    { "firstKey" : "userID",    "secondKey" : "userid"},
-    { "firstKey" : "productID", "secondKey" : "productID"}
+"from" : {"stream": "orders", "count/seconds/minutes/hours/seconds" : 10, "dropDuplicates" : false },
+
+"joins" : [
+    { "type":"inner/left/right/outer",  "stream":"adImpressions",  "count/seconds/minutes/hours":10,  "dropDuplicates":false,
+               "conditions" : [
+                  [ "equal",  "adImpressions:userID",  "orders:userId" ],
+                  [ "ignoreCase", "product", "orders:product"]
+               ]
+     }
   ],
-  "outputKeys" : [ "userID", "orders:productID" ,"orderId", "impressionId" ],
-  "outputStream" : "joinedStream1"
+
+"outputKeys" : [ "userID", "orders:product as product" ,"orderId", "impressionId" ],
+"outputStream" : "joinedStream1"
 }
  */
 
@@ -65,38 +67,33 @@ public class RealtimeJoinBoltFluxComponent extends AbstractFluxComponent {
         ArrayList<String> result = new ArrayList<>(conf.size());
 
         if ( conf.containsKey("from") ) {
-            result.add("dataStream");
+            result.add("from");
         } else {
             throw new IllegalArgumentException("'from' parameter is required and cannot be null");
         }
 
-        Map<String, Object> joinConfig = (Map<String, Object>) conf.get("join");
+        ArrayList<Map<String, Object>> joinConfig = (ArrayList<Map<String, Object>>) conf.get("joins");
         if ( joinConfig!=null ) {
-            String joinType = joinConfig.get("type").toString();
-            if (joinType.equalsIgnoreCase("inner")) {
-                result.add("innerJoin");
-            } else if (joinType.equalsIgnoreCase("left")) {
-                result.add("leftJoin");
-            } else if (joinType.equalsIgnoreCase("right")) {
-                result.add("rightJoin");
-            } else if (joinType.equalsIgnoreCase("outer")) {
-                result.add("outerJoin");
-            } else {
-                throw new IllegalArgumentException("Allowed join types : 'inner'/'left'/'right'/'outer'");
+            for (Map<String, Object> join : joinConfig) {
+                String joinType = join.get("type").toString();
+                if (joinType.equalsIgnoreCase("inner")) {
+                    result.add("innerJoin");
+                } else if (joinType.equalsIgnoreCase("left")) {
+                    result.add("leftJoin");
+                } else if (joinType.equalsIgnoreCase("right")) {
+                    result.add("rightJoin");
+                } else if (joinType.equalsIgnoreCase("outer")) {
+                    result.add("outerJoin");
+                } else {
+                    throw new IllegalArgumentException("Allowed join types : 'inner'/'left'/'right'/'outer'");
+                }
             }
         } else {
             throw new IllegalArgumentException("'join' configuration missing");
         }
 
-        Object val;
-        if ( (val = conf.get("equal")) != null  ) {
-            for (Object equalMethod : ((List<Object>) val)) {
-                result.add("streamlineEqual");
-            }
-        }
-
         if ( conf.containsKey("outputKeys") ) {
-            result.add("streamlineSelect");
+            result.add("select");
         } else {
             throw new IllegalArgumentException("'outputKeys' parameter is required and cannot be null");
         }
@@ -114,31 +111,40 @@ public class RealtimeJoinBoltFluxComponent extends AbstractFluxComponent {
     private Object[] getConfiguredMethodArgs(Map<String, Object> conf) {
         ArrayList<Object[]> result = new ArrayList<>(conf.size());
 
-        // dataStream()
-        String fromStream = ((Map<String,Object>)conf.get("from")).get("stream").toString();
-        result.add( new String[]{fromStream} );
+        {  // from()
+            Map<String, Object> fromConf = (Map<String, Object>) conf.get("from");
+            String fromStream = fromConf.get("stream").toString();
+            Boolean dropDuplicates = (Boolean) fromConf.get("dropDuplicates");
 
+            Integer count = (Integer) fromConf.get("count");
+            if( count != null ) {
+                result.add(new Object[]{fromStream, count, dropDuplicates});
+            } else {
+                String durationId = addDurationToComponents(fromConf);
+                result.add(new Object[]{fromStream, getRefYaml(durationId), dropDuplicates});
+            }
+        }
+        {  // *Join()
+            ArrayList<Map<String, Object>> joinConfig = (ArrayList<Map<String, Object>>) conf.get("joins");
+            for (Map<String, Object> joinConf : joinConfig) {
+                String stream = joinConf.get("stream").toString();
+                Boolean dropDuplicates = (Boolean) joinConf.get("dropDuplicates");
 
-        // *Join()
-        Map<String, Object> joinConf = (Map<String, Object>) conf.get("join");
-        String stream = joinConf.get("stream").toString();
-        String countOrDurationId =  addCountOrDuration(joinConf);
-        Boolean dropDuplicates = (Boolean) joinConf.get("dropDuplicates");
-        result.add(new Object[]{stream, getRefYaml(countOrDurationId), dropDuplicates });
-
-
-        // streamlineEqual()
-        Object val;
-        if( (val = conf.get("equal")) != null  ) {
-            for (Object joinKeys : ((List<Object>) val)) {
-                Map<String, Object> ji = ((Map<String, Object>) joinKeys);
-                String firstKey = ji.get("firstKey").toString();
-                String secondKey = ji.get("secondKey").toString();
-                result.add( new String[]{firstKey, secondKey} );
+                ArrayList<Map<String, String> > comparators = new ArrayList<>();
+                for (ArrayList<String> condition : (ArrayList<ArrayList<String> >) joinConf.get("conditions")) {
+                    comparators.add( getRefYaml( addComparatorToComponents(condition) ) );
+                }
+                Integer count = (Integer) joinConf.get("count");
+                if (count!=null) {
+                    result.add(new Object[]{stream, count, dropDuplicates, comparators.toArray()});
+                } else {
+                    String durationId = addDurationToComponents(joinConf);
+                    result.add(new Object[]{stream, getRefYaml(durationId), dropDuplicates, comparators.toArray()});
+                }
             }
         }
 
-        // streamlineSelect()
+        // select()
         ArrayList<String> outputKeys = (ArrayList<String>) conf.get("outputKeys");
         String outputKeysStr = String.join(",", outputKeys);
         result.add(new String[]{outputKeysStr});
@@ -150,38 +156,33 @@ public class RealtimeJoinBoltFluxComponent extends AbstractFluxComponent {
         return result.toArray(new Object[]{});
     }
 
-    // returns component ID
-    private String addCountOrDuration(Map<String, Object> joinArgs) {
-        Integer count = (Integer) joinArgs.get("count");
-        if( count != null ) {
-            return addCountToComponents(count);
-        }
-        return addDurationToComponents( joinArgs );
-    }
+    private String addComparatorToComponents(ArrayList<String> condition) {
+        String componentId = "slcmp_" + UUID.randomUUID();
 
 
-    // Creates component for the Count object and adds it to the components list
-    // returns the component ID
-    private String addCountToComponents(Integer count) {
-        String componentId = "duration_" + UUID_FOR_COMPONENTS;
-        String className = "org.apache.storm.topology.base.BaseWindowedBolt.Count";
-        List<Object> constructorArgs = new ArrayList<>();
-        try {
-            constructorArgs.add(count);
-            this.addToComponents(this.createComponent(componentId, className, null, constructorArgs, null));
-            return componentId;
-        } catch (Exception e) {
-            throw new RuntimeException("Unable to crate json for window definition", e);
+        String className = null;
+        String methodName = condition.get(0).toString();
+        if (methodName.equalsIgnoreCase("equal"))
+             className = "com.hortonworks.streamline.streams.runtime.storm.bolt.query.SLCmp.Equal";
+        else if (methodName.equalsIgnoreCase("ignoreCase"))
+             className = "com.hortonworks.streamline.streams.runtime.storm.bolt.query.SLCmp.IgnoreCase";
+
+        List<String> constructorArgs = new ArrayList<>();
+        for (int i = 1; i < condition.size(); i++) {
+            constructorArgs.add(condition.get(i));
         }
+
+        this.addToComponents(this.createComponent(componentId, className, null, constructorArgs, null));
+        return componentId;
     }
 
     // Creates component for the Duration object and adds it to the components list
     // returns the component ID
     private String addDurationToComponents(Map<String, Object> joinArgs) {
-        String componentId = "duration_" + UUID_FOR_COMPONENTS;
+        String componentId = "duration_" + UUID.randomUUID();
         String className = "org.apache.storm.topology.base.BaseWindowedBolt.Duration";
 
-        // Find dthe TimeUnit.enums key in joinArgs .... secs/mins/millis/days/etc
+        // Find the TimeUnit.enums key in joinArgs .... secs/mins/millis/days/etc
         String units = Stream.of(TimeUnit.values()).map(TimeUnit::name).filter(
                 k -> joinArgs.containsKey(k.toLowerCase())
         ).findFirst().get();

@@ -136,11 +136,19 @@ public class WindowedQueryBolt extends JoinBolt {
         return resultRow;
     }
 
-    // Return the alias if any, or else the unaliased keyname
-    // Examples:
-    //      "stream1:key1.innerkey as  inner"  => "inner"
-    //      "stream1:key1 "  => "stream1:key1"
-    //      "key1 "  => "key1"
+    /** Return the alias if any, or else the unaliased keyname
+     *** Examples: ***
+     *      -  "stream1:key1.innerkey as  inner"  => "inner"
+     *      -  "stream1:key1 "  => "stream1:key1"
+     *      -  "key1 "  => "key1"
+     *
+     * @param keySpec  a field selector
+     * @return
+     */
+
+
+
+
     private static String getAliasOrKeyName(String keySpec) {
         Pattern pattern =  Pattern.compile(" +as +(\\w+)");
         Matcher result = pattern.matcher(keySpec);

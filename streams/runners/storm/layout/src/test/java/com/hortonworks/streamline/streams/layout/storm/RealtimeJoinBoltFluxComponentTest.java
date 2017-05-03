@@ -34,40 +34,25 @@ public class RealtimeJoinBoltFluxComponentTest {
     public void testFluxGen_Count() throws Exception {
         RealtimeJoinBoltFluxComponent me = new RealtimeJoinBoltFluxComponent();
         String json = "{\n" +
-                "\"from\" : {\"stream\": \"orders\"},\n" +
-                "\"join\" : {\"type\" : \"left\", \"stream\" : \"adImpressions\", \"count\" : 10, \"dropDuplicates\" : false}," +
-                "\"equal\" :\n" +
-                "  [\n" +
-                "    { \"firstKey\" : \"userID\",    \"secondKey\" : \"userid\"},\n" +
-                "    { \"firstKey\" : \"productID\", \"secondKey\" : \"productID\"}\n" +
+                "\"from\" : {\"stream\": \"orders\", \"seconds\" : 10, \"dropDuplicates\" : false },\n" +
+                "\n" +
+                "\"joins\" : [\n" +
+                "    { \"type\":\"inner\",  \"stream\":\"adImpressions\",  \"seconds\":20,  \"dropDuplicates\":false,\n" +
+                "               \"conditions\" : [\n" +
+                "                  [ \"equal\",  \"adImpressions:userID\",  \"orders:userId\" ],\n" +
+                "                  [ \"ignoreCase\", \"product\", \"orders:product\"]\n" +
+                "               ]\n" +
+                "     }\n" +
                 "  ],\n" +
-                "  \"outputKeys\" : [ \"userID\", \"orders:productID\" ,\"orderId\", \"impressionId\" ],\n" +
-                "  \"outputStream\" : \"joinedStream1\"\n" +
+                "\n" +
+                "\"outputKeys\" : [ \"userID\", \"orders:product as product\" ,\"orderId\", \"impressionId\" ],\n" +
+                "\"outputStream\" : \"joinedStream1\"\n" +
                 "}";
 
         List<Map.Entry<String, Map<String, Object>>> map = getYamlComponents(json, me);
         String yamlStr = makeYaml(map);
         System.out.println(yamlStr);
 
-    }
-
-    @Test
-    public void testFluxGen_Duration() throws Exception {
-        RealtimeJoinBoltFluxComponent me = new RealtimeJoinBoltFluxComponent();
-        String json = "{\"from\" : {\"stream\": \"orders\"},\n" +
-                "\"join\" : {\"type\" : \"left\", \"stream\" : \"adImpressions\", \"milliseconds\" : 10, \"dropDuplicates\" : false}," +
-                "\"equal\" :\n" +
-                "  [\n" +
-                "    { \"firstKey\" : \"userID\",    \"secondKey\" : \"userid\"},\n" +
-                "    { \"firstKey\" : \"productID\", \"secondKey\" : \"productID\"}\n" +
-                "  ],\n" +
-                "  \"outputKeys\" : [ \"userID\", \"orders:productID\" ,\"orderId\", \"impressionId\" ],\n" +
-                "  \"outputStream\" : \"joinedStream1\"\n" +
-                "}";
-
-        List<Map.Entry<String, Map<String, Object>>> map = getYamlComponents(json, me);
-        String yamlStr = makeYaml(map);
-        System.out.println(yamlStr);
     }
 
     public static List<Map.Entry<String, Map<String, Object>>> getYamlComponents(String json, FluxComponent fluxComponent) throws IOException {
