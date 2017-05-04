@@ -325,44 +325,35 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
         // 1- join against buffered joinStream and emit results if any
         String key = getKey(tuple, fromStream);
         List<TupleInfo> matches = joinInfos[1].findMatches(tuple, key); // match with joinStream
-        if (matches==null || matches.isEmpty()) {  // no match
-            if (joinInfos[1].joinType==JoinType.LEFT ||  joinInfos[1].joinType==JoinType.OUTER) {
-                List<Object> outputTuple = doProjection(tuple, null);
-                emit(outputTuple, tuple);
-            }
-        }  else {  // match found
-            for (TupleInfo lookupTuple : matches) {
-                lookupTuple.matched = true;
-                List<Object> outputTuple = doProjection(lookupTuple.tuple, tuple);
-                emit(outputTuple, tuple, lookupTuple.tuple);
+        if (matches!=null && !matches.isEmpty()) {  // match found
+            for (TupleInfo tupleInfo : matches) {
+                tupleInfo.matched = true;
+                List<Object> outputTuple = doProjection(tupleInfo.tuple, tuple);
+                emit(outputTuple, tuple, tupleInfo.tuple);
             }
         }
 
         // 2- add to fromStream buffer
         Tuple expired = joinInfos[0].addTuple(key, tuple);
-        collector.ack(expired);
+        if (expired!=null)
+            collector.ack(expired);
     }
 
     private void processJoinStreamTuple(Tuple tuple) throws InvalidTuple {
         // 1- join against buffered fromStream and emit results if any
         String key = getKey(tuple, joinStream);
         List<TupleInfo> matches = joinInfos[0].findMatches(tuple, key);  // match with fromStream
-        if (matches==null || matches.isEmpty()) {  // no match
-            if (joinInfos[1].joinType==JoinType.RIGHT ||  joinInfos[1].joinType==JoinType.OUTER ) {
-                List<Object> outputTuple = doProjection(tuple, null);
-                emit(outputTuple, tuple);
-            }
-        }  else { // match found
+        if (matches!=null && !matches.isEmpty()) {  // match found
             for (TupleInfo lookupTuple : matches) {
                 lookupTuple.matched = true;
                 List<Object> outputTuple = doProjection(lookupTuple.tuple, tuple);
                 emit(outputTuple, tuple, lookupTuple.tuple);
             }
         }
-
         // 2- add to joinStream buffer
         Tuple expired = joinInfos[1].addTuple(key, tuple);
-        collector.ack(expired);
+        if (expired!=null)
+            collector.ack(expired);
     }
 
 

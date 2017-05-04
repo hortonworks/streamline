@@ -28,10 +28,10 @@ import java.util.stream.Stream;
 
 /* ---- Sample Json of whats expected from UI  ---
 {
-"from" : {"stream": "orders", "count/seconds/minutes/hours/seconds" : 10, "dropDuplicates" : false },
+"from" : {"stream": "orders", "count/seconds/minutes/hours" : 10, "unique" : false },
 
 "joins" : [
-    { "type":"inner/left/right/outer",  "stream":"adImpressions",  "count/seconds/minutes/hours":10,  "dropDuplicates":false,
+    { "type":"inner/left/right/outer",  "stream":"adImpressions",  "count/seconds/minutes/hours":10,  "unique":false,
                "conditions" : [
                   [ "equal",  "adImpressions:userID",  "orders:userId" ],
                   [ "ignoreCase", "product", "orders:product"]
@@ -114,21 +114,21 @@ public class RealtimeJoinBoltFluxComponent extends AbstractFluxComponent {
         {  // from()
             Map<String, Object> fromConf = (Map<String, Object>) conf.get("from");
             String fromStream = fromConf.get("stream").toString();
-            Boolean dropDuplicates = (Boolean) fromConf.get("dropDuplicates");
+            Boolean unique = (Boolean) fromConf.get("unique");
 
             Integer count = (Integer) fromConf.get("count");
             if( count != null ) {
-                result.add(new Object[]{fromStream, count, dropDuplicates});
+                result.add(new Object[]{fromStream, count, unique});
             } else {
                 String durationId = addDurationToComponents(fromConf);
-                result.add(new Object[]{fromStream, getRefYaml(durationId), dropDuplicates});
+                result.add(new Object[]{fromStream, getRefYaml(durationId), unique});
             }
         }
         {  // *Join()
             ArrayList<Map<String, Object>> joinConfig = (ArrayList<Map<String, Object>>) conf.get("joins");
             for (Map<String, Object> joinConf : joinConfig) {
                 String stream = joinConf.get("stream").toString();
-                Boolean dropDuplicates = (Boolean) joinConf.get("dropDuplicates");
+                Boolean unique = (Boolean) joinConf.get("unique");
 
                 ArrayList<Map<String, String> > comparators = new ArrayList<>();
                 for (ArrayList<String> condition : (ArrayList<ArrayList<String> >) joinConf.get("conditions")) {
@@ -136,10 +136,10 @@ public class RealtimeJoinBoltFluxComponent extends AbstractFluxComponent {
                 }
                 Integer count = (Integer) joinConf.get("count");
                 if (count!=null) {
-                    result.add(new Object[]{stream, count, dropDuplicates, comparators.toArray()});
+                    result.add(new Object[]{stream, count, unique, comparators.toArray()});
                 } else {
                     String durationId = addDurationToComponents(joinConf);
-                    result.add(new Object[]{stream, getRefYaml(durationId), dropDuplicates, comparators.toArray()});
+                    result.add(new Object[]{stream, getRefYaml(durationId), unique, comparators.toArray()});
                 }
             }
         }

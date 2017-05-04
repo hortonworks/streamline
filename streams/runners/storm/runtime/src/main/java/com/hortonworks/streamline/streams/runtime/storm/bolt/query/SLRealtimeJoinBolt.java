@@ -80,6 +80,12 @@ public class SLRealtimeJoinBolt extends RealtimeJoinBolt {
         return (SLRealtimeJoinBolt) super.from(stream, retentionCount, unique);
     }
 
+    @Override
+    public SLRealtimeJoinBolt from(String stream, Duration retentionTime, boolean unique) {
+        return (SLRealtimeJoinBolt) super.from(stream, retentionTime, unique);
+    }
+
+    // TODO: Eliminate this overload once Taylor fixes Flux to support static method calls like Duration.ofSeconds()
     public SLRealtimeJoinBolt from(String stream, BaseWindowedBolt.Duration retentionTime, boolean unique) {
         return (SLRealtimeJoinBolt) super.from(stream, Duration.ofMillis(retentionTime.value), unique);
     }
@@ -89,6 +95,12 @@ public class SLRealtimeJoinBolt extends RealtimeJoinBolt {
         return (SLRealtimeJoinBolt) super.innerJoin(stream, retentionCount, unique, comparators);
     }
 
+    @Override
+    public SLRealtimeJoinBolt innerJoin(String stream, Duration retentionTime, boolean unique, JoinComparator... comparators) {
+        return (SLRealtimeJoinBolt) super.innerJoin(stream, retentionTime, unique, comparators);
+    }
+
+    // TODO: Eliminate this overload once Taylor fixes Flux to support static method calls like Duration.ofSeconds()
     public SLRealtimeJoinBolt innerJoin(String stream, BaseWindowedBolt.Duration retentionTime, boolean unique, JoinComparator... comparators) {
         return (SLRealtimeJoinBolt) super.innerJoin(stream, Duration.ofMillis(retentionTime.value), unique, comparators);
     }
@@ -98,6 +110,12 @@ public class SLRealtimeJoinBolt extends RealtimeJoinBolt {
         return (SLRealtimeJoinBolt) super.leftJoin(stream, retentionCount, unique, comparators);
     }
 
+    @Override
+    public SLRealtimeJoinBolt leftJoin(String stream, Duration retentionTime, boolean unique, JoinComparator... comparators) {
+        return (SLRealtimeJoinBolt) super.leftJoin(stream, retentionTime, unique, comparators);
+    }
+
+    // TODO: Eliminate this overload once Taylor fixes Flux to support static method calls like Duration.ofSeconds()
     public SLRealtimeJoinBolt leftJoin(String stream, BaseWindowedBolt.Duration retentionTime, boolean unique, JoinComparator... comparators) {
         return (SLRealtimeJoinBolt) super.leftJoin(stream, Duration.ofMillis(retentionTime.value), unique, comparators);
     }
@@ -107,6 +125,12 @@ public class SLRealtimeJoinBolt extends RealtimeJoinBolt {
         return (SLRealtimeJoinBolt) super.rightJoin(stream, retentionCount, unique, comparators);
     }
 
+    @Override
+    public SLRealtimeJoinBolt rightJoin(String stream, Duration retentionTime, boolean unique, JoinComparator... comparators) {
+        return (SLRealtimeJoinBolt) super.rightJoin(stream, retentionTime, unique, comparators);
+    }
+
+    // TODO: Eliminate this overload once Taylor fixes Flux to support static method calls like Duration.ofSeconds()
     public SLRealtimeJoinBolt rightJoin(String stream, BaseWindowedBolt.Duration retentionTime, boolean unique, JoinComparator... comparators) {
         return (SLRealtimeJoinBolt) super.rightJoin(stream, Duration.ofMillis(retentionTime.value), unique, comparators);
     }
@@ -116,6 +140,12 @@ public class SLRealtimeJoinBolt extends RealtimeJoinBolt {
         return (SLRealtimeJoinBolt) super.outerJoin(stream, retentionCount, unique, comparators);
     }
 
+    @Override
+    public SLRealtimeJoinBolt outerJoin(String stream, Duration retentionTime, boolean unique, JoinComparator... comparators) {
+        return (SLRealtimeJoinBolt) super.outerJoin(stream, retentionTime, unique, comparators);
+    }
+
+    // TODO: Eliminate this overload once Taylor fixes Flux to support static method calls like Duration.ofSeconds()
     public SLRealtimeJoinBolt outerJoin(String stream, BaseWindowedBolt.Duration retentionTime, boolean unique, JoinComparator... comparators) {
         return (SLRealtimeJoinBolt) super.outerJoin(stream, Duration.ofMillis(retentionTime.value), unique, comparators);
     }

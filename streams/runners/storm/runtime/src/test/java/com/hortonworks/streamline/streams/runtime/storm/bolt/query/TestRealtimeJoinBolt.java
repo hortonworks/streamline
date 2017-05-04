@@ -54,22 +54,22 @@ public class TestRealtimeJoinBolt {
             {11, 21, "book"  , 71},
             {12, 22, "watch" , 330},
             {13, 23, "chair" , 500},
-            {14, 29, "tv"    , 2000},    //  matches adImpression on [product] but not on [userId & product]
-            {15, 30, "watch" , 400},     //  matches adImpression on [userID] but not on [userId & product]
+            {14, 32, "tv"    , 2000},    //  matches adImpression on [product] but not on [userId & product] or [userid]
+            {15, 30, "watch" , 400},     //  matches adImpression on [userID] or [product] but not on [userId & product]
             {16, 31, "mattress" , 900},  //  this has no match whatsoever in adImpressions
     };
 
 
 
     @Test
-    public void testSingleKey_InnerJoin_CountRetention() throws Exception {
+    public void testSingleKey_InnerJoin_CountRetention_good() throws Exception {
         ArrayList<Tuple> orderStream = makeStream("orders", orderFields, orders);
         ArrayList<Tuple> adImpressionStream = makeStream("ads", adImpressionFields, adImpressions);
 
         RealtimeJoinBolt bolt = new RealtimeJoinBolt(RealtimeJoinBolt.StreamKind.STREAM)
-                .from("orders", 10, false )
+                .from("orders", 6, false )
                 .innerJoin("ads", 10, false, Cmp.equal("userId", "orders:userId") )
-                .select("orders:id,ads:userId,ads:product,orders:product,price");
+                .select("ads:id,orders:id,ads:userId,ads:product,orders:product,price");
 
         MockCollector collector = new MockCollector(bolt.getOutputFields());
         bolt.prepare(null, null, collector);
@@ -82,7 +82,7 @@ public class TestRealtimeJoinBolt {
         }
 
         printResults(collector);
-        Assert.assertEquals( 5, collector.actualResults.size() );
+        Assert.assertEquals( 4, collector.actualResults.size() );
     }
 
     @Test
@@ -93,7 +93,7 @@ public class TestRealtimeJoinBolt {
         RealtimeJoinBolt bolt = new RealtimeJoinBolt(RealtimeJoinBolt.StreamKind.STREAM)
                 .from("orders", Duration.ofSeconds(1), false)
                 .innerJoin("ads", Duration.ofSeconds(2), false, Cmp.equal("userId", "orders:userId"))
-                .select("orders:id,ads:userId,product,price");
+                .select("ads:id,orders:id,userId,ads:product,orders:product,price");
 
         MockCollector collector = new MockCollector(bolt.getOutputFields());
         bolt.prepare(null, null, collector);
@@ -108,7 +108,7 @@ public class TestRealtimeJoinBolt {
         bolt.execute(makeTickTuple());
 
         printResults(collector);
-        Assert.assertEquals( 5, collector.actualResults.size() );
+        Assert.assertEquals( 4, collector.actualResults.size() );
     }
 
     @Test
@@ -119,7 +119,7 @@ public class TestRealtimeJoinBolt {
         RealtimeJoinBolt bolt = new RealtimeJoinBolt(RealtimeJoinBolt.StreamKind.STREAM)
                 .from("ads", 10, false)
                 .leftJoin("orders", 10, false,  Cmp.equal("userId", "ads:userId"))
-                .select("orders:id , ads:userId , ads:product , orders:product , price");
+                .select("ads:id, orders:id , ads:userId , ads:product , orders:product , price");
 
         MockCollector collector = new MockCollector(bolt.getOutputFields());
         bolt.prepare(null, null, collector);
@@ -132,6 +132,33 @@ public class TestRealtimeJoinBolt {
             bolt.execute(tuple);
         }
         Thread.sleep( Duration.ofSeconds(2).toMillis() );
+        bolt.execute(makeTickTuple());
+
+        printResults(collector);
+        Assert.assertEquals( adImpressionStream.size(), collector.actualResults.size() );
+    }
+
+    @Test
+    public void testSingleKey_LeftJoin_TimeRetention() throws Exception {
+        ArrayList<Tuple> orderStream = makeStream("orders", orderFields, orders);
+        ArrayList<Tuple> adImpressionStream = makeStream("ads", adImpressionFields, adImpressions);
+
+        RealtimeJoinBolt bolt = new RealtimeJoinBolt(RealtimeJoinBolt.StreamKind.STREAM)
+                .from("ads", Duration.ofSeconds(2), false)
+                .leftJoin("orders", Duration.ofSeconds(2), false,  Cmp.equal("userId", "ads:userId"))
+                .select("ads:id, orders:id , ads:userId , ads:product , orders:product , price");
+
+        MockCollector collector = new MockCollector(bolt.getOutputFields());
+        bolt.prepare(null, null, collector);
+
+        for (Tuple tuple : orderStream) {
+            bolt.execute(tuple);
+        }
+
+        for (Tuple tuple : adImpressionStream) {
+            bolt.execute(tuple);
+        }
+        Thread.sleep( Duration.ofSeconds(3).toMillis() );
         bolt.execute(makeTickTuple());
 
         printResults(collector);
@@ -179,7 +206,7 @@ public class TestRealtimeJoinBolt {
         RealtimeJoinBolt bolt = new RealtimeJoinBolt(RealtimeJoinBolt.StreamKind.STREAM)
                 .from("ads", Duration.ofSeconds(1), false)
                 .outerJoin("orders", Duration.ofSeconds(1), false, Cmp.equal("orders:userId", "ads:userId"))
-                .select(" orders:id as orderId, ads:userId  as  userId ,ads:product, orders:product, price "); // extra spaces are to test FieldDescriptor
+                .select("ads:id, orders:id as orderId, ads:userId  as  userId ,ads:product, orders:product, price "); // extra spaces are to test FieldDescriptor
 
         MockCollector collector = new MockCollector(bolt.getOutputFields());
         bolt.prepare(null, null, collector);
@@ -189,14 +216,11 @@ public class TestRealtimeJoinBolt {
         }
 
         // emit all ads but last one
-        for (int i = 0; i < adImpressionStream.size()-1; i++) {
-            bolt.execute( adImpressionStream.get(i) );
+        for (Tuple tuple : adImpressionStream) {
+            bolt.execute(tuple);
         }
         // sleep to allow expiration of all buffered orders and trigger an emit of unmatched orders on next execute()
-        Thread.sleep(1_100);
-        bolt.execute( adImpressionStream.get(adImpressionStream.size()-1) );
-
-        Thread.sleep( Duration.ofSeconds(1).toMillis() );
+        Thread.sleep( Duration.ofSeconds(2).toMillis() );
         bolt.execute(makeTickTuple());
 
 
@@ -205,7 +229,7 @@ public class TestRealtimeJoinBolt {
     }
 
     @Test
-    public void testMultiKey_InnerJoin_CountRetention() throws Exception {
+    public void testMultiKey_InnerJoin_CountRetention_good() throws Exception {
         ArrayList<Tuple> orderStream = makeStream("orders", orderFields, orders);
         ArrayList<Tuple> adImpressionStream = makeStream("ads", adImpressionFields, adImpressions);
 
@@ -382,15 +406,5 @@ public class TestRealtimeJoinBolt {
         MockContext context = new MockContext(new String[]{StreamlineEvent.STREAMLINE_EVENT}, Constants.SYSTEM_COMPONENT_ID );
 
         return new TupleImpl(context, new Values(1000), (int) Constants.SYSTEM_TASK_ID, Constants.SYSTEM_TICK_STREAM_ID);
-    }
-
-    public static void main(String[] args) {
-                 new RealtimeJoinBolt(RealtimeJoinBolt.StreamKind.STREAM)
-                 .from("purchases", 10, false )
-                 .leftJoin("ads", 10, false, Cmp.ignoreCase("ads:product","purchases:product")
-                                           , Cmp.equal("userId", "purchases:userId") )
-                 .select("orders:id , ads:userId, ads:product, orders:product, price")
-                 .withOutputStream("outStreamName");
-
     }
 }
