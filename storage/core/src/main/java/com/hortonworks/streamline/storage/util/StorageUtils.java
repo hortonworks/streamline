@@ -18,19 +18,23 @@ package com.hortonworks.streamline.storage.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.util.ReflectionHelper;
+import com.hortonworks.streamline.storage.annotation.SearchableField;
 import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.common.exception.DuplicateEntityException;
 import com.hortonworks.streamline.storage.Storable;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-
-import static com.hortonworks.streamline.common.util.ReflectionHelper.getAnnotatedClasses;
 
 /**
  * Utility methods for the storage package.
@@ -66,11 +70,25 @@ public final class StorageUtils {
     @SuppressWarnings("unchecked")
     public static Collection<Class<? extends Storable>> getStreamlineEntities() {
         Set<Class<? extends Storable>> entities = new HashSet<>();
-        getAnnotatedClasses("com.hortonworks", StorableEntity.class).forEach(clazz -> {
+        ReflectionHelper.getAnnotatedClasses("com.hortonworks", StorableEntity.class).forEach(clazz -> {
             if (Storable.class.isAssignableFrom(clazz)) {
                 entities.add((Class<? extends Storable>) clazz);
             }
         });
         return entities;
+    }
+
+    public static List<Pair<Field, String>> getSearchableFieldValues(Storable storable)
+            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        List<Pair<Field, String>> res = new ArrayList<>();
+        for (Field field : storable.getClass().getDeclaredFields()) {
+            if (field.getAnnotation(SearchableField.class) != null) {
+                Object val = ReflectionHelper.invokeGetter(field.getName(), storable);
+                if (val != null) {
+                    res.add(Pair.of(field, val instanceof String ? (String) val : val.toString()));
+                }
+            }
+        }
+        return res;
     }
 }
