@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 
 /* ---- Sample Json of whats expected from UI  ---
 {
-"from" : {"stream": "orders", "count/seconds/minutes/hours" : 10, "unique" : false },
+"from" : {"stream": "orders", "seconds/minutes/hours" : 10, "unique" : false },
 
 "joins" : [
     { "type":"inner/left/right/outer",  "stream":"adImpressions",  "count/seconds/minutes/hours":10,  "unique":false,
@@ -44,7 +44,7 @@ import java.util.stream.Stream;
 }
  */
 
-public class RealtimeJoinBoltFluxComponent extends AbstractFluxComponent {
+public class SLRealtimeJoinBoltFluxComponent extends AbstractFluxComponent {
 
     @Override
     protected void generateComponent()  {

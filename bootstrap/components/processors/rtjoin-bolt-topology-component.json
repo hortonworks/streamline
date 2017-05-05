@@ -4,7 +4,7 @@
   "subType": "RT-JOIN",
   "builtin": true,
   "streamingEngine": "STORM",
-  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.RealtimeJoinBoltFluxComponent",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.SLRealtimeJoinBoltFluxComponent",
   "topologyComponentUISpecification": {
     "fields": [
       {
@@ -41,14 +41,13 @@
         ]
       },
       {
-        "uiName": "Buffer Size",
+        "uiName": "Retention Window",
         "fieldName": "buffer",
         "isOptional": false,
-        "tooltip": "How much to buffer",
+        "tooltip": "How long an event in this stream should wait for its matching events on the other stream to arrive",
         "isUserInput": false,
         "type": "enumstring",
         "options": [
-          "count",
           "milliseconds",
           "seconds",
           "minutes",

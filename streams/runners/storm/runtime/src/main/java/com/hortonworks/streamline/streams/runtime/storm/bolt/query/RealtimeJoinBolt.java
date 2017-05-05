@@ -210,6 +210,9 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
 
 
     private RealtimeJoinBolt joinHelperCountRetention(JoinType joinType, String stream, int retentionCount, boolean unique, JoinComparator[] comparators) {
+        if (fromStream==null)
+            throw  new IllegalArgumentException("Need to call from() before calling any of the *join() methods.");
+
         // 1- Check stream names and make explicit any implicit stream names
         validateAndSetupStreamNames(comparators, stream);
         // 2- Check and set up the field names
@@ -220,11 +223,19 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
 
         joinStream = stream;
         this.joinInfos[1] = new JoinInfo(joinType, null, retentionCount, unique, comparators);
+
+        if (joinType==JoinType.LEFT || joinType==JoinType.OUTER)
+            joinInfos[0].emitIfUnmatched = true;
+        if (joinType==JoinType.RIGHT || joinType==JoinType.OUTER)
+            joinInfos[1].emitIfUnmatched = true;
         return this;
     }
 
     private RealtimeJoinBolt joinHelperTimeRetention(JoinType joinType, String stream, Duration retentionTime,
                                                      boolean unique, JoinComparator[] comparators) {
+        if (fromStream==null)
+            throw  new IllegalArgumentException("Need to call from() before calling any of the *join() methods.");
+
         // 1- Check stream names and make explicit any implicit stream names
         validateAndSetupStreamNames(comparators, stream);
 
@@ -236,6 +247,11 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
 
         joinStream = stream;
         this.joinInfos[1] = new JoinInfo(joinType, retentionTime.toMillis(), null, unique, comparators);
+
+        if (joinType==JoinType.LEFT || joinType==JoinType.OUTER)
+            joinInfos[0].emitIfUnmatched = true;
+        if (joinType==JoinType.RIGHT || joinType==JoinType.OUTER)
+            joinInfos[1].emitIfUnmatched = true;
         return this;
     }
 
@@ -323,6 +339,7 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
 
     private void processFromStreamTuple(Tuple tuple) throws InvalidTuple {
         // 1- join against buffered joinStream and emit results if any
+        boolean matchFound = false;
         String key = getKey(tuple, fromStream);
         List<TupleInfo> matches = joinInfos[1].findMatches(tuple, key); // match with joinStream
         if (matches!=null && !matches.isEmpty()) {  // match found
@@ -331,16 +348,17 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
                 List<Object> outputTuple = doProjection(tupleInfo.tuple, tuple);
                 emit(outputTuple, tuple, tupleInfo.tuple);
             }
+            matchFound=true;
         }
-
-        // 2- add to fromStream buffer
-        Tuple expired = joinInfos[0].addTuple(key, tuple);
+        // 2- add to fromStream buffer & expire
+        Tuple expired = joinInfos[0].addTuple(key, tuple, matchFound);
         if (expired!=null)
             collector.ack(expired);
     }
 
     private void processJoinStreamTuple(Tuple tuple) throws InvalidTuple {
         // 1- join against buffered fromStream and emit results if any
+        boolean matchFound = false;
         String key = getKey(tuple, joinStream);
         List<TupleInfo> matches = joinInfos[0].findMatches(tuple, key);  // match with fromStream
         if (matches!=null && !matches.isEmpty()) {  // match found
@@ -349,9 +367,10 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
                 List<Object> outputTuple = doProjection(lookupTuple.tuple, tuple);
                 emit(outputTuple, tuple, lookupTuple.tuple);
             }
+            matchFound = true;
         }
         // 2- add to joinStream buffer
-        Tuple expired = joinInfos[1].addTuple(key, tuple);
+        Tuple expired = joinInfos[1].addTuple(key, tuple, matchFound);
         if (expired!=null)
             collector.ack(expired);
     }
@@ -424,6 +443,7 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
         final Integer retentionCount;         // can be null
         final Boolean unique;
         final JoinComparator[] comparators;   // null for first stream defined via from()
+        boolean emitIfUnmatched = false;
 
         final ArrayDeque<Long> timeTracker;   // for time based retention. tracks time at which the tuples were received
         final LinkedListMultimap<String, TupleInfo> buffer;   // retention window. A [key->tuple] map.
@@ -455,7 +475,7 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
             while ( insertionTime!=null  &&   expirationTime > insertionTime ) {
                 TupleInfo expired = expireOldest();
                 timeTracker.pop();
-                if ( joinType == JoinType.RIGHT || joinType == JoinType.OUTER )
+                if ( emitIfUnmatched )
                     emitUnMatchedTuple(expired);
                 collector.ack(expired.tuple);
                 insertionTime = timeTracker.peek();
@@ -463,10 +483,10 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
         }
 
         // returns a tuple if it has been expired (for count based retention case), or null
-        public Tuple addTuple(String key, Tuple tuple) {
+        public Tuple addTuple(String key, Tuple tuple, boolean matched) {
             if (unique)
                 buffer.removeAll(key);
-            buffer.put(key, new TupleInfo(tuple) );
+            buffer.put(key, new TupleInfo(tuple, matched) );
 
             if (timeTracker!=null) { // time based retention
                 timeTracker.add(System.currentTimeMillis());
@@ -474,9 +494,8 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
             }
             else if (buffer.size() > retentionCount) {
                 TupleInfo expired = expireOldest();
-                if( (joinType==JoinType.RIGHT) || (joinType==JoinType.OUTER)  ) {
+                if ( emitIfUnmatched )
                     emitUnMatchedTuple(expired);
-                }
                 return expired.tuple;
             }
             return null;
@@ -494,7 +513,8 @@ class TupleInfo {
     Tuple tuple;
     boolean matched = false;
 
-    public TupleInfo(Tuple tuple) {
+    public TupleInfo(Tuple tuple, boolean matched) {
         this.tuple = tuple;
+        this.matched = matched;
     }
 }

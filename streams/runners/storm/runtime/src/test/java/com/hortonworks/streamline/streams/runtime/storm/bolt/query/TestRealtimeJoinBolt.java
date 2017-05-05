@@ -62,7 +62,7 @@ public class TestRealtimeJoinBolt {
 
 
     @Test
-    public void testSingleKey_InnerJoin_CountRetention_good() throws Exception {
+    public void testSingleKey_InnerJoin_CountRetention() throws Exception {
         ArrayList<Tuple> orderStream = makeStream("orders", orderFields, orders);
         ArrayList<Tuple> adImpressionStream = makeStream("ads", adImpressionFields, adImpressions);
 
@@ -117,8 +117,8 @@ public class TestRealtimeJoinBolt {
         ArrayList<Tuple> adImpressionStream = makeStream("ads", adImpressionFields, adImpressions);
 
         RealtimeJoinBolt bolt = new RealtimeJoinBolt(RealtimeJoinBolt.StreamKind.STREAM)
-                .from("ads", 10, false)
-                .leftJoin("orders", 10, false,  Cmp.equal("userId", "ads:userId"))
+                .from("ads", 1, false)
+                .leftJoin("orders", 12, false,  Cmp.equal("userId", "ads:userId"))
                 .select("ads:id, orders:id , ads:userId , ads:product , orders:product , price");
 
         MockCollector collector = new MockCollector(bolt.getOutputFields());
@@ -127,12 +127,9 @@ public class TestRealtimeJoinBolt {
         for (Tuple tuple : orderStream) {
             bolt.execute(tuple);
         }
-
         for (Tuple tuple : adImpressionStream) {
             bolt.execute(tuple);
         }
-        Thread.sleep( Duration.ofSeconds(2).toMillis() );
-        bolt.execute(makeTickTuple());
 
         printResults(collector);
         Assert.assertEquals( adImpressionStream.size(), collector.actualResults.size() );
@@ -229,7 +226,7 @@ public class TestRealtimeJoinBolt {
     }
 
     @Test
-    public void testMultiKey_InnerJoin_CountRetention_good() throws Exception {
+    public void testMultiKey_InnerJoin_CountRetention() throws Exception {
         ArrayList<Tuple> orderStream = makeStream("orders", orderFields, orders);
         ArrayList<Tuple> adImpressionStream = makeStream("ads", adImpressionFields, adImpressions);
 
@@ -255,7 +252,7 @@ public class TestRealtimeJoinBolt {
 
 
     @Test
-    public void testStreamline_InnerJoin_TimeRetention() throws Exception {
+    public void testStreamlineMultiKey_InnerJoin_TimeRetention() throws Exception {
         ArrayList<Tuple> orderStream = makeStreamLineEventStream("orders", orderFields, orders);
         ArrayList<Tuple> adImpressionStream = makeStreamLineEventStream("ads", adImpressionFields, adImpressions);
 

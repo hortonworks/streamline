@@ -28,11 +28,11 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.*;
 
-public class RealtimeJoinBoltFluxComponentTest {
+public class SLRealtimeJoinBoltFluxComponentTest {
 
     @Test
     public void testFluxGen_Count() throws Exception {
-        RealtimeJoinBoltFluxComponent me = new RealtimeJoinBoltFluxComponent();
+        SLRealtimeJoinBoltFluxComponent me = new SLRealtimeJoinBoltFluxComponent();
         String json = "{\n" +
                 "\"from\" : {\"stream\": \"orders\", \"seconds\" : 10, \"dropDuplicates\" : false },\n" +
                 "\n" +
