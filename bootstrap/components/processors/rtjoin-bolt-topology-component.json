@@ -29,18 +29,6 @@
         ]
       },
       {
-        "uiName": "Conditions",
-        "fieldName": "Condition",
-        "isOptional": false,
-        "tooltip": "Join condition",
-        "isUserInput": true,
-        "type": "enumstring",
-        "options": [
-          { "name" : "equal", "arity": 2},
-          { "name" : "ignoreCase", "arity": 2}
-        ]
-      },
-      {
         "uiName": "Retention Window",
         "fieldName": "buffer",
         "isOptional": false,

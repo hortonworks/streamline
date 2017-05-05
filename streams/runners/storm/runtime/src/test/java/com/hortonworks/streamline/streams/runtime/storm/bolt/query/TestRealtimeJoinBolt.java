@@ -20,6 +20,7 @@ package com.hortonworks.streamline.streams.runtime.storm.bolt.query;
 
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.runtime.storm.bolt.query.RealtimeJoinBolt.StreamKind;
 import org.apache.storm.Constants;
 import org.apache.storm.task.GeneralTopologyContext;
 import org.apache.storm.task.OutputCollector;
@@ -109,6 +110,44 @@ public class TestRealtimeJoinBolt {
 
         printResults(collector);
         Assert.assertEquals( 4, collector.actualResults.size() );
+    }
+
+    @Test
+    public void testSingleKey_InnerJoin_TimeRetention_Unique() throws Exception {
+        ArrayList<Tuple> orderStream = makeStream("orders", orderFields, orders);
+        appendToStream(orderStream, orders[0], orderFields, "orders"); // add a duplicate record
+
+        ArrayList<Tuple> adImpressionStream = makeStream("ads", adImpressionFields, adImpressions);
+        appendToStream(adImpressionStream, adImpressions[0], adImpressionFields, "ads"); // add a duplicate record
+
+        RealtimeJoinBolt bolt = new RealtimeJoinBolt(RealtimeJoinBolt.StreamKind.STREAM)
+                .from("orders", Duration.ofSeconds(1), true)
+                .innerJoin("ads", Duration.ofSeconds(2), true, Cmp.equal("userId", "orders:userId"))
+                .select("ads:id,orders:id,userId,ads:product,orders:product,price");
+
+        MockCollector collector = new MockCollector(bolt.getOutputFields());
+        bolt.prepare(null, null, collector);
+
+        for (Tuple tuple : adImpressionStream) {
+            bolt.execute(tuple);
+        }
+        int i=0;
+        for (Tuple tuple : orderStream) {
+            ++i;
+            bolt.execute(tuple);
+            if(i==6)
+                Thread.sleep(0);
+        }
+        Thread.sleep( Duration.ofSeconds(2).toMillis() );
+        bolt.execute(makeTickTuple());
+
+        printResults(collector);
+        Assert.assertEquals( 4, collector.actualResults.size() );
+    }
+
+    // adds rec to streamRecs
+    private static void appendToStream(ArrayList<Tuple> streamRecs, Object[] rec, String[] fieldNames, String streamName) {
+        streamRecs.add( new TupleImpl(new MockContext(fieldNames), Arrays.asList(rec), 0, streamName) );
     }
 
     @Test
@@ -203,7 +242,8 @@ public class TestRealtimeJoinBolt {
         RealtimeJoinBolt bolt = new RealtimeJoinBolt(RealtimeJoinBolt.StreamKind.STREAM)
                 .from("ads", Duration.ofSeconds(1), false)
                 .outerJoin("orders", Duration.ofSeconds(1), false, Cmp.equal("orders:userId", "ads:userId"))
-                .select("ads:id, orders:id as orderId, ads:userId  as  userId ,ads:product, orders:product, price "); // extra spaces are to test FieldDescriptor
+                // extra spaces in arg to select() are to test FieldDescriptor
+                .select(" ads:id, orders:id as orderId, ads:userId  as  userId ,ads:product, orders:product, price ");
 
         MockCollector collector = new MockCollector(bolt.getOutputFields());
         bolt.prepare(null, null, collector);
@@ -250,6 +290,32 @@ public class TestRealtimeJoinBolt {
         Assert.assertEquals( 3, collector.actualResults.size() );
     }
 
+    @Test
+    public void testMultiKey_InnerJoin_TimeRetention() throws Exception {
+        ArrayList<Tuple> orderStream = makeStream("orders", orderFields, orders);
+        ArrayList<Tuple> adImpressionStream = makeStream("ads", adImpressionFields, adImpressions);
+
+        RealtimeJoinBolt bolt = new RealtimeJoinBolt(StreamKind.STREAM)
+                .from("orders", Duration.ofSeconds(2), false)
+                .innerJoin("ads", Duration.ofSeconds(2), false, Cmp.equal("orders:userId", "ads:userId")
+                                                              , Cmp.ignoreCase("ads:product","orders:product") )
+                .select("orders:id,ads:userId,product,price");
+
+        MockCollector collector = new MockCollector(bolt.getOutputFields());
+        bolt.prepare(null, null, collector);
+
+        for (Tuple tuple : adImpressionStream) {
+            bolt.execute(tuple);
+        }
+        for (Tuple tuple : orderStream) {
+            bolt.execute(tuple);
+        }
+        Thread.sleep( Duration.ofSeconds(2).toMillis() );
+        bolt.execute(makeTickTuple());
+
+        printResults(collector);
+        Assert.assertEquals( 3, collector.actualResults.size() );
+    }
 
     @Test
     public void testStreamlineMultiKey_InnerJoin_TimeRetention() throws Exception {

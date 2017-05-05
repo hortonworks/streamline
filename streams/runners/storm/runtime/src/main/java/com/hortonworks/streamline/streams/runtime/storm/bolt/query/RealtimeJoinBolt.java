@@ -18,7 +18,6 @@
 
 package com.hortonworks.streamline.streams.runtime.storm.bolt.query;
 
-import com.amazonaws.services.cloudfront.model.InvalidArgumentException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.LinkedListMultimap;
 import org.apache.storm.Config;
@@ -225,9 +224,9 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
         this.joinInfos[1] = new JoinInfo(joinType, null, retentionCount, unique, comparators);
 
         if (joinType==JoinType.LEFT || joinType==JoinType.OUTER)
-            joinInfos[0].emitIfUnmatched = true;
+            joinInfos[0].emitUnmatchedTuples = true;
         if (joinType==JoinType.RIGHT || joinType==JoinType.OUTER)
-            joinInfos[1].emitIfUnmatched = true;
+            joinInfos[1].emitUnmatchedTuples = true;
         return this;
     }
 
@@ -249,9 +248,9 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
         this.joinInfos[1] = new JoinInfo(joinType, retentionTime.toMillis(), null, unique, comparators);
 
         if (joinType==JoinType.LEFT || joinType==JoinType.OUTER)
-            joinInfos[0].emitIfUnmatched = true;
+            joinInfos[0].emitUnmatchedTuples = true;
         if (joinType==JoinType.RIGHT || joinType==JoinType.OUTER)
-            joinInfos[1].emitIfUnmatched = true;
+            joinInfos[1].emitUnmatchedTuples = true;
         return this;
     }
 
@@ -264,10 +263,10 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
             String s1 = f1.streamName;
             String s2 = f2.streamName;
             if (s1==null && s2==null)
-                throw  new InvalidArgumentException("Either one or both field selectors must have an explicit stream qualifier in a join condition: '"
+                throw  new IllegalArgumentException("Either one or both field selectors must have an explicit stream qualifier in a join condition: '"
                         + f1.canonicalFieldName() + "' & '" + f2.canonicalFieldName() + "'");
             if (s1!=null && s2!=null && s1.equalsIgnoreCase(s2))
-                throw  new InvalidArgumentException("Both field selectors must cannot have same stream prefix: '" + f1.outputName + "' & '" + f2.outputName + "'");
+                throw  new IllegalArgumentException("Both field selectors must cannot have same stream prefix: '" + f1.outputName + "' & '" + f2.outputName + "'");
 
 
             if ( f1.streamName == null) {
@@ -315,8 +314,9 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
 
     @Override
     public void execute(Tuple tuple) {
+        long currTime = System.currentTimeMillis();
         for (JoinInfo joinInfo : joinInfos) {
-            joinInfo.expireAndAckTimedOutEntries(collector);
+            joinInfo.expireAndAckTimedOutEntries(collector, currTime);
         }
 
         if (TupleUtils.isTick(tuple))
@@ -325,9 +325,9 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
         try {
             String stream = streamKind.getStreamId(tuple);
             if (stream.equalsIgnoreCase(fromStream))
-                processFromStreamTuple(tuple);
+                processFromStreamTuple(tuple, currTime);
             else if(stream.equalsIgnoreCase(joinStream))
-                processJoinStreamTuple(tuple);
+                processJoinStreamTuple(tuple, currTime);
             else
                 throw new InvalidTuple("Source component/streamId for Tuple not part of streams being joined : " + stream, tuple);
         } catch (InvalidTuple e) {
@@ -337,30 +337,83 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
     }
 
 
-    private void processFromStreamTuple(Tuple tuple) throws InvalidTuple {
-        // 1- join against buffered joinStream and emit results if any
-        boolean matchFound = false;
+    private void processFromStreamTuple(Tuple tuple, long currTime) throws InvalidTuple {
         String key = getKey(tuple, fromStream);
-        List<TupleInfo> matches = joinInfos[1].findMatches(tuple, key); // match with joinStream
-        if (matches!=null && !matches.isEmpty()) {  // match found
-            for (TupleInfo tupleInfo : matches) {
-                tupleInfo.matched = true;
-                List<Object> outputTuple = doProjection(tupleInfo.tuple, tuple);
-                emit(outputTuple, tuple, tupleInfo.tuple);
-            }
-            matchFound=true;
+
+        // 1- Remove older duplicate if 'unique' flag was set
+        TupleInfo duplicate = null;
+        if (joinInfos[0].unique) {
+            duplicate = joinInfos[0].remove(key);
         }
-        // 2- add to fromStream buffer & expire
-        Tuple expired = joinInfos[0].addTuple(key, tuple, matchFound);
+
+        // 2- Match tuple against other stream (unless its a duplicate) and emit results if any
+        boolean matchFound = false;
+        if(duplicate==null) {
+            List<TupleInfo> matches = joinInfos[1].findMatches(key); // match with joinStream
+            if (matches != null && !matches.isEmpty()) {  // match found
+                for (TupleInfo tupleInfo : matches) {
+                    tupleInfo.matched = true;
+                    List<Object> outputTuple = doProjection(tupleInfo.tuple, tuple);
+                    emit(outputTuple, tuple, tupleInfo.tuple);
+                }
+                matchFound = true;
+            }
+        } else {
+            matchFound = duplicate.matched; // clone this setting from the older entry
+        }
+
+        // 3- Add to retention buffer
+        Tuple expired = joinInfos[0].addTuple(key, tuple, matchFound, currTime); // emits unmatched expiring tuples depending on join type
+
+        // 4- ACK any expired tuples
         if (expired!=null)
             collector.ack(expired);
+        if (duplicate!=null)
+            collector.ack(duplicate.tuple);
+
     }
 
-    private void processJoinStreamTuple(Tuple tuple) throws InvalidTuple {
+    private void processJoinStreamTuple(Tuple tuple, long currTime) throws InvalidTuple {
+        String key = getKey(tuple, joinStream);
+
+        // 1- Remove older duplicate if 'unique' flag was set
+        TupleInfo duplicate = null;
+        if (joinInfos[1].unique) {
+            duplicate = joinInfos[1].remove(key);
+        }
+
+        // 2- Match tuple against other stream (unless its a duplicate) and emit results if any
+        boolean matchFound = false;
+        if(duplicate==null) {
+            List<TupleInfo> matches = joinInfos[0].findMatches(key); // match with fromStream
+            if (matches != null && !matches.isEmpty()) {  // match found
+                for (TupleInfo tupleInfo : matches) {
+                    tupleInfo.matched = true;
+                    List<Object> outputTuple = doProjection(tupleInfo.tuple, tuple);
+                    emit(outputTuple, tuple, tupleInfo.tuple);
+                }
+                matchFound = true;
+            }
+        } else {
+            matchFound = duplicate.matched; // clone this setting from the older entry
+        }
+
+        // 3- Add to retention buffer
+        Tuple expired = joinInfos[1].addTuple(key, tuple, matchFound, currTime); // emits unmatched expiring tuples depending on join type
+
+        // 4- ACK any expired tuples
+        if (expired!=null)
+            collector.ack(expired);
+        if (duplicate!=null)
+            collector.ack(duplicate.tuple);
+    }
+
+
+    private void processJoinStreamTuple2(Tuple tuple, long currTime) throws InvalidTuple {
         // 1- join against buffered fromStream and emit results if any
         boolean matchFound = false;
         String key = getKey(tuple, joinStream);
-        List<TupleInfo> matches = joinInfos[0].findMatches(tuple, key);  // match with fromStream
+        List<TupleInfo> matches = joinInfos[0].findMatches(key);  // match with fromStream
         if (matches!=null && !matches.isEmpty()) {  // match found
             for (TupleInfo lookupTuple : matches) {
                 lookupTuple.matched = true;
@@ -370,7 +423,7 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
             matchFound = true;
         }
         // 2- add to joinStream buffer
-        Tuple expired = joinInfos[1].addTuple(key, tuple, matchFound);
+        Tuple expired = joinInfos[1].addTuple(key, tuple, matchFound, currTime);
         if (expired!=null)
             collector.ack(expired);
     }
@@ -411,7 +464,7 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
             collector.emit(outputStream, anchors, outputTuple);
     }
 
-    private void emitUnMatchedTuple(TupleInfo expired) {
+    private void emitIfUnMatchedTuple(TupleInfo expired) {
         if(!expired.matched) {
             List<Object> outputTuple = doProjection(expired.tuple, null);
             emit(outputTuple, expired.tuple);
@@ -443,9 +496,9 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
         final Integer retentionCount;         // can be null
         final Boolean unique;
         final JoinComparator[] comparators;   // null for first stream defined via from()
-        boolean emitIfUnmatched = false;
+        boolean emitUnmatchedTuples = false;
 
-        final ArrayDeque<Long> timeTracker;   // for time based retention. tracks time at which the tuples were received
+//        final LinkedHashMap<String, Long> timeTracker;        // for time based retention. Tracks time at which the tuples were received
         final LinkedListMultimap<String, TupleInfo> buffer;   // retention window. A [key->tuple] map.
 
         public JoinInfo(JoinType joinType, Long retentionTimeMs, Integer retentionCount, Boolean unique, JoinComparator... comparators) {
@@ -457,45 +510,42 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
             this.unique = unique;
             this.comparators = comparators;
             int estimateWindowSz = retentionCount != null ? retentionCount : 100_000;
-            this.timeTracker = (retentionTimeMs!=null) ?  new ArrayDeque<Long>( estimateWindowSz ) : null;
+//            this.timeTracker = (retentionTimeMs!=null) ?  new LinkedHashMap<String, Long>( estimateWindowSz ) : null;
             this.buffer = LinkedListMultimap.create( estimateWindowSz );
         }
 
         // returns null if no match
-        List<TupleInfo> findMatches(Tuple tuple, String tupleKey) throws InvalidTuple {
+        List<TupleInfo> findMatches(String tupleKey) throws InvalidTuple {
             return buffer.get(tupleKey);
         }
 
-        // Removes timedout entries from lookupBuffer & timeTracker. Acks tuples being expired.
-        public void expireAndAckTimedOutEntries(OutputCollector collector) {
-            if(timeTracker==null || timeTracker.isEmpty())
+        // Removes timedout entries from lookupBuffer & timeTracker. ACKs tuples being expired.
+        public void expireAndAckTimedOutEntries(OutputCollector collector, long currTime) {
+            if(buffer.isEmpty() || retentionTime==null)
                 return;
-            Long expirationTime = System.currentTimeMillis() - retentionTime;
-            Long  insertionTime = timeTracker.peek();
-            while ( insertionTime!=null  &&   expirationTime > insertionTime ) {
-                TupleInfo expired = expireOldest();
-                timeTracker.pop();
-                if ( emitIfUnmatched )
-                    emitUnMatchedTuple(expired);
+            long expirationTime = currTime - retentionTime;
+
+            while ( !buffer.isEmpty() ) {
+                Map.Entry<String, TupleInfo> oldest = buffer.entries().get(0);
+                if ( expirationTime < oldest.getValue().insertionTime )
+                    break;
+
+                TupleInfo expired = buffer.entries().remove(0).getValue();
+                if (emitUnmatchedTuples)
+                    emitIfUnMatchedTuple(expired);
                 collector.ack(expired.tuple);
-                insertionTime = timeTracker.peek();
             }
         }
 
-        // returns a tuple if it has been expired (for count based retention case), or null
-        public Tuple addTuple(String key, Tuple tuple, boolean matched) {
-            if (unique)
-                buffer.removeAll(key);
-            buffer.put(key, new TupleInfo(tuple, matched) );
+        // Adds a new tuple into buffer, and removes the oldest tuple if size limit is reached (for count based retention case) or null
+        // returns an expiring tuple (if any) or null
+        public  Tuple addTuple(String key, Tuple tuple, boolean matched, long insertionTime) {
+            buffer.put(key, new TupleInfo(tuple, matched, insertionTime) );
 
-            if (timeTracker!=null) { // time based retention
-                timeTracker.add(System.currentTimeMillis());
-                return null;
-            }
-            else if (buffer.size() > retentionCount) {
+            if (retentionCount!=null && buffer.size() > retentionCount) {
                 TupleInfo expired = expireOldest();
-                if ( emitIfUnmatched )
-                    emitUnMatchedTuple(expired);
+                if (emitUnmatchedTuples)
+                    emitIfUnMatchedTuple(expired);
                 return expired.tuple;
             }
             return null;
@@ -505,6 +555,13 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
             return buffer.entries().remove(0).getValue();
         }
 
+        // remove the entry (if exsits) with this key and returns the removed entry or null
+        public TupleInfo remove(String key) {
+            List<TupleInfo> expired = buffer.removeAll(key);
+            if (expired==null || expired.isEmpty())
+                return null;
+            return expired.get(0); // 'expired' will have only one element due to dedup
+        }
     } // class JoinInfo
 }
 
@@ -512,9 +569,11 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
 class TupleInfo {
     Tuple tuple;
     boolean matched = false;
+    long insertionTime;
 
-    public TupleInfo(Tuple tuple, boolean matched) {
+    public TupleInfo(Tuple tuple, boolean matched, long insertionTime) {
         this.tuple = tuple;
         this.matched = matched;
+        this.insertionTime =insertionTime;
     }
 }

@@ -34,10 +34,10 @@ public class SLRealtimeJoinBoltFluxComponentTest {
     public void testFluxGen_Count() throws Exception {
         SLRealtimeJoinBoltFluxComponent me = new SLRealtimeJoinBoltFluxComponent();
         String json = "{\n" +
-                "\"from\" : {\"stream\": \"orders\", \"seconds\" : 10, \"dropDuplicates\" : false },\n" +
+                "\"from\" : {\"stream\": \"orders\", \"seconds\" : 10, \"unique\" : false },\n" +
                 "\n" +
                 "\"joins\" : [\n" +
-                "    { \"type\":\"inner\",  \"stream\":\"adImpressions\",  \"seconds\":20,  \"dropDuplicates\":false,\n" +
+                "    { \"type\":\"inner\",  \"stream\":\"adImpressions\",  \"seconds\":20,  \"unique\":true,\n" +
                 "               \"conditions\" : [\n" +
                 "                  [ \"equal\",  \"adImpressions:userID\",  \"orders:userId\" ],\n" +
                 "                  [ \"ignoreCase\", \"product\", \"orders:product\"]\n" +

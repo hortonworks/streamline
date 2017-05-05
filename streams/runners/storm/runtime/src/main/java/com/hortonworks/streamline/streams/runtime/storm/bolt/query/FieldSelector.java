@@ -61,20 +61,6 @@ class FieldSelector implements Serializable {
             outputName = (streamName==null) ? fieldDesc :  streamName+":"+fieldDesc ;
     }
 
-//    /**
-//     * @param stream name of stream
-//     * @param fieldDescriptor  Simple fieldDescriptor like "x.y.z" and without a stream qualifier prefix 'stream1:'.
-//     */
-//    public FieldSelector(String stream, String fieldDescriptor, RealtimeJoinBolt.StreamKind streamKind)  {
-//        this(stream + ":" + fieldDescriptor, streamKind);
-//        if(fieldDescriptor.indexOf(":")>=0) {
-//            throw new IllegalArgumentException("Not expecting stream qualifier ':' in '" + fieldDescriptor
-//                    + "'. Stream '" + stream +  "' is separately provided in this context");
-//        }
-//        this.streamName = stream;
-//    }
-
-
     // returns field name in x.y.z format (without stream name)
     public String canonicalFieldName() {
         return String.join(".", field);
