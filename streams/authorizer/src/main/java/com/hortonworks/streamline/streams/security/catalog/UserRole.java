@@ -35,6 +35,14 @@ public class UserRole extends AbstractStorable {
     private Long userId;
     private Long roleId;
 
+    public UserRole() {
+    }
+
+    public UserRole(Long userId, Long roleId) {
+        this.userId = userId;
+        this.roleId = roleId;
+    }
+
     @JsonIgnore
     @Override
     public String getNameSpace() {
@@ -64,6 +72,17 @@ public class UserRole extends AbstractStorable {
 
     public void setRoleId(Long roleId) {
         this.roleId = roleId;
+    }
+
+    // for jackson to serialize properly
+    @Override
+    public Long getId() {
+        return null;
+    }
+
+    @Override
+    public void setId(Long id) {
+        // noop
     }
 
     @Override

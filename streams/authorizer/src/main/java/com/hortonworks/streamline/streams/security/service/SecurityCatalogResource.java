@@ -26,6 +26,7 @@ import com.hortonworks.streamline.streams.security.catalog.AclEntry;
 import com.hortonworks.streamline.streams.security.catalog.Role;
 import com.hortonworks.streamline.streams.security.catalog.RoleHierarchy;
 import com.hortonworks.streamline.streams.security.catalog.User;
+import com.hortonworks.streamline.streams.security.catalog.UserRole;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.DELETE;
@@ -41,6 +42,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -95,16 +97,17 @@ public class SecurityCatalogResource {
         throw EntityNotFoundException.byId(roleId.toString());
     }
 
+    // convienience APIs for maintaining role-user mappings
     @GET
     @Path("/roles/{roleNameOrId}/users")
     @Timed
     public Response getRoleUsers(@PathParam("roleNameOrId") String roleNameOrId, @Context SecurityContext securityContext) {
         SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
         Long roleId = StringUtils.isNumeric(roleNameOrId) ? Long.parseLong(roleNameOrId) : getIdFromRoleName(roleNameOrId);
-        return getRoleUsers(roleId, securityContext);
+        return getRoleUsers(roleId);
     }
 
-    private Response getRoleUsers(Long roleId, @Context SecurityContext securityContext) {
+    private Response getRoleUsers(Long roleId) {
         Role role = catalogService.getRole(roleId);
         Set<Role> rolesToQuery = new HashSet<>();
         if (role != null) {
@@ -114,6 +117,67 @@ public class SecurityCatalogResource {
             return WSUtils.respondEntities(res, OK);
         }
         throw EntityNotFoundException.byId(roleId.toString());
+    }
+
+    @POST
+    @Path("/roles/{roleNameOrId}/users")
+    @Timed
+    public Response addRoleUsers(@PathParam("roleNameOrId") String roleNameOrId, Set<String> userNamesOrIds,
+                                 @Context SecurityContext securityContext) {
+        SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
+        Long roleId = StringUtils.isNumeric(roleNameOrId) ? Long.parseLong(roleNameOrId) : getIdFromRoleName(roleNameOrId);
+        Set<Long> userIds = new HashSet<>();
+        for (String userNameOrId: userNamesOrIds) {
+            if (StringUtils.isNumeric(userNameOrId)) {
+                userIds.add(Long.parseLong(userNameOrId));
+            } else {
+                userIds.add(catalogService.getUser(userNameOrId).getId());
+            }
+        }
+        return addRoleUsers(roleId, userIds);
+    }
+
+    private Response addRoleUsers(Long roleId, Set<Long> userIds) {
+        List<UserRole> userRoles = new ArrayList<>();
+        userIds.forEach(userId -> {
+            userRoles.add(catalogService.addUserRole(userId, roleId));
+        });
+        return WSUtils.respondEntities(userRoles, OK);
+    }
+
+
+    @PUT
+    @Path("/roles/{roleNameOrId}/users")
+    @Timed
+    public Response addOrUpdateRoleUsers(@PathParam("roleNameOrId") String roleNameOrId, Set<String> userNamesOrIds,
+                                 @Context SecurityContext securityContext) {
+        SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
+        Long roleId = StringUtils.isNumeric(roleNameOrId) ? Long.parseLong(roleNameOrId) : getIdFromRoleName(roleNameOrId);
+        Set<Long> userIds = new HashSet<>();
+        for (String userNameOrId: userNamesOrIds) {
+            if (StringUtils.isNumeric(userNameOrId)) {
+                userIds.add(Long.parseLong(userNameOrId));
+            } else {
+                userIds.add(catalogService.getUser(userNameOrId).getId());
+            }
+        }
+        return addOrUpdateRoleUsers(roleId, userIds);
+    }
+
+    private Response addOrUpdateRoleUsers(Long roleId, Set<Long> userIds) {
+        List<UserRole> userRoles = new ArrayList<>();
+        Role roleToQuery = catalogService.getRole(roleId);
+        Set<Long> currentUserIds = catalogService.listUsers(roleToQuery).stream().map(User::getId).collect(Collectors.toSet());
+        Set<Long> userIdsToAdd = Sets.difference(userIds, currentUserIds);
+        Set<Long> userIdsToRemove = Sets.difference(currentUserIds, userIds);
+        Sets.intersection(currentUserIds, userIds).forEach(userId -> {
+            userRoles.add(new UserRole(userId, roleId));
+        });
+        userIdsToRemove.forEach(userId -> catalogService.removeUserRole(userId, roleId));
+        userIdsToAdd.forEach(userId -> {
+            userRoles.add(catalogService.addUserRole(userId, roleId));
+        });
+        return WSUtils.respondEntities(userRoles, OK);
     }
 
     @POST
