@@ -103,7 +103,11 @@ export default class UDFContainer extends Component {
             FSReactToastr.error(
                 <CommonNotification flag="error" content={data.responseMessage}/>, '', toastOpt);
           } else {
-            FSReactToastr.success(<strong>UDF added successfully</strong>);
+            if(this.state.editData.id) {
+              FSReactToastr.success(<strong>UDF updated successfully</strong>);
+            } else {
+              FSReactToastr.success(<strong>UDF added successfully</strong>);
+            }
           }
         });
     }

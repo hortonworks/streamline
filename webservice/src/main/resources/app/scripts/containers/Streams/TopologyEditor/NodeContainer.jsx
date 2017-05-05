@@ -110,7 +110,7 @@ export default class NodeContainer extends Component {
   getPopover() {
     const {name, children, editToolbar, onFolderNameChange, data} = this.props;
     const popover = (
-      <Popover id="popover-positioned-right" title={editToolbar ? <input value={name} className="popoverTitleEditable" onChange={(e) => onFolderNameChange(e, data)}/> : name}>
+      <Popover id="popover-positioned-right" title={editToolbar ? <input value={name} className={name.trim() === '' ? "popoverTitleEditable invalidName" : "popoverTitleEditable"} onChange={(e) => onFolderNameChange(e, data)}/> : name}>
         <ul className="nodeContainerFolderPopover">{children}</ul>
       </Popover>
     );

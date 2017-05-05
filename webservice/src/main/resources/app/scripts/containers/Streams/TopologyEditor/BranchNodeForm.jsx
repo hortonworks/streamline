@@ -72,16 +72,18 @@ export default class BranchNodeForm extends Component {
   fetchData() {
     let {topologyId, versionId, nodeType, nodeData} = this.props;
     let promiseArr = [
+      TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId),
       TopologyREST.getAllNodes(topologyId, versionId, 'edges'),
       TopologyREST.getAllNodes(topologyId, versionId, 'streams')
     ];
 
     Promise.all(promiseArr).then((results) => {
+      this.context.ParentForm.setState({processorNode: results[0]});
       //Found the edge connected to current node
-      let allEdges = results[0].entities;
+      let allEdges = results[1].entities;
       this.allEdges = allEdges;
 
-      let allStreams = results[1].entities;
+      let allStreams = results[2].entities;
       this.allStreams = allStreams;
 
       //find the input stream from connected edge
@@ -269,8 +271,8 @@ export default class BranchNodeForm extends Component {
     if (this.refs.RuleForm.validateData()) {
       this.refs.RuleForm.handleSave().then((results) => {
         if (results) {
-          this.fetchData();
           this.refs.BranchRuleModal.hide();
+          this.fetchData();
         }
       });
     }

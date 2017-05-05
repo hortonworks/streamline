@@ -17,7 +17,7 @@ import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import {Link} from 'react-router';
 import moment from 'moment';
-import {DropdownButton, MenuItem, Button} from 'react-bootstrap';
+import {DropdownButton, MenuItem, Button,FormGroup,InputGroup,FormControl} from 'react-bootstrap';
 import Modal from '../../components/FSModal';
 import {Scrollbars} from 'react-custom-scrollbars';
 
@@ -173,7 +173,8 @@ class EnvironmentContainer extends Component {
       namespaceIdToEdit: null,
       refIdArr: [],
       loader: false,
-      checkServices: false
+      checkServices: false,
+      filterValue: ''
     };
     this.fetchData();
   }
@@ -426,6 +427,10 @@ class EnvironmentContainer extends Component {
     }
   }
 
+  onFilterChange = (e) => {
+    this.setState({filterValue: e.target.value.trim()});
+  }
+
   render() {
     const {
       entities,
@@ -436,10 +441,12 @@ class EnvironmentContainer extends Component {
       namespaceIdToEdit,
       refIdArr,
       loader,
-      checkServices
+      checkServices,
+      filterValue
     } = this.state;
     const {routes} = this.props;
-    const splitData = _.chunk(entities, pageSize) || [];
+    const filteredEntities = TopologyUtils.topologyFilter(entities, filterValue,"namespace");
+    const splitData = _.chunk(filteredEntities, pageSize) || [];
     const modelTitle = <span>{namespaceIdToEdit === null
         ? "New "
         : "Edit "}Environment{/* <i className="fa fa-info-circle"></i>*/}</span>;
@@ -453,11 +460,33 @@ class EnvironmentContainer extends Component {
         <div className="row">
           {fetchLoader
             ? <CommonLoaderSign imgName={"environments"}/>
-            : entities.length === 0
-              ? <NoData serviceFlag={checkServices} imgName={"environments"}/>
-              : splitData[pageIndex].map((nameSpaceList, i) => {
-                return <EnvironmentCards key={i} nameSpaceList={nameSpaceList} nameSpaceClicked={this.nameSpaceClicked} clusterDetails={clusterDetails} refIdArr={refIdArr} loader={loader}/>;
-              })
+            : <div>
+              {
+                (filterValue && splitData.length === 0) || splitData.length !== 0
+                ? <div className="row">
+                    <div className="page-title-box clearfix">
+                      <div className="col-md-3 col-md-offset-8 text-right">
+                        <FormGroup>
+                          <InputGroup>
+                          <FormControl data-stest="searchBox" type="text" placeholder="Search by name" onKeyUp={this.onFilterChange} className="" />
+                          <InputGroup.Addon>
+                            <i className="fa fa-search"></i>
+                          </InputGroup.Addon>
+                          </InputGroup>
+                        </FormGroup>
+                      </div>
+                    </div>
+                  </div>
+                : ''
+              }
+              {
+                splitData.length === 0
+                  ? <NoData serviceFlag={checkServices} imgName={"environments"}/>
+                  : splitData[pageIndex].map((nameSpaceList, i) => {
+                    return <EnvironmentCards key={i} nameSpaceList={nameSpaceList} nameSpaceClicked={this.nameSpaceClicked} clusterDetails={clusterDetails} refIdArr={refIdArr} loader={loader}/>;
+                  })
+              }
+            </div>
 }
         </div>
         {(entities.length > pageSize)

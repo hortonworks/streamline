@@ -643,7 +643,7 @@ class TopologyListingContainer extends Component {
       sourceCheck,
       refIdArr
     } = this.state;
-    const filteredEntities = TopologyUtils.topologyFilter(entities, filterValue);
+    const filteredEntities = TopologyUtils.topologyFilter(entities, filterValue,'topology');
     const splitData = _.chunk(filteredEntities, pageSize) || [];
     const btnIcon = <i className="fa fa-plus"></i>;
     const sortTitle = <span>Sort:<span style={{

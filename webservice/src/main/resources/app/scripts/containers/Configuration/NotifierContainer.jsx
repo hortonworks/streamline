@@ -103,7 +103,11 @@ export default class NotifierContainer extends Component {
             FSReactToastr.error(
                 <CommonNotification flag="error" content={data.responseMessage}/>, '', toastOpt);
           } else {
-            FSReactToastr.success(<strong>Notifier added successfully</strong>);
+            if(this.state.editData.id) {
+              FSReactToastr.success(<strong>Notifier updated successfully</strong>);
+            } else {
+              FSReactToastr.success(<strong>Notifier added successfully</strong>);
+            }
           }
         });
     }

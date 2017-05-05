@@ -17,7 +17,7 @@ import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import {Link} from 'react-router';
 import moment from 'moment';
-import {DropdownButton, MenuItem, Button} from 'react-bootstrap';
+import {DropdownButton, MenuItem, Button ,FormGroup,InputGroup,FormControl} from 'react-bootstrap';
 import Modal from '../../components/FSModal';
 import {Scrollbars} from 'react-custom-scrollbars';
 
@@ -126,10 +126,10 @@ class PoolItemsCard extends Component {
       <div className="col-md-4">
         <div className="service-box" data-id={cluster.id} ref={(ref) => this.clusterRef = ref}>
           <div className="service-head clearfix">
-            <h4 className="pull-left no-margin">{cluster.name}<br/>
-              <span>{cluster.ambariImportUrl ? cluster.ambariImportUrl : 'Not import from ambari'}</span>
+            <h4 className="no-margin">{cluster.name}
+              <span className="display-block">{cluster.ambariImportUrl ? cluster.ambariImportUrl : cluster.description}</span>
             </h4>
-            <div className="pull-right">
+            <div className="service-action-btn">
               <DropdownButton noCaret title={ellipseIcon} id="dropdown" bsStyle="link" className="dropdown-toggle" data-stest="service-pool-actions">
                 {
                   cluster.ambariImportUrl
@@ -197,7 +197,8 @@ class ServicePoolContainer extends Component {
       pageSize: 6,
       mClusterId: '',
       mClusterServiceUpdate : false,
-      mServiceNameList : []
+      mServiceNameList : [],
+      filterValue: ''
     };
     this.fetchData();
   }
@@ -777,6 +778,10 @@ class ServicePoolContainer extends Component {
     }
   }
 
+  onFilterChange = (e) => {
+    this.setState({filterValue: e.target.value.trim()});
+  }
+
   render() {
     const {routes} = this.props;
     const {
@@ -791,10 +796,12 @@ class ServicePoolContainer extends Component {
       clusterData,
       mClusterId,
       mClusterServiceUpdate,
-      mServiceNameList
+      mServiceNameList,
+      filterValue
     } = this.state;
     const {ambariUrl} = clusterData;
-    const splitData = _.chunk(entities, pageSize) || [];
+    const filteredEntities = TopologyUtils.topologyFilter(entities, filterValue,"cluster");
+    const splitData = _.chunk(filteredEntities, pageSize) || [];
     const adminFormFields = () => {
       return <form className="modal-form config-modal-form" ref="modelForm">
         {loader || showFields
@@ -828,6 +835,24 @@ class ServicePoolContainer extends Component {
         {fetchLoader
           ? <CommonLoaderSign imgName={"services"}/>
           : <div>
+            {
+              (filterValue && splitData.length === 0) || splitData.length !== 0
+              ? <div className="row">
+                  <div className="page-title-box clearfix">
+                    <div className="col-md-3 col-md-offset-8 text-right">
+                      <FormGroup>
+                        <InputGroup>
+                        <FormControl data-stest="searchBox" type="text" placeholder="Search by name" onKeyUp={this.onFilterChange} className="" />
+                        <InputGroup.Addon>
+                          <i className="fa fa-search"></i>
+                        </InputGroup.Addon>
+                        </InputGroup>
+                      </FormGroup>
+                    </div>
+                  </div>
+                </div>
+              : ''
+            }
             <div className="row row-margin-bottom">
               <div className="col-md-8 col-md-offset-2">
                 <div className="input-group">

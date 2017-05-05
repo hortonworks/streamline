@@ -76,6 +76,7 @@ export default class ComponentNodeContainer extends Component {
         processors: sortedProcessors.map((d) => { return {bundleId: d.id}; }),
         sinks: sortedSinks.map((d) => { return {bundleId: d.id}; })
       },
+      invalidName: false,
       userId: null
     };
     this.fetchData();
@@ -231,8 +232,13 @@ export default class ComponentNodeContainer extends Component {
   }
 
   onFolderNameChange(e, data){
-    data.name = e.currentTarget.value;
-    this.setState(this.state);
+    let value = e.currentTarget.value;
+    data.name = value;
+    if(value.trim() === '') {
+      this.setState({invalidName: true});
+    } else {
+      this.setState({invalidName: false});
+    }
   }
 
   getNodeContainer(nodeType) {
@@ -298,11 +304,15 @@ export default class ComponentNodeContainer extends Component {
     return nodeContainer;
   }
   handleClickOutside(){
-    if(this.state.editToolbar){
+    let className = event.target.className;
+    if(this.state.editToolbar && className !== 'popoverTitleEditable'){
       this.doneEditToolbar();
     }
   }
   doneEditToolbar(){
+    if(this.state.invalidName) {
+      return;
+    }
     TopologyREST.putTopologyEditorToolbar({body: JSON.stringify({data: JSON.stringify(this.state.toolbar), userId: this.state.userId})})
       .then(toolbarResult => {
         this.setState({editToolbar: false});
@@ -323,21 +333,21 @@ export default class ComponentNodeContainer extends Component {
       return null;
     }
     return (
-      <div className={`${!testRunActivated ? 'component-panel' : 'testComponent-panel'} right`} style={{height: window.innerHeight - 60}}>
+      <div className="component-panel right" style={{height: testRunActivated ? "auto" : window.innerHeight - 60}}>
       {
         !testRunActivated
         ? <div>
             <div className="toolbarButton">
                 {
                   this.state.editToolbar
-                  ? <OverlayTrigger placement="top" overlay={<Popover id="tooltip-popover"><span className="editor-control-tooltip">Save Toolbar</span></Popover>}>
+                  ? <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip">Save Toolbar</Tooltip>}>
                       <a href="javascript:void(0);" onClick={this.doneEditToolbar.bind(this)} style={{width: '100%'}}><i className="fa fa-check" aria-hidden="true"></i></a>
                     </OverlayTrigger>
                   : <div>
-                      <OverlayTrigger placement="top" overlay={<Popover id="tooltip-popover"><span className="editor-control-tooltip"><div>Search show/hide</div><div>(Ctrl+Space, Esc)</div></span></Popover>}>
+                      <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip"><div>Search show/hide</div><div>(Ctrl+Space, Esc)</div></Tooltip>}>
                         <a href="javascript:void(0);" className="spotlight-search" onClick={()=>{state.showSpotlightSearch = !state.showSpotlightSearch;}}><i className="fa fa-search"></i></a>
                       </OverlayTrigger>
-                      <OverlayTrigger placement="top" overlay={<Popover id="tooltip-popover"><span className="editor-control-tooltip">Edit Toolbar</span></Popover>}>
+                      <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip">Edit Toolbar</Tooltip>}>
                        <a href="javascript:void(0);" onClick={this.editToolbar.bind(this)}><i className="fa fa-pencil-square-o" aria-hidden="true"></i></a>
                       </OverlayTrigger>
                     </div>
@@ -370,27 +380,25 @@ export default class ComponentNodeContainer extends Component {
                 </Scrollbars>
               </div>
           </div>
-        : <div className="panel-wrapper" style={{height: window.innerHeight - 90}}>
+        : <div className="testPanel-wrapper" style={{height: window.innerHeight - 90}}>
             <Scrollbars autoHide autoHeightMin={452} renderThumbHorizontal= { props => <div style = { { display: "none" } } />}>
-              <div className="testInner-panel">
-                <Button className="btn-xs" bsStyle="success" onClick={this.handleButtonClicked.bind(this,true)}>
-                  <i className="fa fa-plus"></i> Add New Test
-                </Button>
+              {
+                testCaseList.length > 0
+                ? <h6 className="testComponent-title">
+                    Test Cases
+                  </h6>
+                : ''
+              }
+              <ul className="testComponent-list">
                 {
-                  testCaseList.length > 0
-                  ? <h6 className="testComponent-title">
-                      Test Cases List
-                    </h6>
-                  : ''
+                  _.map(testCaseList , (list) => {
+                    return <li key={list.id} className={selectedTestObj.id === list.id ? 'active' : ''} onClick={this.testListItemClicked.bind(this,list)}><i className="fa fa-flask flaskFontSize"></i><br/>{list.name}</li>;
+                  })
                 }
-                <ul className="testComponent-list">
-                  {
-                    _.map(testCaseList , (list) => {
-                      return <li key={list.id} className={selectedTestObj.id === list.id ? 'active' : ''} onClick={this.testListItemClicked.bind(this,list)}>{list.name}</li>;
-                    })
-                  }
-                </ul>
-              </div>
+              </ul>
+              <ul className="testComponent-list">
+                <li onClick={this.handleButtonClicked.bind(this,true)}><i className="fa fa-plus addFontSize"></i><i className="fa fa-flask flaskFontSize"></i><br/>Add</li>
+              </ul>
             </Scrollbars>
           </div>
       }

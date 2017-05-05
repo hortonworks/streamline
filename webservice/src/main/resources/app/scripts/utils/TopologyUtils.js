@@ -1033,9 +1033,9 @@ const updateParallelismCount = function(topologyId, versionId, nodeData, setLast
   });
 };
 
-const topologyFilter = function(entities, filterValue) {
+const topologyFilter = function(entities, filterValue,entity) {
   let matchFilter = new RegExp(filterValue, 'i');
-  return entities.filter(filteredList => !filterValue || matchFilter.test(filteredList.topology.name));
+  return entities.filter(filteredList => !filterValue || matchFilter.test(filteredList[entity].name));
 };
 
 const getEdgeData = function(data, topologyId, versionId, callback) {

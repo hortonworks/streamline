@@ -62,7 +62,7 @@
     "moment": "^2.14.1",
     "pace-progress": "^1.0.2",
     "postcss-loader": "^1.2.2",
-    "react": "^15.2.1",
+    "react": "15.4.2",
     "react-bootstrap": "^0.30.0",
     "react-bootstrap-datetimerangepicker": "^2.0.3",
     "react-bootstrap-switch": "^3.4.5",

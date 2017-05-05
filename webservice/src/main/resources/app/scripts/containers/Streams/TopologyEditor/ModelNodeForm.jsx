@@ -154,16 +154,14 @@ export default class ModelNodeForm extends Component {
           <form className="customFormClass">
             <div className="form-group row">
               <div className="col-sm-12">
+               <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Name of the model</Popover>}>
                 <label>Model Name
                   <span className="text-danger">*</span>
                 </label>
-                <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Name of the model</Popover>}>
-                <div>
+               </OverlayTrigger>
                 <Select ref={(ref) => {
                   this.modelNameRef = ref;
                 }} value={modelId} options={modelsNameArr} onChange={this.handleModelNameChange.bind(this)} required={true} disabled={disabledFields} clearable={false}/>
-                </div>
-                </OverlayTrigger>
               </div>
               {/*<div className="col-sm-12">
                 <label>Parallelism</label>
