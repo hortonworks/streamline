@@ -25,14 +25,12 @@ import com.hortonworks.streamline.common.exception.service.exception.request.Ent
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.Cluster;
-import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.AmbariServiceNodeDiscoverer;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
-import com.hortonworks.streamline.streams.cluster.model.ServiceWithComponents;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.StormMetadataService;
 import com.hortonworks.streamline.streams.security.Permission;
@@ -255,7 +253,8 @@ public class ClusterCatalogResource {
 
             injectStormViewAsStormConfiguration(clusterId, discoverer);
 
-            ClusterServicesImportResult result = buildClusterServicesImportResult(retrievedCluster);
+            CatalogResourceUtil.ClusterServicesImportResult result =
+                    CatalogResourceUtil.enrichCluster(retrievedCluster, environmentService);
             return WSUtils.respondEntity(result, OK);
         } finally {
             if (acquired) {
@@ -268,8 +267,8 @@ public class ClusterCatalogResource {
 
     private Response buildClustersGetResponse(Collection<Cluster> clusters, Boolean detail) {
         if (BooleanUtils.isTrue(detail)) {
-            List<ClusterServicesImportResult> clustersWithServices = clusters.stream()
-                    .map(c -> buildClusterServicesImportResult(c))
+            List<CatalogResourceUtil.ClusterServicesImportResult> clustersWithServices = clusters.stream()
+                    .map(c -> CatalogResourceUtil.enrichCluster(c, environmentService))
                     .collect(Collectors.toList());
             return WSUtils.respondEntities(clustersWithServices, OK);
         } else {
@@ -279,27 +278,12 @@ public class ClusterCatalogResource {
 
     private Response buildClusterGetResponse(Cluster cluster, Boolean detail) {
         if (BooleanUtils.isTrue(detail)) {
-            ClusterServicesImportResult clusterWithServices = buildClusterServicesImportResult(cluster);
+            CatalogResourceUtil.ClusterServicesImportResult clusterWithServices =
+                    CatalogResourceUtil.enrichCluster(cluster, environmentService);
             return WSUtils.respondEntity(clusterWithServices, OK);
         } else {
             return WSUtils.respondEntity(cluster, OK);
         }
-    }
-
-    private ClusterServicesImportResult buildClusterServicesImportResult(Cluster cluster) {
-        ClusterServicesImportResult result = new ClusterServicesImportResult(cluster);
-
-        for (Service service : environmentService.listServices(cluster.getId())) {
-            Collection<ServiceConfiguration> configurations = environmentService.listServiceConfigurations(service.getId());
-            Collection<Component> components = environmentService.listComponents(service.getId());
-
-            ServiceWithComponents s = new ServiceWithComponents(service);
-            s.setComponents(components);
-            s.setConfigurations(configurations);
-
-            result.addService(s);
-        }
-        return result;
     }
 
     private void injectStormViewAsStormConfiguration(Long clusterId, AmbariServiceNodeDiscoverer discoverer) {
@@ -401,31 +385,6 @@ public class ClusterCatalogResource {
 
         public void setPassword(String password) {
             this.password = password;
-        }
-    }
-
-    private static class ClusterServicesImportResult {
-        private Cluster cluster;
-        private Collection<ServiceWithComponents> services = new ArrayList<>();
-
-        public ClusterServicesImportResult(Cluster cluster) {
-            this.cluster = cluster;
-        }
-
-        public Cluster getCluster() {
-            return cluster;
-        }
-
-        public Collection<ServiceWithComponents> getServices() {
-            return services;
-        }
-
-        public void setServices(Collection<ServiceWithComponents> services) {
-            this.services = services;
-        }
-
-        public void addService(ServiceWithComponents service) {
-            services.add(service);
         }
     }
 

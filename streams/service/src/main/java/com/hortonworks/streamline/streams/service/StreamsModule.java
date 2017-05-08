@@ -96,7 +96,8 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         result.add(new SchemaResource(authorizer, createSchemaRegistryClient()));
         result.addAll(getServiceMetadataResources(authorizer, environmentService));
         result.add(new NamespaceCatalogResource(authorizer, streamcatalogService, topologyActionsService, environmentService));
-        result.add(new SearchCatalogResource(authorizer, streamcatalogService, environmentService));
+        result.add(new SearchCatalogResource(authorizer, streamcatalogService, environmentService,
+                topologyActionsService, topologyMetricsService));
         watchFiles(streamcatalogService);
         setupPlaceholderEntities(streamcatalogService);
         return result;

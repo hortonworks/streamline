@@ -5,11 +5,13 @@ import com.hortonworks.streamline.common.util.ReflectionHelper;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.util.StorageUtils;
+import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+import com.hortonworks.streamline.streams.metrics.topology.service.TopologyMetricsService;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +27,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -39,19 +43,23 @@ public class SearchCatalogResource {
     private final StreamlineAuthorizer authorizer;
     private final StreamCatalogService catalogService;
     private final EnvironmentService environmentService;
+    private final TopologyActionsService actionsService;
+    private final TopologyMetricsService metricsService;
 
-    public SearchCatalogResource(StreamlineAuthorizer authorizer, StreamCatalogService catalogService, EnvironmentService environmentService) {
+    public SearchCatalogResource(StreamlineAuthorizer authorizer,
+                                 StreamCatalogService catalogService,
+                                 EnvironmentService environmentService,
+                                 TopologyActionsService actionsService,
+                                 TopologyMetricsService metricsService) {
         this.authorizer = authorizer;
         this.catalogService = catalogService;
         this.environmentService = environmentService;
+        this.actionsService = actionsService;
+        this.metricsService = metricsService;
     }
 
     // used internally to execute the different list commands in a seamless way
-    private interface ListCommand {
-        Collection<Storable> execute();
-    }
-
-    private ListCommand getListCommand(String namespace) {
+    private Supplier<Collection<Storable>> listCommand(String namespace) {
         switch (namespace) {
             case Topology.NAMESPACE:
                 return () -> {
@@ -76,6 +84,31 @@ public class SearchCatalogResource {
         }
     }
 
+    // used internally to enrich the storables in a seamless way
+    private Function<Collection<Storable>, Collection<?>> enrichCommand(String namespace,
+                                                                        Integer latencyTopN) {
+        switch (namespace) {
+            case Topology.NAMESPACE:
+                return (Collection<Storable> storables) -> storables
+                        .parallelStream()
+                        .map(s -> CatalogResourceUtil.enrichTopology((Topology) s, latencyTopN,
+                                environmentService, actionsService, metricsService, catalogService))
+                        .collect(Collectors.toList());
+            case Namespace.NAMESPACE:
+                return (Collection<Storable> storables) -> storables
+                        .parallelStream()
+                        .map(s -> CatalogResourceUtil.enrichNamespace((Namespace) s, environmentService))
+                        .collect(Collectors.toList());
+            case Cluster.NAMESPACE:
+                return (Collection<Storable> storables) -> storables
+                        .parallelStream()
+                        .map(s -> CatalogResourceUtil.enrichCluster((Cluster) s, environmentService))
+                        .collect(Collectors.toList());
+            default:
+                throw new UnsupportedOperationException("Not implemented for " + namespace);
+        }
+    }
+
     @GET
     @Path("/search")
     @Timed
@@ -83,18 +116,25 @@ public class SearchCatalogResource {
                                    @javax.ws.rs.QueryParam("desc") Boolean desc,
                                    @javax.ws.rs.QueryParam("namespace") String namespace,
                                    @javax.ws.rs.QueryParam("queryString") String queryString,
+                                   @javax.ws.rs.QueryParam("detail") Boolean detail,
+                                   @javax.ws.rs.QueryParam("latencyTopN") Integer latencyTopN,
                                    @Context SecurityContext securityContext) {
         Collection<Storable> storables = SecurityUtil.filter(authorizer, securityContext, namespace,
-                getListCommand(namespace).execute(), READ);
-        Collection<Storable> res = new ArrayList<>();
+                listCommand(namespace).get(), READ);
+        Collection<Storable> searchResult = new ArrayList<>();
         if (!storables.isEmpty()) {
             String sortFieldName = getSortFieldName(sortType);
-            res.addAll(storables.stream()
-                    .filter(s -> StringUtils.isEmpty(queryString) || matches(s, Pattern.compile(queryString)))
+            searchResult.addAll(storables.stream()
+                    .filter(s -> StringUtils.isEmpty(queryString)
+                            || matches(s, Pattern.compile(queryString, Pattern.CASE_INSENSITIVE)))
                     .sorted((s1, s2) -> compare(s1, s2, sortFieldName, desc))
                     .collect(Collectors.toList()));
         }
-        return WSUtils.respondEntities(res, OK);
+        if (detail != null && detail) {
+            return WSUtils.respondEntities(enrichCommand(namespace, latencyTopN).apply(searchResult), OK);
+        } else {
+            return WSUtils.respondEntities(searchResult, OK);
+        }
     }
 
     private String getSortFieldName(String sortType) {

@@ -394,8 +394,8 @@ public class NamespaceCatalogResource {
 
   private Response buildNamespacesGetResponse(Collection<Namespace> namespaces, Boolean detail) {
     if (BooleanUtils.isTrue(detail)) {
-      List<NamespaceWithMapping> namespacesWithMapping = namespaces.stream()
-              .map(this::buildNamespaceWithMapping)
+      List<CatalogResourceUtil.NamespaceWithMapping> namespacesWithMapping = namespaces.stream()
+              .map(namespace -> CatalogResourceUtil.enrichNamespace(namespace, environmentService))
               .collect(toList());
 
       return WSUtils.respondEntities(namespacesWithMapping, OK);
@@ -406,43 +406,14 @@ public class NamespaceCatalogResource {
 
   private Response buildNamespaceGetResponse(Namespace namespace, Boolean detail) {
     if (BooleanUtils.isTrue(detail)) {
-      NamespaceWithMapping namespaceWithMapping = buildNamespaceWithMapping(namespace);
+      CatalogResourceUtil.NamespaceWithMapping namespaceWithMapping =
+              CatalogResourceUtil.enrichNamespace(namespace, environmentService);
       return WSUtils.respondEntity(namespaceWithMapping, OK);
     } else {
       return WSUtils.respondEntity(namespace, OK);
     }
   }
 
-  private NamespaceWithMapping buildNamespaceWithMapping(Namespace namespace) {
-    NamespaceWithMapping nm = new NamespaceWithMapping(namespace);
-    nm.setServiceClusterMappings(environmentService.listServiceClusterMapping(namespace.getId()));
-    return nm;
-  }
-
-  private static class NamespaceWithMapping {
-    private Namespace namespace;
-    private Collection<NamespaceServiceClusterMapping> mappings = new ArrayList<>();
-
-    public NamespaceWithMapping(Namespace namespace) {
-      this.namespace = namespace;
-    }
-
-    public Namespace getNamespace() {
-      return namespace;
-    }
-
-    public Collection<NamespaceServiceClusterMapping> getMappings() {
-      return mappings;
-    }
-
-    public void setServiceClusterMappings(Collection<NamespaceServiceClusterMapping> mappings) {
-      this.mappings = mappings;
-    }
-
-    public void addServiceClusterMapping(NamespaceServiceClusterMapping mapping) {
-      mappings.add(mapping);
-    }
-  }
 
   private String buildMessageForCompositeId(Long namespaceId, String serviceName) {
     return "Namespace: " + namespaceId.toString() + " / serviceName: " + serviceName;
