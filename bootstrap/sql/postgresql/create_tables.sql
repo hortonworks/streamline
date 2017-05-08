@@ -338,7 +338,7 @@ CREATE TABLE IF NOT EXISTS topology_state (
   "topologyId" BIGINT NOT NULL,
   "name" VARCHAR(255) NOT NULL,
   "description" TEXT NOT NULL,
-  PRIMARY KEY (topologyId)
+  PRIMARY KEY ("topologyId")
 );
 
 CREATE TABLE IF NOT EXISTS service_bundle (
@@ -408,8 +408,7 @@ CREATE TABLE IF NOT EXISTS topology_test_run_case (
   "name" VARCHAR(256) NOT NULL,
   "topologyId" BIGINT NOT NULL,
   "timestamp" BIGINT,
-  PRIMARY KEY (id),
-  FOREIGN KEY (topologyId) REFERENCES topology(id)
+  PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_test_run_case_source (
@@ -419,21 +418,19 @@ CREATE TABLE IF NOT EXISTS topology_test_run_case_source (
   "records" TEXT NOT NULL,
   "timestamp" BIGINT,
   PRIMARY KEY (id),
-  FOREIGN KEY (testCaseId) REFERENCES topology_test_run_case(id),
-  FOREIGN KEY (sourceId) REFERENCES topology_source(id),
-  UNIQUE KEY testcase_source (testCaseId, sourceId)
+  FOREIGN KEY ("testCaseId") REFERENCES topology_test_run_case(id),
+  CONSTRAINT UK_testcase_source UNIQUE ("testCaseId", "sourceId")
 );
 
 CREATE TABLE IF NOT EXISTS topology_test_run_case_sink (
-  id SERIAL NOT NULL,
-  testCaseId BIGINT NOT NULL,
-  sinkId BIGINT NOT NULL,
-  records TEXT NOT NULL,
-  timestamp BIGINT,
+  "id" SERIAL NOT NULL,
+  "testCaseId" BIGINT NOT NULL,
+  "sinkId" BIGINT NOT NULL,
+  "records" TEXT NOT NULL,
+  "timestamp" BIGINT,
   PRIMARY KEY (id),
-  FOREIGN KEY (testCaseId) REFERENCES topology_test_run_case(id),
-  FOREIGN KEY (sinkId) REFERENCES topology_sink(id),
-  UNIQUE KEY testcase_sink (testCaseId, sinkId)
+  FOREIGN KEY ("testCaseId") REFERENCES topology_test_run_case(id),
+  CONSTRAINT UK_testcase_sink UNIQUE ("testCaseId", "sinkId")
 );
 
 CREATE TABLE IF NOT EXISTS topology_test_run_histories (
@@ -450,6 +447,5 @@ CREATE TABLE IF NOT EXISTS topology_test_run_histories (
   "finishTime" BIGINT,
   "timestamp" BIGINT,
   PRIMARY KEY (id),
-  FOREIGN KEY (topologyId) REFERENCES topology(id),
-  FOREIGN KEY (versionId) REFERENCES topology_version(id)
+  FOREIGN KEY ("topologyId", "versionId") REFERENCES topology("id", "versionId")
 );
