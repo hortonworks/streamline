@@ -23,6 +23,7 @@ import com.hortonworks.registries.common.ServletFilterConfiguration;
 import com.hortonworks.streamline.cache.Cache;
 import com.hortonworks.streamline.common.Constants;
 import com.hortonworks.streamline.common.ModuleRegistration;
+import com.hortonworks.streamline.common.security.authenticator.Login;
 import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.common.util.ReflectionHelper;
 import com.hortonworks.streamline.storage.CacheBackedStorageManager;
@@ -53,6 +54,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.security.auth.Subject;
+import javax.security.auth.login.LoginException;
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
@@ -93,7 +96,7 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
 
         environment.jersey().register(GenericExceptionMapper.class);
 
-        registerResources(configuration, environment);
+        registerResources(configuration, environment, getSubjectFromLoginImpl(configuration));
 
         if (configuration.isEnableCors()) {
             List<String> urlPatterns = configuration.getCorsUrlPatterns();
@@ -105,6 +108,7 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
         setupCustomTrustStore(configuration);
 
         addServletFilters(configuration, environment);
+
     }
 
     private void addServletFilters(StreamlineConfiguration configuration, Environment environment) {
@@ -125,6 +129,26 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
             }
         } else {
             LOG.info("No servlet filters configured");
+        }
+    }
+
+    private Subject getSubjectFromLoginImpl (StreamlineConfiguration streamlineConfiguration) {
+        LoginConfiguration loginConfiguration = streamlineConfiguration.getLoginConfiguration();
+        if (loginConfiguration == null) {
+            return null;
+        }
+        try {
+            Login login = (Login) Class.forName(loginConfiguration.getClassName()).newInstance();
+            login.configure(loginConfiguration.getParams() != null ? loginConfiguration.getParams() : new HashMap<String, Object>(), "StreamlineServer");
+            try {
+                return login.login().getSubject();
+            } catch (LoginException e) {
+                LOG.error("Unable to login using login configuration {}", loginConfiguration);
+                throw new RuntimeException(e);
+            }
+        } catch (InstantiationException|IllegalAccessException|ClassNotFoundException e) {
+            LOG.error("Unable to instantiate loginImpl using login configuration {}", loginConfiguration);
+            throw new RuntimeException(e);
         }
     }
 
@@ -202,7 +226,8 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
         return fileStorage;
     }
 
-    private void registerResources(StreamlineConfiguration configuration, Environment environment) throws ConfigException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    private void registerResources(StreamlineConfiguration configuration, Environment environment, Subject subject) throws ConfigException,
+            ClassNotFoundException, IllegalAccessException, InstantiationException {
         StorageManager storageManager = getCacheBackedDao(configuration);
         Collection<Class<? extends Storable>> streamlineEntities = getStreamlineEntities();
         storageManager.registerStorables(streamlineEntities);
@@ -248,6 +273,7 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
             Map<String, Object> initConfig = new HashMap<>(moduleConfiguration.getConfig());
             initConfig.put(Constants.CONFIG_AUTHORIZER, authorizer);
             initConfig.put(Constants.CONFIG_SECURITY_CATALOG_SERVICE, securityCatalogService);
+            initConfig.put(Constants.CONFIG_SUBJECT, subject);
             moduleRegistration.init(initConfig, fileStorage);
             if (moduleRegistration instanceof StorageManagerAware) {
                 LOG.info("Module [{}] is StorageManagerAware and setting StorageManager.", moduleName);
