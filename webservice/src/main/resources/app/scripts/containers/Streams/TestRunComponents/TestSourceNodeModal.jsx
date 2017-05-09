@@ -55,18 +55,22 @@ class TestSourceNodeModal extends Component{
     super(props);
     let obj = {
       showLoading : true,
-      fileName : '',
+      testName : '',
       inputFile : '',
-      inputData : '',
+      records : '',
       streamIdList : [],
       selectedTestCase : {},
       streamObj :{},
       activeTabKey:1,
       entity : {},
-      showFileError : false
+      repeatTime : 0,
+      showInputError : false,
+      sourceNodeArr : [],
+      sourceIndex : 0
     };
     this.state = obj;
     this.fetchData();
+    this.testArr = [];
   }
 
   /*
@@ -81,45 +85,69 @@ class TestSourceNodeModal extends Component{
     swapEntity = testCaseObj
     And SET the output streams and Output records
   */
-  fetchData = () => {
-    const {topologyId, nodeData,testCaseObj,versionId,checkConfigureTestCase} = this.props;
-    let promiseArr = [],swapEntity = {};
+  fetchData = (index) => {
+    const {topologyId, nodeListArr,testCaseObj,versionId,checkConfigureTestCase} = this.props;
+    let sourcePromiseArr = [],swapEntity = {},testPromiseArr = [];
+    const sourceArr = _.filter(nodeListArr,(node) => {return node.parentType.toLowerCase() === "source";});
     // fetch the source details for streams
-    promiseArr.push(TopologyREST.getNode(topologyId, versionId, 'sources', nodeData.nodeId));
+    _.map(sourceArr, (source) => {
+      sourcePromiseArr.push(TopologyREST.getNode(topologyId, versionId, 'sources', source.nodeId));
+    });
 
     // fetch testcase
-    promiseArr.push(TestRunREST.getSourceTestCase(topologyId,testCaseObj.id,'sources',nodeData.nodeId));
+    if(!_.isEmpty(testCaseObj)){
+      _.map(sourceArr, (source) => {
+        testPromiseArr.push(TestRunREST.getSourceTestCase(topologyId,testCaseObj.id,'sources',source.nodeId));
+      });
+    }
 
-    Promise.all(promiseArr).then((results) => {
+    Promise.all(sourcePromiseArr).then((results) => {
       _.map(results, (result ,i) => {
         if(result.responseMessage !== undefined){
-          if(i === 1){
-            swapEntity = testCaseObj;
-          } else {
-            FSReactToastr.error(
-              <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
-          }
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
         }
       });
-
-      this.node = results[0];
-      const outputStream = this.node.outputStreams;
-      let streamList = [],tempInput='';
-      _.map(outputStream, (stream) => {
-        streamList.push(stream.streamId);
+      let stateObj = {},tempInput='';
+      this.nodeArr = results;
+      stateObj.sourceNodeArr = [];
+      _.map(results, (result, i) => {
+        let streamIdListArr=[];
+        _.map(result.outputStreams, (stream) => {
+          streamIdListArr.push(stream.streamId);
+          stateObj.sourceNodeArr[i] = {streamIdList : streamIdListArr};
+        });
+        stateObj.sourceNodeArr[i].nodeId = result.id;
+        stateObj.sourceNodeArr[i].streamObj = result.outputStreams[0];
       });
 
-      let entity =  _.keys(swapEntity).length > 0 ?  swapEntity : results[1] ;
-
-      if(entity.records){
-        let recordData = JSON.parse(entity.records);
-        streamList = _.keys(recordData);
-        _.map(streamList, (key) => {
-          tempInput = recordData[key];
+      if(testPromiseArr.length){
+        Promise.all(testPromiseArr).then((testResult) => {
+          _.map(testResult, (result ,i) => {
+            if(result.responseMessage !== undefined){
+              FSReactToastr.error(
+                <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
+            }
+          });
+          this.testArr = testResult;
+          let tempInput= '';
+          let stateObj = _.cloneDeep(this.state.sourceNodeArr);
+          _.map(testResult, (tResult,i) => {
+            let recordData = JSON.parse(tResult.records);
+            stateObj[i].streamIdList = _.keys(recordData);
+            _.map(stateObj[i].streamIdList, (key) => {
+              tempInput = recordData[key];
+            });
+            stateObj[i].records = JSON.stringify(tempInput,null,"  ");
+            stateObj[i].repeatTime = tResult.occurrence;
+            stateObj[i].testCaseId = tResult.testCaseId;
+            checkConfigureTestCase(tResult.sourceId,'Source');
+          });
+          this.setState({showLoading : false,sourceNodeArr:stateObj ,testName : this.props.testCaseObj.name});
         });
-        checkConfigureTestCase(entity.sourceId,'Source');
       }
-      this.setState({entity ,  streamIdList : streamList,streamObj : outputStream[0], showLoading: false,inputData : ! _.isEmpty(tempInput) ? JSON.stringify(tempInput,null,"  ") : ''});
+      testPromiseArr.length === 0 ? stateObj.showLoading = false : '';
+      this.setState(stateObj);
     });
   }
 
@@ -127,20 +155,28 @@ class TestSourceNodeModal extends Component{
     handleOutputDataChange accept the json value from the codemirror
   */
   handleInputDataChange(json){
-    this.setState({inputData : json});
+    const {sourceIndex} = this.state;
+    let tempSourceArr = _.cloneDeep(this.state.sourceNodeArr);
+    tempSourceArr[sourceIndex].records = json;
+    this.setState({sourceNodeArr : tempSourceArr});
   }
 
   /*
     validateData
-    check inputData is a valid JSON and is Array
+    check records is a valid JSON and is Array
   */
   validateData = () => {
-    const {inputData} = this.state;
-    let validate = false;
-    if(Utils.validateJSON(inputData)){
+    const {showInputError,sourceNodeArr, testName} = this.state;
+    let validate = false,validationArr = [];
+    _.map(sourceNodeArr, (source,i) => {
+      if(source.records === '' || source.repeatTime === '' || source.repeatTime === undefined || source.records === undefined || testName === ''){
+        validationArr.push(false);
+      }
+    });
+    if(!showInputError){
       validate = true;
     }
-    return validate;
+    return validate && validationArr.length === 0 ? true : false;
   }
 
   /*
@@ -151,40 +187,100 @@ class TestSourceNodeModal extends Component{
     Call the GET OR PUT API
   */
   handleSave = () => {
-    const {topologyId ,testCaseObj,nodeData} = this.props;
-    const {inputData,streamIdList,entity} = this.state;
-    const entityId = entity && entity.records ? entity.testCaseId : testCaseObj.id;
-    let tempInputdata={};
-    let obj = {
-      sourceId : nodeData.nodeId,
-      testCaseId : entityId
-    };
-    tempInputdata[streamIdList[0]] = JSON.parse(inputData);
-    obj.records = JSON.stringify(tempInputdata);
-    return entity && entity.records
-            ? TestRunREST.putTestRunNode(topologyId,entityId,'sources',entity.sourceId,{body : JSON.stringify(obj)})
-            : TestRunREST.postTestRunNode(topologyId, entityId,'sources',{body : JSON.stringify(obj)});
+    const {topologyId ,testCaseObj} = this.props;
+    const {testName,sourceNodeArr} = this.state;
+    let promiseArr = [],obj = [];
+    _.map(sourceNodeArr, (source, i) => {
+      let tempInputdata={};
+      obj.push({
+        sourceId : this.nodeArr[i].id,
+        testCaseId : source.testCaseId || '',
+        occurrence : source.repeatTime
+      });
+      tempInputdata[source.streamIdList[0]] = JSON.parse(source.records);
+      obj[i].records = JSON.stringify(tempInputdata);
+    });
+
+    if(_.isEmpty(testCaseObj)){
+      let testObj = {
+        name : testName,
+        topologyId : topologyId
+      };
+      return  TestRunREST.postTestRun(topologyId,{body : JSON.stringify(testObj)}).then((result) => {
+        if(result.responseMessage !== undefined){
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
+        } else {
+          _.map(obj,(o) => {
+            o.testCaseId = result.id;
+          });
+          this.props.updateTestCaseList(result);
+          return this.handleSaveApiCallback(obj,result);
+        }
+      });
+    } else {
+      return this.handleSaveApiCallback(obj);
+    }
   }
 
-  handleFileChange = (e) => {
-    if (e.target.files.length) {
-      let file = e.target.files[0];
-      const fileName = e.target.files[0].name;
+  handleSaveApiCallback = (obj,result) => {
+    const {topologyId} = this.props;
+    const {sourceNodeArr} = this.state;
+    let savePromiseArr=[];
+
+    _.map(sourceNodeArr, (source, i) => {
+      if(source.records && this.testArr.length){
+        savePromiseArr.push(TestRunREST.putTestRunNode(topologyId,obj[i].testCaseId,'sources',obj[i].sourceId,{body : JSON.stringify(obj[i])}));
+      }
+    });
+
+    if(savePromiseArr.length === 0){
+      return this.handleNewTestCase(obj,result);
+    } else {
+      return Promise.all(savePromiseArr);
+    }
+  }
+
+  handleNewTestCase = (obj,result) => {
+    const {topologyId} = this.props;
+    const {sourceNodeArr} = this.state;
+    return TestRunREST.postTestRunNode(topologyId, result.id,'sources',{body : JSON.stringify(obj[0])}).then((result) => {
+      if(result.responseMessage !== undefined){
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
+      } else {
+        if(obj.length > 1){
+          let putPromiseArr = [];
+          _.map(sourceNodeArr, (source, i) => {
+            if(i > 0){
+              putPromiseArr.push(TestRunREST.putTestRunNode(topologyId,obj[i].testCaseId,'sources',obj[i].sourceId,{body : JSON.stringify(obj[i])}));
+            }
+          });
+          return Promise.all(putPromiseArr);
+        } else {
+          return result;
+        }
+      }
+    });
+  }
+
+  handleFileChange = (file) => {
+    if (file) {
+      const {sourceIndex} = this.state;
+      let tempSourceArr = _.cloneDeep(this.state.sourceNodeArr);
+      const fileName = file.name;
       const reader = new FileReader();
       reader.onload = function(e) {
         if(Utils.validateJSON(reader.result)) {
-          this.setState({showFileError: false, inputFile: file, inputData: reader.result,fileName});
-        } else {
-          this.setState({showFileError: true});
+          tempSourceArr[sourceIndex].inputFile = file;
+          tempSourceArr[sourceIndex].records = JSON.stringify(JSON.parse(reader.result),null,"  ");
+          this.setState({showFileError: false,fileName,sourceNodeArr :tempSourceArr});
         }
       }.bind(this);
       reader.readAsText(file);
     }
   }
 
-  handleFileUpload = () => {
-    this.refs.fileName.click();
-  }
   /*
     onSelectTab accept eventKey
     to SET the TAB active
@@ -195,6 +291,29 @@ class TestSourceNodeModal extends Component{
     }
   }
 
+  handleRepeatTime = (e ,index) => {
+    const {sourceIndex} = this.state;
+    let tempSourceArr = _.cloneDeep(this.state.sourceNodeArr);
+    tempSourceArr[sourceIndex].repeatTime = e.target.value;
+    this.setState({sourceNodeArr : tempSourceArr});
+  }
+
+  handleFileDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.dataTransfer.files.length){
+      this.handleFileChange(e.dataTransfer.files[0]);
+    }
+  }
+
+  inputTestName = (e) => {
+    this.setState({testName : e.target.value , showInputError : e.target.value.trim() === '' ? true : false});
+  }
+
+  sourceNodeClick = (node,index) => {
+    this.setState({sourceIndex : index});
+  }
+
   render(){
     const jsonoptions = {
       lineNumbers: true,
@@ -203,79 +322,85 @@ class TestSourceNodeModal extends Component{
       gutters: ["CodeMirror-lint-markers"],
       lint: true
     };
-    const {showLoading,inputData,entities,selectedTestCase,streamObj,activeTabKey,showFileError,fileName} = this.state;
-    const outputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={streamObj} streamType="output"/>;
-    return(
-      <Tabs id="TestSourceForm" activeKey={activeTabKey} className="modal-tabs" onSelect={this.onSelectTab}>
-        <Tab eventKey={1} title="Configuration" >
-          {outputSidebar}
+    const {showLoading,selectedTestCase,activeTabKey,repeatTime,testName,showInputError,sourceNodeArr,sourceIndex} = this.state;
+    const {nodeListArr,nodeData,testCaseObj} = this.props;
+    const tempSourceArr= sourceNodeArr[sourceIndex] ? sourceNodeArr : [{streamObj : {fields:[]},records:''}];
+    const sourceNode = _.filter(nodeListArr, (node) =>  { return node.parentType.toLowerCase() === "source";});
+    const tempNodeId = sourceNode[sourceIndex].nodeId;
+    const outputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={tempSourceArr[sourceIndex].streamObj} streamType="output"/>;
+    const sourceSideBar = (
+      <div className="modal-sidebar-left sidebar-overflow">
+        <h4>Sources</h4>
+        <ul className="sourceList">
           {
-            showLoading
-            ? <div className="loading-img text-center">
-                <img src="styles/img/start-loader.gif" alt="loading" style={{
-                  marginTop: "140px"
-                }}/>
-              </div>
-            : <div className="source-modal-form" style={{width:"690px"}}>
-              <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
-                display: "none"
-              }}/>}>
-                <div className="customFormClass">
-                    <form>
-                      <div className="form-group">
-                        <div className="col-md-12" style={{marginTop:"10px",marginBottom:"10px"}}>
-                          <label>Upload Schema from file
-                            <span className="text-danger">*</span>
-                          </label>
-                          <input ref="fileName" accept=".json"
-                            type="file"
-                            placeholder="Select file"  className="hidden-file-input"
-                            onChange={(event) => {
-                              this.handleFileChange.call(this, event);
-                            }}
-                            required={true}/>
-                          <div>
-                            <InputGroup>
-                              <InputGroup.Addon className="file-upload">
-                                <Button
-                                  type="button"
-                                  className="browseBtn btn-primary"
-                                  onClick={this.handleFileUpload.bind(this)}
-                                >
-                                  <i className="fa fa-folder-open-o"></i>&nbsp;Browse
-                                </Button>
-                              </InputGroup.Addon>
-                              <FormControl
-                                type="text"
-                                placeholder="No file chosen"
-                                value={fileName}
-                                className={showFileError
-                                ? "form-control invalidInput"
-                                : "form-control"}
-                              />
-                            </InputGroup>
+            _.map(sourceNode, (source,i) => {
+              return <li key={source.nodeId} className={tempNodeId === source.nodeId ? "active" : ''} onClick={this.sourceNodeClick.bind(this,source,i)}>
+                <img src={source.imageURL} alt={source.nodeLabel} />
+                <div>
+                  <h3>Test-{source.uiname}</h3>
+                  <h5>{source.currentType}</h5>
+                </div>
+              </li>;
+            })
+          }
+        </ul>
+      </div>
+    );
+    return(
+      <div>
+        <div style={{"width" : "95%", margin : "auto auto 20px auto"}}>
+          <label>Name
+            <span className="text-danger">*</span>
+          </label>
+          <input type="text" disabled={!_.isEmpty(testCaseObj) ? true : false} placeholder="Enter test case name" className={`form-control ${showInputError ? 'invalidInput' : ''}`}  value={testName} onChange={this.inputTestName}/>
+        </div>
+        <div style={{position : "relative"}}>
+          <Tabs id="TestSourceForm" className="modal-tabs" onSelect={this.onSelectTab}>
+            <Tab>
+              {sourceSideBar}
+              {outputSidebar}
+              {
+                showLoading
+                ? <div className="loading-img text-center">
+                    <img src="styles/img/start-loader.gif" alt="loading" style={{
+                      marginTop: "140px"
+                    }}/>
+                  </div>
+                : <div className="processor-modal-form">
+                  <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
+                    display: "none"
+                  }}/>}>
+                    <div className="customFormClass">
+                        <form>
+                          <div className="row">
+                              <div className="col-md-12" onDrop={this.handleFileDrop} style={{marginTop:"10px",marginBottom:"10px"}}>
+                                <label>TEST DATA (type or drag file)
+                                  <span className="text-danger">*</span>
+                                </label>
+                                <ReactCodemirror ref="JSONCodemirror" value={tempSourceArr[sourceIndex].records || ''} onChange={this.handleInputDataChange.bind(this)} options={jsonoptions}/>
+                              </div>
                           </div>
-                        </div>
-                      </div>
-                      {
-                        fileName || ! _.isEmpty(inputData)
-                        ? <div className="form-group">
-                            <div className="col-md-12">
-                              <label>Input Records
-                                <span className="text-danger">*</span>
+                          <div className="form-group">
+                            <div className="col-md-12 row" >
+                              <label>Repeat
                               </label>
-                              <ReactCodemirror ref="JSONCodemirror" value={inputData} onChange={this.handleInputDataChange.bind(this)} options={jsonoptions}/>
+                            </div>
+                            <div className="col-md-8 row">
+                                <input type="number" value={tempSourceArr[sourceIndex].repeatTime || ''} className="form-control" min={0} max={Number.MAX_SAFE_INTEGER} onChange={this.handleRepeatTime.bind(this)}/>
+                            </div>
+                            <div className="col-md-4 row" style={{lineHeight : "30px"}}>
+                              <span>&nbsp;times</span>
                             </div>
                           </div>
-                        : ''
-                      }
-                    </form>
+                        </form>
+                    </div>
+                  </Scrollbars>
                 </div>
-              </Scrollbars>
-            </div>
-          }
-        </Tab>
-      </Tabs>
+              }
+            </Tab>
+          </Tabs>
+        </div>
+      </div>
     );
   }
 }

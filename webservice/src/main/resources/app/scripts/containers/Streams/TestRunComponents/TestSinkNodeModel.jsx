@@ -58,11 +58,11 @@ class TestSinkNodeModal extends Component{
       showLoading : false,
       expectedOutputData : '',
       expectedOutputFile : '',
-      showFileError : false,
       fileName : '',
       entity : {},
       activeTabKey:1,
-      streamObjArr:[]
+      streamObjArr:[],
+      repeatTime : 0
     };
     this.state = obj;
     this.fetchProcessorData();
@@ -161,24 +161,17 @@ class TestSinkNodeModal extends Component{
           : TestRunREST.postTestRunNode(topologyId, entityId,'sinks',{body : JSON.stringify(obj)});
   }
 
-  handleFileChange = (e) => {
-    if (e.target.files.length) {
-      let file = e.target.files[0];
-      const fileName = e.target.files[0].name;
+  handleFileChange = (file) => {
+    if (file) {
+      const fileName = file.name;
       const reader = new FileReader();
       reader.onload = function(e) {
         if(Utils.validateJSON(reader.result)) {
           this.setState({showFileError: false, expectedOutputFile: file, expectedOutputData: reader.result,fileName});
-        } else {
-          this.setState({showFileError: true});
         }
       }.bind(this);
       reader.readAsText(file);
     }
-  }
-
-  handleFileUpload = () => {
-    this.refs.fileName.click();
   }
 
   /*
@@ -191,6 +184,18 @@ class TestSinkNodeModal extends Component{
     }
   }
 
+  handleRepeatTime = (e) => {
+    this.setState({repeatTime :e.target.value});
+  }
+
+  handleFileDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.dataTransfer.files.length){
+      this.handleFileChange(e.dataTransfer.files[0]);
+    }
+  }
+
   render(){
     const jsonoptions = {
       lineNumbers: true,
@@ -199,7 +204,7 @@ class TestSinkNodeModal extends Component{
       gutters: ["CodeMirror-lint-markers"],
       lint: true
     };
-    const {showLoading,expectedOutputData,activeTabKey,streamObjArr,streamObj,showFileError,fileName} = this.state;
+    const {showLoading,expectedOutputData,activeTabKey,streamObjArr,streamObj,repeatTime,fileName} = this.state;
     const inputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={streamObj || []} inputStreamOptions={streamObjArr} streamType="input"/>;
     return(
       <div>
@@ -221,52 +226,25 @@ class TestSinkNodeModal extends Component{
                       <div className="customFormClass">
                           <form>
                             <div className="form-group">
-                              <div className="col-md-12" style={{marginTop:"10px",marginBottom:"10px"}}>
-                                <label>Upload Schema from file
+                              <div className="col-md-12" onDrop={this.handleFileDrop} style={{marginTop:"10px",marginBottom:"10px"}}>
+                                <label>TEST DATA (type or drag file)
                                   <span className="text-danger">*</span>
                                 </label>
-                                <input ref="fileName" accept=".json"
-                                  type="file"
-                                  placeholder="Select file"  className="hidden-file-input"
-                                  onChange={(event) => {
-                                    this.handleFileChange.call(this, event);
-                                  }}
-                                  required={true}/>
-                                <div>
-                                  <InputGroup>
-                                    <InputGroup.Addon className="file-upload">
-                                      <Button
-                                        type="button"
-                                        className="browseBtn btn-primary"
-                                        onClick={this.handleFileUpload.bind(this)}
-                                      >
-                                        <i className="fa fa-folder-open-o"></i>&nbsp;Browse
-                                      </Button>
-                                    </InputGroup.Addon>
-                                    <FormControl
-                                      type="text"
-                                      placeholder="No file chosen"
-                                      value={fileName}
-                                      className={showFileError
-                                      ? "form-control invalidInput"
-                                      : "form-control"}
-                                    />
-                                  </InputGroup>
-                                </div>
+                                <ReactCodemirror ref="JSONCodemirror" value={expectedOutputData} onChange={this.handleOutputDataChange.bind(this)} options={jsonoptions}/>
                               </div>
                             </div>
-                            {
-                              fileName || ! _.isEmpty(expectedOutputData)
-                              ? <div className="form-group">
-                                    <div className="col-md-12">
-                                      <label>Expected Output Records
-                                        <span className="text-danger">*</span>
-                                      </label>
-                                      <ReactCodemirror ref="JSONCodemirror" value={expectedOutputData} onChange={this.handleOutputDataChange.bind(this)} options={jsonoptions}/>
-                                    </div>
-                                  </div>
-                              : ''
-                            }
+                            <div className="form-group">
+                              <div className="col-md-12 row" >
+                                <label>Repeat
+                                </label>
+                              </div>
+                              <div className="col-md-8 row">
+                                  <input type="number" value={repeatTime} className="form-control" min={0} max={Number.MAX_SAFE_INTEGER} onChange={this.handleRepeatTime}/>
+                              </div>
+                              <div className="col-md-4 row" style={{lineHeight : "30px"}}>
+                                <span>&nbsp;times</span>
+                              </div>
+                            </div>
                           </form>
                       </div>
                     </Scrollbars>

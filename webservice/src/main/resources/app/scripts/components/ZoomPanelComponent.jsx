@@ -21,7 +21,7 @@ import {observer} from 'mobx-react';
 @observer
 class  ZoomPanelComponent extends Component {
   render(){
-    const {lastUpdatedTime,versionName,zoomInAction,zoomOutAction,showConfig,confirmMode,testRunActivated} = this.props;
+    const {lastUpdatedTime,versionName,zoomInAction,zoomOutAction,showConfig,confirmMode,testRunActivated,eventLogData,handleEventLogHide} = this.props;
     return (
       <div className="zoomWrap clearfix">
         <div className="topology-editor-controls pull-right">
@@ -38,13 +38,20 @@ class  ZoomPanelComponent extends Component {
             }}>{versionName}</span>
           </span>
           <span className="version">
+            Mode:&nbsp;
             <span className="SwitchWrapper">
-              <span className={`Switch Round ${testRunActivated ? 'On' : 'Off'}`} onClick={confirmMode}>
-                <span className="Toggle"></span>
+              <span className={`Switch ${testRunActivated ? 'On' : 'Off'}`} onClick={confirmMode}>
+                <span className={`Toggle ${testRunActivated ? 'On' : 'Off'}`}>
+                  <span className="ToggleBtnText">
+                    {
+                      testRunActivated ? "TEST" : "EDIT"
+                    }
+                  </span>
+                </span>
                 {
                   testRunActivated
-                  ? <span className="OnActive">TEST</span>
-                  :  <span className="OffActive">DEV</span>
+                  ? <span className="OnActive">EDIT</span>
+                  :  <span className="OffActive">TEST</span>
                 }
               </span>
             </span>
@@ -65,6 +72,15 @@ class  ZoomPanelComponent extends Component {
               <i className="fa fa-gear"></i>
             </a>
           </OverlayTrigger>
+          {
+            eventLogData.length && testRunActivated
+            ? <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip"> Event Log </Tooltip>}>
+                <a href="javascript:void(0);" className="config" onClick={handleEventLogHide.bind(this,true,'panel')}>
+                  <i className="fa fa-flask"></i>
+                </a>
+              </OverlayTrigger>
+            : ''
+          }
         </div>
       </div>
     );

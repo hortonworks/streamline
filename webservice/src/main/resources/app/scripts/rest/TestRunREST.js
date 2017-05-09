@@ -130,6 +130,23 @@ const TestRunREST = {
       .then((response) => {
         return response.json();
       });
+  },
+  getTestCaseEventLog(id,historyId,options){
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    options.headers = options.headers || {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    let url = baseUrl + 'topologies/' + id+ "/testhistories/"+historyId+'/events';
+    return fetch(url, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  getDownloadTestCaseUrl(id,historyId){
+    return baseUrl + 'topologies/' + id + "/testhistories/"+historyId+"/events/download";
   }
 };
 

@@ -65,11 +65,28 @@ export default class TopologyGraphComponent extends Component {
   constructor(props) {
     super(props);
     this.renderFlag = false;
+    this.testRunActivated = props.testRunActivated;
+    this.hideEventLog = props.hideEventLog;
+  }
+
+  componentWillReceiveProps(nextProps,previousProps){
+    if(nextProps.testRunActivated && nextProps.activeLogRowArr !== undefined && previousProps.activeLogRowArr !== nextProps.activeLogRowArr){
+      this.activeLogRowArr = nextProps.activeLogRowArr;
+    }
+    nextProps.testRunActivated !== previousProps.testRunActivated
+    ? this.testRunActivated = nextProps.testRunActivated
+    : '';
+    nextProps.hideEventLog !== previousProps.hideEventLog
+      ? this.hideEventLog = nextProps.hideEventLog
+      :'';
   }
 
   componentWillUpdate(){
-    if(this.props.testRunActivated){
+    if(this.testRunActivated){
       this.updateGraph();
+    }
+    if((!this.testRunActivated && !this.props.viewMode) || this.hideEventLog){
+      this.toolTip.hide();
     }
   }
 
@@ -165,12 +182,12 @@ export default class TopologyGraphComponent extends Component {
     this.drag = d3.behavior.drag().origin(function(d) {
       return {x: d.x, y: d.y};
     }).on("drag", function(args) {
-      if (thisGraph.editMode && !thisGraph.props.testRunActivated) {
+      if (thisGraph.editMode && !thisGraph.testRunActivated) {
         thisGraph.internalFlags.justDragged = true;
         thisGraph.dragMove.call(thisGraph, args);
       }
     }).on("dragend", function(node) {
-      if (thisGraph.editMode && !thisGraph.props.testRunActivated) {
+      if (thisGraph.editMode && !thisGraph.testRunActivated) {
         let {topologyId, versionId, versionsArr, metaInfo} = thisGraph;
         if (versionId) {
           let versionName = versionsArr.find((o) => {
@@ -206,7 +223,7 @@ export default class TopologyGraphComponent extends Component {
     });
 
     svg.on("mousemove", function(d) {
-      if (d3.event.target.nodeName === 'svg')
+      if (d3.event.target.nodeName === 'svg' && !thisGraph.testRunActivated)
         {thisGraph.toolTip.hide();}
     });
 
@@ -230,7 +247,7 @@ export default class TopologyGraphComponent extends Component {
           let versionName = versionsArr.find((o) => {
             return o.id == versionId;
           }).name;
-          if (versionName.toLowerCase() == 'current' && editMode && !thisGraph.props.testRunActivated) {
+          if (versionName.toLowerCase() == 'current' && editMode && !thisGraph.testRunActivated) {
             TopologyUtils.saveMetaInfo(topologyId, versionId, null, metaInfo, null);
           }
         }
@@ -244,8 +261,11 @@ export default class TopologyGraphComponent extends Component {
     //NOTE - To use scroll for zoom in/out, uncomment the below line
     svg.call(this.dragSvg).on("dblclick.zoom", null);
 
+    this.activeLogRowArr = thisGraph.props.activeLogRowArr;
     this.updateGraph();
     this.renderFlag = true;
+    this.evt = document.createEvent("Events");
+    this.evt.initEvent("click", true, true);
   }
 
   zoomAction(zoomType) {
@@ -314,7 +334,7 @@ export default class TopologyGraphComponent extends Component {
             let versionName = versionsArr.find((o) => {
               return o.id == versionId;
             }).name;
-            if (versionName.toLowerCase() == 'current' && editMode && !thisGraph.props.testRunActivated) {
+            if (versionName.toLowerCase() == 'current' && editMode && !thisGraph.testRunActivated) {
               TopologyUtils.saveMetaInfo(topologyId, versionId, null, metaInfo, null);
             }
           }
@@ -737,6 +757,29 @@ export default class TopologyGraphComponent extends Component {
       ? true
       : false;
   }
+
+  showEventLogTooltip = (d,data,node) => {
+    let thisGraph = this;
+    const list = _.map(_.keys(data.streamlineEvent), (key) => {
+      return `<li> ${data.streamlineEvent[key]} <span class='output-type'> ${key}</span> </li>`;
+    });
+    thisGraph.toolTip.attr('class', "d3-tip "+ data.componentName).offset([0, 10]).direction('s' ).html(function(d) {
+      return (
+        "<div class='schema-tooltip clearfix'>"+
+          "<a href='javascript:void(0)'><i id='close-btn-"+data.componentName+"' data-name='"+data.componentName+"' class='fa fa-times pull-right'></i></a>"+
+          "<h3>Output</h3>"+
+          "<div class='input-schema'>"+
+            "<ul class='schema-list'>"
+              +list.join('')+
+            "</ul>"+
+          "</div>"+
+        "</div>"
+      );
+    });
+
+    thisGraph.toolTip.show(data ,node);
+  }
+
   updateGraph() {
     let that = this;
     var duplicateLinks = document.getElementsByClassName('visible-link');
@@ -761,6 +804,7 @@ export default class TopologyGraphComponent extends Component {
         });
       }
     }
+
     thisGraph.paths = thisGraph.paths.data(thisGraph.edges, function(d) {
       return String(d.source.nodeId) + "+" + String(d.target.nodeId);
     });
@@ -817,7 +861,7 @@ export default class TopologyGraphComponent extends Component {
 
     thisGraph.rectangles.selectAll('rect').attr('class', function(d){
       let classStr = 'node-rectangle ' + TopologyUtils.getNodeRectClass(d);
-      if(thisGraph.props.testRunActivated){
+      if(thisGraph.testRunActivated){
         classStr +=  d.parentType.toLowerCase() === "source"
                     ?  ' testSourceBg'
                     : d.parentType.toLowerCase() === "sink"
@@ -845,7 +889,7 @@ export default class TopologyGraphComponent extends Component {
     });
     thisGraph.rectangles.selectAll('circle').attr("filter", function(d) {
       if (!d.isConfigured) {
-        return "url(#grayscale)";
+        return thisGraph.testRunActivated ? thisGraph.props.eventLogData.length ? '' : "url(#grayscale)" : "url(#grayscale)";
       } else {
         return "";
       }
@@ -853,7 +897,7 @@ export default class TopologyGraphComponent extends Component {
     thisGraph.rectangles.selectAll('text.node-title').text(function(d) {
       // append "Test" if testRunActivated is true for source and sink
       const titleNode = TopologyUtils.getNodeRectClass(d);
-      let title = thisGraph.props.testRunActivated ? (titleNode === "source" || titleNode === "datasink") ? `TEST-${d.parentType}` : d.uiname : d.uiname;
+      let title = thisGraph.testRunActivated ? (titleNode === "source" || titleNode === "datasink") ? `TEST-${d.parentType}` : d.uiname : d.uiname;
       if (title.length > 11) {
         return title.slice(0, 10) + '...';
       } else {
@@ -872,6 +916,10 @@ export default class TopologyGraphComponent extends Component {
         : d.parallelismCount;
     });
 
+    if(!thisGraph.testRunActivated){
+      thisGraph.rectangles.selectAll('circle.test-circle').remove();
+    }
+
     //add new nodes
     var newGs = thisGraph.rectangles.enter().append("g");
     newGs.classed(constants.rectangleGClass, true).attr("transform", function(d) {
@@ -881,7 +929,7 @@ export default class TopologyGraphComponent extends Component {
     //Outer Rectangle
     newGs.append("rect").attr("width", constants.rectangleWidth + constants.rectangleHeight).attr("height", constants.rectangleHeight - 1).attr("class", function(d) {
       let classStr = 'node-rectangle ' + TopologyUtils.getNodeRectClass(d);
-      if(thisGraph.props.testRunActivated){
+      if(thisGraph.testRunActivated){
         classStr +=  d.parentType.toLowerCase() === "source"
                     ?  ' testSourceBg'
                     : d.parentType.toLowerCase() === "sink"
@@ -899,7 +947,7 @@ export default class TopologyGraphComponent extends Component {
       return "url(#dropshadow)";
     }).on("mouseover", function(d) {
       if (thisGraph.editMode) {
-        d3.select(this.parentElement).select('text.fa.fa-times').style('display', thisGraph.props.testRunActivated ? 'none' : 'block');
+        d3.select(this.parentElement).select('text.fa.fa-times').style('display', thisGraph.testRunActivated ? 'none' : 'block');
       } else {
         TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, this));
       }
@@ -930,7 +978,7 @@ export default class TopologyGraphComponent extends Component {
       return "url(#grayscale)";
     }).on("mouseover", function(d) {
       if (thisGraph.editMode) {
-        d3.select(this.parentElement).select('text.fa.fa-times').style('display', thisGraph.props.testRunActivated ? 'none' : 'block');
+        d3.select(this.parentElement).select('text.fa.fa-times').style('display', thisGraph.testRunActivated ? 'none' : 'block');
       } else {
         TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, d3.select(this.parentElement).select('rect')));
       }
@@ -957,7 +1005,7 @@ export default class TopologyGraphComponent extends Component {
     newGs.append("text").attr("class", "fa fa-caret-right").attr("x", "173px").attr("y", "26px").text(function(d) {
       return '\uf0da';
     }).on("click", function(d) {
-      if (thisGraph.editMode && !thisGraph.props.testRunActivated) {
+      if (thisGraph.editMode && !thisGraph.testRunActivated) {
         let value = parseInt(d.parallelismCount, 10) + 1;
         d.parallelismCount = value <= 1
           ? 1
@@ -972,7 +1020,7 @@ export default class TopologyGraphComponent extends Component {
     newGs.append("text").attr("class", "fa fa-caret-left").attr("x", "143px").attr("y", "26px").text(function(d) {
       return '\uf0d9';
     }).on("click", function(d) {
-      if (thisGraph.editMode && !thisGraph.props.testRunActivated) {
+      if (thisGraph.editMode && !thisGraph.testRunActivated) {
         let value = parseInt(d.parallelismCount, 10) - 1;
         d.parallelismCount = value <= 1
           ? 1
@@ -1049,12 +1097,87 @@ export default class TopologyGraphComponent extends Component {
       }
     });
 
+    if(thisGraph.testRunActivated){
+      if(thisGraph.props.eventLogData.length && thisGraph.activeLogRowArr.length){
+        const circleNode = thisGraph.rectangles.select('circle.test-circle');
+        circleNode[0].forEach(function(c){
+          let c_Node = d3.select(c);
+          const data = c_Node.data();
+          if(data[0] !== undefined){
+            const index = _.findIndex(thisGraph.activeLogRowArr, (row) => {return row.componentName === data[0].uiname;});
+            if(index !== -1 && c_Node.classed('active')){
+              thisGraph.toolTip.hide();
+              c_Node.attr("class",'test-circle');
+            }
+            if(index !== -1 &&  !c_Node.classed('active')){
+              c_Node.attr("class",'test-circle active');
+              c.dispatchEvent(thisGraph.evt);
+            }
+          }
+        });
+      }
+    }
+
+
+    // For Test Mode Events Circle append
+    if(thisGraph.testRunActivated){
+      if(thisGraph.props.eventLogData.length){
+        let testCircle = thisGraph.rectangles.selectAll('circle.test-circle')
+          .data(function(d){
+            return [d];
+          });
+        testCircle.exit().remove();
+        testCircle.enter().append("circle").attr("cx", function(d) {
+          return (constants.rectangleWidth / 1.5);
+        }).attr("cy", function(d) {
+          return constants.rectangleHeight + 3.5;
+        }).attr("r", function(d) {
+          return '5';
+        }).attr("class", function(d) {
+          return 'test-circle';
+        }).attr("fill", "#1892c1")
+        .attr("filter", function(d){
+          return '';
+        }).on("click",function(d){
+          const eventData = _.filter(thisGraph.props.eventLogData, (log) => {return log.componentName === d.uiname;});
+          let data = [];
+          if(thisGraph.activeLogRowArr.length === 0){
+            data.push(eventData[eventData.length - 1]);
+          } else {
+            data = _.filter(eventData, (event) => {return event.id === thisGraph.activeLogRowArr[0].id;});
+          }
+          thisGraph.showEventLogTooltip.call(thisGraph, d,data[0] || {},this);
+          const that = thisGraph;
+          d3.select('#close-btn-'+data[0].componentName).on('click', function(){
+            event.preventDefault();
+            event.stopPropagation();
+            const name = event.target.dataset.name;
+            const circleNode = thisGraph.rectangles.select('circle.test-circle');
+            circleNode[0].forEach(function(c){
+              let c_Node = d3.select(c);
+              const data = c_Node.data();
+              if(name === d.uiname){
+                let tempActiveRow = _.cloneDeep(that.activeLogRowArr);
+                const index = _.findIndex(tempActiveRow, (row) => {return row.componentName === d.uiname;});
+                const cNode = d3.select('circle.test-circle.active');
+                if(index !== -1 && cNode.classed('active')){
+                  cNode.attr({'class':'test-circle'});
+                  that.props.removeActiveLogToolTip(tempActiveRow[index]);
+                }
+                that.toolTip.hide(d);
+              }
+            });
+          });
+        });
+      }
+    }
+
     //Label Text
     newGs.each(function(d) {
       // append "Test" if testRunActivated is true for source and sink
       const titleNode = TopologyUtils.getNodeRectClass(d);
       let gEl = d3.select(this),
-        title = thisGraph.props.testRunActivated ? (titleNode === "source" || titleNode === "datasink") ? `TEST-${d.parentType}` : d.uiname : d.uiname,
+        title = thisGraph.testRunActivated ? (titleNode === "source" || titleNode === "datasink") ? `TEST-${d.parentType}` : d.uiname : d.uiname,
         words = title.split(/\s+/g),
         nwords = words.length,
         nodeTitle = '';
@@ -1072,7 +1195,7 @@ export default class TopologyGraphComponent extends Component {
         return ((constants.rectangleHeight / 2) - 2);
       }).on("mouseover", function(d) {
         if (thisGraph.editMode) {
-          d3.select(this.parentElement).select('text.fa.fa-times').style('display', thisGraph.props.testRunActivated ? 'none' : 'block');
+          d3.select(this.parentElement).select('text.fa.fa-times').style('display', thisGraph.testRunActivated ? 'none' : 'block');
         } else {
           TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, d3.select(this.parentElement).select('rect')));
         }
@@ -1123,7 +1246,7 @@ export default class TopologyGraphComponent extends Component {
         return ((constants.rectangleHeight - 7));
       }).on("mouseover", function(d) {
         if (thisGraph.editMode) {
-          d3.select(this.parentElement).select('text.fa.fa-times').style('display', thisGraph.props.testRunActivated ? 'none' : 'block');
+          d3.select(this.parentElement).select('text.fa.fa-times').style('display', thisGraph.testRunActivated ? 'none' : 'block');
         } else {
           TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, d3.select(this.parentElement).select('rect')));
         }
@@ -1151,7 +1274,7 @@ export default class TopologyGraphComponent extends Component {
       return '\uf00d';
     }).style("display", "none").on("mouseover", function(d) {
       if (thisGraph.editMode) {
-        this.style.display = thisGraph.props.testRunActivated ? 'none' : 'block';
+        this.style.display = thisGraph.testRunActivated ? 'none' : 'block';
       }
     }).on("mouseout", function(d) {
       if (thisGraph.editMode) {

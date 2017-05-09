@@ -490,6 +490,15 @@ const handleNestedFormDataEmptyObj = (formData) => {
   return nestedObj(formData);
 };
 
+const eventLogNumberId = function(num){
+  if(!num){
+    return;
+  }
+  let numString = num.toString();
+  numString =  numString.length === 1 ? `00${numString}` : numString.length === 2 ? `0${numString}` : numString;
+  return numString;
+};
+
 export default {
   sortArray,
   numberToMilliseconds,
@@ -515,5 +524,6 @@ export default {
   deepmerge,
   deepmergeAll,
   mergeFormDataFields,
-  handleNestedFormDataEmptyObj
+  handleNestedFormDataEmptyObj,
+  eventLogNumberId
 };
