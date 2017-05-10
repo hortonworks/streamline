@@ -22,6 +22,7 @@ import com.hortonworks.streamline.common.util.ReflectionHelper;
 import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.storage.annotation.SchemaIgnore;
+import com.hortonworks.streamline.storage.annotation.SearchableField;
 import com.hortonworks.streamline.storage.exception.StorageException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

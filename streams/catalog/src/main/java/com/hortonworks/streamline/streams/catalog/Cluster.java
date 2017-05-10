@@ -17,6 +17,7 @@ package com.hortonworks.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.registries.common.Schema;
+import com.hortonworks.streamline.storage.annotation.SearchableField;
 import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
@@ -34,8 +35,10 @@ public class Cluster extends AbstractStorable {
     public static final String NAMESPACE = "cluster";
 
     private Long id;
+    @SearchableField
     private String name;
     private String ambariImportUrl = "";
+    @SearchableField
     private String description = "";
     private Long timestamp;
 

@@ -17,6 +17,7 @@ package com.hortonworks.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.registries.common.Schema;
+import com.hortonworks.streamline.storage.annotation.SearchableField;
 import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
@@ -32,9 +33,12 @@ public class Namespace extends AbstractStorable {
   public static final String NAMESPACE = "namespace";
 
   private Long id;
+  @SearchableField
   private String name;
+  @SearchableField
   private String streamingEngine;
   private String timeSeriesDB;
+  @SearchableField
   private String description = "";
   private Long timestamp;
 
