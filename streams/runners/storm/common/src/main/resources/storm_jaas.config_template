@@ -1,0 +1,9 @@
+StormClient {
+  com.sun.security.auth.module.Krb5LoginModule required
+  useKeyTab=true
+  keyTab="{{keyTab}}"
+  storeKey=true
+  useTicketCache=false
+  serviceName="{{serviceName}}"
+  principal="{{principal}}";
+};

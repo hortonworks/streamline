@@ -142,7 +142,7 @@ public class NamespaceCatalogResourceTest {
         new Verifications() {{
             catalogService.listTopologies();
             times = 0;
-            topologyActionsService.getRuntimeTopologyId(withAny(new Topology()));
+            topologyActionsService.getRuntimeTopologyId(withAny(new Topology()), anyString);
             times = 0;
             environmentService.removeServiceClusterMapping(testNamespaceId, anyString, anyLong);
             times = existingMappings.size();
@@ -183,7 +183,7 @@ public class NamespaceCatalogResourceTest {
         new Verifications() {{
             catalogService.listTopologies();
             times = 0;
-            topologyActionsService.getRuntimeTopologyId(withAny(new Topology()));
+            topologyActionsService.getRuntimeTopologyId(withAny(new Topology()), anyString);
             times = 0;
             // request fails before removing existing mappings
             environmentService.removeServiceClusterMapping(testNamespaceId, anyString, anyLong);
@@ -223,7 +223,7 @@ public class NamespaceCatalogResourceTest {
         new Verifications() {{
             catalogService.listTopologies();
             times = 0;
-            topologyActionsService.getRuntimeTopologyId(withAny(new Topology()));
+            topologyActionsService.getRuntimeTopologyId(withAny(new Topology()), anyString);
             times = 0;
             // request fails before removing existing mappings
             environmentService.removeServiceClusterMapping(testNamespaceId, anyString, anyLong);
@@ -434,10 +434,10 @@ public class NamespaceCatalogResourceTest {
             catalogService.listTopologies();
             result = topologies;
             // assuming first topology is not running
-            topologyActionsService.getRuntimeTopologyId(topologies.get(0));
+            topologyActionsService.getRuntimeTopologyId(topologies.get(0), anyString);
             result = new TopologyNotAliveException("generated exception for purpose");
             // and second topology is running now
-            topologyActionsService.getRuntimeTopologyId(topologies.get(1));
+            topologyActionsService.getRuntimeTopologyId(topologies.get(1), anyString);
             result = "dummy-storm-topology-id";
         }};
     }

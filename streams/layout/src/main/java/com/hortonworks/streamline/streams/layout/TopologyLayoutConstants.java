@@ -17,12 +17,18 @@ package com.hortonworks.streamline.streams.layout;
 
 public final class TopologyLayoutConstants {
 
-
   private TopologyLayoutConstants () {}
     // streaming engines
     public static final String STORM_STREAMING_ENGINE = "STORM";
 
-    // metric
+    public static final String STORM_NIMBUS_PRINCIPAL_NAME = "nimbus_principal_name";
+
+    public static final String STORM_THRIFT_TRANSPORT = "storm.thrift.transport";
+    public static final String STORM_SECURED_THRIFT_TRANSPORT = "_storm.thrift.secure.transport";
+    public static final String STORM_NONSECURED_THRIFT_TRANSPORT = "_storm.thrift.nonsecure.transport";
+    public static final String STORM_PRINCIPAL_TO_LOCAL = "storm.principal.tolocal";
+
+  // metric
     public static final String STORM_API_ROOT_URL_KEY = "stormApiRootUrl";
 
     public static final String SCHEMA_REGISTRY_URL = "schemaRegistryUrl";

@@ -23,6 +23,7 @@ import com.hortonworks.streamline.common.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 import java.io.BufferedOutputStream;
@@ -167,5 +168,7 @@ public class WSUtils {
         };
     }
 
-
+    public static String getUserFromSecurityContext(SecurityContext securityContext) {
+        return securityContext.isSecure() ? securityContext.getUserPrincipal().getName() : null;
+    }
 }

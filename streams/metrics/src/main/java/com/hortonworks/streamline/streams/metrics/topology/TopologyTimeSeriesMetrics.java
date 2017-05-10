@@ -41,9 +41,10 @@ public interface TopologyTimeSeriesMetrics {
      * @param topology      topology catalog instance
      * @param from          beginning of the time period: timestamp (in milliseconds)
      * @param to            end of the time period: timestamp (in milliseconds)
+     * @param asUser        username if request needs impersonation to specific user
      * @return Map of metric name and Map of data points which are paired to (timestamp, value).
      */
-    TimeSeriesComponentMetric getTopologyStats(TopologyLayout topology, long from, long to);
+    TimeSeriesComponentMetric getTopologyStats(TopologyLayout topology, long from, long to, String asUser);
 
     /**
      * Retrieve "complete latency" on source.
@@ -52,9 +53,10 @@ public interface TopologyTimeSeriesMetrics {
      * @param component component layout instance
      * @param from      beginning of the time period: timestamp (in milliseconds)
      * @param to        end of the time period: timestamp (in milliseconds)
+     * @param asUser        username if request needs impersonation to specific user
      * @return Map of data points which are paired to (timestamp, value)
      */
-    Map<Long, Double> getCompleteLatency(TopologyLayout topology, Component component, long from, long to);
+    Map<Long, Double> getCompleteLatency(TopologyLayout topology, Component component, long from, long to, String asUser);
 
     /**
      * Retrieve "kafka topic offsets" on source.
@@ -70,9 +72,10 @@ public interface TopologyTimeSeriesMetrics {
      * @param component component layout instance
      * @param from      beginning of the time period: timestamp (in milliseconds)
      * @param to        end of the time period: timestamp (in milliseconds)
+     * @param asUser        username if request needs impersonation to specific user
      * @return Map of metric name and Map of data points which are paired to (timestamp, value).
      */
-    Map<String, Map<Long, Double>> getkafkaTopicOffsets(TopologyLayout topology, Component component, long from, long to);
+    Map<String, Map<Long, Double>> getkafkaTopicOffsets(TopologyLayout topology, Component component, long from, long to, String asUser);
 
     /**
      * Retrieve "component stats" on component.
@@ -81,9 +84,10 @@ public interface TopologyTimeSeriesMetrics {
      * @param component     component layout instance
      * @param from          beginning of the time period: timestamp (in milliseconds)
      * @param to            end of the time period: timestamp (in milliseconds)
+     * @param asUser        username if request needs impersonation to specific user
      * @return Map of metric name and Map of data points which are paired to (timestamp, value).
      */
-    TimeSeriesComponentMetric getComponentStats(TopologyLayout topology, Component component, long from, long to);
+    TimeSeriesComponentMetric getComponentStats(TopologyLayout topology, Component component, long from, long to, String asUser);
 
     /**
      * Get instance of TimeSeriesQuerier.

@@ -42,19 +42,21 @@ public interface TopologyMetrics extends TopologyTimeSeriesMetrics {
      * Retrieves topology metric for Streamline topology/
      *
      * @param topology topology catalog instance. Implementations should find actual runtime topology with provided topology.
+     * @param asUser   username if request needs impersonation to specific user
      * @return TopologyMetrics
      */
-    TopologyMetric getTopologyMetric(TopologyLayout topology);
+    TopologyMetric getTopologyMetric(TopologyLayout topology, String asUser);
 
     /**
      * Retrieves metrics data for Streamline topology.
      *
      * @param topology topology catalog instance. Implementations should find actual runtime topology with provided topology.
+     * @param asUser   username if request needs impersonation to specific user
      * @return pair of (component id, ComponentMetric instance).
      * Implementations should ensure that component name is same to UI name of component
      * so that it can be matched to Streamline topology.
      */
-    Map<String, ComponentMetric> getMetricsForTopology(TopologyLayout topology);
+    Map<String, ComponentMetric> getMetricsForTopology(TopologyLayout topology, String asUser);
 
     /**
      * Data structure of Metrics for each component on topology.

@@ -251,7 +251,7 @@ public class NamespaceCatalogResource {
 
     // indicates that mapping of streaming engine has been changed or removed
     if (existingStreamingEngine.isPresent() && !mappings.contains(existingStreamingEngine.get())) {
-      assertNoTopologyReferringNamespaceIsRunning(namespaceId);
+      assertNoTopologyReferringNamespaceIsRunning(namespaceId, WSUtils.getUserFromSecurityContext(securityContext));
     }
 
     // we're OK to just check with new mappings since we will remove existing mappings
@@ -316,7 +316,7 @@ public class NamespaceCatalogResource {
             .anyMatch(m -> m.getServiceName().equals(streamingEngine));
     // check topology running only streaming engine exists
     if (serviceName.equals(streamingEngine) && containsStreamingEngine) {
-      assertNoTopologyReferringNamespaceIsRunning(namespaceId);
+      assertNoTopologyReferringNamespaceIsRunning(namespaceId, WSUtils.getUserFromSecurityContext(securityContext));
     }
 
     NamespaceServiceClusterMapping mapping = environmentService.removeServiceClusterMapping(namespaceId, serviceName, clusterId);
@@ -343,7 +343,7 @@ public class NamespaceCatalogResource {
     boolean containsStreamingEngine = mappings.stream()
             .anyMatch(m -> m.getServiceName().equals(streamingEngine));
     if (containsStreamingEngine) {
-      assertNoTopologyReferringNamespaceIsRunning(namespaceId);
+      assertNoTopologyReferringNamespaceIsRunning(namespaceId, WSUtils.getUserFromSecurityContext(securityContext));
     }
 
     List<NamespaceServiceClusterMapping> removed = mappings.stream()
@@ -363,13 +363,13 @@ public class NamespaceCatalogResource {
     }
   }
 
-  private void assertNoTopologyReferringNamespaceIsRunning(Long namespaceId) {
+  private void assertNoTopologyReferringNamespaceIsRunning(Long namespaceId, String asUser) {
     Collection<Topology> topologies = catalogService.listTopologies();
     List<Topology> runningTopologiesInNamespace = topologies.stream()
             .filter(t -> Objects.equals(t.getNamespaceId(), namespaceId))
             .filter(t -> {
               try {
-                topologyActionsService.getRuntimeTopologyId(t);
+                topologyActionsService.getRuntimeTopologyId(t, asUser);
                 return true;
               } catch (TopologyNotAliveException | IOException e) {
                 // if streaming engine is not accessible, we just treat it as not running
