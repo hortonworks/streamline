@@ -23,6 +23,24 @@ const MiscREST = {
       .then( (response) => {
         return response.json();
       });
+  },
+  searchEntities(namespace, queryStr, filters, options){
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    let url = '/api/v1/catalog/search?detail=true&namespace='+namespace;
+    if(queryStr){
+      url += '&queryString='+queryStr;
+    }
+    if(filters){
+      filters === 'last_updated' ? url += '&sort=timestamp&desc=true' : url += '&sort='+filters+'&desc=false';
+    } else {
+      url += '&desc=false';
+    }
+    return fetch(url, options)
+      .then( (response) => {
+        return response.json();
+      });
   }
 };
 

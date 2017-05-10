@@ -104,6 +104,7 @@ class TestSourceNodeModal extends Component{
     Promise.all(sourcePromiseArr).then((results) => {
       _.map(results, (result ,i) => {
         if(result.responseMessage !== undefined){
+          this.setState({showLoading : false});
           FSReactToastr.error(
             <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
         }
@@ -125,20 +126,26 @@ class TestSourceNodeModal extends Component{
         Promise.all(testPromiseArr).then((testResult) => {
           _.map(testResult, (result ,i) => {
             if(result.responseMessage !== undefined){
-              FSReactToastr.error(
-                <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
+              result.records = '';
+              result.occurrence = '';
+              result.testCaseId = testResult[0].testCaseId;
+              this.setState({showLoading : false});
             }
           });
           this.testArr = testResult;
-          let tempInput= '';
           let stateObj = _.cloneDeep(this.state.sourceNodeArr);
+          let tempInput= '';
           _.map(testResult, (tResult,i) => {
-            let recordData = JSON.parse(tResult.records);
-            stateObj[i].streamIdList = _.keys(recordData);
-            _.map(stateObj[i].streamIdList, (key) => {
-              tempInput = recordData[key];
-            });
-            stateObj[i].records = JSON.stringify(tempInput,null,"  ");
+            if(tResult.records !== '' && tResult.records !== undefined){
+              let recordData = JSON.parse(tResult.records);
+              stateObj[i].streamIdList = _.keys(recordData);
+              _.map(stateObj[i].streamIdList, (key) => {
+                tempInput = recordData[key];
+              });
+              stateObj[i].records = JSON.stringify(tempInput,null,"  ");
+            } else {
+              stateObj[i].records = '';
+            }
             stateObj[i].repeatTime = tResult.occurrence;
             stateObj[i].testCaseId = tResult.testCaseId;
             checkConfigureTestCase(tResult.sourceId,'Source');
@@ -258,7 +265,7 @@ class TestSourceNodeModal extends Component{
           });
           return Promise.all(putPromiseArr);
         } else {
-          return result;
+          return [result];
         }
       }
     });
