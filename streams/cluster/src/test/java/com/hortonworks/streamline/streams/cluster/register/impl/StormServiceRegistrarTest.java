@@ -22,11 +22,15 @@ import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
+import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.InputStream;
+import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -36,6 +40,7 @@ public class StormServiceRegistrarTest extends AbstractServiceRegistrarTest<Stor
     public static final String STORM_YAML_FILE_PATH = REGISTER_RESOURCE_DIRECTORY + STORM_YAML;
     public static final String STORM_YAML_BADCASE_FILE_PATH = REGISTER_BADCASE_RESOURCE_DIRECTORY + STORM_YAML;
     private static final String CONFIGURATION_NAME_STORM_YAML = "storm";
+    private static final String CONFIGURATION_NAME_STORM_ENV = "storm-env";
 
     public StormServiceRegistrarTest() {
         super(StormServiceRegistrar.class);
@@ -56,6 +61,7 @@ public class StormServiceRegistrarTest extends AbstractServiceRegistrarTest<Stor
             Config config = new Config();
             config.put(StormServiceRegistrar.PARAM_STORM_UI_SERVER_HOSTNAME, "storm-1");
             config.put(StormServiceRegistrar.PARAM_NIMBUS_HOSTNAMES, Lists.newArrayList("storm-1", "storm-2"));
+            config.put(StormServiceRegistrar.PARAM_NIMBUS_PRINCIPAL_NAME, "nimbus/_HOST@EXAMPLE.COM");
             ManualServiceRegistrar.ConfigFileInfo stormYaml = new ManualServiceRegistrar.ConfigFileInfo(STORM_YAML, is);
             registrar.register(cluster, config, Lists.newArrayList(stormYaml));
         }
@@ -64,6 +70,34 @@ public class StormServiceRegistrarTest extends AbstractServiceRegistrarTest<Stor
         assertNotNull(stormService);
         ServiceConfiguration stormYamlConf = environmentService.getServiceConfigurationByName(stormService.getId(), CONFIGURATION_NAME_STORM_YAML);
         assertNotNull(stormYamlConf);
+        ServiceConfiguration stormEnvConf = environmentService.getServiceConfigurationByName(stormService.getId(), CONFIGURATION_NAME_STORM_ENV);
+        assertNotNull(stormEnvConf);
+        Map<String, String> confMap = stormEnvConf.getConfigurationMap();
+        assertEquals("nimbus/_HOST@EXAMPLE.COM", confMap.get(TopologyLayoutConstants.STORM_NIMBUS_PRINCIPAL_NAME));
+    }
+
+    @Test
+    public void testRegisterWithoutNimbusPrincipal() throws Exception {
+        Cluster cluster = getTestCluster(1L);
+
+        StormServiceRegistrar registrar = initializeServiceRegistrar();
+
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream(STORM_YAML_FILE_PATH)) {
+            Config config = new Config();
+            config.put(StormServiceRegistrar.PARAM_STORM_UI_SERVER_HOSTNAME, "storm-1");
+            config.put(StormServiceRegistrar.PARAM_NIMBUS_HOSTNAMES, Lists.newArrayList("storm-1", "storm-2"));
+            ManualServiceRegistrar.ConfigFileInfo stormYaml = new ManualServiceRegistrar.ConfigFileInfo(STORM_YAML, is);
+            registrar.register(cluster, config, Lists.newArrayList(stormYaml));
+        }
+
+        Service stormService = environmentService.getServiceByName(cluster.getId(), Constants.Storm.SERVICE_NAME);
+        assertNotNull(stormService);
+        ServiceConfiguration stormYamlConf = environmentService.getServiceConfigurationByName(stormService.getId(), CONFIGURATION_NAME_STORM_YAML);
+        assertNotNull(stormYamlConf);
+        ServiceConfiguration stormEnvConf = environmentService.getServiceConfigurationByName(stormService.getId(), CONFIGURATION_NAME_STORM_ENV);
+        assertNotNull(stormEnvConf);
+        Map<String, String> confMap = stormEnvConf.getConfigurationMap();
+        assertFalse(confMap.containsKey(TopologyLayoutConstants.STORM_NIMBUS_PRINCIPAL_NAME));
     }
 
     @Test

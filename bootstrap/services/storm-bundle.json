@@ -18,6 +18,13 @@
         "type": "array.string"
       },
       {
+        "uiName": "Nimbus Principal",
+        "fieldName": "nimbusPrincipalName",
+        "isOptional": true,
+        "tooltip": "The principal of Nimbus (only for secured cluster)",
+        "type": "string"
+      },
+      {
         "uiName": "Storm config file (storm.yaml)",
         "fieldName": "storm.yaml",
         "hint" : "yaml",
