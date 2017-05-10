@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.security.impl;
 import com.hortonworks.streamline.streams.security.AuthenticationContext;
 import com.hortonworks.streamline.streams.security.AuthorizationException;
 import com.hortonworks.streamline.streams.security.Permission;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import com.hortonworks.streamline.streams.security.catalog.AclEntry;
 import com.hortonworks.streamline.streams.security.catalog.Role;
@@ -30,6 +31,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultStreamlineAuthorizer.class);
@@ -38,14 +40,17 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
     public static final String CONF_ADMIN_PRINCIPALS = "adminPrincipals";
 
     private SecurityCatalogService catalogService;
-    private Set<String> adminPrincipals;
+    private Set<String> adminUsers;
 
     @SuppressWarnings("unchecked")
     @Override
     public void init(Map<String, Object> config) {
         LOG.info("Initializing DefaultStreamlineAuthorizer with config {}", config);
         catalogService = (SecurityCatalogService) config.get(CONF_CATALOG_SERVICE);
-        adminPrincipals = (Set<String>) config.get(CONF_ADMIN_PRINCIPALS);
+        adminUsers = ((Set<String>) config.get(CONF_ADMIN_PRINCIPALS)).stream()
+                .map(SecurityUtil::getUserName)
+                .collect(Collectors.toSet());
+        LOG.info("Admin users: {}", adminUsers);
     }
 
     @Override
@@ -66,7 +71,7 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
     @Override
     public void addAcl(AuthenticationContext ctx, String targetEntityNamespace, Long targetEntityId, EnumSet<Permission> permissions) {
         validateAuthenticationContext(ctx);
-        String userName = ctx.getPrincipal().getName();
+        String userName = SecurityUtil.getUserName(ctx);
         User user = catalogService.getUser(userName);
         if (user == null || user.getId() == null) {
             LOG.warn("No such user '{}'", userName);
@@ -84,7 +89,7 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
     @Override
     public void removeAcl(AuthenticationContext ctx, String targetEntityNamespace, Long targetEntityId) {
         validateAuthenticationContext(ctx);
-        String userName = ctx.getPrincipal().getName();
+        String userName = SecurityUtil.getUserName(ctx);
         User user = catalogService.getUser(userName);
         if (user == null || user.getId() == null) {
             LOG.warn("No such user '{}'", userName);
@@ -98,8 +103,8 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
 
     private boolean checkPermissions(AuthenticationContext ctx, String targetEntityNamespace, Long targetEntityId, EnumSet<Permission> permissions) {
         validateAuthenticationContext(ctx);
-        String userName = ctx.getPrincipal().getName();
-        if (adminPrincipals.contains(userName)) {
+        String userName = SecurityUtil.getUserName(ctx);
+        if (adminUsers.contains(userName)) {
             return true;
         }
         User user = catalogService.getUser(userName);
@@ -111,15 +116,15 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
     }
 
     private void validateAuthenticationContext(AuthenticationContext ctx) {
-        if (ctx.getPrincipal() == null) {
+        if (ctx == null || ctx.getPrincipal() == null) {
             throw new AuthorizationException("No principal in AuthenticationContext");
         }
     }
 
     private boolean checkRole(AuthenticationContext ctx, String role) {
         validateAuthenticationContext(ctx);
-        String userName = ctx.getPrincipal().getName();
-        if (adminPrincipals.contains(userName)) {
+        String userName = SecurityUtil.getUserName(ctx);
+        if (adminUsers.contains(userName)) {
             return true;
         }
         User user = catalogService.getUser(userName);

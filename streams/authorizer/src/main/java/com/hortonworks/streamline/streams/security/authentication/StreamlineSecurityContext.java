@@ -15,7 +15,6 @@
  **/
 package com.hortonworks.streamline.streams.security.authentication;
 
-import com.hortonworks.streamline.streams.security.StreamlinePrincipal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,22 +26,22 @@ import java.security.Principal;
  */
 public class StreamlineSecurityContext implements SecurityContext {
     private static final Logger LOG = LoggerFactory.getLogger(StreamlineSecurityContext.class);
-    private final StreamlinePrincipal user;
+    private final Principal principal;
     private final String scheme;
 
-    public StreamlineSecurityContext(StreamlinePrincipal user, String scheme) {
-        this.user = user;
+    public StreamlineSecurityContext(Principal principal, String scheme) {
+        this.principal = principal;
         this.scheme = scheme;
     }
 
     @Override
     public Principal getUserPrincipal() {
-        return user;
+        return principal;
     }
 
     @Override
     public boolean isUserInRole(String role) {
-        LOG.debug("isUserInRole user: {}, role: {}", user, role);
+        LOG.debug("isUserInRole user: {}, role: {}", principal, role);
         return false;
     }
 
@@ -56,4 +55,11 @@ public class StreamlineSecurityContext implements SecurityContext {
         return SecurityContext.BASIC_AUTH;
     }
 
+    @Override
+    public String toString() {
+        return "StreamlineSecurityContext{" +
+                "principal=" + principal +
+                ", scheme='" + scheme + '\'' +
+                '}';
+    }
 }

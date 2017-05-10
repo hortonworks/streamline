@@ -37,6 +37,7 @@ import com.hortonworks.streamline.storage.cache.writer.StorageWriter;
 import com.hortonworks.streamline.streams.exception.ConfigException;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import com.hortonworks.streamline.streams.security.authentication.StreamlineBasicAuthorizationRequestFilter;
+import com.hortonworks.streamline.streams.security.authentication.StreamlineKerberosRequestFilter;
 import com.hortonworks.streamline.streams.security.impl.DefaultStreamlineAuthorizer;
 import com.hortonworks.streamline.streams.security.service.SecurityCatalogService;
 import com.hortonworks.streamline.streams.service.GenericExceptionMapper;
@@ -252,7 +253,7 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
             authorizerConfig.put(DefaultStreamlineAuthorizer.CONF_CATALOG_SERVICE, securityCatalogService);
             authorizerConfig.put(DefaultStreamlineAuthorizer.CONF_ADMIN_PRINCIPALS, authorizerConf.getAdminPrincipals());
             authorizer.init(authorizerConfig);
-            environment.jersey().register(new StreamlineBasicAuthorizationRequestFilter());
+            environment.jersey().register(new StreamlineKerberosRequestFilter());
         } else {
             LOG.info("Authorizer config not set, setting noop authorizer");
             String noopAuthorizerClassName = "com.hortonworks.streamline.streams.security.impl.NoopAuthorizer";
