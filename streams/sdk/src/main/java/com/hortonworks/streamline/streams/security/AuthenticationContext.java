@@ -22,7 +22,6 @@ import java.security.Principal;
  * for authorization.
  */
 public final class AuthenticationContext {
-    private String remoteAddress;
     private Principal principal;
 
     public Principal getPrincipal() {
@@ -33,18 +32,9 @@ public final class AuthenticationContext {
         this.principal = principal;
     }
 
-    public String getRemoteAddress() {
-        return remoteAddress;
-    }
-
-    public void setRemoteAddress(String remoteAddress) {
-        this.remoteAddress = remoteAddress;
-    }
-
     @Override
     public String toString() {
         return "AuthenticationContext{" +
-                "remoteAddress='" + remoteAddress + '\'' +
                 ", principal=" + principal +
                 '}';
     }

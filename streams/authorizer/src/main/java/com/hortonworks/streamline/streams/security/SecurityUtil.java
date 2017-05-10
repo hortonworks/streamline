@@ -79,6 +79,14 @@ public final class SecurityUtil {
                 .collect(Collectors.toList());
     }
 
+    public static String getUserName(String principalName) {
+        return principalName == null ? null : principalName.split("[/@]")[0];
+    }
+
+    public static String getUserName(AuthenticationContext context) {
+        return context.getPrincipal() == null ? null : getUserName(context.getPrincipal().getName());
+    }
+
     private static boolean doCheckPermissions(StreamlineAuthorizer authorizer, Principal principal,
                                               String targetEntityNamespace, Long targetEntityId,
                                               EnumSet<Permission> permissions) {
