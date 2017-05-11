@@ -1,0 +1,5 @@
+{
+  "name": "ROLE_ADMIN",
+  "description": "Super user role that has all the system roles",
+  "system": false
+}

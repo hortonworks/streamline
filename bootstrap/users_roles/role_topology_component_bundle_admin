@@ -1,0 +1,5 @@
+{
+  "name": "ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN",
+  "description": "Topology component bundle adminstrator, who can create/upload new bundles and manage them",
+  "system": true
+}

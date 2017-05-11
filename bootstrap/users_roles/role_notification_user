@@ -1,0 +1,5 @@
+{
+  "name": "ROLE_NOTIFICATION_USER",
+  "description": "Role that can user the notifiers as part of the topology to send out notifications",
+  "system": true
+}

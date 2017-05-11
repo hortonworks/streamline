@@ -32,12 +32,16 @@ public class Role extends AbstractStorable {
     public static final String ID = "id";
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
+    public static final String METADATA = "metadata";
 
     private Long id;
     private String name;
     private String description;
     // if this is a system or user defined role.
     private boolean system;
+    // any metadata that needs to be associated with the role
+    // (e.g UI wants to associate some color and icon with each role)
+    private String metadata;
     private Long timestamp;
 
     @JsonIgnore
@@ -96,6 +100,14 @@ public class Role extends AbstractStorable {
 
     public void setSystem(Boolean system) {
         this.system = system;
+    }
+
+    public String getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
     }
 
     public Long getTimestamp() {

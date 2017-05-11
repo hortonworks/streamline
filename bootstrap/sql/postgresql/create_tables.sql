@@ -366,6 +366,7 @@ CREATE TABLE IF NOT EXISTS role (
   "name"      VARCHAR(255) NOT NULL,
   "description" TEXT,
   "system" BOOLEAN NOT NULL,
+  "metadata" TEXT,
   "timestamp" BIGINT,
   CONSTRAINT UK_name_role UNIQUE ("name"),
   PRIMARY KEY (id)

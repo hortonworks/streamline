@@ -1,0 +1,5 @@
+{
+  "name": "ROLE_SCHEMA_ADMIN",
+  "description": "Role that can create schema registry schema from streamline",
+  "system": true
+}
