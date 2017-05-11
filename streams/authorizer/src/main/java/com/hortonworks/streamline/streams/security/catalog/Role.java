@@ -36,6 +36,7 @@ public class Role extends AbstractStorable {
 
     private Long id;
     private String name;
+    private String displayName;
     private String description;
     // if this is a system or user defined role.
     private boolean system;
@@ -118,6 +119,13 @@ public class Role extends AbstractStorable {
         this.timestamp = timestamp;
     }
 
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
 
     @Override
     public boolean equals(Object o) {
