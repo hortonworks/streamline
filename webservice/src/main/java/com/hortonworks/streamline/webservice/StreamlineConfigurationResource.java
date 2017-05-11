@@ -51,6 +51,8 @@ public class StreamlineConfigurationResource {
     private final String CONFIG_HOST = "host";
     private final String CONFIG_PORT = "port";
     private final String CONFIG_DASHBOARD = "dashboard";
+    private final String CONFIG_AUTHORIZER = "authorizer";
+
 
 
 
@@ -93,6 +95,7 @@ public class StreamlineConfigurationResource {
         }
         conf.put(CONFIG_REGISTRY, registryConf);
         conf.put(CONFIG_DASHBOARD, streamlineConfiguration.getDashboardConfiguration());
+        conf.put(CONFIG_AUTHORIZER, streamlineConfiguration.getAuthorizerConfiguration());
     }
 
 
