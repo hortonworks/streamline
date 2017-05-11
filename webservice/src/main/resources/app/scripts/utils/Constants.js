@@ -37,6 +37,28 @@ const deployStatusText = {
   TOPOLOGY_STATE_DEPLOYMENT_FAILED : 'Topology State Deployment Failed'
 };
 
+const colorOptions = [
+  {value: '#8261be', label: 'purple'},
+  {value: '#ce761b', label: 'orange'},
+  {value: '#dcaa15', label: 'yellow'},
+  {value: '#4c979f', label: 'blue'},
+  {value: '#529e4c', label: 'green'},
+  {value: '#9e8a4c', label: 'brown'},
+  {value: '#9e4c75', label: 'pink'},
+  {value: '#000000', label: 'black'}
+];
+
+const iconOptions = [
+  {value: 'gears'},
+  {value: 'pencil'},
+  {value: 'info'},
+  {value: 'globe'},
+  {value: 'eye'},
+  {value: 'video-camera'},
+  {value: 'picture-o'},
+  {value: 'home'}
+];
+
 export {
   baseUrl,
   pageSize,
@@ -45,5 +67,7 @@ export {
   toastOpt,
   PieChartColor,
   deleteNodeIdArr,
-  deployStatusText
+  deployStatusText,
+  colorOptions,
+  iconOptions
 };

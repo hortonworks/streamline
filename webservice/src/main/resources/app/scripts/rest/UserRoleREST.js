@@ -109,6 +109,41 @@ const UserRoleREST = {
         return response.json();
       });
   },
+  getRoleUsers(id, options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'roles/' + id + '/users', options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  postRoleUsers(parentName, options) {
+    options = options || {};
+    options.method = options.method || 'POST';
+    options.credentials = 'same-origin';
+    options.headers = options.headers || {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    return fetch(baseUrl + 'roles/' + parentName + '/users', options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  putRoleUsers(parentName, options) {
+    options = options || {};
+    options.method = options.method || 'PUT';
+    options.credentials = 'same-origin';
+    options.headers = options.headers || {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    return fetch(baseUrl + 'roles/' + parentName + '/users', options)
+      .then((response) => {
+        return response.json();
+      });
+  },
   getAllUsers(options) {
     options = options || {};
     options.method = options.method || 'GET';
@@ -158,6 +193,59 @@ const UserRoleREST = {
     options.method = options.method || 'DELETE';
     options.credentials = 'same-origin';
     return fetch(baseUrl + 'users/' + id, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  postACL(options) {
+    options = options || {};
+    options.method = options.method || 'POST';
+    options.credentials = 'same-origin';
+    options.headers = options.headers || {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    return fetch(baseUrl + 'acls', options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  putACL(id, options) {
+    options = options || {};
+    options.method = options.method || 'PUT';
+    options.credentials = 'same-origin';
+    options.headers = options.headers || {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    return fetch(baseUrl + 'acls/' + id, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  getAllACL(options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'acls', options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  getACL(id, type, options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'acls?sidId=' + id + '&sidType=' + type, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  deleteACL(id, options) {
+    options = options || {};
+    options.method = options.method || 'DELETE';
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'acls/' + id, options)
       .then((response) => {
         return response.json();
       });

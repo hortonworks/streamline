@@ -41,12 +41,12 @@ export default class UserRolesContainer extends Component {
       <BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" headerContent={this.getHeader()}>
         <div className="row">
           <div className="col-sm-12">
-            <Tabs defaultActiveKey={1} id="userRoles" className="user-tabs">
-              <Tab eventKey={1} title="Roles">
-                <RolesListingContainer callbackHandler={this.callbackHandler.bind(this)}/>
-              </Tab>
-              <Tab eventKey={2} title="Users">
+            <Tabs defaultActiveKey={1} id="userRoles" className="role-tabs" unmountOnExit={true}>
+              <Tab eventKey={1} title="Users">
                 <UsersListingContainer callbackHandler={this.callbackHandler.bind(this)}/>
+              </Tab>
+              <Tab eventKey={2} title="Roles">
+                <RolesListingContainer callbackHandler={this.callbackHandler.bind(this)}/>
               </Tab>
             </Tabs>
           </div>

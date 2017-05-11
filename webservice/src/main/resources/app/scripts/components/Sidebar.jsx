@@ -164,6 +164,11 @@ export default class Sidebar extends Component {
                 {/*<li onClick={this.handleClick.bind(this, 3)}>
                   <Link to="/component-definition">Component Definition</Link>
                 </li>*/}
+                {app_state.streamline_config.secureMode ?
+                <li onClick={this.handleClick.bind(this, 3)}>
+                  <Link to="/user-roles">Users</Link>
+                </li>
+                : null}
               </ul>
             </li>
           </ul>
