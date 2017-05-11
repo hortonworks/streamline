@@ -15,17 +15,12 @@
  **/
 package com.hortonworks.streamline.streams.layout.storm;
 
-import com.google.common.collect.Lists;
-import com.hortonworks.streamline.streams.layout.ConfigFieldValidation;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.streamline.streams.layout.component.impl.KafkaSource;
-import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,50 +28,19 @@ import java.util.Map;
  * Implementation for KafkaSpout
  */
 public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
-    public static final String DEFAULT_SCHEME_CLASS = "com.hortonworks.streamline.streams.runtime.storm.spout.AvroKafkaSpoutScheme";
 
     private static final Logger LOG = LoggerFactory.getLogger(KafkaSpoutFluxComponent.class);
+    static final String SASL_JAAS_CONFIG_KEY = "saslJaasConfig";
+    static final String SASL_KERBEROS_SERVICE_NAME = "kafkaServiceName";
     private KafkaSource kafkaSource;
 
     // for unit tests
-    public KafkaSpoutFluxComponent() {
+    public KafkaSpoutFluxComponent () {
     }
 
     @Override
     protected void generateComponent () {
         kafkaSource = (KafkaSource) conf.get(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY);
-        String spoutConfigRef = addSpoutConfigComponent();
-        String spoutId = "kafkaSpout" + UUID_FOR_COMPONENTS;
-        String spoutClassName = "org.apache.storm.kafka.KafkaSpout";
-        List<Map<String, String>> spoutConstructorArgs = new ArrayList<>();
-        Map<String, String> ref = getRefYaml(spoutConfigRef);
-        spoutConstructorArgs.add(ref);
-        component = createComponent(spoutId, spoutClassName, null, spoutConstructorArgs, null);
-        addParallelismToComponent();
-    }
-
-    private String addSpoutConfigComponent () {
-        String zkHostsRef = addBrokerHostsComponent();
-        String schemeRef = addSchemeComponent();
-        String spoutConfigComponentId = "spoutConfig" + UUID_FOR_COMPONENTS;
-        String spoutConfigClassName = "org.apache.storm.kafka.SpoutConfig";
-        String[] properties = {
-                TopologyLayoutConstants.JSON_KEY_FETCH_SIZE_BYTES,
-                TopologyLayoutConstants.JSON_KEY_SOCKET_TIMEOUT_MS,
-                TopologyLayoutConstants.JSON_KEY_FETCH_MAX_WAIT,
-                TopologyLayoutConstants.JSON_KEY_BUFFER_SIZE_BYTES,
-                TopologyLayoutConstants.JSON_KEY_IGNORE_ZK_OFFSETS,
-                TopologyLayoutConstants.JSON_KEY_MAX_OFFSET_BEHIND,
-                TopologyLayoutConstants.JSON_KEY_USE_START_OFFSET_IF_OFFSET_OUT_OF_RANGE,
-                TopologyLayoutConstants.JSON_KEY_METRICS_TIME_BUCKET_SIZE_IN_SECS,
-                TopologyLayoutConstants.JSON_KEY_ZK_SERVERS,
-                TopologyLayoutConstants.JSON_KEY_ZK_PORT,
-                TopologyLayoutConstants.JSON_KEY_STATE_UPDATE_INTERVAL_MS,
-                TopologyLayoutConstants.JSON_KEY_RETRY_INITIAL_DELAY_MS,
-                TopologyLayoutConstants.JSON_KEY_RETRY_DELAY_MULTIPLIER,
-                TopologyLayoutConstants.JSON_KEY_RETRY_DELAY_MAX_MS,
-                TopologyLayoutConstants.JSON_KEY_OUTPUT_STREAM_ID
-        };
         // add the output stream to conf so that the kafka spout declares output stream properly
         if (kafkaSource != null && kafkaSource.getOutputStreams().size() == 1) {
             conf.put(TopologyLayoutConstants.JSON_KEY_OUTPUT_STREAM_ID,
@@ -86,178 +50,162 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
             LOG.error(msg, kafkaSource);
             throw new IllegalArgumentException(msg);
         }
-        List<Object> propertiesYaml = getPropertiesYaml(properties);
+        setSaslJaasConfig();
+        String spoutConfigRef = addKafkaSpoutConfigComponent();
+        String spoutId = "kafkaSpout" + UUID_FOR_COMPONENTS;
+        String spoutClassName = "org.apache.storm.kafka.spout.KafkaSpout";
+        List<Map<String, String>> spoutConstructorArgs = new ArrayList<>();
+        Map<String, String> ref = getRefYaml(spoutConfigRef);
+        spoutConstructorArgs.add(ref);
+        component = createComponent(spoutId, spoutClassName, null, spoutConstructorArgs, null);
+        addParallelismToComponent();
+    }
 
-        propertiesYaml.add(getSchemeRefEntry(schemeRef));
-
+    private String addKafkaSpoutConfigComponent () {
+        String kafkaSpoutConfigComponentId = "kafkaSpoutConfig" + UUID_FOR_COMPONENTS;
+        String kafkaSpoutConfigClassName = "org.apache.storm.kafka.spout.KafkaSpoutConfig";
+        String kafkaSpoutConfigBuilderRef = addKafkaSpoutConfigBuilder();
         List<Object> spoutConfigConstructorArgs = new ArrayList<Object>();
-        Map<String, String> ref = getRefYaml(zkHostsRef);
+        Map<String, String> ref = getRefYaml(kafkaSpoutConfigBuilderRef);
         spoutConfigConstructorArgs.add(ref);
-        Object[] constructorArgs = {
-            conf.get(TopologyLayoutConstants.JSON_KEY_TOPIC),
-            TopologyLayoutConstants.ZK_ROOT_NODE,
-            conf.get(TopologyLayoutConstants.JSON_KEY_CONSUMER_GROUP_ID)
-        };
-        spoutConfigConstructorArgs.addAll(getConstructorArgsYaml(constructorArgs));
-        addToComponents(createComponent(spoutConfigComponentId, spoutConfigClassName,
-                propertiesYaml, spoutConfigConstructorArgs, null));
-
-        return spoutConfigComponentId;
+        addToComponents(createComponent(kafkaSpoutConfigComponentId, kafkaSpoutConfigClassName, null, spoutConfigConstructorArgs, null));
+        return kafkaSpoutConfigComponentId;
     }
 
-    private Map<String, Object> getSchemeRefEntry(String schemeRef) {
-        LinkedHashMap<String, Object> pair = new LinkedHashMap<>();
-        pair.put(StormTopologyLayoutConstants.YAML_KEY_NAME, TopologyLayoutConstants.JSON_KEY_MULTI_SCHEME_IMPL);
-        pair.put(StormTopologyLayoutConstants.YAML_KEY_REF, schemeRef);
-        return pair;
-    }
 
-    private String addSchemeComponent() {
-        String streamsSchemeId = "streamsScheme-" + UUID_FOR_COMPONENTS;
-        String schemeClassName = (String) conf.getOrDefault(TopologyLayoutConstants.JSON_KEY_SCHEME_CLASS_NAME,
-                                                            DEFAULT_SCHEME_CLASS);
-        if(schemeClassName.isEmpty()) {
-            throw new RuntimeException("Property [" + TopologyLayoutConstants.JSON_KEY_SCHEME_CLASS_NAME
-                                               + "] value can not be an empty String, it must be a valid class.");
-        }
 
-        Map<String, Object> configMethod = getConfigMethodWithRefArgs("init",
-                                                                      Collections.singletonList(addConfigInstance()));
-        addToComponents(createComponent(streamsSchemeId,
-                                        schemeClassName,
-                                        null,
-                                        null,
-                                        Collections.singletonList(configMethod)));
-
-        return streamsSchemeId;
-    }
-
-    private String addConfigInstance() {
-        String configInstanceId = "config-" + UUID_FOR_COMPONENTS;
-        List<String> constructorArgs = Lists.newArrayList((String) conf.get(TopologyLayoutConstants.JSON_KEY_TOPIC),
-                                                          (String) conf.get(TopologyLayoutConstants.SCHEMA_REGISTRY_URL_KEY),
-                                                          kafkaSource != null ? kafkaSource.getId() : "");
-        addToComponents(createComponent(configInstanceId,
-                                        "com.hortonworks.streamline.streams.layout.storm.KafkaSourceScheme$Config",
-                                        null,
-                                        constructorArgs,
-                                        null));
-
-        return configInstanceId;
-    }
-
-    // Add BrokerHosts yaml component and return its yaml id to further use
+    // Add KafkaSpoutConfig$Builder yaml component and return its yaml id to further use
     // it as a ref
-    private String addBrokerHostsComponent () {
-        String zkHostsComponentId = "zkHosts" + UUID_FOR_COMPONENTS;
-
-        // currently only BrokerHosts is supported.
-        String zkHostsClassName = "org.apache.storm.kafka.ZkHosts";
-
-        String[] propertyNames = {TopologyLayoutConstants
-                .JSON_KEY_REFRESH_FREQ_SECS};
-        //properties
-        List<Object> properties = getPropertiesYaml(propertyNames);
+    private String addKafkaSpoutConfigBuilder() {
+        String kafkaSpoutConfigBuilderId = "kafkaSpoutConfigBuilder" + UUID_FOR_COMPONENTS;
+        String kafkaSpoutConfigBuilderClassName = "org.apache.storm.kafka.spout.KafkaSpoutConfig$Builder";
 
         //constructor args
-        String[] constructorArgNames = {
-            TopologyLayoutConstants.JSON_KEY_ZK_URL,
-            TopologyLayoutConstants.JSON_KEY_ZK_PATH
-        };
-        List<Object> zkHostsConstructorArgs = getConstructorArgsYaml
-                (constructorArgNames);
+        String[] constructorArgNames = { "bootstrapServers", TopologyLayoutConstants.JSON_KEY_TOPIC };
+        List<Object> constructorArgs = new ArrayList<>();
+        List bootstrapServersAndTopic = getConstructorArgsYaml (constructorArgNames);
+        constructorArgs.add(bootstrapServersAndTopic.get(0));
+        // pass null for key and value deserializers. we will set them as a property using setProp on Builder
+        constructorArgs.add(null);
+        constructorArgs.add(null);
+        constructorArgs.add(bootstrapServersAndTopic.get(1));
 
-        this.addToComponents(this.createComponent(zkHostsComponentId,
-                zkHostsClassName, properties, zkHostsConstructorArgs, null));
-        return zkHostsComponentId;
+        List<Object> configMethods = new ArrayList<>();
+        String[] configMethodNames = {
+                "setPollTimeoutMs", "setOffsetCommitPeriodMs", "setMaxUncommittedOffsets",
+                "setFirstPollOffsetStrategy", "setPartitionRefreshPeriodMs", "setEmitNullTuples"
+        };
+        String[] configKeys = {
+                "pollTimeoutMs", "offsetCommitPeriodMs", "maximumUncommittedOffsets",
+                "firstPollOffsetStrategy", "partitionRefreshPeriodMs", "emitNullTuples"
+        };
+        configMethods.addAll(getConfigMethodsYaml(configMethodNames, configKeys));
+        String[] moreConfigMethodNames = {
+            "setRetry", "setRecordTranslator", "setProp"
+        };
+        String[] configMethodArgRefs = new String[moreConfigMethodNames.length];
+        configMethodArgRefs[0] = addRetry();
+        configMethodArgRefs[1] = addRecordTranslator();
+        configMethodArgRefs[2] = addConsumerProperties();
+        configMethods.addAll(getConfigMethodWithRefArg(moreConfigMethodNames, configMethodArgRefs));
+        this.addToComponents(this.createComponent(kafkaSpoutConfigBuilderId, kafkaSpoutConfigBuilderClassName, null, constructorArgs, configMethods));
+        return kafkaSpoutConfigBuilderId;
     }
 
-    @Override
-    public void validateConfig () throws ComponentConfigException {
-        super.validateConfig();
-        validateBooleanFields();
-        validateStringFields();
-        validateIntegerFields();
-        validateLongFields();
-        validateFloatOrDoubleFields();
-        String fieldName = TopologyLayoutConstants.JSON_KEY_ZK_SERVERS;
-        Object value = conf.get(fieldName);
-        if (value != null) {
-            if (!ConfigFieldValidation.isList(value)) {
-                throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
-            }
-            List zkServers = (List) value;
-            int listLength = zkServers.size();
-            for (Object zkServer : zkServers) {
-                if (!ConfigFieldValidation.isStringAndNotEmpty(zkServer)) {
-                    throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldName));
-                }
+    private String addRetry () {
+        String componentId = "kafkaSpoutRetryService" + UUID_FOR_COMPONENTS;
+        String className = "org.apache.storm.kafka.spout.KafkaSpoutRetryExponentialBackoff";
+        List<Object> constructorArgs = new ArrayList<>();
+        String retryInitialDelayMsId = "retryInitialDelayMs" + UUID_FOR_COMPONENTS;
+        addTimeInterval(retryInitialDelayMsId, conf.get("retryInitialDelayMs") != null ? conf.get("retryInitialDelayMs") : new Long(0));
+        constructorArgs.add(getRefYaml(retryInitialDelayMsId));
+        String retryDelayPeriodMsId = "retryDelayPeriodMs" + UUID_FOR_COMPONENTS;
+        addTimeInterval(retryDelayPeriodMsId, conf.get("retryDelayPeriodMs") != null ? conf.get("retryDelayPeriodMs") : new Long(2));
+        constructorArgs.add(getRefYaml(retryDelayPeriodMsId));
+        constructorArgs.add(getConstructorArgsYaml(conf.get("maximumRetries") != null ? new Object[] {conf.get("maximumRetries")} : new Object[] {Integer
+                .MAX_VALUE}));
+        String retryDelayMaximumMs = "retryDelayMaximumMs" + UUID_FOR_COMPONENTS;
+        addTimeInterval(retryDelayMaximumMs, conf.get("retryDelayMaximumMs") != null ? conf.get("retryDelayMaximumMs") : new Long(10000));
+        constructorArgs.add(getRefYaml(retryDelayMaximumMs));
+        addToComponents(createComponent(componentId, className, null, constructorArgs, null));
+        return componentId;
+    }
+
+    private void addTimeInterval (String componentId, Object value) {
+        String className = "org.apache.storm.kafka.spout.KafkaSpoutRetryExponentialBackoff$TimeInterval";
+        List<Object> constructorArgs = new ArrayList<>();
+        constructorArgs.add(value);
+        constructorArgs.add("MILLISECONDS");
+        addToComponents(createComponent(componentId, className, null, constructorArgs, null));
+    }
+
+    private String addRecordTranslator () {
+        String translatorId = "avroKafkaSpoutTranslator" + UUID_FOR_COMPONENTS;
+        String translatorClassname = "com.hortonworks.streamline.streams.runtime.storm.spout.AvroKafkaSpoutTranslator";
+        List<Object> constructorArgs = new ArrayList<>();
+        constructorArgs.addAll(getConstructorArgsYaml(new String[]{TopologyLayoutConstants.JSON_KEY_OUTPUT_STREAM_ID, TopologyLayoutConstants
+                .JSON_KEY_TOPIC}));
+        constructorArgs.add(kafkaSource != null ? kafkaSource.getId() : "");
+        constructorArgs.add(conf.get(TopologyLayoutConstants.SCHEMA_REGISTRY_URL));
+        constructorArgs.add(conf.get("readerSchemaVersion") != null ? Integer.parseInt((String) conf.get("readerSchemaVersion")) : null);
+        addToComponents(createComponent(translatorId, translatorClassname, null, constructorArgs, null));
+        return translatorId;
+    }
+
+    private String addConsumerProperties () {
+        String consumerPropertiesComponentId = "consumerProperties" + UUID_FOR_COMPONENTS;
+        String consumerPropertiesClassName = "java.util.Properties";
+        String methodName = "put";
+        String[] specialPropertyNames = { "key.deserializer", "value.deserializer" };
+        //fieldNames and propertyNames arrays should be of same length
+        String[] propertyNames = {
+                "group.id", "fetch.min.bytes", "max.partition.fetch.bytes", "max.poll.records", "security.protocol", "sasl.kerberos.service.name",
+                "sasl.jaas.config", "ssl.keystore.location", "ssl.keystore.password", "ssl.key.password", "ssl.truststore.location", "ssl.truststore.password",
+                "ssl.enabled.protocols", "ssl.keystore.type", "ssl.truststore.type", "ssl.protocol", "ssl.provider", "ssl.cipher.suites",
+                "ssl.endpoint.identification.algorithm", "ssl.keymanager.algorithm", "ssl.secure.random.implementation", "ssl.trustmanager.algorithm"
+        };
+        String[] fieldNames = {
+                "consumerGroupId", "fetchMinimumBytes", "fetchMaximumBytesPerPartition", "maxRecordsPerPoll",  "securityProtocol", SASL_KERBEROS_SERVICE_NAME,
+                SASL_JAAS_CONFIG_KEY, "sslKeystoreLocation", "sslKeystorePassword", "sslKeyPassword", "sslTruststoreLocation", "sslTruststorePassword",
+                "sslEnabledProtocols", "sslKeystoreType", "sslTruststoreType", "sslProtocol", "sslProvider", "sslCipherSuites", "sslEndpointIdAlgo",
+                "sslKeyManagerAlgo", "sslSecureRandomImpl", "sslTrustManagerAlgo"
+        };
+        List<String> methodNames = new ArrayList<>();
+        List<Object> args = new ArrayList<>();
+        methodNames.add(methodName);
+        args.add(new String[]{specialPropertyNames[0], "org.apache.kafka.common.serialization.ByteArrayDeserializer"});
+        methodNames.add(methodName);
+        args.add(new String[]{specialPropertyNames[1], "org.apache.kafka.common.serialization.ByteArrayDeserializer"});
+        for (int j = 0; j < propertyNames.length; ++j) {
+            if (conf.get(fieldNames[j]) != null) {
+                methodNames.add(methodName);
+                args.add(new Object[]{propertyNames[j], conf.get(fieldNames[j])});
             }
         }
+        addToComponents(createComponent(consumerPropertiesComponentId, consumerPropertiesClassName, null, null,
+                getConfigMethodsYaml(methodNames.toArray(new String[methodNames.size()]), args.toArray())));
+        return consumerPropertiesComponentId;
     }
 
-    private void validateBooleanFields () throws ComponentConfigException {
-        String[] optionalBooleanFields = {
-            TopologyLayoutConstants.JSON_KEY_IGNORE_ZK_OFFSETS,
-            TopologyLayoutConstants.JSON_KEY_USE_START_OFFSET_IF_OFFSET_OUT_OF_RANGE
-        };
-        validateBooleanFields(optionalBooleanFields, false);
+    private void setSaslJaasConfig () {
+        String securityProtocol = (String) conf.get("securityProtocol");
+        if (securityProtocol != null && !securityProtocol.isEmpty() && securityProtocol.startsWith("SASL")) {
+            StringBuilder saslConfigStrBuilder = new StringBuilder();
+            String kafkaServiceName = (String) conf.get(SASL_KERBEROS_SERVICE_NAME);
+            String principal = (String) conf.get("principal");
+            String keytab = (String) conf.get("keytab");
+            if (kafkaServiceName == null || kafkaServiceName.isEmpty()) {
+                throw new IllegalArgumentException("Kafka service name must be provided for SASL GSSAPI Kerberos");
+            }
+            if (principal == null || principal.isEmpty()) {
+                throw new IllegalArgumentException("Kafka client principal must be provided for SASL GSSAPI Kerberos");
+            }
+            if (keytab == null || keytab.isEmpty()) {
+                throw new IllegalArgumentException("Kafka client principal keytab must be provided for SASL GSSAPI Kerberos");
+            }
+            saslConfigStrBuilder.append("com.sun.security.auth.module.Krb5LoginModule required \\ useKeyTab=true \\ storeKey=true \\ keyTab=\"");
+            saslConfigStrBuilder.append(keytab).append("\" \\ principal=\"").append(principal).append("\";");
+            conf.put(SASL_JAAS_CONFIG_KEY, saslConfigStrBuilder.toString());
+        }
     }
-
-    private void validateStringFields () throws ComponentConfigException {
-        String[] requiredStringFields = {
-            TopologyLayoutConstants.JSON_KEY_ZK_URL,
-            TopologyLayoutConstants.JSON_KEY_TOPIC,
-            TopologyLayoutConstants.JSON_KEY_CONSUMER_GROUP_ID
-        };
-        validateStringFields(requiredStringFields, true);
-        String[] optionalStringFields = {
-            TopologyLayoutConstants.JSON_KEY_ZK_PATH
-        };
-        validateStringFields(optionalStringFields, false);
-    }
-
-    private void validateIntegerFields () throws ComponentConfigException {
-        String[] optionalIntegerFields = {
-            TopologyLayoutConstants.JSON_KEY_REFRESH_FREQ_SECS,
-            TopologyLayoutConstants.JSON_KEY_FETCH_SIZE_BYTES,
-            TopologyLayoutConstants.JSON_KEY_SOCKET_TIMEOUT_MS,
-            TopologyLayoutConstants.JSON_KEY_FETCH_MAX_WAIT,
-            TopologyLayoutConstants.JSON_KEY_BUFFER_SIZE_BYTES,
-            TopologyLayoutConstants.JSON_KEY_METRICS_TIME_BUCKET_SIZE_IN_SECS,
-            TopologyLayoutConstants.JSON_KEY_ZK_PORT
-        };
-        Integer[] mins = {
-            0, 0, 0, 0, 0, 0, 1025
-        };
-        Integer[] maxes = {
-            Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer
-                .MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, 65536
-        };
-        validateIntegerFields(optionalIntegerFields, false, mins, maxes);
-    }
-
-    private void validateLongFields () throws ComponentConfigException {
-        String[] optionalLongFields = {
-            TopologyLayoutConstants.JSON_KEY_MAX_OFFSET_BEHIND,
-            TopologyLayoutConstants.JSON_KEY_STATE_UPDATE_INTERVAL_MS,
-            TopologyLayoutConstants.JSON_KEY_RETRY_INITIAL_DELAY_MS,
-            TopologyLayoutConstants.JSON_KEY_RETRY_DELAY_MAX_MS
-        };
-        Long[] mins = {
-                0L, 0L, 0L, 0L
-        };
-        Long[] maxes = {
-            Long.MAX_VALUE, Long.MAX_VALUE, Long.MAX_VALUE, Long.MAX_VALUE
-        };
-        validateLongFields(optionalLongFields, false, mins, maxes);
-    }
-
-    private void validateFloatOrDoubleFields () throws ComponentConfigException {
-        String[] optionalFields = {
-            TopologyLayoutConstants.JSON_KEY_RETRY_DELAY_MULTIPLIER
-        };
-        validateFloatOrDoubleFields(optionalFields, false);
-    }
-
 }

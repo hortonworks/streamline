@@ -6,7 +6,7 @@
   "builtin": true,
   "fieldHintProviderClass": "com.hortonworks.streamline.streams.cluster.bundle.impl.KafkaSinkBundleHintProvider",
   "transformationClass": "com.hortonworks.streamline.streams.layout.storm.KafkaBoltFluxComponent",
-  "mavenDeps": "org.apache.storm:storm-kafka:STORM_VERSION^org.slf4j:slf4j-log4j12,org.apache.kafka:kafka_2.11:0.10.0.2.5.3.0-37^org.apache.zookeeper:zookeeper^log4j:log4j^org.slf4j:slf4j-log4j12",
+  "mavenDeps": "org.apache.storm:storm-kafka-client:STORM_VERSION^org.slf4j:slf4j-log4j12^log4j:log4j^org.apache.zookeeper:zookeeper",
   "topologyComponentUISpecification": {
     "fields": [
       {
@@ -160,10 +160,37 @@
         "uiName": "Security Protocol",
         "fieldName": "securityProtocol",
         "isOptional": true,
-        "tooltip": "Protocol to be used to communicate with kafka brokers",
+        "tooltip": "Protocol to be used to communicate with Kafka brokers",
+        "type": "enumstring",
+        "options": ["PLAINTEXT", "SSL", "SASL_PLAINTEXT", "SASL_SSL"],
+        "defaultValue": "PLAINTEXT"
+      },
+      {
+        "uiName": "Kerberos client principal",
+        "fieldName": "principal",
+        "isOptional": true,
+        "tooltip": "Client principal to use to connect to brokers while using SASL GSSAPI mechanism for Kerberos",
         "type": "string",
-        "defaultValue": "PLAINTEXT",
-        "isUserInput": false
+        "hint": "security_kerberos",
+        "defaultValue": null
+      },
+      {
+        "uiName": "Kerberos keytab file",
+        "fieldName": "keytab",
+        "isOptional": true,
+        "tooltip": "Keytab file location on worker node containing the secret key for client principal while using SASL GSSAPI mechanism for Kerberos",
+        "type": "string",
+        "hint": "security_kerberos",
+        "defaultValue": null
+      },
+      {
+        "uiName": "Kafka service name",
+        "fieldName": "kafkaServiceName",
+        "isOptional": true,
+        "tooltip": "Service name that Kafka broker is running as",
+        "type": "string",
+        "hint": "security_kerberos",
+        "defaultValue": null
       },
       {
         "uiName": "Send Buffer Size",
@@ -228,6 +255,141 @@
         "tooltip": "Amount of time in milliseconds to wait before attempting to retry a failed fetch request",
         "type": "string",
         "defaultValue": "100" 
+      },
+      {
+        "uiName": "SSL keystore location",
+        "fieldName": "sslKeystoreLocation",
+        "isOptional": true,
+        "tooltip": "The location of the key store file",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": null
+      },
+      {
+        "uiName": "SSL keystore password",
+        "fieldName": "sslKeystorePassword",
+        "isOptional": true,
+        "tooltip": "The store password for the key store file",
+        "type": "string",
+        "hint": "security_ssl,password",
+        "defaultValue": null
+      },
+      {
+        "uiName": "SSL key password",
+        "fieldName": "sslKeyPassword",
+        "isOptional": true,
+        "tooltip": "The password of the private key in the key store file",
+        "type": "string",
+        "hint": "security_ssl,password",
+        "defaultValue": null
+      },
+      {
+        "uiName": "SSL truststore location",
+        "fieldName": "sslTruststoreLocation",
+        "isOptional": true,
+        "tooltip": "The location of the trust store file",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": null
+      },
+      {
+        "uiName": "SSL truststore password",
+        "fieldName": "sslTruststorePassword",
+        "isOptional": true,
+        "tooltip": "The password for the trust store file",
+        "type": "string",
+        "hint": "security_ssl,password",
+        "defaultValue": null
+      },
+      {
+        "uiName": "SSL enabled protocols",
+        "fieldName": "sslEnabledProtocols",
+        "isOptional": true,
+        "tooltip": "Comma separated list of protocols enabled for SSL connections",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": null
+      },
+      {
+        "uiName": "SSL keystore type",
+        "fieldName": "sslKeystoreType",
+        "isOptional": true,
+        "tooltip": "File format of keystore file",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": "JKS"
+      },
+      {
+        "uiName": "SSL truststore type",
+        "fieldName": "sslTruststoreType",
+        "isOptional": true,
+        "tooltip": "File format of truststore file",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": "JKS"
+      },
+      {
+        "uiName": "SSL protocol",
+        "fieldName": "sslProtocol",
+        "isOptional": true,
+        "tooltip": "SSL protocol used to generate SSLContext",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": "TLS"
+      },
+      {
+        "uiName": "SSL provider",
+        "fieldName": "sslProvider",
+        "isOptional": true,
+        "tooltip": "Security provider used for SSL connections. Default value is default security provider for JVM",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": null
+      },
+      {
+        "uiName": "SSL cipher suites",
+        "fieldName": "sslCipherSuites",
+        "isOptional": true,
+        "tooltip": "Comma separated list of cipher suites. This is a named combination of authentication, encryption, MAC and key exchange algorithm used to negotiate the security settings for a network connection using TLS or SSL network protocol. By default all the available cipher suites are supported",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": null
+      },
+      {
+        "uiName": "SSL endpoint identification algorithm",
+        "fieldName": "sslEndpointIdAlgo",
+        "isOptional": true,
+        "tooltip": "The endpoint identification algorithm to validate server hostname using server certificate",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": null
+      },
+      {
+        "uiName": "SSL key manager algorithm",
+        "fieldName": "sslKeyManagerAlgo",
+        "isOptional": true,
+        "tooltip": "The algorithm used by key manager factory for SSL connections",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": "SunX509"
+      },
+      {
+        "uiName": "SSL secure random implementation",
+        "fieldName": "sslSecureRandomImpl",
+        "isOptional": true,
+        "tooltip": "The SecureRandom PRNG implementation to use for SSL cryptography operations",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": null
+      },
+      {
+        "uiName": "SSL trust manager algorithm",
+        "fieldName": "sslTrustManagerAlgo",
+        "isOptional": true,
+        "tooltip": "The algorithm used by trust manager factory for SSL connections. Default value is the trust manager factory algorithm configured for the Java Virtual Machine",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": "PKIX"
       },
       {
         "uiName": "Parallelism",

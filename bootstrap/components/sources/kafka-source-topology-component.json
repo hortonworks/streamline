@@ -6,31 +6,15 @@
   "builtin": true,
   "fieldHintProviderClass": "com.hortonworks.streamline.streams.cluster.bundle.impl.KafkaBundleHintProvider",
   "transformationClass": "com.hortonworks.streamline.streams.layout.storm.KafkaSpoutFluxComponent",
-  "mavenDeps": "org.apache.storm:storm-kafka:STORM_VERSION^org.slf4j:slf4j-log4j12,org.apache.kafka:kafka_2.11:0.10.0.2.5.3.0-37^org.apache.zookeeper:zookeeper^log4j:log4j^org.slf4j:slf4j-log4j12",
+  "mavenDeps": "org.apache.storm:storm-kafka-client:STORM_VERSION^org.slf4j:slf4j-log4j12^log4j:log4j^org.apache.zookeeper:zookeeper",
   "topologyComponentUISpecification": {
     "fields": [
       {
-        "uiName": "Zookeeper connection URL",
-        "fieldName": "zkUrl",
+        "uiName": "Bootstrap servers",
+        "fieldName": "bootstrapServers",
         "isOptional": false,
-        "tooltip": "A comma separated string of host:port for zookeeper servers used by kafka brokers",
+        "tooltip": "A comma separated string of host:port for Kafka brokers",
         "type": "string"
-      },
-      {
-        "uiName": "Brokers zookeeper node",
-        "fieldName": "zkPath",
-        "isOptional": true,
-        "tooltip": "Zookeeper node configured as root for kafka brokers",
-        "type": "string",
-        "defaultValue": "/brokers"
-      },
-      {
-        "uiName": "Refresh interval(s)",
-        "fieldName": "refreshFreqSecs",
-        "isOptional": true,
-        "tooltip": "Interval in seconds at which topic partition information is refreshed from zookeeper",
-        "type": "number",
-        "defaultValue": 60
       },
       {
         "uiName": "Kafka topic",
@@ -42,6 +26,23 @@
         "hint": "schema,override"
       },
       {
+        "uiName": "Security Protocol",
+        "fieldName": "securityProtocol",
+        "isOptional": true,
+        "tooltip": "Protocol to be used to communicate with Kafka brokers",
+        "type": "enumstring",
+        "options": ["PLAINTEXT", "SSL", "SASL_PLAINTEXT", "SASL_SSL"],
+        "defaultValue": "PLAINTEXT"
+      },
+      {
+        "uiName": "Reader schema version",
+        "fieldName": "readerSchemaVersion",
+        "isOptional": true,
+        "tooltip": "Version of schema for topic to use for deserializing the message",
+        "type": "string",
+        "defaultValue": null
+      },
+      {
         "uiName": "Consumer Group Id",
         "fieldName": "consumerGroupId",
         "isOptional": false,
@@ -49,121 +50,277 @@
         "type": "string"
       },
       {
-        "uiName": "Kafka fetch size",
-        "fieldName": "fetchSizeBytes",
+        "uiName": "Kerberos client principal",
+        "fieldName": "principal",
         "isOptional": true,
-        "tooltip": "Fetch size in bytes for kafka consumer request sent by the spout",
+        "tooltip": "Client principal to use to connect to brokers while using SASL GSSAPI mechanism for Kerberos",
+        "type": "string",
+        "hint": "security_kerberos",
+        "defaultValue": null
+      },
+      {
+        "uiName": "Kerberos keytab file",
+        "fieldName": "keytab",
+        "isOptional": true,
+        "tooltip": "Keytab file location on worker node containing the secret key for client principal while using SASL GSSAPI mechanism for Kerberos",
+        "type": "string",
+        "hint": "security_kerberos",
+        "defaultValue": null
+      },
+      {
+        "uiName": "Kafka service name",
+        "fieldName": "kafkaServiceName",
+        "isOptional": true,
+        "tooltip": "Service name that Kafka broker is running as",
+        "type": "string",
+        "hint": "security_kerberos",
+        "defaultValue": null
+      },
+      {
+        "uiName": "Fetch minimum bytes",
+        "fieldName": "fetchMinimumBytes",
+        "isOptional": true,
+        "tooltip": "The minimum number of bytes the broker should return for a fetch request",
+        "type": "string",
+        "defaultValue": "1"
+      },
+      {
+        "uiName": "Maximum fetch bytes per partition",
+        "fieldName": "fetchMaximumBytesPerPartition",
+        "isOptional": true,
+        "tooltip": "The maximum amount of data per-partition the broker will return",
+        "type": "string",
+        "defaultValue": "1048576"
+      },
+      {
+        "uiName": "Maximum records per poll",
+        "fieldName": "maxRecordsPerPoll",
+        "isOptional": true,
+        "tooltip": "The maximum number of records a poll will return",
+        "type": "string",
+        "defaultValue": "500"
+      },
+      {
+        "uiName": "Poll timeout(ms)",
+        "fieldName": "pollTimeoutMs",
+        "isOptional": true,
+        "tooltip": "Time in milliseconds spent waiting in poll if data is not available",
         "type": "number",
-        "defaultValue": 1048576
+        "defaultValue": 200
       },
       {
-        "uiName": "Kafka socket timeout(ms)",
-        "fieldName": "socketTimeoutMs",
+        "uiName": "Offset commit period(ms)",
+        "fieldName": "offsetCommitPeriodMs",
         "isOptional": true,
-        "tooltip": "Kafka consumer socket timeout interval in milliseconds",
+        "tooltip": "Period in milliseconds at which offsets are committed",
         "type": "number",
-        "defaultValue": 10000
+        "defaultValue": 30000
       },
       {
-        "uiName": "Kafka fetch max wait(ms)",
-        "fieldName": "fetchMaxWait",
+        "uiName": "Maximum uncommitted offsets",
+        "fieldName": "maximumUncommittedOffsets",
         "isOptional": true,
-        "tooltip": "Maximum time in milliseconds to wait for in kafka consumer request",
+        "tooltip": "Defines the max number of polled records that can be pending commit, before another poll can take place",
         "type": "number",
-        "defaultValue": 10000
+        "defaultValue": 10000000
       },
       {
-        "uiName": "Kafka buffer size",
-        "fieldName": "bufferSizeBytes",
+        "uiName": "First poll offset strategy",
+        "fieldName": "firstPollOffsetStrategy",
         "isOptional": true,
-        "tooltip": "Buffer size in bytes for kafka consumer request sent by the spout",
-        "type": "number",
-        "defaultValue": 1048576
+        "tooltip": "Offset used by the Kafka spout in the first poll to Kafka broker",
+        "type": "enumstring",
+        "options": ["EARLIEST", "LATEST", "UNCOMMITTED_EARLIEST", "UNCOMMITTED_LATEST"],
+        "defaultValue": "UNCOMMITTED_EARLIEST"
       },
       {
-        "uiName": "Ignore zookeeper offsets?",
-        "fieldName": "ignoreZkOffsets",
+        "uiName": "Partition refresh period(ms)",
+        "fieldName": "partitionRefreshPeriodMs",
         "isOptional": true,
-        "tooltip": "Flag representing if kafka spout should ignore offsets committed to zookeeper on restart",
-        "type": "boolean",
-        "defaultValue": false
-      },
-      {
-        "uiName": "Maximum offset behind",
-        "fieldName": "maxOffsetBehind",
-        "isOptional": true,
-        "tooltip": "Maximum offset lag allowed",
-        "type": "number",
-        "defaultValue": 9007199254740991
-      },
-      {
-        "uiName": "Use start offset?",
-        "fieldName": "useStartOffsetTimeIfOffsetOutOfRange",
-        "isOptional": true,
-        "tooltip": "Use start offset time if offset is out of range",
-        "type": "boolean",
-        "defaultValue": true
-      },
-      {
-        "uiName": "Metrics time bucket(s)",
-        "fieldName": "metricsTimeBucketSizeInSecs",
-        "isOptional": true,
-        "tooltip": "Metric time bucket size in seconds",
-        "type": "number",
-        "defaultValue": 60
-      },
-      {
-        "uiName": "Zookeeper servers",
-        "fieldName": "zkServers",
-        "isOptional": true,
-        "tooltip": "Zookeeper server hosts for spout to store committed offsets",
-        "type": "array.string"
-      },
-      {
-        "uiName": "Zookeeper server port",
-        "fieldName": "zkPort",
-        "isOptional": true,
-        "tooltip": "Zookeeper server port",
-        "type": "number",
-        "defaultValue": 2181
-      },
-      {
-        "uiName": "State update interval(ms)",
-        "fieldName": "stateUpdateIntervalMs",
-        "isOptional": true,
-        "tooltip": "Interval in milliseconds at which spout updated the committed offsets in zookeeper",
+        "tooltip": "Period in milliseconds at which Kafka will be polled for new topics and/or partitions",
         "type": "number",
         "defaultValue": 2000
+      },
+      {
+        "uiName": "Emit null tuples?",
+        "fieldName": "emitNullTuples",
+        "isOptional": true,
+        "tooltip": "A flag to indicate if null tuples should be emitted to downstream components or not",
+        "type": "boolean",
+        "defaultValue": false
       },
       {
         "uiName": "First retry delay(ms)",
         "fieldName": "retryInitialDelayMs",
         "isOptional": true,
-        "tooltip": "Interval delay in milliseconds for first retry for a failed kafka spout message",
+        "tooltip": "Interval delay in milliseconds for first retry for a failed Kafka spout message",
         "type": "number",
         "defaultValue": 0
       },
       {
-        "uiName": "Retry delay multiplier",
-        "fieldName": "retryDelayMultiplier",
+        "uiName": "Retry delay period(ms)",
+        "fieldName": "retryDelayPeriodMs",
         "isOptional": true,
-        "tooltip": "Retry delay multiplier for second and subsequent retries for a failed kafka spout message",
+        "tooltip": "Retry delay period(geometric progression) in milliseconds for second and subsequent retries for a failed Kafka spout message",
         "type": "number",
-        "defaultValue": 1
+        "defaultValue": 2
       },
       {
-        "uiName": "Max retry delay(ms)",
-        "fieldName": "retryDelayMaxMs",
+        "uiName": "Maximum retries",
+        "fieldName": "maximumRetries",
         "isOptional": true,
-        "tooltip": "Maximum interval in milliseconds to wait before sucessive retries for a failed kafka spout message",
+        "tooltip": "Maximum number of times a failed message is retried before it is acked and committed",
         "type": "number",
-        "defaultValue": 60000
+        "defaultValue": 2147483647
+      },
+      {
+        "uiName": "Maximum retry delay(ms)",
+        "fieldName": "retryDelayMaximumMs",
+        "isOptional": true,
+        "tooltip": "Maximum interval in milliseconds to wait before successive retries for a failed Kafka spout message",
+        "type": "number",
+        "defaultValue": 10000
+      },
+      {
+        "uiName": "SSL keystore location",
+        "fieldName": "sslKeystoreLocation",
+        "isOptional": true,
+        "tooltip": "The location of the key store file",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": null
+      },
+      {
+        "uiName": "SSL keystore password",
+        "fieldName": "sslKeystorePassword",
+        "isOptional": true,
+        "tooltip": "The store password for the key store file",
+        "type": "string",
+        "hint": "security_ssl,password",
+        "defaultValue": null
+      },
+      {
+        "uiName": "SSL key password",
+        "fieldName": "sslKeyPassword",
+        "isOptional": true,
+        "tooltip": "The password of the private key in the key store file",
+        "type": "string",
+        "hint": "security_ssl,password",
+        "defaultValue": null
+      },
+      {
+        "uiName": "SSL truststore location",
+        "fieldName": "sslTruststoreLocation",
+        "isOptional": true,
+        "tooltip": "The location of the trust store file",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": null
+      },
+      {
+        "uiName": "SSL truststore password",
+        "fieldName": "sslTruststorePassword",
+        "isOptional": true,
+        "tooltip": "The password for the trust store file",
+        "type": "string",
+        "hint": "security_ssl,password",
+        "defaultValue": null
+      },
+      {
+        "uiName": "SSL enabled protocols",
+        "fieldName": "sslEnabledProtocols",
+        "isOptional": true,
+        "tooltip": "Comma separated list of protocols enabled for SSL connections",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": null
+      },
+      {
+        "uiName": "SSL keystore type",
+        "fieldName": "sslKeystoreType",
+        "isOptional": true,
+        "tooltip": "File format of keystore file",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": "JKS"
+      },
+      {
+        "uiName": "SSL truststore type",
+        "fieldName": "sslTruststoreType",
+        "isOptional": true,
+        "tooltip": "File format of truststore file",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": "JKS"
+      },
+      {
+        "uiName": "SSL protocol",
+        "fieldName": "sslProtocol",
+        "isOptional": true,
+        "tooltip": "SSL protocol used to generate SSLContext",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": "TLS"
+      },
+      {
+        "uiName": "SSL provider",
+        "fieldName": "sslProvider",
+        "isOptional": true,
+        "tooltip": "Security provider used for SSL connections. Default value is default security provider for JVM",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": null
+      },
+      {
+        "uiName": "SSL cipher suites",
+        "fieldName": "sslCipherSuites",
+        "isOptional": true,
+        "tooltip": "Comma separated list of cipher suites. This is a named combination of authentication, encryption, MAC and key exchange algorithm used to negotiate the security settings for a network connection using TLS or SSL network protocol. By default all the available cipher suites are supported",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": null
+      },
+      {
+        "uiName": "SSL endpoint identification algorithm",
+        "fieldName": "sslEndpointIdAlgo",
+        "isOptional": true,
+        "tooltip": "The endpoint identification algorithm to validate server hostname using server certificate",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": null
+      },
+      {
+        "uiName": "SSL key manager algorithm",
+        "fieldName": "sslKeyManagerAlgo",
+        "isOptional": true,
+        "tooltip": "The algorithm used by key manager factory for SSL connections",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": "SunX509"
+      },
+      {
+        "uiName": "SSL secure random implementation",
+        "fieldName": "sslSecureRandomImpl",
+        "isOptional": true,
+        "tooltip": "The SecureRandom PRNG implementation to use for SSL cryptography operations",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": null
+      },
+      {
+        "uiName": "SSL trust manager algorithm",
+        "fieldName": "sslTrustManagerAlgo",
+        "isOptional": true,
+        "tooltip": "The algorithm used by trust manager factory for SSL connections. Default value is the trust manager factory algorithm configured for the Java Virtual Machine",
+        "type": "string",
+        "hint": "security_ssl",
+        "defaultValue": "PKIX"
       },
       {
         "uiName": "Parallelism",
         "fieldName": "parallelism",
         "isOptional": true,
-        "tooltip": "Parallelism hint for kafka spout",
+        "tooltip": "Parallelism hint for Kafka spout",
         "type": "number",
         "defaultValue": 1,
         "min": 1,

@@ -32,6 +32,7 @@ public class KafkaBoltFluxComponent extends AbstractFluxComponent {
 
     @Override
     protected void generateComponent() {
+        setSaslJaasConfig();
         String boltId = "kafkaBolt" + UUID_FOR_COMPONENTS;
         String boltClassName = "org.apache.storm.kafka.bolt.KafkaBolt";
         List<Object> configMethods = new ArrayList<>();
@@ -82,13 +83,19 @@ public class KafkaBoltFluxComponent extends AbstractFluxComponent {
             "bootstrap.servers", "buffer.memory", "compression.type", "retries", "batch.size", "client.id", "connections.max.idle.ms",
             "linger.ms", "max.block.ms", "max.request.size", "receive.buffer.bytes", "request.timeout.ms", "security.protocol", "send.buffer.bytes",
             "timeout.ms", "block.on.buffer.full", "max.in.flight.requests.per.connection", "metadata.fetch.timeout.ms", "metadata.max.age.ms",
-            "reconnect.backoff.ms", "retry.backoff.ms", "schema.registry.url"
+            "reconnect.backoff.ms", "retry.backoff.ms", "schema.registry.url", "sasl.kerberos.service.name", "sasl.jaas.config","ssl.keystore.location",
+            "ssl.keystore.password", "ssl.key.password", "ssl.truststore.location", "ssl.truststore.password", "ssl.enabled.protocols", "ssl.keystore.type",
+            "ssl.truststore.type", "ssl.protocol", "ssl.provider", "ssl.cipher.suites", "ssl.endpoint.identification.algorithm", "ssl.keymanager.algorithm",
+            "ssl.secure.random.implementation"
         };
         String[] fieldNames = {
             "bootstrapServers", "bufferMemory", "compressionType", "retries", "batchSize", "clientId", "maxConnectionIdle",
             "lingerTime", "maxBlock", "maxRequestSize", "receiveBufferSize", "requestTimeout", "securityProtocol", "sendBufferSize",
             "timeout", "blocKOnBufferFull", "maxInflighRequests", "metadataFetchTimeout", "metadataMaxAge", "reconnectBackoff", "retryBackoff",
-            TopologyLayoutConstants.SCHEMA_REGISTRY_URL
+            TopologyLayoutConstants.SCHEMA_REGISTRY_URL, KafkaSpoutFluxComponent.SASL_KERBEROS_SERVICE_NAME, KafkaSpoutFluxComponent.SASL_JAAS_CONFIG_KEY,
+            "sslKeystoreLocation", "sslKeystorePassword", "sslKeyPassword", "sslTruststoreLocation", "sslTruststorePassword", "sslEnabledProtocols",
+            "sslKeystoreType", "sslTruststoreType", "sslProtocol", "sslProvider", "sslCipherSuites", "sslEndpointIdAlgo", "sslKeyManagerAlgo",
+            "sslSecureRandomImpl", "sslTrustManagerAlgo"
         };
         List<String> methodNames = new ArrayList<>();
         List<Object> args = new ArrayList<>();
@@ -133,6 +140,28 @@ public class KafkaBoltFluxComponent extends AbstractFluxComponent {
             return "all";
         } else {
             throw new IllegalArgumentException("Ack mode for kafka sink is not supported: " + ackMode);
+        }
+    }
+
+    private void setSaslJaasConfig () {
+        String securityProtocol = (String) conf.get("securityProtocol");
+        if (securityProtocol != null && !securityProtocol.isEmpty() && securityProtocol.startsWith("SASL")) {
+            StringBuilder saslConfigStrBuilder = new StringBuilder();
+            String kafkaServiceName = (String) conf.get(KafkaSpoutFluxComponent.SASL_KERBEROS_SERVICE_NAME);
+            String principal = (String) conf.get("principal");
+            String keytab = (String) conf.get("keytab");
+            if (kafkaServiceName == null || kafkaServiceName.isEmpty()) {
+                throw new IllegalArgumentException("Kafka service name must be provided for SASL GSSAPI Kerberos");
+            }
+            if (principal == null || principal.isEmpty()) {
+                throw new IllegalArgumentException("Kafka client principal must be provided for SASL GSSAPI Kerberos");
+            }
+            if (keytab == null || keytab.isEmpty()) {
+                throw new IllegalArgumentException("Kafka client principal keytab must be provided for SASL GSSAPI Kerberos");
+            }
+            saslConfigStrBuilder.append("com.sun.security.auth.module.Krb5LoginModule required \\ useKeyTab=true \\ storeKey=true \\ keyTab=\"");
+            saslConfigStrBuilder.append(keytab).append("\" \\ principal=\"").append(principal).append("\";");
+            conf.put(KafkaSpoutFluxComponent.SASL_JAAS_CONFIG_KEY, saslConfigStrBuilder.toString());
         }
     }
 }
