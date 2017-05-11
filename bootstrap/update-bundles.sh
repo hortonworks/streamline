@@ -47,7 +47,7 @@ function run_cmd {
 function update_bundle {
   uri=$1
   data=$2
-  cmd="curl -sS -X PUT -i -F topologyComponentBundle=@$data ${CATALOG_ROOT_URL}$uri"
+  cmd="curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -sS -X PUT -i -F topologyComponentBundle=@$data ${CATALOG_ROOT_URL}$uri"
   echo "PUT $data"
   run_cmd $cmd
 }
