@@ -27,12 +27,13 @@ import javax.ws.rs.core.SecurityContext;
 import java.io.IOException;
 import java.security.Principal;
 
+import static com.hortonworks.streamline.streams.security.authentication.StreamlineSecurityContext.KERBEROS_AUTH;
+
 public class StreamlineKerberosRequestFilter implements ContainerRequestFilter {
     private static final Logger LOG = LoggerFactory.getLogger(StreamlineKerberosRequestFilter.class);
 
     @Context
     private HttpServletRequest httpRequest;
-
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
@@ -43,12 +44,12 @@ public class StreamlineKerberosRequestFilter implements ContainerRequestFilter {
                 httpRequest.getMethod(), httpRequest.getAuthType(),
                 httpRequest.getRemoteUser(), principal, scheme);
 
-        if (principal != null) {
-            SecurityContext securityContext = new StreamlineSecurityContext(principal, scheme);
-            LOG.debug("SecuirtyContext {}", securityContext);
-            requestContext.setSecurityContext(securityContext);
-        } else {
+        if (principal == null || !httpRequest.getAuthType().equalsIgnoreCase(KERBEROS_AUTH)) {
             throw new WebserviceAuthorizationException("Not authorized");
         }
+
+        SecurityContext securityContext = new StreamlineSecurityContext(principal, scheme, KERBEROS_AUTH);
+        LOG.debug("SecuirtyContext {}", securityContext);
+        requestContext.setSecurityContext(securityContext);
     }
 }

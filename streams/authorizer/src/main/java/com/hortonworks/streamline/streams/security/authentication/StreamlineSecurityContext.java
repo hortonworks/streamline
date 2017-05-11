@@ -26,12 +26,21 @@ import java.security.Principal;
  */
 public class StreamlineSecurityContext implements SecurityContext {
     private static final Logger LOG = LoggerFactory.getLogger(StreamlineSecurityContext.class);
+
+    public static final String KERBEROS_AUTH = "KERBEROS";
+
     private final Principal principal;
     private final String scheme;
+    private final String authenticationScheme;
 
     public StreamlineSecurityContext(Principal principal, String scheme) {
+        this(principal, scheme, SecurityContext.BASIC_AUTH);
+    }
+
+    public StreamlineSecurityContext(Principal principal, String scheme, String authenticationScheme) {
         this.principal = principal;
         this.scheme = scheme;
+        this.authenticationScheme = authenticationScheme;
     }
 
     @Override
@@ -52,7 +61,7 @@ public class StreamlineSecurityContext implements SecurityContext {
 
     @Override
     public String getAuthenticationScheme() {
-        return SecurityContext.BASIC_AUTH;
+        return authenticationScheme;
     }
 
     @Override
@@ -60,6 +69,7 @@ public class StreamlineSecurityContext implements SecurityContext {
         return "StreamlineSecurityContext{" +
                 "principal=" + principal +
                 ", scheme='" + scheme + '\'' +
+                ", authenticationScheme='" + authenticationScheme + '\'' +
                 '}';
     }
 }
