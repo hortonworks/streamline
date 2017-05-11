@@ -576,7 +576,7 @@ class EnvironmentContainer extends Component {
                     return <EnvironmentCards key={i} nameSpaceList={nameSpaceList} nameSpaceClicked={this.nameSpaceClicked} clusterDetails={clusterDetails} refIdArr={refIdArr} loader={loader}/>;
                   })
                   : !this.initialFetch && entities.length === 0
-                    ? <NoData imgName={"environments"}/>
+                    ? <NoData imgName={"environments"} serviceFlag={checkServices}/>
                     : ''
               }
             </div>

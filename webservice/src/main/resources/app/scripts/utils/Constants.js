@@ -50,13 +50,15 @@ const colorOptions = [
 
 const iconOptions = [
   {value: 'gears'},
-  {value: 'pencil'},
-  {value: 'info'},
-  {value: 'globe'},
-  {value: 'eye'},
-  {value: 'video-camera'},
-  {value: 'picture-o'},
-  {value: 'home'}
+  {value: 'sitemap'},
+  {value: 'file-code-o'},
+  {value: 'code'},
+  {value: 'shield'},
+  {value: 'bell'},
+  {value: 'file'},
+  {value: 'lock'},
+  {value: 'key'},
+  {value: 'cubes'}
 ];
 
 export {

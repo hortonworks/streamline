@@ -172,10 +172,11 @@ export default class AppRoleForm extends Component {
   }
 
   handleSave = () => {
-    let {name, description, parentRoles, users, system} = this.refs.RoleForm.state.FormData;
+    let {name, displayName, description, parentRoles, users, system} = this.refs.RoleForm.state.FormData;
     let {metadata} = this.state;
     let data = {
       name,
+      displayName,
       description
     };
     data.system = system || false;
@@ -210,7 +211,7 @@ export default class AppRoleForm extends Component {
     const {metadata, colorOptions,
       iconOptions} = this.state;
     let {id, userOptions, applicationOptions, servicePoolOptions, environmentOptions, roleOptions} = this.props;
-    let {name, description, users = [], system = false, accessControlList = []} = this.props.editData;
+    let {name, displayName, description, users = [], system = false, accessControlList = []} = this.props.editData;
     let roleOptionsArr = roleOptions.filter((r)=>{return r.id !== id;});
     return (
       <div className="user-role-form">
@@ -219,6 +220,7 @@ export default class AppRoleForm extends Component {
           <div className="col-md-10 user-role-form-container">
           <Form ref="RoleForm" FormData={this.props.editData} showRequired={null}>
             <Fields.string value="name" label="Role Name" valuePath="name" fieldJson={{isOptional:false, tooltip: 'Role Name', isUserInput: this.props.editData.system ? false : true}} validation={["required"]}/>
+            <Fields.string value="displayName" label="Display Name" valuePath="displayName" fieldJson={{isOptional:false, tooltip: 'Display Name', isUserInput: this.props.editData.system ? false : true}} validation={["required"]}/>
             <Fields.string value="description" label="Description" valuePath="description" fieldJson={{isOptional:false, tooltip: 'Description', isUserInput: this.props.editData.system ? false : true}} validation={["required"]}/>
             {!this.props.editData.system ?
               <Fields.arrayenumstring value="parentRoles" valuePath="parentRoles" label="Pre-defined Roles" fieldJson={{isOptional:false, tooltip: 'Pre-defined roles'}} fieldAttr={{options: roleOptionsArr}} validation={["required"]}/>

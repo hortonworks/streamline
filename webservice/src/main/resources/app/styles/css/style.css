@@ -3040,7 +3040,6 @@ div#TestSourceForm > ul {
   font-size: 14px;
   margin: 0;
   color:  #818181;
-  text-transform: uppercase;
 }
 
 .role-name, .user-name, .role-td {
@@ -3075,7 +3074,7 @@ div#TestSourceForm > ul {
   position: absolute;
   background-color: #fff;
   top: 69px;
-  margin-left: 38.6%;
+  margin-left: 40.2%;
   color:#888;
   padding: 15px;
   width: 60%;
@@ -3161,6 +3160,7 @@ div#TestSourceForm > ul {
     overflow: hidden;
     text-overflow: ellipsis;
     color: #888;
+    white-space: nowrap
 }
 
 .status-list .fa-stop{

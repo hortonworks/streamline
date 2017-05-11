@@ -194,8 +194,10 @@ export default class RolesListingContainer extends Component {
   handleAddAppRole = (e) => {
     this.setState({editData : {
       name: '',
+      displayName: '',
       description: '',
       parentRoles: [],
+      system: false,
       users: [],
       applications: [],
       services: [],
@@ -266,6 +268,25 @@ export default class RolesListingContainer extends Component {
   render() {
     let {roles, roleOptions, systemRoles, applicationRoles, editData, fetchLoader, showRoleForm,
       applicationOptions, userOptions, servicePoolOptions, environmentOptions} = this.state;
+    var defaultHeader = (
+      <div>
+        <span className="hb success role-icon"><i className="fa fa-key"></i></span>
+        <div className="panel-sections first">
+          <h4 ref="roleName" className="role-name" title="Name">New Role</h4>
+        </div>
+        <div className="panel-sections second">
+          <div className="status-list">
+            <i className="fa fa-stop m-r-xs"></i>
+            <i className="fa fa-stop m-r-xs"></i>
+            <i className="fa fa-stop m-r-xs"></i>
+          </div>
+        </div>
+        <div className="panel-sections pull-right">
+          <h6 className="role-th">USERS</h6>
+          <h4 className="role-td">0</h4>
+        </div>
+      </div>
+    );
     return (
       <div>
       <div id="add-role" >
@@ -286,6 +307,20 @@ export default class RolesListingContainer extends Component {
               bsClass="panel-roles"
               role="tablist"
             >
+            {
+            showRoleForm && !editData.id ?
+            (
+            <Panel
+              header={defaultHeader}
+              headerRole="tabpanel"
+              collapsible
+              expanded={false}
+              className="selected"
+            >
+            </Panel>
+            )
+            : ''
+            }
             {
               roles.map((entity, i)=>{
                 var metadata = entity.metadata ? JSON.parse(entity.metadata) : {};
@@ -309,7 +344,7 @@ export default class RolesListingContainer extends Component {
                   <div key={i}>
                   <span className={`hb ${btnClass} role-icon`}><i className={`fa fa-${iconClass}`}></i></span>
                   <div className="panel-sections first">
-                      <h4 ref="roleName" className="role-name" title={entity.name}>{entity.name}</h4>
+                      <h4 ref="roleName" className="role-name" title={entity.name}>{entity.displayName}</h4>
                   </div>
                   <div className="panel-sections second">
                     <div className="status-list">

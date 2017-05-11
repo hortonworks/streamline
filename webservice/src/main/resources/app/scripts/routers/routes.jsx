@@ -64,7 +64,7 @@ export default (
     <Route path="model-registry" name="Model Registry" component={ModelRegistryContainer} onEnter={onEnter}/>
     <Route path="component-definition" name="Component Definition" component={ComponentDefinition} onEnter={onEnter}/>
     <Route path="application-resources" name="Application Resources" component={AppResourcesContainer} onEnter={onEnter}/>
-    <Route path="user-roles" name="User Roles" component={UserRolesContainer} onEnter={onEnter}/>
+    <Route path="authorizer" name="Authorizer" component={UserRolesContainer} onEnter={onEnter}/>
   </Route>
 
 );

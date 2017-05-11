@@ -166,7 +166,7 @@ export default class Sidebar extends Component {
                 </li>*/}
                 {app_state.streamline_config.secureMode ?
                 <li onClick={this.handleClick.bind(this, 3)}>
-                  <Link to="/user-roles">Users</Link>
+                  <Link to="/authorizer">Authorizer</Link>
                 </li>
                 : null}
               </ul>
