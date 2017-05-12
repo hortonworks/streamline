@@ -82,7 +82,7 @@ public class AvroStreamsSnapshotDeserializerTest {
                                                                   "http://localhost:8080/api/v1");
             avroStreamsSnapshotDeserializer.init(config);
 
-            Object deserializedObject = avroStreamsSnapshotDeserializer.deserialize(new ByteArrayInputStream(serializedBytes),null, 1);
+            Object deserializedObject = avroStreamsSnapshotDeserializer.deserialize(new ByteArrayInputStream(serializedBytes), 1);
 
             Map<Object, Object> map = (Map<Object, Object>) deserializedObject;
             String deserializedJson = new ObjectMapper().writeValueAsString(map);

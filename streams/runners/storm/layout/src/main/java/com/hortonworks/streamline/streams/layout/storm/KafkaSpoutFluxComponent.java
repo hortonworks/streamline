@@ -50,6 +50,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
             LOG.error(msg, kafkaSource);
             throw new IllegalArgumentException(msg);
         }
+        validateSSLConfig();
         setSaslJaasConfig();
         String spoutConfigRef = addKafkaSpoutConfigComponent();
         String spoutId = "kafkaSpout" + UUID_FOR_COMPONENTS;
@@ -206,6 +207,20 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
             saslConfigStrBuilder.append("com.sun.security.auth.module.Krb5LoginModule required \\ useKeyTab=true \\ storeKey=true \\ keyTab=\"");
             saslConfigStrBuilder.append(keytab).append("\" \\ principal=\"").append(principal).append("\";");
             conf.put(SASL_JAAS_CONFIG_KEY, saslConfigStrBuilder.toString());
+        }
+    }
+
+    private void validateSSLConfig () {
+        String securityProtocol = (String) conf.get("securityProtocol");
+        if (securityProtocol != null && !securityProtocol.isEmpty() && securityProtocol.endsWith("SSL")) {
+            String truststoreLocation = (String) conf.get("sslTruststoreLocation");
+            String truststorePassword = (String) conf.get("sslTruststorePassword");
+            if (truststoreLocation == null || truststoreLocation.isEmpty()) {
+                throw new IllegalArgumentException("Truststore location must be provided for SSL");
+            }
+            if (truststorePassword == null || truststorePassword.isEmpty()) {
+                throw new IllegalArgumentException("Truststore password must be provided for SSL");
+            }
         }
     }
 }

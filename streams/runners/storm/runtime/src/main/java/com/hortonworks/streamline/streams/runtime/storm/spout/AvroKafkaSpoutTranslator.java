@@ -42,7 +42,6 @@ public class AvroKafkaSpoutTranslator implements RecordTranslator<Object, ByteBu
     private final String topic;
     private final String dataSourceId;
     private final String schemaRegistryUrl;
-    private final SchemaMetadata schemaMetadata;
     private final Integer readerSchemaVersion;
     private transient volatile AvroStreamsSnapshotDeserializer avroStreamsSnapshotDeserializer;
 
@@ -52,11 +51,10 @@ public class AvroKafkaSpoutTranslator implements RecordTranslator<Object, ByteBu
         this.dataSourceId = dataSourceId;
         this.schemaRegistryUrl = schemaRegistryUrl;
         this.readerSchemaVersion = readerSchemaVersion;
-        this.schemaMetadata = createSchemaMetadata(topic);
     }
     @Override
     public List<Object> apply (ConsumerRecord<Object, ByteBuffer> consumerRecord) {
-        Map<String, Object> keyValues = (Map<String, Object>) deserializer().deserialize(new ByteBufferInputStream(consumerRecord.value()), schemaMetadata,
+        Map<String, Object> keyValues = (Map<String, Object>) deserializer().deserialize(new ByteBufferInputStream(consumerRecord.value()),
                 readerSchemaVersion);
         StreamlineEvent streamlineEvent = StreamlineEventImpl.builder().putAll(keyValues).dataSourceId(dataSourceId).build();
         KafkaTuple kafkaTuple = new KafkaTuple(streamlineEvent);
@@ -72,13 +70,6 @@ public class AvroKafkaSpoutTranslator implements RecordTranslator<Object, ByteBu
     @Override
     public List<String> streams () {
         return Collections.singletonList(outputStream);
-    }
-
-    private SchemaMetadata createSchemaMetadata (String topic) {
-        return new SchemaMetadata.Builder(Utils.getSchemaKey(topic, false))
-                .type(AvroSchemaProvider.TYPE)
-                .schemaGroup("kafka")
-                .build();
     }
 
     private AvroStreamsSnapshotDeserializer deserializer () {
