@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 public class StormJaasCreator {
-    public static final String STORM_JAAS_CONFIG_TEMPLATE = "/storm_jaas.config_template";
+    public static final String STORM_JAAS_CONFIG_TEMPLATE = "storm_jaas.config_template";
 
     private final String stormJaasConfigTemplate;
     private final String keyTabPath;
@@ -28,7 +28,7 @@ public class StormJaasCreator {
         try (InputStream configStream = getClass().getClassLoader().getResourceAsStream(STORM_JAAS_CONFIG_TEMPLATE)) {
             List<String> lines = IOUtils.readLines(configStream, Charset.forName("UTF-8"));
             stormJaasConfigTemplate = String.join("\n", lines);
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             throw new RuntimeException("Unable to read JAAS template file for Storm.");
         }
 
