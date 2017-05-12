@@ -16,6 +16,7 @@
 package com.hortonworks.streamline.streams.cluster.service.metadata.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
 
 import org.apache.hadoop.hbase.TableName;
 
@@ -42,7 +43,7 @@ public class Tables {
 
     public Tables(List<String> tables, SecurityContext securityContext) {
         this.tables = tables;
-        if (securityContext != null && securityContext.isSecure()) {
+        if (SecurityUtil.isKerberosAuthenticated(securityContext)) {
             msg = Tables.AUTHRZ_MSG;
         }
     }

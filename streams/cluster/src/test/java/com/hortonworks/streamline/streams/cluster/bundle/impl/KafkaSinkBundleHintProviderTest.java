@@ -33,12 +33,14 @@ import java.util.Map;
 import javax.ws.rs.core.SecurityContext;
 
 import mockit.Expectations;
+import mockit.Injectable;
 import mockit.Mocked;
 import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
 
 @RunWith(JMockit.class)
 public class KafkaSinkBundleHintProviderTest {
+    private static final String AUTHENTICATION_SCHEME_NOT_KERBEROS = "NOT_KERBEROS";
     private KafkaSinkBundleHintProvider provider = new KafkaSinkBundleHintProvider();
 
     @Mocked
@@ -47,11 +49,15 @@ public class KafkaSinkBundleHintProviderTest {
     @Mocked
     private KafkaMetadataService kafkaMetadataService;
 
-    @Mocked
+    @Injectable
     private SecurityContext securityContext;
 
     @Test
     public void getHintsOnCluster() throws Exception {
+        new Expectations() {{
+            securityContext.getAuthenticationScheme(); result = AUTHENTICATION_SCHEME_NOT_KERBEROS;
+        }};
+
         List<String> topics = Lists.newArrayList("test1", "test2", "test3");
 
         List<String> hosts = Lists.newArrayList("svr1", "svr2");

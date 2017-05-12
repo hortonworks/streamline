@@ -127,9 +127,9 @@ public class HiveMetadataService implements AutoCloseable {
     public static HiveMetadataService newInstance(HiveConf hiveConf, SecurityContext securityContext, Subject subject)
             throws MetaException, IOException, EntityNotFoundException, PrivilegedActionException {
 
-        if (securityContext.isSecure()) {
+        if (SecurityUtil.isKerberosAuthenticated(securityContext)) {
             UserGroupInformation.setConfiguration(hiveConf);    // Sets Kerberos rules
-            UserGroupInformation.getUGIFromSubject(subject);    // Sets the User principal in this subject
+            UserGroupInformation.getUGIFromSubject(subject);    // Adds User principal to this subject
 
             return new HiveMetadataService(SecurityUtil.execute(() -> new HiveMetaStoreClient(hiveConf),
                     securityContext, subject), hiveConf, securityContext, subject);
@@ -241,16 +241,15 @@ public class HiveMetadataService implements AutoCloseable {
         @JsonInclude(JsonInclude.Include.NON_NULL)
         private String msg;
 
-        public Databases(List<String> databases, boolean isSecure) {
+        public Databases(List<String> databases, SecurityContext securityContext) {
             this.databases = databases;
-            if (isSecure) {
+            if (SecurityUtil.isKerberosAuthenticated(securityContext)) {
                 msg = Tables.AUTHRZ_MSG;
             }
         }
 
         public static Databases newInstance(List<String> databases, SecurityContext securityContext) {
-            final boolean isSecure = securityContext.isSecure();
-            return databases == null ? new Databases(Collections.emptyList(), isSecure) : new Databases(databases, isSecure);
+            return databases == null ? new Databases(Collections.emptyList(), securityContext) : new Databases(databases, securityContext);
         }
 
         @JsonProperty("databases")

@@ -117,7 +117,7 @@ public class HBaseMetadataService implements AutoCloseable {
     public static HBaseMetadataService newInstance(Configuration hbaseConfig, SecurityContext securityContext, Subject subject)
                 throws IOException, EntityNotFoundException {
 
-        if (securityContext.isSecure()) {
+        if (SecurityUtil.isKerberosAuthenticated(securityContext)) {
             UserGroupInformation.setConfiguration(hbaseConfig);                                             // Sets Kerberos rules
             final UserGroupInformation ugiFromSubject = UserGroupInformation.getUGIFromSubject(subject);    // Adds User principal to the subject
             final UserGroupInformation proxyUserForImpersonation = UserGroupInformation

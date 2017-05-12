@@ -28,6 +28,7 @@ import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfig
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.Tables;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
 
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
@@ -49,7 +50,7 @@ public class StormMetadataService {
     private static final String STORM_REST_API_TOPOLOGIES_DEFAULT_RELATIVE_PATH = "/api/v1/topology/summary";
     private static final String STORM_REST_API_TOPOLOGIES_KEY = "topologies";
     private static final String STORM_REST_API_TOPOLOGY_ID_KEY = "id";
-    private static final String STORM_REST_API_DO_AS_USER_QUERY_PARAM = "doAsUser";
+    public static final String STORM_REST_API_DO_AS_USER_QUERY_PARAM = "doAsUser";
 
     // used to hack adding / getting Storm View
     public static final String SERVICE_STORM_VIEW = "STORM_VIEW";
@@ -146,7 +147,7 @@ public class StormMetadataService {
         private String getTopologySummaryRestUrl() throws ServiceNotFoundException, ServiceComponentNotFoundException {
             final HostPort hostPort = getHostPort();
             String url = "http://" + hostPort.toString() + (urlRelativePath.startsWith("/") ? urlRelativePath : "/" + urlRelativePath);
-            if (securityContext.isSecure()) {
+            if (SecurityUtil.isKerberosAuthenticated(securityContext)) {
                 url += "?" + STORM_REST_API_DO_AS_USER_QUERY_PARAM + "=" + securityContext.getUserPrincipal().getName();
             }
             return url;
@@ -218,7 +219,7 @@ public class StormMetadataService {
 
         public Topologies(List<String> topologies, SecurityContext securityContext) {
             this.topologies = topologies;
-            if (securityContext != null && securityContext.isSecure()) {
+            if (SecurityUtil.isKerberosAuthenticated(securityContext)) {
                 msg = Tables.AUTHRZ_MSG;
             }
         }

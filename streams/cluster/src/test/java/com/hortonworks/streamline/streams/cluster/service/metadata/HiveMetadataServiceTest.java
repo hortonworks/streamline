@@ -67,7 +67,7 @@ public class HiveMetadataServiceTest {
     private Subject subject;
 
 
-    private void setUp() throws Exception {
+    private void setup() throws Exception {
         new Expectations() {{
             serviceConfiguration.getConfigurationMap(); result = getHiveConfigs();
         }};
@@ -105,7 +105,7 @@ public class HiveMetadataServiceTest {
      */
     @Test
     public void test_getDatabase_getTables() throws Exception {
-        setUp();
+        setup();
         try {
             test_getHiveDatabases();
             test_getHiveTablesForDatabase();

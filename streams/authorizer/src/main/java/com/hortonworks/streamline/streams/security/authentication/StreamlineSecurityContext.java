@@ -18,21 +18,29 @@ package com.hortonworks.streamline.streams.security.authentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.security.Principal;
-
 import javax.ws.rs.core.SecurityContext;
+import java.security.Principal;
 
 /**
  * Holds authenticated principal and security context which gets passed to the JAX-RS request methods
  */
 public class StreamlineSecurityContext implements SecurityContext {
     private static final Logger LOG = LoggerFactory.getLogger(StreamlineSecurityContext.class);
+
+    public static final String KERBEROS_AUTH = "KERBEROS";
+
     private final Principal principal;
     private final String scheme;
+    private final String authenticationScheme;
 
     public StreamlineSecurityContext(Principal principal, String scheme) {
+        this(principal, scheme, SecurityContext.BASIC_AUTH);
+    }
+
+    public StreamlineSecurityContext(Principal principal, String scheme, String authenticationScheme) {
         this.principal = principal;
         this.scheme = scheme;
+        this.authenticationScheme = authenticationScheme;
     }
 
     @Override
@@ -53,7 +61,7 @@ public class StreamlineSecurityContext implements SecurityContext {
 
     @Override
     public String getAuthenticationScheme() {
-        return SecurityContext.BASIC_AUTH;
+        return authenticationScheme;
     }
 
     @Override
@@ -61,6 +69,7 @@ public class StreamlineSecurityContext implements SecurityContext {
         return "StreamlineSecurityContext{" +
                 "principal=" + principal +
                 ", scheme='" + scheme + '\'' +
+                ", authenticationScheme='" + authenticationScheme + '\'' +
                 ", isSecure=" + isSecure() +
                 '}';
     }

@@ -40,7 +40,6 @@ import javax.ws.rs.core.SecurityContext;
 
 import mockit.Expectations;
 import mockit.Injectable;
-import mockit.Mocked;
 import mockit.Tested;
 import mockit.integration.junit4.JMockit;
 
@@ -49,6 +48,7 @@ import static com.hortonworks.streamline.streams.cluster.service.metadata.KafkaM
 
 @RunWith(JMockit.class)
 public class KafkaMetadataServiceTest {
+    private static final String AUTHENTICATION_SCHEME_NOT_KERBEROS = "NOT_KERBEROS";
     private static final Logger LOG = LoggerFactory.getLogger(KafkaMetadataServiceTest.class);
 
     private static final String CHROOT = "/chroot";
@@ -70,7 +70,7 @@ public class KafkaMetadataServiceTest {
     private ZookeeperClient zkCli;
     @Injectable
     private KafkaMetadataService.KafkaZkConnection kafkaZkConnection;
-    @Mocked
+    @Injectable
     private SecurityContext securityContext;
 
     // === Test Methods ===
@@ -110,6 +110,8 @@ public class KafkaMetadataServiceTest {
             component.getHosts(); result = expectedHosts;
             component.getPort(); result = expectedPort;
             environmentService.getComponentByName(anyLong, anyString); result = component;
+            // Means test run in insecure mode as they did before adding security
+            securityContext.getAuthenticationScheme(); result = AUTHENTICATION_SCHEME_NOT_KERBEROS;
         }};
 
         final KafkaMetadataService.BrokersInfo<HostPort> brokerHostPort = kafkaMetadataService.getBrokerHostPortFromStreamsJson(1L);
@@ -132,7 +134,7 @@ public class KafkaMetadataServiceTest {
                 brokerIdZkLeaves,
                 this::getActualBrokerData,
                 p -> Assert.assertEquals(brokerZkData, p),
-                brokerZkData);
+                brokerZkData, true);
     }
 
     private List<String> getActualBrokerData() {
@@ -153,7 +155,7 @@ public class KafkaMetadataServiceTest {
                 brokerIdZkLeaves,
                 this::getActualBrokerIds,
                 p -> Assert.assertEquals(brokerIdZkLeaves, p),
-                null);
+                null, true);
     }
 
     private List<String> getActualBrokerIds() {
@@ -175,12 +177,12 @@ public class KafkaMetadataServiceTest {
                 componentZkLeaves,
                 this::getActualTopics,
                 p -> Assert.assertEquals(componentZkLeaves, p),
-                null);
+                null, false);
     }
 
     private List<String> getActualTopics() {
         try {
-            final List<String> actualTopics = kafkaMetadataService.getTopicsFromZk().getTopics();
+            final List<String> actualTopics = kafkaMetadataService.getTopicsFromZk().list();
             Collections.sort(actualTopics);
             return actualTopics;
         } catch (ZookeeperClientException e) {
@@ -193,7 +195,6 @@ public class KafkaMetadataServiceTest {
         final String connectionString = server.getConnectString();
         zkCli = ZookeeperClient.newInstance(connectionString);
         zkCli.start();
-//        kafkaMetadataService = new KafkaMetadataService(environmentService, zkCli, kafkaZkConnection);
     }
 
     public void stopZk() {
@@ -201,7 +202,8 @@ public class KafkaMetadataServiceTest {
     }
 
     private <T> void testZkCode(String componentZkPath, List<String> componentZkLeaves,
-            Supplier<T> executionCode, Consumer<T> verificationCode, List<String> zkNodeData) throws Exception {
+                                Supplier<T> executionCode, Consumer<T> verificationCode, List<String> zkNodeData,
+                                boolean setSecurityExpectation) throws Exception {
 
         startZk();
 
@@ -231,6 +233,14 @@ public class KafkaMetadataServiceTest {
                     kafkaZkConnection.buildZkRootPath(anyString);
                     result = zkRootPath;
                 }};
+
+                if (setSecurityExpectation) {
+                    new Expectations() {{
+                        // Means test run in insecure mode as they did before adding security
+                        securityContext.getAuthenticationScheme();
+                        result = AUTHENTICATION_SCHEME_NOT_KERBEROS;
+                    }};
+                }
 
                 // Executes the code to test and returns the actual result
                 T actual = executionCode.get();

@@ -51,6 +51,28 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
                 .map(SecurityUtil::getUserName)
                 .collect(Collectors.toSet());
         LOG.info("Admin users: {}", adminUsers);
+        mayBeAddAdminUsers();
+    }
+
+    private void mayBeAddAdminUsers() {
+        LOG.info("Checking user entries for admin users");
+        adminUsers.stream()
+                .filter(name -> {
+                    User user = catalogService.getUser(name);
+                    if (user != null) {
+                        LOG.info("User entry for '{}' already exists", name);
+                        return false;
+                    } else {
+                        return true;
+                    }
+                })
+                .forEach(name -> {
+                    User user = new User();
+                    user.setName(name);
+                    user.setEmail(name + "@auto-generated");
+                    User addedUser = catalogService.addUser(user);
+                    LOG.info("Added admin user entry: {}", addedUser);
+                });
     }
 
     @Override

@@ -15,14 +15,15 @@
  **/
 package com.hortonworks.streamline.streams.cluster.bundle.impl;
 
-import com.hortonworks.streamline.streams.cluster.Constants;
-import org.apache.commons.lang.StringUtils;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
+import com.hortonworks.streamline.streams.cluster.Constants;
+import com.hortonworks.streamline.streams.cluster.bundle.AbstractBundleHintProvider;
 import com.hortonworks.streamline.streams.cluster.service.metadata.KafkaMetadataService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
-import com.hortonworks.streamline.streams.cluster.bundle.AbstractBundleHintProvider;
+
+import org.apache.commons.lang.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +41,7 @@ public class KafkaSinkBundleHintProvider extends AbstractBundleHintProvider {
         Map<String, Object> hintClusterMap = new HashMap<>();
         try (KafkaMetadataService kafkaMetadataService = KafkaMetadataService.newInstance(environmentService, cluster.getId())) {
             KafkaMetadataService.Topics topics = kafkaMetadataService.getTopicsFromZk();
-            hintClusterMap.put(FIELD_NAME_TOPIC, topics.getTopics());
+            hintClusterMap.put(FIELD_NAME_TOPIC, topics.list());
 
             KafkaMetadataService.BrokersInfo<HostPort> brokerHosts = kafkaMetadataService.getBrokerHostPortFromStreamsJson(cluster.getId());
             List<HostPort> hosts = brokerHosts.getInfo();

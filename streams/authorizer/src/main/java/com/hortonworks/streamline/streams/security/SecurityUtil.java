@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.security;
 import com.hortonworks.streamline.common.exception.service.exception.request.WebserviceAuthorizationException;
 import com.hortonworks.streamline.common.function.SupplierException;
 import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.streams.security.authentication.StreamlineSecurityContext;
 
 import org.apache.hadoop.hbase.security.User;
 import org.slf4j.Logger;
@@ -113,8 +114,9 @@ public final class SecurityUtil {
     }
 
     /**
-     * Executes the supplied action. If {@code securityContext.isSecure() == true}, it wraps the action execution
-     * with Subject.doAs(subject, action) where subject is created for every call by {@link SecurityUtil#getSubject}
+     * Executes the supplied action. If {@link SecurityUtil#isKerberosAuthenticated(javax.ws.rs.core.SecurityContext)}
+     * returns true, it wraps the action execution with Subject.doAs(subject, action), where subject is created
+     * for every call by {@link SecurityUtil#getSubject}
      */
     public static <T, E extends Exception> T execute(SupplierException<T, E> action, SecurityContext securityContext)
             throws E, PrivilegedActionException {
@@ -122,32 +124,43 @@ public final class SecurityUtil {
     }
 
     /**
-     * Executes the supplied action. If {@code securityContext.isSecure() == true}, it wraps the
-     * action execution with Subject.doAs(subject, action) with the provided subject
+     * Executes the supplied action. If {@link SecurityUtil#isKerberosAuthenticated(javax.ws.rs.core.SecurityContext)} returns
+     * true, it wraps the action execution with Subject.doAs(subject, action) with the provided subject
      */
     public static <T, E extends Exception> T execute(SupplierException<T, E> action, SecurityContext securityContext, Subject subject)
             throws E, PrivilegedActionException {
-        if (subject != null && securityContext != null && securityContext.isSecure()) {
-            LOG.debug("Executing secure action [{}] for subject [{}] with security context [{}]", action, securityContext, subject);
+        if (subject != null && isKerberosAuthenticated(securityContext)) {
+            LOG.debug("Executing action [{}] for subject [{}] with security context [{}] using Kerberos authentication",
+                    action, securityContext, subject);
             return Subject.doAs(subject, (PrivilegedExceptionAction<T>) action::get);
         } else {
-            LOG.debug("Executing insecure action [{}] for subject [{}] with security context [{}]", action, securityContext, subject);
+            LOG.debug("Executing action [{}] for subject [{}] with security context [{}] without Kerberos authentication",
+                    action, securityContext, subject);
             return action.get();
         }
     }
 
     public static <T, E extends Exception> T execute(SupplierException<T, E> action, SecurityContext securityContext, User user)
             throws E, PrivilegedActionException, IOException, InterruptedException {
-        if (user != null && securityContext != null && securityContext.isSecure()) {
-            LOG.debug("Executing secure action [{}] for user [{}] with security context [{}]", action, securityContext, user);
+        if (user != null && isKerberosAuthenticated(securityContext)) {
+            LOG.debug("Executing action [{}] for user [{}] with security context [{}] using Kerberos authentication",
+                    action, securityContext, user);
             return user.runAs((PrivilegedExceptionAction<T>) action::get);
         } else {
-            LOG.debug("Executing insecure action [{}] for user [{}] with security context [{}]", action, securityContext, user);
+            LOG.debug("Executing action [{}] for user [{}] with security context [{}] without Kerberos authentication",
+                    action, securityContext, user);
             return action.get();
         }
     }
 
     public static Subject getSubject() {
         return Subject.getSubject(AccessController.getContext());
+    }
+
+    /**
+     * @return true If the request has a non-null {@link SecurityContext} with Kerberos authentication scheme. False otherwise
+     */
+    public static boolean isKerberosAuthenticated(SecurityContext securityContext) {
+        return securityContext != null && securityContext.getAuthenticationScheme().equals(StreamlineSecurityContext.KERBEROS_AUTH);
     }
 }

@@ -17,6 +17,7 @@ package com.hortonworks.streamline.streams.cluster.service.metadata;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceComponentNotFoundException;
@@ -28,6 +29,7 @@ import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfig
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.Tables;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -169,6 +171,7 @@ public class KafkaMetadataService implements AutoCloseable {
      */
 
     public static class BrokersInfo<T> {
+
         private final List<T> brokers;
         @JsonInclude(JsonInclude.Include.NON_NULL)
         private String msg;
@@ -179,7 +182,7 @@ public class KafkaMetadataService implements AutoCloseable {
 
         public BrokersInfo(List<T> brokers, SecurityContext securityContext) {
             this.brokers = brokers;
-            if (securityContext != null && securityContext.isSecure()) {
+            if (SecurityUtil.isKerberosAuthenticated(securityContext)) {
                 msg = Tables.AUTHRZ_MSG;
             }
         }
@@ -243,7 +246,8 @@ public class KafkaMetadataService implements AutoCloseable {
             this.topics = topics;
         }
 
-        public List<String> getTopics() {
+        @JsonProperty("topics")
+        public List<String> list() {
             return topics;
         }
     }
