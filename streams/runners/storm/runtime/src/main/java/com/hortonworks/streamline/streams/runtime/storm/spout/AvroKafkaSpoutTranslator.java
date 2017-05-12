@@ -16,10 +16,7 @@
 
 package com.hortonworks.streamline.streams.runtime.storm.spout;
 
-import com.hortonworks.registries.schemaregistry.SchemaMetadata;
-import com.hortonworks.registries.schemaregistry.avro.AvroSchemaProvider;
 import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
-import com.hortonworks.registries.schemaregistry.serdes.avro.kafka.Utils;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import org.apache.kafka.clients.consumer.ConsumerRecord;

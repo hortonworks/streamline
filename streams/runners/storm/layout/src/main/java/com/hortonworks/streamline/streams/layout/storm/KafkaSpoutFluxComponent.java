@@ -86,7 +86,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         List<Object> constructorArgs = new ArrayList<>();
         List bootstrapServersAndTopic = getConstructorArgsYaml (constructorArgNames);
         constructorArgs.add(bootstrapServersAndTopic.get(0));
-        constructorArgs.add(bootstrapServersAndTopic.get(1));
+        constructorArgs.add(new String[] {(String) bootstrapServersAndTopic.get(1)});
 
         List<Object> configMethods = new ArrayList<>();
         String[] configMethodNames = {
@@ -172,7 +172,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         methodNames.add(methodName);
         args.add(new String[]{specialPropertyNames[0], "org.apache.kafka.common.serialization.ByteArrayDeserializer"});
         methodNames.add(methodName);
-        args.add(new String[]{specialPropertyNames[1], "org.apache.kafka.common.serialization.ByteArrayDeserializer"});
+        args.add(new String[]{specialPropertyNames[1], "org.apache.kafka.common.serialization.ByteBufferDeserializer"});
         for (int j = 0; j < propertyNames.length; ++j) {
             if (conf.get(fieldNames[j]) != null) {
                 methodNames.add(methodName);
