@@ -58,7 +58,7 @@ class AddModelRegistry extends Component {
     formData.append('pmmlFile', jarFile);
     formData.append('modelInfo', new Blob([JSON.stringify({"name": modelName})], {type: 'application/json'}));
     hideInput
-      ? this.setState({hideInput, false})
+      ? this.setState({hideInput: false})
       : '';
     return ModelRegistryREST.postModelRegistry({body: formData});
   }
