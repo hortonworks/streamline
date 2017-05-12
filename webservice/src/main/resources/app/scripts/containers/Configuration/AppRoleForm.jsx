@@ -32,6 +32,11 @@ export default class AppRoleForm extends Component {
     this.state = {
       colorOptions: colorOptions,
       iconOptions: iconOptions,
+      sizeOptions: [
+        {label: 'Large', value: 'Large'},
+        {label: 'Medium', value: 'Medium'},
+        {label: 'Small', value: 'Small'}
+      ],
       metadata: {}
     };
   }
@@ -44,7 +49,7 @@ export default class AppRoleForm extends Component {
     this.setData(this.props);
   }
   setData(props) {
-    let metadata = props.editData.metadata || '{"colorCode": "#529e4c", "colorLabel": "green", "icon": ""}';
+    let metadata = props.editData.metadata || '{"colorCode": "#529e4c", "colorLabel": "green", "icon": "key", "size": "Medium"}';
     this.setState({
       metadata: JSON.parse(metadata)
     });
@@ -52,17 +57,25 @@ export default class AppRoleForm extends Component {
 
   handleColorChange = (obj) => {
     if (obj) {
-      this.setState({metadata: {colorCode: obj.value, colorLabel: obj.label, icon: this.state.metadata.icon}});
+      this.setState({metadata: {colorCode: obj.value, colorLabel: obj.label, icon: this.state.metadata.icon, size: this.state.metadata.size}});
     } else {
-      this.setState({metadata: {colorCode: '', colorLabel: '', icon: this.state.metadata.icon}});
+      this.setState({metadata: {colorCode: '', colorLabel: '', icon: this.state.metadata.icon, size: this.state.metadata.size}});
     }
   }
 
   handleIconChange = (obj) => {
     if (obj) {
-      this.setState({metadata: {colorCode: this.state.metadata.colorCode, colorLabel: this.state.metadata.colorLabel, icon: obj.value}});
+      this.setState({metadata: {colorCode: this.state.metadata.colorCode, colorLabel: this.state.metadata.colorLabel, icon: obj.value, size: this.state.metadata.size}});
     } else {
-      this.setState({metadata: {colorCode: this.state.metadata.colorCode, colorLabel: this.state.metadata.colorLabel, icon: ''}});
+      this.setState({metadata: {colorCode: this.state.metadata.colorCode, colorLabel: this.state.metadata.colorLabel, icon: '', size: this.state.metadata.size}});
+    }
+  }
+
+  handleSizeChange = (obj) => {
+    if (obj) {
+      this.setState({metadata: {colorCode: this.state.metadata.colorCode, colorLabel: this.state.metadata.colorLabel, icon: this.state.metadata.icon, size: obj.value}});
+    } else {
+      this.setState({metadata: {colorCode: this.state.metadata.colorCode, colorLabel: this.state.metadata.colorLabel, icon: this.state.metadata.icon, size: ''}});
     }
   }
 
@@ -70,10 +83,11 @@ export default class AppRoleForm extends Component {
     let validDataFlag = true;
     let {
       name,
+      displayName,
       description,
       parentRoles
     } = this.refs.RoleForm.state.FormData;
-    if(name.trim() === '' || description.trim() === '') {
+    if(name.trim() === '' || displayName.trim() === '' || description.trim() === '') {
       validDataFlag = false;
     }
     if(!this.props.editData.system && parentRoles.length === 0) {
@@ -209,7 +223,7 @@ export default class AppRoleForm extends Component {
 
   render() {
     const {metadata, colorOptions,
-      iconOptions} = this.state;
+      iconOptions, sizeOptions} = this.state;
     let {id, userOptions, applicationOptions, servicePoolOptions, environmentOptions, roleOptions} = this.props;
     let {name, displayName, description, users = [], system = false, accessControlList = []} = this.props.editData;
     let roleOptionsArr = roleOptions.filter((r)=>{return r.id !== id;});
@@ -238,6 +252,9 @@ export default class AppRoleForm extends Component {
             </div>
             <div className="col-md-4">
               <label>Icon</label>
+            </div>
+            <div className="col-md-4">
+              <label>Size</label>
             </div>
             </div>
           </div>
@@ -283,6 +300,15 @@ export default class AppRoleForm extends Component {
                   );
                 }}
                 onChange={this.handleIconChange}
+              />
+            </div>
+            <div className="col-md-4">
+              <Select
+                value={metadata.size}
+                options={sizeOptions}
+                required={true}
+                clearable={false}
+                onChange={this.handleSizeChange}
               />
             </div>
             </div>

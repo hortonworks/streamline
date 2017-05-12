@@ -61,6 +61,20 @@ const iconOptions = [
   {value: 'cubes'}
 ];
 
+const rolePriorities = [
+  {name: "ROLE_SECURITY_ADMIN", priority: 1},
+  {name: "ROLE_TOPOLOGY_ADMIN", priority: 2},
+  {name: "ROLE_TOPOLOGY_COMPONENT_BUNDLE_USER", priority: 3},
+  {name: "ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN", priority: 2},
+  {name: "ROLE_CLUSTER_ADMIN", priority: 2},
+  {name: "ROLE_FILE_ADMIN", priority: 2},
+  {name: "ROLE_UDF_ADMIN", priority: 2},
+  {name: "ROLE_NOTIFIER_ADMIN", priority: 2},
+  {name: "ROLE_NOTIFICATION_USER", priority: 3},
+  {name: "ROLE_SCHEMA_USER", priority: 3},
+  {name: "ROLE_SCHEMA_ADMIN", priority: 2}
+];
+
 export {
   baseUrl,
   pageSize,
@@ -71,5 +85,6 @@ export {
   deleteNodeIdArr,
   deployStatusText,
   colorOptions,
-  iconOptions
+  iconOptions,
+  rolePriorities
 };

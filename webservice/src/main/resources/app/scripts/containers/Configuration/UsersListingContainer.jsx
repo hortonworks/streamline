@@ -55,6 +55,7 @@ export default class UsersListingContainer extends Component {
       UserRoleREST.getAllUsers(),
       UserRoleREST.getAllRoles()
     ];
+    let rolesPromiseArr = [];
     Promise.all(promiseArr)
       .then((results) => {
         if (results[0].responseMessage !== undefined) {
@@ -67,10 +68,22 @@ export default class UsersListingContainer extends Component {
               id: e.id,
               name: e.name,
               label: e.name,
-              value: e.name
+              value: e.name,
+              system: e.system,
+              metadata: e.metadata
             });
+            rolesPromiseArr.push(UserRoleREST.getRoleChildren(e.id));
           });
           this.setState({users: results[0].entities, fetchLoader: false, roles: roleOptions});
+          Promise.all(rolesPromiseArr) /* Promise array to fetch all the child roles and map to the parent using index */
+          .then((results)=>{
+            let roleOptionsArr = roleOptions;
+            results.map((r, index)=>{
+              let parentRoles = [];
+              roleOptionsArr[index].children = r.entities;
+            });
+            this.setState({roles: roleOptionsArr});
+          });
         }
       });
   }
@@ -135,6 +148,18 @@ export default class UsersListingContainer extends Component {
 
   render() {
     let {users, editData, fetchLoader, roles, showUserForm} = this.state;
+    var defaultHeader = (
+      <div>
+      <span className="hb success user-icon"><i className="fa fa-user"></i></span>
+      <div className="panel-sections first">
+        <h4 ref="userName" className="user-name" title="name">New User</h4>
+      </div>
+      <div className="panel-sections pull-right">
+        <h6 className="role-th">ROLES</h6>
+        <h4 className="role-td">0</h4>
+      </div>
+      </div>
+    );
     return (
       <div>
       <div id="add-user" >
@@ -156,12 +181,28 @@ export default class UsersListingContainer extends Component {
               role="tablist"
             >
             {
+            showUserForm && !editData.id ?
+            (
+            <Panel
+              header={defaultHeader}
+              headerRole="tabpanel"
+              collapsible
+              expanded={false}
+              className="selected"
+            >
+            </Panel>
+            )
+            : ''
+            }
+            {
               users.map((entity, i)=>{
-                var btnClass = 'success';
-                var iconClass = 'user';
+                var metadata = entity.metadata ? JSON.parse(entity.metadata) : {};
+                var btnClass = metadata.colorLabel || 'success';
+                var iconClass = metadata.icon || 'user';
+                var sizeClass = metadata.size || '';
                 var header = (
                   <div key={i}>
-                  <span className={`hb ${btnClass} user-icon`}><i className={`fa fa-${iconClass}`}></i></span>
+                  <span className={`hb ${btnClass} ${sizeClass.toLowerCase()} user-icon`}><i className={`fa fa-${iconClass}`}></i></span>
                   <div className="panel-sections first">
                       <h4 ref="userName" className="user-name" title={entity.name}>{entity.name}</h4>
                   </div>
