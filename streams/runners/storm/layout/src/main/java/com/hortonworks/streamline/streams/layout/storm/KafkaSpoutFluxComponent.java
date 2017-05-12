@@ -123,7 +123,7 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         String retryDelayPeriodMsId = "retryDelayPeriodMs" + UUID_FOR_COMPONENTS;
         addTimeInterval(retryDelayPeriodMsId, conf.get("retryDelayPeriodMs") != null ? conf.get("retryDelayPeriodMs") : new Long(2));
         constructorArgs.add(getRefYaml(retryDelayPeriodMsId));
-        constructorArgs.add(getConstructorArgsYaml(conf.get("maximumRetries") != null ? conf.get("maximumRetries") : Integer.MAX_VALUE));
+        constructorArgs.add(conf.get("maximumRetries") != null ? conf.get("maximumRetries") : Integer.MAX_VALUE);
         String retryDelayMaximumMs = "retryDelayMaximumMs" + UUID_FOR_COMPONENTS;
         addTimeInterval(retryDelayMaximumMs, conf.get("retryDelayMaximumMs") != null ? conf.get("retryDelayMaximumMs") : new Long(10000));
         constructorArgs.add(getRefYaml(retryDelayMaximumMs));
