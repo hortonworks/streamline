@@ -20,13 +20,16 @@ import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.actions.container.mapping.MappedTopologyActionsImpl;
+import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.container.NamespaceAwareContainer;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 
+import javax.security.auth.Subject;
 import java.io.File;
-import java.io.FilenameFilter;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +39,9 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
 
     private static final String COMPONENT_NAME_STORM_UI_SERVER = ComponentPropertyPattern.STORM_UI_SERVER.name();
     private static final String COMPONENT_NAME_NIMBUS = ComponentPropertyPattern.NIMBUS.name();
+    private static final String SERVICE_CONFIGURATION_STORM = ServiceConfigurations.STORM.getConfNames()[0];
+    private static final String SERVICE_CONFIGURATION_STORM_ENV = ServiceConfigurations.STORM.getConfNames()[1];
+
     private static final String NIMBUS_SEEDS = "nimbus.seeds";
     private static final String NIMBUS_PORT = "nimbus.port";
     public static final String STREAMLINE_STORM_JAR = "streamlineStormJar";
@@ -47,10 +53,13 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
     private static final String DEFAULT_STORM_JAR_FILE_PREFIX = "streamline-runtime-storm-";
 
     private final Map<String, String> streamlineConf;
+    private final Subject subject;
 
-    public TopologyActionsContainer(EnvironmentService environmentService, Map<String, String> streamlineConf) {
+    public TopologyActionsContainer(EnvironmentService environmentService, Map<String, String> streamlineConf,
+                                    Subject subject) {
         super(environmentService);
         this.streamlineConf = streamlineConf;
+        this.subject = subject;
     }
 
     @Override
@@ -66,13 +75,13 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
         }
 
         // FIXME: "how to initialize" is up to implementation detail - now we just only consider about Storm implementation
-        Map<String, String> conf = buildStormTopologyActionsConfigMap(namespace, streamingEngine);
+        Map<String, Object> conf = buildStormTopologyActionsConfigMap(namespace, streamingEngine, subject);
 
         String className = actionsImpl.getClassName();
         return initTopologyActions(conf, className);
     }
 
-    private TopologyActions initTopologyActions(Map<String, String> conf, String className) {
+    private TopologyActions initTopologyActions(Map<String, Object> conf, String className) {
         try {
             TopologyActions topologyActions = instantiate(className);
             topologyActions.init(conf);
@@ -82,7 +91,7 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
         }
     }
 
-    private Map<String, String> buildStormTopologyActionsConfigMap(Namespace namespace, String streamingEngine) {
+    private Map<String, Object> buildStormTopologyActionsConfigMap(Namespace namespace, String streamingEngine, Subject subject) {
         // Assuming that a namespace has one mapping of streaming engine
         Service streamingEngineService = getFirstOccurenceServiceForNamespace(namespace, streamingEngine);
         if (streamingEngineService == null) {
@@ -90,19 +99,21 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
                     namespace.getName() + "(" + namespace.getId() + ")");
         }
 
-        Component uiServer = getComponent(streamingEngineService, COMPONENT_NAME_STORM_UI_SERVER);
+        Component uiServer = getComponent(streamingEngineService, COMPONENT_NAME_STORM_UI_SERVER)
+                .orElseThrow(() -> new RuntimeException(streamingEngine + " doesn't have " + COMPONENT_NAME_STORM_UI_SERVER + " as component"));
         String uiHost = uiServer.getHosts().get(0);
         Integer uiPort = uiServer.getPort();
 
         assertHostAndPort(uiServer.getName(), uiHost, uiPort);
 
-        Component nimbus = getComponent(streamingEngineService, COMPONENT_NAME_NIMBUS);
+        Component nimbus = getComponent(streamingEngineService, COMPONENT_NAME_NIMBUS)
+                .orElseThrow(() -> new RuntimeException(streamingEngine + " doesn't have " + COMPONENT_NAME_NIMBUS + " as component"));
         List<String> nimbusHosts = nimbus.getHosts();
         Integer nimbusPort = nimbus.getPort();
 
         assertHostsAndPort(nimbus.getName(), nimbusHosts, nimbusPort);
 
-        Map<String, String> conf = new HashMap<>();
+        Map<String, Object> conf = new HashMap<>();
 
         // We need to have some local configurations anyway because topology submission can't be done with REST API.
         String stormJarLocation = streamlineConf.get(STREAMLINE_STORM_JAR);
@@ -120,13 +131,55 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
         conf.put(NIMBUS_SEEDS, String.join(",", nimbusHosts));
         conf.put(NIMBUS_PORT, String.valueOf(nimbusPort));
         conf.put(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY, buildStormRestApiRootUrl(uiHost, uiPort));
-        conf.putAll(streamlineConf);
+        conf.put(TopologyLayoutConstants.SUBJECT_OBJECT, subject);
+
+        putStormSecurityConfigurations(streamingEngineService, conf);
 
         // Topology during run-time will require few critical configs such as schemaRegistryUrl and catalogRootUrl
         // Hence its important to pass StreamlineConfig to TopologyConfig
         conf.putAll(streamlineConf);
 
         return conf;
+    }
+
+    private void putStormSecurityConfigurations(Service streamingEngineService, Map<String, Object> conf) {
+        ServiceConfiguration storm = getServiceConfiguration(streamingEngineService, SERVICE_CONFIGURATION_STORM)
+                .orElse(new ServiceConfiguration());
+        ServiceConfiguration stormEnv = getServiceConfiguration(streamingEngineService, SERVICE_CONFIGURATION_STORM_ENV)
+                .orElse(new ServiceConfiguration());
+
+        try {
+            Map<String, String> stormConfMap = storm.getConfigurationMap();
+            if (stormConfMap != null) {
+                if (stormConfMap.containsKey(TopologyLayoutConstants.STORM_THRIFT_TRANSPORT)) {
+                    String thriftTransport = stormConfMap.get(TopologyLayoutConstants.STORM_THRIFT_TRANSPORT);
+                    if (!thriftTransport.startsWith("{{") && !thriftTransport.endsWith("}}")) {
+                        conf.put(TopologyLayoutConstants.STORM_THRIFT_TRANSPORT, stormConfMap.get(TopologyLayoutConstants.STORM_THRIFT_TRANSPORT));
+                    }
+                }
+
+                if (stormConfMap.containsKey(TopologyLayoutConstants.STORM_NONSECURED_THRIFT_TRANSPORT)) {
+                    conf.put(TopologyLayoutConstants.STORM_NONSECURED_THRIFT_TRANSPORT, stormConfMap.get(TopologyLayoutConstants.STORM_NONSECURED_THRIFT_TRANSPORT));
+                }
+
+                if (stormConfMap.containsKey(TopologyLayoutConstants.STORM_SECURED_THRIFT_TRANSPORT)) {
+                    conf.put(TopologyLayoutConstants.STORM_SECURED_THRIFT_TRANSPORT, stormConfMap.get(TopologyLayoutConstants.STORM_SECURED_THRIFT_TRANSPORT));
+                }
+
+                if (stormConfMap.containsKey(TopologyLayoutConstants.STORM_PRINCIPAL_TO_LOCAL)) {
+                    conf.put(TopologyLayoutConstants.STORM_PRINCIPAL_TO_LOCAL, stormConfMap.get(TopologyLayoutConstants.STORM_PRINCIPAL_TO_LOCAL));
+                }
+            }
+
+            Map<String, String> stormEnvConfMap = stormEnv.getConfigurationMap();
+            if (stormEnvConfMap != null) {
+                if (stormEnvConfMap.containsKey(TopologyLayoutConstants.STORM_NIMBUS_PRINCIPAL_NAME)) {
+                    conf.put(TopologyLayoutConstants.STORM_NIMBUS_PRINCIPAL_NAME, stormEnvConfMap.get(TopologyLayoutConstants.STORM_NIMBUS_PRINCIPAL_NAME));
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private String findFirstMatchingJarLocation(String jarFindDir) {

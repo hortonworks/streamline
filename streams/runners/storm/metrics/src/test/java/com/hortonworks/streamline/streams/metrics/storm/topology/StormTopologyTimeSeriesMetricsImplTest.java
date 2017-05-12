@@ -74,7 +74,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
     private StormRestAPIClient createMockStormRestAPIClient(final String mockTopologyName) {
         return new MockUp<StormRestAPIClient>() {
                 @Mock
-                public Map getTopologySummary() {
+                public Map getTopologySummary(String asUser) {
                     Map<String, Object> topologySummary = new HashMap<>();
                     List<Map<String, Object>> topologies = new ArrayList<>();
                     topologySummary.put(StormRestAPIConstant.TOPOLOGY_SUMMARY_JSON_TOPOLOGIES, topologies);
@@ -94,7 +94,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
         final long from = 1L;
         final long to = 3L;
 
-        stormTopologyTimeSeriesMetrics.getCompleteLatency(topology, component, from, to);
+        stormTopologyTimeSeriesMetrics.getCompleteLatency(topology, component, from, to, null);
         fail("It should throw Exception!");
     }
 
@@ -118,7 +118,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
             result = expected;
         }};
 
-        Map<Long, Double> actual = stormTopologyTimeSeriesMetrics.getCompleteLatency(topology, component, from, to);
+        Map<Long, Double> actual = stormTopologyTimeSeriesMetrics.getCompleteLatency(topology, component, from, to, null);
         assertEquals(expected, actual);
     }
 
@@ -166,7 +166,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
             result = expected.get(StormMappedMetric.lag.name());
         }};
 
-        Map<String, Map<Long, Double>> actual = stormTopologyTimeSeriesMetrics.getkafkaTopicOffsets(topology, component, from, to);
+        Map<String, Map<Long, Double>> actual = stormTopologyTimeSeriesMetrics.getkafkaTopicOffsets(topology, component, from, to, null);
         assertEquals(expected, actual);
     }
 
@@ -260,7 +260,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
         }};
 
         TopologyTimeSeriesMetrics.TimeSeriesComponentMetric actual =
-                stormTopologyTimeSeriesMetrics.getComponentStats(topology, component, from, to);
+                stormTopologyTimeSeriesMetrics.getComponentStats(topology, component, from, to, null);
         assertEquals(expectedMetric, actual);
     }
 

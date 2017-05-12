@@ -30,9 +30,9 @@ public class StormTopologyUtil {
         return "streamline-" + topologyId + "-";
     }
 
-    public static String findStormTopologyId(StormRestAPIClient client, Long topologyId) {
+    public static String findStormTopologyId(StormRestAPIClient client, Long topologyId, String asUser) {
         String topologyNamePrefix = generateUniqueStormTopologyNamePrefix(topologyId);
-        Map<?, ?> summaryMap = client.getTopologySummary();
+        Map<?, ?> summaryMap = client.getTopologySummary(asUser);
         List<Map<?, ?>> topologies = (List<Map<?, ?>>) summaryMap.get(StormRestAPIConstant.TOPOLOGY_SUMMARY_JSON_TOPOLOGIES);
         String stormTopologyId = null;
         for (Map<?, ?> topologyMap : topologies) {
@@ -46,9 +46,9 @@ public class StormTopologyUtil {
         return stormTopologyId;
     }
 
-    public static String findStormCompleteTopologyName(StormRestAPIClient client, Long topologyId) {
+    public static String findStormCompleteTopologyName(StormRestAPIClient client, Long topologyId, String asUser) {
         String topologyNamePrefix = generateUniqueStormTopologyNamePrefix(topologyId);
-        Map<?, ?> summaryMap = client.getTopologySummary();
+        Map<?, ?> summaryMap = client.getTopologySummary(asUser);
         List<Map<?, ?>> topologies = (List<Map<?, ?>>) summaryMap.get(StormRestAPIConstant.TOPOLOGY_SUMMARY_JSON_TOPOLOGIES);
         String topologyName = null;
         for (Map<?, ?> topologyMap : topologies) {
@@ -62,8 +62,8 @@ public class StormTopologyUtil {
         return topologyName;
     }
 
-    public static String findOrGenerateTopologyName(StormRestAPIClient client, Long topologyId, String topologyName) {
-        String actualTopologyName = findStormCompleteTopologyName(client, topologyId);
+    public static String findOrGenerateTopologyName(StormRestAPIClient client, Long topologyId, String topologyName, String asUser) {
+        String actualTopologyName = findStormCompleteTopologyName(client, topologyId, asUser);
         if (actualTopologyName == null) {
             actualTopologyName = generateStormTopologyName(topologyId, topologyName);
         }

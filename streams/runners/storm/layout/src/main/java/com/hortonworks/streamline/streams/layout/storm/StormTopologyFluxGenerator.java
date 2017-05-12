@@ -61,10 +61,10 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
 
     private final List<Map.Entry<String, Map<String, Object>>> keysAndComponents = new ArrayList<>();
     private final TopologyDag topologyDag;
-    private final Map<String, String> config;
+    private final Map<String, Object> config;
     private final Config topologyConfig;
 
-    public StormTopologyFluxGenerator(TopologyLayout topologyLayout, Map<String, String> config, Path extraJarsLocation) {
+    public StormTopologyFluxGenerator(TopologyLayout topologyLayout, Map<String, Object> config, Path extraJarsLocation) {
         this.topologyDag = topologyLayout.getTopologyDag();
         this.topologyConfig = topologyLayout.getConfig();
         this.config = config;

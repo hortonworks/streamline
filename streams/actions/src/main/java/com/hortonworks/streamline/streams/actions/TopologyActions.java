@@ -29,11 +29,11 @@ import java.util.Map;
  */
 public interface TopologyActions {
     // Any one time initialization is done here
-    void init (Map<String, String> conf);
+    void init (Map<String, Object> conf);
 
     // Deploy the artifact generated using the underlying streaming
     // engine
-    void deploy(TopologyLayout topology, String mavenArtifacts, TopologyActionContext ctx) throws Exception;
+    void deploy(TopologyLayout topology, String mavenArtifacts, TopologyActionContext ctx, String asUser) throws Exception;
 
     // Compose and run parameter topology as test mode using the underlying streaming engine.
     // The parameter 'topology' should contain its own topology DAG.
@@ -44,7 +44,7 @@ public interface TopologyActions {
                  Map<String, TestRunSink> testRunSinksForEachSink) throws Exception;
 
     //Kill the artifact that was deployed using deploy
-    void kill (TopologyLayout topology) throws Exception;
+    void kill (TopologyLayout topology, String asUser) throws Exception;
 
     //Validate the json representing the Streamline based on underlying streaming
     // engine
@@ -52,14 +52,14 @@ public interface TopologyActions {
 
     //Suspend the json representing the Streamline based on underlying streaming
     // engine
-    void suspend (TopologyLayout topology) throws Exception;
+    void suspend (TopologyLayout topology, String asUser) throws Exception;
 
     //Resume the json representing the Streamline based on underlying streaming
     // engine
-    void resume (TopologyLayout topology) throws Exception;
+    void resume (TopologyLayout topology, String asUser) throws Exception;
 
     // return topology status
-    Status status (TopologyLayout topology) throws Exception;
+    Status status(TopologyLayout topology, String asUser) throws Exception;
 
     /**
      * the Path where topology specific artifacts are kept
@@ -74,7 +74,7 @@ public interface TopologyActions {
     /**
      * the topology id which is running in runtime streaming engine
      */
-    String getRuntimeTopologyId(TopologyLayout topology);
+    String getRuntimeTopologyId(TopologyLayout topology, String asUser);
 
     interface Status {
         String getStatus();

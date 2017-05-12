@@ -21,6 +21,7 @@ import com.hortonworks.streamline.streams.actions.TopologyActionContext;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
+import com.hortonworks.streamline.streams.storm.common.StormJaasCreator;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -42,10 +43,12 @@ import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
+import javax.security.auth.Subject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -56,6 +59,8 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -70,6 +75,9 @@ public class StormTopologyActionsImpl implements TopologyActions {
     public static final int DEFAULT_WAIT_TIME_SEC = 30;
     public static final int TEST_RUN_TOPOLOGY_WAIT_MILLIS_FOR_SHUTDOWN = 30_000;
 
+    private static final String DEFAULT_THRIFT_TRANSPORT_PLUGIN = "org.apache.storm.security.auth.SimpleTransportPlugin";
+    private static final String DEFAULT_PRINCIPAL_TO_LOCAL = "org.apache.storm.security.auth.DefaultPrincipalToLocal";
+
     private static final String NIMBUS_SEEDS = "nimbus.seeds";
     private static final String NIMBUS_PORT = "nimbus.port";
 
@@ -81,28 +89,32 @@ public class StormTopologyActionsImpl implements TopologyActions {
     private StormRestAPIClient client;
     private String nimbusSeeds;
     private Integer nimbusPort;
-    private Map<String, String> conf;
+    private Map<String, Object> conf;
+
+    private String thriftTransport;
+    private Optional<String> jaasFilePath;
+    private String principalToLocal;
 
     public StormTopologyActionsImpl() {
     }
 
     @Override
-    public void init (Map<String, String> conf) {
+    public void init (Map<String, Object> conf) {
         this.conf = conf;
         if (conf != null) {
             if (conf.containsKey(StormTopologyLayoutConstants.STORM_ARTIFACTS_LOCATION_KEY)) {
-                stormArtifactsLocation = conf.get(StormTopologyLayoutConstants.STORM_ARTIFACTS_LOCATION_KEY);
+                stormArtifactsLocation = (String) conf.get(StormTopologyLayoutConstants.STORM_ARTIFACTS_LOCATION_KEY);
             }
             if (conf.containsKey(StormTopologyLayoutConstants.STORM_HOME_DIR)) {
-                String stormHomeDir = conf.get(StormTopologyLayoutConstants.STORM_HOME_DIR);
+                String stormHomeDir = (String) conf.get(StormTopologyLayoutConstants.STORM_HOME_DIR);
                 if (!stormHomeDir.endsWith(File.separator)) {
                     stormHomeDir += File.separator;
                 }
                 stormCliPath = stormHomeDir + "bin" + File.separator + "storm";
             }
-            this.stormJarLocation = conf.get(StormTopologyLayoutConstants.STORM_JAR_LOCATION_KEY);
+            this.stormJarLocation = (String) conf.get(StormTopologyLayoutConstants.STORM_JAR_LOCATION_KEY);
 
-            catalogRootUrl = conf.get(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL);
+            catalogRootUrl = (String) conf.get(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL);
 
             Map<String, String> env = System.getenv();
             String javaHomeStr = env.get("JAVA_HOME");
@@ -116,20 +128,51 @@ public class StormTopologyActionsImpl implements TopologyActions {
             }
 
             String stormApiRootUrl = null;
+            Subject subject = null;
             if (conf != null) {
-                stormApiRootUrl = conf.get(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY);
+                stormApiRootUrl = (String) conf.get(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY);
+                subject = (Subject) conf.get(TopologyLayoutConstants.SUBJECT_OBJECT);
             }
             Client restClient = ClientBuilder.newClient(new ClientConfig());
-            this.client = new StormRestAPIClient(restClient, stormApiRootUrl);
-            nimbusSeeds = conf.get(NIMBUS_SEEDS);
-            nimbusPort = Integer.valueOf(conf.get(NIMBUS_PORT));
+            this.client = new StormRestAPIClient(restClient, stormApiRootUrl, subject);
+            nimbusSeeds = (String) conf.get(NIMBUS_SEEDS);
+            nimbusPort = Integer.valueOf((String) conf.get(NIMBUS_PORT));
         }
         File f = new File (stormArtifactsLocation);
         f.mkdirs();
+
+        setupSecuredStormCluster(conf);
+    }
+
+    private void setupSecuredStormCluster(Map<String, Object> conf) {
+        thriftTransport = (String) conf.get(TopologyLayoutConstants.STORM_THRIFT_TRANSPORT);
+
+        if (conf.containsKey(TopologyLayoutConstants.STORM_NIMBUS_PRINCIPAL_NAME)) {
+            String nimbusPrincipal = (String) conf.get(TopologyLayoutConstants.STORM_NIMBUS_PRINCIPAL_NAME);
+            String kerberizedNimbusServiceName = nimbusPrincipal.split("/")[0];
+            jaasFilePath = Optional.of(createJaasFile(kerberizedNimbusServiceName));
+        } else {
+            jaasFilePath = Optional.empty();
+        }
+
+        principalToLocal = (String) conf.getOrDefault(TopologyLayoutConstants.STORM_PRINCIPAL_TO_LOCAL, DEFAULT_PRINCIPAL_TO_LOCAL);
+
+        if (thriftTransport == null) {
+            if (jaasFilePath.isPresent()) {
+                thriftTransport = (String) conf.get(TopologyLayoutConstants.STORM_SECURED_THRIFT_TRANSPORT);
+            } else {
+                thriftTransport = (String) conf.get(TopologyLayoutConstants.STORM_NONSECURED_THRIFT_TRANSPORT);
+            }
+        }
+
+        // if it's still null, set to default
+        if (thriftTransport == null) {
+            thriftTransport = DEFAULT_THRIFT_TRANSPORT_PLUGIN;
+        }
     }
 
     @Override
-    public void deploy(TopologyLayout topology, String mavenArtifacts, TopologyActionContext ctx) throws Exception {
+    public void deploy(TopologyLayout topology, String mavenArtifacts, TopologyActionContext ctx, String asUser) throws Exception {
         ctx.setCurrentAction("Adding artifacts to jar");
         Path jarToDeploy = addArtifactsToJar(getArtifactsLocation(topology));
         ctx.setCurrentAction("Creating Storm topology YAML file");
@@ -142,6 +185,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
         commands.addAll(getExtraJarsArg(topology));
         commands.addAll(getMavenArtifactsRelatedArgs(mavenArtifacts));
         commands.addAll(getNimbusConf());
+        commands.addAll(getSecuredClusterConf(asUser));
         commands.add("org.apache.storm.flux.Flux");
         commands.add("--remote");
         commands.add(fileName);
@@ -202,10 +246,10 @@ public class StormTopologyActionsImpl implements TopologyActions {
     }
 
     @Override
-    public void kill (TopologyLayout topology) throws Exception {
-        String stormTopologyId = getRuntimeTopologyId(topology);
+    public void kill (TopologyLayout topology, String asUser) throws Exception {
+        String stormTopologyId = getRuntimeTopologyId(topology, asUser);
 
-        boolean killed = client.killTopology(stormTopologyId, DEFAULT_WAIT_TIME_SEC);
+        boolean killed = client.killTopology(stormTopologyId, asUser, DEFAULT_WAIT_TIME_SEC);
         if (!killed) {
             throw new Exception("Topology could not be killed " +
                     "successfully.");
@@ -227,10 +271,10 @@ public class StormTopologyActionsImpl implements TopologyActions {
     }
 
     @Override
-    public void suspend (TopologyLayout topology) throws Exception {
-        String stormTopologyId = getRuntimeTopologyId(topology);
+    public void suspend (TopologyLayout topology, String asUser) throws Exception {
+        String stormTopologyId = getRuntimeTopologyId(topology, asUser);
 
-        boolean suspended = client.deactivateTopology(stormTopologyId);
+        boolean suspended = client.deactivateTopology(stormTopologyId, asUser);
         if (!suspended) {
             throw new Exception("Topology could not be suspended " +
                     "successfully.");
@@ -238,13 +282,13 @@ public class StormTopologyActionsImpl implements TopologyActions {
     }
 
     @Override
-    public void resume (TopologyLayout topology) throws Exception {
-        String stormTopologyId = getRuntimeTopologyId(topology);
+    public void resume (TopologyLayout topology, String asUser) throws Exception {
+        String stormTopologyId = getRuntimeTopologyId(topology, asUser);
         if (stormTopologyId == null || stormTopologyId.isEmpty()) {
             throw new TopologyNotAliveException("Topology not found in Storm Cluster - topology id: " + topology.getId());
         }
 
-        boolean resumed = client.activateTopology(stormTopologyId);
+        boolean resumed = client.activateTopology(stormTopologyId, asUser);
         if (!resumed) {
             throw new Exception("Topology could not be resumed " +
                     "successfully.");
@@ -252,10 +296,10 @@ public class StormTopologyActionsImpl implements TopologyActions {
     }
 
     @Override
-    public Status status(TopologyLayout topology) throws Exception {
-        String stormTopologyId = getRuntimeTopologyId(topology);
+    public Status status(TopologyLayout topology, String asUser) throws Exception {
+        String stormTopologyId = getRuntimeTopologyId(topology, asUser);
 
-        Map topologyStatus = client.getTopology(stormTopologyId);
+        Map topologyStatus = client.getTopology(stormTopologyId, asUser);
 
         StatusImpl status = new StatusImpl();
         status.setStatus((String) topologyStatus.get("status"));
@@ -279,8 +323,8 @@ public class StormTopologyActionsImpl implements TopologyActions {
     }
 
     @Override
-    public String getRuntimeTopologyId(TopologyLayout topology) {
-        String stormTopologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId());
+    public String getRuntimeTopologyId(TopologyLayout topology, String asUser) {
+        String stormTopologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId(), asUser);
         if (StringUtils.isEmpty(stormTopologyId)) {
             throw new TopologyNotAliveException("Topology not found in Storm Cluster - topology id: " + topology.getId());
         }
@@ -297,7 +341,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
             args.add("--artifacts");
             args.add(mavenArtifacts);
             args.add("--artifactRepositories");
-            args.add(conf.get("mavenRepoUrl"));
+            args.add((String) conf.get("mavenRepoUrl"));
         }
         return args;
     }
@@ -335,6 +379,39 @@ public class StormTopologyActionsImpl implements TopologyActions {
         args.add("nimbus.port=" + String.valueOf(nimbusPort));
 
         return args;
+    }
+
+    private List<String> getSecuredClusterConf(String asUser) {
+        List<String> args = new ArrayList<>();
+        args.add("-c");
+        args.add("storm.thrift.transport=" + thriftTransport);
+
+        if (jaasFilePath.isPresent()) {
+            args.add("-c");
+            args.add("java.security.auth.login.config=" + jaasFilePath.get());
+        }
+
+        args.add("-c");
+        args.add("storm.principal.tolocal=" + principalToLocal);
+
+        if (StringUtils.isNotEmpty(asUser)) {
+            args.add("-c");
+            args.add("storm.doAsUser=" + asUser);
+        }
+
+        return args;
+    }
+
+    private String createJaasFile(String kerberizedNimbusServiceName) {
+        try {
+            Path jaasFilePath = Files.createTempFile("jaas-", UUID.randomUUID().toString());
+
+            String filePath = jaasFilePath.toAbsolutePath().toString();
+            File jaasFile = new StormJaasCreator().create(filePath, kerberizedNimbusServiceName);
+            return jaasFile.getAbsolutePath();
+        } catch (IOException e) {
+            throw new RuntimeException("Can't create JAAS file to connect to secure nimbus", e);
+        }
     }
 
     private Path addArtifactsToJar(Path artifactsLocation) throws Exception {

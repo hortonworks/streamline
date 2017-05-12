@@ -50,6 +50,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.security.auth.Subject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -80,7 +81,7 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
 
     public TopologyActionsService(StreamCatalogService catalogService, EnvironmentService environmentService,
                                   FileStorage fileStorage, MLModelRegistryClient modelRegistryClient,
-                                  Map<String, Object> configuration) {
+                                  Map<String, Object> configuration, Subject subject) {
         this.catalogService = catalogService;
         this.environmentService = environmentService;
         this.fileStorage = fileStorage;
@@ -102,13 +103,13 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
             topologyTestRunResultDir = topologyTestRunResultDir.substring(0, topologyTestRunResultDir.length() - 1);
         }
 
-        this.topologyActionsContainer = new TopologyActionsContainer(environmentService, conf);
+        this.topologyActionsContainer = new TopologyActionsContainer(environmentService, conf, subject);
         this.stateFactory = TopologyStateFactory.getInstance();
         this.topologyTestRunner = new TopologyTestRunner(catalogService, this, topologyTestRunResultDir);
     }
 
-    public Void deployTopology(Topology topology) throws Exception {
-        TopologyContext ctx = getTopologyContext(topology);
+    public Void deployTopology(Topology topology, String asUser) throws Exception {
+        TopologyContext ctx = getTopologyContext(topology, asUser);
         LOG.debug("Deploying topology {}", topology);
         while (ctx.getState() != TopologyStates.TOPOLOGY_STATE_DEPLOYED) {
             LOG.debug("Current state {}", ctx.getStateName());
@@ -126,26 +127,26 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
         return topologyTestRunner.runTest(topologyActions, topology, testRunInputJson);
     }
 
-    public void killTopology(Topology topology) throws Exception {
-        getTopologyContext(topology).kill();
+    public void killTopology(Topology topology, String asUser) throws Exception {
+        getTopologyContext(topology, asUser).kill();
     }
 
-    public void suspendTopology(Topology topology) throws Exception {
-        getTopologyContext(topology).suspend();
+    public void suspendTopology(Topology topology, String asUser) throws Exception {
+        getTopologyContext(topology, asUser).suspend();
     }
 
-    public void resumeTopology(Topology topology) throws Exception {
-        getTopologyContext(topology).resume();
+    public void resumeTopology(Topology topology, String asUser) throws Exception {
+        getTopologyContext(topology, asUser).resume();
     }
 
-    public TopologyActions.Status topologyStatus(Topology topology) throws Exception {
+    public TopologyActions.Status topologyStatus(Topology topology, String asUser) throws Exception {
         TopologyActions topologyActions = getTopologyActionsInstance(topology);
-        return topologyActions.status(CatalogToLayoutConverter.getTopologyLayout(topology));
+        return topologyActions.status(CatalogToLayoutConverter.getTopologyLayout(topology), asUser);
     }
 
-    public String getRuntimeTopologyId(Topology topology) throws IOException {
+    public String getRuntimeTopologyId(Topology topology, String asUser) throws IOException {
         TopologyActions topologyActions = getTopologyActionsInstance(topology);
-        return topologyActions.getRuntimeTopologyId(CatalogToLayoutConverter.getTopologyLayout(topology));
+        return topologyActions.getRuntimeTopologyId(CatalogToLayoutConverter.getTopologyLayout(topology), asUser);
     }
 
     @Override
@@ -298,12 +299,12 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
         return topologyDagBuilder;
     }
 
-    private TopologyContext getTopologyContext(Topology topology) {
+    private TopologyContext getTopologyContext(Topology topology, String asUser) {
         TopologyState state = catalogService
                 .getTopologyState(topology.getId())
                 .map(s -> stateFactory.getTopologyState(s.getName()))
                 .orElse(TOPOLOGY_STATE_INITIAL);
-        return new TopologyContext(topology, this, state);
+        return new TopologyContext(topology, this, state, asUser);
     }
 
     public StreamCatalogService getCatalogService() {

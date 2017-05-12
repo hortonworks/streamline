@@ -86,12 +86,13 @@ public class SearchCatalogResource {
 
     // used internally to enrich the storables in a seamless way
     private Function<Collection<Storable>, Collection<?>> enrichCommand(String namespace,
+                                                                        String asUser,
                                                                         Integer latencyTopN) {
         switch (namespace) {
             case Topology.NAMESPACE:
                 return (Collection<Storable> storables) -> storables
                         .parallelStream()
-                        .map(s -> CatalogResourceUtil.enrichTopology((Topology) s, latencyTopN,
+                        .map(s -> CatalogResourceUtil.enrichTopology((Topology) s, asUser, latencyTopN,
                                 environmentService, actionsService, metricsService, catalogService))
                         .collect(Collectors.toList());
             case Namespace.NAMESPACE:
@@ -131,7 +132,8 @@ public class SearchCatalogResource {
                     .collect(Collectors.toList()));
         }
         if (detail != null && detail) {
-            return WSUtils.respondEntities(enrichCommand(namespace, latencyTopN).apply(searchResult), OK);
+            String asUser = WSUtils.getUserFromSecurityContext(securityContext);
+            return WSUtils.respondEntities(enrichCommand(namespace, asUser, latencyTopN).apply(searchResult), OK);
         } else {
             return WSUtils.respondEntities(searchResult, OK);
         }
