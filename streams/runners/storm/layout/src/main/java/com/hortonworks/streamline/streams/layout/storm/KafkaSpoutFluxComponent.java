@@ -86,9 +86,6 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         List<Object> constructorArgs = new ArrayList<>();
         List bootstrapServersAndTopic = getConstructorArgsYaml (constructorArgNames);
         constructorArgs.add(bootstrapServersAndTopic.get(0));
-        // pass null for key and value deserializers. we will set them as a property using setProp on Builder
-        constructorArgs.add(null);
-        constructorArgs.add(null);
         constructorArgs.add(bootstrapServersAndTopic.get(1));
 
         List<Object> configMethods = new ArrayList<>();
