@@ -1,5 +1,7 @@
 {
   "name": "ROLE_TOPOLOGY_ADMIN",
+  "displayName": "Topology Admin",
   "description": "Topology administrator who can create and manage topologies",
+  "metadata": "{\"colorCode\":\"#529e4c\",\"colorLabel\":\"green\",\"icon\":\"sitemap\"}",
   "system": true
 }

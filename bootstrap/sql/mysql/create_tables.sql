@@ -385,6 +385,7 @@ CREATE TABLE IF NOT EXISTS acl_entry (
 CREATE TABLE IF NOT EXISTS role (
   id        BIGINT AUTO_INCREMENT NOT NULL,
   name      VARCHAR(255)          NOT NULL,
+  displayName VARCHAR(255)          NOT NULL,
   description TEXT NOT NULL,
   system BOOLEAN NOT NULL,
   metadata TEXT,

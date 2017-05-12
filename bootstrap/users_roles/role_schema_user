@@ -1,5 +1,7 @@
 {
   "name": "ROLE_SCHEMA_USER",
+  "displayName": "Schema User",
   "description": "Role that can use schema registry schemas",
+  "metadata": "{\"colorCode\":\"#4c979f\",\"colorLabel\":\"blue\",\"icon\":\"file-code-o\"}",
   "system": true
 }
