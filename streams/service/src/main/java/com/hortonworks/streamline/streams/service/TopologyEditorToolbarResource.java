@@ -132,7 +132,8 @@ public class TopologyEditorToolbarResource {
 
     private long getUserId(SecurityContext securityContext) {
         Principal principal = securityContext.getUserPrincipal();
-        String userName = principal != null ? principal.getName() : User.USER_ANONYMOUS;
+        String principalName = principal != null ? SecurityUtil.getUserName(principal.getName()) : null;
+        String userName = principalName != null ? principalName : User.USER_ANONYMOUS;
         User user = securityCatalogService.getUser(userName);
         if (user != null && user.getId() != null) {
             return user.getId();
