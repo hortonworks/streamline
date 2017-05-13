@@ -25,9 +25,13 @@ import org.apache.storm.kafka.spout.RecordTranslator;
 import org.apache.storm.shade.com.google.common.base.Preconditions;
 import org.apache.storm.tuple.Fields;
 
+import javax.security.auth.Subject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +45,7 @@ public class AvroKafkaSpoutTranslator implements RecordTranslator<Object, ByteBu
     private final String schemaRegistryUrl;
     private final Integer readerSchemaVersion;
     private transient volatile AvroStreamsSnapshotDeserializer avroStreamsSnapshotDeserializer;
+    private transient Subject subject;
 
     public AvroKafkaSpoutTranslator (String outputStream, String topic, String dataSourceId, String schemaRegistryUrl, Integer readerSchemaVersion) {
         this.outputStream = outputStream;
@@ -51,8 +56,17 @@ public class AvroKafkaSpoutTranslator implements RecordTranslator<Object, ByteBu
     }
     @Override
     public List<Object> apply (ConsumerRecord<Object, ByteBuffer> consumerRecord) {
-        Map<String, Object> keyValues = (Map<String, Object>) deserializer().deserialize(new ByteBufferInputStream(consumerRecord.value()),
-                readerSchemaVersion);
+        Map < String, Object > keyValues = null;
+        try {
+            keyValues = Subject.doAs(subject(), new PrivilegedExceptionAction<Map<String, Object>>() {
+                @Override
+                public Map<String, Object> run () {
+                    return (Map<String, Object>) deserializer().deserialize(new ByteBufferInputStream(consumerRecord.value()), readerSchemaVersion);
+                }
+            });
+        } catch (PrivilegedActionException e) {
+            throw new RuntimeException(e);
+        }
         StreamlineEvent streamlineEvent = StreamlineEventImpl.builder().putAll(keyValues).dataSourceId(dataSourceId).build();
         KafkaTuple kafkaTuple = new KafkaTuple(streamlineEvent);
         kafkaTuple.routedTo(outputStream);
@@ -79,6 +93,14 @@ public class AvroKafkaSpoutTranslator implements RecordTranslator<Object, ByteBu
             avroStreamsSnapshotDeserializer = deserializer;
         }
         return avroStreamsSnapshotDeserializer;
+    }
+
+    private Subject subject () {
+        //kafka consumer should have called doAs already with KafkaClient principal and hence that subject should be associated with access control's context
+        if (subject == null) {
+            subject = Subject.getSubject(AccessController.getContext());
+        }
+        return subject;
     }
 
     public static class ByteBufferInputStream extends InputStream {

@@ -200,8 +200,8 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
             if (keytab == null || keytab.isEmpty()) {
                 throw new IllegalArgumentException("Kafka client principal keytab must be provided for SASL GSSAPI Kerberos");
             }
-            saslConfigStrBuilder.append("com.sun.security.auth.module.Krb5LoginModule required \\ useKeyTab=true \\ storeKey=true \\ keyTab=\"");
-            saslConfigStrBuilder.append(keytab).append("\" \\ principal=\"").append(principal).append("\";");
+            saslConfigStrBuilder.append("com.sun.security.auth.module.Krb5LoginModule required useKeyTab=true storeKey=true keyTab=\"");
+            saslConfigStrBuilder.append(keytab).append("\"  principal=\"").append(principal).append("\";");
             conf.put(SASL_JAAS_CONFIG_KEY, saslConfigStrBuilder.toString());
         }
     }
