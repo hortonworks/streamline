@@ -197,4 +197,6 @@ public final class TopologyLayoutConstants {
 
     public static final String SUBJECT_OBJECT = "subjectObj";
 
+    public static final String REGISTRY_CLIENT_SECTION = "RegistryClient";
+
 }
