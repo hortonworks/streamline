@@ -20,14 +20,15 @@ import com.google.common.collect.Lists;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.HiveDatabases;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.Tables;
+
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
-import com.hortonworks.streamline.streams.cluster.service.metadata.common.Tables;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -39,6 +40,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import javax.security.auth.Subject;
+import javax.ws.rs.core.SecurityContext;
 
 import mockit.Expectations;
 import mockit.Mocked;
@@ -58,13 +62,18 @@ public class HiveMetadataServiceTest {
     private EnvironmentService environmentService;
     @Mocked
     private ServiceConfiguration serviceConfiguration;
+    @Mocked
+    private SecurityContext securityContext;
+    @Mocked
+    private Subject subject;
 
-    private void setUp() throws Exception {
+
+    private void setup() throws Exception {
         new Expectations() {{
             serviceConfiguration.getConfigurationMap(); result = getHiveConfigs();
         }};
 
-        hiveService = HiveMetadataService.newInstance(environmentService, 1L);
+        hiveService = HiveMetadataService.newInstance(environmentService, 1L, securityContext, subject);
 
         for (String database : HIVE_TEST_DATABASES) {
             hiveService.createDatabase(database, "desc", "/tmp/h", new HashMap<>());
@@ -97,7 +106,7 @@ public class HiveMetadataServiceTest {
      */
     @Test
     public void test_getDatabase_getTables() throws Exception {
-        setUp();
+        setup();
         try {
             test_getHiveDatabases();
             test_getHiveTablesForDatabase();
@@ -115,8 +124,8 @@ public class HiveMetadataServiceTest {
     }
 
     private void test_getHiveDatabases() throws Exception {
-        final HiveMetadataService.Databases hiveDatabases = hiveService.getHiveDatabases();
-        Assert.assertTrue(hiveDatabases.asList().containsAll(HIVE_TEST_DATABASES));
+        final HiveDatabases hiveDatabases = hiveService.getHiveDatabases();
+        Assert.assertTrue(hiveDatabases.list().containsAll(HIVE_TEST_DATABASES));
     }
 
     /**
