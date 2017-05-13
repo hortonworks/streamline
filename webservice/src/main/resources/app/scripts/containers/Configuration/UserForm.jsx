@@ -23,6 +23,7 @@ import UserRoleREST from '../../rest/UserRoleREST';
 import Utils from '../../utils/Utils';
 import Form from '../../libs/form';
 import * as Fields from '../../libs/form/Fields';
+import {rolePriorities} from '.../../utils/Constants';
 
 export default class UserForm extends Component {
   constructor(props) {
@@ -46,13 +47,40 @@ export default class UserForm extends Component {
     return validDataFlag;
   }
 
+  getUserMetadata(rolesArr) {
+    let metadata = {};
+    let {roleOptions} = this.props;
+    let priority = 3, roleName = '', role = {};
+    let hasCustom = false;
+    rolesArr.map((r)=>{
+      let obj = rolePriorities.find((o)=>{return o.name === r;});
+      let customRole = roleOptions.find((o)=>{return o.name === r && o.system === false;});
+      if(obj && !hasCustom) {
+        if(obj.priority <= priority) {
+          priority = obj.priority;
+          roleName = obj.name;
+        }
+      }
+      if(customRole) {
+        priority = 3;
+        roleName = customRole.name;
+        hasCustom = true;
+      }
+    });
+
+    role = roleOptions.find((o)=>{return o.name === roleName;});
+    metadata = role.metadata;
+    return metadata;
+  }
+
   handleSave = () => {
-    let {name, email, roles} = this.refs.UserForm.state.FormData;;
+    let {name, email, roles} = this.refs.UserForm.state.FormData;
     let data = {
       name,
       email,
       roles
     };
+    data.metadata = this.getUserMetadata(roles);
     if (this.props.id) {
       return UserRoleREST.putUser(this.props.id, {body: JSON.stringify(data)});
     } else {

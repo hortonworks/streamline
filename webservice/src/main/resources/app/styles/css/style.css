@@ -3053,6 +3053,34 @@ div#TestSourceForm > ul {
   margin-top: -10px;
 }
 
+.role-icon.hb.large {
+ left: -19px;
+}
+
+.role-icon.hb.small {
+  left: -12px;
+}
+
+.hb.large, .hb.large:before, .hb.large:after {
+  height: 22px;
+  width: 38px;
+  line-height: 24px;
+}
+
+.hb.large i {
+  font-size: 18px;
+}
+
+.hb.small, .hb.small:before, .hb.small:after {
+  height: 14px;
+  width: 24px;
+  line-height: 12px;
+}
+
+.hb.small i {
+  font-size: 10px;
+}
+
 .role-th {
   margin: 0;
   color: #919191;
@@ -3156,7 +3184,7 @@ div#TestSourceForm > ul {
 }
 
 .role-name, .user-name{
-    width: 100px;
+    width: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
     color: #888;

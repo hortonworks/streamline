@@ -91,12 +91,14 @@ export default class RolesListingContainer extends Component {
           userPromiseArr.push(UserRoleREST.getRoleUsers(role.id));
           aclPromiseArr.push(UserRoleREST.getACL(role.id, 'ROLE'));
 
-          roleOptions.push({
-            name: role.name,
-            label: role.name,
-            value: role.name,
-            id: role.id
-          });
+          if(role.system) {
+            roleOptions.push({
+              name: role.name,
+              label: role.name,
+              value: role.name,
+              id: role.id
+            });
+          }
         });
 
         Promise.all(userPromiseArr) /* Promise array to fetch all the users and map to the parent role using index */
@@ -326,6 +328,7 @@ export default class RolesListingContainer extends Component {
                 var metadata = entity.metadata ? JSON.parse(entity.metadata) : {};
                 var btnClass = metadata.colorLabel || 'success';
                 var iconClass = metadata.icon || 'key';
+                var sizeClass = metadata.size || '';
                 var accessControlList = entity.accessControlList || [];
                 let topologyACL = accessControlList.find((a)=>{return a.objectNamespace === 'topology';});
                 let clusterACL = accessControlList.find((a)=>{return a.objectNamespace === 'cluster';});
@@ -342,21 +345,15 @@ export default class RolesListingContainer extends Component {
                 }
                 var header = (
                   <div key={i}>
-                  <span className={`hb ${btnClass} role-icon`}><i className={`fa fa-${iconClass}`}></i></span>
+                  <span className={`hb ${btnClass} ${sizeClass.toLowerCase()} role-icon`}><i className={`fa fa-${iconClass}`}></i></span>
                   <div className="panel-sections first">
-                      <h4 ref="roleName" className="role-name" title={entity.name}>{entity.displayName}</h4>
+                      <h4 ref="roleName" className="role-name" title={entity.displayName}>{entity.displayName}</h4>
                   </div>
                   <div className="panel-sections second">
                     <div className="status-list">
-                      <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip">{'Applications: '+ (topologyPermissionClass ? topologyPermissionClass.toUpperCase() : 'NONE')}</Tooltip>}>
-                        <i className={"fa fa-stop " + topologyPermissionClass + " m-r-xs"}></i>
-                      </OverlayTrigger>
-                      <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip">{'Services: '+ (clusterPermissionClass ? clusterPermissionClass.toUpperCase() : 'NONE')}</Tooltip>}>
-                        <i className={"fa fa-stop " + clusterPermissionClass +" m-r-xs"}></i>
-                      </OverlayTrigger>
-                      <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip">{'Environments: '+ (namespacePermissionClass ? namespacePermissionClass.toUpperCase() : 'NONE')}</Tooltip>}>
-                        <i className={"fa fa-stop " + namespacePermissionClass + " m-r-xs"}></i>
-                      </OverlayTrigger>
+                      <i className={"fa fa-stop " + topologyPermissionClass + " m-r-xs"} title={'Applications: '+ (topologyPermissionClass ? topologyPermissionClass.toUpperCase() : 'NONE')}></i>
+                      <i className={"fa fa-stop " + clusterPermissionClass +" m-r-xs"} title={'Services: '+ (clusterPermissionClass ? clusterPermissionClass.toUpperCase() : 'NONE')}></i>
+                      <i className={"fa fa-stop " + namespacePermissionClass + " m-r-xs"} title={'Environments: '+ (namespacePermissionClass ? namespacePermissionClass.toUpperCase() : 'NONE')}></i>
                     </div>
                   </div>
                   <div className="panel-sections pull-right">
