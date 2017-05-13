@@ -22,7 +22,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
-import com.hortonworks.streamline.streams.cluster.service.metadata.common.Tables;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.HiveDatabases;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.Tables;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -123,7 +124,7 @@ public class HiveMetadataServiceTest {
     }
 
     private void test_getHiveDatabases() throws Exception {
-        final HiveMetadataService.Databases hiveDatabases = hiveService.getHiveDatabases();
+        final HiveDatabases hiveDatabases = hiveService.getHiveDatabases();
         Assert.assertTrue(hiveDatabases.list().containsAll(HIVE_TEST_DATABASES));
     }
 

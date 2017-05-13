@@ -21,7 +21,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
-import com.hortonworks.streamline.streams.cluster.service.metadata.common.Tables;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.HBaseNamespaces;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.Tables;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -113,7 +114,7 @@ public class HBaseMetadataServiceTest {
     }
 
     private void test_getHBaseNamespaces() throws Exception {
-        final HBaseMetadataService.Namespaces hBaseNamespaces = hbaseService.getHBaseNamespaces();
+        final HBaseNamespaces hBaseNamespaces = hbaseService.getHBaseNamespaces();
         Assert.assertTrue(hBaseNamespaces.getNamespaces().containsAll(HBASE_TEST_NAMESPACES));
     }
 

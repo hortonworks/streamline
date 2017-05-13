@@ -25,7 +25,8 @@ import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundExcep
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.OverrideHadoopConfiguration;
-import com.hortonworks.streamline.streams.cluster.service.metadata.common.Tables;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.HBaseNamespaces;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.Tables;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 
 import org.apache.hadoop.conf.Configuration;
@@ -44,9 +45,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.PrivilegedActionException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import javax.security.auth.Subject;
@@ -137,7 +136,7 @@ public class HBaseMetadataService implements AutoCloseable {
     public Tables getHBaseTables() throws Exception {
         final TableName[] tableNames = executeSecure(() -> hBaseAdmin.listTableNames());
         LOG.debug("HBase tables {}", Arrays.toString(tableNames));
-        return Tables.newInstance(tableNames);
+        return Tables.newInstance(tableNames, securityContext, true);
     }
 
     /**
@@ -147,14 +146,15 @@ public class HBaseMetadataService implements AutoCloseable {
     public Tables getHBaseTables(final String namespace) throws IOException, PrivilegedActionException, InterruptedException {
         final TableName[] tableNames = executeSecure(() -> hBaseAdmin.listTableNamesByNamespace(namespace));
         LOG.debug("HBase namespace [{}] has tables {}", namespace, Arrays.toString(tableNames));
-        return Tables.newInstance(tableNames);
+        return Tables.newInstance(tableNames, securityContext, true);
     }
 
     /**
      * @return All namespaces
      */
-    public Namespaces getHBaseNamespaces() throws IOException, PrivilegedActionException, InterruptedException {
-        final Namespaces namespaces = Namespaces.newInstance(executeSecure(() -> hBaseAdmin.listNamespaceDescriptors()));
+    public HBaseNamespaces getHBaseNamespaces() throws IOException, PrivilegedActionException, InterruptedException {
+        final HBaseNamespaces namespaces = HBaseNamespaces.newInstance(
+                executeSecure(() -> hBaseAdmin.listNamespaceDescriptors()), securityContext, true);
         LOG.debug("HBase namespaces {}", namespaces);
         return namespaces;
     }
@@ -213,31 +213,5 @@ public class HBaseMetadataService implements AutoCloseable {
                 ", subject=" + subject +
                 ", user=" + user +
                 '}';
-    }
-
-    /**
-     * Wrapper used to show proper JSON formatting
-     */
-    public static class Namespaces {
-        private List<String> namespaces;
-
-        public Namespaces(List<String> namespaces) {
-            this.namespaces = namespaces;
-        }
-
-        public static Namespaces newInstance(NamespaceDescriptor[] namespaceDescriptors) {
-            List<String> namespaces = Collections.emptyList();
-            if (namespaceDescriptors != null) {
-                namespaces = new ArrayList<>(namespaceDescriptors.length);
-                for (NamespaceDescriptor namespace : namespaceDescriptors) {
-                    namespaces.add(namespace.getName());
-                }
-            }
-            return new Namespaces(namespaces);
-        }
-
-        public List<String> getNamespaces() {
-            return namespaces;
-        }
     }
 }

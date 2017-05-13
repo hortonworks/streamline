@@ -161,6 +161,8 @@ public final class SecurityUtil {
      * @return true If the request has a non-null {@link SecurityContext} with Kerberos authentication scheme. False otherwise
      */
     public static boolean isKerberosAuthenticated(SecurityContext securityContext) {
-        return securityContext != null && securityContext.getAuthenticationScheme().equals(StreamlineSecurityContext.KERBEROS_AUTH);
+        return securityContext != null
+                && securityContext.getAuthenticationScheme() != null
+                && securityContext.getAuthenticationScheme().equals(StreamlineSecurityContext.KERBEROS_AUTH);
     }
 }

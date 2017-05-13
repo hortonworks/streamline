@@ -23,6 +23,7 @@ import com.hortonworks.streamline.streams.cluster.bundle.AbstractBundleHintProvi
 import com.hortonworks.streamline.streams.cluster.service.metadata.KafkaMetadataService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.ZookeeperMetadataService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaTopics;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,7 +47,7 @@ public class KafkaBundleHintProvider extends AbstractBundleHintProvider {
         Map<String, Object> hintClusterMap = new HashMap<>();
         try (KafkaMetadataService kafkaMetadataService = KafkaMetadataService.newInstance(environmentService, cluster.getId())) {
             KafkaMetadataService.KafkaZkConnection zkConnection = kafkaMetadataService.getKafkaZkConnection();
-            KafkaMetadataService.Topics topics = kafkaMetadataService.getTopicsFromZk();
+            KafkaTopics topics = kafkaMetadataService.getTopicsFromZk();
 
             String zkUrl = zkConnection.createZkConnString();
             String brokerPath = DEFAULT_BROKER_ZK_PATH;

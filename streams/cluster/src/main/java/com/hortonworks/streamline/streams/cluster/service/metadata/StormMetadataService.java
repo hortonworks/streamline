@@ -15,8 +15,6 @@
  **/
 package com.hortonworks.streamline.streams.cluster.service.metadata;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hortonworks.streamline.common.JsonClientUtil;
 import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.Service;
@@ -27,7 +25,9 @@ import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentProp
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
-import com.hortonworks.streamline.streams.cluster.service.metadata.common.Tables;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.Authorizer;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.Security;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.StormTopologies;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 
 import org.glassfish.jersey.client.ClientConfig;
@@ -172,7 +172,7 @@ public class StormMetadataService {
     /**
      * @return List of storm topologies as returned by Storm's REST API
      */
-    public Topologies getTopologies() {
+    public StormTopologies getTopologies() {
         final Map<String, ?> jsonAsMap = JsonClientUtil.getEntity(httpClient.target(tplgySumUrl), Map.class);
         List<String> topologies = Collections.emptyList();
         if (jsonAsMap != null) {
@@ -184,7 +184,7 @@ public class StormMetadataService {
                 }
             }
         }
-        return new Topologies(topologies, securityContext);
+        return new StormTopologies(topologies, new Security(securityContext, new Authorizer(false)));
     }
 
     /**
@@ -199,38 +199,5 @@ public class StormMetadataService {
      */
     public String getTopologySummaryUrl() {
         return tplgySumUrl;
-    }
-
-    /** Wrapper used to show proper JSON formatting
-     * {@code
-     *  {
-     *   "topologies" : [ "A", "B", "C" ]
-     *  }
-     * }
-     * */
-    public static class Topologies {
-        private List<String> topologies;
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        private String msg;
-
-        public Topologies(List<String> topologies) {
-            this(topologies, null);
-        }
-
-        public Topologies(List<String> topologies, SecurityContext securityContext) {
-            this.topologies = topologies;
-            if (SecurityUtil.isKerberosAuthenticated(securityContext)) {
-                msg = Tables.AUTHRZ_MSG;
-            }
-        }
-
-        @JsonGetter("topologies")
-        public List<String> list() {
-            return topologies;
-        }
-
-        public String getMsg() {
-            return msg;
-        }
     }
 }

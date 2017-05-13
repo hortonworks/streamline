@@ -13,10 +13,9 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
  **/
-package com.hortonworks.streamline.streams.cluster.service.metadata.common;
+package com.hortonworks.streamline.streams.cluster.service.metadata.json;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import org.apache.hadoop.hbase.TableName;
 
@@ -29,30 +28,26 @@ import javax.ws.rs.core.SecurityContext;
 /**
  * Wrapper used to show proper JSON formatting
  */
+@JsonPropertyOrder({"tables", "security" })
 public class Tables {
-    public static final String AUTHRZ_MSG =
-            "Authorization not enforced. Every authenticated user has access to all metadata info";
-
     private List<String> tables;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String msg;
+    private Security security;
+
 
     public Tables(List<String> tables) {
         this(tables, null);
     }
 
-    public Tables(List<String> tables, SecurityContext securityContext) {
+    public Tables(List<String> tables, Security security) {
         this.tables = tables;
-        if (SecurityUtil.isKerberosAuthenticated(securityContext)) {
-            msg = Tables.AUTHRZ_MSG;
-        }
+        this.security = security;
     }
 
-    public static Tables newInstance(TableName[] tableNames) {
-        return newInstance(tableNames, null);
+    public static Tables newInstance(List<String> tables, SecurityContext securityContext, boolean isAuthorizerInvoked) {
+        return new Tables(tables, new Security(securityContext, new Authorizer(isAuthorizerInvoked)));
     }
 
-    public static Tables newInstance(TableName[] tableNames, SecurityContext securityContext) {
+    public static Tables newInstance(TableName[] tableNames, SecurityContext securityContext, boolean isAuthorizerInvoked) {
         List<String> fqTableNames = Collections.emptyList();
         if (tableNames != null) {
             fqTableNames = new ArrayList<>(tableNames.length);
@@ -60,19 +55,15 @@ public class Tables {
                 fqTableNames.add(tableName.getNameWithNamespaceInclAsString());
             }
         }
-        return new Tables(fqTableNames, securityContext);
-    }
-
-    public static Tables newInstance(List<String> tables, SecurityContext securityContext) {
-        return tables == null ? new Tables(Collections.<String>emptyList(), securityContext) : new Tables(tables, securityContext);
+        return newInstance(fqTableNames, securityContext, isAuthorizerInvoked);
     }
 
     public List<String> getTables() {
         return tables;
     }
 
-    public String getMsg() {
-        return msg;
+    public Security getSecurity() {
+        return security;
     }
 
     @Override

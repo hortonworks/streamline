@@ -40,12 +40,13 @@ import com.hortonworks.streamline.streams.service.metadata.HiveMetadataResource;
 import com.hortonworks.streamline.streams.service.metadata.KafkaMetadataResource;
 import com.hortonworks.streamline.streams.service.metadata.StormMetadataResource;
 
-import javax.security.auth.Subject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import javax.security.auth.Subject;
 
 /**
  * Implementation for the streams module for registration with web service module
@@ -65,7 +66,8 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
     public List<Object> getResources() {
         List<Object> result = new ArrayList<>();
         String catalogRootUrl = (String) config.get(Constants.CONFIG_CATALOG_ROOT_URL);
-        Subject subject = (Subject) config.get(Constants.CONFIG_SUBJECT);
+        final Subject subject = (Subject) config.get(Constants.CONFIG_SUBJECT);  // Authorized subject
+
         MLModelRegistryClient modelRegistryClient = new MLModelRegistryClient(catalogRootUrl);
         final StreamCatalogService streamcatalogService = new StreamCatalogService(storageManager, fileStorage, modelRegistryClient);
         final EnvironmentService environmentService = new EnvironmentService(storageManager);
@@ -94,7 +96,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
                 topologyMetricsService, securityCatalogService));
         result.add(new UDFCatalogResource(authorizer, streamcatalogService, fileStorage));
         result.addAll(getNotificationsRelatedResources(authorizer, streamcatalogService));
-        
+
         final SchemaRegistryClient schemaRegistryClient = createSchemaRegistryClient();
         result.add(new SchemaResource(authorizer, schemaRegistryClient, subject));
         result.addAll(getServiceMetadataResources(authorizer, environmentService, subject));

@@ -24,11 +24,13 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.security.Principal;
 
 import static com.hortonworks.streamline.streams.security.authentication.StreamlineSecurityContext.KERBEROS_AUTH;
 
+@Provider
 public class StreamlineKerberosRequestFilter implements ContainerRequestFilter {
     private static final Logger LOG = LoggerFactory.getLogger(StreamlineKerberosRequestFilter.class);
 
@@ -49,7 +51,7 @@ public class StreamlineKerberosRequestFilter implements ContainerRequestFilter {
         }
 
         SecurityContext securityContext = new StreamlineSecurityContext(principal, scheme, KERBEROS_AUTH);
-        LOG.debug("SecuirtyContext {}", securityContext);
+        LOG.debug("SecurityContext {}", securityContext);
         requestContext.setSecurityContext(securityContext);
     }
 }

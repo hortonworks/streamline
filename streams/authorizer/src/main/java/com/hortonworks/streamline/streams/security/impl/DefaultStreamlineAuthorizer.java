@@ -60,7 +60,7 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
                 .filter(name -> {
                     User user = catalogService.getUser(name);
                     if (user != null) {
-                        LOG.info("User entry for '{}' already exists", name);
+                        LOG.info("Entry for user '{}' already exists", name);
                         return false;
                     } else {
                         return true;

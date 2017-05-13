@@ -41,11 +41,12 @@ import mockit.Injectable;
 import mockit.Tested;
 import mockit.integration.junit4.JMockit;
 
+import static com.hortonworks.streamline.streams.security.authentication.StreamlineSecurityContext.AUTHENTICATION_SCHEME_NOT_KERBEROS;
+
 @RunWith(JMockit.class)
 public class StormMetadataServiceTest {
     private static final String STORM_TOPOLOGIES_SUMMARY_JSON = "metadata/topology-summary.json";
     private static final String STORM_UI_URL_EXPECTED =  "http://localhost:8080/api/v1/topology/summary";
-    private static final String AUTHENTICATION_SCHEME_NOT_KERBEROS = "NOT_KERBEROS";
 
     @Tested
     StormMetadataService stormService;
