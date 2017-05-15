@@ -22,47 +22,76 @@ package com.hortonworks.streamline.streams.runtime.storm.bolt.query;
 import org.apache.storm.tuple.Tuple;
 
 abstract class JoinComparator {
-    private final String fieldStr1; // from 1st stream
-    private final String fieldStr2; // from 2nd stream
+    private final String fieldStr1; // 1st arg
+    private final String fieldStr2; // 2nd arg
 
-    FieldSelector field1;
-    FieldSelector field2;
+    FieldSelector fromField;
+    FieldSelector joinField;
 
     public JoinComparator(String fieldSelector1, String fieldSelector2) {
         this.fieldStr1 = fieldSelector1;
         this.fieldStr2 = fieldSelector2;
     }
 
-    // Unfortunately we need to do some additional initialization here after construction
-    // as these two args are not available at construction time
+    // Unfortunately we need to do some additional initialization using init() after construction
+    // as these args are not available at construction time
+    // defaultStream is used when a field selector does not have an explicit stream name
+    // defaultStream is same as the fromStream for two stream joins
     public void init(RealtimeJoinBolt.StreamKind streamKind, String defaultStream) {
-        this.field1 = new FieldSelector(fieldStr1, streamKind);
-        this.field2 = new FieldSelector(fieldStr2, streamKind);
-        if (field1.streamName==null)
-            field1.streamName = defaultStream;
-        if (field2.streamName==null)
-            field2.streamName = defaultStream;
-        if (field1.streamName.equalsIgnoreCase(field2.streamName))
+        FieldSelector f1 = new FieldSelector(fieldStr1, streamKind);
+        FieldSelector f2 = new FieldSelector(fieldStr2, streamKind);
+        // fill in missing stream name (if any) with default stream name
+        if (f1.streamName==null) {
+            if (f2.streamName==null) {
+                throw new IllegalArgumentException("At least one field selector must explicitly specify stream name prefix in comparator: "
+                        + fieldStr1 + "," + fieldStr2);
+            }
+            f1.streamName = defaultStream;
+        }  else if (f2.streamName==null) {
+            f2.streamName = defaultStream;
+        }
+
+        if (f1.streamName.equalsIgnoreCase(defaultStream)) {
+            fromField = f2;
+            joinField = f1;
+        } else if (f2.streamName.equalsIgnoreCase(defaultStream)) {
+            fromField = f1;
+            joinField = f2;
+        } else {
+            throw new IllegalArgumentException("Verify the stream names used for the field selectors in the comparator: "
+                    + fieldStr1 + "," + fieldStr2);
+        }
+
+        if (fromField.streamName.equalsIgnoreCase(joinField.streamName))
             throw new IllegalArgumentException("Both field selectors in cannot refer to same stream in a comparator: "
                     + fieldStr1 + "," + fieldStr2);
     }
 
-    public FieldSelector getField1() {
-        return field1;
+    public FieldSelector getFromField() {
+        return fromField;
     }
 
-    public FieldSelector getField2() {
-        return field2;
+    public FieldSelector getJoinField() {
+        return joinField;
     }
 
-    // TODO: see how to optimize this lookup as it falls in critical path
-    public FieldSelector getFieldForStream(String stream) {
-        if (field1.streamName.equalsIgnoreCase(stream))
-            return field1;
-        else if (field2.streamName.equalsIgnoreCase(stream))
-            return field2;
-        return null;
+//     TODO: see how to optimize this lookup as it falls in critical path
+//    public FieldSelector getFieldForStream(String stream) {
+//        if (fromField.streamName.equalsIgnoreCase(stream))
+//            return fromField;
+//        else if (joinField.streamName.equalsIgnoreCase(stream))
+//            return joinField;
+//        return null;
+//    }
+
+    public FieldSelector getFieldForFromStream() {
+        return fromField;
     }
+
+    public FieldSelector getFieldForJoinStream() {
+        return joinField;
+    }
+
 
     public abstract boolean compare(Tuple t1, Tuple t2) throws InvalidTuple;
 

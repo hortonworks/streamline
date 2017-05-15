@@ -28,12 +28,12 @@ public class Cmp {
 
         @Override
         public boolean compare(Tuple t1, Tuple t2) throws InvalidTuple {
-            Object f1 = field1.findField(t1);
+            Object f1 = fromField.findField(t1);
             if (f1==null)
-                throw new InvalidTuple("Field '" + field1.canonicalFieldName() + "' not found in tuple", t1 );
-            Object f2 = field2.findField(t2);
+                throw new InvalidTuple("Field '" + fromField.canonicalFieldName() + "' not found in tuple", t1 );
+            Object f2 = joinField.findField(t2);
             if (f2==null)
-                throw new InvalidTuple("Field '" + field2.canonicalFieldName() + "' not found in tuple", t2 );
+                throw new InvalidTuple("Field '" + joinField.canonicalFieldName() + "' not found in tuple", t2 );
             return f1.equals(f2);
         }
 
@@ -51,12 +51,12 @@ public class Cmp {
 
         @Override
         public boolean compare(Tuple t1, Tuple t2) throws InvalidTuple {
-            Object f1 = field1.findField(t1);
+            Object f1 = fromField.findField(t1);
             if (f1==null)
-                throw new InvalidTuple("Field '" + field1.canonicalFieldName() + "' not found in tuple", t1 );
-            Object f2 = field2.findField(t2);
+                throw new InvalidTuple("Field '" + fromField.canonicalFieldName() + "' not found in tuple", t1 );
+            Object f2 = joinField.findField(t2);
             if (f2==null)
-                throw new InvalidTuple("Field '" + field2.canonicalFieldName() + "' not found in tuple", t2 );
+                throw new InvalidTuple("Field '" + joinField.canonicalFieldName() + "' not found in tuple", t2 );
             return f1.toString().equalsIgnoreCase(f2.toString());
         }
     }

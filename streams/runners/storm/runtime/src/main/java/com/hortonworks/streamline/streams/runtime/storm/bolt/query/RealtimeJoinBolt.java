@@ -257,8 +257,8 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
     private void validateAndSetupStreamNames(JoinComparator[] comparators, String currentStream) {
         for (JoinComparator cmp : comparators) {
             cmp.init(streamKind, currentStream);
-            FieldSelector f1 = cmp.getField1();
-            FieldSelector f2 = cmp.getField2();
+            FieldSelector f1 = cmp.getFromField();
+            FieldSelector f2 = cmp.getJoinField();
 
             String s1 = f1.streamName;
             String s2 = f2.streamName;
@@ -338,7 +338,7 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
 
 
     private void processFromStreamTuple(Tuple tuple, long currTime) throws InvalidTuple {
-        String key = getKey(tuple, fromStream);
+        String key = getFromStreamKey(tuple);
 
         // 1- Remove older duplicate if 'unique' flag was set
         TupleInfo duplicate = null;
@@ -374,7 +374,7 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
     }
 
     private void processJoinStreamTuple(Tuple tuple, long currTime) throws InvalidTuple {
-        String key = getKey(tuple, joinStream);
+        String key = getJoinStreamKey(tuple);
 
         // 1- Remove older duplicate if 'unique' flag was set
         TupleInfo duplicate = null;
@@ -412,7 +412,7 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
     private void processJoinStreamTuple2(Tuple tuple, long currTime) throws InvalidTuple {
         // 1- join against buffered fromStream and emit results if any
         boolean matchFound = false;
-        String key = getKey(tuple, joinStream);
+        String key = getJoinStreamKey(tuple);
         List<TupleInfo> matches = joinInfos[0].findMatches(key);  // match with fromStream
         if (matches!=null && !matches.isEmpty()) {  // match found
             for (TupleInfo lookupTuple : matches) {
@@ -430,16 +430,35 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
 
 
     /**
-     *  Get the composite key for the tuple based on the stream to which it belongs
+     *  Get the composite key for the tuple from the From Stream
      * @param tuple
-     * @param stream  The stream to which the tuple belongs
      * @return
      * @throws InvalidTuple
      */
-    private String getKey(Tuple tuple, String stream) throws InvalidTuple {
+    private String getFromStreamKey(Tuple tuple) throws InvalidTuple {
         StringBuilder key = new StringBuilder();
         for (JoinComparator cmp : joinInfos[1].comparators) { // info always comes from the join stream as from stream doesnt have
-            FieldSelector field = cmp.getFieldForStream(stream);
+            FieldSelector field = cmp.getFieldForFromStream();
+            Object partialKey = field.findField(tuple);
+            if (partialKey==null)
+                throw new InvalidTuple("'" + field + "' field is missing in the tuple", tuple);
+            key.append( partialKey.toString() );
+            key.append(".");
+        }
+        return key.toString();
+    }
+
+
+    /**
+     *  Get the composite key for the tuple from the Joined Stream
+     * @param tuple
+     * @return
+     * @throws InvalidTuple
+     */
+    private String getJoinStreamKey(Tuple tuple) throws InvalidTuple {
+        StringBuilder key = new StringBuilder();
+        for (JoinComparator cmp : joinInfos[1].comparators) { // info always comes from the join stream as from stream doesnt have
+            FieldSelector field = cmp.getFieldForJoinStream();
             Object partialKey = field.findField(tuple);
             if (partialKey==null)
                 throw new InvalidTuple("'" + field + "' field is missing in the tuple", tuple);
