@@ -16,8 +16,17 @@
 package com.hortonworks.streamline.streams.actions.storm.topology;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.exception.service.exception.request.TopologyAlreadyExistsOnCluster;
 import com.hortonworks.streamline.streams.actions.TopologyActionContext;
+import com.hortonworks.streamline.streams.catalog.Service;
+import com.hortonworks.streamline.streams.cluster.Constants;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+import com.hortonworks.streamline.streams.layout.component.InputComponent;
+import com.hortonworks.streamline.streams.layout.component.OutputComponent;
+import com.hortonworks.streamline.streams.layout.component.impl.HBaseSink;
+import com.hortonworks.streamline.streams.layout.component.impl.HdfsSink;
+import com.hortonworks.streamline.streams.layout.component.impl.HdfsSource;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
@@ -56,6 +65,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,6 +106,8 @@ public class StormTopologyActionsImpl implements TopologyActions {
     private Optional<String> jaasFilePath;
     private String principalToLocal;
 
+    private ServiceConfigurationReader serviceConfigurationReader;
+
     public StormTopologyActionsImpl() {
     }
 
@@ -127,21 +140,22 @@ public class StormTopologyActionsImpl implements TopologyActions {
                 javaJarCommand = "jar";
             }
 
-            String stormApiRootUrl = null;
-            Subject subject = null;
-            if (conf != null) {
-                stormApiRootUrl = (String) conf.get(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY);
-                subject = (Subject) conf.get(TopologyLayoutConstants.SUBJECT_OBJECT);
-            }
+            String stormApiRootUrl = (String) conf.get(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY);
+            Subject subject = (Subject) conf.get(TopologyLayoutConstants.SUBJECT_OBJECT);
             Client restClient = ClientBuilder.newClient(new ClientConfig());
+
             this.client = new StormRestAPIClient(restClient, stormApiRootUrl, subject);
             nimbusSeeds = (String) conf.get(NIMBUS_SEEDS);
             nimbusPort = Integer.valueOf((String) conf.get(NIMBUS_PORT));
+
+            setupSecuredStormCluster(conf);
+
+            EnvironmentService environmentService = (EnvironmentService) conf.get(TopologyLayoutConstants.ENVIRONMENT_SERVICE_OBJECT);
+            Long namespaceId = (Long) conf.get(TopologyLayoutConstants.NAMESPACE_ID);
+            this.serviceConfigurationReader = new ServiceConfigurationReader(environmentService, namespaceId);
         }
         File f = new File (stormArtifactsLocation);
         f.mkdirs();
-
-        setupSecuredStormCluster(conf);
     }
 
     private void setupSecuredStormCluster(Map<String, Object> conf) {
@@ -467,12 +481,15 @@ public class StormTopologyActionsImpl implements TopologyActions {
             yamlMap.put(StormTopologyLayoutConstants.YAML_KEY_NAME, generateStormTopologyName(topology));
             TopologyDag topologyDag = topology.getTopologyDag();
             LOG.debug("Initial Topology config {}", topology.getConfig());
-            StormTopologyFluxGenerator fluxGenerator = new StormTopologyFluxGenerator(topology, conf, getExtraJarsLocation(topology));
+            StormTopologyFluxGenerator fluxGenerator = new StormTopologyFluxGenerator(topology, conf,
+                    getExtraJarsLocation(topology));
             topologyDag.traverse(fluxGenerator);
             for (Map.Entry<String, Map<String, Object>> entry: fluxGenerator.getYamlKeysAndComponents()) {
                 addComponentToCollection(yamlMap, entry.getValue(), entry.getKey());
             }
             Config topologyConfig = fluxGenerator.getTopologyConfig();
+            putAutoTokenDelegationConfig(topologyConfig, topologyDag);
+
             LOG.debug("Final Topology config {}", topologyConfig);
             addTopologyConfig(yamlMap, topologyConfig.getProperties());
             DumperOptions options = new DumperOptions();
@@ -486,6 +503,101 @@ public class StormTopologyActionsImpl implements TopologyActions {
         } finally {
             if (fileWriter != null) {
                 fileWriter.close();
+            }
+        }
+    }
+
+    private void putAutoTokenDelegationConfig(Config topologyConfig, TopologyDag topologyDag) {
+        Optional<?> securityConfigsOptional = topologyConfig.getAnyOptional("clustersSecurityConfig");
+        Map<String, Map<String, String>> clusterToConfiguration = new HashMap<>();
+        if (securityConfigsOptional.isPresent()) {
+            List<?> securityConfigurations = (List<?>) securityConfigsOptional.get();
+            securityConfigurations.forEach(securityConfig -> {
+                Map<String, Object> sc = (Map<String, Object>) securityConfig;
+                String clusterName = (String) sc.get("clusterName");
+
+                Map<String, String> configurationForCluster = new HashMap<>();
+                configurationForCluster.put("principal", (String) sc.get("principal"));
+                configurationForCluster.put("keytabPath", (String) sc.get("keytabPath"));
+                clusterToConfiguration.put(clusterName, configurationForCluster);
+            });
+        }
+
+        if (clusterToConfiguration.isEmpty()) {
+            // it will function only when user input keytab path and principal
+            return;
+        }
+
+        putServiceSpecificCredentialConfig(topologyConfig, topologyDag, clusterToConfiguration,
+                Collections.singletonList(HdfsSource.class),
+                Collections.singletonList(HdfsSink.class),
+                Constants.HDFS.SERVICE_NAME, "hdfs_", "hdfs.keytab.file", "hdfs.kerberos.principal",
+                "hdfsCredentialsConfigKeys", "org.apache.storm.hdfs.common.security.AutoHDFS");
+
+        putServiceSpecificCredentialConfig(topologyConfig, topologyDag, clusterToConfiguration,
+                Collections.emptyList(),
+                Collections.singletonList(HBaseSink.class),
+                Constants.HBase.SERVICE_NAME, "hbase_", "hbase.keytab.file", "hbase.kerberos.principal",
+                "hbaseCredentialsConfigKeys", "org.apache.storm.hbase.security.AutoHBase");
+    }
+
+    private void putServiceSpecificCredentialConfig(Config topologyConfig, TopologyDag topologyDag,
+                                                    Map<String, Map<String, String>> clusterToConfiguration,
+                                                    List<Class<?>> outputComponentClasses,
+                                                    List<Class<?>> inputComponentClasses,
+                                                    String serviceName, String clusterKeyPrefix,
+                                                    String keytabPathKeyName, String principalKeyName,
+                                                    String credentialConfigKeyName,
+                                                    String topologyAutoCredentialClassName) {
+
+        boolean componentExists = false;
+        for (OutputComponent outputComponent : topologyDag.getOutputComponents()) {
+            for (Class<?> clazz : outputComponentClasses) {
+                if (outputComponent.getClass().isAssignableFrom(clazz)) {
+                    componentExists = true;
+                    break;
+                }
+            }
+        }
+
+        if (!componentExists) {
+            for (InputComponent inputComponent : topologyDag.getInputComponents()) {
+                for (Class<?> clazz : inputComponentClasses) {
+                    if (inputComponent.getClass().isAssignableFrom(clazz)) {
+                        componentExists = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (componentExists) {
+            List<String> clusterKeys = new ArrayList<>();
+
+            clusterToConfiguration.keySet()
+                    .forEach(clusterName -> {
+                        // FIXME: it shouldn't read service config if the service isn't belong to the namespace
+                        Map<String, String> conf = serviceConfigurationReader.read(clusterName, serviceName);
+                        // add only when such (cluster, service) pair is available for the namespace
+                        if (!conf.isEmpty()) {
+                            Map<String, String> confForToken = clusterToConfiguration.get(clusterName);
+                            conf.put(principalKeyName, confForToken.get("principal"));
+                            conf.put(keytabPathKeyName, confForToken.get("keytabPath"));
+
+                            String clusterKey = clusterKeyPrefix + clusterName;
+                            topologyConfig.put(clusterKey, conf);
+                            clusterKeys.add(clusterKey);
+                        }
+                    });
+
+            topologyConfig.put(credentialConfigKeyName, clusterKeys);
+
+            Optional<List<String>> autoCredentialsOptional = topologyConfig.getAnyOptional("topology.auto-credentials");
+            if (autoCredentialsOptional.isPresent()) {
+                List<String> autoCredentials = autoCredentialsOptional.get();
+                autoCredentials.add(topologyAutoCredentialClassName);
+            } else {
+                topologyConfig.put("topology.auto-credential", Lists.newArrayList(topologyAutoCredentialClassName));
             }
         }
     }

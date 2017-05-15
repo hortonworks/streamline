@@ -19,6 +19,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.google.common.collect.ImmutableMap;
+import com.hortonworks.streamline.streams.layout.component.impl.HBaseSink;
+import com.hortonworks.streamline.streams.layout.component.impl.HdfsSink;
+import com.hortonworks.streamline.streams.layout.component.impl.HiveSink;
+import com.hortonworks.streamline.streams.layout.component.impl.KafkaSink;
 import org.apache.commons.lang.StringUtils;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
@@ -233,6 +237,10 @@ public class TopologyComponentFactory {
     private Map<String, Provider<StreamlineSink>> createSinkProviders() {
         ImmutableMap.Builder<String, Provider<StreamlineSink>> builder = ImmutableMap.builder();
         builder.put(notificationSinkProvider());
+        builder.put(hdfsSinkProvider());
+        builder.put(hbaseSinkProvider());
+        builder.put(hiveSinkProvider());
+        builder.put(kafkaSinkProvider());
         return builder.build();
     }
 
@@ -486,4 +494,43 @@ public class TopologyComponentFactory {
         return new SimpleImmutableEntry<>(MULTILANG, provider);
     }
 
+    private Map.Entry<String, Provider<StreamlineSink>> hdfsSinkProvider() {
+        Provider<StreamlineSink> provider = new Provider<StreamlineSink>() {
+            @Override
+            public StreamlineSink create(TopologyComponent component) {
+                return new HdfsSink();
+            }
+        };
+        return new SimpleImmutableEntry<>(HDFS, provider);
+    }
+
+    private Map.Entry<String, Provider<StreamlineSink>> hbaseSinkProvider() {
+        Provider<StreamlineSink> provider = new Provider<StreamlineSink>() {
+            @Override
+            public StreamlineSink create(TopologyComponent component) {
+                return new HBaseSink();
+            }
+        };
+        return new SimpleImmutableEntry<>(HBASE, provider);
+    }
+
+    private Map.Entry<String, Provider<StreamlineSink>> hiveSinkProvider() {
+        Provider<StreamlineSink> provider = new Provider<StreamlineSink>() {
+            @Override
+            public StreamlineSink create(TopologyComponent component) {
+                return new HiveSink();
+            }
+        };
+        return new SimpleImmutableEntry<>(HIVE, provider);
+    }
+
+    private Map.Entry<String, Provider<StreamlineSink>> kafkaSinkProvider() {
+        Provider<StreamlineSink> provider = new Provider<StreamlineSink>() {
+            @Override
+            public StreamlineSink create(TopologyComponent component) {
+                return new KafkaSink();
+            }
+        };
+        return new SimpleImmutableEntry<>(KAFKA, provider);
+    }
 }
