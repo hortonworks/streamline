@@ -1,7 +1,7 @@
 {
   "name": "ROLE_ADMIN",
   "displayName": "Admin",
-  "description": "Super user role that has all the system roles",
-  "metadata": "{\"colorCode\":\"#8261be\",\"colorLabel\":\"purple\",\"icon\":\"gears\"}",
-  "system": false
+  "description": "Super user role that has all the system roles and privileges",
+  "metadata": "{\"colorCode\":\"#8261be\",\"colorLabel\":\"purple\",\"icon\":\"gears\", \"menu\": [\"udf\", \"topology\", \"authorizer\", \"notifier\", \"servicepool\", \"environments\"]}",
+  "system": true
 }

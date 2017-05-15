@@ -1,7 +1,0 @@
-{
-  "name": "ROLE_FILE_ADMIN",
-  "displayName": "File Admin",
-  "description": "Role that can upload and manage files",
-  "metadata": "{\"colorCode\":\"#dcaa15\",\"colorLabel\":\"yellow\",\"icon\":\"file\"}",
-  "system": true
-}

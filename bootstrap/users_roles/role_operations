@@ -1,0 +1,7 @@
+{
+  "name": "ROLE_OPERATIONS",
+  "displayName": "Operations",
+  "description": "Operations role that has the necessary privileges to create service pools, environments and submit topologies",
+  "metadata": "{\"colorCode\":\"#529e4c\",\"colorLabel\":\"green\",\"icon\":\"sitemap\", \"menu\":[\"topology\", \"servicepool\", \"environments\"]}",
+  "system": false
+}

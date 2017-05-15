@@ -29,6 +29,7 @@ import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.function.Function;
@@ -39,6 +40,18 @@ import javax.ws.rs.core.SecurityContext;
 
 public final class SecurityUtil {
     private static final Logger LOG = LoggerFactory.getLogger(SecurityUtil.class);
+
+    public static boolean hasRole(StreamlineAuthorizer authorizer, SecurityContext securityContext, String... roles) {
+        Principal principal = securityContext.getUserPrincipal();
+        AuthenticationContext authenticationCtx = SecurityUtil.getAuthenticationContext(principal);
+        for (String role : roles) {
+            if (!authorizer.hasRole(authenticationCtx, role)) {
+                LOG.debug("Principal: " + principal + " does not have role: " + role);
+                return false;
+            }
+        }
+        return true;
+    }
 
     public static void checkRole(StreamlineAuthorizer authorizer, SecurityContext securityContext, String... roles) {
         Principal principal = securityContext.getUserPrincipal();
@@ -65,7 +78,7 @@ public final class SecurityUtil {
                               String targetEntityNamespace, Long targetEntityId,
                               EnumSet<Permission> permissions) {
         AuthenticationContext ctx = SecurityUtil.getAuthenticationContext(securityContext.getUserPrincipal());
-        authorizer.addAcl(ctx, targetEntityNamespace, targetEntityId, permissions);
+        authorizer.addAcl(ctx, targetEntityNamespace, targetEntityId, true, true, permissions);
 
     }
 

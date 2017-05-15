@@ -1,7 +1,0 @@
-{
-  "name": "ROLE_TOPOLOGY_EDITOR",
-  "displayName": "Topology Editor",
-  "description": "Topology editor that has the necessary roles to create and submit topologies",
-  "metadata": "{\"colorCode\":\"#529e4c\",\"colorLabel\":\"green\",\"icon\":\"sitemap\"}",
-  "system": false
-}

@@ -269,6 +269,15 @@ public class SecurityCatalogService {
         return dao.remove(new StorableKey(UserRole.NAMESPACE, userRole.getPrimaryKey()));
     }
 
+    public Collection<AclEntry> listAclsForUserOnObject(Long userId, String objectNamespace, Long objectId) {
+        List<QueryParam> qps = QueryParam.params(
+                AclEntry.SID_ID, userId.toString(),
+                AclEntry.OBJECT_NAMESPACE, objectNamespace,
+                AclEntry.OBJECT_ID, objectId.toString()
+        );
+        return listAcls(qps);
+    }
+
     public Collection<AclEntry> listAcls() {
         return this.dao.list(AclEntry.NAMESPACE);
     }
@@ -280,6 +289,14 @@ public class SecurityCatalogService {
     public Collection<AclEntry> listUserAcls(Long userId, String targetEntityNamespace, Long targetEntityId) {
         List<QueryParam> qps = QueryParam.params(AclEntry.SID_ID, userId.toString(),
                 AclEntry.SID_TYPE, AclEntry.SidType.USER.toString(),
+                AclEntry.OBJECT_NAMESPACE, targetEntityNamespace,
+                AclEntry.OBJECT_ID, targetEntityId.toString());
+        return listAcls(qps);
+    }
+
+    public Collection<AclEntry> listRoleAcls(Long roleId, String targetEntityNamespace, Long targetEntityId) {
+        List<QueryParam> qps = QueryParam.params(AclEntry.SID_ID, roleId.toString(),
+                AclEntry.SID_TYPE, AclEntry.SidType.ROLE.toString(),
                 AclEntry.OBJECT_NAMESPACE, targetEntityNamespace,
                 AclEntry.OBJECT_ID, targetEntityId.toString());
         return listAcls(qps);

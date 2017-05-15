@@ -121,7 +121,7 @@ public class FileCatalogResource {
                             @FormDataParam("file") final FormDataContentDisposition contentDispositionHeader,
                             @FormDataParam("fileInfo") final File file,
                             @Context SecurityContext securityContext) throws IOException {
-        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_FILE_ADMIN);
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_ADMIN);
         log.info("Received fileInfo: [{}]", file);
         File updatedFile = addFile(inputStream, file);
         SecurityUtil.addAcl(authorizer, securityContext, File.NAMESPACE, updatedFile.getId(), EnumSet.allOf(Permission.class));

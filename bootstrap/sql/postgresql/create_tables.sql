@@ -357,6 +357,8 @@ CREATE TABLE IF NOT EXISTS acl_entry (
   "sidId"           BIGINT       NOT NULL,
   "sidType"         VARCHAR(255) NOT NULL,
   "permissions"     TEXT         NOT NULL,
+  "owner"           BOOLEAN      NOT NULL,
+  "grant"           BOOLEAN      NOT NULL,
   "timestamp"       BIGINT,
   PRIMARY KEY (id)
 );

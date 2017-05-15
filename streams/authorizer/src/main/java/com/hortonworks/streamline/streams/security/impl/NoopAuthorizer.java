@@ -47,7 +47,7 @@ public class NoopAuthorizer implements StreamlineAuthorizer {
     }
 
     @Override
-    public void addAcl(AuthenticationContext ctx, String targetEntityNamespace, Long targetEntityId, EnumSet<Permission> permissions) {
+    public void addAcl(AuthenticationContext ctx, String targetEntityNamespace, Long targetEntityId, boolean owner, boolean grant, EnumSet<Permission> permissions) {
         LOG.debug("NoopAuthorizer addAcl, AuthenticationContext: {}, targetEntityNamespace: {}, targetEntityId: {}, " +
                 "permissions: {}", ctx, targetEntityNamespace, targetEntityId, permissions);
     }
@@ -58,8 +58,4 @@ public class NoopAuthorizer implements StreamlineAuthorizer {
                 ctx, targetEntityNamespace, targetEntityId);
     }
 
-    @Override
-    public Set<String> getAdminUsers() {
-        return Collections.emptySet();
-    }
 }
