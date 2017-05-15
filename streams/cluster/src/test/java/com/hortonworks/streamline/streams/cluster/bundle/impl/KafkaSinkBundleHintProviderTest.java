@@ -29,7 +29,6 @@ import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaTop
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.Security;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -67,14 +66,9 @@ public class KafkaSinkBundleHintProviderTest {
     @Mocked
     private Security security;
 
-    @Ignore
+    @Test
     public void getHintsOnCluster() throws Exception {
-        new Expectations() {{
-            securityContext.getAuthenticationScheme(); result = AUTHENTICATION_SCHEME_NOT_KERBEROS;
-        }};
-
         List<String> topics = Lists.newArrayList("test1", "test2", "test3");
-
         List<String> hosts = Lists.newArrayList("svr1", "svr2");
         KafkaBrokersInfo<HostPort> brokersInfo = KafkaBrokersInfo.hostPort(hosts, 6667, securityContext);
         String protocol = "SASL_PLAINTEXT";
