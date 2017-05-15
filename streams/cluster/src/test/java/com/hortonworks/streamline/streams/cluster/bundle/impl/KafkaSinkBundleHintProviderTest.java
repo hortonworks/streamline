@@ -29,6 +29,7 @@ import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaTop
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.Security;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -66,7 +67,7 @@ public class KafkaSinkBundleHintProviderTest {
     @Mocked
     private Security security;
 
-    @Test
+    @Ignore
     public void getHintsOnCluster() throws Exception {
         new Expectations() {{
             securityContext.getAuthenticationScheme(); result = AUTHENTICATION_SCHEME_NOT_KERBEROS;
