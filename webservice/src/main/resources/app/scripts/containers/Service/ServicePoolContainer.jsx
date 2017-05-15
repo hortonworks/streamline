@@ -726,7 +726,7 @@ class ServicePoolContainer extends Component {
             <CommonNotification flag="error" content={manualCluster.responseMessage}/>, '', toastOpt);
         } else {
           FSReactToastr.success(
-            <strong>{"Manual cluster add successfully"}</strong>);
+            <strong>{"Manual cluster added successfully"}</strong>);
           this.fetchData();
         }
       });

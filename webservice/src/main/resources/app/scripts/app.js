@@ -40,6 +40,15 @@ class App extends Component {
             dashboard: results[0].dashboard,
             secureMode: results[0].authorizer ? true : false
           };
+          if(results[0].authorizer){
+            MiscREST.getUserProfile().then((userProfile) => {
+              if(userProfile.responseMessage !== undefined){
+                FSReactToastr.error(<CommonNotification flag="error" content={userProfile.responseMessage}/>, '', toastOpt);
+              } else {
+                app_state.user_profile = userProfile;
+              }
+            });
+          }
         }
       });
   }

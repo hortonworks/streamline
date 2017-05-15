@@ -290,18 +290,20 @@ export default class SinkNodeForm extends Component {
     ];
 
     // Check hint schema is present in the uiSpecification fields
-    let schemaName ='';
+    let schemaName ='',clusterOption=[];
     uiSpecification.map((x) => {
       if(x.hint !== undefined && x.hint.indexOf('schema') !== -1){
         _.keys(data).map((k) => {
           if(x.fieldName === k && !_.isEmpty(data[k])){
+            clusterOption = x.options;
             schemaName = data[k];
           }
         });
       }
     });
+    const _index = _.findIndex(clusterOption, (opt) => {return opt.uiName === schemaName;});
     // if the hint schema is present then create the schema by POST request
-    if(schemaName){
+    if(schemaName && _index === -1){
       const schemaData = {
         schemaMetadata: {
           type: "avro",

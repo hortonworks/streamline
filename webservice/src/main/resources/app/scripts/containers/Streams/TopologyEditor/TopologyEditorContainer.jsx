@@ -1170,6 +1170,9 @@ class TopologyEditorContainer extends Component {
                 this.setState({hideEventLog : true});
                 FSReactToastr.info(
                   <CommonNotification flag="error" content={testHistory.responseMessage}/>, '', toastOpt);
+                this.setState({hideEventLog :true,testHistory : {},testCompleted : true}, () => {
+                  this.removeEventLogOverlayDiv();
+                });
               } else {
                 if(testHistory.finished){
                   testHistory.eventLogFilePath = "/tmp/topology-test-run-event-topology-4-3b074dc7-0d29-4560-bc55-a97b4a0985ee.log";
@@ -1178,6 +1181,9 @@ class TopologyEditorContainer extends Component {
                       clearInterval(this.interval);
                       FSReactToastr.info(
                         <CommonNotification flag="error" content={events.responseMessage}/>, '', toastOpt);
+                      this.setState({eventLogData : [] ,hideEventLog :true,testCompleted : true}, () => {
+                        this.removeEventLogOverlayDiv();
+                      });
                     } else {
                       _.map(events.entities,(entity , i) => {
                         entity.id = Utils.eventLogNumberId(i+1);
@@ -1193,6 +1199,13 @@ class TopologyEditorContainer extends Component {
           },3000);
         }
       });
+    }
+  }
+
+  removeEventLogOverlayDiv = () => {
+    const elem = document.getElementById('eventDiv');
+    if(elem !== null){
+      elem.parentNode.removeChild(elem);
     }
   }
 

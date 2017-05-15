@@ -3229,3 +3229,91 @@ div#TestSourceForm > ul {
     color: #fff;
     border-color: #1190c0;
 }
+.addSchemaBrowseFileContainer{
+  border: 1px solid #e5e5e5;
+  padding: 15px;
+  height: 373px;
+  display: table;
+  width: 100%;
+}
+.addSchemaBrowseFileContainer > div {
+  border: 2px solid #83b2c3;
+  border-style: dashed;
+  border-radius: 5px;
+  height: 100%;
+  text-align: center;
+  display: table-cell;
+  vertical-align: middle;
+
+}
+.addSchemaBrowseFileContainer h4{
+  color: #606060;
+}
+.inputfile {
+  width: 89px;
+  height: 40px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  margin: auto;
+  cursor: pointer;
+  display: inline-block !important;
+}
+.inputfile + label {
+  font-size: 1.00em;
+  color: white;
+  display: inline-block;
+  padding: 8px 15px;
+}
+.inputfile + label {
+  cursor: pointer; /* "hand" cursor */
+}
+.inputfile:focus + label {
+  outline: 1px dotted #000;
+  outline: -webkit-focus-ring-color auto 5px;
+}
+.clear-link, .clear-link:hover{
+  color: #006ea0;
+  cursor: pointer;
+  text-decoration: none;
+}
+.nomargin {
+  margin: 0;
+}
+
+.m-t-md {
+  margin-top: 20px;
+}
+
+.m-t-sm{
+  margin-top: 10px;
+}
+.m-t-xs{
+  margin-top: 5px;
+}
+
+.main-title{
+  font-size: 23px;
+  color: #606060;
+}
+
+.sub-title{
+  font-size: 17px;
+  color: #606060;
+}
+
+.m-b-sm {
+  margin-bottom: 10px;
+}
+
+span.warning {
+  color: #f0ad4e;
+}
+.expandTestSourceCodeMirror{
+  margin-left: 200px;
+  height: 395px;
+  width: 695px;
+  top:0;
+  position: absolute;;
+  padding: 5px 0 10px 0 !important;
+}

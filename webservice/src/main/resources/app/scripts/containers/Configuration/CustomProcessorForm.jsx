@@ -40,6 +40,7 @@ import lint from 'codemirror/addon/lint/lint';
 import Modal from '../../components/FSModal';
 import BaseContainer from '../BaseContainer';
 import CommonNotification from '../../utils/CommonNotification';
+import Utils from '../../utils/Utils';
 
 CodeMirror.registerHelper("lint", "json", function(text) {
   var found = [];
@@ -72,7 +73,9 @@ class CustomProcessorForm extends Component {
     topologyComponentUISpecification: [],
     fieldId: null,
     modalTitle: 'Add Config  Field',
-    showNameError: false
+    showNameError: false,
+    showCodeMirror : false,
+    expandCodemirror : false
   };
 
   constructor(props) {
@@ -124,7 +127,9 @@ class CustomProcessorForm extends Component {
           customProcessorImpl,
           jarFileName,
           inputSchema,
-          outputStreamToSchema
+          outputStreamToSchema,
+          showCodeMirror : false,
+          expandCodemirror : false
         };
         obj.topologyComponentUISpecification = topologyComponentUISpecification.fields;
         CustomProcessorREST.getCustomProcessorFile(jarFileName)
@@ -411,7 +416,52 @@ class CustomProcessorForm extends Component {
     }
   }
 
+  handleFileChange = (file) => {
+    if(file){
+      const fileName = file.name;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        if(Utils.validateJSON(reader.result)) {
+          const tempInputSchema = JSON.stringify(JSON.parse(reader.result),null,"  ");
+          this.setState({inputSchema : tempInputSchema,showCodeMirror:true});
+        }
+      }.bind(this);
+      reader.readAsText(file);
+    }
+  }
+
+  fileHandler = (type,e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if(type === 'drop'){
+      if(e.dataTransfer.files.length){
+        this.handleFileChange(e.dataTransfer.files[0]);
+      }
+    } else {
+      if(e.target.files.length){
+        this.handleFileChange(e.target.files[0]);
+      }
+    }
+  }
+
+  hideCodeMirror = (e) => {
+    e.preventDefault();
+    this.setState({inputSchema : '',showCodeMirror:false});
+  }
+
+  outerDivClicked = (e) => {
+    e.preventDefault();
+    this.setState({showCodeMirror:true});
+  }
+
+  handleExpandClick = (e) => {
+    e.preventDefault();
+    const {expandCodemirror} = this.state;
+    this.setState({expandCodemirror :!expandCodemirror});
+  }
+
   render() {
+    const {showCodeMirror,expandCodemirror} = this.state;
     const jsonoptions = {
       lineNumbers: true,
       mode: "application/json",
@@ -559,8 +609,35 @@ class CustomProcessorForm extends Component {
                     <label className="col-sm-2 control-label" data-stest="inputSchemaLable">Input Schema
                       <span className="text-danger">*</span>
                     </label>
-                    <div className="col-sm-6">
-                      <ReactCodemirror ref="JSONCodemirror" value={this.state.inputSchema} onChange={this.handleInputSchemaChange.bind(this)} options={jsonoptions}/>
+                    <div className={`${expandCodemirror ? 'col-md-10' : 'col-sm-6'}`}  onDrop={this.fileHandler.bind(this,'drop')} onDragOver={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    }}>
+                      <a className="pull-right clear-link" href="javascript:void(0)" onClick={this.hideCodeMirror.bind(this)}> CLEAR </a>
+                      <span className="pull-right" style={{margin: '-1px 5px 0'}}>|</span>
+                      <a className="pull-right" href="javascript:void(0)" onClick={this.handleExpandClick.bind(this)}>
+                        {expandCodemirror ? <i className="fa fa-compress"></i> : <i className="fa fa-expand"></i>}
+                      </a>
+                      {
+                        showCodeMirror
+                        ? <ReactCodemirror ref="JSONCodemirror" value={this.state.inputSchema} onChange={this.handleInputSchemaChange.bind(this)} options={jsonoptions}/>
+                        : <div ref="browseFileContainer" className={"addSchemaBrowseFileContainer"}>
+                            <div onClick={this.outerDivClicked.bind(this)}>
+                            <div className="main-title">Copy & Paste</div>
+                            <div className="sub-title m-t-sm m-b-sm">OR</div>
+                            <div className="main-title">Drag & Drop</div>
+                            <div className="sub-title" style={{"marginTop": "-4px"}}>Files Here</div>
+                            <div className="sub-title m-t-sm m-b-sm">OR</div>
+                            <div  className="m-t-md">
+                              <input type="file" ref="browseFile" accept=".json" className="inputfile" onClick={(e) => {
+                                e.stopPropagation();
+                              }} onChange={this.fileHandler.bind(this,'browser')}/>
+                              <label htmlFor="file" className="btn btn-success">BROWSE</label>
+                              </div>
+                            </div>
+                          </div>
+                      }
                     </div>
                   </div>
                   <div className="form-group">

@@ -41,6 +41,15 @@ const MiscREST = {
       .then( (response) => {
         return response.json();
       });
+  },
+  getUserProfile(options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    return fetch('/api/v1/catalog/users/current', options)
+      .then( (response) => {
+        return response.json();
+      });
   }
 };
 

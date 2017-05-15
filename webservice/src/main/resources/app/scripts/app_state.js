@@ -27,6 +27,7 @@ class app_state {
   }
   @observable showComponentNodeContainer = true
   @observable showSpotlightSearch = false
+  @observable user_profile = {}
 }
 
 export default new app_state();

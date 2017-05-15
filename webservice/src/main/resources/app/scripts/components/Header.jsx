@@ -17,6 +17,9 @@ import {Link} from 'react-router';
 import app_state from '../app_state';
 import {observer} from 'mobx-react';
 import {Nav, Navbar, NavItem, NavDropdown, MenuItem} from 'react-bootstrap';
+import _ from 'lodash';
+import Modal from './FSModal';
+import UserProfile from './UserProfile';
 
 @observer
 export default class Header extends Component {
@@ -25,8 +28,16 @@ export default class Header extends Component {
     super();
   }
 
+  handleUserProfile = (e) => {
+    this.refs.UserProfileModal.show();
+  }
+
+  handleUserProfileModal = () => {
+    this.refs.UserProfileModal.hide();
+  }
+
   render() {
-    const userIcon = <i className="fa fa-user"></i>;
+    const userIcon = <i className="fa fa-user" style={{marginRight : 3}}></i>;
     const bigIcon = <i className="fa fa-caret-down"></i>;
     const config = <i className="fa fa-cog"></i>;
     const users = <i className="fa fa-users"></i>;
@@ -47,14 +58,22 @@ export default class Header extends Component {
               {this.props.headerContent}
             </div>
             <ul className="nav pull-right">
-              <li>
-                <a role="button" href="javascript:void(0);">
-                  {userIcon}
-                </a>
-              </li>
+              {
+                !_.isEmpty(app_state.user_profile)
+                ? <li>
+                    <a role="button" href="javascript:void(0);" title={app_state.user_profile.name} onClick={this.handleUserProfile}>
+                      {userIcon}
+                      {app_state.user_profile.name}
+                    </a>
+                  </li>
+                : ''
+              }
             </ul>
           </div>
         </nav>
+        <Modal ref="UserProfileModal" data-title="User Profile"  data-resolve={this.handleUserProfileModal}>
+          <UserProfile />
+        </Modal>
       </header>
     );
   }

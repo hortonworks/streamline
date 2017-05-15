@@ -472,8 +472,9 @@ const mergeFormDataFields = function(name, clusterArr,clusterName,formData,uiSpe
 };
 
 const handleNestedFormDataEmptyObj = (formData) => {
+  let tempData = _.cloneDeep(formData);
   const nestedObj = function(data){
-    return _.map(_.keys(data), (key) => {
+    _.map(_.keys(data), (key) => {
       if(_.isObject(data[key])){
         nestedObj(data[key]);
       } else if (_.isArray(data[key])){
@@ -486,8 +487,9 @@ const handleNestedFormDataEmptyObj = (formData) => {
         }
       }
     });
+    return data;
   };
-  return nestedObj(formData);
+  return nestedObj(tempData);
 };
 
 const eventLogNumberId = function(num){

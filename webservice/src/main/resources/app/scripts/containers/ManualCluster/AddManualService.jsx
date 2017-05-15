@@ -20,6 +20,7 @@ import {toastOpt} from '../../utils/Constants';
 import Select from 'react-select';
 import Form from '../../libs/form';
 import Utils from '../../utils/Utils';
+import _ from 'lodash';
 
 class AddManualService extends Component{
   constructor(props){

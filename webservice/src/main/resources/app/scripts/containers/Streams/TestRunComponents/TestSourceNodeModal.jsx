@@ -143,9 +143,12 @@ class TestSourceNodeModal extends Component{
                 tempInput = recordData[key];
               });
               stateObj[i].records = JSON.stringify(tempInput,null,"  ");
+              stateObj[i].showCodeMirror = true;
             } else {
+              stateObj[i].showCodeMirror = false;
               stateObj[i].records = '';
             }
+            stateObj[i].expandCodemirror = false;
             stateObj[i].repeatTime = tResult.occurrence;
             stateObj[i].testCaseId = tResult.testCaseId;
             checkConfigureTestCase(tResult.sourceId,'Source');
@@ -281,6 +284,7 @@ class TestSourceNodeModal extends Component{
         if(Utils.validateJSON(reader.result)) {
           tempSourceArr[sourceIndex].inputFile = file;
           tempSourceArr[sourceIndex].records = JSON.stringify(JSON.parse(reader.result),null,"  ");
+          tempSourceArr[sourceIndex].showCodeMirror = true;
           this.setState({showFileError: false,fileName,sourceNodeArr :tempSourceArr});
         }
       }.bind(this);
@@ -305,11 +309,17 @@ class TestSourceNodeModal extends Component{
     this.setState({sourceNodeArr : tempSourceArr});
   }
 
-  handleFileDrop = (e) => {
+  fileHandler = (type,e) => {
     e.preventDefault();
     e.stopPropagation();
-    if(e.dataTransfer.files.length){
-      this.handleFileChange(e.dataTransfer.files[0]);
+    if(type === 'drop'){
+      if(e.dataTransfer.files.length){
+        this.handleFileChange(e.dataTransfer.files[0]);
+      }
+    } else {
+      if(e.target.files.length){
+        this.handleFileChange(e.target.files[0]);
+      }
     }
   }
 
@@ -319,6 +329,32 @@ class TestSourceNodeModal extends Component{
 
   sourceNodeClick = (node,index) => {
     this.setState({sourceIndex : index});
+  }
+
+  outerDivClicked = (e) => {
+    e.preventDefault();
+    const {sourceIndex} = this.state;
+    let tempSourceArr = _.cloneDeep(this.state.sourceNodeArr);
+    tempSourceArr[sourceIndex].showCodeMirror = true;
+    this.setState({sourceNodeArr : tempSourceArr});
+  }
+
+  hideCodeMirror = (e) => {
+    e.preventDefault();
+    const {sourceIndex} = this.state;
+    let tempSourceArr = _.cloneDeep(this.state.sourceNodeArr);
+    tempSourceArr[sourceIndex].inputFile = '';
+    tempSourceArr[sourceIndex].records = '';
+    tempSourceArr[sourceIndex].showCodeMirror = false;
+    this.setState({showFileError: false,fileName : '',sourceNodeArr :tempSourceArr});
+  }
+
+  handleExpandClick = (e) => {
+    e.preventDefault();
+    const {sourceIndex} = this.state;
+    let tempSourceArr = _.cloneDeep(this.state.sourceNodeArr);
+    tempSourceArr[sourceIndex].expandCodemirror = !tempSourceArr[sourceIndex].expandCodemirror;
+    this.setState({sourceNodeArr :tempSourceArr});
   }
 
   render(){
@@ -365,7 +401,13 @@ class TestSourceNodeModal extends Component{
           <Tabs id="TestSourceForm" className="modal-tabs" onSelect={this.onSelectTab}>
             <Tab>
               {sourceSideBar}
-              {outputSidebar}
+              {
+                !showLoading
+                ? sourceNodeArr[sourceIndex].expandCodemirror
+                  ? ''
+                  : outputSidebar
+                : ''
+              }
               {
                 showLoading
                 ? <div className="loading-img text-center">
@@ -373,18 +415,45 @@ class TestSourceNodeModal extends Component{
                       marginTop: "140px"
                     }}/>
                   </div>
-                : <div className="processor-modal-form">
+                : <div className={sourceNodeArr[sourceIndex].expandCodemirror ? 'expandTestSourceCodeMirror' : 'processor-modal-form'}>
                   <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
                     display: "none"
                   }}/>}>
                     <div className="customFormClass">
                         <form>
                           <div className="row">
-                              <div className="col-md-12" onDrop={this.handleFileDrop} style={{marginTop:"10px",marginBottom:"10px"}}>
-                                <label>TEST DATA (type or drag file)
+                              <div className="col-md-12" onDrop={this.fileHandler.bind(this,'drop')} style={{marginTop:"10px",marginBottom:"10px"}} onDragOver={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                return false;
+                              }}>
+                                <label>TEST DATA
                                   <span className="text-danger">*</span>
                                 </label>
-                                <ReactCodemirror ref="JSONCodemirror" value={tempSourceArr[sourceIndex].records || ''} onChange={this.handleInputDataChange.bind(this)} options={jsonoptions}/>
+                                <a className="pull-right clear-link" href="javascript:void(0)" onClick={this.hideCodeMirror.bind(this)}> CLEAR </a>
+                                <span className="pull-right" style={{margin: '-1px 5px 0'}}>|</span>
+                                  <a className="pull-right" href="javascript:void(0)" onClick={this.handleExpandClick.bind(this)}>
+                                    {sourceNodeArr[sourceIndex].expandCodemirror ? <i className="fa fa-compress"></i> : <i className="fa fa-expand"></i>}
+                                  </a>
+                                {
+                                  sourceNodeArr[sourceIndex].showCodeMirror
+                                  ? <ReactCodemirror ref="JSONCodemirror" value={tempSourceArr[sourceIndex].records || ''} onChange={this.handleInputDataChange.bind(this)} options={jsonoptions}/>
+                                  : <div ref="browseFileContainer" className={"addSchemaBrowseFileContainer"}>
+                                      <div onClick={this.outerDivClicked.bind(this)}>
+                                      <div className="main-title">Copy & Paste</div>
+                                      <div className="sub-title m-t-sm m-b-sm">OR</div>
+                                      <div className="main-title">Drag & Drop</div>
+                                      <div className="sub-title" style={{"marginTop": "-4px"}}>Files Here</div>
+                                      <div className="sub-title m-t-sm m-b-sm">OR</div>
+                                      <div  className="m-t-md">
+                                        <input type="file" ref="browseFile" accept=".json" className="inputfile" onClick={(e) => {
+                                          e.stopPropagation();
+                                        }} onChange={this.fileHandler.bind(this,'browser')}/>
+                                        <label htmlFor="file" className="btn btn-success">BROWSE</label>
+                                        </div>
+                                      </div>
+                                    </div>
+                                }
                               </div>
                           </div>
                           <div className="form-group">

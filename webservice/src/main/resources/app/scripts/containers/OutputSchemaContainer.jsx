@@ -23,6 +23,7 @@ import 'codemirror/mode/javascript/javascript';
 import jsonlint from 'jsonlint';
 import lint from 'codemirror/addon/lint/lint';
 import Editable from '../components/Editable';
+import Utils from '../utils/Utils';
 
 CodeMirror.registerHelper("lint", "json", function(text) {
   var found = [];
@@ -48,7 +49,8 @@ export default class OutputSchemaContainer extends Component {
     if (props.streamData.length) {
       this.state = {
         activeTab: 1,
-        streamData: props.streamData
+        streamData: props.streamData,
+        conditionalArr : this.initialCodeMirrorArr(props.streamData.length)
       };
     } else {
       this.state = {
@@ -56,20 +58,10 @@ export default class OutputSchemaContainer extends Component {
         streamData: [
           {
             streamId: 'Stream_1',
-            fields: JSON.stringify([
-              {
-                "name": "childField1",
-                "type": "INTEGER"
-              }, {
-                "name": "childField2",
-                "type": "BOOLEAN"
-              }, {
-                "name": "topLevelStringField",
-                "type": "STRING"
-              }
-            ], null, " ")
+            fields: ''
           }
-        ]
+        ],
+        conditionalArr : this.initialCodeMirrorArr(1,'one')
       };
     }
     this.validateFlag = true;
@@ -79,6 +71,15 @@ export default class OutputSchemaContainer extends Component {
     if (nextProps.streamData.length > 0) {
       this.setState({streamData: nextProps.streamData});
     }
+  }
+
+  initialCodeMirrorArr= (num,string) => {
+    let tempArr = new Array(num);
+    return _.map(tempArr, (arr) => {
+      return string === " one"
+              ? {showCodeMirror : true , expandCodemirror : false}
+              : {showCodeMirror : false , expandCodemirror : false};
+    });
   }
 
   handleSelectTab(key, e) {
@@ -106,12 +107,15 @@ export default class OutputSchemaContainer extends Component {
         streamId: newStreamId,
         fields: ''
       };
+      let tempCondition = _.cloneDeep(this.state.conditionalArr);
+      tempCondition.push({showCodeMirror : false , expandCodemirror : false});
       this.setState({
         activeTab: tabId,
         streamData: [
           ...this.state.streamData,
           obj
-        ]
+        ],
+        conditionalArr : tempCondition
       });
     } else{
       this.setState({activeTab: key});
@@ -128,6 +132,7 @@ export default class OutputSchemaContainer extends Component {
   }
 
   handleDeleteStream(e) {
+    this.state.conditionalArr.splice(this.state.activeTab - 1 , 1);
     this.state.streamData.splice(this.state.activeTab - 1, 1);
     this.setState({activeTab: 1});
   }
@@ -182,7 +187,65 @@ export default class OutputSchemaContainer extends Component {
     });
   }
 
+  handleFileChange = (file) => {
+    if (file) {
+      const {activeTab} = this.state;
+      let tempStreamData = _.cloneDeep(this.state.streamData);
+      let tempCondition = _.cloneDeep(this.state.conditionalArr);
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        if(Utils.validateJSON(reader.result)) {
+          tempStreamData[activeTab - 1].fields = JSON.stringify(JSON.parse(reader.result),null,"  ");
+          tempCondition[activeTab - 1].showCodeMirror = true;
+          this.setState({streamData :tempStreamData , conditionalArr : tempCondition});
+        }
+      }.bind(this);
+      reader.readAsText(file);
+    }
+  }
+
+  fileHandler = (type,e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if(type === 'drop'){
+      if(e.dataTransfer.files.length){
+        this.handleFileChange(e.dataTransfer.files[0]);
+      }
+    } else {
+      if(e.target.files.length){
+        this.handleFileChange(e.target.files[0]);
+      }
+    }
+  }
+
+  outerDivClicked = (e) => {
+    e.preventDefault();
+    const {activeTab} = this.state;
+    let tempCondition = _.cloneDeep(this.state.conditionalArr);
+    tempCondition[activeTab - 1].showCodeMirror = true;
+    this.setState({conditionalArr : tempCondition});
+  }
+
+  hideCodeMirror = (e) => {
+    e.preventDefault();
+    const {activeTab} = this.state;
+    let tempStreamData = _.cloneDeep(this.state.streamData);
+    let tempCondition = _.cloneDeep(this.state.conditionalArr);
+    tempStreamData[activeTab -  1].fields = '';
+    tempCondition[activeTab -  1].showCodeMirror = false;
+    this.setState({streamData : tempStreamData, conditionalArr : tempCondition});
+  }
+
+  handleExpandClick = (e) => {
+    e.preventDefault();
+    const {activeTab} = this.state;
+    let tempCondition = _.cloneDeep(this.state.conditionalArr);
+    tempCondition[activeTab -  1].expandCodemirror = !tempCondition[activeTab -  1].expandCodemirror;
+    this.setState({conditionalArr :tempCondition});
+  }
+
   render() {
+    const {conditionalArr} = this.state;
     const jsonoptions = {
       lineNumbers: true,
       mode: "application/json",
@@ -225,8 +288,35 @@ export default class OutputSchemaContainer extends Component {
               return (
                 <Tab.Pane eventKey={i + 1} key={i + 1}>
                   <div className="row">
-                  <div className="col-sm-6">
-                    <ReactCodemirror ref="JSONCodemirror" value={obj.fields} onChange={this.handleSchemaChange.bind(this)} options={jsonoptions}/>
+                  <div className={`${conditionalArr[i].expandCodemirror ? 'col-sm-12' : 'col-sm-7' }`} onDrop={this.fileHandler.bind(this,'drop')} onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                  }}>
+                    <a className="pull-right clear-link" href="javascript:void(0)" onClick={this.hideCodeMirror.bind(this)}> CLEAR </a>
+                      <span className="pull-right" style={{margin: '-1px 5px 0'}}>|</span>
+                      <a className="pull-right" href="javascript:void(0)" onClick={this.handleExpandClick.bind(this)}>
+                        {conditionalArr[i].expandCodemirror ? <i className="fa fa-compress"></i> : <i className="fa fa-expand"></i>}
+                      </a>
+                    {
+                      conditionalArr[i].showCodeMirror
+                      ? <ReactCodemirror ref="JSONCodemirror" value={obj.fields} onChange={this.handleSchemaChange.bind(this)} options={jsonoptions}/>
+                      : <div ref="browseFileContainer" className={"addSchemaBrowseFileContainer"}>
+                          <div onClick={this.outerDivClicked.bind(this)}>
+                          <div className="main-title">Copy & Paste</div>
+                          <div className="sub-title m-t-sm m-b-sm">OR</div>
+                          <div className="main-title">Drag & Drop</div>
+                          <div className="sub-title" style={{"marginTop": "-4px"}}>Files Here</div>
+                          <div className="sub-title m-t-sm m-b-sm">OR</div>
+                          <div  className="m-t-md">
+                            <input type="file" ref="browseFile" accept=".json" className="inputfile" onClick={(e) => {
+                              e.stopPropagation();
+                            }} onChange={this.fileHandler.bind(this,'browser')}/>
+                            <label htmlFor="file" className="btn btn-success">BROWSE</label>
+                            </div>
+                          </div>
+                        </div>
+                    }
                   </div>
                   </div>
                 </Tab.Pane>
