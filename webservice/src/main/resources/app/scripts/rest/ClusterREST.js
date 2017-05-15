@@ -32,6 +32,15 @@ const ClusterREST = {
         return response.json();
       });
   },
+  getAllClustersWithoutServiceDetail(options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + clusterBaseURL, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
   getCluster(id, options) {
     options = options || {};
     options.method = options.method || 'GET';

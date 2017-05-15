@@ -23,6 +23,7 @@ import {Scrollbars} from 'react-custom-scrollbars';
 
 /* import common utils*/
 import ClusterREST from '../../rest/ClusterREST';
+import MiscREST from '../../rest/MiscREST';
 import Utils from '../../utils/Utils';
 import TopologyUtils from '../../utils/TopologyUtils';
 import FSReactToastr from '../../components/FSReactToastr';
@@ -170,7 +171,7 @@ class PoolItemsCard extends Component {
 }
                 </ul>
               </Scrollbars>
-}
+            }
           </div>
         </div>
       </div>
@@ -198,9 +199,15 @@ class ServicePoolContainer extends Component {
       mClusterId: '',
       mClusterServiceUpdate : false,
       mServiceNameList : [],
-      filterValue: ''
+      filterValue: '',
+      sorted: {
+        key: 'last_updated',
+        text: 'Last Updated'
+      },
+      searchLoader : false
     };
     this.fetchData();
+    this.initialFetch = false;
   }
 
   /*
@@ -213,15 +220,11 @@ class ServicePoolContainer extends Component {
       if (clusters.responseMessage !== undefined) {
         FSReactToastr.error(
           <CommonNotification flag="error" content={clusters.responseMessage}/>, '', toastOpt);
-        this.setState({fetchLoader: false});
+        this.setState({fetchLoader: false,searchLoader:false});
       } else {
         let result = clusters.entities;
         this.setState({fetchLoader: false, entities: result, pageIndex: 0});
       }
-    }).catch((err) => {
-      this.setState({fetchLoader: false});
-      FSReactToastr.error(
-        <CommonNotification flag="error" content={err.message}/>, '', toastOpt);
     });
   }
 
@@ -233,6 +236,13 @@ class ServicePoolContainer extends Component {
   btnClassChange = () => {
     const container = document.querySelector('.content-wrapper');
     container.setAttribute("class", "content-wrapper animated fadeIn ");
+    if (!this.state.fetchLoader) {
+      if (this.state.entities.length !== 0) {
+        const sortDropdown = document.querySelector('.sortDropdown');
+        sortDropdown.setAttribute("class", "sortDropdown");
+        sortDropdown.parentElement.setAttribute("class", "dropdown");
+      }
+    }
   }
 
   /*
@@ -361,7 +371,7 @@ class ServicePoolContainer extends Component {
   handleDeleteCluster = (id) => {
     this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete ?'}).then((confirmBox) => {
       ClusterREST.deleteCluster(id).then((cluster) => {
-
+        this.initialFetch = false;
         confirmBox.cancel();
         if (cluster.responseMessage !== undefined) {
           if (cluster.responseMessage.indexOf('Namespace refers the cluster') !== 1) {
@@ -779,7 +789,56 @@ class ServicePoolContainer extends Component {
   }
 
   onFilterChange = (e) => {
-    this.setState({filterValue: e.target.value.trim()});
+    this.setState({filterValue: e.target.value.trim()}, () => {
+      this.getFilteredEntities();
+    });
+  }
+
+  getFilteredEntities = () => {
+    clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => {
+      const {filterValue,sorted} = this.state;
+      this.setState({searchLoader: true}, () => {
+        MiscREST.searchEntities('cluster', filterValue,sorted.key).then((cluster)=>{
+          if (cluster.responseMessage !== undefined) {
+            FSReactToastr.error(
+              <CommonNotification flag="error" content={cluster.responseMessage}/>, '', toastOpt);
+            this.setState({searchLoader: false});
+          } else {
+            this.initialFetch = true;
+            let result = cluster.entities;
+            this.setState({searchLoader: false, entities: result, pageIndex: 0});
+          }
+        });
+      });
+    }, 500);
+  }
+
+  onSortByClicked = (eventKey, el) => {
+    const liList = el.target.parentElement.parentElement.children;
+    for (let i = 0; i < liList.length; i++) {
+      liList[i].setAttribute('class', '');
+    }
+    el.target.parentElement.setAttribute("class", "active");
+    const sortKey = (eventKey.toString() === "name")
+      ? "name"
+      : eventKey;
+    this.setState({searchLoader: true});
+    const {filterValue} = this.state;
+
+    MiscREST.searchEntities('cluster', filterValue,sortKey).then((cluster)=>{
+      if (cluster.responseMessage !== undefined) {
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={cluster.responseMessage}/>, '', toastOpt);
+        this.setState({searchLoader: false});
+      } else {
+        const sortObj = {
+          key: eventKey,
+          text: Utils.sortByKey(eventKey)
+        };
+        this.setState({searchLoader: false, entities: cluster.entities, sorted: sortObj});
+      }
+    });
   }
 
   render() {
@@ -797,11 +856,16 @@ class ServicePoolContainer extends Component {
       mClusterId,
       mClusterServiceUpdate,
       mServiceNameList,
-      filterValue
+      filterValue,
+      searchLoader,
+      sorted
     } = this.state;
     const {ambariUrl} = clusterData;
-    const filteredEntities = TopologyUtils.topologyFilter(entities, filterValue,"cluster");
-    const splitData = _.chunk(filteredEntities, pageSize) || [];
+    const splitData = _.chunk(entities, pageSize) || [];
+    const sortTitle = <span>Sort:<span style={{
+      color: "#006ea0"
+    }}>&nbsp;{sorted.text}</span>
+    </span>;
     const adminFormFields = () => {
       return <form className="modal-form config-modal-form" ref="modelForm">
         {loader || showFields
@@ -830,29 +894,40 @@ class ServicePoolContainer extends Component {
       </form>;
     };
 
+
     return (
       <BaseContainer ref="BaseContainer" routes={routes} headerContent={this.getHeaderContent()}>
         {fetchLoader
           ? <CommonLoaderSign imgName={"services"}/>
           : <div>
-            {
-              (filterValue && splitData.length === 0) || splitData.length !== 0
-              ? <div className="row">
-                  <div className="page-title-box clearfix">
-                    <div className="col-md-3 col-md-offset-8 text-right">
-                      <FormGroup>
-                        <InputGroup>
-                        <FormControl data-stest="searchBox" type="text" placeholder="Search by name" onKeyUp={this.onFilterChange} className="" />
-                        <InputGroup.Addon>
-                          <i className="fa fa-search"></i>
-                        </InputGroup.Addon>
-                        </InputGroup>
-                      </FormGroup>
-                    </div>
+              <div className="row">
+                <div className="page-title-box clearfix">
+                  <div className="col-md-3 col-md-offset-6 text-right">
+                    <FormGroup>
+                      <InputGroup>
+                      <FormControl data-stest="searchBox" type="text" placeholder="Search by name" onKeyUp={this.onFilterChange} className="" />
+                      <InputGroup.Addon>
+                        <i className="fa fa-search"></i>
+                      </InputGroup.Addon>
+                      </InputGroup>
+                    </FormGroup>
                   </div>
-                </div>
-              : ''
-            }
+                  <div className="col-md-2 text-center">
+                    <DropdownButton title={sortTitle} id="sortDropdown" className="sortDropdown ">
+                      <MenuItem active={sorted.key === "name" ? true : false } onClick={this.onSortByClicked.bind(this, "name")}>
+                        &nbsp;Name
+                      </MenuItem>
+                      <MenuItem active={sorted.key === "last_updated" ? true : false } onClick={this.onSortByClicked.bind(this, "last_updated")}>
+                        &nbsp;Last Update
+                      </MenuItem>
+                      {/*<MenuItem active={this.state.sorted.key === "status" ? true : false } onClick={this.onSortByClicked.bind(this, "status")}>
+                        &nbsp;Status
+                      </MenuItem>*/}
+                    </DropdownButton>
+                  </div>
+              </div>
+            </div>
+
             <div className="row row-margin-bottom">
               <div className="col-md-8 col-md-offset-2">
                 <div className="input-group">
@@ -876,12 +951,18 @@ class ServicePoolContainer extends Component {
               </div>
             </div>
             <div className="row">
-              {(splitData.length === 0)
-                ? <NoData imgName={"services"}/>
-                : splitData[pageIndex].map((list) => {
-                  return <PoolItemsCard key={list.cluster.id} clusterList={list} poolActionClicked={this.poolActionClicked} refIdArr={refIdArr} loader={loader} addManualServiceHandler={this.addManualServiceHandler}/>;
-                })
-}
+              {searchLoader
+              ? <CommonLoaderSign imgName={"services"}/>
+              : !searchLoader && entities.length === 0 && filterValue
+                ? <NoData imgName={"applications"} searchVal={filterValue}/>
+                : entities.length !== 0
+                  ? splitData[pageIndex].map((list) => {
+                    return <PoolItemsCard key={list.cluster.id} clusterList={list} poolActionClicked={this.poolActionClicked} refIdArr={refIdArr} loader={loader} addManualServiceHandler={this.addManualServiceHandler}/>;
+                  })
+                  : !this.initialFetch && entities.length === 0
+                    ? <NoData imgName={"services"}/>
+                    : ''
+              }
             </div>
           </div>
 }

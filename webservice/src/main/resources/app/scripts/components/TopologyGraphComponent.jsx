@@ -763,7 +763,7 @@ export default class TopologyGraphComponent extends Component {
     const list = _.map(_.keys(data.streamlineEvent), (key) => {
       return `<li> ${data.streamlineEvent[key]} <span class='output-type'> ${key}</span> </li>`;
     });
-    thisGraph.toolTip.attr('class', "d3-tip "+ data.componentName).offset([0, 10]).direction('s' ).html(function(d) {
+    thisGraph.toolTip.attr('class', "d3-tip "+ data.componentName).attr('id','d3-tip').offset([0, 10]).direction('s' ).html(function(d) {
       return (
         "<div class='schema-tooltip clearfix'>"+
           "<a href='javascript:void(0)'><i id='close-btn-"+data.componentName+"' data-name='"+data.componentName+"' class='fa fa-times pull-right'></i></a>"+
@@ -776,7 +776,6 @@ export default class TopologyGraphComponent extends Component {
         "</div>"
       );
     });
-
     thisGraph.toolTip.show(data ,node);
   }
 
@@ -916,7 +915,7 @@ export default class TopologyGraphComponent extends Component {
         : d.parallelismCount;
     });
 
-    if(!thisGraph.testRunActivated){
+    if(!thisGraph.testRunActivated || (thisGraph.testRunActivated && thisGraph.props.eventLogData.length === 0)){
       thisGraph.rectangles.selectAll('circle.test-circle').remove();
     }
 

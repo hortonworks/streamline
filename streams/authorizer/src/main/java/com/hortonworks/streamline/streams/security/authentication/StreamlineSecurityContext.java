@@ -15,34 +15,44 @@
  **/
 package com.hortonworks.streamline.streams.security.authentication;
 
-import com.hortonworks.streamline.streams.security.StreamlinePrincipal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.SecurityContext;
 import java.security.Principal;
+
+import javax.ws.rs.core.SecurityContext;
 
 /**
  * Holds authenticated principal and security context which gets passed to the JAX-RS request methods
  */
 public class StreamlineSecurityContext implements SecurityContext {
     private static final Logger LOG = LoggerFactory.getLogger(StreamlineSecurityContext.class);
-    private final StreamlinePrincipal user;
-    private final String scheme;
 
-    public StreamlineSecurityContext(StreamlinePrincipal user, String scheme) {
-        this.user = user;
+    public static final String KERBEROS_AUTH = "kerberos";
+    public static final String AUTHENTICATION_SCHEME_NOT_KERBEROS = "NOT_KERBEROS";     // useful for tests
+
+    private final Principal principal;
+    private final String scheme;
+    private final String authenticationScheme;
+
+    public StreamlineSecurityContext(Principal principal, String scheme) {
+        this(principal, scheme, SecurityContext.BASIC_AUTH);
+    }
+
+    public StreamlineSecurityContext(Principal principal, String scheme, String authenticationScheme) {
+        this.principal = principal;
         this.scheme = scheme;
+        this.authenticationScheme = authenticationScheme;
     }
 
     @Override
     public Principal getUserPrincipal() {
-        return user;
+        return principal;
     }
 
     @Override
     public boolean isUserInRole(String role) {
-        LOG.debug("isUserInRole user: {}, role: {}", user, role);
+        LOG.debug("isUserInRole user: {}, role: {}", principal, role);
         return false;
     }
 
@@ -53,7 +63,16 @@ public class StreamlineSecurityContext implements SecurityContext {
 
     @Override
     public String getAuthenticationScheme() {
-        return SecurityContext.BASIC_AUTH;
+        return authenticationScheme;
     }
 
+    @Override
+    public String toString() {
+        return "StreamlineSecurityContext{" +
+                "principal=" + principal +
+                ", scheme='" + scheme + '\'' +
+                ", authenticationScheme='" + authenticationScheme + '\'' +
+                ", isSecure=" + isSecure() +
+                '}';
+    }
 }

@@ -2,12 +2,14 @@ package com.hortonworks.streamline.streams.storm.common;
 
 import com.hortonworks.streamline.common.Constants;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.Configuration;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -23,14 +25,10 @@ public class StormJaasCreator {
     private final String streamlinePrincipal;
 
     public StormJaasCreator() {
-        URL templateFileUrl = getClass().getClassLoader().getResource(STORM_JAAS_CONFIG_TEMPLATE);
-        if (templateFileUrl == null) {
-            throw new RuntimeException("Unable to read JAAS template file for Storm.");
-        }
-
-        try {
-            stormJaasConfigTemplate = FileUtils.readFileToString(new File(templateFileUrl.toURI()), Charset.defaultCharset());
-        } catch (IOException | URISyntaxException e) {
+        try (InputStream configStream = getClass().getClassLoader().getResourceAsStream(STORM_JAAS_CONFIG_TEMPLATE)) {
+            List<String> lines = IOUtils.readLines(configStream, Charset.forName("UTF-8"));
+            stormJaasConfigTemplate = String.join("\n", lines);
+        } catch (IOException | NullPointerException e) {
             throw new RuntimeException("Unable to read JAAS template file for Storm.");
         }
 

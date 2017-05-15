@@ -16,23 +16,30 @@
 package com.hortonworks.streamline.streams.cluster.bundle.impl;
 
 import com.google.common.collect.Lists;
-import mockit.Expectations;
-import mockit.Mocked;
-import mockit.Verifications;
-import mockit.integration.junit4.JMockit;
+
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.metadata.KafkaMetadataService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.ZookeeperMetadataService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
-import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.Authentication;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.Authorizer;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaTopics;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.Security;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.List;
 import java.util.Map;
+
+import mockit.Expectations;
+import mockit.Mocked;
+import mockit.Verifications;
+import mockit.integration.junit4.JMockit;
 
 @RunWith(JMockit.class)
 public class KafkaBundleHintProviderTest {
@@ -48,6 +55,15 @@ public class KafkaBundleHintProviderTest {
     @Mocked
     private ZookeeperMetadataService zookeeperMetadataService;
 
+    @Mocked
+    private Authentication authentication;
+
+    @Mocked
+    private Authorizer authorizer;
+
+    @Mocked
+    private Security security;
+
     @Test
     public void getHintsOnCluster() throws Exception {
         List<String> topics = Lists.newArrayList("test1", "test2", "test3");
@@ -59,7 +75,7 @@ public class KafkaBundleHintProviderTest {
 
         new Expectations() {{
             kafkaMetadataService.getTopicsFromZk();
-            result = new KafkaMetadataService.Topics(topics);
+            result = new KafkaTopics(topics, security);
 
             kafkaMetadataService.getKafkaZkConnection();
             result = zkConnection;
@@ -96,7 +112,7 @@ public class KafkaBundleHintProviderTest {
 
         new Expectations() {{
             kafkaMetadataService.getTopicsFromZk();
-            result = new KafkaMetadataService.Topics(topics);
+            result = new KafkaTopics(topics, security);
 
             kafkaMetadataService.getKafkaZkConnection();
             result = zkConnection;

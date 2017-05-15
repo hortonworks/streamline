@@ -40,12 +40,13 @@ import com.hortonworks.streamline.streams.service.metadata.HiveMetadataResource;
 import com.hortonworks.streamline.streams.service.metadata.KafkaMetadataResource;
 import com.hortonworks.streamline.streams.service.metadata.StormMetadataResource;
 
-import javax.security.auth.Subject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import javax.security.auth.Subject;
 
 /**
  * Implementation for the streams module for registration with web service module
@@ -65,28 +66,29 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
     public List<Object> getResources() {
         List<Object> result = new ArrayList<>();
         String catalogRootUrl = (String) config.get(Constants.CONFIG_CATALOG_ROOT_URL);
+        final Subject subject = (Subject) config.get(Constants.CONFIG_SUBJECT);  // Authorized subject
+
         MLModelRegistryClient modelRegistryClient = new MLModelRegistryClient(catalogRootUrl);
         final StreamCatalogService streamcatalogService = new StreamCatalogService(storageManager, fileStorage, modelRegistryClient);
         final EnvironmentService environmentService = new EnvironmentService(storageManager);
         TagClient tagClient = new TagClient(catalogRootUrl);
         final CatalogService catalogService = new CatalogService(storageManager, fileStorage, tagClient);
         final TopologyActionsService topologyActionsService = new TopologyActionsService(streamcatalogService,
-                environmentService, fileStorage, modelRegistryClient, config);
-        final TopologyMetricsService topologyMetricsService = new TopologyMetricsService(environmentService);
+                environmentService, fileStorage, modelRegistryClient, config, subject);
+        final TopologyMetricsService topologyMetricsService = new TopologyMetricsService(environmentService, subject);
 
         environmentService.addNamespaceAwareContainer(topologyActionsService);
         environmentService.addNamespaceAwareContainer(topologyMetricsService);
 
         // authorizer
-        StreamlineAuthorizer authorizer = (StreamlineAuthorizer) config.get(Constants.CONFIG_AUTHORIZER);
+        final StreamlineAuthorizer authorizer = (StreamlineAuthorizer) config.get(Constants.CONFIG_AUTHORIZER);
         if (authorizer == null) {
             throw new IllegalStateException("Authorizer not set");
         }
-        SecurityCatalogService securityCatalogService =
+        final SecurityCatalogService securityCatalogService =
                 (SecurityCatalogService) config.get(Constants.CONFIG_SECURITY_CATALOG_SERVICE);
-        result.addAll(getAuthorizerResources(authorizer, securityCatalogService));
-        //
 
+        result.addAll(getAuthorizerResources(authorizer, securityCatalogService));
         result.add(new MetricsResource(authorizer, streamcatalogService, topologyMetricsService));
         result.addAll(getClusterRelatedResources(authorizer, environmentService));
         result.add(new FileCatalogResource(authorizer, catalogService));
@@ -94,9 +96,10 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
                 topologyMetricsService, securityCatalogService));
         result.add(new UDFCatalogResource(authorizer, streamcatalogService, fileStorage));
         result.addAll(getNotificationsRelatedResources(authorizer, streamcatalogService));
-        SchemaRegistryClient schemaRegistryClient = createSchemaRegistryClient();
-        result.add(new SchemaResource(authorizer, schemaRegistryClient, (Subject) config.get(Constants.CONFIG_SUBJECT)));
-        result.addAll(getServiceMetadataResources(authorizer, environmentService));
+
+        final SchemaRegistryClient schemaRegistryClient = createSchemaRegistryClient();
+        result.add(new SchemaResource(authorizer, schemaRegistryClient, subject));
+        result.addAll(getServiceMetadataResources(authorizer, environmentService, subject));
         result.add(new NamespaceCatalogResource(authorizer, streamcatalogService, topologyActionsService, environmentService));
         result.add(new SearchCatalogResource(authorizer, streamcatalogService, environmentService,
                 topologyActionsService, topologyMetricsService));
@@ -153,12 +156,12 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         );
     }
 
-    private List<Object> getServiceMetadataResources(StreamlineAuthorizer authorizer, EnvironmentService environmentService) {
+    private List<Object> getServiceMetadataResources(StreamlineAuthorizer authorizer, EnvironmentService environmentService, Subject subject) {
         return Arrays.asList(
                 new KafkaMetadataResource(authorizer, environmentService),
                 new StormMetadataResource(authorizer, environmentService),
-                new HiveMetadataResource(authorizer, environmentService),
-                new HBaseMetadataResource(authorizer, environmentService)
+                new HiveMetadataResource(authorizer, environmentService, subject),
+                new HBaseMetadataResource(authorizer, environmentService, subject)
         );
     }
 

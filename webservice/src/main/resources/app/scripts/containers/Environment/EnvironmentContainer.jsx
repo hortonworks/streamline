@@ -24,6 +24,7 @@ import {Scrollbars} from 'react-custom-scrollbars';
 /* import common utils*/
 import EnvironmentREST from '../../rest/EnvironmentREST';
 import ClusterREST from '../../rest/ClusterREST';
+import MiscREST from '../../rest/MiscREST';
 import Utils from '../../utils/Utils';
 import TopologyUtils from '../../utils/TopologyUtils';
 import FSReactToastr from '../../components/FSReactToastr';
@@ -174,14 +175,38 @@ class EnvironmentContainer extends Component {
       refIdArr: [],
       loader: false,
       checkServices: false,
-      filterValue: ''
+      filterValue: '',
+      sorted: {
+        key: 'last_updated',
+        text: 'Last Updated'
+      },
+      searchLoader : false
     };
     this.fetchData();
+    this.initialFetch = false;
+  }
+
+  btnClassChange = () => {
+    if (!this.state.fetchLoader) {
+      const actionMenu = document.querySelector('.actionDropdown');
+      actionMenu.setAttribute("class", "actionDropdown hb lg success ");
+      if (this.state.entities.length !== 0) {
+        actionMenu.parentElement.setAttribute("class", "dropdown");
+        const sortDropdown = document.querySelector('.sortDropdown');
+        sortDropdown.setAttribute("class", "sortDropdown");
+        sortDropdown.parentElement.setAttribute("class", "dropdown");
+      }
+    }
+  }
+
+  componentDidUpdate() {
+    this.btnClassChange();
   }
 
   componentDidMount() {
     const container = document.querySelector('.content-wrapper');
     container.setAttribute("class", "content-wrapper environment-wrapper");
+    this.btnClassChange();
   }
 
   componentWillUnmount() {
@@ -216,7 +241,7 @@ class EnvironmentContainer extends Component {
         serviceFlag = false;
       // call for get All cluster Name
       if (result[0].responseMessage !== undefined) {
-        this.setState({fetchLoader: false, namespaceIdToEdit: null});
+        this.setState({fetchLoader: false, namespaceIdToEdit: null,searchLoader: false});
         FSReactToastr.error(
           <CommonNotification flag="error" content={result[0].responseMessage}/>, '', toastOpt);
       } else {
@@ -382,7 +407,7 @@ class EnvironmentContainer extends Component {
   handleDeleteNameSpace = (id) => {
     this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete ?'}).then((confirmBox) => {
       EnvironmentREST.deleteNameSpace(id).then((nameSpace) => {
-
+        this.initialFetch = false;
         confirmBox.cancel();
         if (nameSpace.responseMessage !== undefined) {
           if (nameSpace.responseMessage.indexOf('Namespace refers the cluster') !== 1) {
@@ -428,7 +453,56 @@ class EnvironmentContainer extends Component {
   }
 
   onFilterChange = (e) => {
-    this.setState({filterValue: e.target.value.trim()});
+    this.setState({filterValue: e.target.value.trim()}, () => {
+      this.getFilteredEntities();
+    });
+  }
+
+  getFilteredEntities = () => {
+    clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => {
+      const {filterValue,sorted} = this.state;
+      this.setState({searchLoader: true}, () => {
+        MiscREST.searchEntities('namespace', filterValue,sorted.key).then((namespace)=>{
+          if (namespace.responseMessage !== undefined) {
+            FSReactToastr.error(
+              <CommonNotification flag="error" content={namespace.responseMessage}/>, '', toastOpt);
+            this.setState({searchLoader: false});
+          } else {
+            this.initialFetch = true;
+            const mappingList = this.customMapping(namespace.entities);
+            this.setState({searchLoader: false, entities: mappingList, pageIndex: 0});
+          }
+        });
+      });
+    }, 500);
+  }
+
+  onSortByClicked = (eventKey, el) => {
+    const liList = el.target.parentElement.parentElement.children;
+    for (let i = 0; i < liList.length; i++) {
+      liList[i].setAttribute('class', '');
+    }
+    el.target.parentElement.setAttribute("class", "active");
+    const sortKey = (eventKey.toString() === "name")
+      ? "name"
+      : eventKey;
+    this.setState({searchLoader: true});
+    const {filterValue} = this.state;
+
+    MiscREST.searchEntities('namespace', filterValue,sortKey).then((namespace)=>{
+      if (namespace.responseMessage !== undefined) {
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={namespace.responseMessage}/>, '', toastOpt);
+        this.setState({searchLoader: false});
+      } else {
+        const sortObj = {
+          key: eventKey,
+          text: Utils.sortByKey(eventKey)
+        };
+        this.setState({searchLoader: false, entities: namespace.entities, sorted: sortObj});
+      }
+    });
   }
 
   render() {
@@ -442,14 +516,19 @@ class EnvironmentContainer extends Component {
       refIdArr,
       loader,
       checkServices,
-      filterValue
+      filterValue,
+      searchLoader,
+      sorted
     } = this.state;
     const {routes} = this.props;
-    const filteredEntities = TopologyUtils.topologyFilter(entities, filterValue,"namespace");
-    const splitData = _.chunk(filteredEntities, pageSize) || [];
+    const splitData = _.chunk(entities, pageSize) || [];
     const modelTitle = <span>{namespaceIdToEdit === null
         ? "New "
         : "Edit "}Environment{/* <i className="fa fa-info-circle"></i>*/}</span>;
+    const sortTitle = <span>Sort:<span style={{
+      color: "#006ea0"
+    }}>&nbsp;{sorted.text}</span>
+    </span>;
     return (
       <BaseContainer ref="BaseContainer" routes={routes} headerContent={this.getHeaderContent()}>
         <div id="add-environment">
@@ -461,30 +540,44 @@ class EnvironmentContainer extends Component {
           {fetchLoader
             ? <CommonLoaderSign imgName={"environments"}/>
             : <div>
-              {
-                (filterValue && splitData.length === 0) || splitData.length !== 0
-                ? <div className="row">
-                    <div className="page-title-box clearfix">
-                      <div className="col-md-3 col-md-offset-8 text-right">
-                        <FormGroup>
-                          <InputGroup>
-                          <FormControl data-stest="searchBox" type="text" placeholder="Search by name" onKeyUp={this.onFilterChange} className="" />
-                          <InputGroup.Addon>
-                            <i className="fa fa-search"></i>
-                          </InputGroup.Addon>
-                          </InputGroup>
-                        </FormGroup>
-                      </div>
+                <div className="row">
+                  <div className="page-title-box clearfix">
+                    <div className="col-md-3 col-md-offset-6 text-right">
+                      <FormGroup>
+                        <InputGroup>
+                        <FormControl data-stest="searchBox" type="text" placeholder="Search by name" onKeyUp={this.onFilterChange} className="" />
+                        <InputGroup.Addon>
+                          <i className="fa fa-search"></i>
+                        </InputGroup.Addon>
+                        </InputGroup>
+                      </FormGroup>
+                    </div>
+                    <div className="col-md-2 text-center">
+                      <DropdownButton title={sortTitle} id="sortDropdown" className="sortDropdown ">
+                        <MenuItem active={sorted.key === "name" ? true : false } onClick={this.onSortByClicked.bind(this, "name")}>
+                          &nbsp;Name
+                        </MenuItem>
+                        <MenuItem active={sorted.key === "last_updated" ? true : false } onClick={this.onSortByClicked.bind(this, "last_updated")}>
+                          &nbsp;Last Update
+                        </MenuItem>
+                        {/*<MenuItem active={this.state.sorted.key === "status" ? true : false } onClick={this.onSortByClicked.bind(this, "status")}>
+                          &nbsp;Status
+                        </MenuItem>*/}
+                      </DropdownButton>
                     </div>
                   </div>
-                : ''
-              }
-              {
-                splitData.length === 0
-                  ? <NoData serviceFlag={checkServices} imgName={"environments"}/>
-                  : splitData[pageIndex].map((nameSpaceList, i) => {
+                </div>
+              {searchLoader
+              ? <CommonLoaderSign imgName={"environments"}/>
+              : !searchLoader && entities.length === 0 && filterValue
+                ? <NoData imgName={"applications"} searchVal={filterValue}/>
+                : entities.length !== 0
+                  ? splitData[pageIndex].map((nameSpaceList, i) => {
                     return <EnvironmentCards key={i} nameSpaceList={nameSpaceList} nameSpaceClicked={this.nameSpaceClicked} clusterDetails={clusterDetails} refIdArr={refIdArr} loader={loader}/>;
                   })
+                  : !this.initialFetch && entities.length === 0
+                    ? <NoData imgName={"environments"} serviceFlag={checkServices}/>
+                    : ''
               }
             </div>
 }

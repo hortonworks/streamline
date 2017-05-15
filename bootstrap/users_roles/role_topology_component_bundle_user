@@ -1,0 +1,7 @@
+{
+  "name": "ROLE_TOPOLOGY_COMPONENT_BUNDLE_USER",
+  "displayName": "Topology Component Bundle User",
+  "description": "Role that can use the uploaded topology component bundles",
+  "metadata": "{\"colorCode\":\"#9e4c75\",\"colorLabel\":\"pink\",\"icon\":\"sitemap\"}",
+  "system": true
+}

@@ -17,9 +17,17 @@ package com.hortonworks.streamline.streams.cluster.service.metadata;
 
 import com.google.common.collect.Lists;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
+import com.hortonworks.streamline.common.function.SupplierException;
+import com.hortonworks.streamline.streams.catalog.exception.EntityNotFoundException;
+import com.hortonworks.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
+import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+import com.hortonworks.streamline.streams.cluster.service.metadata.common.OverrideHadoopConfiguration;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.HiveDatabases;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.Tables;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -27,62 +35,105 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import com.hortonworks.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
-import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
-import com.hortonworks.streamline.streams.cluster.service.metadata.common.OverrideHadoopConfiguration;
-import com.hortonworks.streamline.streams.cluster.service.metadata.common.Tables;
-import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.security.PrivilegedActionException;
 import java.util.List;
 import java.util.Map;
 
+import javax.security.auth.Subject;
+import javax.ws.rs.core.SecurityContext;
+
 /**
- * Provides Hive databases and database tables metadata information using {@link HiveMetaStoreClient}
+ * Provides Hive databases, and database tables metadata information using {@link HiveMetaStoreClient}
  */
 public class HiveMetadataService implements AutoCloseable {
-    protected static final Logger LOG = LoggerFactory.getLogger(HiveMetadataService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(HiveMetadataService.class);
 
     private static final String STREAMS_JSON_SCHEMA_CONFIG_HIVE_METASTORE_SITE = ServiceConfigurations.HIVE.getConfNames()[3];
     private static final String STREAMS_JSON_SCHEMA_CONFIG_HIVE_SITE = ServiceConfigurations.HIVE.getConfNames()[6];
 
-    private final HiveConf hiveConf;  // HiveConf used to create HiveMetaStoreClient. If this class is created with the 1 parameter constructor, it is set to null
-    private HiveMetaStoreClient metaStoreClient;
+    private final HiveConf hiveConf;  // HiveConf used to create HiveMetaStoreClient. If this class is created with
+                                      // the 3 parameter constructor, it is set to null
+    private final HiveMetaStoreClient metaStoreClient;
+    private final SecurityContext securityContext;
+    private final Subject subject;
 
     public HiveMetadataService(HiveMetaStoreClient metaStoreClient) {
-        this(metaStoreClient, null);
+        this(metaStoreClient, null, null, null);
     }
 
-    private HiveMetadataService(HiveMetaStoreClient metaStoreClient, HiveConf hiveConf) {
+    /**
+     * @param hiveConf The hive configuration used to instantiate {@link HiveMetaStoreClient}
+     */
+    public HiveMetadataService(HiveMetaStoreClient metaStoreClient, HiveConf hiveConf,
+                                SecurityContext securityContext, Subject subject) {
         this.metaStoreClient = metaStoreClient;
         this.hiveConf = hiveConf;
+        this.securityContext = securityContext;
+        this.subject = subject;
+        LOG.info("Created {}", this);
     }
 
     /**
-     * Creates a new instance of {@link HiveMetadataService} which delegates to {@link HiveMetaStoreClient} instantiated with
-     * default {@link HiveConf} and {@code hivemetastore-site.xml} config related properties overridden with the
-     * values set in the hivemetastore-site config serialized in "streams json"
+     * Creates insecure {@link HiveMetadataService}, which delegates to {@link HiveMetaStoreClient} instantiated with
+     * default {@link HiveConf}, and {@code hivemetastore-site.xml} and {@code hive-site.xml} properties overridden
+     * with the config for the cluster imported in the service pool (either manually or using Ambari)
      */
     public static HiveMetadataService newInstance(EnvironmentService environmentService, Long clusterId)
-            throws MetaException, IOException, ServiceConfigurationNotFoundException, ServiceNotFoundException {
-        return newInstance(new HiveConf(), environmentService, clusterId);
+            throws IOException, EntityNotFoundException, MetaException, PrivilegedActionException {
+        return newInstance(overrideConfig(environmentService, clusterId));
     }
 
+    /**
+     * Creates secure {@link HiveMetadataService}, which delegates to {@link HiveMetaStoreClient}
+     * instantiated with the {@link HiveConf} provided using the first parameter
+     */
+    public static HiveMetadataService newInstance(HiveConf hiveConf)
+            throws MetaException, IOException, ServiceConfigurationNotFoundException,
+            ServiceNotFoundException, PrivilegedActionException {
+
+        return new HiveMetadataService(new HiveMetaStoreClient(hiveConf), hiveConf, null, null);
+    }
 
     /**
-     * Creates a new instance of {@link HiveMetadataService} which delegates to {@link HiveMetaStoreClient} instantiated with
-     * the provided {@link HiveConf} and {@code hivemetastore-site.xml} config related properties overridden with the
-     * values set in the hivemetastore-site config serialized in "streams json"
+     * Creates secure {@link HiveMetadataService}, which delegates to {@link HiveMetaStoreClient} instantiated with
+     * default {@link HiveConf}, and {@code hivemetastore-site.xml} and {@code hive-site.xml} properties overridden
+     * with the config for the cluster imported in the service pool (either manually or using Ambari)
      */
-    public static HiveMetadataService newInstance(HiveConf hiveConf, EnvironmentService environmentService, Long clusterId)
-            throws MetaException, IOException, ServiceConfigurationNotFoundException, ServiceNotFoundException {
-        return new HiveMetadataService(new HiveMetaStoreClient(
-                OverrideHadoopConfiguration.override(environmentService, clusterId, ServiceConfigurations.HIVE,
-                        getConfigNames(), hiveConf)), hiveConf);
+    public static HiveMetadataService newInstance(EnvironmentService environmentService, Long clusterId,
+                                                  SecurityContext securityContext, Subject subject)
+            throws MetaException, IOException, EntityNotFoundException, PrivilegedActionException {
+
+        return newInstance(overrideConfig(environmentService, clusterId), securityContext, subject);
+    }
+
+    private static HiveConf overrideConfig(EnvironmentService environmentService, Long clusterId)
+            throws IOException, EntityNotFoundException {
+        return OverrideHadoopConfiguration.override(environmentService, clusterId,
+                ServiceConfigurations.HIVE, getConfigNames(), new HiveConf());
+    }
+
+    /**
+     * Creates secure {@link HiveMetadataService}, which delegates to {@link HiveMetaStoreClient}
+     * instantiated with the {@link HiveConf} provided using the first parameter
+     */
+    public static HiveMetadataService newInstance(HiveConf hiveConf, SecurityContext securityContext, Subject subject)
+            throws MetaException, IOException, EntityNotFoundException, PrivilegedActionException {
+
+        if (SecurityUtil.isKerberosAuthenticated(securityContext)) {
+            UserGroupInformation.setConfiguration(hiveConf);    // Sets Kerberos rules
+            UserGroupInformation.getUGIFromSubject(subject);    // Adds User principal to this subject
+
+            return new HiveMetadataService(SecurityUtil.execute(() -> new HiveMetaStoreClient(hiveConf),
+                    securityContext, subject), hiveConf, securityContext, subject);
+        } else {
+            return newInstance(hiveConf);
+        }
     }
 
     private static List<String> getConfigNames() {
@@ -91,29 +142,39 @@ public class HiveMetadataService implements AutoCloseable {
     }
 
     /**
-     * @return The table names of for the database specified in the parameter
+     * @return The table names for the database specified in the parameter
      */
-    public Tables getHiveTables(String dbName) throws MetaException {
-        return Tables.newInstance(metaStoreClient.getAllTables(dbName));
+    public Tables getHiveTables(String dbName) throws MetaException, PrivilegedActionException {
+        final Tables tables = Tables.newInstance(executeSecure(() -> metaStoreClient.getAllTables(dbName)), securityContext, false);
+        LOG.debug("Hive database [{}] has tables {}", dbName, tables.getTables());
+        return tables;
     }
 
     /**
      * @return The names of all databases in the MetaStore.
      */
-    public Databases getHiveDatabases() throws MetaException {
-        return Databases.newInstance(metaStoreClient.getAllDatabases());
+    public HiveDatabases getHiveDatabases() throws MetaException, PrivilegedActionException {
+        final HiveDatabases databases = HiveDatabases.newInstance(executeSecure(metaStoreClient::getAllDatabases), securityContext);
+        LOG.debug("Hive databases {}", databases.list());
+        return databases;
     }
 
     @Override
     public void close() throws Exception {
-        metaStoreClient.close();
+        executeSecure(() -> {
+            metaStoreClient.close();
+            return null;
+        });
+    }
+
+    private <T, E extends Exception> T executeSecure(SupplierException<T, E> action) throws PrivilegedActionException, E {
+        return SecurityUtil.execute(action, securityContext, subject);
     }
 
     /*
-        Create and delete methods useful for system tests. Left as package protected for now.
-        These methods can be made public and exposed in REST API.
-    */
-
+     *   Create and delete methods useful for system tests. Left as package protected for now.
+     *   These methods can be made public and exposed in REST API.
+     */
     void createDatabase(String dbName, String description, String locationUri, Map<String, String> parameters) throws TException {
         metaStoreClient.createDatabase(new Database(dbName,description, locationUri, parameters));
     }
@@ -164,29 +225,19 @@ public class HiveMetadataService implements AutoCloseable {
     /**
      * @return a copy of the {@link HiveConf} used to configure the {@link HiveMetaStoreClient} instance created
      * using the factory methods. null if this object was initialized using the
-     * {@link HiveMetadataService#HiveMetadataService(org.apache.hadoop.hive.metastore.HiveMetaStoreClient)} constructor
+     * {@link HiveMetadataService#HiveMetadataService(HiveMetaStoreClient)} constructor
      */
     public HiveConf getHiveConfCopy() {
         return hiveConf == null ? null : new HiveConf(hiveConf);
     }
 
-    /**
-     * Wrapper used to show proper JSON formatting
-     */
-    public static class Databases {
-        private List<String> databases;
-
-        public Databases(List<String> databases) {
-            this.databases = databases;
-        }
-
-        public static Databases newInstance(List<String> databases) {
-            return databases == null ? new Databases(Collections.<String>emptyList()) : new Databases(databases);
-        }
-
-        @JsonProperty("databases")
-        public List<String> asList() {
-            return databases;
-        }
+    @Override
+    public String toString() {
+        return "HiveMetadataService{" +
+                "hiveConf=" + hiveConf +
+                ", metaStoreClient=" + metaStoreClient +
+                ", securityContext=" + securityContext +
+                ", subject=" + subject +
+                '}';
     }
 }

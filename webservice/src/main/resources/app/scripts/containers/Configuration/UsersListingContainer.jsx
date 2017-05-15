@@ -27,7 +27,7 @@ import {BtnEdit, BtnDelete} from '../../components/ActionButtons';
 import FSReactToastr from '../../components/FSReactToastr';
 import Modal from '../../components/FSModal';
 import {pageSize} from '../../utils/Constants';
-import {FormGroup, InputGroup, FormControl} from 'react-bootstrap';
+import {FormGroup, InputGroup, FormControl, Button, PanelGroup, Panel} from 'react-bootstrap';
 import Utils from '../../utils/Utils';
 import CommonNotification from '../../utils/CommonNotification';
 import {toastOpt} from '../../utils/Constants';
@@ -40,12 +40,14 @@ export default class UsersListingContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      entities: [],
-      filterValue: '',
+      users: [],
       editData: '',
       roles: [],
+      showUserForm: false,
       fetchLoader: true
     };
+  }
+  componentWillMount() {
     this.fetchData();
   }
   fetchData = () => {
@@ -53,35 +55,52 @@ export default class UsersListingContainer extends Component {
       UserRoleREST.getAllUsers(),
       UserRoleREST.getAllRoles()
     ];
+    let rolesPromiseArr = [];
     Promise.all(promiseArr)
       .then((results) => {
-        let tempEntities = [];
         if (results[0].responseMessage !== undefined) {
           FSReactToastr.error(<CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
           this.setState({fetchLoader: false});
         } else {
-          Array.prototype.push.apply(tempEntities, Utils.sortArray(results[0].entities, 'name', true));
-          this.setState({entities: tempEntities, fetchLoader: false, roles: results[1].entities});
+          let roleOptions = [];
+          results[1].entities.map((e)=>{
+            roleOptions.push({
+              id: e.id,
+              name: e.name,
+              label: e.name,
+              value: e.name,
+              system: e.system,
+              metadata: e.metadata
+            });
+            rolesPromiseArr.push(UserRoleREST.getRoleChildren(e.id));
+          });
+          this.setState({users: results[0].entities, fetchLoader: false, roles: roleOptions});
+          Promise.all(rolesPromiseArr) /* Promise array to fetch all the child roles and map to the parent using index */
+          .then((results)=>{
+            let roleOptionsArr = roleOptions;
+            results.map((r, index)=>{
+              let parentRoles = [];
+              roleOptionsArr[index].children = r.entities;
+            });
+            this.setState({roles: roleOptionsArr});
+          });
         }
       });
   }
-  onFilterChange = (e) => {
-    this.setState({filterValue: e.target.value.trim()});
-  }
 
   handleAdd = (e) => {
-    this.setState({editData : {}}, () => {this.refs.UserInfoModal.show();});
-  }
-
-  handleEditUser = (id) => {
-    const data = this.state.entities.filter(o => {return o.id === id;});
-    this.setState({editData : data.length === 1 ? data[0]: {}}, () => {this.refs.UserInfoModal.show();});
+    this.setState({editData : {
+      name: '',
+      email: '',
+      roles: []
+    }, showUserForm: true, activePanel: ''});
   }
 
   handleDeleteUser = (id) => {
     let BaseContainer = this.props.callbackHandler();
     BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete this user?'}).then((confirmBox) => {
       UserRoleREST.deleteUser(id).then((user) => {
+        this.setState({showUserForm: false, editData: {}});
         this.fetchData();
         confirmBox.cancel();
         if (user.responseMessage !== undefined) {
@@ -99,113 +118,130 @@ export default class UsersListingContainer extends Component {
     }, (Modal) => {});
   }
 
+  handleSelect(entity, k, e) {
+    this.setState({showUserForm: true, editData: JSON.parse(JSON.stringify(entity)), activePanel: entity.id});
+  }
+
+  handleCancel() {
+    this.setState({showUserForm: false, editData: {}, activePanel: ''});
+  }
+
   handleSave = () => {
     if (this.refs.UserForm.validateData()) {
       this.refs.UserForm.handleSave()
         .then((data)=>{
-          this.fetchData();
-          this.refs.UserInfoModal.hide();
           if(data.responseMessage !== undefined){
             FSReactToastr.error(
-                <CommonNotification flag="error" content={data.responseMessage}/>, '', toastOpt);
+              <CommonNotification flag="error" content={data.responseMessage}/>, '', toastOpt);
           } else {
-            FSReactToastr.success(<strong>User added successfully</strong>);
+            if(this.state.editData.id) {
+              FSReactToastr.success(<strong>User updated successfully</strong>);
+            } else {
+              FSReactToastr.success(<strong>User added successfully</strong>);
+            }
           }
+          this.setState({showUserForm: false, editData: {}});
+          this.fetchData();
         });
     }
   }
 
-  handleKeyPress = (event) => {
-    if(event.key === "Enter"){
-      this.refs.UserForm.state.show ? this.handleSave() : '';
-    }
-  }
-
   render() {
-    let {entities, filterValue, editData, fetchLoader, roles} = this.state;
-    const filteredEntities = Utils.filterByName(entities, filterValue);
+    let {users, editData, fetchLoader, roles, showUserForm} = this.state;
+    var defaultHeader = (
+      <div>
+      <span className="hb success user-icon"><i className="fa fa-user"></i></span>
+      <div className="panel-sections first">
+        <h4 ref="userName" className="user-name" title="name">New User</h4>
+      </div>
+      <div className="panel-sections pull-right">
+        <h6 className="role-th">ROLES</h6>
+        <h4 className="role-td">0</h4>
+      </div>
+      </div>
+    );
     return (
       <div>
-        <a onClick={this.handleAdd} href="javascript:void(0);" className="hb success pull-right"><i className="fa fa-plus"></i></a>
-        <div>
-        {fetchLoader
-          ? <CommonLoaderSign imgName={"default"}/>
-          : <div>
-            <div className="row">
-              <div className="page-title-box clearfix">
-                {((filterValue && filteredEntities.length === 0) || filteredEntities !== 0)
-                ?
-                <div className="pull-left col-md-3">
-                  <FormGroup>
-                    <InputGroup>
-                      <FormControl type="text" placeholder="Search by name" onKeyUp={this.onFilterChange} className=""/>
-                      <InputGroup.Addon>
-                        <i className="fa fa-search"></i>
-                      </InputGroup.Addon>
-                    </InputGroup>
-                  </FormGroup>
-                </div>
-                : ''
-                }
-              </div>
-            </div>
-            {filteredEntities.length === 0
-              ? <div className="row"><NoData imgName={"default-white"} searchVal={filterValue}/></div>
-              : <div className="row">
-                  <div className="col-sm-12">
-                    <div className="table-responsive">
-                    <Table className="table table-hover table-bordered" noDataText="No records found." currentPage={0} itemsPerPage={filteredEntities.length > pageSize
-                      ? pageSize
-                      : 0} pageButtonLimit={5}>
-                        <Thead>
-                          <Th column="name">User Name</Th>
-                          <Th column="email">Email</Th>
-                          <Th column="roles">Roles</Th>
-                          <Th column="actions">Actions</Th>
-                        </Thead>
-                        {filteredEntities.map((obj, i) => {
-                          return (
-                            <Tr key={`${obj.name}${i}`}>
-                              <Td column="name">{obj.name}</Td>
-                              <Td column="email">{obj.email}</Td>
-                              <Td column="roles">
-                              <div>
-                              {
-                                obj.roles.map((r) => {
-                                  return (<span className="label label-primary">{r}</span>);
-                                })
-                              }
-                              </div>
-                              </Td>
-                              <Td column="actions">
-                                <div className="btn-action">
-                                  <button type="button" onClick={this.handleEditUser.bind(this, obj.id)} className="text-warning"><i className="fa fa-pencil"></i></button>
-                                  <button type="button" onClick={this.handleDeleteUser.bind(this, obj.id)} className="text-danger"><i className="fa fa-trash"></i></button>
-                                </div>
-                              </Td>
-                            </Tr>
-                          );
-                        })}
-                    </Table>
-                    </div>
-                  </div>
-                </div>
-              }
-            </div>
+      <div id="add-user" >
+      <button type="button" onClick={this.handleAdd} href="javascript:void(0);" className="hb lg success pull-right"><i className="fa fa-plus"></i></button>
+      </div>
+      <div className="row">
+        {fetchLoader ?
+        <div className="col-sm-12">
+          <div className="loading-img text-center">
+            <img src="styles/img/start-loader.gif" alt="loading"/>
+          </div>
+        </div>
+        :(users.length === 0 ?
+          <NoData imgName={"default-white"} /> : '')
         }
-        <Modal ref="UserInfoModal"
-          data-title={editData.id ? "Edit User" : "Add User"}
-          onKeyPress={this.handleKeyPress}
-          data-resolve={this.handleSave}>
-          <UserForm
-            ref="UserForm"
-            editData={editData}
-            id={editData.id ? editData.id : null}
-            roles={roles}
-          />
-        </Modal>
+        <div className="col-md-5">
+            <PanelGroup
+              bsClass="panel-roles"
+              role="tablist"
+            >
+            {
+            showUserForm && !editData.id ?
+            (
+            <Panel
+              header={defaultHeader}
+              headerRole="tabpanel"
+              collapsible
+              expanded={false}
+              className="selected"
+            >
+            </Panel>
+            )
+            : ''
+            }
+            {
+              users.map((entity, i)=>{
+                var metadata = entity.metadata ? JSON.parse(entity.metadata) : {};
+                var btnClass = metadata.colorLabel || 'success';
+                var iconClass = metadata.icon || 'user';
+                var sizeClass = metadata.size || '';
+                var header = (
+                  <div key={i}>
+                  <span className={`hb ${btnClass} ${sizeClass.toLowerCase()} user-icon`}><i className={`fa fa-${iconClass}`}></i></span>
+                  <div className="panel-sections first">
+                      <h4 ref="userName" className="user-name" title={entity.name}>{entity.name}</h4>
+                  </div>
+                  <div className="panel-sections pull-right">
+                    <h6 className="role-th">ROLES</h6>
+                    <h4 className="role-td">{entity.roles ? entity.roles.length : '0'}</h4>
+                  </div>
+                  </div>
+                );
+                return (
+                  <Panel
+                    header={header}
+                    headerRole="tabpanel"
+                    key={i}
+                    collapsible
+                    expanded={false}
+                    onSelect={this.handleSelect.bind(this, entity)}
+                    className={entity.id === this.state.activePanel ? "selected" : ""}
+                  >
+                  </Panel>
+                );
+              })
+            }
+            </PanelGroup>
         </div>
       </div>
+      {showUserForm ?
+        <UserForm
+          ref="UserForm"
+          editData={editData}
+          id={editData.id ? editData.id : null}
+          roleOptions={roles}
+          saveCallback={this.handleSave.bind(this)}
+          cancelCallback={this.handleCancel.bind(this)}
+          deleteCallback={this.handleDeleteUser.bind(this, editData.id)}
+        />
+        : ''
+      }
+    </div>
     );
   }
 }

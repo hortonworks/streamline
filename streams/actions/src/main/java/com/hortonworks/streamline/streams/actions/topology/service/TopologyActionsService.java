@@ -50,6 +50,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.security.auth.Subject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -80,7 +81,7 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
 
     public TopologyActionsService(StreamCatalogService catalogService, EnvironmentService environmentService,
                                   FileStorage fileStorage, MLModelRegistryClient modelRegistryClient,
-                                  Map<String, Object> configuration) {
+                                  Map<String, Object> configuration, Subject subject) {
         this.catalogService = catalogService;
         this.environmentService = environmentService;
         this.fileStorage = fileStorage;
@@ -102,7 +103,7 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
             topologyTestRunResultDir = topologyTestRunResultDir.substring(0, topologyTestRunResultDir.length() - 1);
         }
 
-        this.topologyActionsContainer = new TopologyActionsContainer(environmentService, conf);
+        this.topologyActionsContainer = new TopologyActionsContainer(environmentService, conf, subject);
         this.stateFactory = TopologyStateFactory.getInstance();
         this.topologyTestRunner = new TopologyTestRunner(catalogService, this, topologyTestRunResultDir);
     }

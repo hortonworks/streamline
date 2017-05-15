@@ -34,10 +34,10 @@ class EventLogContainer extends Component{
   }
 
   componentDidMount(){
-    if(this.props.eventLogData.length === 0){
+    if(!this.completed){
       const elem = document.getElementById('eventDiv');
       if(elem !== null){
-        // elem.parentNode.removeChild(elem);
+        elem.parentNode.removeChild(elem);
       } else {
         let eventOverlay = document.createElement('div');
         eventOverlay.setAttribute('id','eventDiv');
@@ -79,7 +79,7 @@ class EventLogContainer extends Component{
       <div>
         <h4>Event Log
         {
-          eventLogData.length > 0
+          this.completed
           ? <a href="javascript:void(0)" onClick={this.hideEventLog}><i className="fa fa-times pull-right"></i></a>
           : ''
         }

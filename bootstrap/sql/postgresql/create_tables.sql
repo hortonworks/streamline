@@ -364,8 +364,10 @@ CREATE TABLE IF NOT EXISTS acl_entry (
 CREATE TABLE IF NOT EXISTS role (
   "id"        SERIAL       NOT NULL,
   "name"      VARCHAR(255) NOT NULL,
+  "displayName" VARCHAR(256) NOT NULL,
   "description" TEXT,
   "system" BOOLEAN NOT NULL,
+  "metadata" TEXT,
   "timestamp" BIGINT,
   CONSTRAINT UK_name_role UNIQUE ("name"),
   PRIMARY KEY (id)

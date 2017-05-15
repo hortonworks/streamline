@@ -27,6 +27,7 @@ import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 
+import javax.security.auth.Subject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -52,10 +53,13 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
     private static final String DEFAULT_STORM_JAR_FILE_PREFIX = "streamline-runtime-storm-";
 
     private final Map<String, String> streamlineConf;
+    private final Subject subject;
 
-    public TopologyActionsContainer(EnvironmentService environmentService, Map<String, String> streamlineConf) {
+    public TopologyActionsContainer(EnvironmentService environmentService, Map<String, String> streamlineConf,
+                                    Subject subject) {
         super(environmentService);
         this.streamlineConf = streamlineConf;
+        this.subject = subject;
     }
 
     @Override
@@ -71,13 +75,13 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
         }
 
         // FIXME: "how to initialize" is up to implementation detail - now we just only consider about Storm implementation
-        Map<String, String> conf = buildStormTopologyActionsConfigMap(namespace, streamingEngine);
+        Map<String, Object> conf = buildStormTopologyActionsConfigMap(namespace, streamingEngine, subject);
 
         String className = actionsImpl.getClassName();
         return initTopologyActions(conf, className);
     }
 
-    private TopologyActions initTopologyActions(Map<String, String> conf, String className) {
+    private TopologyActions initTopologyActions(Map<String, Object> conf, String className) {
         try {
             TopologyActions topologyActions = instantiate(className);
             topologyActions.init(conf);
@@ -87,7 +91,7 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
         }
     }
 
-    private Map<String, String> buildStormTopologyActionsConfigMap(Namespace namespace, String streamingEngine) {
+    private Map<String, Object> buildStormTopologyActionsConfigMap(Namespace namespace, String streamingEngine, Subject subject) {
         // Assuming that a namespace has one mapping of streaming engine
         Service streamingEngineService = getFirstOccurenceServiceForNamespace(namespace, streamingEngine);
         if (streamingEngineService == null) {
@@ -109,7 +113,7 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
 
         assertHostsAndPort(nimbus.getName(), nimbusHosts, nimbusPort);
 
-        Map<String, String> conf = new HashMap<>();
+        Map<String, Object> conf = new HashMap<>();
 
         // We need to have some local configurations anyway because topology submission can't be done with REST API.
         String stormJarLocation = streamlineConf.get(STREAMLINE_STORM_JAR);
@@ -127,6 +131,7 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
         conf.put(NIMBUS_SEEDS, String.join(",", nimbusHosts));
         conf.put(NIMBUS_PORT, String.valueOf(nimbusPort));
         conf.put(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY, buildStormRestApiRootUrl(uiHost, uiPort));
+        conf.put(TopologyLayoutConstants.SUBJECT_OBJECT, subject);
 
         putStormSecurityConfigurations(streamingEngineService, conf);
 
@@ -137,7 +142,7 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
         return conf;
     }
 
-    private void putStormSecurityConfigurations(Service streamingEngineService, Map<String, String> conf) {
+    private void putStormSecurityConfigurations(Service streamingEngineService, Map<String, Object> conf) {
         ServiceConfiguration storm = getServiceConfiguration(streamingEngineService, SERVICE_CONFIGURATION_STORM)
                 .orElse(new ServiceConfiguration());
         ServiceConfiguration stormEnv = getServiceConfiguration(streamingEngineService, SERVICE_CONFIGURATION_STORM_ENV)

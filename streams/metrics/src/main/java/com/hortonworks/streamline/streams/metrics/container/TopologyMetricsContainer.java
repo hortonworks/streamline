@@ -28,6 +28,7 @@ import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.streamline.streams.metrics.TimeSeriesQuerier;
 import com.hortonworks.streamline.streams.metrics.topology.TopologyMetrics;
 
+import javax.security.auth.Subject;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,8 +38,11 @@ public class TopologyMetricsContainer extends NamespaceAwareContainer<TopologyMe
     public static final String COMPONENT_NAME_METRICS_COLLECTOR = ComponentPropertyPattern.METRICS_COLLECTOR.name();
     public static final String COLLECTOR_API_URL_KEY = "collectorApiUrl";
 
-    public TopologyMetricsContainer(EnvironmentService environmentService) {
+    private final Subject subject;
+
+    public TopologyMetricsContainer(EnvironmentService environmentService, Subject subject) {
         super(environmentService);
+        this.subject = subject;
     }
 
     @Override
@@ -54,7 +58,7 @@ public class TopologyMetricsContainer extends NamespaceAwareContainer<TopologyMe
         }
 
         // FIXME: "how to initialize" is up to implementation detail - now we just only consider about Storm implementation
-        Map<String, String> conf = buildStormTopologyMetricsConfigMap(namespace, streamingEngine);
+        Map<String, Object> conf = buildStormTopologyMetricsConfigMap(namespace, streamingEngine, subject);
 
         String className = metricsImpl.getClassName();
         TopologyMetrics topologyMetrics = initTopologyMetrics(conf, className);
@@ -83,7 +87,7 @@ public class TopologyMetricsContainer extends NamespaceAwareContainer<TopologyMe
         return topologyMetrics;
     }
 
-    private TopologyMetrics initTopologyMetrics(Map<String, String> conf, String className) {
+    private TopologyMetrics initTopologyMetrics(Map<String, Object> conf, String className) {
         try {
             TopologyMetrics topologyMetrics = instantiate(className);
             topologyMetrics.init(conf);
@@ -104,7 +108,7 @@ public class TopologyMetricsContainer extends NamespaceAwareContainer<TopologyMe
         }
     }
 
-    private Map<String, String> buildStormTopologyMetricsConfigMap(Namespace namespace, String streamingEngine) {
+    private Map<String, Object> buildStormTopologyMetricsConfigMap(Namespace namespace, String streamingEngine, Subject subject) {
         // Assuming that a namespace has one mapping of streaming engine
         Service streamingEngineService = getFirstOccurenceServiceForNamespace(namespace, streamingEngine);
         if (streamingEngineService == null) {
@@ -119,8 +123,9 @@ public class TopologyMetricsContainer extends NamespaceAwareContainer<TopologyMe
 
         assertHostAndPort(uiServer.getName(), uiHost, uiPort);
 
-        Map<String, String> conf = new HashMap<>();
+        Map<String, Object> conf = new HashMap<>();
         conf.put(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY, buildStormRestApiRootUrl(uiHost, uiPort));
+        conf.put(TopologyLayoutConstants.SUBJECT_OBJECT, subject);
         return conf;
     }
 

@@ -16,15 +16,13 @@
 package com.hortonworks.streamline.streams.cluster.bundle.impl;
 
 import com.google.common.collect.Lists;
-import mockit.Expectations;
-import mockit.Mocked;
-import mockit.Verifications;
-import mockit.integration.junit4.JMockit;
+
 import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.HBaseMetadataService;
-import com.hortonworks.streamline.streams.cluster.service.metadata.common.Tables;
-import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.Tables;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +30,11 @@ import org.junit.runner.RunWith;
 
 import java.util.List;
 import java.util.Map;
+
+import mockit.Expectations;
+import mockit.Mocked;
+import mockit.Verifications;
+import mockit.integration.junit4.JMockit;
 
 @RunWith(JMockit.class)
 public class HBaseBundleHintProviderTest {

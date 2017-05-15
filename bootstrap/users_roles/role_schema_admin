@@ -1,0 +1,7 @@
+{
+  "name": "ROLE_SCHEMA_ADMIN",
+  "displayName": "Schema Admin",
+  "description": "Role that can create schema registry schema from streamline",
+  "metadata": "{\"colorCode\":\"#9e4c75\",\"colorLabel\":\"pink\",\"icon\":\"file-code-o\"}",
+  "system": true
+}

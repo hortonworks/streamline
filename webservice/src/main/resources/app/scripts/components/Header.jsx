@@ -47,15 +47,6 @@ export default class Header extends Component {
               {this.props.headerContent}
             </div>
             <ul className="nav pull-right">
-              {app_state.streamline_config.secureMode ?
-                <li>
-                  <Link to="/user-roles" role="button">
-                    {users}
-                  </Link>
-                </li>
-                :
-                null
-              }
               <li>
                 <a role="button" href="javascript:void(0);">
                   {userIcon}

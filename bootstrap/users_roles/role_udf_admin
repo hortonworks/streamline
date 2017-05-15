@@ -1,0 +1,7 @@
+{
+  "name": "ROLE_UDF_ADMIN",
+  "displayName": "UDF Admin",
+  "description": "Role that can upload and manage UDFs and UDAFs",
+  "metadata": "{\"colorCode\":\"#dcaa15\",\"colorLabel\":\"yellow\",\"icon\":\"code\"}",
+  "system": true
+}

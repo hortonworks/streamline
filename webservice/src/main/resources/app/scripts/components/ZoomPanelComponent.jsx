@@ -21,7 +21,7 @@ import {observer} from 'mobx-react';
 @observer
 class  ZoomPanelComponent extends Component {
   render(){
-    const {lastUpdatedTime,versionName,zoomInAction,zoomOutAction,showConfig,confirmMode,testRunActivated,eventLogData,handleEventLogHide} = this.props;
+    const {lastUpdatedTime,versionName,zoomInAction,zoomOutAction,showConfig,confirmMode,testRunActivated,testCompleted,handleEventLogHide} = this.props;
     return (
       <div className="zoomWrap clearfix">
         <div className="topology-editor-controls pull-right">
@@ -73,7 +73,7 @@ class  ZoomPanelComponent extends Component {
             </a>
           </OverlayTrigger>
           {
-            eventLogData.length && testRunActivated
+            testCompleted && testRunActivated
             ? <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip"> Event Log </Tooltip>}>
                 <a href="javascript:void(0);" className="config" onClick={handleEventLogHide.bind(this,true,'panel')}>
                   <i className="fa fa-flask"></i>

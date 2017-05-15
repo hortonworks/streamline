@@ -27,6 +27,7 @@ import com.hortonworks.streamline.streams.security.catalog.Role;
 import com.hortonworks.streamline.streams.security.catalog.RoleHierarchy;
 import com.hortonworks.streamline.streams.security.catalog.User;
 import com.hortonworks.streamline.streams.security.catalog.UserRole;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,6 +131,12 @@ public class SecurityCatalogService {
 
     public Collection<User> listUsers(List<QueryParam> params) {
         return fillRoles(dao.find(User.NAMESPACE, params));
+    }
+
+    // list of users that have the given role
+    public Collection<User> listUsers(Role role) {
+        List<QueryParam> qps = QueryParam.params(UserRole.ROLE_ID, role.getId().toString());
+        return listUserRoles(qps).stream().map(ur -> getUser(ur.getUserId())).collect(Collectors.toSet());
     }
 
     public User getUser(String name) {
@@ -387,11 +394,17 @@ public class SecurityCatalogService {
 
     private void validateRole(Role role) {
         Utils.requireNonEmpty(role.getName(), "Role name");
+        if (StringUtils.isNumeric(role.getName())) {
+            throw new IllegalArgumentException("Role name cannot be numeric");
+        }
         StorageUtils.ensureUnique(role, this::listRoles, QueryParam.params(User.NAME, role.getName()));
     }
 
     private void validateUser(User user) {
         Utils.requireNonEmpty(user.getName(), "User name");
+        if (StringUtils.isNumeric(user.getName())) {
+            throw new IllegalArgumentException("User name cannot be numeric");
+        }
         StorageUtils.ensureUnique(user, this::listUsers, QueryParam.params(User.NAME, user.getName()));
     }
 

@@ -27,6 +27,7 @@ import com.hortonworks.streamline.streams.metrics.container.TopologyMetricsConta
 import com.hortonworks.streamline.streams.metrics.topology.TopologyMetrics;
 import com.hortonworks.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
 
+import javax.security.auth.Subject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,9 +40,9 @@ public class TopologyMetricsService implements ContainingNamespaceAwareContainer
     private final EnvironmentService environmentService;
     private final TopologyMetricsContainer topologyMetricsContainer;
 
-    public TopologyMetricsService(EnvironmentService environmentService) {
+    public TopologyMetricsService(EnvironmentService environmentService, Subject subject) {
         this.environmentService = environmentService;
-        this.topologyMetricsContainer = new TopologyMetricsContainer(environmentService);
+        this.topologyMetricsContainer = new TopologyMetricsContainer(environmentService, subject);
     }
 
     public Map<String, TopologyMetrics.ComponentMetric> getTopologyMetrics(Topology topology, String asUser) throws IOException {

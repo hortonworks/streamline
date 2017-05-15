@@ -37,6 +37,44 @@ const deployStatusText = {
   TOPOLOGY_STATE_DEPLOYMENT_FAILED : 'Topology State Deployment Failed'
 };
 
+const colorOptions = [
+  {value: '#8261be', label: 'purple'},
+  {value: '#ce761b', label: 'orange'},
+  {value: '#dcaa15', label: 'yellow'},
+  {value: '#4c979f', label: 'blue'},
+  {value: '#529e4c', label: 'green'},
+  {value: '#9e8a4c', label: 'brown'},
+  {value: '#9e4c75', label: 'pink'},
+  {value: '#000000', label: 'black'}
+];
+
+const iconOptions = [
+  {value: 'gears'},
+  {value: 'sitemap'},
+  {value: 'file-code-o'},
+  {value: 'code'},
+  {value: 'shield'},
+  {value: 'bell'},
+  {value: 'file'},
+  {value: 'lock'},
+  {value: 'key'},
+  {value: 'cubes'}
+];
+
+const rolePriorities = [
+  {name: "ROLE_SECURITY_ADMIN", priority: 1},
+  {name: "ROLE_TOPOLOGY_ADMIN", priority: 2},
+  {name: "ROLE_TOPOLOGY_COMPONENT_BUNDLE_USER", priority: 3},
+  {name: "ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN", priority: 2},
+  {name: "ROLE_CLUSTER_ADMIN", priority: 2},
+  {name: "ROLE_FILE_ADMIN", priority: 2},
+  {name: "ROLE_UDF_ADMIN", priority: 2},
+  {name: "ROLE_NOTIFIER_ADMIN", priority: 2},
+  {name: "ROLE_NOTIFICATION_USER", priority: 3},
+  {name: "ROLE_SCHEMA_USER", priority: 3},
+  {name: "ROLE_SCHEMA_ADMIN", priority: 2}
+];
+
 export {
   baseUrl,
   pageSize,
@@ -45,5 +83,8 @@ export {
   toastOpt,
   PieChartColor,
   deleteNodeIdArr,
-  deployStatusText
+  deployStatusText,
+  colorOptions,
+  iconOptions,
+  rolePriorities
 };

@@ -47,21 +47,21 @@ function run_cmd {
 function post {
   uri=$1
   data=$2
-  cmd="curl -sS -X POST ${CATALOG_ROOT_URL}$uri --data @$data -H 'Content-Type: application/json'"
+  cmd="curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -sS -X POST ${CATALOG_ROOT_URL}$uri --data @$data -H 'Content-Type: application/json'"
   echo "POST $data"
   run_cmd $cmd
 }
 
 function add_sample_topology_component_bundle {
   echo "POST sample_bundle"
-  cmd="curl -sS -X POST -i -F topologyComponentBundle=@$bootstrap_dir/kafka-topology-bundle ${CATALOG_ROOT_URL}/streams/componentbundles/SOURCE/"
+  cmd="curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -sS -X POST -i -F topologyComponentBundle=@$bootstrap_dir/kafka-topology-bundle ${CATALOG_ROOT_URL}/streams/componentbundles/SOURCE/"
   run_cmd $cmd
 }
 
 function add_topology_component_bundle {
   uri=$1
   data=$2
-  cmd="curl -sS -X POST -i -F topologyComponentBundle=@$data ${CATALOG_ROOT_URL}$uri"
+  cmd="curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -sS -X POST -i -F topologyComponentBundle=@$data ${CATALOG_ROOT_URL}$uri"
   echo "POST $data"
   run_cmd $cmd
 }
@@ -171,6 +171,21 @@ function add_all_bundles {
     # === anonymous user ===
     post /users ${user_role_dir}/user_anon.json
 
+    # === system roles ===
+    for i in ${user_role_dir}/role_*
+    do
+     echo "Adding $(basename $i)"
+     post /roles $i
+    done
+
+    # === role hierarchy  ===
+    for i in ${user_role_dir}/children_*
+    do
+     role_name=$(basename $i | cut -d'_' -f2-)
+     echo "Adding child roles for $role_name"
+     post /roles/$role_name/children $i
+    done
+
     #----------------------------------
     # Execute other bootstrap scripts
     #----------------------------------
@@ -185,7 +200,7 @@ function add_all_bundles {
 function main {
     echo ""
     echo "===================================================================================="
-    echo "Running bootstrap.sh will create streamline default components, notifiers and udfs."
+    echo "Running bootstrap.sh will create streamline default components, notifiers, udfs and roles"
     add_all_bundles
 }
 

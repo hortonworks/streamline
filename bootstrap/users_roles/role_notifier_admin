@@ -1,0 +1,7 @@
+{
+  "name": "ROLE_NOTIFIER_ADMIN",
+  "displayName": "Notifer Admin",
+  "description": "Role that can upload and manage Notifiers",
+  "metadata": "{\"colorCode\":\"#9e8a4c\",\"colorLabel\":\"brown\",\"icon\":\"bell\"}",
+  "system": true
+}

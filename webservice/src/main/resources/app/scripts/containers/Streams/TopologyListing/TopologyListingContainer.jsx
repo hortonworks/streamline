@@ -32,6 +32,7 @@ import Utils from '../../../utils/Utils';
 import TopologyUtils from '../../../utils/TopologyUtils';
 import FSReactToastr from '../../../components/FSReactToastr';
 import EnvironmentREST from '../../../rest/EnvironmentREST';
+import MiscREST from '../../../rest/MiscREST';
 
 /* component import */
 import BaseContainer from '../../BaseContainer';
@@ -306,7 +307,8 @@ class TopologyListingContainer extends Component {
       pageSize: 9,
       cloneFromId: null,
       checkEnvironment: false,
-      sourceCheck: false
+      sourceCheck: false,
+      searchLoader : false
     };
 
     this.fetchData();
@@ -347,13 +349,38 @@ class TopologyListingContainer extends Component {
         } else {
           sourceFlag = true;
         }
-        this.setState({fetchLoader: false, entities: result, pageIndex: 0, checkEnvironment: environmentFlag, sourceCheck: sourceFlag});
+        this.setState({fetchLoader: false, entities: result, pageIndex: 0, checkEnvironment: environmentFlag, sourceCheck: sourceFlag,searchLoader:false});
       }
     });
   }
 
   onFilterChange = (e) => {
-    this.setState({filterValue: e.target.value.trim()});
+    this.setState({filterValue: e.target.value.trim()}, () => {
+      this.getFilteredEntities();
+    });
+  }
+
+  getFilteredEntities = () => {
+    clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => {
+      const {filterValue,sorted} = this.state;
+      this.setState({searchLoader: true}, () => {
+        if(filterValue !== ''){
+          MiscREST.searchEntities('topology', filterValue,sorted.key).then((topology)=>{
+            if (topology.responseMessage !== undefined) {
+              FSReactToastr.error(
+                <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt);
+              this.setState({searchLoader: false});
+            } else {
+              let result = topology.entities;
+              this.setState({searchLoader: false, entities: result, pageIndex: 0});
+            }
+          });
+        } else {
+          this.fetchData();
+        }
+      });
+    }, 500);
   }
 
   fetchSingleTopology = (ID) => {
@@ -499,25 +526,23 @@ class TopologyListingContainer extends Component {
     }
     el.target.parentElement.setAttribute("class", "active");
     const sortKey = (eventKey.toString() === "name")
-      ? "name&ascending=true"
+      ? "name"
       : eventKey;
-    this.setState({fetchLoader: true});
-    TopologyREST.getAllTopology(sortKey).then((topology) => {
+    this.setState({searchLoader: true});
+    const {filterValue} = this.state;
+
+    MiscREST.searchEntities('topology', filterValue,sortKey).then((topology)=>{
       if (topology.responseMessage !== undefined) {
         FSReactToastr.error(
           <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt);
+        this.setState({searchLoader: false});
       } else {
-        let result = Utils.sortArray(topology.entities.slice(), 'timestamp', false);
         const sortObj = {
           key: eventKey,
           text: Utils.sortByKey(eventKey)
         };
-        this.setState({fetchLoader: false, entities: result, sorted: sortObj});
+        this.setState({searchLoader: false, entities: topology.entities, sorted: sortObj});
       }
-    }).catch((err) => {
-      this.setState({fetchLoader: false});
-      FSReactToastr.error(
-        <CommonNotification flag="error" content={err.message}/>, '', toastOpt);
     });
   }
 
@@ -641,10 +666,10 @@ class TopologyListingContainer extends Component {
       pageIndex,
       checkEnvironment,
       sourceCheck,
-      refIdArr
+      refIdArr,
+      searchLoader
     } = this.state;
-    const filteredEntities = TopologyUtils.topologyFilter(entities, filterValue,'topology');
-    const splitData = _.chunk(filteredEntities, pageSize) || [];
+    const splitData = _.chunk(entities, pageSize) || [];
     const btnIcon = <i className="fa fa-plus"></i>;
     const sortTitle = <span>Sort:<span style={{
       color: "#006ea0"
@@ -687,9 +712,9 @@ class TopologyListingContainer extends Component {
                           <MenuItem active={this.state.sorted.key === "last_updated" ? true : false } onClick={this.onSortByClicked.bind(this, "last_updated")}>
                             &nbsp;Last Update
                           </MenuItem>
-                          <MenuItem active={this.state.sorted.key === "status" ? true : false } onClick={this.onSortByClicked.bind(this, "status")}>
+                          {/*<MenuItem active={this.state.sorted.key === "status" ? true : false } onClick={this.onSortByClicked.bind(this, "status")}>
                             &nbsp;Status
-                          </MenuItem>
+                          </MenuItem>*/}
                         </DropdownButton>
                       </div>
                       <div className="col-md-1 col-sm-3 text-left"></div>
@@ -701,7 +726,7 @@ class TopologyListingContainer extends Component {
           : ''
 }
         <div className="row">
-          {(fetchLoader)
+          {(fetchLoader || searchLoader)
             ? <CommonLoaderSign imgName={"applications"}/>
             : (splitData.length === 0)
               ? <NoData environmentFlag={checkEnvironment} imgName={"applications"} sourceCheck={sourceCheck} searchVal={filterValue}/>
@@ -710,8 +735,8 @@ class TopologyListingContainer extends Component {
               })
 }
         </div>
-        {(filteredEntities.length > pageSize)
-          ? <Paginate len={filteredEntities.length} splitData={splitData} pagesize={pageSize} pagePosition={this.pagePosition}/>
+        {(entities.length > pageSize)
+          ? <Paginate len={entities.length} splitData={splitData} pagesize={pageSize} pagePosition={this.pagePosition}/>
           : ''
 }
         <Modal ref={(ref) => this.AddTopologyModelRef = ref} data-title="Add Application" onKeyPress={this.handleKeyPress} data-resolve={this.handleSaveClicked}>

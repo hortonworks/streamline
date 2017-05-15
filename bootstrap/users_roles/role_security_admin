@@ -1,0 +1,7 @@
+{
+  "name": "ROLE_SECURITY_ADMIN",
+  "displayName": "Security Admin",
+  "description": "Security administrator who can create users, assign roles etc",
+  "metadata": "{\"colorCode\":\"#0\",\"colorLabel\":\"black\",\"icon\":\"shield\"}",
+  "system": true
+}

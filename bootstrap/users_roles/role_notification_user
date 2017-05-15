@@ -1,0 +1,7 @@
+{
+  "name": "ROLE_NOTIFICATION_USER",
+  "displayName": "Notification User",
+  "description": "Role that can user the notifiers as part of the topology to send out notifications",
+  "metadata": "{\"colorCode\":\"#4c979f\",\"colorLabel\":\"blue\",\"icon\":\"bell\"}",
+  "system": true
+}

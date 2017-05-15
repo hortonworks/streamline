@@ -29,7 +29,7 @@ import java.util.Map;
  */
 public interface TopologyActions {
     // Any one time initialization is done here
-    void init (Map<String, String> conf);
+    void init (Map<String, Object> conf);
 
     // Deploy the artifact generated using the underlying streaming
     // engine

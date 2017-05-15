@@ -31,7 +31,7 @@ then
     exit 1
   fi
 fi
-curl -X POST "${CATALOG_ROOT_URL}/notifiers" -F notifierJarFile=@${jarFile} -F notifierConfig='{
+curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -X POST "${CATALOG_ROOT_URL}/notifiers" -F notifierJarFile=@${jarFile} -F notifierConfig='{
   "name": "email_notifier.json",
   "description": "testing",
   "className": "com.hortonworks.streamline.streams.notifiers.EmailNotifier",
@@ -56,7 +56,7 @@ curl -X POST "${CATALOG_ROOT_URL}/notifiers" -F notifierJarFile=@${jarFile} -F n
 echo
 
 echo "Adding Console notifier"
-curl -X POST "${CATALOG_ROOT_URL}/notifiers" -F notifierJarFile=@${jarFile} -F notifierConfig='{
+curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -X POST "${CATALOG_ROOT_URL}/notifiers" -F notifierJarFile=@${jarFile} -F notifierConfig='{
   "name": "console_notifier",
   "description": "testing",
   "className": "com.hortonworks.streamline.streams.notifiers.ConsoleNotifier",
