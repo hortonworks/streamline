@@ -133,7 +133,7 @@ public class SchemaResource {
             LOG.info("Received path: [{}]", topicName);
             // for now, takes care of kafka for topic values. We will enhance to work this to get schema for different
             // sources based on given properties.
-            String schemaName = topicName + ":v";
+            final String schemaName = topicName;
             SchemaVersionInfo schemaVersionInfo = Subject.doAs(subject, new PrivilegedExceptionAction<SchemaVersionInfo>() {
                 @Override
                 public SchemaVersionInfo run() throws SchemaNotFoundException {
