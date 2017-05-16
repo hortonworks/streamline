@@ -30,9 +30,11 @@ public class ServiceConfigurationReader implements ServiceConfigurationReadable 
 
     @Override
     public Map<Long, Map<String, String>> readAllClusters(String serviceName) {
-        // FIXME: assertions or some validations
-
         Namespace namespace = environmentService.getNamespace(namespaceId);
+
+        if (namespace == null) {
+            throw new IllegalArgumentException("Namespace " + namespaceId + " doesn't exist.");
+        }
 
         Long namespaceId = namespace.getId();
 
@@ -85,10 +87,11 @@ public class ServiceConfigurationReader implements ServiceConfigurationReadable 
     @Override
     public Map<String, String> read(String clusterName, String serviceName) {
         Collection<Cluster> clusters = environmentService.listClusters(
-                Lists.newArrayList(new QueryParam("namespaceId", String.valueOf(namespaceId)),
-                        new QueryParam("name", clusterName)));
+                Lists.newArrayList(new QueryParam("name", clusterName)));
 
-        // FIXME: assertions or some validations
+        if (clusters.isEmpty()) {
+            throw new IllegalArgumentException("Cluster with name " + clusterName + " doesn't exist.");
+        }
 
         Cluster cluster = clusters.iterator().next();
         return read(cluster.getId(), serviceName);
