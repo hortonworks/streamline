@@ -146,7 +146,7 @@ public class ClusterCatalogResource {
     @POST
     @Path("/clusters")
     public Response addCluster(Cluster cluster, @Context SecurityContext securityContext) {
-        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_CLUSTER_ADMIN);
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_SERVICE_POOL_ADMIN);
         String clusterName = cluster.getName();
         String ambariImportUrl = cluster.getAmbariImportUrl();
         Cluster result = environmentService.getClusterByNameAndImportUrl(clusterName, ambariImportUrl);
@@ -191,7 +191,7 @@ public class ClusterCatalogResource {
     @Timed
     public Response verifyAmbariUrl(AmbariClusterImportParams params,
                                     @Context SecurityContext securityContext) {
-        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_CLUSTER_ADMIN);
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_SERVICE_POOL_ADMIN);
         // Not assigning to interface to apply a hack
         AmbariServiceNodeDiscoverer discoverer = new AmbariServiceNodeDiscoverer(params.getAmbariRestApiRootUrl(),
                 params.getUsername(), params.getPassword());

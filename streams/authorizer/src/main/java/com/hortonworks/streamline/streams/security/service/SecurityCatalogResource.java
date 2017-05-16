@@ -540,9 +540,9 @@ public class SecurityCatalogResource {
         EnumSet<Permission> remaining = aclEntry.getPermissions();
         Collection<AclEntry> userAcls = catalogService.listUserAcls(currentUser.getId(), aclEntry.getObjectNamespace(), aclEntry.getObjectId());
         for (AclEntry userAcl : userAcls) {
-            if (userAcl.getOwner()) {
+            if (userAcl.isOwner()) {
                 return true;
-            } else if (userAcl.getGrant()) {
+            } else if (userAcl.isGrant()) {
                 remaining.removeAll(userAcl.getPermissions());
                 if (remaining.isEmpty()) {
                     return true;
@@ -554,9 +554,9 @@ public class SecurityCatalogResource {
         for (Role role : currentUserRoles) {
             Collection<AclEntry> roleAcls = catalogService.listRoleAcls(role.getId(), aclEntry.getObjectNamespace(), aclEntry.getObjectId());
             for (AclEntry roleAcl : roleAcls) {
-                if (roleAcl.getOwner()) {
+                if (roleAcl.isOwner()) {
                     return true;
-                } else if (roleAcl.getGrant()) {
+                } else if (roleAcl.isGrant()) {
                     remaining.removeAll(roleAcl.getPermissions());
                     if (remaining.isEmpty()) {
                         return true;

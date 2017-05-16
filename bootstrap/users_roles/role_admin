@@ -2,6 +2,6 @@
   "name": "ROLE_ADMIN",
   "displayName": "Admin",
   "description": "Super user role that has all the system roles and privileges",
-  "metadata": "{\"colorCode\":\"#8261be\",\"colorLabel\":\"purple\",\"icon\":\"gears\", \"menu\": [\"udf\", \"topology\", \"authorizer\", \"notifier\", \"servicepool\", \"environments\"]}",
-  "system": true
+  "metadata": "{\"colorCode\":\"#8261be\",\"colorLabel\":\"purple\",\"icon\":\"gears\", \"menu\": [\"udf\", \"dashboard\", \"topology\", \"authorizer\", \"notifier\", \"servicepool\", \"environments\"], \"capabilities\": [{\"Applications\": \"Edit\"}, {\"Service Pool\": \"Edit\"}, {\"Environments\": \"Edit\"}, {\"Users\": \"Edit\"}]}",
+  "system": false
 }

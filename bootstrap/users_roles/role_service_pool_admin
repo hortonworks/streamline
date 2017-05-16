@@ -1,0 +1,7 @@
+{
+  "name": "ROLE_SERVICE_POOL_ADMIN",
+  "displayName": "Service Pool Admin",
+  "description": "Role that can create and manage service pools",
+  "metadata": "{\"colorCode\":\"#ce761b\",\"colorLabel\":\"orange\",\"icon\":\"lock\", \"menu\": [\"servicepool\"]}",
+  "system": true
+}

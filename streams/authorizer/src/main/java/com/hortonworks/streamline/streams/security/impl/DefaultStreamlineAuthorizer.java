@@ -200,7 +200,7 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
                 }
             }
         }
-        LOG.debug("User: {}, Role: {}, Result: ", user.getName(), roleName, res);
+        LOG.debug("User: {}, Role: {}, Result: {}", user.getName(), roleName, res);
         return res;
     }
 }

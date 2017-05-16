@@ -1,0 +1,7 @@
+{
+  "name": "ROLE_ENVIRONMENT_ADMIN",
+  "displayName": "Environment Admin",
+  "description": "Role that can create and manage environments",
+  "metadata": "{\"colorCode\":\"#ce761b\",\"colorLabel\":\"orange\",\"icon\":\"lock\", \"menu\": [\"environments\"]}",
+  "system": true
+}

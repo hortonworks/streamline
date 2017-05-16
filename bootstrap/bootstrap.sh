@@ -46,7 +46,7 @@ function run_cmd {
 
 function getId {
   str=$1
-  echo $str | grep -o -E "\"id\":\d+" | head -n1 | cut -d : -f2
+  echo $str | grep -o -E "\"id\":[0-9]+" | head -n1 | cut -d : -f2
 }
 
 function getAdminRoleId {

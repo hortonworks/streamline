@@ -269,15 +269,6 @@ public class SecurityCatalogService {
         return dao.remove(new StorableKey(UserRole.NAMESPACE, userRole.getPrimaryKey()));
     }
 
-    public Collection<AclEntry> listAclsForUserOnObject(Long userId, String objectNamespace, Long objectId) {
-        List<QueryParam> qps = QueryParam.params(
-                AclEntry.SID_ID, userId.toString(),
-                AclEntry.OBJECT_NAMESPACE, objectNamespace,
-                AclEntry.OBJECT_ID, objectId.toString()
-        );
-        return listAcls(qps);
-    }
-
     public Collection<AclEntry> listAcls() {
         return this.dao.list(AclEntry.NAMESPACE);
     }
