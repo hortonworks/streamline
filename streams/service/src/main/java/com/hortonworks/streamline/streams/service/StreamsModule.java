@@ -67,7 +67,6 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         List<Object> result = new ArrayList<>();
         String catalogRootUrl = (String) config.get(Constants.CONFIG_CATALOG_ROOT_URL);
         final Subject subject = (Subject) config.get(Constants.CONFIG_SUBJECT);  // Authorized subject
-
         MLModelRegistryClient modelRegistryClient = new MLModelRegistryClient(catalogRootUrl);
         final StreamCatalogService streamcatalogService = new StreamCatalogService(storageManager, fileStorage, modelRegistryClient);
         final EnvironmentService environmentService = new EnvironmentService(storageManager);
