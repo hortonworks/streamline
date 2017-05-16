@@ -19,11 +19,11 @@ package com.hortonworks.streamline.webservice;
 
 import com.google.common.cache.CacheBuilder;
 
+import com.hortonworks.registries.auth.Login;
 import com.hortonworks.registries.common.ServletFilterConfiguration;
 import com.hortonworks.streamline.cache.Cache;
 import com.hortonworks.streamline.common.Constants;
 import com.hortonworks.streamline.common.ModuleRegistration;
-import com.hortonworks.streamline.common.security.authenticator.Login;
 import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.common.util.ReflectionHelper;
 import com.hortonworks.streamline.storage.CacheBackedStorageManager;

@@ -39,11 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-
-import javax.security.auth.Subject;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -64,11 +59,9 @@ public class SchemaResource {
     private static final Logger LOG = LoggerFactory.getLogger(SchemaResource.class);
 
     private final SchemaRegistryClient schemaRegistryClient;
-    private final Subject subject;
 
-    public SchemaResource(SchemaRegistryClient schemaRegistryClient, Subject subject) {
+    public SchemaResource(SchemaRegistryClient schemaRegistryClient) {
         this.schemaRegistryClient = schemaRegistryClient;
-        this.subject = subject;
     }
 
     @POST
@@ -81,12 +74,7 @@ public class SchemaResource {
         SchemaIdVersion schemaIdVersion = null;
         SchemaMetadata schemaMetadata = streamsSchemaInfo.getSchemaMetadata();
         String schemaName = schemaMetadata.getName();
-        Long schemaMetadataId = Subject.doAs(subject, new PrivilegedAction<Long>() {
-            @Override
-            public Long run() {
-                return schemaRegistryClient.registerSchemaMetadata(schemaMetadata);
-            }
-        });
+        Long schemaMetadataId = schemaRegistryClient.registerSchemaMetadata(schemaMetadata);
         LOG.info("Registered schemaMetadataId [{}] for schema with name:[{}]", schemaMetadataId, schemaName);
 
         String streamsSchemaText = streamsSchemaInfo.getSchemaVersion().getSchemaText();
@@ -94,31 +82,22 @@ public class SchemaResource {
             // convert streams schema to avro schema.
             String avroSchemaText = AvroStreamlineSchemaConverter.convertStreamlineSchemaToAvroSchema(streamsSchemaText);
             SchemaVersion avroSchemaVersion = new SchemaVersion(avroSchemaText, streamsSchemaInfo.getSchemaVersion().getDescription());
-            schemaIdVersion = Subject.doAs(subject, new PrivilegedExceptionAction<SchemaIdVersion>() {
-                @Override
-                public SchemaIdVersion run() throws SchemaNotFoundException, InvalidSchemaException, IncompatibleSchemaException {
-                    return schemaRegistryClient.addSchemaVersion(schemaName, avroSchemaVersion);
-                }
-            });
-
-        } catch (PrivilegedActionException e) {
-            Exception ex = e.getException();
-            if (SchemaNotFoundException.class.isAssignableFrom(ex.getClass())) {
-                LOG.error("Schema not found for topic: [{}]", schemaName, e);
-                throw EntityNotFoundException.byId(schemaName);
-            } else if (InvalidSchemaException.class.isAssignableFrom(ex.getClass())) {
-                String errMsg = String.format("Invalid schema received for schema with name [%s] : [%s]", schemaName, streamsSchemaText);
-                LOG.error(errMsg, e);
-                throw BadRequestException.message(errMsg, e);
-            } else if (IncompatibleSchemaException.class.isAssignableFrom(ex.getClass())) {
-                String errMsg = String.format("Incompatible schema received for schema with name [%s] : [%s]", schemaName, streamsSchemaText);
-                LOG.error(errMsg, e);
-                throw BadRequestException.message(errMsg, e);
-            } else {
-                throw new RuntimeException(e);
-            }
+            schemaIdVersion = schemaRegistryClient.addSchemaVersion(schemaName, avroSchemaVersion);
+        } catch (InvalidSchemaException e) {
+            String errMsg = String.format("Invalid schema received for schema with name [%s] : [%s]", schemaName, streamsSchemaText);
+            LOG.error(errMsg, e);
+            throw BadRequestException.message(errMsg, e);
+        } catch (SchemaNotFoundException e) {
+            String errMsg = String.format("Schema not found for topic: [{}]", schemaName, e);
+            LOG.error(errMsg, e);
+            throw EntityNotFoundException.byId(schemaName);
+        } catch (IncompatibleSchemaException e) {
+            String errMsg = String.format("Incompatible schema received for schema with name [%s] : [%s]", schemaName, streamsSchemaText);
+            LOG.error(errMsg, e);
+            throw BadRequestException.message(errMsg, e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
         return WSUtils.respondEntity(schemaIdVersion, OK);
     }
 
@@ -134,12 +113,7 @@ public class SchemaResource {
             // for now, takes care of kafka for topic values. We will enhance to work this to get schema for different
             // sources based on given properties.
             final String schemaName = topicName;
-            SchemaVersionInfo schemaVersionInfo = Subject.doAs(subject, new PrivilegedExceptionAction<SchemaVersionInfo>() {
-                @Override
-                public SchemaVersionInfo run() throws SchemaNotFoundException {
-                    return schemaRegistryClient.getLatestSchemaVersionInfo(schemaName);
-                }
-            });
+            SchemaVersionInfo schemaVersionInfo = schemaRegistryClient.getLatestSchemaVersionInfo(schemaName);
             String schema = schemaVersionInfo != null ? schemaVersionInfo.getSchemaText() : null;
             LOG.debug("######### Received schema from schema registry: ", schema);
             if (schema != null && !schema.isEmpty()) {
@@ -147,18 +121,14 @@ public class SchemaResource {
             }
             LOG.debug("######### Converted schema: {}", schema);
             return WSUtils.respondEntity(schema, OK);
-        } catch (PrivilegedActionException e) {
-            Exception ex = e.getException();
-            if (SchemaNotFoundException.class.isAssignableFrom(ex.getClass())) {
-                // ignore and log error
-                LOG.error("Schema not found for topic: [{}]", topicName, e);
-                throw EntityNotFoundException.byId(topicName);
-            } else {
-                throw new RuntimeException(e);
-            }
+        } catch (SchemaNotFoundException e) {
+            LOG.error("Schema not found for topic: [{}]", topicName, e);
+            throw EntityNotFoundException.byId(topicName);
         } catch (JsonProcessingException ex) {
             LOG.error("Error occurred while retrieving schema with name [{}]", topicName, ex);
             throw ex;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

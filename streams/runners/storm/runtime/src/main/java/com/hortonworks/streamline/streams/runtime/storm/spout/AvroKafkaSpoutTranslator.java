@@ -17,11 +17,8 @@
 package com.hortonworks.streamline.streams.runtime.storm.spout;
 
 import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
-import com.hortonworks.streamline.common.security.authenticator.AbstractLogin;
-import com.hortonworks.streamline.common.security.authenticator.KerberosLogin;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
-import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.storm.kafka.spout.KafkaTuple;
 import org.apache.storm.kafka.spout.RecordTranslator;
@@ -30,14 +27,9 @@ import org.apache.storm.tuple.Fields;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.security.auth.Subject;
-import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -51,23 +43,6 @@ public class AvroKafkaSpoutTranslator implements RecordTranslator<Object, ByteBu
     private final String schemaRegistryUrl;
     private final Integer readerSchemaVersion;
     private transient volatile AvroStreamsSnapshotDeserializer avroStreamsSnapshotDeserializer;
-    private static Subject subject;
-    static {
-        String jaasConfigFile = System.getProperty("java.security.auth.login.config");
-        if (jaasConfigFile != null) {
-                KerberosLogin kerberosLogin = new KerberosLogin();
-                kerberosLogin.configure(new HashMap<>(), TopologyLayoutConstants.REGISTRY_CLIENT_SECTION);
-                try {
-                    subject = kerberosLogin.login().getSubject();
-                } catch (LoginException e) {
-                    subject = null;
-                    log.error("Could not login using jaas config  section " + TopologyLayoutConstants.REGISTRY_CLIENT_SECTION);
-                }
-        } else {
-            log.warn("System property for jaas config file is not defined. Its okay if storm is not running in secured mode");
-            subject = null;
-        }
-    }
 
     public AvroKafkaSpoutTranslator (String outputStream, String topic, String dataSourceId, String schemaRegistryUrl, Integer readerSchemaVersion) {
         this.outputStream = outputStream;
@@ -78,17 +53,8 @@ public class AvroKafkaSpoutTranslator implements RecordTranslator<Object, ByteBu
     }
     @Override
     public List<Object> apply (ConsumerRecord<Object, ByteBuffer> consumerRecord) {
-        Map < String, Object > keyValues = null;
-        try {
-            keyValues = Subject.doAs(subject, new PrivilegedExceptionAction<Map<String, Object>>() {
-                @Override
-                public Map<String, Object> run () {
-                    return (Map<String, Object>) deserializer().deserialize(new ByteBufferInputStream(consumerRecord.value()), readerSchemaVersion);
-                }
-            });
-        } catch (PrivilegedActionException e) {
-            throw new RuntimeException(e);
-        }
+        Map < String, Object > keyValues = (Map<String, Object>) deserializer().deserialize(new ByteBufferInputStream(consumerRecord.value()),
+                readerSchemaVersion);
         StreamlineEvent streamlineEvent = StreamlineEventImpl.builder().putAll(keyValues).dataSourceId(dataSourceId).build();
         KafkaTuple kafkaTuple = new KafkaTuple(streamlineEvent);
         kafkaTuple.routedTo(outputStream);

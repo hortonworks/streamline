@@ -95,8 +95,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
                 topologyMetricsService, securityCatalogService));
         result.add(new UDFCatalogResource(authorizer, streamcatalogService, fileStorage));
         result.addAll(getNotificationsRelatedResources(authorizer, streamcatalogService));
-        final SchemaRegistryClient schemaRegistryClient = createSchemaRegistryClient();
-        result.add(new SchemaResource(schemaRegistryClient, subject));
+        result.add(new SchemaResource(createSchemaRegistryClient()));
         result.addAll(getServiceMetadataResources(authorizer, environmentService, subject));
         result.add(new NamespaceCatalogResource(authorizer, streamcatalogService, topologyActionsService, environmentService));
         result.add(new SearchCatalogResource(authorizer, streamcatalogService, environmentService,

@@ -79,7 +79,7 @@ logging:
       maxFileSize: 10MB
 
 #loginConfiguration:
-#  className: "com.hortonworks.streamline.common.security.authenticator.KerberosLogin"
+#  className: "com.hortonworks.registries.auth.KerberosLogin"
 #  params:
 #      kinit.cmd: "/usr/local/bin/kinit"
 #      ticket.renew.window.factor: "0.8"
