@@ -15,15 +15,20 @@
  **/
 package com.hortonworks.streamline.streams.cluster.register.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
+import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +39,8 @@ public class StormServiceRegistrar extends AbstractServiceRegistrar {
     public static final String COMPONENT_NIMBUS = ComponentPropertyPattern.NIMBUS.name();
     public static final String PARAM_STORM_UI_SERVER_HOSTNAME = "uiServerHostname";
     public static final String PARAM_NIMBUS_HOSTNAMES = "nimbusesHostnames";
+    public static final String PARAM_NIMBUS_PRINCIPAL_NAME = "nimbusPrincipalName";
+    public static final String STORM_ENV = ServiceConfigurations.STORM.getConfNames()[1];
 
     @Override
     protected String getServiceName() {
@@ -50,7 +57,25 @@ public class StormServiceRegistrar extends AbstractServiceRegistrar {
 
     @Override
     protected List<ServiceConfiguration> createServiceConfigurations(Config config) {
-        return Collections.emptyList();
+        ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
+        serviceConfiguration.setName(STORM_ENV);
+
+        Map<String, String> confMap = new HashMap<>();
+
+        if (config.contains(PARAM_NIMBUS_PRINCIPAL_NAME)) {
+            String principal = config.get(PARAM_NIMBUS_PRINCIPAL_NAME);
+            confMap.put(TopologyLayoutConstants.STORM_NIMBUS_PRINCIPAL_NAME, principal);
+        }
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            String json = objectMapper.writeValueAsString(confMap);
+            serviceConfiguration.setConfiguration(json);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        return Collections.singletonList(serviceConfiguration);
     }
 
     @Override
