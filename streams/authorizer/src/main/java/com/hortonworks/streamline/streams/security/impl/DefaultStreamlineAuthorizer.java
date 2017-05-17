@@ -122,8 +122,9 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
         String userName = SecurityUtil.getUserName(ctx);
         User user = catalogService.getUser(userName);
         if (user == null || user.getId() == null) {
-            LOG.warn("No such user '{}'", userName);
-            throw new AuthorizationException("No such user '" + userName + "'");
+            String msg = String.format("No such user '%s'", userName);
+            LOG.warn(msg);
+            throw new AuthorizationException(msg);
         }
         AclEntry aclEntry = new AclEntry();
         aclEntry.setObjectId(targetEntityId);
@@ -142,8 +143,9 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
         String userName = SecurityUtil.getUserName(ctx);
         User user = catalogService.getUser(userName);
         if (user == null || user.getId() == null) {
-            LOG.warn("No such user '{}'", userName);
-            throw new AuthorizationException("No such user '" + userName + "'");
+            String msg = String.format("No such user '%s'", userName);
+            LOG.warn(msg);
+            throw new AuthorizationException(msg);
         }
         catalogService.listUserAcls(user.getId(), targetEntityNamespace, targetEntityId).forEach(acl -> {
             LOG.debug("Removing Acl {}", acl);
@@ -156,8 +158,9 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
         String userName = SecurityUtil.getUserName(ctx);
         User user = catalogService.getUser(userName);
         if (user == null || user.getId() == null) {
-            LOG.warn("No such user '{}'", userName);
-            return false;
+            String msg = String.format("No such user '%s'", userName);
+            LOG.warn(msg);
+            throw new AuthorizationException(msg);
         }
         return userHasRole(user, Roles.ROLE_ADMIN) ||
                 catalogService.checkUserPermissions(targetEntityNamespace, targetEntityId, user.getId(), permissions);
@@ -174,8 +177,9 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
         String userName = SecurityUtil.getUserName(ctx);
         User user = catalogService.getUser(userName);
         if (user == null) {
-            LOG.warn("No such user '{}'", userName);
-            return false;
+            String msg = String.format("No such user '%s'", userName);
+            LOG.warn(msg);
+            throw new AuthorizationException(msg);
         }
         return userHasRole(user, Roles.ROLE_ADMIN) || userHasRole(user, role);
     }

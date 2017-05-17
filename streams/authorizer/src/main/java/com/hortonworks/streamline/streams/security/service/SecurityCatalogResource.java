@@ -32,6 +32,8 @@ import com.hortonworks.streamline.streams.security.catalog.RoleHierarchy;
 import com.hortonworks.streamline.streams.security.catalog.User;
 import com.hortonworks.streamline.streams.security.catalog.UserRole;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -66,6 +68,8 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class SecurityCatalogResource {
+    private static final Logger LOG = LoggerFactory.getLogger(SecurityCatalogResource.class);
+
     private final StreamlineAuthorizer authorizer;
     private final SecurityCatalogService catalogService;
 
@@ -80,7 +84,9 @@ public class SecurityCatalogResource {
     @Timed
     public Response listRoles(@Context UriInfo uriInfo,
                               @Context SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
+        if (!SecurityUtil.hasRole(authorizer, securityContext, ROLE_SECURITY_ADMIN)) {
+            LOG.debug("Allowing logged-in user '{}'", SecurityUtil.getUserName(securityContext.getUserPrincipal().getName()));
+        }
         Collection<Role> roles;
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
         List<QueryParam> queryParams = WSUtils.buildQueryParameters(params);
@@ -99,7 +105,9 @@ public class SecurityCatalogResource {
     @Path("/roles/{id}")
     @Timed
     public Response getRole(@PathParam("id") Long roleId, @Context SecurityContext securityContext) {
-        SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
+        if (!SecurityUtil.hasRole(authorizer, securityContext, ROLE_SECURITY_ADMIN)) {
+            LOG.debug("Allowing logged-in user '{}'", SecurityUtil.getUserName(securityContext.getUserPrincipal().getName()));
+        }
         Role role = catalogService.getRole(roleId);
         if (role != null) {
             return WSUtils.respondEntity(role, OK);
@@ -363,7 +371,9 @@ public class SecurityCatalogResource {
     @Timed
     public Response listUsers(@Context UriInfo uriInfo,
                               @Context SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
+        if (!SecurityUtil.hasRole(authorizer, securityContext, ROLE_SECURITY_ADMIN)) {
+            LOG.debug("Allowing logged-in user '{}'", SecurityUtil.getUserName(securityContext.getUserPrincipal().getName()));
+        }
         Collection<User> users;
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
         List<QueryParam> queryParams = WSUtils.buildQueryParameters(params);
@@ -382,7 +392,9 @@ public class SecurityCatalogResource {
     @Path("/users/{id}")
     @Timed
     public Response getUser(@PathParam("id") Long userId, @Context SecurityContext securityContext) {
-        SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
+        if (!SecurityUtil.hasRole(authorizer, securityContext, ROLE_SECURITY_ADMIN)) {
+            LOG.debug("Allowing logged-in user '{}'", SecurityUtil.getUserName(securityContext.getUserPrincipal().getName()));
+        }
         User user = catalogService.getUser(userId);
         if (user != null) {
             return WSUtils.respondEntity(user, OK);
