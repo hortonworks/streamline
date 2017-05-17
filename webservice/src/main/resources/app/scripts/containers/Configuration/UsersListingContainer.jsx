@@ -32,6 +32,9 @@ import Utils from '../../utils/Utils';
 import CommonNotification from '../../utils/CommonNotification';
 import {toastOpt} from '../../utils/Constants';
 import UserRoleREST from '../../rest/UserRoleREST';
+import TopologyREST from '../../rest/TopologyREST';
+import ClusterREST from '../../rest/ClusterREST';
+import EnvironmentREST from '../../rest/EnvironmentREST';
 import UserForm from './UserForm';
 import NoData from '../../components/NoData';
 import CommonLoaderSign from '../../components/CommonLoaderSign';
@@ -44,7 +47,10 @@ export default class UsersListingContainer extends Component {
       editData: '',
       roles: [],
       showUserForm: false,
-      fetchLoader: true
+      fetchLoader: true,
+      applicationOptions: [],
+      servicePoolOptions: [],
+      environmentOptions: []
     };
   }
   componentWillMount() {
@@ -53,37 +59,91 @@ export default class UsersListingContainer extends Component {
   fetchData = () => {
     let promiseArr = [
       UserRoleREST.getAllUsers(),
-      UserRoleREST.getAllRoles()
+      UserRoleREST.getAllRoles(),
+      TopologyREST.getAllTopologyWithoutConfig(),
+      ClusterREST.getAllClustersWithoutServiceDetail(),
+      EnvironmentREST.getAllNameSpaceWithoutMappingDetail()
     ];
-    let rolesPromiseArr = [];
+    let rolesPromiseArr = [], topologyACLPromiseArr = [], clusterACLPromiseArr = [], namespaceACLPromiseArr = [];
     Promise.all(promiseArr)
       .then((results) => {
         if (results[0].responseMessage !== undefined) {
           FSReactToastr.error(<CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
           this.setState({fetchLoader: false});
         } else {
-          let roleOptions = [];
+          let roleOptions = [], applicationOptions = [], servicePoolOptions = [], environmentOptions = [];
+          let userEntities = results[0].entities;
+
+          userEntities.map((u)=>{
+            u.applicationsACL = [];
+            u.servicePoolACL = [];
+            u.environmentsACL = [];
+            topologyACLPromiseArr.push(UserRoleREST.getAllACL('topology', u.id, 'USER'));
+            clusterACLPromiseArr.push(UserRoleREST.getAllACL('cluster', u.id, 'USER'));
+            namespaceACLPromiseArr.push(UserRoleREST.getAllACL('namespace', u.id, 'USER'));
+          });
           results[1].entities.map((e)=>{
-            roleOptions.push({
+            if(!e.system){
+              roleOptions.push({
+                id: e.id,
+                name: e.name,
+                label: e.name,
+                value: e.name,
+                system: e.system,
+                metadata: e.metadata
+              });
+            }
+            this.setState({roles: roleOptions});
+          });
+          /* Promise array to fetch all ACL and map to the parent using index */
+          Promise.all(topologyACLPromiseArr)
+          .then((acls)=>{
+            let usersArray = userEntities;
+            acls.map((a, i)=>{
+              usersArray[i].applicationsACL = a.entities || [];
+            });
+            this.setState({users: usersArray});
+          });
+          Promise.all(clusterACLPromiseArr)
+          .then((acls)=>{
+            let usersArray = userEntities;
+            acls.map((a, i)=>{
+              usersArray[i].servicePoolACL = a.entities || [];
+            });
+            this.setState({users: usersArray});
+          });
+          Promise.all(namespaceACLPromiseArr)
+          .then((acls)=>{
+            let usersArray = userEntities;
+            acls.map((a, i)=>{
+              usersArray[i].environmentsACL = a.entities || [];
+            });
+            this.setState({users: usersArray});
+          });
+          results[2].entities.map((a)=>{
+            applicationOptions.push({
+              id: a.id,
+              label: a.name,
+              value: a.name
+            });
+          });
+          results[3].entities.map((s)=>{
+            servicePoolOptions.push({
+              id: s.id,
+              label: s.name,
+              value: s.name
+            });
+          });
+          results[4].entities.map((e)=>{
+            environmentOptions.push({
               id: e.id,
-              name: e.name,
               label: e.name,
-              value: e.name,
-              system: e.system,
-              metadata: e.metadata
+              value: e.name
             });
-            rolesPromiseArr.push(UserRoleREST.getRoleChildren(e.id));
           });
-          this.setState({users: results[0].entities, fetchLoader: false, roles: roleOptions});
-          Promise.all(rolesPromiseArr) /* Promise array to fetch all the child roles and map to the parent using index */
-          .then((results)=>{
-            let roleOptionsArr = roleOptions;
-            results.map((r, index)=>{
-              let parentRoles = [];
-              roleOptionsArr[index].children = r.entities;
-            });
-            this.setState({roles: roleOptionsArr});
-          });
+          var defaultEntity = userEntities[0];
+          this.setState({users: userEntities, fetchLoader: false, roles: roleOptions, applicationOptions: applicationOptions, showUserForm: true,
+            servicePoolOptions: servicePoolOptions, environmentOptions: environmentOptions, editData: defaultEntity, activePanel: defaultEntity.id});
         }
       });
   }
@@ -92,7 +152,10 @@ export default class UsersListingContainer extends Component {
     this.setState({editData : {
       name: '',
       email: '',
-      roles: []
+      roles: [],
+      applicationsACL: [],
+      servicePoolACL: [],
+      environmentsACL: []
     }, showUserForm: true, activePanel: ''});
   }
 
@@ -108,7 +171,7 @@ export default class UsersListingContainer extends Component {
             <CommonNotification flag="error" content={user.responseMessage}/>, '', toastOpt);
         } else {
           FSReactToastr.success(
-            <strong>User data deleted successfully</strong>
+            <strong>User deleted successfully</strong>
           );
         }
       }).catch((err) => {
@@ -134,20 +197,29 @@ export default class UsersListingContainer extends Component {
             FSReactToastr.error(
               <CommonNotification flag="error" content={data.responseMessage}/>, '', toastOpt);
           } else {
-            if(this.state.editData.id) {
-              FSReactToastr.success(<strong>User updated successfully</strong>);
-            } else {
-              FSReactToastr.success(<strong>User added successfully</strong>);
-            }
+            this.refs.UserForm.saveACL(data.id)
+              .then((aclResults)=>{
+                _.map(aclResults, (result)=>{
+                  if(result.responseMessage !== undefined){
+                    FSReactToastr.error(
+                      <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
+                  }
+                });
+                if(this.state.editData.id) {
+                  FSReactToastr.success(<strong>User updated successfully</strong>);
+                } else {
+                  FSReactToastr.success(<strong>User added successfully</strong>);
+                }
+                this.setState({showUserForm: false, editData: {}});
+                this.fetchData();
+              });
           }
-          this.setState({showUserForm: false, editData: {}});
-          this.fetchData();
         });
     }
   }
 
   render() {
-    let {users, editData, fetchLoader, roles, showUserForm} = this.state;
+    let {users, editData, fetchLoader, roles, showUserForm, applicationOptions, servicePoolOptions, environmentOptions} = this.state;
     var defaultHeader = (
       <div>
       <span className="hb success user-icon"><i className="fa fa-user"></i></span>
@@ -232,9 +304,12 @@ export default class UsersListingContainer extends Component {
       {showUserForm ?
         <UserForm
           ref="UserForm"
-          editData={editData}
+          editData={JSON.parse(JSON.stringify(editData))}
           id={editData.id ? editData.id : null}
           roleOptions={roles}
+          applicationOptions={applicationOptions}
+          servicePoolOptions={servicePoolOptions}
+          environmentOptions={environmentOptions}
           saveCallback={this.handleSave.bind(this)}
           cancelCallback={this.handleCancel.bind(this)}
           deleteCallback={this.handleDeleteUser.bind(this, editData.id)}

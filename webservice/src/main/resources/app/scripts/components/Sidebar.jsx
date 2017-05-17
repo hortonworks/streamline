@@ -18,6 +18,8 @@ import {NavItem} from 'react-bootstrap';
 import app_state from '../app_state';
 import {observer} from 'mobx-react';
 import Modal from '../components/FSModal';
+import {hasModuleAccess} from '../utils/ACLUtils';
+import {menuName} from '../utils/Constants';
 
 @observer
 export default class Sidebar extends Component {
@@ -103,74 +105,99 @@ export default class Sidebar extends Component {
       <aside className="main-sidebar">
         <section className="sidebar">
           <ul className="sidebar-menu">
-            <li className={app_state.sidebar_activeKey === 1
-              ? 'active'
-              : ''} onClick={this.handleClick.bind(this, 1)}>
-              <Link to="/">
-                <i className="fa fa-sitemap"></i>
-                <span>My Application</span>
-              </Link>
-            </li>
-            <li className={app_state.sidebar_activeKey === 4
-              ? 'active'
-              : ''} onClick={this.handleClickOnDashboard.bind(this, 4)}>
-              <a href="javascript:void(0);">
-                <i className="fa fa-dashboard"></i>
-                <span>Dashboard</span>
-              </a>
-            </li>
-            <li className={app_state.sidebar_activeKey === 2
-              ? 'active'
-              : ''} onClick={this.handleClickOnRegistry.bind(this, 2)}>
-              <a href="javascript:void(0);">
-                <i className="fa fa-file-code-o"></i>
-                <span>Schema Registry</span>
-              </a>
-            </li>
-            <li className={app_state.sidebar_activeKey === 5
-              ? 'active'
-              : ''} onClick={this.handleClick.bind(this, 5)}>
-              <Link to="/model-registry">
-                <i className="fa fa-cube"></i>
-                <span>Model Registry</span>
-              </Link>
-            </li>
-            <li className={app_state.sidebar_activeKey === 3
-              ? 'treeview active'
-              : 'treeview'}>
-              <a href="javascript:void(0);" onClick={this.toggleMenu.bind(this)}>
-                <i className="fa fa-wrench"></i>
-                <span>Configuration</span>
-                <span className="pull-right-container">
-                  <i className={app_state.sidebar_toggleFlag
-                    ? "fa fa-angle-down pull-right"
-                    : (app_state.sidebar_isCollapsed
+            {hasModuleAccess(menuName.APPLICATION) ?
+              <li className={app_state.sidebar_activeKey === 1
+                ? 'active'
+                : ''} onClick={this.handleClick.bind(this, 1)}>
+                <Link to="/">
+                  <i className="fa fa-sitemap"></i>
+                  <span>My Application</span>
+                </Link>
+              </li>
+              : null
+            }
+            {hasModuleAccess(menuName.DASHBOARD) ?
+              <li className={app_state.sidebar_activeKey === 4
+                ? 'active'
+                : ''} onClick={this.handleClickOnDashboard.bind(this, 4)}>
+                <a href="javascript:void(0);">
+                  <i className="fa fa-dashboard"></i>
+                  <span>Dashboard</span>
+                </a>
+              </li>
+              : null
+            }
+            {hasModuleAccess(menuName.SCHEMA_REGISTRY) ?
+              <li className={app_state.sidebar_activeKey === 2
+                ? 'active'
+                : ''} onClick={this.handleClickOnRegistry.bind(this, 2)}>
+                <a href="javascript:void(0);">
+                  <i className="fa fa-file-code-o"></i>
+                  <span>Schema Registry</span>
+                </a>
+              </li>
+              : null
+            }
+            {hasModuleAccess(menuName.MODEL_REGISTRY) ?
+              <li className={app_state.sidebar_activeKey === 5
+                ? 'active'
+                : ''} onClick={this.handleClick.bind(this, 5)}>
+                <Link to="/model-registry">
+                  <i className="fa fa-cube"></i>
+                  <span>Model Registry</span>
+                </Link>
+              </li>
+              : null
+            }
+            {hasModuleAccess(menuName.UDF) || hasModuleAccess(menuName.NOTIFIER) || hasModuleAccess(menuName.CUSTOM_PROCESSOR) ||
+              hasModuleAccess(menuName.SERVICE_POOL) || hasModuleAccess(menuName.ENVIRONMENT) || hasModuleAccess(menuName.AUTHORIZER) ?
+              <li className={app_state.sidebar_activeKey === 3
+                ? 'treeview active'
+                : 'treeview'}>
+                <a href="javascript:void(0);" onClick={this.toggleMenu.bind(this)}>
+                  <i className="fa fa-wrench"></i>
+                  <span>Configuration</span>
+                  <span className="pull-right-container">
+                    <i className={app_state.sidebar_toggleFlag
                       ? "fa fa-angle-down pull-right"
-                      : "fa fa-angle-left pull-right")}></i>
-                </span>
-              </a>
-              <ul className={app_state.sidebar_toggleFlag
-                ? "treeview-menu menu-open"
-                : "treeview-menu"}>
-                <li onClick={this.handleClick.bind(this, 3)}>
-                  <Link to="/application-resources">Application Resources</Link>
-                </li>
-                <li onClick={this.handleClick.bind(this, 3)}>
-                  <Link to="/service-pool">Service Pool</Link>
-                </li>
-                <li onClick={this.handleClick.bind(this, 3)}>
-                  <Link to="/environments">Environments</Link>
-                </li>
-                {/*<li onClick={this.handleClick.bind(this, 3)}>
-                  <Link to="/component-definition">Component Definition</Link>
-                </li>*/}
-                {app_state.streamline_config.secureMode ?
-                <li onClick={this.handleClick.bind(this, 3)}>
-                  <Link to="/authorizer">Authorizer</Link>
-                </li>
-                : null}
-              </ul>
-            </li>
+                      : (app_state.sidebar_isCollapsed
+                        ? "fa fa-angle-down pull-right"
+                        : "fa fa-angle-left pull-right")}></i>
+                  </span>
+                </a>
+                <ul className={app_state.sidebar_toggleFlag
+                  ? "treeview-menu menu-open"
+                  : "treeview-menu"}>
+                  {hasModuleAccess(menuName.UDF) || hasModuleAccess(menuName.NOTIFIER) || hasModuleAccess(menuName.CUSTOM_PROCESSOR) ?
+                    <li onClick={this.handleClick.bind(this, 3)}>
+                      <Link to="/application-resources">Application Resources</Link>
+                    </li>
+                    : null
+                  }
+                  {hasModuleAccess(menuName.SERVICE_POOL) ?
+                    <li onClick={this.handleClick.bind(this, 3)}>
+                      <Link to="/service-pool">Service Pool</Link>
+                    </li>
+                    : null
+                  }
+                  {hasModuleAccess(menuName.ENVIRONMENT) ?
+                    <li onClick={this.handleClick.bind(this, 3)}>
+                      <Link to="/environments">Environments</Link>
+                    </li>
+                    : null
+                  }
+                  {hasModuleAccess(menuName.AUTHORIZER) ?
+                    (app_state.streamline_config.secureMode ?
+                      <li onClick={this.handleClick.bind(this, 3)}>
+                        <Link to="/authorizer">Authorizer</Link>
+                      </li>
+                      : null)
+                    : null
+                  }
+                </ul>
+              </li>
+              : null
+            }
           </ul>
         </section>
         <a href="javascript:void(0);" className="sidebar-toggle" onClick={this.toggleSidebar.bind(this)} data-toggle="offcanvas" role="button">

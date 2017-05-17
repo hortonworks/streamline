@@ -23,7 +23,6 @@ import UserRoleREST from '../../rest/UserRoleREST';
 import Utils from '../../utils/Utils';
 import Form from '../../libs/form';
 import * as Fields from '../../libs/form/Fields';
-import ACLContainer from './ACLContainer';
 import {colorOptions, iconOptions} from '.../../utils/Constants';
 
 export default class AppRoleForm extends Component {
@@ -49,33 +48,36 @@ export default class AppRoleForm extends Component {
     this.setData(this.props);
   }
   setData(props) {
-    let metadata = props.editData.metadata || '{"colorCode": "#529e4c", "colorLabel": "green", "icon": "key", "size": "Medium"}';
+    let metadata = props.editData.metadata || '{"colorCode": "#529e4c", "colorLabel": "green", "icon": "key", "size": "Medium", "menu": [], "capabilities": []}';
     this.setState({
       metadata: JSON.parse(metadata)
     });
   }
 
   handleColorChange = (obj) => {
+    let {metadata} =  this.state;
     if (obj) {
-      this.setState({metadata: {colorCode: obj.value, colorLabel: obj.label, icon: this.state.metadata.icon, size: this.state.metadata.size}});
+      this.setState({metadata: {colorCode: obj.value, colorLabel: obj.label, icon: metadata.icon, size: metadata.size, menu: metadata.menu, capabilities: metadata.capabilities}});
     } else {
-      this.setState({metadata: {colorCode: '', colorLabel: '', icon: this.state.metadata.icon, size: this.state.metadata.size}});
+      this.setState({metadata: {colorCode: '', colorLabel: '', icon: metadata.icon, size: metadata.size, menu: metadata.menu, capabilities: metadata.capabilities}});
     }
   }
 
   handleIconChange = (obj) => {
+    let {metadata} =  this.state;
     if (obj) {
-      this.setState({metadata: {colorCode: this.state.metadata.colorCode, colorLabel: this.state.metadata.colorLabel, icon: obj.value, size: this.state.metadata.size}});
+      this.setState({metadata: {colorCode: this.state.metadata.colorCode, colorLabel: this.state.metadata.colorLabel, icon: obj.value, size: this.state.metadata.size, menu: metadata.menu, capabilities: metadata.capabilities}});
     } else {
-      this.setState({metadata: {colorCode: this.state.metadata.colorCode, colorLabel: this.state.metadata.colorLabel, icon: '', size: this.state.metadata.size}});
+      this.setState({metadata: {colorCode: this.state.metadata.colorCode, colorLabel: this.state.metadata.colorLabel, icon: '', size: this.state.metadata.size, menu: metadata.menu, capabilities: metadata.capabilities}});
     }
   }
 
   handleSizeChange = (obj) => {
+    let {metadata} =  this.state;
     if (obj) {
-      this.setState({metadata: {colorCode: this.state.metadata.colorCode, colorLabel: this.state.metadata.colorLabel, icon: this.state.metadata.icon, size: obj.value}});
+      this.setState({metadata: {colorCode: metadata.colorCode, colorLabel: metadata.colorLabel, icon: metadata.icon, size: obj.value, menu: metadata.menu, capabilities: metadata.capabilities}});
     } else {
-      this.setState({metadata: {colorCode: this.state.metadata.colorCode, colorLabel: this.state.metadata.colorLabel, icon: this.state.metadata.icon, size: ''}});
+      this.setState({metadata: {colorCode: metadata.colorCode, colorLabel: metadata.colorLabel, icon: metadata.icon, size: '', menu: metadata.menu, capabilities: metadata.capabilities}});
     }
   }
 
@@ -84,105 +86,12 @@ export default class AppRoleForm extends Component {
     let {
       name,
       displayName,
-      description,
-      parentRoles
+      description
     } = this.refs.RoleForm.state.FormData;
     if(name.trim() === '' || displayName.trim() === '' || description.trim() === '') {
       validDataFlag = false;
     }
-    if(!this.props.editData.system && parentRoles.length === 0) {
-      validDataFlag = false;
-    }
     return validDataFlag;
-  }
-
-  saveACL(roleId) {
-    let {accessControlList = []} = this.props.editData;
-    let {applicationOptions, servicePoolOptions, environmentOptions} = this.props;
-    let formData = this.refs.RoleForm.state.FormData;
-    let promiseArr = [];
-    //Adding ACLs for topologies
-    formData.applications.map((a)=>{
-      let application = applicationOptions.find((o)=>{return o.value === a;});
-      let dataObj = {
-        objectId: application.id,
-        objectNamespace: "topology",
-        sidId: roleId,
-        sidType: "ROLE",
-        permissions: this.refs.ACLContainer.getPermissions('applications')
-      };
-      let aclObj = accessControlList.find((o)=>{return o.objectNamespace === 'topology' && o.objectId === application.id;});
-      if(aclObj) {
-        promiseArr.push(UserRoleREST.putACL(aclObj.id, {body: JSON.stringify(dataObj)}, aclObj.id));
-      } else {
-        promiseArr.push(UserRoleREST.postACL({body: JSON.stringify(dataObj)}));
-      }
-    });
-    //Adding ACLs for clusters
-    formData.services.map((c)=>{
-      let cluster = servicePoolOptions.find((o)=>{return o.value === c;});
-      let dataObj = {
-        objectId: cluster.id,
-        objectNamespace: "cluster",
-        sidId: roleId,
-        sidType: "ROLE",
-        permissions: this.refs.ACLContainer.getPermissions('servicePool')
-      };
-      let aclObj = accessControlList.find((o)=>{return o.objectNamespace === 'cluster' && o.objectId === cluster.id;});
-      if(aclObj) {
-        promiseArr.push(UserRoleREST.putACL(aclObj.id, {body: JSON.stringify(dataObj)}));
-      } else {
-        promiseArr.push(UserRoleREST.postACL({body: JSON.stringify(dataObj)}));
-      }
-    });
-    //Adding ACLs for environments
-    formData.environments.map((e)=>{
-      let namespace = environmentOptions.find((o)=>{return o.value === e;});
-      let dataObj = {
-        objectId: namespace.id,
-        objectNamespace: "namespace",
-        sidId: roleId,
-        sidType: "ROLE",
-        permissions: this.refs.ACLContainer.getPermissions('environments')
-      };
-      let aclObj = accessControlList.find((o)=>{return o.objectNamespace === 'namespace' && o.objectId === namespace.id;});
-      if(aclObj) {
-        promiseArr.push(UserRoleREST.putACL(aclObj.id, {body: JSON.stringify(dataObj)}));
-      } else {
-        promiseArr.push(UserRoleREST.postACL({body: JSON.stringify(dataObj)}));
-      };
-    });
-    //delete ACLs
-    accessControlList.map((acl)=>{
-      switch(acl.objectNamespace){
-      case 'topology':
-        let appObj = applicationOptions.find((a)=>{return acl.objectId === a.id;});
-        if(formData.applications.indexOf(appObj.value) == -1) {
-          promiseArr.push(UserRoleREST.deleteACL(acl.id));
-        }
-        break;
-      case 'cluster':
-        let clusterObj = servicePoolOptions.find((a)=>{return acl.objectId === a.id;});
-        if(formData.services.indexOf(clusterObj.value) == -1) {
-          promiseArr.push(UserRoleREST.deleteACL(acl.id));
-        }
-        break;
-      case 'namespace':
-        let envObj = environmentOptions.find((a)=>{return acl.objectId === a.id;});
-        if(formData.environments.indexOf(envObj.value) == -1) {
-          promiseArr.push(UserRoleREST.deleteACL(acl.id));
-        }
-        break;
-      }
-    });
-    Promise.all(promiseArr)
-      .then((results)=>{
-        results.map((r)=>{
-          if (r.responseMessage !== undefined) {
-            FSReactToastr.error(<CommonNotification flag="error" content={r.responseMessage}/>, '', toastOpt);
-          }
-        });
-      });
   }
 
   handleSave = () => {
@@ -199,34 +108,37 @@ export default class AppRoleForm extends Component {
       return UserRoleREST.putRole(this.props.id, {body:JSON.stringify(data)})
         .then((result)=>{
           if(!result.responseMessage) {
-            if(system === true) {
-              this.saveACL(result.id);
-              return UserRoleREST.putRoleUsers(name, {body: JSON.stringify(users)});
-            } else {
-              UserRoleREST.putRoleUsers(name, {body: JSON.stringify(users)});
-              this.saveACL(result.id);
-              return UserRoleREST.putRoleChildren(name, {body: JSON.stringify(parentRoles)});
-            }
-          }
-        });
-    } else {
-      return UserRoleREST.postRole({body:JSON.stringify(data)})
-        .then((result)=>{
-          if(!result.responseMessage) {
-            UserRoleREST.putRoleUsers(name, {body: JSON.stringify(users)});
-            this.saveACL(result.id);
-            return UserRoleREST.postRoleChildren(name, {body: JSON.stringify(parentRoles)});
+            return UserRoleREST.putRoleUsers(name, {body: JSON.stringify(users)});
           }
         });
     }
   }
 
   render() {
-    const {metadata, colorOptions,
+    const {metadata = {}, colorOptions,
       iconOptions, sizeOptions} = this.state;
-    let {id, userOptions, applicationOptions, servicePoolOptions, environmentOptions, roleOptions} = this.props;
-    let {name, displayName, description, users = [], system = false, accessControlList = []} = this.props.editData;
+    let {id, userOptions, roleOptions} = this.props;
+    let {name, displayName, description, users = [], system = false} = this.props.editData;
     let roleOptionsArr = roleOptions.filter((r)=>{return r.id !== id;});
+    var capabilities = [];
+    if(metadata.capabilities) {
+      metadata.capabilities.map((c)=>{
+        capabilities.push({
+          name: _.keys(c)[0],
+          value: _.values(c)[0]
+        });
+      });
+    }
+    let applications = capabilities.find((o)=>{return o.name == "Applications";}),
+      appPermission = applications ? applications.value : "None",
+      servicePool = capabilities.find((o)=>{return o.name == "Service Pool";}),
+      servicePermission = servicePool ? servicePool.value : "None",
+      environment = capabilities.find((o)=>{return o.name == "Environments";}),
+      envPermission = environment ? environment.value : "None",
+      usersAccess = capabilities.find((o)=>{return o.name == "Users";}),
+      userPermission = usersAccess ? usersAccess.value : "None",
+      dashboard = capabilities.find((o)=>{return o.name == "Dashboard";}),
+      dashboardPermission = dashboard ? dashboard.value : "None";
     return (
       <div className="user-role-form">
         <div className="panel-registry-body">
@@ -236,14 +148,7 @@ export default class AppRoleForm extends Component {
             <Fields.string value="name" label="Role Name" valuePath="name" fieldJson={{isOptional:false, tooltip: 'Role Name', isUserInput: this.props.editData.system ? false : true}} validation={["required"]}/>
             <Fields.string value="displayName" label="Display Name" valuePath="displayName" fieldJson={{isOptional:false, tooltip: 'Display Name', isUserInput: this.props.editData.system ? false : true}} validation={["required"]}/>
             <Fields.string value="description" label="Description" valuePath="description" fieldJson={{isOptional:false, tooltip: 'Description', isUserInput: this.props.editData.system ? false : true}} validation={["required"]}/>
-            {!this.props.editData.system ?
-              <Fields.arrayenumstring value="parentRoles" valuePath="parentRoles" label="Pre-defined Roles" fieldJson={{isOptional:false, tooltip: 'Pre-defined roles'}} fieldAttr={{options: roleOptionsArr}} validation={["required"]}/>
-            : <Fields.BaseField value="" label="" fieldJson={{isOptional:false, hint: "hidden"}} />
-            }
             <Fields.arrayenumstring value="users" label="Users" fieldJson={{isOptional:false, tooltip: 'Users'}} fieldAttr={{options: userOptions}}/>
-            <Fields.arrayenumstring value="applications" label="Applications" fieldJson={{isOptional:false, tooltip: 'Applications'}} fieldAttr={{options: applicationOptions}}/>
-            <Fields.arrayenumstring value="services" label="Service Pool" fieldJson={{isOptional:false, tooltip: 'Services'}} fieldAttr={{options: servicePoolOptions}}/>
-            <Fields.arrayenumstring value="environments" label="Environments" fieldJson={{isOptional:false, tooltip: 'Environments'}} fieldAttr={{options: environmentOptions}}/>
           </Form>
           <div className="form-group no-margin">
             <div className="row">
@@ -313,22 +218,25 @@ export default class AppRoleForm extends Component {
             </div>
             </div>
           </div>
-          <ACLContainer ref="ACLContainer" editData={accessControlList}/>
-          {!system ? <div className="form-group">
-            <div className="col-md-10">
-            <button type="button" className="btn btn-success m-r-xs" onClick={()=>{this.props.saveCallback();}}>SAVE</button>{'\n'}
-            <button type="button" className="btn btn-default m-r-xs" onClick={()=>{this.props.cancelCallback();}}>CANCEL</button>{'\n'}
-            {this.props.editData.id ? <a href="javascript:void(0);" className="" onClick={()=>{this.props.deleteCallback();}}> Delete</a> : ''}
+          <div>
+            <h5>Access Control</h5>
+            <hr/>
+            <div className="row">
+            <div className="col-md-12">
+              <div className="acl-item">Applications<span className="pull-right">{appPermission}</span></div><hr/>
+              <div className="acl-item">Service Pools<span className="pull-right">{servicePermission}</span></div><hr/>
+              <div className="acl-item">Environments<span className="pull-right">{envPermission}</span></div><hr/>
+              <div className="acl-item">Users<span className="pull-right">{userPermission}</span></div><hr/>
+              <div className="acl-item">Dashboard<span className="pull-right">{dashboardPermission}</span></div><hr/>
+            </div>
             </div>
           </div>
-          :
           <div className="form-group">
             <div className="col-md-10">
             <button type="button" className="btn btn-success m-r-xs" onClick={()=>{this.props.saveCallback();}}>SAVE</button>{'\n'}
             <button type="button" className="btn btn-default m-r-xs" onClick={()=>{this.props.cancelCallback();}}>CANCEL</button>{'\n'}
             </div>
           </div>
-          }
           </div>
           </div>
         </div>

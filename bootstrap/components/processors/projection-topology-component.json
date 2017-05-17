@@ -1,6 +1,6 @@
 {
   "type": "PROCESSOR",
-  "name": "Projection bolt",
+  "name": "Projection",
   "subType": "PROJECTION",
   "builtin": true,
   "streamingEngine": "STORM",

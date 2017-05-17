@@ -39,6 +39,15 @@ const UserRoleREST = {
         return response.json();
       });
   },
+  getRoleByRoleName(roleName, options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'roles?name=' + roleName, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
   getRoleChildren(id, options) {
     options = options || {};
     options.method = options.method || 'GET';
@@ -223,11 +232,11 @@ const UserRoleREST = {
         return response.json();
       });
   },
-  getAllACL(options) {
+  getAllACL(namespace, id, type, options) {
     options = options || {};
     options.method = options.method || 'GET';
     options.credentials = 'same-origin';
-    return fetch(baseUrl + 'acls', options)
+    return fetch(baseUrl + 'acls?objectNamespace='+namespace+'&sidId=' + id + '&sidType=' + type, options)
       .then((response) => {
         return response.json();
       });
@@ -246,6 +255,15 @@ const UserRoleREST = {
     options.method = options.method || 'DELETE';
     options.credentials = 'same-origin';
     return fetch(baseUrl + 'acls/' + id, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  getUserACL(type, id, options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'acls?objectNamespace=' + type + '&objectId=' + id, options)
       .then((response) => {
         return response.json();
       });

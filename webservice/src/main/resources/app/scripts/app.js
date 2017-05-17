@@ -18,12 +18,16 @@ import { Router, browserHistory, hashHistory } from 'react-router';
 import FSReactToastr from './components/FSReactToastr';
 import { toastOpt } from './utils/Constants';
 import MiscREST from './rest/MiscREST';
+import UserRoleREST from './rest/UserRoleREST';
 import app_state from './app_state';
 import CommonNotification from './utils/CommonNotification';
 
 class App extends Component {
   constructor(){
     super();
+    this.state = {
+      showLoading: true
+    };
     this.fetchData();
   }
   fetchData(){
@@ -34,28 +38,51 @@ class App extends Component {
       .then((results)=>{
         if(results[0].responseMessage !== undefined){
           FSReactToastr.error(<CommonNotification flag="error" content={results[0].responseMessage}/>, '', toastOpt);
+          this.setState({showLoading: false});
         } else {
           app_state.streamline_config = {
             registry: results[0].registry,
             dashboard: results[0].dashboard,
             secureMode: results[0].authorizer ? true : false
           };
-          if(results[0].authorizer){
+          if(app_state.streamline_config.secureMode){
+            // let userProfile = {
+            //   "id":1,
+            //   "name":"streamline-hdp",
+            //   "email":"streamline-hdp@auto-generated",
+            //   "timestamp":1494566927285,
+            //   "admin":true,
+            //   "roles":["ROLE_ADMIN"] //   "roles":["ROLE_ANALYST", "ROLE_DEVELOPER"]
+            // };
+            // app_state.user_profile = userProfile;
+            // this.syncSidebarMenu(userProfile.roles[0]);
             MiscREST.getUserProfile().then((userProfile) => {
               if(userProfile.responseMessage !== undefined){
                 FSReactToastr.error(<CommonNotification flag="error" content={userProfile.responseMessage}/>, '', toastOpt);
               } else {
                 app_state.user_profile = userProfile;
+                this.syncSidebarMenu(userProfile.roles[0]);
               }
             });
+          } else {
+            this.setState({showLoading: false});
           }
         }
       });
   }
-
+  syncSidebarMenu(role) {
+    UserRoleREST.getRoleByRoleName(role).then(response=>{
+      let roleInfo = JSON.parse(response.entities[0].metadata);
+      roleInfo.displayName = response.entities[0].displayName;
+      app_state.roleInfo = roleInfo;
+      this.setState({showLoading: false});
+    });
+  }
   render() {
+    const {showLoading} = this.state;
+    const component = showLoading ? <div></div> : <Router ref="router" history={hashHistory} routes={routes} />;
     return (
-      <Router ref="router" history={hashHistory} routes={routes} />
+      component
     );
   }
 }

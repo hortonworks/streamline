@@ -501,6 +501,33 @@ const eventLogNumberId = function(num){
   return numString;
 };
 
+const checkTypeAndReturnValue = function(data){
+  if(!data){
+    return;
+  }
+  if(data){
+    let exp = /[,:{}]/g ,valideJson = '';
+    exp.test(data)
+    ? valideJson = validateJSON(data)
+    : valideJson = false;
+
+    if(!valideJson){
+      const checkNaN = Number(data);
+      if(isNaN(data)){
+        return data === "true"
+              ? true
+              : data === "false"
+                ? false
+                : data;
+      } else {
+        return Number(data);
+      }
+    } else {
+      return JSON.parse(data);
+    }
+  }
+};
+
 export default {
   sortArray,
   numberToMilliseconds,
@@ -527,5 +554,6 @@ export default {
   deepmergeAll,
   mergeFormDataFields,
   handleNestedFormDataEmptyObj,
-  eventLogNumberId
+  eventLogNumberId,
+  checkTypeAndReturnValue
 };

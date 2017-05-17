@@ -29,11 +29,12 @@ import Modal from '../../components/FSModal';
 import {FormGroup, InputGroup, FormControl, Button} from 'react-bootstrap';
 import Utils from '../../utils/Utils';
 import CommonNotification from '../../utils/CommonNotification';
-import {toastOpt} from '../../utils/Constants';
+import {toastOpt, accessCapabilities} from '../../utils/Constants';
 import UDFForm from './UDFForm';
 import AggregateUdfREST from '../../rest/AggregateUdfREST';
 import NoData from '../../components/NoData';
 import CommonLoaderSign from '../../components/CommonLoaderSign';
+import {hasEditCapability, hasViewCapability} from '../../utils/ACLUtils';
 
 export default class UDFContainer extends Component {
   constructor(props) {
@@ -128,9 +129,12 @@ export default class UDFContainer extends Component {
         {fetchLoader
           ? <CommonLoaderSign imgName={"default"}/>
           : <div>
-            <a href="javascript:void(0);" className="hb pull-right success actionDropdown" data-target="" onClick={this.handleAdd}>
-              <i className="fa fa-plus"></i>
-            </a>
+            {hasEditCapability(accessCapabilities.APPLICATION) ?
+              <a href="javascript:void(0);" className="hb pull-right success actionDropdown" data-target="" onClick={this.handleAdd}>
+                <i className="fa fa-plus"></i>
+              </a>
+              : null
+            }
             <div className="row">
               <div className="page-title-box clearfix">
                 {((filterValue && filteredEntities.length === 0) || filteredEntities !== 0)

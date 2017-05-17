@@ -20,11 +20,13 @@ import moment from 'moment';
 import {DropdownButton, MenuItem, Button,FormGroup,InputGroup,FormControl} from 'react-bootstrap';
 import Modal from '../../components/FSModal';
 import {Scrollbars} from 'react-custom-scrollbars';
+import {observer} from 'mobx-react';
 
 /* import common utils*/
 import EnvironmentREST from '../../rest/EnvironmentREST';
 import ClusterREST from '../../rest/ClusterREST';
 import MiscREST from '../../rest/MiscREST';
+import UserRoleREST from '../../rest/UserRoleREST';
 import Utils from '../../utils/Utils';
 import TopologyUtils from '../../utils/TopologyUtils';
 import FSReactToastr from '../../components/FSReactToastr';
@@ -33,10 +35,13 @@ import FSReactToastr from '../../components/FSReactToastr';
 import BaseContainer from '../BaseContainer';
 import NoData from '../../components/NoData';
 import CommonNotification from '../../utils/CommonNotification';
-import {toastOpt} from '../../utils/Constants';
+import {toastOpt, accessCapabilities} from '../../utils/Constants';
 import Paginate from '../../components/Paginate';
 import AddEnvironment from '../../components/AddEnvironment';
 import CommonLoaderSign from '../../components/CommonLoaderSign';
+import {hasEditCapability, hasViewCapability} from '../../utils/ACLUtils';
+import app_state from '../../app_state';
+import CommonShareModal from '../../components/CommonShareModal';
 
 const MappingItem = (props) => {
   const {item} = props;
@@ -74,6 +79,7 @@ const EnvironmentItems = (props) => {
   );
 };
 
+@observer
 class EnvironmentCards extends Component {
   constructor(props) {
     super(props);
@@ -89,10 +95,19 @@ class EnvironmentCards extends Component {
   }
 
   onActionClick = (eventKey) => {
-    this.props.nameSpaceClicked(eventKey, this.nameSpaceRef.dataset.id);
+    const {allACL} = this.props;
+    if(! _.isEmpty(allACL)){
+      const {aclObject,permission} = TopologyUtils.getPermissionAndObj(Number(this.nameSpaceRef.dataset.id),allACL);
+      if(!permission){
+        this.props.nameSpaceClicked(eventKey, this.nameSpaceRef.dataset.id,aclObject);
+      }
+    } else {
+      this.props.nameSpaceClicked(eventKey, this.nameSpaceRef.dataset.id);
+    }
   }
+
   render() {
-    const {nameSpaceList, clusterDetails, mapData} = this.props;
+    const {nameSpaceList, clusterDetails, mapData,allACL} = this.props;
     const ellipseIcon = <i className="fa fa-ellipsis-v"></i>;
     const {
       namespace,
@@ -106,23 +121,40 @@ class EnvironmentCards extends Component {
       return count;
     };
 
+    const {aclObject , permission = false} = TopologyUtils.getPermissionAndObj(namespace.id, allACL || []);
+    const rights_share = aclObject.owner !== undefined
+                        ? aclObject.owner
+                          ? false
+                          : true
+                        : false;
+
     return (
       <div className="col-environment">
         <div className="service-box environment-box" data-id={namespace.id} ref={(ref) => this.nameSpaceRef = ref}>
           <div className="service-head clearfix">
             <h4 className="pull-left no-margin" title={namespace.name}>{Utils.ellipses(namespace.name, 15)}</h4>
-            <div className="pull-right">
-              <DropdownButton noCaret title={ellipseIcon} id="dropdown" bsStyle="link" className="dropdown-toggle" data-stest="environment-actions">
-                <MenuItem onClick={this.onActionClick.bind(this, "edit/")} data-stest="edit-environment">
-                  <i className="fa fa-pencil"></i>
-                  &nbsp;Edit
-                </MenuItem>
-                <MenuItem onClick={this.onActionClick.bind(this, "delete/")} data-stest="delete-environment">
-                  <i className="fa fa-trash"></i>
-                  &nbsp;Delete
-                </MenuItem>
-              </DropdownButton>
-            </div>
+            {hasEditCapability(accessCapabilities.ENVIRONMENT) ?
+              <div className="pull-right">
+                <DropdownButton noCaret title={ellipseIcon} id="dropdown" bsStyle="link" className="dropdown-toggle" data-stest="environment-actions">
+                  <MenuItem  disabled={permission}  onClick={this.onActionClick.bind(this, "edit/")} data-stest="edit-environment">
+                    <i className="fa fa-pencil"></i>
+                    &nbsp;Edit
+                  </MenuItem>
+                  { !_.isEmpty(aclObject)
+                    ? <MenuItem title="Share" disabled={rights_share} onClick={this.onActionClick.bind(this, "share/")}>
+                        <i className="fa fa-share"></i>
+                        &nbsp;Share
+                      </MenuItem>
+                    : ''
+                  }
+                  <MenuItem  disabled={permission}  onClick={this.onActionClick.bind(this, "delete/")} data-stest="delete-environment">
+                    <i className="fa fa-trash"></i>
+                    &nbsp;Delete
+                  </MenuItem>
+                </DropdownButton>
+              </div>
+              : null
+            }
           </div>
           {(this.checkRefId(namespace.id))
             ? <div className="service-components">
@@ -150,17 +182,18 @@ class EnvironmentCards extends Component {
                     : _.keys(mappings).map((key, i) => {
                       return <EnvironmentItems key={i} mapData={mappings[key]} clusterObj ={clusterDetails[key]}/>;
                     })
-}
+                  }
                 </Scrollbars>
               </div>
             </div>
-}
+          }
         </div>
       </div>
     );
   }
 }
 
+@observer
 class EnvironmentContainer extends Component {
   constructor(props) {
     super(props);
@@ -180,7 +213,8 @@ class EnvironmentContainer extends Component {
         key: 'last_updated',
         text: 'Last Updated'
       },
-      searchLoader : false
+      searchLoader : false,
+      shareObj : {}
     };
     this.fetchData();
     this.initialFetch = false;
@@ -235,51 +269,53 @@ class EnvironmentContainer extends Component {
   fetchData = () => {
     const obj = {};
     let promiseArr = [ClusterREST.getAllCluster(), EnvironmentREST.getAllNameSpaces()];
-
-    Promise.all(promiseArr).then(result => {
+    if(app_state.streamline_config.secureMode){
+      promiseArr.push(UserRoleREST.getAllACL('namespace',app_state.user_profile.id,'USER'));
+    }
+    Promise.all(promiseArr).then(results => {
       let serviceLen = 0,
         serviceFlag = false;
-      // call for get All cluster Name
-      if (result[0].responseMessage !== undefined) {
-        this.setState({fetchLoader: false, namespaceIdToEdit: null,searchLoader: false});
-        FSReactToastr.error(
-          <CommonNotification flag="error" content={result[0].responseMessage}/>, '', toastOpt);
-      } else {
-        const entities = result[0].entities;
-        serviceLen = entities.length;
-        entities.map(x => {
-          if (obj[Number(x.cluster.id)] === undefined) {
-            obj[Number(x.cluster.id)] = {
-              name: x.cluster.name,
-              clusterURL: x.cluster.ambariImportUrl
-            };
-          }
-        });
-      }
-      // call for get All nameSpaces
-      if (result[1].responseMessage !== undefined) {
-        FSReactToastr.error(
-          <CommonNotification flag="error" content={result[1].responseMessage}/>, '', toastOpt);
-      } else {
-        const resultSet = result[1].entities;
-        const mappingList = this.customMapping(resultSet);
-        if (resultSet.length === 0 && serviceLen !== 0) {
-          serviceFlag = true;
+      _.map(results, (result) => {
+        if(result.responseMessage !== undefined){
+          this.setState({fetchLoader: false, namespaceIdToEdit: null,searchLoader: false});
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
         }
-        this.setState({
-          fetchLoader: false,
-          entities: mappingList,
-          pageIndex: 0,
-          clusterDetails: obj,
-          namespaceIdToEdit: null,
-          checkServices: serviceFlag
-        });
+      });
+      let stateObj = {};
+      // call for get All cluster Name
+      stateObj.entities = results[0].entities;
+      serviceLen = stateObj.entities.length;
+
+      stateObj.entities.map(x => {
+        if (obj[Number(x.cluster.id)] === undefined) {
+          obj[Number(x.cluster.id)] = {
+            name: x.cluster.name,
+            clusterURL: x.cluster.ambariImportUrl
+          };
+        }
+      });
+      // call for get All nameSpaces
+      const resultSet = results[1].entities;
+      const mappingList = this.customMapping(resultSet);
+      if (resultSet.length === 0 && serviceLen !== 0) {
+        serviceFlag = true;
       }
 
-    }).catch((err) => {
-      this.setState({fetchLoader: false, namespaceIdToEdit: null});
-      FSReactToastr.error(
-        <CommonNotification flag="error" content={err.message}/>, '', toastOpt);
+      stateObj.fetchLoader = false;
+      stateObj.entities = mappingList;
+      stateObj.pageIndex = 0;
+      stateObj.clusterDetails = obj;
+      stateObj.namespaceIdToEdit = null;
+      stateObj.checkServices = serviceFlag;
+
+      // stateObj.allACL = [{"id":7,"objectId":1,"objectNamespace":"topology","sidId":3,"sidType":"USER","permissions":["READ","WRITE","EXECUTE","DELETE"],"owner":true,"grant":true,"timestamp":1494868999112},
+      // {"id":10,"objectId":2,"objectNamespace":"topology","sidId":2,"sidType":"USER","permissions":["READ"],"owner":false,"grant":false,"timestamp":1494869390535}];
+      // If the application is in secure mode result[2]
+      if(results[2]){
+        stateObj.allACL = results[2].entities;
+      }
+      this.setState(stateObj);
     });
   }
 
@@ -371,7 +407,7 @@ class EnvironmentContainer extends Component {
     });
   }
 
-  nameSpaceClicked = (eventKey, id) => {
+  nameSpaceClicked = (eventKey, id,obj) => {
     const key = eventKey.split('/');
     switch (key[0].toString()) {
     case "edit":
@@ -380,9 +416,18 @@ class EnvironmentContainer extends Component {
     case "delete":
       this.handleDeleteNameSpace(id);
       break;
+    case "share":
+      this.shareSingleNameSpace(id,obj);
+      break;
     default:
       break;
     }
+  }
+
+  shareSingleNameSpace = (id,obj) => {
+    this.setState({shareObj : obj}, () => {
+      this.refs.CommonShareModalRef.show();
+    });
   }
 
   handleUpdateNameSpace = (id) => {
@@ -505,6 +550,32 @@ class EnvironmentContainer extends Component {
     });
   }
 
+  handleShareSave = () => {
+    if(this.refs.CommonShareModal.validate()){
+      this.refs.CommonShareModalRef.hide();
+      this.refs.CommonShareModal.handleSave().then((namespaceShare) => {
+        let flag = true;
+        _.map(namespaceShare, (share) => {
+          if(share.responseMessage !== undefined){
+            flag = false;
+            FSReactToastr.error(
+              <CommonNotification flag="error" content={share.responseMessage}/>, '', toastOpt);
+          }
+          this.setState({shareObj : {}});
+        });
+        if(flag){
+          FSReactToastr.success(
+            <strong>Environment has been shared successfully</strong>
+          );
+        }
+      });
+    }
+  }
+
+  handleShareCancel = () => {
+    this.refs.CommonShareModalRef.hide();
+  }
+
   render() {
     const {
       entities,
@@ -518,7 +589,9 @@ class EnvironmentContainer extends Component {
       checkServices,
       filterValue,
       searchLoader,
-      sorted
+      sorted,
+      allACL,
+      shareObj
     } = this.state;
     const {routes} = this.props;
     const splitData = _.chunk(entities, pageSize) || [];
@@ -531,11 +604,14 @@ class EnvironmentContainer extends Component {
     </span>;
     return (
       <BaseContainer ref="BaseContainer" routes={routes} headerContent={this.getHeaderContent()}>
-        <div id="add-environment">
-          <a href="javascript:void(0);" className="hb lg success actionDropdown" data-target="#addEnvironment" onClick={this.addEnvironmentBtn}>
-            <i className="fa fa-plus"></i>
-          </a>
-        </div>
+        {hasEditCapability(accessCapabilities.ENVIRONMENT) ?
+          <div id="add-environment">
+            <a href="javascript:void(0);" className="hb lg success actionDropdown" data-target="#addEnvironment" onClick={this.addEnvironmentBtn}>
+              <i className="fa fa-plus"></i>
+            </a>
+          </div>
+          : null
+        }
         <div className="row">
           {fetchLoader
             ? <CommonLoaderSign imgName={"environments"}/>
@@ -573,21 +649,25 @@ class EnvironmentContainer extends Component {
                 ? <NoData imgName={"applications"} searchVal={filterValue}/>
                 : entities.length !== 0
                   ? splitData[pageIndex].map((nameSpaceList, i) => {
-                    return <EnvironmentCards key={i} nameSpaceList={nameSpaceList} nameSpaceClicked={this.nameSpaceClicked} clusterDetails={clusterDetails} refIdArr={refIdArr} loader={loader}/>;
+                    return <EnvironmentCards key={i} nameSpaceList={nameSpaceList} nameSpaceClicked={this.nameSpaceClicked} clusterDetails={clusterDetails} refIdArr={refIdArr} loader={loader} allACL={allACL}/>;
                   })
                   : !this.initialFetch && entities.length === 0
                     ? <NoData imgName={"environments"} serviceFlag={checkServices}/>
                     : ''
               }
             </div>
-}
+          }
         </div>
         {(entities.length > pageSize)
           ? <Paginate len={entities.length} splitData={splitData} pagesize={pageSize} pagePosition={this.pagePosition}/>
           : ''
-}
+        }
         <Modal ref={(ref) => this.addEvtModel = ref} data-title={modelTitle} onKeyPress={this.handleKeyPress} data-resolve={this.addEvtModelSaveClicked} data-reject={this.addEvtModelCancelClicked}>
           <AddEnvironment ref={(ref) => this.EvtModelRef = ref} namespaceId={namespaceIdToEdit}/>
+        </Modal>
+        {/* CommonShareModal */}
+        <Modal ref={"CommonShareModalRef"} data-title="Share Environment"  data-resolve={this.handleShareSave.bind(this)} data-reject={this.handleShareCancel.bind(this)}>
+          <CommonShareModal ref="CommonShareModal" shareObj={shareObj}/>
         </Modal>
       </BaseContainer>
     );

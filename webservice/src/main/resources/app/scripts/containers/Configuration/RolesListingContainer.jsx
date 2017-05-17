@@ -32,9 +32,6 @@ import Utils from '../../utils/Utils';
 import CommonNotification from '../../utils/CommonNotification';
 import {toastOpt} from '../../utils/Constants';
 import UserRoleREST from '../../rest/UserRoleREST';
-import TopologyREST from '../../rest/TopologyREST';
-import ClusterREST from '../../rest/ClusterREST';
-import EnvironmentREST from '../../rest/EnvironmentREST';
 import AppRoleForm from './AppRoleForm';
 import NoData from '../../components/NoData';
 import CommonLoaderSign from '../../components/CommonLoaderSign';
@@ -49,9 +46,6 @@ export default class RolesListingContainer extends Component {
       applicationRoles: [],
       editData: '',
       userOptions: [],
-      applicationOptions: [],
-      servicePoolOptions: [],
-      environmentOptions: [],
       showRoleForm: false,
       fetchLoader: true,
       activePanel: ''
@@ -68,30 +62,19 @@ export default class RolesListingContainer extends Component {
       applicationRoles = [],
       promiseArr = [
         UserRoleREST.getAllRoles(),
-        UserRoleREST.getAllUsers(),
-        TopologyREST.getAllTopologyWithoutConfig(),
-        ClusterREST.getAllClustersWithoutServiceDetail(),
-        EnvironmentREST.getAllNameSpaceWithoutMappingDetail()
+        UserRoleREST.getAllUsers()
       ],
-      rolesPromiseArr = [],
-      userPromiseArr = [],
-      aclPromiseArr = [];
+      userPromiseArr = [];
     Promise.all(promiseArr)
       .then((results) => {
         let tempEntities = results[0].entities;
-        let userOptionsArr = [], applicationOptions = [], servicePoolOptions = [], environmentOptions = [], roleOptions = [];
+        let userOptionsArr = [], roleOptions = [];
 
         tempEntities.map((role)=>{
-          if(role.system) {
-            systemRoles.push(role);
-          } else {
+          if(!role.system){
             applicationRoles.push(role);
-            rolesPromiseArr.push(UserRoleREST.getRoleChildren(role.id));
-          }
-          userPromiseArr.push(UserRoleREST.getRoleUsers(role.id));
-          aclPromiseArr.push(UserRoleREST.getACL(role.id, 'ROLE'));
-
-          if(role.system) {
+            // rolesPromiseArr.push(UserRoleREST.getRoleChildren(role.id));
+            userPromiseArr.push(UserRoleREST.getRoleUsers(role.id));
             roleOptions.push({
               name: role.name,
               label: role.name,
@@ -99,6 +82,16 @@ export default class RolesListingContainer extends Component {
               id: role.id
             });
           }
+        });
+
+        results[1].entities.map((u)=>{
+          userOptionsArr.push({
+            id: u.id,
+            name: u.name,
+            label: u.name,
+            value: u.name,
+            email: u.name
+          });
         });
 
         Promise.all(userPromiseArr) /* Promise array to fetch all the users and map to the parent role using index */
@@ -111,122 +104,11 @@ export default class RolesListingContainer extends Component {
               });
               rolesArr[i].users = usersData;
             });
-            this.setState({roles: rolesArr});
+            var defaultEntity = applicationRoles[0];
+            this.setState({roles: rolesArr, roleOptions: roleOptions, systemRoles: systemRoles, applicationRoles: applicationRoles, fetchLoader: false,
+              userOptions: userOptionsArr, showRoleForm: true, editData: defaultEntity, activePanel: defaultEntity.id});
           });
-        Promise.all(rolesPromiseArr) /* Promise array to fetch all the child roles and map to the parent using index */
-          .then((results)=>{
-            let appRolesArr = this.state.applicationRoles;
-            let rolesArr = tempEntities;
-            results.map((r, index)=>{
-              let parentRoles = [];
-              appRolesArr[index].children = r.entities;
-              r.entities.map((c)=>{
-                parentRoles.push(c.name);
-              });
-              let obj = rolesArr.find((o)=>{return o.id == appRolesArr[index].id;});
-              obj.parentRoles = parentRoles;
-            });
-            this.setState({applicationRoles: appRolesArr, roles: rolesArr});
-          });
-        Promise.all(aclPromiseArr) /* Promise array to fetch all ACL and map to the parent using index */
-          .then((acls)=>{
-            let rolesArray = tempEntities;
-            acls.map((a, i)=>{
-              rolesArray[i].accessControlList = a.entities;
-              let applications = [], services = [], environments = [];
-              a.entities.map((o)=>{
-                switch(o.objectNamespace){
-                case 'topology':
-                  let app = applicationOptions.find((a)=>{return o.objectId === a.id;});
-                  applications.push(app.value);
-                  break;
-                case 'cluster':
-                  let service = servicePoolOptions.find((s)=>{return o.objectId === s.id;});
-                  services.push(service.value);
-                  break;
-                case 'namespace':
-                  let environment = environmentOptions.find((e)=>{return o.objectId === e.id;});
-                  environments.push(environment.value);
-                  break;
-                }
-              });
-              rolesArray[i].applications = applications;
-              rolesArray[i].services = services;
-              rolesArray[i].environments = environments;
-            });
-            this.setState({roles: rolesArray});
-          });
-
-        results[1].entities.map((u)=>{
-          userOptionsArr.push({
-            id: u.id,
-            name: u.name,
-            label: u.name,
-            value: u.name,
-            email: u.name
-          });
-        });
-        results[2].entities.map((a)=>{
-          applicationOptions.push({
-            id: a.id,
-            label: a.name,
-            value: a.name
-          });
-        });
-        results[3].entities.map((s)=>{
-          servicePoolOptions.push({
-            id: s.id,
-            label: s.name,
-            value: s.name
-          });
-        });
-        results[4].entities.map((e)=>{
-          environmentOptions.push({
-            id: e.id,
-            label: e.name,
-            value: e.name
-          });
-        });
-        this.setState({roles: tempEntities, roleOptions: roleOptions, systemRoles: systemRoles, applicationRoles: applicationRoles, fetchLoader: false,
-          userOptions: userOptionsArr, applicationOptions: applicationOptions, servicePoolOptions: servicePoolOptions,
-          environmentOptions: environmentOptions});
       });
-  }
-
-  handleAddAppRole = (e) => {
-    this.setState({editData : {
-      name: '',
-      displayName: '',
-      description: '',
-      parentRoles: [],
-      system: false,
-      users: [],
-      applications: [],
-      services: [],
-      environments: []
-    }, showRoleForm: true, activePanel: ''});
-  }
-
-  handleDeleteRole = (id) => {
-    let BaseContainer = this.props.callbackHandler();
-    BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete this role?'}).then((confirmBox) => {
-      UserRoleREST.deleteRole(id).then((role) => {
-        this.setState({showRoleForm: false, editData: {}});
-        this.fetchData();
-        confirmBox.cancel();
-        if (role.responseMessage !== undefined) {
-          FSReactToastr.error(
-            <CommonNotification flag="error" content={role.responseMessage}/>, '', toastOpt);
-        } else {
-          FSReactToastr.success(
-            <strong>Role deleted successfully</strong>
-          );
-        }
-      }).catch((err) => {
-        FSReactToastr.error(
-          <CommonNotification flag="error" content={err}/>, '', toastOpt);
-      });
-    }, (Modal) => {});
   }
 
   handleSelect(entity, k, e) {
@@ -257,43 +139,10 @@ export default class RolesListingContainer extends Component {
     }
   }
 
-  getPermissionClass = (obj) => {
-    if(obj.permissions.length === 0) {
-      return 'none';
-    } else if(obj.permissions.length === 1) {
-      return 'view';
-    } else if(obj.permissions.length > 1) {
-      return 'edit';
-    }
-  }
-
   render() {
-    let {roles, roleOptions, systemRoles, applicationRoles, editData, fetchLoader, showRoleForm,
-      applicationOptions, userOptions, servicePoolOptions, environmentOptions} = this.state;
-    var defaultHeader = (
-      <div>
-        <span className="hb success role-icon"><i className="fa fa-key"></i></span>
-        <div className="panel-sections first">
-          <h4 ref="roleName" className="role-name" title="Name">New Role</h4>
-        </div>
-        <div className="panel-sections second">
-          <div className="status-list">
-            <i className="fa fa-stop m-r-xs"></i>
-            <i className="fa fa-stop m-r-xs"></i>
-            <i className="fa fa-stop m-r-xs"></i>
-          </div>
-        </div>
-        <div className="panel-sections pull-right">
-          <h6 className="role-th">USERS</h6>
-          <h4 className="role-td">0</h4>
-        </div>
-      </div>
-    );
+    let {roles, roleOptions, systemRoles, applicationRoles, editData, fetchLoader, showRoleForm, userOptions} = this.state;
     return (
       <div>
-      <div id="add-role" >
-      <button type="button" onClick={this.handleAddAppRole} href="javascript:void(0);" className="hb lg success pull-right"><i className="fa fa-plus"></i></button>
-      </div>
       <div className="row">
         {fetchLoader ?
         <div className="col-sm-12">
@@ -310,39 +159,28 @@ export default class RolesListingContainer extends Component {
               role="tablist"
             >
             {
-            showRoleForm && !editData.id ?
-            (
-            <Panel
-              header={defaultHeader}
-              headerRole="tabpanel"
-              collapsible
-              expanded={false}
-              className="selected"
-            >
-            </Panel>
-            )
-            : ''
-            }
-            {
-              roles.map((entity, i)=>{
+              applicationRoles.map((entity, i)=>{
                 var metadata = entity.metadata ? JSON.parse(entity.metadata) : {};
-                var btnClass = metadata.colorLabel || 'success';
-                var iconClass = metadata.icon || 'key';
-                var sizeClass = metadata.size || '';
-                var accessControlList = entity.accessControlList || [];
-                let topologyACL = accessControlList.find((a)=>{return a.objectNamespace === 'topology';});
-                let clusterACL = accessControlList.find((a)=>{return a.objectNamespace === 'cluster';});
-                let namespaceACL = accessControlList.find((a)=>{return a.objectNamespace === 'namespace';});
-                let topologyPermissionClass = '', clusterPermissionClass = '', namespacePermissionClass = '';
-                if(topologyACL){
-                  topologyPermissionClass = this.getPermissionClass(topologyACL);
+                var btnClass = metadata.colorLabel || 'success', iconClass = metadata.icon || 'key', sizeClass = metadata.size || '';
+                var capabilities = [];
+                if(metadata.capabilities){
+                  metadata.capabilities.map((c)=>{
+                    capabilities.push({
+                      name: _.keys(c)[0],
+                      value: _.values(c)[0]
+                    });
+                  });
                 }
-                if(clusterACL){
-                  clusterPermissionClass = this.getPermissionClass(clusterACL);
-                }
-                if(namespaceACL){
-                  namespacePermissionClass = this.getPermissionClass(namespaceACL);
-                }
+                let applications = capabilities.find((o)=>{return o.name == "Applications";}),
+                  appPermission = applications ? applications.value : "None",
+                  servicePool = capabilities.find((o)=>{return o.name == "Service Pool";}),
+                  servicePermission = servicePool ? servicePool.value : "None",
+                  environment = capabilities.find((o)=>{return o.name == "Environments";}),
+                  envPermission = environment ? environment.value : "None",
+                  users = capabilities.find((o)=>{return o.name == "Users";}),
+                  userPermission = users ? users.value : "None",
+                  dashboard = capabilities.find((o)=>{return o.name == "Dashboard";}),
+                  dashboardPermission = dashboard ? dashboard.value : "None";
                 var header = (
                   <div key={i}>
                   <span className={`hb ${btnClass} ${sizeClass.toLowerCase()} role-icon`}><i className={`fa fa-${iconClass}`}></i></span>
@@ -351,9 +189,11 @@ export default class RolesListingContainer extends Component {
                   </div>
                   <div className="panel-sections second">
                     <div className="status-list">
-                      <i className={"fa fa-stop " + topologyPermissionClass + " m-r-xs"} title={'Applications: '+ (topologyPermissionClass ? topologyPermissionClass.toUpperCase() : 'NONE')}></i>
-                      <i className={"fa fa-stop " + clusterPermissionClass +" m-r-xs"} title={'Services: '+ (clusterPermissionClass ? clusterPermissionClass.toUpperCase() : 'NONE')}></i>
-                      <i className={"fa fa-stop " + namespacePermissionClass + " m-r-xs"} title={'Environments: '+ (namespacePermissionClass ? namespacePermissionClass.toUpperCase() : 'NONE')}></i>
+                      <i className={"fa fa-stop " + appPermission.toLowerCase() + " m-r-xs"} title={"Applications: "+appPermission}></i>
+                      <i className={"fa fa-stop " + servicePermission.toLowerCase() + " m-r-xs"} title={"Service Pool: "+servicePermission}></i>
+                      <i className={"fa fa-stop " + envPermission.toLowerCase() + " m-r-xs"} title={"Environments: "+envPermission}></i>
+                      <i className={"fa fa-stop " + dashboardPermission.toLowerCase() + " m-r-xs"} title={"Dashboard: "+dashboardPermission}></i>
+                      <i className={"fa fa-stop " + userPermission.toLowerCase() + " m-r-xs"} title={"Users: "+userPermission}></i>
                     </div>
                   </div>
                   <div className="panel-sections pull-right">
@@ -382,17 +222,13 @@ export default class RolesListingContainer extends Component {
       {showRoleForm ?
        <AppRoleForm
          ref="AppRoleForm"
-         editData={editData}
+         editData={JSON.parse(JSON.stringify(editData))}
          id={editData.id ? editData.id : null}
          roles={systemRoles}
          roleOptions={roleOptions}
          userOptions={userOptions}
-         applicationOptions={applicationOptions}
-         servicePoolOptions={servicePoolOptions}
-         environmentOptions={environmentOptions}
          saveCallback={this.handleSave.bind(this)}
          cancelCallback={this.handleCancel.bind(this)}
-         deleteCallback={this.handleDeleteRole.bind(this, editData.id)}
        />
        : ''
       }

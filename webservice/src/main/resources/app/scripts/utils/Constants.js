@@ -58,7 +58,10 @@ const iconOptions = [
   {value: 'file'},
   {value: 'lock'},
   {value: 'key'},
-  {value: 'cubes'}
+  {value: 'cubes'},
+  {value: 'globe'},
+  {value: 'pencil'},
+  {value: 'eye'}
 ];
 
 const rolePriorities = [
@@ -75,6 +78,24 @@ const rolePriorities = [
   {name: "ROLE_SCHEMA_ADMIN", priority: 2}
 ];
 
+const menuName = {
+  APPLICATION: 'topology',
+  DASHBOARD: 'dashboard',
+  SCHEMA_REGISTRY: 'schemaRegistry',
+  MODEL_REGISTRY: 'modelRegistry',
+  UDF: 'udf',
+  NOTIFIER: 'notifier',
+  CUSTOM_PROCESSOR: 'customprocessor',
+  SERVICE_POOL: 'servicepool',
+  ENVIRONMENT: 'environments',
+  AUTHORIZER: 'authorizer'
+};
+const accessCapabilities = {
+  APPLICATION: 'Applications',
+  SERVICE_POOL: 'Service Pool',
+  ENVIRONMENT: 'Environments',
+  USER: 'Users'
+};
 export {
   baseUrl,
   pageSize,
@@ -86,5 +107,7 @@ export {
   deployStatusText,
   colorOptions,
   iconOptions,
-  rolePriorities
+  rolePriorities,
+  menuName,
+  accessCapabilities
 };

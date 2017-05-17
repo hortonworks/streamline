@@ -620,6 +620,15 @@ label {
   left: -70px;
 }
 
+#actionDropdown {
+  margin-top: 10px;
+}
+
+.profileDropdown ul.dropdown-menu > li > a {
+  padding: 1px 5px;
+  white-space: normal;
+}
+
 .stream-box .stream-body {
   padding: 0px 7.5px;
   position: relative;
@@ -1790,7 +1799,7 @@ h5.environment-title span, .service-box .service-head h4 span {
 
 #add-environment {
   position: absolute;
-  right: 90px;
+  right: 140px;
   z-index: 1050;
   top: 50px;
 }
@@ -3093,9 +3102,9 @@ div#TestSourceForm > ul {
 
 #add-role, #add-user {
   position: absolute;
-  right: 30px;
+  right: 50px;
   z-index: 1050;
-  top: -20px;
+  top: -13px;
 }
 
 .user-role-form {
@@ -3109,6 +3118,11 @@ div#TestSourceForm > ul {
   padding-left: 5%;
   -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
   box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+ }
+
+ .user-role-form hr {
+   margin-top: 10px;
+   margin-bottom: 10px;
  }
 
  .role-tabs .nav-tabs {
@@ -3184,7 +3198,7 @@ div#TestSourceForm > ul {
 }
 
 .role-name, .user-name{
-    width: 200px;
+    width: 180px;
     overflow: hidden;
     text-overflow: ellipsis;
     color: #888;
@@ -3316,4 +3330,34 @@ span.warning {
   top:0;
   position: absolute;;
   padding: 5px 0 10px 0 !important;
+}
+.userProfile{
+  background-color: #fff;
+  position: absolute;
+  top:60px;
+  right:0;
+  z-index: 9999;
+  width: 120px;
+  height: 100px;
+}
+.acl-item {
+  font-size: 0.9em;
+  color: #444;
+  padding: 0 15px;
+}
+
+.acl-item a {
+  color: #d1d3d4;
+}
+
+#user-form-dropdown {
+  border: none;
+  color: #1190c0;
+  font-size: .9em;
+}
+
+#user-form-dropdown .caret {
+  margin-left: 2px;
+  margin-top: -2px;
+  color: #888;
 }

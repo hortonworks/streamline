@@ -340,6 +340,7 @@ export default class ProjectionProcessorContainer extends Component {
         });
       });
     }
+    this.projectionNode.name = name;
     this.projectionNode.description = description;
     return this.projectionNode;
   }

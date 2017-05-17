@@ -1092,6 +1092,30 @@ const updateGraphEdges = function(graphEdges, newEdges) {
   });
 };
 
+const findSingleAclObj = (id,aclArr) => {
+  let obj = {};
+  obj = _.find(aclArr, (acl) => {return acl.objectId === id;});
+  return obj !== undefined ? obj : {};
+};
+
+const getPermissionAndObj = (topologyId,arr) => {
+  const aclObject =  findSingleAclObj(topologyId ,arr);
+  const permission = getPermission(aclObject.permissions);
+  return {aclObject , permission};
+};
+
+const getPermission = (permissionArray) => {
+  if(permissionArray === undefined){
+    return ;
+  }
+  const tempPermission = permissionArray.toString();
+  return tempPermission.includes('WRITE')
+  ? false
+  : tempPermission.includes('READ')
+    ? true
+    : true;
+};
+
 export default {
   defineMarkers,
   isValidConnection,
@@ -1127,5 +1151,8 @@ export default {
   getEdgeData,
   getNodeStreams,
   updateGraphEdges,
-  spliceDeleteNodeArr
+  spliceDeleteNodeArr,
+  findSingleAclObj,
+  getPermission,
+  getPermissionAndObj
 };

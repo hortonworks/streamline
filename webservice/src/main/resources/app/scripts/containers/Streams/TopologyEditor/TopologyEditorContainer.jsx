@@ -127,7 +127,8 @@ class TopologyEditorContainer extends Component {
     hideEventLog : true,
     activeLogRowArr : [],
     testHistory : {},
-    testCompleted : false
+    testCompleted : false,
+    deployFlag : false
   };
 
   fetchData(versionId) {
@@ -481,7 +482,11 @@ class TopologyEditorContainer extends Component {
           this.topologyName = config.name;
           this.topologyConfig = JSON.parse(config.config);
           this.lastUpdatedTime = new Date(config.timestamp);
-          this.setState({topologyName: this.topologyName, mapTopologyConfig: this.topologyConfig});
+          this.setState({topologyName: this.topologyName, mapTopologyConfig: this.topologyConfig},() => {
+            if(this.state.deployFlag){
+              this.deployTopology();
+            }
+          });
         }
       });
     }
@@ -548,60 +553,60 @@ class TopologyEditorContainer extends Component {
     return obj;
   }
   deployTopology() {
-    this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to deploy this topology ?'}).then((confirmBox) => {
-      this.refs.deployLoadingModal.show();
-      this.setState({topologyStatus: 'DEPLOYING...', progressCount: 12});
-      TopologyREST.validateTopology(this.topologyId, this.versionId).then(result => {
-        if (result.responseMessage !== undefined) {
-          FSReactToastr.error(
-            <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
-          let status = this.topologyMetric.status || 'NOT RUNNING';
-          this.refs.deployLoadingModal.hide();
-          this.setState({topologyStatus: status});
-        } else {
-          TopologyREST.deployTopology(this.topologyId, this.versionId).then(topology => {
-            if (topology.responseMessage !== undefined) {
-              FSReactToastr.error(
-                <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt);
-              let status = this.topologyMetric.status || 'NOT RUNNING';
-              this.refs.deployLoadingModal.hide();
-              this.setState({topologyStatus: status});
-            } else {
-              let interval = setInterval(() => {
-                TopologyREST.deployTopologyState(this.topologyId).then((topologyState) => {
-                  if(topologyState.responseMessage !== undefined){
-                    clearInterval(interval);
-                    FSReactToastr.error(
-                      <CommonNotification flag="error" content={topologyState.responseMessage}/>, '', toastOpt);
-                  }else{
-                    if(topologyState.name.indexOf('TOPOLOGY_STATE_DEPLOYED')  !== -1){
-                      this.setState({deployStatus : topologyState.name}, () => {
-                        const clearTimer = setTimeout(() => {
-                          clearInterval(interval);
-                          this.refs.deployLoadingModal.hide();
-                          this.saveTopologyVersion(topology.timestamp);
-                        },1000);
-                      });
-                    } else if (topologyState.name.indexOf('TOPOLOGY_STATE_DEPLOYMENT_FAILED','TOPOLOGY_STATE_SUSPENDED') !== -1) {
-                      this.setState({deployStatus : topologyState.name}, () => {
-                        const clearTimer = setTimeout(() => {
-                          clearInterval(interval);
-                          this.refs.deployLoadingModal.hide();
-                          FSReactToastr.error(
-                            <CommonNotification flag="error" content={topologyState.description}/>, '', toastOpt);
-                        },1000);
-                      });
-                    }
-                    this.setState({deployStatus : topologyState.name});
+    // this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to deploy this topology ?'}).then((confirmBox) => {
+    this.refs.deployLoadingModal.show();
+    this.setState({topologyStatus: 'DEPLOYING...', progressCount: 12,deployFlag : false});
+    TopologyREST.validateTopology(this.topologyId, this.versionId).then(result => {
+      if (result.responseMessage !== undefined) {
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
+        let status = this.topologyMetric.status || 'NOT RUNNING';
+        this.refs.deployLoadingModal.hide();
+        this.setState({topologyStatus: status});
+      } else {
+        TopologyREST.deployTopology(this.topologyId, this.versionId).then(topology => {
+          if (topology.responseMessage !== undefined) {
+            FSReactToastr.error(
+              <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt);
+            let status = this.topologyMetric.status || 'NOT RUNNING';
+            this.refs.deployLoadingModal.hide();
+            this.setState({topologyStatus: status});
+          } else {
+            let interval = setInterval(() => {
+              TopologyREST.deployTopologyState(this.topologyId).then((topologyState) => {
+                if(topologyState.responseMessage !== undefined){
+                  clearInterval(interval);
+                  FSReactToastr.error(
+                    <CommonNotification flag="error" content={topologyState.responseMessage}/>, '', toastOpt);
+                }else{
+                  if(topologyState.name.indexOf('TOPOLOGY_STATE_DEPLOYED')  !== -1){
+                    this.setState({deployStatus : topologyState.name}, () => {
+                      const clearTimer = setTimeout(() => {
+                        clearInterval(interval);
+                        this.refs.deployLoadingModal.hide();
+                        this.saveTopologyVersion(topology.timestamp);
+                      },1000);
+                    });
+                  } else if (topologyState.name.indexOf('TOPOLOGY_STATE_DEPLOYMENT_FAILED','TOPOLOGY_STATE_SUSPENDED') !== -1) {
+                    this.setState({deployStatus : topologyState.name}, () => {
+                      const clearTimer = setTimeout(() => {
+                        clearInterval(interval);
+                        this.refs.deployLoadingModal.hide();
+                        FSReactToastr.error(
+                          <CommonNotification flag="error" content={topologyState.description}/>, '', toastOpt);
+                      },1000);
+                    });
                   }
-                });
-              },3000);
-            }
-          });
-        }
-      });
-      confirmBox.cancel();
-    }, () => {});
+                  this.setState({deployStatus : topologyState.name});
+                }
+              });
+            },3000);
+          }
+        });
+      }
+    });
+    //   confirmBox.cancel();
+    // }, () => {});
   }
   saveTopologyVersion(timestamp){
     FSReactToastr.success(
@@ -1292,8 +1297,20 @@ class TopologyEditorContainer extends Component {
     this.refs.BaseContainer.refs.Confirm.cancel();
   }
 
+  handleDeployTopology = () => {
+    this.setState({deployFlag : true}, () => {
+      this.refs.TopologyConfigModal.show();
+    });
+  }
+
+  handleCancelConfig = () => {
+    this.setState({deployFlag : false}, () => {
+      this.refs.TopologyConfigModal.hide();
+    });
+  }
+
   render() {
-    const {progressCount, progressBarColor, fetchLoader, mapTopologyConfig,deployStatus,testRunActivated,testCaseList,selectedTestObj,testCaseLoader,testRunCurrentEdges,testResult,nodeData,testName,showError,testSinkConfigure,nodeListArr,hideEventLog,eventLogData,activeLogRowArr,testHistory,testCompleted} = this.state;
+    const {progressCount, progressBarColor, fetchLoader, mapTopologyConfig,deployStatus,testRunActivated,testCaseList,selectedTestObj,testCaseLoader,testRunCurrentEdges,testResult,nodeData,testName,showError,testSinkConfigure,nodeListArr,hideEventLog,eventLogData,activeLogRowArr,testHistory,testCompleted,deployFlag} = this.state;
     let nodeType = this.node
       ? this.node.currentType
       : '';
@@ -1322,7 +1339,7 @@ class TopologyEditorContainer extends Component {
                       </OverlayTrigger>
                     : (this.state.unknown !== "UNKNOWN")
                       ? <OverlayTrigger key={3} placement="top" overlay={<Tooltip id = "tooltip" > Run </Tooltip>}>
-                          <button className="hb xl success pull-right" onClick={ testRunActivated ? this.runTestCase : this.deployTopology.bind(this)}>
+                          <button className="hb xl success pull-right" onClick={ testRunActivated ? this.runTestCase : this.handleDeployTopology.bind(this)}>
                             <i className="fa fa-paper-plane"></i>
                           </button>
                         </OverlayTrigger>
@@ -1358,7 +1375,7 @@ class TopologyEditorContainer extends Component {
 }
           </div>
         </div>
-        <Modal ref="TopologyConfigModal" data-title="Topology Configuration" onKeyPress={this.handleKeyPress.bind(this)} data-resolve={this.handleSaveConfig.bind(this)}>
+        <Modal ref="TopologyConfigModal" data-title={deployFlag ? " Are you sure want to continue with this configuration" : "Application Configuration"}  onKeyPress={this.handleKeyPress.bind(this)} data-resolve={this.handleSaveConfig.bind(this)} data-reject={this.handleCancelConfig.bind(this)}>
           <TopologyConfig ref="topologyConfig" topologyId={this.topologyId} versionId={this.versionId} data={mapTopologyConfig} topologyName={this.state.topologyName} uiConfigFields={this.topologyConfigData} testRunActivated={this.state.testRunActivated}/>
         </Modal>
         {/* NodeModal for Development Mode for source*/}

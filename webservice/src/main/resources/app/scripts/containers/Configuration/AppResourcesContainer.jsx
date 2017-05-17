@@ -20,6 +20,9 @@ import {Tabs, Tab} from 'react-bootstrap';
 import UDFContainer from './UDFContainer';
 import NotifierContainer from './NotifierContainer';
 import CustomProcessorContainer from './CustomProcessorContainer';
+import {hasModuleAccess} from '../../utils/ACLUtils';
+import {menuName} from '../../utils/Constants';
+
 
 export default class AppResourcesContainer extends Component {
   constructor(props) {
@@ -42,16 +45,25 @@ export default class AppResourcesContainer extends Component {
       <BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" headerContent={this.getHeader()}>
         <div className="row">
           <div className="col-sm-12">
-            <Tabs defaultActiveKey={1} id="appResources" className="user-tabs">
-              <Tab eventKey={1} title="Custom Processor">
-                <CustomProcessorContainer callbackHandler={this.callbackHandler.bind(this)}/>
-              </Tab>
-              <Tab eventKey={2} title="UDF">
-                <UDFContainer callbackHandler={this.callbackHandler.bind(this)}/>
-              </Tab>
-              <Tab eventKey={3} title="Notifiers">
-                <NotifierContainer callbackHandler={this.callbackHandler.bind(this)}/>
-              </Tab>
+            <Tabs id="appResources" className="user-tabs">
+              {hasModuleAccess(menuName.CUSTOM_PROCESSOR) ?
+                <Tab eventKey={1} title="Custom Processor">
+                  <CustomProcessorContainer callbackHandler={this.callbackHandler.bind(this)}/>
+                </Tab>
+                : null
+              }
+              {hasModuleAccess(menuName.UDF) ?
+                <Tab eventKey={2} title="UDF">
+                  <UDFContainer callbackHandler={this.callbackHandler.bind(this)}/>
+                </Tab>
+                : null
+              }
+              {hasModuleAccess(menuName.NOTIFIER) ?
+                <Tab eventKey={3} title="Notifiers">
+                  <NotifierContainer callbackHandler={this.callbackHandler.bind(this)}/>
+                </Tab>
+                : null
+              }
             </Tabs>
           </div>
         </div>

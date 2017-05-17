@@ -20,10 +20,12 @@ import moment from 'moment';
 import {DropdownButton, MenuItem, Button ,FormGroup,InputGroup,FormControl} from 'react-bootstrap';
 import Modal from '../../components/FSModal';
 import {Scrollbars} from 'react-custom-scrollbars';
+import {observer} from 'mobx-react';
 
 /* import common utils*/
 import ClusterREST from '../../rest/ClusterREST';
 import MiscREST from '../../rest/MiscREST';
+import UserRoleREST from '../../rest/UserRoleREST';
 import Utils from '../../utils/Utils';
 import TopologyUtils from '../../utils/TopologyUtils';
 import FSReactToastr from '../../components/FSReactToastr';
@@ -32,11 +34,15 @@ import FSReactToastr from '../../components/FSReactToastr';
 import BaseContainer from '../BaseContainer';
 import NoData from '../../components/NoData';
 import CommonNotification from '../../utils/CommonNotification';
-import {toastOpt} from '../../utils/Constants';
+import {toastOpt, accessCapabilities} from '../../utils/Constants';
 import Paginate from '../../components/Paginate';
 import CommonLoaderSign from '../../components/CommonLoaderSign';
 import AddManualCluster from '../ManualCluster/AddManualCluster';
 import AddManualService from '../ManualCluster/AddManualService';
+import {hasEditCapability, hasViewCapability} from '../../utils/ACLUtils';
+import app_state from '../../app_state';
+import CommonShareModal from '../../components/CommonShareModal';
+
 
 /*
   ServiceItems is a stateless component to display a service image on UI
@@ -57,6 +63,7 @@ const ServiceItems = (props) => {
   PoolItemsCard is a React Component with state
   And contains single CARD item
 */
+@observer
 class PoolItemsCard extends Component {
   constructor(props) {
     super(props);
@@ -68,7 +75,16 @@ class PoolItemsCard extends Component {
     call this.props.poolActionClicked with params eventKey and fetch Id from the dataset
   */
   onActionClick = (eventKey) => {
-    this.props.poolActionClicked(eventKey, this.clusterRef.dataset.id);
+    const {allACL} = this.props;
+    const mClusterId =  this.clusterRef.dataset.id;
+    if(! _.isEmpty(allACL)){
+      const {aclObject,permission} = TopologyUtils.getPermissionAndObj(Number(mClusterId),allACL);
+      if(!permission){
+        this.props.poolActionClicked(eventKey,mClusterId,aclObject);
+      }
+    } else {
+      this.props.poolActionClicked(eventKey,mClusterId);
+    }
   }
 
   /*
@@ -92,12 +108,20 @@ class PoolItemsCard extends Component {
     Add called props.addManualServiceHandler function
   */
   addManualService = (event) => {
+    const {allACL} = this.props;
     const mClusterId = (event.target.nodeName !== 'I') ? parseInt(event.target.dataset.id) : parseInt(event.target.parentElement.dataset.id);
-    this.props.addManualServiceHandler(mClusterId);
+    if(! _.isEmpty(allACL)){
+      const {permission} = TopologyUtils.getPermissionAndObj(Number(mClusterId),allACL);
+      if(!permission){
+        this.props.addManualServiceHandler(mClusterId);
+      }
+    } else {
+      this.props.addManualServiceHandler(mClusterId);
+    }
   }
 
   render() {
-    const {clusterList, loader} = this.props;
+    const {clusterList, loader,allACL} = this.props;
     const {cluster, services} = clusterList;
     const tempArr = services || {
       service: (services === undefined)
@@ -122,6 +146,12 @@ class PoolItemsCard extends Component {
     if(manual_index === -1 && clusterList.cluster.ambariImportUrl === ''){
       serviceWrap.push({service :{name : 'addManualBtn', manualClusterId : clusterList.cluster.id}});
     }
+    const {aclObject , permission = false} = TopologyUtils.getPermissionAndObj(cluster.id, allACL || []);
+    const rights_share = aclObject.owner !== undefined
+                        ? aclObject.owner
+                          ? false
+                          : true
+                        : false;
 
     return (
       <div className="col-md-4">
@@ -130,22 +160,32 @@ class PoolItemsCard extends Component {
             <h4 className="no-margin">{cluster.name}
               <span className="display-block">{cluster.ambariImportUrl ? cluster.ambariImportUrl : cluster.description}</span>
             </h4>
-            <div className="service-action-btn">
-              <DropdownButton noCaret title={ellipseIcon} id="dropdown" bsStyle="link" className="dropdown-toggle" data-stest="service-pool-actions">
-                {
-                  cluster.ambariImportUrl
-                  ? <MenuItem onClick={this.onActionClick.bind(this, "refresh/")} data-stest="edit-service-pool">
-                      <i className="fa fa-refresh"></i>
-                      &nbsp;Refresh
-                    </MenuItem>
-                  : ''
-                }
-                <MenuItem onClick={this.onActionClick.bind(this, "delete/")} data-stest="delete-service-pool">
-                  <i className="fa fa-trash"></i>
-                  &nbsp;Delete
-                </MenuItem>
-              </DropdownButton>
-            </div>
+            {hasEditCapability(accessCapabilities.SERVICE_POOL) ?
+              <div className="service-action-btn">
+                <DropdownButton noCaret title={ellipseIcon} id="dropdown" bsStyle="link" className="dropdown-toggle" data-stest="service-pool-actions">
+                  {
+                    cluster.ambariImportUrl
+                    ? <MenuItem onClick={this.onActionClick.bind(this, "refresh/")} data-stest="edit-service-pool">
+                        <i className="fa fa-refresh"></i>
+                        &nbsp;Refresh
+                      </MenuItem>
+                    : ''
+                  }
+                  { !_.isEmpty(aclObject)
+                    ? <MenuItem title="Share" disabled={rights_share} onClick={this.onActionClick.bind(this, "share/")}>
+                        <i className="fa fa-share"></i>
+                        &nbsp;Share
+                      </MenuItem>
+                    : ''
+                  }
+                  <MenuItem  disabled={permission}  onClick={this.onActionClick.bind(this, "delete/")} data-stest="delete-service-pool">
+                    <i className="fa fa-trash"></i>
+                    &nbsp;Delete
+                  </MenuItem>
+                </DropdownButton>
+              </div>
+              : null
+            }
           </div>
           <div className="service-body clearfix">
             {(this.checkRefId(cluster.id))
@@ -167,8 +207,7 @@ class PoolItemsCard extends Component {
                     : <div className="col-sm-12 text-center">
                           No Service
                       </div>
-
-}
+                    }
                 </ul>
               </Scrollbars>
             }
@@ -182,6 +221,7 @@ PoolItemsCard.propTypes = {
   poolActionClicked: React.PropTypes.func.isRequired
 };
 
+@observer
 class ServicePoolContainer extends Component {
   constructor(props) {
     super(props);
@@ -216,15 +256,33 @@ class ServicePoolContainer extends Component {
     SET entities and pageIndex to "0"
   */
   fetchData = () => {
-    ClusterREST.getAllCluster().then((clusters) => {
-      if (clusters.responseMessage !== undefined) {
-        FSReactToastr.error(
-          <CommonNotification flag="error" content={clusters.responseMessage}/>, '', toastOpt);
-        this.setState({fetchLoader: false,searchLoader:false});
-      } else {
-        let result = clusters.entities;
-        this.setState({fetchLoader: false, entities: result, pageIndex: 0});
+    let promiseArr = [];
+    promiseArr.push(ClusterREST.getAllCluster());
+    if(app_state.streamline_config.secureMode){
+      promiseArr.push(UserRoleREST.getAllACL('cluster',app_state.user_profile.id,'USER'));
+    }
+    Promise.all(promiseArr).then((results) => {
+      _.map(results, (result) => {
+        if(result.responseMessage !== undefined){
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
+          this.setState({fetchLoader: false,searchLoader:false});
+        }
+      });
+
+      let stateObj = {};
+      stateObj.entities = results[0].entities;
+      stateObj.fetchLoader = false;
+      stateObj.pageIndex = 0;
+
+      // stateObj.allACL = [{"id":7,"objectId":1,"objectNamespace":"topology","sidId":3,"sidType":"USER","permissions":["READ","WRITE","EXECUTE","DELETE"],"owner":true,"grant":true,"timestamp":1494868999112},
+      // {"id":10,"objectId":2,"objectNamespace":"topology","sidId":2,"sidType":"USER","permissions":["READ"],"owner":false,"grant":false,"timestamp":1494869390535}];
+      // If the application is in secure mode result[1]
+      if(results[1]){
+        stateObj.allACL = results[1].entities;
       }
+
+      this.setState(stateObj);
     });
   }
 
@@ -311,7 +369,7 @@ class ServicePoolContainer extends Component {
     poolActionClicked method is call on multiple button
     And on the bases of eventKey futhere method is called
   */
-  poolActionClicked = (eventKey, id) => {
+  poolActionClicked = (eventKey, id,obj) => {
     const key = eventKey.split('/');
     switch (key[0].toString()) {
     case "refresh":
@@ -320,9 +378,18 @@ class ServicePoolContainer extends Component {
     case "delete":
       this.handleDeleteCluster(id);
       break;
+    case "share":
+      this.shareSingleCluster(id,obj);
+      break;
     default:
       break;
     }
+  }
+
+  shareSingleCluster = (id,obj) => {
+    this.setState({shareObj : obj}, () => {
+      this.refs.CommonShareModalRef.show();
+    });
   }
 
   /*
@@ -841,6 +908,32 @@ class ServicePoolContainer extends Component {
     });
   }
 
+  handleShareSave = () => {
+    if(this.refs.CommonShareModal.validate()){
+      this.refs.CommonShareModalRef.hide();
+      this.refs.CommonShareModal.handleSave().then((shareCluster) => {
+        let flag = true;
+        _.map(shareCluster, (share) => {
+          if(share.responseMessage !== undefined){
+            flag = false;
+            FSReactToastr.error(
+              <CommonNotification flag="error" content={share.responseMessage}/>, '', toastOpt);
+          }
+          this.setState({shareObj : {}});
+        });
+        if(flag){
+          FSReactToastr.success(
+            <strong>Services has been shared successfully</strong>
+          );
+        }
+      });
+    }
+  }
+
+  handleShareCancel = () => {
+    this.refs.CommonShareModalRef.hide();
+  }
+
   render() {
     const {routes} = this.props;
     const {
@@ -858,7 +951,9 @@ class ServicePoolContainer extends Component {
       mServiceNameList,
       filterValue,
       searchLoader,
-      sorted
+      sorted,
+      allACL,
+      shareObj
     } = this.state;
     const {ambariUrl} = clusterData;
     const splitData = _.chunk(entities, pageSize) || [];
@@ -928,28 +1023,31 @@ class ServicePoolContainer extends Component {
               </div>
             </div>
 
-            <div className="row row-margin-bottom">
-              <div className="col-md-8 col-md-offset-2">
-                <div className="input-group">
-                  <input data-stest="url" type="text" ref="addURLInput" onKeyPress={this.handleKeyPress} className={`form-control ${showInputErr
-                    ? ''
-                    : 'invalidInput'}`} placeholder="http://ambari_host:port/api/v1/clusters/CLUSTER_NAME"/>
-                  <span className="input-group-btn">
-                    <button className="btn btn-success" type="button" onClick={this.addBtnClicked}>
-                      AUTO ADD
-                    </button>
-                  </span>
+            {hasEditCapability(accessCapabilities.SERVICE_POOL) ?
+              <div className="row row-margin-bottom">
+                <div className="col-md-8 col-md-offset-2">
+                  <div className="input-group">
+                    <input data-stest="url" type="text" ref="addURLInput" onKeyPress={this.handleKeyPress} className={`form-control ${showInputErr
+                      ? ''
+                      : 'invalidInput'}`} placeholder="http://ambari_host:port/api/v1/clusters/CLUSTER_NAME"/>
+                    <span className="input-group-btn">
+                      <button className="btn btn-success" type="button" onClick={this.addBtnClicked}>
+                        AUTO ADD
+                      </button>
+                    </span>
+                  </div>
+                  <lable data-stest="validationMsg" className={`text-danger ${showInputErr
+                    ? 'hidden'
+                    : ''}`}>This is not a valid Url</lable>
                 </div>
-                <lable data-stest="validationMsg" className={`text-danger ${showInputErr
-                  ? 'hidden'
-                  : ''}`}>This is not a valid Url</lable>
+                <div className="col-md-2">
+                  <button className="btn btn-default" type="button" onClick={this.addManualCluster}>
+                    MANUAL
+                  </button>
+                </div>
               </div>
-              <div className="col-md-2">
-                <button className="btn btn-default" type="button" onClick={this.addManualCluster}>
-                  MANUAL
-                </button>
-              </div>
-            </div>
+              : null
+            }
             <div className="row">
               {searchLoader
               ? <CommonLoaderSign imgName={"services"}/>
@@ -957,7 +1055,7 @@ class ServicePoolContainer extends Component {
                 ? <NoData imgName={"applications"} searchVal={filterValue}/>
                 : entities.length !== 0
                   ? splitData[pageIndex].map((list) => {
-                    return <PoolItemsCard key={list.cluster.id} clusterList={list} poolActionClicked={this.poolActionClicked} refIdArr={refIdArr} loader={loader} addManualServiceHandler={this.addManualServiceHandler}/>;
+                    return <PoolItemsCard key={list.cluster.id} clusterList={list} poolActionClicked={this.poolActionClicked} refIdArr={refIdArr} loader={loader} addManualServiceHandler={this.addManualServiceHandler} allACL={allACL}/>;
                   })
                   : !this.initialFetch && entities.length === 0
                     ? <NoData imgName={"services"}/>
@@ -978,6 +1076,10 @@ class ServicePoolContainer extends Component {
         </Modal>
         <Modal ref={(ref) => this.addManualServiceModal = ref} data-title={mClusterServiceUpdate ? "Edit Manual Service" : "Add Manual Service"}  data-resolve={this.addManualServiceSave} data-reject={this.addManualCommonCancel.bind(this,'service')} onKeyPress={this.handleKeyPress}>
           <AddManualService ref="addManualServiceRef" mClusterId={mClusterId} mClusterServiceUpdate={mClusterServiceUpdate} serviceNameList={mServiceNameList}/>
+        </Modal>
+        {/* CommonShareModal */}
+        <Modal ref={"CommonShareModalRef"} data-title="Share Cluster"  data-resolve={this.handleShareSave.bind(this)} data-reject={this.handleShareCancel.bind(this)}>
+          <CommonShareModal ref="CommonShareModal" shareObj={shareObj}/>
         </Modal>
       </BaseContainer>
     );

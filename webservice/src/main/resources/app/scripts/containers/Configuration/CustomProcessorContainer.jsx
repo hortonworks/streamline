@@ -29,12 +29,12 @@ import {BtnDelete, BtnEdit} from '../../components/ActionButtons';
 import CustomProcessorForm from './CustomProcessorForm';
 import CustomProcessorREST from '../../rest/CustomProcessorREST';
 import FSReactToastr from '../../components/FSReactToastr';
-import {pageSize} from '../../utils/Constants';
+import {pageSize, accessCapabilities, toastOpt} from '../../utils/Constants';
 import Utils from '../../utils/Utils';
 import CommonNotification from '../../utils/CommonNotification';
-import {toastOpt} from '../../utils/Constants';
 import NoData from '../../components/NoData';
 import CommonLoaderSign from '../../components/CommonLoaderSign';
+import {hasEditCapability, hasViewCapability} from '../../utils/ACLUtils';
 
 export default class CustomProcessorContainer extends Component {
 
@@ -165,9 +165,12 @@ export default class CustomProcessorContainer extends Component {
           : <div>
             {this.state.showListing
               ? <div>
-                  <a href="javascript:void(0);" className="hb success pull-right" data-target="#addEnvironment" onClick={this.handleAdd.bind(this)}>
-                    <i className="fa fa-plus"></i>
-                  </a>
+                  {hasEditCapability(accessCapabilities.APPLICATION) ?
+                    <a href="javascript:void(0);" className="hb success pull-right" data-target="#addEnvironment" onClick={this.handleAdd.bind(this)}>
+                      <i className="fa fa-plus"></i>
+                    </a>
+                    : null
+                  }
                   <div className="row">
                     <div className="page-title-box clearfix">
                       <div className="pull-left col-md-3">

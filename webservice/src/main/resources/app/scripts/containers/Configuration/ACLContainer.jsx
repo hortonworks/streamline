@@ -32,7 +32,7 @@ export default class ACLContainer extends Component {
       servicePool: 'NONE',
       environments: 'NONE'
     };
-    if(props) {
+    if(props && props !== this.props) {
       if(props.editData) {
         props.editData.map((o)=>{
           let namespaceType = '';
@@ -55,13 +55,6 @@ export default class ACLContainer extends Component {
       }
     }
   }
-  handleOnClick = (e) =>{
-    let obj = {};
-    let namspaceType = e.target.dataset.name;
-    let permission = e.target.innerText;
-    obj[namspaceType] = permission;
-    this.setState(obj);
-  }
   getPermissions(namspaceType) {
     let permissions = [];
     if(this.state[namspaceType] === 'VIEW') {
@@ -75,53 +68,6 @@ export default class ACLContainer extends Component {
     let {applications, servicePool, environments} = this.state;
     return (
       <div>
-        <h5>Access Control</h5>
-        <div className="row">
-          <div className="col-md-12">
-            <div className="form-group">
-              <div className="row">
-                <div className="col-md-6">
-                  <label>Applications</label>
-                </div>
-                <div className="col-md-6">
-                  <label>Service Pool</label>
-                </div>
-              </div>
-              <div className="row">
-                <div className="col-md-6">
-                  <ButtonGroup onClick={this.handleOnClick} className="acl-btn">
-                    <Button className={applications === 'NONE' ? "btn-selected" : ""} data-name="applications">NONE</Button>
-                    <Button className={applications === 'VIEW' ? "btn-selected" : ""} data-name="applications">VIEW</Button>
-                    <Button className={applications === 'EDIT' ? "btn-selected" : ""} data-name="applications">EDIT</Button>
-                  </ButtonGroup>
-                </div>
-                <div className="col-md-6">
-                  <ButtonGroup onClick={this.handleOnClick} className="acl-btn">
-                    <Button className={servicePool === 'NONE' ? "btn-selected" : ""} data-name="servicePool">NONE</Button>
-                    <Button className={servicePool === 'VIEW' ? "btn-selected" : ""} data-name="servicePool">VIEW</Button>
-                    <Button className={servicePool === 'EDIT' ? "btn-selected" : ""} data-name="servicePool">EDIT</Button>
-                  </ButtonGroup>
-                </div>
-              </div>
-            </div>
-            <div className="form-group">
-              <div className="row">
-                <div className="col-md-6">
-                  <label>Environment</label>
-                </div>
-              </div>
-              <div className="row">
-                <div className="col-md-6">
-                  <ButtonGroup onClick={this.handleOnClick} className="acl-btn">
-                    <Button className={environments === 'NONE' ? "btn-selected" : ""} data-name="environments">NONE</Button>
-                    <Button className={environments === 'VIEW' ? "btn-selected" : ""} data-name="environments">VIEW</Button>
-                    <Button className={environments === 'EDIT' ? "btn-selected" : ""} data-name="environments">EDIT</Button>
-                  </ButtonGroup>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     );
   }

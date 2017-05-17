@@ -28,6 +28,8 @@ import ModelRegistryContainer from '../containers/ModelRegistry/ModelRegistryCon
 import ComponentDefinition from '../containers/Configuration/ComponentDefinition';
 import AppResourcesContainer from '../containers/Configuration/AppResourcesContainer';
 import UserRolesContainer from '../containers/Configuration/UserRolesContainer';
+import {menuName} from '../utils/Constants';
+import {hasModuleAccess} from '../utils/ACLUtils';
 
 const onEnter = (nextState, replace, callback) => {
   var sidebarRoute = nextState.routes[1];
@@ -43,28 +45,39 @@ const onEnter = (nextState, replace, callback) => {
       state.sidebar_toggleFlag = false;
     }
   }
-  callback();
+  const route = nextState.routes[nextState.routes.length - 1];
+  let hasAccess = false;
+  if(_.has(route, 'accessMenuName')){
+    hasAccess = hasModuleAccess(route.accessMenuName);
+  }else{
+    hasAccess = true;
+  }
+  if(hasAccess){
+    callback();
+  } else {
+    throw new Error("Access Denied for "+route.accessMenuName);
+  }
 };
 
 export default (
 
   <Route path="/" component={null} name="Home" onEnter={onEnter}>
-    <IndexRoute name="My Applications" component={TopologyListContainer} onEnter={onEnter} />
-    <Route path="metrics" name="Metrics" component={MetricsContainer} onEnter={onEnter}/>
+    <IndexRoute name="My Applications" accessMenuName={menuName.APPLICATION} component={TopologyListContainer} onEnter={onEnter} />
+    {/* <Route path="metrics" name="Metrics" component={MetricsContainer} onEnter={onEnter}/> */}
     <Route path="applications" name="My Applications" onEnter={onEnter}>
       <IndexRoute name="My Applications" component={TopologyListContainer} onEnter={onEnter} />
-      <Route path=":id/view" name="Application Editor" component={TopologyViewContainer} onEnter={onEnter}/>
-      <Route path=":id/edit" name="Application Editor" component={TopologyEditorContainer} onEnter={onEnter}/>
+      <Route path=":id/view" name="Application Editor" accessMenuName={menuName.APPLICATION} accessAction="VIEW" component={TopologyViewContainer} onEnter={onEnter}/>
+      <Route path=":id/edit" name="Application Editor" accessMenuName={menuName.APPLICATION} accessAction="EDIT" component={TopologyEditorContainer} onEnter={onEnter}/>
     </Route>
   {/* <Route path="custom-processor" name="Custom Processor" component={CustomProcessorContainer} onEnter={onEnter}/> */}
   {/* <Route path="tags" name="Tags" component={TagsContainer} onEnter={onEnter}/>
   <Route path="files" name="Files" component={FilesContainer} onEnter={onEnter}/> */}
-    <Route path="service-pool" name="Service Pool" component={ServicePoolContainer} onEnter={onEnter}/>
-    <Route path="environments" name="Environments" component={EnvironmentContainer} onEnter={onEnter}/>
-    <Route path="model-registry" name="Model Registry" component={ModelRegistryContainer} onEnter={onEnter}/>
+    <Route path="service-pool" name="Service Pool" accessMenuName={menuName.SERVICE_POOL} component={ServicePoolContainer} onEnter={onEnter}/>
+    <Route path="environments" name="Environments" accessMenuName={menuName.ENVIRONMENT} component={EnvironmentContainer} onEnter={onEnter}/>
+    <Route path="model-registry" name="Model Registry" accessMenuName={menuName.MODEL_REGISTRY} component={ModelRegistryContainer} onEnter={onEnter}/>
     <Route path="component-definition" name="Component Definition" component={ComponentDefinition} onEnter={onEnter}/>
     <Route path="application-resources" name="Application Resources" component={AppResourcesContainer} onEnter={onEnter}/>
-    <Route path="authorizer" name="Authorizer" component={UserRolesContainer} onEnter={onEnter}/>
+    <Route path="authorizer" name="Authorizer" accessMenuName={menuName.AUTHORIZER} component={UserRolesContainer} onEnter={onEnter}/>
   </Route>
 
 );

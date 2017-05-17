@@ -21,6 +21,8 @@ import Form from '../../../libs/form';
 import FSReactToastr from '../../../components/FSReactToastr';
 import {toastOpt} from '../../../utils/Constants';
 import CommonNotification from '../../../utils/CommonNotification';
+import {Tabs, Tab} from 'react-bootstrap';
+import {Scrollbars} from 'react-custom-scrollbars';
 
 export default class TopologyConfigContainer extends Component {
   static propTypes = {
@@ -32,7 +34,12 @@ export default class TopologyConfigContainer extends Component {
     this.state = {
       formData: {},
       formField: {},
-      fetchLoader: true
+      fetchLoader: true,
+      activeTabKey: 1,
+      advancedField : [{
+        fieldName : '',
+        fieldValue : ''
+      }]
     };
     this.fetchData();
   }
@@ -45,8 +52,9 @@ export default class TopologyConfigContainer extends Component {
     Promise.all(promiseArr).then(result => {
       const formField = this.props.uiConfigFields.topologyComponentUISpecification;
       const config = result[0].config;
+      const {f_Data,adv_Field}= this.fetchAdvanedField(formField,JSON.parse(config));
       this.namespaceId = result[0].namespaceId;
-      this.setState({formData: JSON.parse(config), formField: formField, fetchLoader: false});
+      this.setState({formData: f_Data, formField: formField, fetchLoader: false,advancedField : adv_Field});
     }).catch(err => {
       this.setState({fetchLoader: false});
       FSReactToastr.error(
@@ -54,19 +62,66 @@ export default class TopologyConfigContainer extends Component {
     });
   }
 
+  fetchAdvanedField = (formField,config) => {
+    let f_Data = {}, adv_Field = [];
+    _.map(_.keys(config), (key) => {
+      const index = _.findIndex(formField.fields, (fd) => { return fd.fieldName === key;});
+      if(index !== -1){
+        f_Data[key] = config[key];
+      } else {
+        adv_Field.push({fieldName : key , fieldValue : config[key]});
+      }
+    });
+
+    return {f_Data,adv_Field};
+  }
+
+
   validate() {
-    let validDataFlag = false;
+    let validDataFlag = false,validateError=[];
+    const {advancedField} = this.state;
     if (!this.state.fetchLoader) {
       if (this.refs.Form.validate()) {
         validDataFlag = true;
       }
+      if(advancedField.length > 1){
+        _.map(advancedField, (adv) => {
+          if((adv.fieldName !== '' && adv.fieldValue === '') || (adv.fieldName === '' && adv.fieldValue !== '')){
+            validateError.push(false);
+          }
+        });
+      }
     }
-    return validDataFlag;
+    return validDataFlag && validateError.length === 0 ? true : false;
+  }
+
+  checkAdvancedField = (fields) => {
+    let merge = true;
+    _.map(fields, (field) => {
+      if(field.fieldName === '' || field.fieldValue === ''){
+        merge = false;
+      }
+    });
+    return merge;
+  }
+
+  generateOutputFields = (fieldList) => {
+    let mergeData = {};
+    _.map(fieldList,(fd) => {
+      mergeData[fd.fieldName] =  Utils.checkTypeAndReturnValue(fd.fieldValue);
+    });
+    return mergeData;
   }
 
   handleSave() {
     const {topologyName, topologyId, versionId} = this.props;
-    let data = this.refs.Form.state.FormData;
+    const {advancedField} = this.state;
+    let data = _.cloneDeep(this.refs.Form.state.FormData);
+    // check if advancedField doesn't has empty field and ready to mergeData
+    if(this.checkAdvancedField(advancedField)){
+      data = Utils.deepmerge(data , this.generateOutputFields(advancedField));
+    }
+
     let dataObj = {
       name: topologyName,
       config: JSON.stringify(data),
@@ -75,10 +130,37 @@ export default class TopologyConfigContainer extends Component {
     return TopologyREST.putTopology(topologyId, versionId, {body: JSON.stringify(dataObj)});
   }
 
-  render() {
-    const {formData, formField, fetchLoader} = this.state;
-    let fields = Utils.genFields(formField.fields || [], [], formData);
+  onSelectTab = (eventKey) => {
+    if (eventKey == 1) {
+      this.setState({activeTabKey: 1});
+    } else if (eventKey == 2) {
+      this.setState({activeTabKey: 2});
+    }
+  }
 
+  advanedFieldChange = (fieldType,index,event) => {
+    let tempField = _.cloneDeep(this.state.advancedField);
+    const val = event.target.value;
+    tempField[index][fieldType] = val;
+    this.setState({advancedField : tempField});
+  }
+
+  addAdvancedRowField = () => {
+    let tempField = _.cloneDeep(this.state.advancedField);
+    tempField.push({fieldName : '',fieldValue : ''});
+    this.setState({advancedField : tempField});
+  }
+
+  deleteAdvancedRowField = (index) => {
+    let tempField = _.cloneDeep(this.state.advancedField);
+    tempField.splice(index,1);
+    this.setState({advancedField : tempField});
+  }
+
+  render() {
+    const {formData, formField, fetchLoader,advancedField} = this.state;
+    let fields = Utils.genFields(formField.fields || [], [], formData);
+    const disabledFields = this.props.testRunActivated ? true : false;
     return (
       <div>
         {fetchLoader
@@ -89,9 +171,70 @@ export default class TopologyConfigContainer extends Component {
                 <img src="styles/img/start-loader.gif" alt="loading"/>
               </div>
             </div>
-          : <Form ref="Form" FormData={formData} readOnly={this.props.testRunActivated} showRequired={null} className="modal-form config-modal-form">
-            {fields}
-          </Form>
+          : <Tabs id="ConfigForm" activeKey={this.state.activeTabKey} className="modal-tabs" onSelect={this.onSelectTab}>
+              <Tab eventKey={1} title="GENERAL">
+                <div className="source-modal-form" style={{width : 580}}>
+                  <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
+                    display: "none"
+                  }}/>}>
+                    <Form ref="Form" FormData={formData} readOnly={disabledFields} showRequired={null} className="modal-form config-modal-form">
+                      {fields}
+                    </Form>
+                  </Scrollbars>
+                </div>
+              </Tab>
+              <Tab eventKey={2} title="ADVANCED">
+                <form className="source-modal-form" style={{width : 580}}>
+                  <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
+                    display: "none"
+                  }}/>}>
+                    <div className="row">
+                      <div className="col-sm-5">
+                        <div className="form-group">
+                          <label>Field Name
+                            <span className="text-danger">*</span>
+                          </label>
+                        </div>
+                      </div>
+                      <div className="col-sm-5">
+                        <div className="form-group">
+                          <label>Field Value
+                            <span className="text-danger">*</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    {
+                      _.map(advancedField , (adv,i) => {
+                        return  <div className="row" key={i}>
+                                  <div className="col-sm-5">
+                                    <div className="form-group">
+                                      <input type="text" value={adv.fieldName} className="form-control" onChange={this.advanedFieldChange.bind(this,'fieldName',i)} />
+                                    </div>
+                                  </div>
+                                  <div className="col-sm-5">
+                                    <div className="form-group">
+                                      <input type="text" value={adv.fieldValue} className="form-control" onChange={this.advanedFieldChange.bind(this,'fieldValue',i)} />
+                                    </div>
+                                  </div>
+                                  {!this.props.testRunActivated
+                                    ? <div className="col-sm-2">
+                                        <button className="btn btn-default btn-sm" disabled={disabledFields} type="button" onClick={this.addAdvancedRowField.bind(this)}>
+                                          <i className="fa fa-plus"></i>
+                                        </button>&nbsp; {i > 0
+                                          ? <button className="btn btn-sm btn-danger" type="button" onClick={this.deleteAdvancedRowField.bind(this, i)}>
+                                              <i className="fa fa-trash"></i>
+                                            </button>
+                                          : null}
+                                      </div>
+                                    : null}
+                                </div>;
+                      })
+                    }
+                  </Scrollbars>
+                </form>
+              </Tab>
+            </Tabs>
 }
       </div>
     );

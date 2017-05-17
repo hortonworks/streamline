@@ -32,13 +32,14 @@ import Utils from '../../../utils/Utils';
 import TopologyUtils from '../../../utils/TopologyUtils';
 import FSReactToastr from '../../../components/FSReactToastr';
 import EnvironmentREST from '../../../rest/EnvironmentREST';
+import UserRoleREST from '../../../rest/UserRoleREST';
 import MiscREST from '../../../rest/MiscREST';
 
 /* component import */
 import BaseContainer from '../../BaseContainer';
 import NoData from '../../../components/NoData';
 import CommonNotification from '../../../utils/CommonNotification';
-import {toastOpt, PieChartColor} from '../../../utils/Constants';
+import {toastOpt, PieChartColor, accessCapabilities} from '../../../utils/Constants';
 import PieChart from '../../../components/PieChart';
 import Paginate from '../../../components/Paginate';
 import Modal from '../../../components/FSModal';
@@ -48,6 +49,8 @@ import CloneTopology from './CloneTopology';
 import CommonLoaderSign from '../../../components/CommonLoaderSign';
 import app_state from '../../../app_state';
 import {observer} from 'mobx-react';
+import {hasEditCapability, hasViewCapability} from '../../../utils/ACLUtils';
+import CommonShareModal from '../../../components/CommonShareModal';
 
 class CustPieChart extends PieChart {
   drawPie() {
@@ -85,14 +88,30 @@ class TopologyItems extends Component {
   }
 
   onActionClick = (eventKey) => {
-    this.props.topologyAction(eventKey, this.streamRef.dataset.id);
+    const {allACL} = this.props;
+    if(! _.isEmpty(allACL)){
+      const {aclObject ,permission} = TopologyUtils.getPermissionAndObj(Number(this.streamRef.dataset.id),allACL);
+      if(!permission){
+        this.props.topologyAction(eventKey, this.streamRef.dataset.id,aclObject);
+      }
+    } else {
+      this.props.topologyAction(eventKey, this.streamRef.dataset.id);
+    }
   }
   streamBoxClick = (id, event) => {
+    const {allACL} = this.props;
     // check whether the element of streamBox is click..
     if ((event.target.nodeName !== 'BUTTON' && event.target.nodeName !== 'I' && event.target.nodeName !== 'A')) {
       this.context.router.push('applications/' + id + '/view');
     } else if (event.target.title === "Edit") {
-      this.context.router.push('applications/' + id + '/edit');
+      const {permission} = TopologyUtils.getPermissionAndObj(id,allACL);
+      if(! _.isEmpty(allACL)){
+        if(!permission){
+          this.context.router.push('applications/' + id + '/edit');
+        }
+      } else {
+        this.context.router.push('applications/' + id + '/edit');
+      }
     }
   }
   checkRefId = (id) => {
@@ -103,8 +122,9 @@ class TopologyItems extends Component {
       ? true
       : false;
   }
+
   render() {
-    const {topologyAction, topologyList} = this.props;
+    const {topologyAction, topologyList,allACL} = this.props;
     const {
       topology,
       runtime = {},
@@ -132,6 +152,12 @@ class TopologyItems extends Component {
     const unitLeft = _.slice(latencyWrap, 0, latencyWrap.length / 2);
     const unitRight = _.slice(latencyWrap, latencyWrap.length / 2, latencyWrap.length);
     const ellipseIcon = <i className="fa fa-ellipsis-v"></i>;
+    const {aclObject , permission = false} = TopologyUtils.getPermissionAndObj(topology.id, allACL || []);
+    const rights_share = aclObject.owner !== undefined
+                        ? aclObject.owner
+                          ? false
+                          : true
+                        : false;
 
     return (
       <div className="col-sm-4">
@@ -168,26 +194,41 @@ class TopologyItems extends Component {
                     <i className="fa fa-refresh"></i>
                     &nbsp;Refresh
                   </MenuItem>
-                  <MenuItem title="Edit" onClick={this.onActionClick.bind(this, "edit/" + topology.id)}>
+                  <MenuItem title="Edit" disabled={permission} onClick={this.onActionClick.bind(this, "edit/" + topology.id)}>
                     <i className="fa fa-pencil"></i>
                     &nbsp;Edit
                   </MenuItem>
-                  <MenuItem title="Clone" onClick={this.onActionClick.bind(this, "clone/" + topology.id)}>
+                  { !_.isEmpty(aclObject)
+                    ? <MenuItem title="Share" disabled={rights_share} onClick={this.onActionClick.bind(this, "share/" + topology.id)}>
+                        <i className="fa fa-share"></i>
+                        &nbsp;Share
+                      </MenuItem>
+                    : ''
+                  }
+                  <MenuItem title="Clone" disabled={permission}  onClick={this.onActionClick.bind(this, "clone/" + topology.id)}>
                     <i className="fa fa-clone"></i>
                     &nbsp;Clone
                   </MenuItem>
-                  <MenuItem title="Export" onClick={this.onActionClick.bind(this, "export/" + topology.id)}>
+                  <MenuItem title="Export" disabled={permission}  onClick={this.onActionClick.bind(this, "export/" + topology.id)}>
                     <i className="fa fa-share-square-o"></i>
                     &nbsp;Export
                   </MenuItem>
-                  <MenuItem title="Delete" onClick={this.onActionClick.bind(this, "delete/" + topology.id)}>
+                  <MenuItem title="Delete" disabled={permission} onClick={this.onActionClick.bind(this, "delete/" + topology.id)}>
                     <i className="fa fa-trash"></i>
                     &nbsp;Delete
                   </MenuItem>
                 </DropdownButton>
-                <a href="javascript:void(0)" title="Delete" className="close" onClick={this.onActionClick.bind(this, "delete/" + topology.id)}>
-                  <i className="fa fa-times-circle"></i>
-                </a>
+                {
+                  aclObject.owner !== undefined
+                  ? permission
+                    ? ''
+                    : <a href="javascript:void(0)" title="Delete" className="close" onClick={this.onActionClick.bind(this, "delete/" + topology.id)}>
+                        <i className="fa fa-times-circle"></i>
+                      </a>
+                  : <a href="javascript:void(0)" title="Delete" className="close" onClick={this.onActionClick.bind(this, "delete/" + topology.id)}>
+                      <i className="fa fa-times-circle"></i>
+                    </a>
+                }
               </div>
             </div>
           </div>
@@ -290,6 +331,7 @@ TopologyItems.contextTypes = {
   router: React.PropTypes.object.isRequired
 };
 
+@observer
 class TopologyListingContainer extends Component {
   constructor(props) {
     super();
@@ -308,7 +350,9 @@ class TopologyListingContainer extends Component {
       cloneFromId: null,
       checkEnvironment: false,
       sourceCheck: false,
-      searchLoader : false
+      searchLoader : false,
+      allACL : [],
+      shareObj : {}
     };
 
     this.fetchData();
@@ -317,40 +361,52 @@ class TopologyListingContainer extends Component {
   fetchData() {
     const sortKey = this.state.sorted.key;
     let promiseArr = [EnvironmentREST.getAllNameSpaces(), TopologyREST.getSourceComponent(), TopologyREST.getAllTopology(sortKey)];
+    if(app_state.streamline_config.secureMode){
+      promiseArr.push(UserRoleREST.getAllACL('topology',app_state.user_profile.id,'USER'));
+    }
     Promise.all(promiseArr).then((results) => {
       let environmentLen = 0,
         environmentFlag = false,
         sourceLen = 0,
         sourceFlag = false;
-      if (results[0].responseMessage !== undefined) {
-        this.setState({fetchLoader: false, checkEnvironment: false, sourceCheck: false});
-        FSReactToastr.error(
-          <CommonNotification flag="error" content={results[0].responseMessage}/>, '', toastOpt);
-      } else {
-        environmentLen = results[0].entities.length;
-      }
-      if (results[1].responseMessage !== undefined) {
-        this.setState({fetchLoader: false, checkEnvironment: false, sourceCheck: false});
-        FSReactToastr.error(
-          <CommonNotification flag="error" content={results[0].responseMessage}/>, '', toastOpt);
-      } else {
-        sourceLen = results[1].entities.length;
-      }
-      if (results[2].responseMessage !== undefined) {
-        this.setState({fetchLoader: false, checkEnvironment: false, sourceCheck: false});
-        FSReactToastr.error(
-          <CommonNotification flag="error" content={results[2].responseMessage}/>, '', toastOpt);
-      } else {
-        let result = Utils.sortArray(results[2].entities.slice(), 'timestamp', false);
-        if (sourceLen !== 0) {
-          if (result.length === 0 && environmentLen !== 0) {
-            environmentFlag = true;
-          }
-        } else {
-          sourceFlag = true;
+      _.map(results, (result) => {
+        if(result.responseMessage !== undefined){
+          this.setState({fetchLoader: false, checkEnvironment: false, sourceCheck: false});
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
         }
-        this.setState({fetchLoader: false, entities: result, pageIndex: 0, checkEnvironment: environmentFlag, sourceCheck: sourceFlag,searchLoader:false});
+      });
+      // environment result[0]
+      environmentLen = results[0].entities.length;
+
+      // source component result[1]
+      sourceLen = results[1].entities.length;
+
+      // All topology result[2]
+      let stateObj = {};
+      let resultEntities = Utils.sortArray(results[2].entities.slice(), 'timestamp', false);
+      if (sourceLen !== 0) {
+        if (resultEntities.length === 0 && environmentLen !== 0) {
+          environmentFlag = true;
+        }
+      } else {
+        sourceFlag = true;
       }
+
+      stateObj.fetchLoader = false;
+      stateObj.entities = resultEntities;
+      stateObj.pageIndex = 0;
+      stateObj.checkEnvironment = environmentFlag;
+      stateObj.sourceCheck = sourceFlag ;
+      stateObj.searchLoader = false;
+
+      // stateObj.allACL = [{"id":7,"objectId":1,"objectNamespace":"topology","sidId":3,"sidType":"USER","permissions":["READ","WRITE","EXECUTE","DELETE"],"owner":true,"grant":true,"timestamp":1494868999112},
+      // {"id":10,"objectId":2,"objectNamespace":"topology","sidId":2,"sidType":"USER","permissions":["READ"],"owner":false,"grant":false,"timestamp":1494869390535}];
+      // If the application is in secure mode result[3]
+      if(results[3]){
+        stateObj.allACL = results[3].entities;
+      }
+      this.setState(stateObj);
     });
   }
 
@@ -487,7 +543,7 @@ class TopologyListingContainer extends Component {
     this.refs.BaseContainer.refs.Confirm.cancel();
   }
 
-  actionHandler = (eventKey, id) => {
+  actionHandler = (eventKey, id,obj) => {
     const key = eventKey.split('/');
     switch (key[0].toString()) {
     case "refresh":
@@ -502,9 +558,18 @@ class TopologyListingContainer extends Component {
     case "delete":
       this.deleteSingleTopology(id);
       break;
+    case "share":
+      this.shareSingleTopology(id,obj);
+      break;
     default:
       break;
     }
+  }
+
+  shareSingleTopology = (id,obj) => {
+    this.setState({shareObj : obj}, () => {
+      this.refs.CommonShareModalRef.show();
+    });
   }
 
   slideInput = (e) => {
@@ -565,8 +630,8 @@ class TopologyListingContainer extends Component {
     this.btnClassChange();
   }
   btnClassChange = () => {
-    if (!this.state.fetchLoader) {
-      const actionMenu = document.querySelector('.actionDropdown');
+    const actionMenu = document.querySelector('.actionDropdown');
+    if (!this.state.fetchLoader && actionMenu) {
       actionMenu.setAttribute("class", "actionDropdown hb lg success ");
       if (this.state.entities.length !== 0) {
         actionMenu.parentElement.setAttribute("class", "dropdown");
@@ -656,6 +721,32 @@ class TopologyListingContainer extends Component {
     }
   }
 
+  handleShareSave = () => {
+    if(this.refs.CommonShareModal.validate()){
+      this.refs.CommonShareModalRef.hide();
+      this.refs.CommonShareModal.handleSave().then((shareTopology) => {
+        let flag = true;
+        _.map(shareTopology, (share) => {
+          if(share.responseMessage !== undefined){
+            flag = false;
+            FSReactToastr.error(
+              <CommonNotification flag="error" content={share.responseMessage}/>, '', toastOpt);
+          }
+          this.setState({shareObj : {}});
+        });
+        if(flag){
+          FSReactToastr.success(
+            <strong>Topology has been shared successfully</strong>
+          );
+        }
+      });
+    }
+  }
+
+  handleShareCancel = () => {
+    this.refs.CommonShareModalRef.hide();
+  }
+
   render() {
     const {
       entities,
@@ -667,7 +758,9 @@ class TopologyListingContainer extends Component {
       checkEnvironment,
       sourceCheck,
       refIdArr,
-      searchLoader
+      searchLoader,
+      allACL,
+      shareObj
     } = this.state;
     const splitData = _.chunk(entities, pageSize) || [];
     const btnIcon = <i className="fa fa-plus"></i>;
@@ -680,16 +773,19 @@ class TopologyListingContainer extends Component {
       <BaseContainer ref="BaseContainer" routes={this.props.routes} headerContent={this.props.routes[this.props.routes.length - 1].name}>
         {!fetchLoader
           ? <div>
-              <div id="add-environment">
-                <DropdownButton title={btnIcon} id="actionDropdown" className="actionDropdown hb lg success" noCaret>
-                  <MenuItem onClick={this.onActionMenuClicked.bind(this, "create")}>
-                    &nbsp;New Application
-                  </MenuItem>
-                  <MenuItem onClick={this.onActionMenuClicked.bind(this, "import")}>
-                    &nbsp;Import Application
-                  </MenuItem>
-                </DropdownButton>
-              </div>
+              {hasEditCapability(accessCapabilities.APPLICATION) ?
+                <div id="add-environment">
+                  <DropdownButton title={btnIcon} id="actionDropdown" className="actionDropdown hb lg success" noCaret>
+                    <MenuItem onClick={this.onActionMenuClicked.bind(this, "create")}>
+                      &nbsp;New Application
+                    </MenuItem>
+                    <MenuItem onClick={this.onActionMenuClicked.bind(this, "import")}>
+                      &nbsp;Import Application
+                    </MenuItem>
+                  </DropdownButton>
+                </div>
+                : null
+              }
               {((filterValue && splitData.length === 0) || splitData.length !== 0)
                 ? <div className="row">
                     <div className="page-title-box clearfix">
@@ -731,7 +827,7 @@ class TopologyListingContainer extends Component {
             : (splitData.length === 0)
               ? <NoData environmentFlag={checkEnvironment} imgName={"applications"} sourceCheck={sourceCheck} searchVal={filterValue}/>
               : splitData[pageIndex].map((list) => {
-                return <TopologyItems key={list.topology.id} topologyList={list} topologyAction={this.actionHandler} refIdArr={refIdArr}/>;
+                return <TopologyItems key={list.topology.id} topologyList={list} topologyAction={this.actionHandler} refIdArr={refIdArr} allACL={allACL}/>;
               })
 }
         </div>
@@ -747,6 +843,10 @@ class TopologyListingContainer extends Component {
         </Modal>
         <Modal ref={(ref) => this.CloneTopologyModelRef = ref} data-title="Clone Application" onKeyPress={this.handleKeyPress} data-resolve={this.handleCloneSave}>
           <CloneTopology topologyId={this.state.cloneFromId} ref={(ref) => this.cloneTopologyRef = ref}/>
+        </Modal>
+        {/* CommonShareModal */}
+        <Modal ref={"CommonShareModalRef"} data-title="Share Application"  data-resolve={this.handleShareSave.bind(this)} data-reject={this.handleShareCancel.bind(this)}>
+          <CommonShareModal ref="CommonShareModal" shareObj={shareObj}/>
         </Modal>
         <a className="btn-download" ref="ExportTopology" hidden download href=""></a>
       </BaseContainer>
