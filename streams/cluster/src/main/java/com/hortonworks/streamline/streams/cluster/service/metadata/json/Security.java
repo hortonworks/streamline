@@ -17,6 +17,9 @@ public class Security {
         this.authorizer = authorizer;
     }
 
+    /**
+     * Sets authorizer info iff {@code authentication.isEnabled()}, otherise it is set to null
+     */
     public Security(SecurityContext securityContext, Authorizer authorizer) {
         this.authentication = new Authentication(securityContext);
         if (authentication.isEnabled()) {
