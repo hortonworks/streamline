@@ -1,5 +1,4 @@
-#!/bin/bash
-#
+#!/bin/bash#
 # Copyright 2017 Hortonworks.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -75,6 +74,11 @@ done
 
 echo "CLASSPATH: ${CLASSPATH}"
 
+#JAAS config file params
+if [ -z "$STREAMLINE_KERBEROS_PARAMS" ]; then
+    STREAMLINE_KERBEROS_PARAMS=""
+fi
+
 COMMAND=$1
 case $COMMAND in
   -name)
@@ -107,7 +111,7 @@ fi
 
 # Launch mode
 if [ "x$DAEMON_MODE" = "xtrue" ]; then
-  nohup $JAVA $STREAMLINE_HEAP_OPTS $STREAMLINE_JVM_PERFORMANCE_OPTS -cp $CLASSPATH $STREAMLINE_OPTS "com.hortonworks.streamline.webservice.StreamlineApplication" "server" "$@" > "$CONSOLE_OUTPUT_FILE" 2>&1 < /dev/null &
+  nohup $JAVA $STREAMLINE_HEAP_OPTS $STREAMLINE_JVM_PERFORMANCE_OPTS $STREAMLINE_KERBEROS_PARAMS -cp $CLASSPATH $STREAMLINE_OPTS "com.hortonworks.streamline.webservice.StreamlineApplication" "server" "$@" > "$CONSOLE_OUTPUT_FILE" 2>&1 < /dev/null &
 else
-  exec $JAVA $STREAMLINE_HEAP_OPTS $STREAMLINE_JVM_PERFORMANCE_OPTS -cp $CLASSPATH $STREAMLINE_OPTS "com.hortonworks.streamline.webservice.StreamlineApplication" "server" "$@"
+  exec $JAVA $STREAMLINE_HEAP_OPTS $STREAMLINE_JVM_PERFORMANCE_OPTS $STREAMLINE_KERBEROS_PARAMS -cp $CLASSPATH $STREAMLINE_OPTS "com.hortonworks.streamline.webservice.StreamlineApplication" "server" "$@"
 fi
