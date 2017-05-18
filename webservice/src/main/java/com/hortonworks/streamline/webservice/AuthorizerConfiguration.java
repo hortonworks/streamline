@@ -17,7 +17,6 @@ package com.hortonworks.streamline.webservice;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import java.util.List;
 import java.util.Set;
 
 public class AuthorizerConfiguration {
@@ -26,6 +25,8 @@ public class AuthorizerConfiguration {
 
     @NotEmpty
     private Set<String> adminPrincipals;
+
+    private String containerRequestFilter;
 
     public String getClassName() {
         return className;
@@ -41,5 +42,13 @@ public class AuthorizerConfiguration {
 
     public void setAdminPrincipals(Set<String> adminPrincipals) {
         this.adminPrincipals = adminPrincipals;
+    }
+
+    public String getContainerRequestFilter() {
+        return containerRequestFilter;
+    }
+
+    public void setContainerRequestFilter(String containerRequestFilter) {
+        this.containerRequestFilter = containerRequestFilter;
     }
 }
