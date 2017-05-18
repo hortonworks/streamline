@@ -26,6 +26,7 @@ import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfig
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
+import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 
 import javax.security.auth.Subject;
 import java.io.File;
@@ -138,6 +139,11 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
         // Topology during run-time will require few critical configs such as schemaRegistryUrl and catalogRootUrl
         // Hence its important to pass StreamlineConfig to TopologyConfig
         conf.putAll(streamlineConf);
+
+        // TopologyActionImpl needs 'EnvironmentService' and namespace ID to load service configurations
+        // for specific cluster associated to the namespace
+        conf.put(TopologyLayoutConstants.ENVIRONMENT_SERVICE_OBJECT, environmentService);
+        conf.put(TopologyLayoutConstants.NAMESPACE_ID, namespace.getId());
 
         return conf;
     }

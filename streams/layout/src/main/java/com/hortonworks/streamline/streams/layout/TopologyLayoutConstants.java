@@ -17,6 +17,7 @@ package com.hortonworks.streamline.streams.layout;
 
 public final class TopologyLayoutConstants {
 
+
   private TopologyLayoutConstants () {}
     // streaming engines
     public static final String STORM_STREAMING_ENGINE = "STORM";
@@ -196,5 +197,7 @@ public final class TopologyLayoutConstants {
     public final static String ZK_ROOT_NODE = "/streamline/kafka-source";
 
     public static final String SUBJECT_OBJECT = "subjectObj";
+    public static final String ENVIRONMENT_SERVICE_OBJECT = "environmentServiceObj";
+    public static final String NAMESPACE_ID = "namesapceId";
 
 }
