@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.security.impl;
 import com.hortonworks.streamline.streams.security.AuthenticationContext;
 import com.hortonworks.streamline.streams.security.AuthorizationException;
 import com.hortonworks.streamline.streams.security.Permission;
+import com.hortonworks.streamline.streams.security.Roles;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import com.hortonworks.streamline.streams.security.catalog.AclEntry;
@@ -52,6 +53,7 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
                 .collect(Collectors.toSet());
         LOG.info("Admin users: {}", adminUsers);
         mayBeAddAdminUsers();
+        mayBeAssignAdminRole();
     }
 
     private void mayBeAddAdminUsers() {
@@ -75,6 +77,30 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
                 });
     }
 
+    private void mayBeAssignAdminRole() {
+        LOG.info("Checking if admin users have admin role");
+        Role adminRole = catalogService.getRole(Roles.ROLE_ADMIN)
+                .orElseGet(() -> {
+                    Role admin = new Role();
+                    admin.setName("ROLE_ADMIN");
+                    admin.setDisplayName("Admin");
+                    admin.setDescription("");
+                    admin.setSystem(true);
+                    return catalogService.addRole(admin);
+                });
+        adminUsers.stream()
+                .map(userName -> catalogService.getUser(userName))
+                .filter(user -> {
+                    if (userHasRole(user, Roles.ROLE_ADMIN)) {
+                        LOG.info("user '{}' already has '{}'", user, Roles.ROLE_ADMIN);
+                        return false;
+                    } else {
+                        return true;
+                    }
+                })
+                .forEach(user -> catalogService.addUserRole(user.getId(), adminRole.getId()));
+    }
+
     @Override
     public boolean hasPermissions(AuthenticationContext ctx, String targetEntityNamespace, Long targetEntityId, EnumSet<Permission> permissions) {
         boolean result = checkPermissions(ctx, targetEntityNamespace, targetEntityId, permissions);
@@ -91,19 +117,22 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
     }
 
     @Override
-    public void addAcl(AuthenticationContext ctx, String targetEntityNamespace, Long targetEntityId, EnumSet<Permission> permissions) {
+    public void addAcl(AuthenticationContext ctx, String targetEntityNamespace, Long targetEntityId, boolean owner, boolean grant, EnumSet<Permission> permissions) {
         validateAuthenticationContext(ctx);
         String userName = SecurityUtil.getUserName(ctx);
         User user = catalogService.getUser(userName);
         if (user == null || user.getId() == null) {
-            LOG.warn("No such user '{}'", userName);
-            throw new AuthorizationException("No such user '" + userName + "'");
+            String msg = String.format("No such user '%s'", userName);
+            LOG.warn(msg);
+            throw new AuthorizationException(msg);
         }
         AclEntry aclEntry = new AclEntry();
         aclEntry.setObjectId(targetEntityId);
         aclEntry.setObjectNamespace(targetEntityNamespace);
         aclEntry.setSidId(user.getId());
         aclEntry.setSidType(AclEntry.SidType.USER);
+        aclEntry.setOwner(owner);
+        aclEntry.setGrant(grant);
         aclEntry.setPermissions(permissions);
         catalogService.addAcl(aclEntry);
     }
@@ -114,8 +143,9 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
         String userName = SecurityUtil.getUserName(ctx);
         User user = catalogService.getUser(userName);
         if (user == null || user.getId() == null) {
-            LOG.warn("No such user '{}'", userName);
-            throw new AuthorizationException("No such user '" + userName + "'");
+            String msg = String.format("No such user '%s'", userName);
+            LOG.warn(msg);
+            throw new AuthorizationException(msg);
         }
         catalogService.listUserAcls(user.getId(), targetEntityNamespace, targetEntityId).forEach(acl -> {
             LOG.debug("Removing Acl {}", acl);
@@ -123,23 +153,17 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
         });
     }
 
-    @Override
-    public Set<String> getAdminUsers() {
-        return adminUsers;
-    }
-
     private boolean checkPermissions(AuthenticationContext ctx, String targetEntityNamespace, Long targetEntityId, EnumSet<Permission> permissions) {
         validateAuthenticationContext(ctx);
         String userName = SecurityUtil.getUserName(ctx);
-        if (adminUsers.contains(userName)) {
-            return true;
-        }
         User user = catalogService.getUser(userName);
         if (user == null || user.getId() == null) {
-            LOG.warn("No such user '{}'", userName);
-            return false;
+            String msg = String.format("No such user '%s'", userName);
+            LOG.warn(msg);
+            throw new AuthorizationException(msg);
         }
-        return catalogService.checkUserPermissions(targetEntityNamespace, targetEntityId, user.getId(), permissions);
+        return userHasRole(user, Roles.ROLE_ADMIN) ||
+                catalogService.checkUserPermissions(targetEntityNamespace, targetEntityId, user.getId(), permissions);
     }
 
     private void validateAuthenticationContext(AuthenticationContext ctx) {
@@ -151,34 +175,36 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
     private boolean checkRole(AuthenticationContext ctx, String role) {
         validateAuthenticationContext(ctx);
         String userName = SecurityUtil.getUserName(ctx);
-        if (adminUsers.contains(userName)) {
-            return true;
-        }
         User user = catalogService.getUser(userName);
         if (user == null) {
-            LOG.warn("No such user '{}'", userName);
-            return false;
+            String msg = String.format("No such user '%s'", userName);
+            LOG.warn(msg);
+            throw new AuthorizationException(msg);
         }
-        return userHasRole(user, role);
+        return userHasRole(user, Roles.ROLE_ADMIN) || userHasRole(user, role);
     }
 
     private boolean userHasRole(User user, String roleName) {
         Set<String> userRoles = user.getRoles();
+        boolean res = false;
         // top level roles
         if (userRoles.contains(roleName)) {
-            return true;
-        }
-        Role roleToCheck = new Role();
-        roleToCheck.setName(roleName);
-        // child roles
-        for (String userRole : userRoles) {
-            Optional<Role> role = catalogService.getRole(userRole);
-            if (role.isPresent()) {
-                if (catalogService.getChildRoles(role.get().getId()).contains(roleToCheck)) {
-                    return true;
+            res = true;
+        } else {
+            Role roleToCheck = new Role();
+            roleToCheck.setName(roleName);
+            // child roles
+            for (String userRole : userRoles) {
+                Optional<Role> role = catalogService.getRole(userRole);
+                if (role.isPresent()) {
+                    if (catalogService.getChildRoles(role.get().getId()).contains(roleToCheck)) {
+                        res = true;
+                        break;
+                    }
                 }
             }
         }
-        return false;
+        LOG.debug("User: {}, Role: {}, Result: {}", user.getName(), roleName, res);
+        return res;
     }
 }

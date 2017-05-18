@@ -1,0 +1,7 @@
+{
+  "name": "ROLE_ANALYST",
+  "displayName": "Analyst",
+  "description": "Analyst role that has access to specific applications and dashboards",
+  "metadata": "{\"colorCode\":\"#529e4c\",\"colorLabel\":\"green\",\"icon\":\"sitemap\", \"menu\": [\"dashboard\", \"topology\"], \"capabilities\": [{\"Dashboard\": \"Edit\"}, {\"Applications\": \"View\"}]}",
+  "system": false
+}

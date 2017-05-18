@@ -285,6 +285,14 @@ public class SecurityCatalogService {
         return listAcls(qps);
     }
 
+    public Collection<AclEntry> listRoleAcls(Long roleId, String targetEntityNamespace, Long targetEntityId) {
+        List<QueryParam> qps = QueryParam.params(AclEntry.SID_ID, roleId.toString(),
+                AclEntry.SID_TYPE, AclEntry.SidType.ROLE.toString(),
+                AclEntry.OBJECT_NAMESPACE, targetEntityNamespace,
+                AclEntry.OBJECT_ID, targetEntityId.toString());
+        return listAcls(qps);
+    }
+
     public AclEntry getAcl(Long aclEntryId) {
         AclEntry aclEntry = new AclEntry();
         aclEntry.setId(aclEntryId);

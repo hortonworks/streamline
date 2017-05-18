@@ -44,6 +44,25 @@ function run_cmd {
   echo "--------------------------------------"
 }
 
+function getId {
+  str=$1
+  echo $str | grep -o -E "\"id\":[0-9]+" | head -n1 | cut -d : -f2
+}
+
+function getAdminRoleId {
+  cmd="curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -sS -X GET ${CATALOG_ROOT_URL}/roles?name=ROLE_ADMIN -H 'Content-Type: application/json'"
+  response=$(eval $cmd)
+  getId "$response"
+}
+
+function put {
+  uri=$1/$2
+  data=$3
+  cmd="curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -sS -X PUT ${CATALOG_ROOT_URL}$uri --data @$data -H 'Content-Type: application/json'"
+  echo "PUT $data"
+  run_cmd $cmd
+}
+
 function post {
   uri=$1
   data=$2
@@ -167,13 +186,26 @@ function add_all_bundles {
     post /servicebundles ${service_dir}/hbase-bundle.json
     post /servicebundles ${service_dir}/hive-bundle.json
     post /servicebundles ${service_dir}/email-bundle.json
+}
 
+function add_roles_and_users {
     # === anonymous user ===
     post /users ${user_role_dir}/user_anon.json
 
     # === system roles ===
     for i in ${user_role_dir}/role_*
     do
+     if echo $i | grep -E "role_admin$"
+     then
+        adminId=$(getAdminRoleId)
+        if [ -n "$adminId" ]
+        then
+          echo "Updating admin role, id: $adminId"
+          put /roles $adminId $i
+          continue
+        fi
+     fi
+
      echo "Adding $(basename $i)"
      post /roles $i
     done
@@ -185,6 +217,14 @@ function add_all_bundles {
      echo "Adding child roles for $role_name"
      post /roles/$role_name/children $i
     done
+}
+
+function main {
+    echo ""
+    echo "===================================================================================="
+    echo "Running bootstrap.sh will create streamline default components, notifiers, udfs and roles"
+    add_all_bundles
+    add_roles_and_users
 
     #----------------------------------
     # Execute other bootstrap scripts
@@ -195,13 +235,6 @@ function add_all_bundles {
 
     echo "Executing ${script_dir}/bootstrap-notifiers.sh ${CATALOG_ROOT_URL}"
     ${script_dir}/bootstrap-notifiers.sh ${CATALOG_ROOT_URL}
-}
-
-function main {
-    echo ""
-    echo "===================================================================================="
-    echo "Running bootstrap.sh will create streamline default components, notifiers, udfs and roles"
-    add_all_bundles
 }
 
 main

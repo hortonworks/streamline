@@ -1,0 +1,7 @@
+{
+  "name": "ROLE_DEVELOPER",
+  "displayName": "Application Developer",
+  "description": "Developer role that has the necessary privileges to create and submit topologies",
+  "metadata": "{\"colorCode\":\"#529e4c\",\"colorLabel\":\"green\",\"icon\":\"sitemap\", \"menu\": [\"udf\", \"topology\", \"notifier\", \"customprocessor\", \"environments\"], \"capabilities\": [{\"Applications\": \"Edit\"}, {\"Service Pool\": \"View\"}, {\"Environments\": \"Edit\"}]}",
+  "system": false
+}

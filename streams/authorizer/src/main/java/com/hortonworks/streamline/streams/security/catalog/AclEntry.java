@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.annotation.SchemaIgnore;
 import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
 import com.hortonworks.streamline.streams.security.Permission;
@@ -44,6 +45,8 @@ public class AclEntry extends AbstractStorable {
     public static final String SID_ID = "sidId";
     public static final String SID_TYPE = "sidType";
     public static final String PERMISSIONS = "permissions";
+    public static final String OWNER = "owner";
+    public static final String GRANT = "grant";
     public static final String TIMESTAMP = "timestamp";
 
     public enum SidType {USER, ROLE}
@@ -52,8 +55,12 @@ public class AclEntry extends AbstractStorable {
     private Long objectId;
     private String objectNamespace;
     private Long sidId; // refers to user id or role id
+    @SchemaIgnore
+    private String sidName; // if client wants to pass sid name (unique) instead of id
     private SidType sidType;
     private EnumSet<Permission> permissions;
+    private boolean owner;
+    private boolean grant;
     private Long timestamp;
 
     @JsonIgnore
@@ -138,6 +145,8 @@ public class AclEntry extends AbstractStorable {
                 Schema.Field.of(SID_ID, Schema.Type.LONG),
                 Schema.Field.of(SID_TYPE, Schema.Type.STRING),
                 Schema.Field.of(PERMISSIONS, Schema.Type.STRING),
+                Schema.Field.of(OWNER, Schema.Type.BOOLEAN),
+                Schema.Field.of(GRANT, Schema.Type.BOOLEAN),
                 Schema.Field.of(TIMESTAMP, Schema.Type.LONG)
         );
     }
@@ -161,6 +170,8 @@ public class AclEntry extends AbstractStorable {
             }
             setPermissions(permissions);
         }
+        setOwner((Boolean) map.get(OWNER));
+        setGrant((Boolean) map.get(GRANT));
         setTimestamp((Long) map.get(TIMESTAMP));
         return this;
     }
@@ -177,6 +188,40 @@ public class AclEntry extends AbstractStorable {
             throw new RuntimeException(ex);
         }
         return map;
+    }
+
+    // needed for storage manager
+    public boolean getOwner() {
+        return isOwner();
+    }
+
+    public boolean isOwner() {
+        return owner;
+    }
+
+    public void setOwner(boolean owner) {
+        this.owner = owner;
+    }
+
+    // needed for storage manager
+    public boolean getGrant() {
+        return isGrant();
+    }
+
+    public boolean isGrant() {
+        return grant;
+    }
+
+    public void setGrant(boolean grant) {
+        this.grant = grant;
+    }
+
+    public String getSidName() {
+        return sidName;
+    }
+
+    public void setSidName(String sidName) {
+        this.sidName = sidName;
     }
 
     @Override
@@ -204,6 +249,8 @@ public class AclEntry extends AbstractStorable {
                 ", sidId=" + sidId +
                 ", sidType=" + sidType +
                 ", permissions=" + permissions +
+                ", owner=" + owner +
+                ", grant=" + grant +
                 ", timestamp=" + timestamp +
                 "} " + super.toString();
     }

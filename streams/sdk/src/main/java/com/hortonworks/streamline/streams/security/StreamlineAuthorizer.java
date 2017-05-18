@@ -39,15 +39,10 @@ public interface StreamlineAuthorizer {
     /**
      * Grant permissions for the currently authenticated user on the target entity
      */
-    void addAcl(AuthenticationContext ctx, String targetEntityNamespace, Long targetEntityId, EnumSet<Permission> permissions);
+    void addAcl(AuthenticationContext ctx, String targetEntityNamespace, Long targetEntityId, boolean owner, boolean grant, EnumSet<Permission> permissions);
 
     /**
      * Remove permissions for the currently authenticated user on the target entity
      */
     void removeAcl(AuthenticationContext ctx, String targetEntityNamespace, Long targetEntityId);
-
-    /**
-     * Return the set of users that are the super-users.
-     */
-    Set<String> getAdminUsers();
 }

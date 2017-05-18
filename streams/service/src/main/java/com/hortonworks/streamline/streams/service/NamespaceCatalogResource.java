@@ -147,7 +147,7 @@ public class NamespaceCatalogResource {
   @POST
   @Path("/namespaces")
   public Response addNamespace(Namespace namespace, @Context SecurityContext securityContext) {
-    SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_CLUSTER_ADMIN);
+    SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_ENVIRONMENT_ADMIN);
     try {
       String namespaceName = namespace.getName();
       Namespace result = environmentService.getNamespaceByName(namespaceName);

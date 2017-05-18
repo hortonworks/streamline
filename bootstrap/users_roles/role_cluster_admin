@@ -1,7 +1,0 @@
-{
-  "name": "ROLE_CLUSTER_ADMIN",
-  "displayName": "Cluster Admin",
-  "description": "Role that can create and manage service pool and environments",
-  "metadata": "{\"colorCode\":\"#ce761b\",\"colorLabel\":\"orange\",\"icon\":\"lock\"}",
-  "system": true
-}

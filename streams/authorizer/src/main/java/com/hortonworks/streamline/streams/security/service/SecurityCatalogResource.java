@@ -19,7 +19,11 @@ import com.codahale.metrics.annotation.Timed;
 import com.google.common.collect.Sets;
 import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.common.exception.service.exception.request.WebserviceAuthorizationException;
 import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.streams.security.AuthenticationContext;
+import com.hortonworks.streamline.streams.security.Permission;
+import com.hortonworks.streamline.streams.security.Roles;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import com.hortonworks.streamline.streams.security.catalog.AclEntry;
@@ -28,6 +32,8 @@ import com.hortonworks.streamline.streams.security.catalog.RoleHierarchy;
 import com.hortonworks.streamline.streams.security.catalog.User;
 import com.hortonworks.streamline.streams.security.catalog.UserRole;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -45,18 +51,25 @@ import javax.ws.rs.core.UriInfo;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import static com.hortonworks.streamline.streams.security.Roles.ROLE_SECURITY_ADMIN;
+import static com.hortonworks.streamline.streams.security.catalog.AclEntry.SidType.ROLE;
+import static com.hortonworks.streamline.streams.security.catalog.AclEntry.SidType.USER;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 
 @Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class SecurityCatalogResource {
+    private static final Logger LOG = LoggerFactory.getLogger(SecurityCatalogResource.class);
+
     private final StreamlineAuthorizer authorizer;
     private final SecurityCatalogService catalogService;
 
@@ -71,7 +84,9 @@ public class SecurityCatalogResource {
     @Timed
     public Response listRoles(@Context UriInfo uriInfo,
                               @Context SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
+        if (!SecurityUtil.hasRole(authorizer, securityContext, ROLE_SECURITY_ADMIN)) {
+            LOG.debug("Allowing logged-in user '{}'", SecurityUtil.getUserName(securityContext.getUserPrincipal().getName()));
+        }
         Collection<Role> roles;
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
         List<QueryParam> queryParams = WSUtils.buildQueryParameters(params);
@@ -90,7 +105,9 @@ public class SecurityCatalogResource {
     @Path("/roles/{id}")
     @Timed
     public Response getRole(@PathParam("id") Long roleId, @Context SecurityContext securityContext) {
-        SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
+        if (!SecurityUtil.hasRole(authorizer, securityContext, ROLE_SECURITY_ADMIN)) {
+            LOG.debug("Allowing logged-in user '{}'", SecurityUtil.getUserName(securityContext.getUserPrincipal().getName()));
+        }
         Role role = catalogService.getRole(roleId);
         if (role != null) {
             return WSUtils.respondEntity(role, OK);
@@ -322,6 +339,11 @@ public class SecurityCatalogResource {
     @Timed
     public Response getCurrentUser(@Context UriInfo uriInfo,
                                    @Context SecurityContext securityContext) throws Exception {
+
+        return WSUtils.respondEntity(getCurrentUser(securityContext), OK);
+    }
+
+    private User getCurrentUser(SecurityContext securityContext) {
         Principal principal = securityContext.getUserPrincipal();
         if (principal == null) {
             throw EntityNotFoundException.byMessage("No principal in security context");
@@ -334,12 +356,14 @@ public class SecurityCatalogResource {
         if (user == null) {
             throw EntityNotFoundException.byMessage("User '" + userName + "' is not in the user database.");
         }
-        if (authorizer.getAdminUsers().contains(userName)) {
+        AuthenticationContext context = new AuthenticationContext();
+        context.setPrincipal(principal);
+        if (authorizer.hasRole(context, Roles.ROLE_ADMIN)) {
             user.setAdmin(true);
         } else {
             user.setAdmin(false);
         }
-        return WSUtils.respondEntity(user, OK);
+        return user;
     }
 
     @GET
@@ -347,7 +371,9 @@ public class SecurityCatalogResource {
     @Timed
     public Response listUsers(@Context UriInfo uriInfo,
                               @Context SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
+        if (!SecurityUtil.hasRole(authorizer, securityContext, ROLE_SECURITY_ADMIN)) {
+            LOG.debug("Allowing logged-in user '{}'", SecurityUtil.getUserName(securityContext.getUserPrincipal().getName()));
+        }
         Collection<User> users;
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
         List<QueryParam> queryParams = WSUtils.buildQueryParameters(params);
@@ -366,7 +392,9 @@ public class SecurityCatalogResource {
     @Path("/users/{id}")
     @Timed
     public Response getUser(@PathParam("id") Long userId, @Context SecurityContext securityContext) {
-        SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
+        if (!SecurityUtil.hasRole(authorizer, securityContext, ROLE_SECURITY_ADMIN)) {
+            LOG.debug("Allowing logged-in user '{}'", SecurityUtil.getUserName(securityContext.getUserPrincipal().getName()));
+        }
         User user = catalogService.getUser(userId);
         if (user != null) {
             return WSUtils.respondEntity(user, OK);
@@ -411,7 +439,6 @@ public class SecurityCatalogResource {
     @Timed
     public Response listAcls(@Context UriInfo uriInfo,
                              @Context SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
         Collection<AclEntry> acls;
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
         List<QueryParam> queryParams = WSUtils.buildQueryParameters(params);
@@ -421,17 +448,26 @@ public class SecurityCatalogResource {
             acls = catalogService.listAcls(queryParams);
         }
         if (acls != null) {
-            return WSUtils.respondEntities(acls, OK);
+            return WSUtils.respondEntities(filter(acls, securityContext), OK);
         }
         throw EntityNotFoundException.byFilter(queryParams.toString());
+    }
+
+    private Collection<AclEntry> filter(Collection<AclEntry> aclEntries, SecurityContext securityContext) {
+        User currentUser = getCurrentUser(securityContext);
+        Set<Role> currentUserRoles = catalogService.getAllUserRoles(currentUser);
+        boolean isSecurityAdmin = SecurityUtil.hasRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
+        return aclEntries.stream()
+                .filter(aclEntry -> isSecurityAdmin || matches(aclEntry, currentUser, currentUserRoles))
+                .collect(Collectors.toSet());
     }
 
     @GET
     @Path("/acls/{id}")
     @Timed
     public Response getAcl(@PathParam("id") Long aclId, @Context SecurityContext securityContext) {
-        SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
         AclEntry aclEntry = catalogService.getAcl(aclId);
+        checkAclOp(aclEntry, securityContext, this::shouldAllowAclGet);
         if (aclEntry != null) {
             return WSUtils.respondEntity(aclEntry, OK);
         }
@@ -442,7 +478,8 @@ public class SecurityCatalogResource {
     @Path("/acls")
     @Timed
     public Response addAcl(AclEntry aclEntry, @Context SecurityContext securityContext) {
-        SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
+        mayBeFillSidId(aclEntry);
+        checkAclOp(aclEntry, securityContext, this::shouldAllowAclAddOrUpdate);
         AclEntry createdAcl = catalogService.addAcl(aclEntry);
         return WSUtils.respondEntity(createdAcl, CREATED);
     }
@@ -451,7 +488,8 @@ public class SecurityCatalogResource {
     @Path("/acls/{id}")
     @Timed
     public Response addOrUpdateAcl(@PathParam("id") Long aclId, AclEntry aclEntry, @Context SecurityContext securityContext) {
-        SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
+        mayBeFillSidId(aclEntry);
+        checkAclOp(aclEntry, securityContext, this::shouldAllowAclAddOrUpdate);
         AclEntry newAclEntry = catalogService.addOrUpdateAcl(aclId, aclEntry);
         return WSUtils.respondEntity(newAclEntry, OK);
     }
@@ -460,11 +498,113 @@ public class SecurityCatalogResource {
     @Path("/acls/{id}")
     @Timed
     public Response deleteAcl(@PathParam("id") Long aclId, @Context SecurityContext securityContext) {
-        SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
-        AclEntry aclEntry = catalogService.removeAcl(aclId);
+        AclEntry aclEntry = catalogService.getAcl(aclId);
         if (aclEntry != null) {
-            return WSUtils.respondEntity(aclEntry, OK);
+            checkAclOp(aclEntry, securityContext, this::shouldAllowAclDelete);
+            AclEntry removedAcl = catalogService.removeAcl(aclId);
+            if (removedAcl != null) {
+                return WSUtils.respondEntity(aclEntry, OK);
+            }
         }
         throw EntityNotFoundException.byId(aclId.toString());
+    }
+
+    // translate sid name to sid id if only name is provided
+    private void mayBeFillSidId(AclEntry aclEntry) {
+        if (aclEntry.getSidId() == null) {
+            if (!StringUtils.isEmpty(aclEntry.getSidName())) {
+                String name = aclEntry.getSidName();
+                if (aclEntry.getSidType() == AclEntry.SidType.USER) {
+                    User user = catalogService.getUser(name);
+                    if (user == null) {
+                        throw EntityNotFoundException.byName("User name : " + name);
+                    }
+                    aclEntry.setSidId(user.getId());
+                } else {
+                    Role role = catalogService.getRole(name).orElseThrow(() -> EntityNotFoundException.byName("Role name : " + name));
+                    aclEntry.setSidId(role.getId());
+                }
+            } else {
+                throw new IllegalArgumentException("Sid id or Sid name must be provided");
+            }
+        }
+    }
+
+    private boolean shouldAllowAclDelete(AclEntry aclEntry, SecurityContext securityContext) {
+        return shouldAllowAclGet(aclEntry, securityContext);
+    }
+
+    private boolean shouldAllowAclGet(AclEntry aclEntry, SecurityContext securityContext) {
+        if (SecurityUtil.hasRole(authorizer, securityContext, ROLE_SECURITY_ADMIN)) {
+            return true;
+        }
+        User currentUser = getCurrentUser(securityContext);
+        Set<Role> currentUserRoles = catalogService.getAllUserRoles(currentUser);
+        return matches(aclEntry, currentUser, currentUserRoles);
+    }
+
+    private boolean shouldAllowAclAddOrUpdate(AclEntry aclEntry, SecurityContext securityContext) {
+        if (SecurityUtil.hasRole(authorizer, securityContext, ROLE_SECURITY_ADMIN)) {
+            return true;
+        }
+        User currentUser = getCurrentUser(securityContext);
+        // check if the current user is the owner or can grant permission on the specific object
+        EnumSet<Permission> remaining = aclEntry.getPermissions();
+        Collection<AclEntry> userAcls = catalogService.listUserAcls(currentUser.getId(), aclEntry.getObjectNamespace(), aclEntry.getObjectId());
+        for (AclEntry userAcl : userAcls) {
+            if (userAcl.isOwner()) {
+                return true;
+            } else if (userAcl.isGrant()) {
+                remaining.removeAll(userAcl.getPermissions());
+                if (remaining.isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        // check if any roles that the current user belongs to is the owner or can grant
+        Set<Role> currentUserRoles = catalogService.getAllUserRoles(currentUser);
+        for (Role role : currentUserRoles) {
+            Collection<AclEntry> roleAcls = catalogService.listRoleAcls(role.getId(), aclEntry.getObjectNamespace(), aclEntry.getObjectId());
+            for (AclEntry roleAcl : roleAcls) {
+                if (roleAcl.isOwner()) {
+                    return true;
+                } else if (roleAcl.isGrant()) {
+                    remaining.removeAll(roleAcl.getPermissions());
+                    if (remaining.isEmpty()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private void checkAclOp(AclEntry aclEntry, SecurityContext securityContext, BiFunction<AclEntry, SecurityContext, Boolean> fn) {
+        if (!fn.apply(aclEntry, securityContext)) {
+            throw new WebserviceAuthorizationException("Principal: " + securityContext.getUserPrincipal() + " is neither a security admin " +
+                    "nor have necessary ACLs for the requested operation");
+        }
+    }
+
+    private boolean matches(AclEntry aclEntry, User currentUser, Set<Role> currentUserRoles) {
+        Collection<AclEntry> userAcls = catalogService.listUserAcls(currentUser.getId(), aclEntry.getObjectNamespace(), aclEntry.getObjectId());
+        for (AclEntry userAcl : userAcls) {
+            if (userAcl.isOwner()) {
+                return true;
+            } else if (aclEntry.getSidType() == USER && userAcl.getSidId().equals(aclEntry.getSidId())) {
+                return true;
+            }
+        }
+        for (Role role : currentUserRoles) {
+            Collection<AclEntry> roleAcls = catalogService.listRoleAcls(role.getId(), aclEntry.getObjectNamespace(), aclEntry.getObjectId());
+            for (AclEntry roleAcl : roleAcls) {
+                if (roleAcl.isOwner()) {
+                    return true;
+                } else if (aclEntry.getSidType() == ROLE && roleAcl.getSidId().equals(aclEntry.getSidId())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
