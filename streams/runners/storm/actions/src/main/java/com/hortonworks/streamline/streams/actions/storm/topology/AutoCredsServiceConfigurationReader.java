@@ -6,24 +6,44 @@ import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.storm.common.ServiceConfigurationReadable;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class ServiceConfigurationReader implements ServiceConfigurationReadable {
+public class AutoCredsServiceConfigurationReader implements ServiceConfigurationReadable {
 
     private final EnvironmentService environmentService;
     private final long namespaceId;
 
-    public ServiceConfigurationReader(EnvironmentService environmentService, long namespaceId) {
+    enum AutoCredsServiceConfigurations {
+        // configurations will be added to specified order, so latter conf. might overwrite existing keys
+        HDFS("core-site", "hadoop-env", "hadoop-policy", "hdfs-site"),
+        HBASE("hbase-env", "hbase-policy", "hbase-site"),
+        HIVE("hive-env", "hivemetastore-site", "hive-site");
+
+        private final String[] confNames;
+
+        AutoCredsServiceConfigurations(String... confNames) {
+            this.confNames = confNames;
+        }
+
+        public String[] getConfNames() {
+            return confNames;
+        }
+    }
+
+    public AutoCredsServiceConfigurationReader(EnvironmentService environmentService, long namespaceId) {
         this.environmentService = environmentService;
         this.namespaceId = namespaceId;
     }
@@ -71,15 +91,25 @@ public class ServiceConfigurationReader implements ServiceConfigurationReadable 
 
         Map<String, String> flattenConfig = new HashMap<>();
 
-        // FIXME: should resolve the priority between configurations if exists
-        serviceConfigurations.forEach(sc -> {
-            try {
-                Map<String, String> configurationMap = sc.getConfigurationMap();
-                flattenConfig.putAll(configurationMap);
-            } catch (IOException e) {
-                throw new RuntimeException("Can't read configuration from service configuration - ID: " + sc.getId());
-            }
-        });
+        String[] confNames = AutoCredsServiceConfigurations.valueOf(serviceName).getConfNames();
+
+        // let's forget about optimization here since two lists will be small enough
+        Arrays.stream(confNames)
+                .forEachOrdered(confName -> {
+                    Optional<ServiceConfiguration> serviceConfigurationOptional = serviceConfigurations.stream()
+                            .filter(sc -> sc.getName().equals(confName))
+                            .findFirst();
+
+                    if (serviceConfigurationOptional.isPresent()) {
+                        ServiceConfiguration sc = serviceConfigurationOptional.get();
+                        try {
+                            Map<String, String> configurationMap = sc.getConfigurationMap();
+                            flattenConfig.putAll(configurationMap);
+                        } catch (IOException e) {
+                            throw new RuntimeException("Can't read configuration from service configuration - ID: " + sc.getId());
+                        }
+                    }
+                });
 
         return flattenConfig;
     }
