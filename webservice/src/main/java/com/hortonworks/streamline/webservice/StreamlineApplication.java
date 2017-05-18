@@ -36,7 +36,6 @@ import com.hortonworks.streamline.storage.cache.writer.StorageWriteThrough;
 import com.hortonworks.streamline.storage.cache.writer.StorageWriter;
 import com.hortonworks.streamline.streams.exception.ConfigException;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
-import com.hortonworks.streamline.streams.security.authentication.StreamlineBasicAuthorizationRequestFilter;
 import com.hortonworks.streamline.streams.security.authentication.StreamlineKerberosRequestFilter;
 import com.hortonworks.streamline.streams.security.impl.DefaultStreamlineAuthorizer;
 import com.hortonworks.streamline.streams.security.service.SecurityCatalogService;
@@ -60,6 +59,7 @@ import javax.security.auth.login.LoginException;
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
+import javax.ws.rs.container.ContainerRequestFilter;
 
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
@@ -254,7 +254,15 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
             authorizerConfig.put(DefaultStreamlineAuthorizer.CONF_CATALOG_SERVICE, securityCatalogService);
             authorizerConfig.put(DefaultStreamlineAuthorizer.CONF_ADMIN_PRINCIPALS, authorizerConf.getAdminPrincipals());
             authorizer.init(authorizerConfig);
-            environment.jersey().register(new StreamlineKerberosRequestFilter());
+            String filterClazzName = authorizerConf.getContainerRequestFilter();
+            ContainerRequestFilter filter;
+            if (StringUtils.isEmpty(filterClazzName)) {
+                filter = new StreamlineKerberosRequestFilter(); // default
+            } else {
+                filter = ((Class<ContainerRequestFilter>) Class.forName(filterClazzName)).newInstance();
+            }
+            LOG.info("Registering ContainerRequestFilter: {}", filter.getClass().getCanonicalName());
+            environment.jersey().register(filter);
         } else {
             LOG.info("Authorizer config not set, setting noop authorizer");
             String noopAuthorizerClassName = "com.hortonworks.streamline.streams.security.impl.NoopAuthorizer";
