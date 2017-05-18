@@ -20,8 +20,10 @@ package com.hortonworks.streamline.streams.runtime.storm.bolt.query;
 
 import org.apache.storm.tuple.Tuple;
 
+import java.io.Serializable;
+
 public class Cmp {
-    static class Equal extends JoinComparator {
+    static class Equal extends JoinComparator implements Serializable {
         public Equal(String fieldSelector1, String fieldSelector2) {
             super(fieldSelector1, fieldSelector2);
         }
@@ -44,7 +46,7 @@ public class Cmp {
     }
 
     // Case-insensitive comparison of two String fields
-    static class IgnoreCase extends Equal {
+    static class IgnoreCase extends Equal implements Serializable {
         public IgnoreCase(String fieldSelector1, String fieldSelector2) {
             super(fieldSelector1, fieldSelector2);
         }

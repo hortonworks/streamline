@@ -43,7 +43,7 @@ abstract class JoinComparator {
         // fill in missing stream name (if any) with default stream name
         if (f1.streamName==null) {
             if (f2.streamName==null) {
-                throw new IllegalArgumentException("At least one field selector must explicitly specify stream name prefix in comparator: "
+                throw new IllegalArgumentException("At least one field selector must explicitly specify streamname: prefix in comparator: "
                         + fieldStr1 + "," + fieldStr2);
             }
             f1.streamName = defaultStream;

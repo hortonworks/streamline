@@ -18,13 +18,15 @@
 
 package com.hortonworks.streamline.streams.runtime.storm.bolt.query;
 
+import java.io.Serializable;
+
 // Streamline specific join comparators
 public class SLCmp {
 
     // TODO: once Flux can call static method SLCmp.equal(), we dont need this class
     //   the streamline prefix insertion can be handled in the static method before instantiating
     //   Cmp.Equal
-    public static class Equal extends Cmp.Equal {
+    public static class Equal extends Cmp.Equal  implements Serializable {
         public Equal(String fieldSelector1, String fieldSelector2) {
             super(   SLRealtimeJoinBolt.insertStreamlinePrefix(fieldSelector1)
                     , SLRealtimeJoinBolt.insertStreamlinePrefix(fieldSelector2) );
@@ -37,7 +39,7 @@ public class SLCmp {
     }
 
 
-    public static class IgnoreCase extends Cmp.IgnoreCase {
+    public static class IgnoreCase extends Cmp.IgnoreCase implements Serializable {
         public IgnoreCase(String fieldSelector1, String fieldSelector2) {
             super(  SLRealtimeJoinBolt.insertStreamlinePrefix(fieldSelector1)
                    , SLRealtimeJoinBolt.insertStreamlinePrefix(fieldSelector2) );
