@@ -92,7 +92,12 @@ class TopologyItems extends Component {
     if(! _.isEmpty(allACL)){
       const {aclObject ,permission} = TopologyUtils.getPermissionAndObj(Number(this.streamRef.dataset.id),allACL);
       if(!permission){
-        this.props.topologyAction(eventKey, this.streamRef.dataset.id,aclObject);
+        if(eventKey.includes('share')){
+          const sharePermission = TopologyUtils.checkSharingPermission(aclObject);
+          sharePermission ? this.props.topologyAction(eventKey, this.streamRef.dataset.id,aclObject) : '';
+        } else {
+          this.props.topologyAction(eventKey, this.streamRef.dataset.id,aclObject);
+        }
       }
     } else {
       this.props.topologyAction(eventKey, this.streamRef.dataset.id);
@@ -399,9 +404,6 @@ class TopologyListingContainer extends Component {
       stateObj.checkEnvironment = environmentFlag;
       stateObj.sourceCheck = sourceFlag ;
       stateObj.searchLoader = false;
-
-      // stateObj.allACL = [{"id":7,"objectId":1,"objectNamespace":"topology","sidId":3,"sidType":"USER","permissions":["READ","WRITE","EXECUTE","DELETE"],"owner":true,"grant":true,"timestamp":1494868999112},
-      // {"id":10,"objectId":2,"objectNamespace":"topology","sidId":2,"sidType":"USER","permissions":["READ"],"owner":false,"grant":false,"timestamp":1494869390535}];
       // If the application is in secure mode result[3]
       if(results[3]){
         stateObj.allACL = results[3].entities;
@@ -722,25 +724,23 @@ class TopologyListingContainer extends Component {
   }
 
   handleShareSave = () => {
-    if(this.refs.CommonShareModal.validate()){
-      this.refs.CommonShareModalRef.hide();
-      this.refs.CommonShareModal.handleSave().then((shareTopology) => {
-        let flag = true;
-        _.map(shareTopology, (share) => {
-          if(share.responseMessage !== undefined){
-            flag = false;
-            FSReactToastr.error(
-              <CommonNotification flag="error" content={share.responseMessage}/>, '', toastOpt);
-          }
-          this.setState({shareObj : {}});
-        });
-        if(flag){
-          FSReactToastr.success(
-            <strong>Topology has been shared successfully</strong>
-          );
+    this.refs.CommonShareModalRef.hide();
+    this.refs.CommonShareModal.handleSave().then((shareTopology) => {
+      let flag = true;
+      _.map(shareTopology, (share) => {
+        if(share.responseMessage !== undefined){
+          flag = false;
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={share.responseMessage}/>, '', toastOpt);
         }
+        this.setState({shareObj : {}});
       });
-    }
+      if(flag){
+        FSReactToastr.success(
+          <strong>Topology has been shared successfully</strong>
+        );
+      }
+    });
   }
 
   handleShareCancel = () => {
@@ -823,7 +823,7 @@ class TopologyListingContainer extends Component {
 }
         <div className="row">
           {(fetchLoader || searchLoader)
-            ? <CommonLoaderSign imgName={"applications"}/>
+            ? [<div key={"1"} className="loader-overlay"></div>,<CommonLoaderSign key={"2"} imgName={"applications"}/>]
             : (splitData.length === 0)
               ? <NoData environmentFlag={checkEnvironment} imgName={"applications"} sourceCheck={sourceCheck} searchVal={filterValue}/>
               : splitData[pageIndex].map((list) => {

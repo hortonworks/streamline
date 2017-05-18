@@ -80,7 +80,12 @@ class PoolItemsCard extends Component {
     if(! _.isEmpty(allACL)){
       const {aclObject,permission} = TopologyUtils.getPermissionAndObj(Number(mClusterId),allACL);
       if(!permission){
-        this.props.poolActionClicked(eventKey,mClusterId,aclObject);
+        if(eventKey.includes('share')){
+          const sharePermission = TopologyUtils.checkSharingPermission(aclObject);
+          sharePermission ? this.props.poolActionClicked(eventKey,mClusterId,aclObject) : '';
+        } else {
+          this.props.poolActionClicked(eventKey,mClusterId,aclObject);
+        }
       }
     } else {
       this.props.poolActionClicked(eventKey,mClusterId);
@@ -909,25 +914,23 @@ class ServicePoolContainer extends Component {
   }
 
   handleShareSave = () => {
-    if(this.refs.CommonShareModal.validate()){
-      this.refs.CommonShareModalRef.hide();
-      this.refs.CommonShareModal.handleSave().then((shareCluster) => {
-        let flag = true;
-        _.map(shareCluster, (share) => {
-          if(share.responseMessage !== undefined){
-            flag = false;
-            FSReactToastr.error(
-              <CommonNotification flag="error" content={share.responseMessage}/>, '', toastOpt);
-          }
-          this.setState({shareObj : {}});
-        });
-        if(flag){
-          FSReactToastr.success(
-            <strong>Services has been shared successfully</strong>
-          );
+    this.refs.CommonShareModalRef.hide();
+    this.refs.CommonShareModal.handleSave().then((shareCluster) => {
+      let flag = true;
+      _.map(shareCluster, (share) => {
+        if(share.responseMessage !== undefined){
+          flag = false;
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={share.responseMessage}/>, '', toastOpt);
         }
+        this.setState({shareObj : {}});
       });
-    }
+      if(flag){
+        FSReactToastr.success(
+          <strong>Services has been shared successfully</strong>
+        );
+      }
+    });
   }
 
   handleShareCancel = () => {
@@ -993,7 +996,7 @@ class ServicePoolContainer extends Component {
     return (
       <BaseContainer ref="BaseContainer" routes={routes} headerContent={this.getHeaderContent()}>
         {fetchLoader
-          ? <CommonLoaderSign imgName={"services"}/>
+          ? [<div key={"1"} className="loader-overlay"></div>,<CommonLoaderSign key={"2"} imgName={"services"}/>]
           : <div>
               <div className="row">
                 <div className="page-title-box clearfix">
@@ -1050,7 +1053,7 @@ class ServicePoolContainer extends Component {
             }
             <div className="row">
               {searchLoader
-              ? <CommonLoaderSign imgName={"services"}/>
+              ? [<div key={"1.1"} className="loader-overlay"></div>,<CommonLoaderSign key={"1.2"} imgName={"services"}/>]
               : !searchLoader && entities.length === 0 && filterValue
                 ? <NoData imgName={"applications"} searchVal={filterValue}/>
                 : entities.length !== 0

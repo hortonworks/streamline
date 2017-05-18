@@ -178,7 +178,7 @@ class ModelRegistryContainer extends Component {
         <div className="row">
           <div className="col-sm-12">
             {fetchLoader
-              ? <CommonLoaderSign imgName={"default"}/>
+              ? [<div key={"1"} className="loader-overlay"></div>,<CommonLoaderSign key={"2"} imgName={"default"}/>]
               : filteredEntities.length == 0
                 ? <NoData imgName={"default"} searchVal={filterValue}/>
                 : <div className="box">

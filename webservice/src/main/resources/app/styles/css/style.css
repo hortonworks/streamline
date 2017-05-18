@@ -3062,11 +3062,11 @@ div#TestSourceForm > ul {
   margin-top: -10px;
 }
 
-.role-icon.hb.large {
+.role-icon.hb.large, .user-icon.hb.large  {
  left: -19px;
 }
 
-.role-icon.hb.small {
+.role-icon.hb.small, .user-icon.hb.small {
   left: -12px;
 }
 
@@ -3323,6 +3323,17 @@ div#TestSourceForm > ul {
 span.warning {
   color: #f0ad4e;
 }
+
+.loader-overlay {
+  position: fixed;
+  background-color: rgba(255, 255, 255, 0.5);
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 1050;
+}
+
 .expandTestSourceCodeMirror{
   margin-left: 200px;
   height: 395px;
@@ -3352,12 +3363,34 @@ span.warning {
 
 #user-form-dropdown {
   border: none;
+  text-decoration: none;
   color: #1190c0;
-  font-size: .9em;
+}
+#user-form-dropdown:focus{
+    background-color: transparent;
+}
+
+#user-form-dropdown:hover{
+  background-color: #e6e6e6;
+  color: #1190c0;
 }
 
 #user-form-dropdown .caret {
   margin-left: 2px;
   margin-top: -2px;
   color: #888;
+}
+button#accessControl{
+  color: #1190c0;
+  text-decoration: none;
+}
+button#accessControl:hover{
+  background-color: #e6e6e6;
+  color: #1190c0;
+}
+
+a.crossIcon{
+  color:#d1d3d4;
+  line-height :30px;
+  font-size: 16px;
 }

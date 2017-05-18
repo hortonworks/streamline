@@ -96,10 +96,11 @@ export default class NotifierContainer extends Component {
 
   handleSave = () => {
     if (this.refs.NotifierForm.validateData()) {
+      this.setState({fetchLoader: true});
+      this.refs.NotifierModal.hide();
       this.refs.NotifierForm.handleSave()
         .then((data)=>{
           this.fetchData();
-          this.refs.NotifierModal.hide();
           if(data.responseMessage !== undefined){
             FSReactToastr.error(
                 <CommonNotification flag="error" content={data.responseMessage}/>, '', toastOpt);
@@ -127,7 +128,12 @@ export default class NotifierContainer extends Component {
     return (
       <div>
         {fetchLoader
-          ? <CommonLoaderSign imgName={"default"}/>
+          ? <div className="row">
+              <div className="page-title-box clearfix">
+                <div className="loader-overlay"></div>
+                <CommonLoaderSign imgName={"default-white"}/>
+              </div>
+            </div>
           : <div>
             {hasEditCapability(accessCapabilities.APPLICATION) ?
               <a href="javascript:void(0);" className="hb pull-right success actionDropdown" onClick={this.handleAdd}>

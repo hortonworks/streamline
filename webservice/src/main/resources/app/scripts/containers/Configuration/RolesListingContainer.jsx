@@ -48,8 +48,10 @@ export default class RolesListingContainer extends Component {
       userOptions: [],
       showRoleForm: false,
       fetchLoader: true,
+      showFormLoading: false,
       activePanel: ''
     };
+    this.showDefault = true;
   }
   componentWillMount() {
     this.fetchData();
@@ -106,7 +108,7 @@ export default class RolesListingContainer extends Component {
             });
             var defaultEntity = applicationRoles[0];
             this.setState({roles: rolesArr, roleOptions: roleOptions, systemRoles: systemRoles, applicationRoles: applicationRoles, fetchLoader: false,
-              userOptions: userOptionsArr, showRoleForm: true, editData: defaultEntity, activePanel: defaultEntity.id});
+              userOptions: userOptionsArr, showRoleForm: this.showDefault ? true : false, editData: this.showDefault ? defaultEntity : {}, activePanel: this.showDefault ? defaultEntity.id : ''});
           });
       });
   }
@@ -121,6 +123,8 @@ export default class RolesListingContainer extends Component {
 
   handleSave = () => {
     if (this.refs.AppRoleForm.validateData()) {
+      this.setState({showFormLoading: true});
+      this.showDefault = false;
       this.refs.AppRoleForm.handleSave()
         .then((data)=>{
           if(data.responseMessage !== undefined){
@@ -133,7 +137,7 @@ export default class RolesListingContainer extends Component {
               FSReactToastr.success(<strong>Role added successfully</strong>);
             }
           }
-          this.setState({showRoleForm: false, editData: {}});
+          this.setState({showRoleForm: false, editData: {}, showFormLoading: false});
           this.fetchData();
         });
     }
@@ -144,6 +148,9 @@ export default class RolesListingContainer extends Component {
     return (
       <div>
       <div className="row">
+        {this.state.showFormLoading || fetchLoader ?
+          <div className="loader-overlay"></div> : ''
+        }
         {fetchLoader ?
         <div className="col-sm-12">
           <div className="loading-img text-center">
@@ -229,6 +236,7 @@ export default class RolesListingContainer extends Component {
          userOptions={userOptions}
          saveCallback={this.handleSave.bind(this)}
          cancelCallback={this.handleCancel.bind(this)}
+         showFormLoading={this.state.showFormLoading}
        />
        : ''
       }

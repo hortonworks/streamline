@@ -46,11 +46,11 @@ export default class OutputSchemaContainer extends Component {
 
   constructor(props) {
     super();
-    if (props.streamData.length) {
+    if (props.streamData.length > 0) {
       this.state = {
         activeTab: 1,
         streamData: props.streamData,
-        conditionalArr : this.initialCodeMirrorArr(props.streamData.length)
+        conditionalArr : this.initialCodeMirrorArr(props.streamData.length, 'one')
       };
     } else {
       this.state = {
@@ -61,7 +61,7 @@ export default class OutputSchemaContainer extends Component {
             fields: ''
           }
         ],
-        conditionalArr : this.initialCodeMirrorArr(1,'one')
+        conditionalArr : this.initialCodeMirrorArr(1)
       };
     }
     this.validateFlag = true;
@@ -69,14 +69,14 @@ export default class OutputSchemaContainer extends Component {
   }
   componentWillReceiveProps(nextProps) {
     if (nextProps.streamData.length > 0) {
-      this.setState({streamData: nextProps.streamData});
+      this.setState({streamData: nextProps.streamData, conditionalArr: this.initialCodeMirrorArr(nextProps.streamData.length, 'one')});
     }
   }
 
-  initialCodeMirrorArr= (num,string) => {
+  initialCodeMirrorArr= (num, string) => {
     let tempArr = new Array(num);
     return _.map(tempArr, (arr) => {
-      return string === " one"
+      return string === "one"
               ? {showCodeMirror : true , expandCodemirror : false}
               : {showCodeMirror : false , expandCodemirror : false};
     });

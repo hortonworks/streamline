@@ -397,7 +397,7 @@ class TopologyViewContainer extends Component {
       <BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" headerContent={this.getTopologyHeader()}>
         <div>
           {fetchLoader
-            ? <CommonLoaderSign imgName={"viewMode"}/>
+            ? [<div key={"1"} className="loader-overlay"></div>,<CommonLoaderSign key={"2"} imgName={"viewMode"}/>]
             : <div>
               <TopologyViewMode {...this.state} topologyId={this.topologyId} killTopology={this.killTopology.bind(this)} handleVersionChange={this.handleVersionChange.bind(this)} setCurrentVersion={this.setCurrentVersion.bind(this)} stormClusterId={this.state.stormClusterId} nameSpaceName={this.nameSpace} namespaceId={this.namespaceId}/>
               <div id="viewMode" className="graph-bg">

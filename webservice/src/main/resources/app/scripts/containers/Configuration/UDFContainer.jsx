@@ -96,10 +96,11 @@ export default class UDFContainer extends Component {
 
   handleSave = () => {
     if (this.refs.UDFForm.validateData()) {
+      this.setState({fetchLoader: true});
+      this.refs.UDFModal.hide();
       this.refs.UDFForm.handleSave()
         .then((data)=>{
           this.fetchData();
-          this.refs.UDFModal.hide();
           if(data.responseMessage !== undefined){
             FSReactToastr.error(
                 <CommonNotification flag="error" content={data.responseMessage}/>, '', toastOpt);
@@ -127,7 +128,12 @@ export default class UDFContainer extends Component {
     return (
       <div>
         {fetchLoader
-          ? <CommonLoaderSign imgName={"default"}/>
+          ? <div className="row">
+              <div className="page-title-box clearfix">
+                <div className="loader-overlay"></div>
+                <CommonLoaderSign imgName={"default-white"}/>
+              </div>
+            </div>
           : <div>
             {hasEditCapability(accessCapabilities.APPLICATION) ?
               <a href="javascript:void(0);" className="hb pull-right success actionDropdown" data-target="" onClick={this.handleAdd}>
