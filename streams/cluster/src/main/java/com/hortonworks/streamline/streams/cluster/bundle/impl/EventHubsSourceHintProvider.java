@@ -4,12 +4,14 @@ import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.bundle.AbstractBundleHintProvider;
 
+import javax.security.auth.Subject;
+import javax.ws.rs.core.SecurityContext;
 import java.util.Collections;
 import java.util.Map;
 
 public class EventHubsSourceHintProvider extends AbstractBundleHintProvider {
     @Override
-    public Map<String, Object> getHintsOnCluster(Cluster cluster) {
+    public Map<String, Object> getHintsOnCluster(Cluster cluster, SecurityContext securityContext, Subject subject) {
         return Collections.emptyMap();
     }
 

@@ -27,6 +27,8 @@ import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaTop
 
 import org.apache.commons.lang3.StringUtils;
 
+import javax.security.auth.Subject;
+import javax.ws.rs.core.SecurityContext;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,9 +45,9 @@ public class KafkaBundleHintProvider extends AbstractBundleHintProvider {
     public static final String FIELD_NAME_ZK_PORT = "zkPort";
 
     @Override
-    public Map<String, Object> getHintsOnCluster(Cluster cluster) {
+    public Map<String, Object> getHintsOnCluster(Cluster cluster, SecurityContext securityContext, Subject subject) {
         Map<String, Object> hintClusterMap = new HashMap<>();
-        try (KafkaMetadataService kafkaMetadataService = KafkaMetadataService.newInstance(environmentService, cluster.getId())) {
+        try (KafkaMetadataService kafkaMetadataService = KafkaMetadataService.newInstance(environmentService, cluster.getId(), securityContext)) {
             KafkaMetadataService.KafkaZkConnection zkConnection = kafkaMetadataService.getKafkaZkConnection();
             KafkaTopics topics = kafkaMetadataService.getTopicsFromZk();
 

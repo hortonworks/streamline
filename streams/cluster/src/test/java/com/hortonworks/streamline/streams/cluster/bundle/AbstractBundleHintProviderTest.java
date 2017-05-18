@@ -28,6 +28,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.security.auth.Subject;
+import javax.ws.rs.core.SecurityContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,7 +43,7 @@ public class AbstractBundleHintProviderTest {
 
     private class TestBundleHintProviderTest extends AbstractBundleHintProvider {
         @Override
-        public Map<String, Object> getHintsOnCluster(Cluster cluster) {
+        public Map<String, Object> getHintsOnCluster(Cluster cluster, SecurityContext securityContext, Subject subject) {
             return TEST_HINTS;
         }
 
@@ -87,7 +89,7 @@ public class AbstractBundleHintProviderTest {
         Namespace namespace = new Namespace();
         namespace.setId(TEST_NAMESPACE_ID);
 
-        Map<Long, ComponentBundleHintProvider.BundleHintsResponse> hints = provider.provide(namespace);
+        Map<Long, ComponentBundleHintProvider.BundleHintsResponse> hints = provider.provide(namespace, null, null);
         Assert.assertEquals(3, hints.size());
         Assert.assertEquals(cluster1, hints.get(cluster1.getId()).getCluster());
         Assert.assertEquals(TEST_HINTS, hints.get(cluster1.getId()).getHints());

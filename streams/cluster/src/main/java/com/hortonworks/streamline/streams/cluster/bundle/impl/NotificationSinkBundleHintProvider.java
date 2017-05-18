@@ -8,6 +8,8 @@ import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundExcep
 import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.bundle.AbstractBundleHintProvider;
 
+import javax.security.auth.Subject;
+import javax.ws.rs.core.SecurityContext;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +29,7 @@ public class NotificationSinkBundleHintProvider extends AbstractBundleHintProvid
     }
 
     @Override
-    public Map<String, Object> getHintsOnCluster(Cluster cluster) {
+    public Map<String, Object> getHintsOnCluster(Cluster cluster, SecurityContext securityContext, Subject subject) {
         Map<String, Object> hintMap = new HashMap<>();
 
         try {

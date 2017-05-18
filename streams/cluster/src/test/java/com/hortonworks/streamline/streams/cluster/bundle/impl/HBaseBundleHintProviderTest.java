@@ -65,7 +65,7 @@ public class HBaseBundleHintProviderTest {
         cluster.setId(1L);
         cluster.setName("cluster1");
 
-        Map<String, Object> hints = provider.getHintsOnCluster(cluster);
+        Map<String, Object> hints = provider.getHintsOnCluster(cluster, null, null);
         Assert.assertNotNull(hints);
         Assert.assertEquals(1, hints.size());
         Assert.assertEquals(tables, hints.get(HBaseBundleHintProvider.FIELD_NAME_TABLE));

@@ -22,6 +22,8 @@ import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.bundle.AbstractBundleHintProvider;
 import com.hortonworks.streamline.streams.cluster.service.metadata.HBaseMetadataService;
 
+import javax.security.auth.Subject;
+import javax.ws.rs.core.SecurityContext;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,9 +31,9 @@ public class HBaseBundleHintProvider extends AbstractBundleHintProvider {
     public static final String FIELD_NAME_TABLE = "table";
 
     @Override
-    public Map<String, Object> getHintsOnCluster(Cluster cluster) {
+    public Map<String, Object> getHintsOnCluster(Cluster cluster, SecurityContext securityContext, Subject subject) {
         Map<String, Object> hintMap = new HashMap<>();
-        try (HBaseMetadataService hBaseMetadataService = HBaseMetadataService.newInstance(environmentService, cluster.getId())) {
+        try (HBaseMetadataService hBaseMetadataService = HBaseMetadataService.newInstance(environmentService, cluster.getId(), securityContext, subject)) {
             hintMap.put(FIELD_NAME_TABLE, hBaseMetadataService.getHBaseTables().getTables());
         } catch (ServiceNotFoundException e) {
             // we access it from mapping information so shouldn't be here

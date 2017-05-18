@@ -92,7 +92,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         result.addAll(getClusterRelatedResources(authorizer, environmentService));
         result.add(new FileCatalogResource(authorizer, catalogService));
         result.addAll(getTopologyRelatedResources(authorizer, streamcatalogService, environmentService, topologyActionsService,
-                topologyMetricsService, securityCatalogService));
+                topologyMetricsService, securityCatalogService, subject));
         result.add(new UDFCatalogResource(authorizer, streamcatalogService, fileStorage));
         result.addAll(getNotificationsRelatedResources(authorizer, streamcatalogService));
         result.add(new SchemaResource(createSchemaRegistryClient()));
@@ -125,10 +125,11 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
                                                      EnvironmentService environmentService,
                                                      TopologyActionsService actionsService,
                                                      TopologyMetricsService metricsService,
-                                                     SecurityCatalogService securityCatalogService) {
+                                                     SecurityCatalogService securityCatalogService,
+                                                     Subject subject) {
         return Arrays.asList(
                 new TopologyCatalogResource(authorizer, streamcatalogService, environmentService, actionsService, metricsService),
-                new TopologyComponentBundleResource(authorizer, streamcatalogService, environmentService),
+                new TopologyComponentBundleResource(authorizer, streamcatalogService, environmentService, subject),
                 new TopologyStreamCatalogResource(authorizer, streamcatalogService),
                 new TopologyEditorMetadataResource(authorizer, streamcatalogService),
                 new TopologySourceCatalogResource(authorizer, streamcatalogService),
