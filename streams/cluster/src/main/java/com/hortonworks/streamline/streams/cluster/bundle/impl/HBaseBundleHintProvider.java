@@ -31,6 +31,10 @@ public class HBaseBundleHintProvider extends AbstractBundleHintProvider {
     @Override
     public Map<String, Object> getHintsOnCluster(Cluster cluster) {
         Map<String, Object> hintMap = new HashMap<>();
+        // FIXME: below hint needs to access HBase and currently it doesn't work with secure cluster
+        // FIXME: hence can't add HBase sink to the topology
+        // FIXME: so we should comment out until it is fixed
+        /*
         try (HBaseMetadataService hBaseMetadataService = HBaseMetadataService.newInstance(environmentService, cluster.getId())) {
             hintMap.put(FIELD_NAME_TABLE, hBaseMetadataService.getHBaseTables().getTables());
         } catch (ServiceNotFoundException e) {
@@ -42,6 +46,7 @@ public class HBaseBundleHintProvider extends AbstractBundleHintProvider {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        */
         return hintMap;
     }
 
