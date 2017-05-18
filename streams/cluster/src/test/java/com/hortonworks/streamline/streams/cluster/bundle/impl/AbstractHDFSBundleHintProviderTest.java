@@ -66,7 +66,7 @@ public class AbstractHDFSBundleHintProviderTest {
         cluster.setId(1L);
         cluster.setName("cluster1");
 
-        Map<String, Object> hints = provider.getHintsOnCluster(cluster);
+        Map<String, Object> hints = provider.getHintsOnCluster(cluster, null, null);
         Assert.assertEquals(1, hints.size());
         Assert.assertEquals(expectedFsUrl, hints.get(TEST_FIELD_NAME_FS_URL));
     }

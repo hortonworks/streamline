@@ -27,6 +27,8 @@ import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaTop
 
 import org.apache.commons.lang.StringUtils;
 
+import javax.security.auth.Subject;
+import javax.ws.rs.core.SecurityContext;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,9 +41,9 @@ public class KafkaSinkBundleHintProvider extends AbstractBundleHintProvider {
     public static final String FIELD_NAME_SECURITY_PROTOCOL = "securityProtocol";
 
     @Override
-    public Map<String, Object> getHintsOnCluster(Cluster cluster) {
+    public Map<String, Object> getHintsOnCluster(Cluster cluster, SecurityContext securityContext, Subject subject) {
         Map<String, Object> hintClusterMap = new HashMap<>();
-        try (KafkaMetadataService kafkaMetadataService = KafkaMetadataService.newInstance(environmentService, cluster.getId())) {
+        try (KafkaMetadataService kafkaMetadataService = KafkaMetadataService.newInstance(environmentService, cluster.getId(), securityContext)) {
             KafkaTopics topics = kafkaMetadataService.getTopicsFromZk();
             hintClusterMap.put(FIELD_NAME_TOPIC, topics.list());
 
