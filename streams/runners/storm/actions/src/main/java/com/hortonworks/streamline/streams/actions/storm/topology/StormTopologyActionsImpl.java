@@ -547,14 +547,18 @@ public class StormTopologyActionsImpl implements TopologyActions {
         putServiceSpecificCredentialConfig(topologyConfig, topologyDag, clusterToConfiguration,
                 Collections.singletonList(HdfsSource.class),
                 Collections.singletonList(HdfsSink.class),
-                Constants.HDFS.SERVICE_NAME, TOPOLOGY_CONFIG_KEY_CLUSTER_KEY_PREFIX_HDFS, TOPOLOGY_CONFIG_KEY_HDFS_KEYTAB_FILE,
+                Constants.HDFS.SERVICE_NAME,
+                Collections.emptyList(),
+                TOPOLOGY_CONFIG_KEY_CLUSTER_KEY_PREFIX_HDFS, TOPOLOGY_CONFIG_KEY_HDFS_KEYTAB_FILE,
                 TOPOLOGY_CONFIG_KEY_HDFS_KERBEROS_PRINCIPAL,
                 TOPOLOGY_CONFIG_KEY_HDFS_CREDENTIALS_CONFIG_KEYS, TOPOLOGY_AUTO_CREDENTIAL_CLASSNAME_HDFS);
 
         putServiceSpecificCredentialConfig(topologyConfig, topologyDag, clusterToConfiguration,
                 Collections.emptyList(),
                 Collections.singletonList(HBaseSink.class),
-                Constants.HBase.SERVICE_NAME, TOPOLOGY_CONFIG_KEY_CLUSTER_KEY_PREFIX_HBASE, TOPOLOGY_CONFIG_KEY_HBASE_KEYTAB_FILE,
+                Constants.HBase.SERVICE_NAME,
+                Collections.singletonList(Constants.HDFS.SERVICE_NAME),
+                TOPOLOGY_CONFIG_KEY_CLUSTER_KEY_PREFIX_HBASE, TOPOLOGY_CONFIG_KEY_HBASE_KEYTAB_FILE,
                 TOPOLOGY_CONFIG_KEY_HBASE_KERBEROS_PRINCIPAL,
                 TOPOLOGY_CONFIG_KEY_HBASE_CREDENTIALS_CONFIG_KEYS, TOPOLOGY_AUTO_CREDENTIAL_CLASSNAME_HBASE);
     }
@@ -563,7 +567,9 @@ public class StormTopologyActionsImpl implements TopologyActions {
                                                     Map<String, Map<String, String>> clusterToConfiguration,
                                                     List<Class<?>> outputComponentClasses,
                                                     List<Class<?>> inputComponentClasses,
-                                                    String serviceName, String clusterKeyPrefix,
+                                                    String serviceName,
+                                                    List<String> dependentServiceNames,
+                                                    String clusterKeyPrefix,
                                                     String keytabPathKeyName, String principalKeyName,
                                                     String credentialConfigKeyName,
                                                     String topologyAutoCredentialClassName) {
@@ -601,8 +607,17 @@ public class StormTopologyActionsImpl implements TopologyActions {
                             conf.put(principalKeyName, confForToken.get(STREAMLINE_TOPOLOGY_CONFIG_PRINCIPAL));
                             conf.put(keytabPathKeyName, confForToken.get(STREAMLINE_TOPOLOGY_CONFIG_KEYTAB_PATH));
 
+                            // also includes all configs for dependent services
+                            // note that such services in cluster should also be associated to the namespace
+                            Map<String, String> clusterConf = new HashMap<>();
+                            dependentServiceNames.forEach(depSvcName -> {
+                                Map<String, String> depConf = serviceConfigurationReader.read(clusterName, depSvcName);
+                                clusterConf.putAll(depConf);
+                            });
+                            clusterConf.putAll(conf);
+
                             String clusterKey = clusterKeyPrefix + clusterName;
-                            topologyConfig.put(clusterKey, conf);
+                            topologyConfig.put(clusterKey, clusterConf);
                             clusterKeys.add(clusterKey);
                         }
                     });
