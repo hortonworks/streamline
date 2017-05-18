@@ -120,7 +120,12 @@ public class ClusterCatalogResource {
         }
 
         if (clusters != null) {
-            clusters = SecurityUtil.filter(authorizer, securityContext, NAMESPACE, clusters, READ);
+            boolean servicePoolUser = SecurityUtil.hasRole(authorizer, securityContext, Roles.ROLE_SERVICE_POOL_USER);
+            if (servicePoolUser) {
+                LOG.debug("Returning all service pools since user has role: {}", Roles.ROLE_SERVICE_POOL_USER);
+            } else {
+                clusters = SecurityUtil.filter(authorizer, securityContext, NAMESPACE, clusters, READ);
+            }
             return buildClustersGetResponse(clusters, detail);
         }
 
@@ -133,7 +138,12 @@ public class ClusterCatalogResource {
     public Response getClusterById(@PathParam("id") Long clusterId,
                                    @javax.ws.rs.QueryParam("detail") Boolean detail,
                                    @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, clusterId, READ);
+        boolean servicePoolUser = SecurityUtil.hasRole(authorizer, securityContext, Roles.ROLE_SERVICE_POOL_USER);
+        if (servicePoolUser) {
+            LOG.debug("Allowing get service pool, since user has role: {}", Roles.ROLE_SERVICE_POOL_USER);
+        } else {
+            SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, clusterId, READ);
+        }
         Cluster result = environmentService.getCluster(clusterId);
         if (result != null) {
             return buildClusterGetResponse(result, detail);
