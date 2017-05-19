@@ -147,8 +147,8 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
 
         // add readerSchemaVersion to constructor arg only when it's not null and not empty
         String readerSchemaVersion = (String) conf.get("readerSchemaVersion");
-        if(readerSchemaVersion != null && !readerSchemaVersion.isEMpty()) {
-            constructorArgs.add(Integer.parseInt(readerSchemaVersion))
+        if(readerSchemaVersion != null && !readerSchemaVersion.isEmpty()) {
+            constructorArgs.add(Integer.parseInt(readerSchemaVersion));
         }
         addToComponents(createComponent(translatorId, translatorClassname, null, constructorArgs, null));
         return translatorId;
