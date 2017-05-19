@@ -24,6 +24,7 @@ import com.hortonworks.streamline.streams.cluster.service.metadata.StormMetadata
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 
+import java.io.IOException;
 import java.util.Collections;
 
 import javax.ws.rs.GET;
@@ -59,7 +60,7 @@ public class StormMetadataResource {
             StormMetadataService stormMetadataService = new StormMetadataService
                     .Builder(environmentService, clusterId, securityContext).build();
             return WSUtils.respondEntity(stormMetadataService.getTopologies(), OK);
-        } catch (EntityNotFoundException ex) {
+        } catch (EntityNotFoundException | IOException ex) {
             throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }
     }

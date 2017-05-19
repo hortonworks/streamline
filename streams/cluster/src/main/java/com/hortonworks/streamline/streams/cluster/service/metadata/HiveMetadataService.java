@@ -25,6 +25,8 @@ import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfig
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.OverrideHadoopConfiguration;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.HiveDatabases;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.Keytabs;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.Principals;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.Tables;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 
@@ -56,6 +58,8 @@ public class HiveMetadataService implements AutoCloseable {
 
     private static final String STREAMS_JSON_SCHEMA_CONFIG_HIVE_METASTORE_SITE = ServiceConfigurations.HIVE.getConfNames()[3];
     private static final String STREAMS_JSON_SCHEMA_CONFIG_HIVE_SITE = ServiceConfigurations.HIVE.getConfNames()[6];
+    private static final String HIVE_METASTORE_KERBEROS_KEYTAB_FILE = "hive.metastore.kerberos.keytab.file";
+    private static final String HIVE_METASTORE_KERBEROS_PRINCIPAL = "hive.metastore.kerberos.principal";
 
     private final HiveConf hiveConf;  // HiveConf used to create HiveMetaStoreClient. If this class is created with
                                       // the 3 parameter constructor, it is set to null
@@ -144,8 +148,11 @@ public class HiveMetadataService implements AutoCloseable {
     /**
      * @return The table names for the database specified in the parameter
      */
-    public Tables getHiveTables(String dbName) throws MetaException, PrivilegedActionException {
-        final Tables tables = Tables.newInstance(executeSecure(() -> metaStoreClient.getAllTables(dbName)), securityContext, false);
+    public Tables getHiveTables(String dbName) throws  MetaException, PrivilegedActionException,
+            IOException, InterruptedException {
+
+        final Tables tables = Tables.newInstance(executeSecure(() -> metaStoreClient.getAllTables(dbName)),
+                securityContext, false, getPrincipals(), getKeytabs());
         LOG.debug("Hive database [{}] has tables {}", dbName, tables.getTables());
         return tables;
     }
@@ -153,10 +160,19 @@ public class HiveMetadataService implements AutoCloseable {
     /**
      * @return The names of all databases in the MetaStore.
      */
-    public HiveDatabases getHiveDatabases() throws MetaException, PrivilegedActionException {
-        final HiveDatabases databases = HiveDatabases.newInstance(executeSecure(metaStoreClient::getAllDatabases), securityContext);
+    public HiveDatabases getHiveDatabases() throws MetaException, PrivilegedActionException, IOException, InterruptedException {
+        final HiveDatabases databases = HiveDatabases.newInstance(
+                executeSecure(metaStoreClient::getAllDatabases), securityContext, getPrincipals(), getKeytabs());
         LOG.debug("Hive databases {}", databases.list());
         return databases;
+    }
+
+    public Keytabs getKeytabs() throws InterruptedException, IOException, PrivilegedActionException {
+        return executeSecure(() -> Keytabs.newInstance(hiveConf.getValByRegex(HIVE_METASTORE_KERBEROS_KEYTAB_FILE)));
+    }
+
+    public Principals getPrincipals() throws InterruptedException, IOException, PrivilegedActionException {
+        return executeSecure(() -> Principals.newInstance(hiveConf.getValByRegex(HIVE_METASTORE_KERBEROS_PRINCIPAL)));
     }
 
     @Override
