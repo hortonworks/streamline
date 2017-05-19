@@ -145,11 +145,11 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         constructorArgs.add(kafkaSource != null ? kafkaSource.getId() : "");
         constructorArgs.add(conf.get(TopologyLayoutConstants.SCHEMA_REGISTRY_URL));
 
+        // add readerSchemaVersion to constructor arg only when it's not null and not empty
         String readerSchemaVersion = (String) conf.get("readerSchemaVersion");
-        if(readerSchemaVersion == null || readerSchemaVersion.isEmpty()) {
-            readerSchemaVersion = "-1";
+        if(readerSchemaVersion != null && !readerSchemaVersion.isEmpty()) {
+            constructorArgs.add(Integer.parseInt(readerSchemaVersion));
         }
-        constructorArgs.add(Integer.parseInt(readerSchemaVersion));
         addToComponents(createComponent(translatorId, translatorClassname, null, constructorArgs, null));
         return translatorId;
     }
