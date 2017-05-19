@@ -16,6 +16,7 @@
 package com.hortonworks.streamline.streams.runtime.storm.bolt.kafka;
 
 import com.hortonworks.registries.schemaregistry.SchemaVersionInfo;
+import com.hortonworks.registries.schemaregistry.SchemaVersionKey;
 import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
 import com.hortonworks.registries.schemaregistry.errors.SchemaNotFoundException;
 import org.apache.avro.Schema;
@@ -38,6 +39,7 @@ public class StreamlineEventSerializer implements Serializer<StreamlineEvent> {
     protected static final Logger LOG = LoggerFactory.getLogger(StreamlineEventSerializer.class);
     private final AvroSnapshotSerializer avroSnapshotSerializer;
     private SchemaRegistryClient schemaRegistryClient;
+    private Integer writerSchemaVersion;
 
     public StreamlineEventSerializer () {
         avroSnapshotSerializer = new AvroSnapshotSerializer();
@@ -48,6 +50,12 @@ public class StreamlineEventSerializer implements Serializer<StreamlineEvent> {
         // ignoring the isKey since this class is expected to be used only as a value serializer for now, value being StreamlineEvent
         avroSnapshotSerializer.init(configs);
         schemaRegistryClient = new SchemaRegistryClient(configs);
+        String writerSchemaVersion = (String) configs.get("writer.schema.version");
+        if (writerSchemaVersion != null && !writerSchemaVersion.isEmpty()) {
+            this.writerSchemaVersion = Integer.parseInt(writerSchemaVersion);
+        } else {
+            this.writerSchemaVersion = null;
+        }
     }
 
     @Override
@@ -56,7 +64,11 @@ public class StreamlineEventSerializer implements Serializer<StreamlineEvent> {
         SchemaVersionInfo schemaVersionInfo;
         try {
             schemaMetadata = schemaRegistryClient.getSchemaMetadataInfo(schemaMetadata.getName()).getSchemaMetadata();
-            schemaVersionInfo = schemaRegistryClient.getLatestSchemaVersionInfo(schemaMetadata.getName());
+            if (writerSchemaVersion != null) {
+                schemaVersionInfo = schemaRegistryClient.getSchemaVersionInfo(new SchemaVersionKey(schemaMetadata.getName(), writerSchemaVersion));
+            } else {
+                schemaVersionInfo = schemaRegistryClient.getLatestSchemaVersionInfo(schemaMetadata.getName());
+            }
         } catch (SchemaNotFoundException e) {
             LOG.error("Exception occured while getting SchemaVersionInfo for " + schemaMetadata, e);
             throw new RuntimeException(e);

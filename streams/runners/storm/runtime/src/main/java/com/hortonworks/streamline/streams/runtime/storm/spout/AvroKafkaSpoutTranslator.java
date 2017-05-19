@@ -53,7 +53,7 @@ public class AvroKafkaSpoutTranslator implements RecordTranslator<Object, ByteBu
         this.topic = topic;
         this.dataSourceId = dataSourceId;
         this.schemaRegistryUrl = schemaRegistryUrl;
-        this.readerSchemaVersion = readerSchemaVersion;
+        this.readerSchemaVersion = readerSchemaVersion == -1 ? null : readerSchemaVersion;
     }
 
     @Override

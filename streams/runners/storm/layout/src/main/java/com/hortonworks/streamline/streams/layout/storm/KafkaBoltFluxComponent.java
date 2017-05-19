@@ -84,19 +84,19 @@ public class KafkaBoltFluxComponent extends AbstractFluxComponent {
             "bootstrap.servers", "buffer.memory", "compression.type", "retries", "batch.size", "client.id", "connections.max.idle.ms",
             "linger.ms", "max.block.ms", "max.request.size", "receive.buffer.bytes", "request.timeout.ms", "security.protocol", "send.buffer.bytes",
             "timeout.ms", "block.on.buffer.full", "max.in.flight.requests.per.connection", "metadata.fetch.timeout.ms", "metadata.max.age.ms",
-            "reconnect.backoff.ms", "retry.backoff.ms", "schema.registry.url", "sasl.kerberos.service.name", "sasl.jaas.config","ssl.keystore.location",
-            "ssl.keystore.password", "ssl.key.password", "ssl.truststore.location", "ssl.truststore.password", "ssl.enabled.protocols", "ssl.keystore.type",
-            "ssl.truststore.type", "ssl.protocol", "ssl.provider", "ssl.cipher.suites", "ssl.endpoint.identification.algorithm", "ssl.keymanager.algorithm",
-            "ssl.secure.random.implementation"
+            "reconnect.backoff.ms", "retry.backoff.ms", "schema.registry.url", "writer.schema.version", "sasl.kerberos.service.name", "sasl.jaas.config",
+            "ssl.keystore.location", "ssl.keystore.password", "ssl.key.password", "ssl.truststore.location", "ssl.truststore.password", "ssl.enabled.protocols",
+            "ssl.keystore.type", "ssl.truststore.type", "ssl.protocol", "ssl.provider", "ssl.cipher.suites", "ssl.endpoint.identification.algorithm",
+            "ssl.keymanager.algorithm", "ssl.secure.random.implementation"
         };
         String[] fieldNames = {
             "bootstrapServers", "bufferMemory", "compressionType", "retries", "batchSize", "clientId", "maxConnectionIdle",
             "lingerTime", "maxBlock", "maxRequestSize", "receiveBufferSize", "requestTimeout", "securityProtocol", "sendBufferSize",
             "timeout", "blocKOnBufferFull", "maxInflighRequests", "metadataFetchTimeout", "metadataMaxAge", "reconnectBackoff", "retryBackoff",
-            TopologyLayoutConstants.SCHEMA_REGISTRY_URL, KafkaSpoutFluxComponent.SASL_KERBEROS_SERVICE_NAME, KafkaSpoutFluxComponent.SASL_JAAS_CONFIG_KEY,
-            "sslKeystoreLocation", "sslKeystorePassword", "sslKeyPassword", "sslTruststoreLocation", "sslTruststorePassword", "sslEnabledProtocols",
-            "sslKeystoreType", "sslTruststoreType", "sslProtocol", "sslProvider", "sslCipherSuites", "sslEndpointIdAlgo", "sslKeyManagerAlgo",
-            "sslSecureRandomImpl", "sslTrustManagerAlgo"
+            TopologyLayoutConstants.SCHEMA_REGISTRY_URL, "writerSchemaVersion", KafkaSpoutFluxComponent.SASL_KERBEROS_SERVICE_NAME,
+            KafkaSpoutFluxComponent.SASL_JAAS_CONFIG_KEY, "sslKeystoreLocation", "sslKeystorePassword", "sslKeyPassword", "sslTruststoreLocation",
+            "sslTruststorePassword", "sslEnabledProtocols", "sslKeystoreType", "sslTruststoreType", "sslProtocol", "sslProvider", "sslCipherSuites",
+            "sslEndpointIdAlgo", "sslKeyManagerAlgo", "sslSecureRandomImpl", "sslTrustManagerAlgo"
         };
         List<String> methodNames = new ArrayList<>();
         List<Object> args = new ArrayList<>();
