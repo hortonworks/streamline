@@ -72,7 +72,7 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
                     User user = new User();
                     user.setName(name);
                     user.setEmail(name + "@auto-generated.com");
-                    user.setMetadata("\"metadata\":\"{\\\"colorCode\\\":\\\"#8261be\\\",\\\"colorLabel\\\":\\\"purple\\\",\\\"icon\\\":\\\"gears\\\"]}\"");
+                    user.setMetadata("{\"colorCode\":\"#8261be\",\"colorLabel\":\"purple\",\"icon\":\"gears\"}");
                     User addedUser = catalogService.addUser(user);
                     LOG.info("Added admin user entry: {}", addedUser);
                 });
