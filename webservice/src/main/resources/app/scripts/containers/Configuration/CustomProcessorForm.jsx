@@ -145,7 +145,7 @@ class CustomProcessorForm extends Component {
   }
 
   componentDidMount() {
-    //this.props.router.setRouteLeaveHook(this.props.route, this.routerWillLeave);
+    this.props.router.setRouteLeaveHook(this.props.route, this.routerWillLeave);
   }
   componentWillUnmount() {
     this.props.popUpFlag(false);
@@ -154,7 +154,7 @@ class CustomProcessorForm extends Component {
 
   routerWillLeave = (nextLocation) => {
     if (!this.unmounted) {
-      this.validateData();
+      this.checkForData();
       this.nextRoutes = nextLocation.pathname;
       (!this.navigateFlag)
         ? this.refs.leaveConfigProcessor.show()
@@ -278,13 +278,12 @@ class CustomProcessorForm extends Component {
       customProcessorImpl,
       jarFileName,
       topologyComponentUISpecification,
-      inputSchema,
-      fieldsChk
+      inputSchema
     } = this.state;
     let outputStreams = this.refs.OutputSchemaContainer.getOutputStreams();
     let outputStreamFlag = false;
     outputStreams.map((o) => {
-      let schema = JSON.parse(o.fields);
+      let schema = o.fields.length > 0 ? JSON.parse(o.fields) : "";
       if (!(schema instanceof Array) || schema.length <= 0) {
         outputStreamFlag = true;
       }
@@ -296,6 +295,31 @@ class CustomProcessorForm extends Component {
       validDataFlag = false;
     }
 
+    if (name !== '') {
+      let errorObj = this.validateName(name);
+      if (errorObj.showNameError) {
+        validDataFlag = false;
+      }
+    }
+
+    if (streamingEngine === '' || name === '' || description === '' || customProcessorImpl === '' || jarFileName === '' || inputSchema === '' || outputStreams.length === 0 || topologyComponentUISpecification.length === 0) {
+      validDataFlag = false;
+    }
+    return validDataFlag;
+  }
+
+  checkForData() {
+    let {
+      streamingEngine,
+      name,
+      description,
+      customProcessorImpl,
+      jarFileName,
+      topologyComponentUISpecification,
+      inputSchema,
+      fieldsChk
+    } = this.state;
+    let outputStreams = this.refs.OutputSchemaContainer.getOutputStreams();
     const emptyVal = [
       name,
       description,
@@ -304,13 +328,6 @@ class CustomProcessorForm extends Component {
       topologyComponentUISpecification,
       inputSchema
     ];
-    if (name !== '') {
-      let errorObj = this.validateName(name);
-      if (errorObj.showNameError) {
-        validDataFlag = false;
-      }
-    }
-
     if (streamingEngine === '' || name === '' || description === '' || customProcessorImpl === '' || jarFileName === '' || inputSchema === '' || outputStreams.length === 0 || topologyComponentUISpecification.length === 0) {
       if (fieldsChk) {
         let filterVal = emptyVal.filter(val => {
@@ -326,9 +343,7 @@ class CustomProcessorForm extends Component {
             })
           : this.navigateFlag = true;
       }
-      validDataFlag = false;
     }
-    return validDataFlag;
   }
 
   handleSave() {
@@ -623,7 +638,7 @@ class CustomProcessorForm extends Component {
                         showCodeMirror
                         ? <ReactCodemirror ref="JSONCodemirror" value={this.state.inputSchema} onChange={this.handleInputSchemaChange.bind(this)} options={jsonoptions}/>
                         : <div ref="browseFileContainer" className={"addSchemaBrowseFileContainer"}>
-                            <div onClick={this.outerDivClicked.bind(this)}>
+                            <div onClick={this.outerDivClicked.bind(this)} data-stest="inputSchemaBox">
                             <div className="main-title">Copy & Paste</div>
                             <div className="sub-title m-t-sm m-b-sm">OR</div>
                             <div className="main-title">Drag & Drop</div>

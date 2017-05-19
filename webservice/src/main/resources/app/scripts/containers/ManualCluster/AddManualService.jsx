@@ -148,7 +148,7 @@ class AddManualService extends Component{
                   <label>Select Service
                     <span className="text-danger">*</span>
                   </label>
-                  <Select placeholder="Select service" value={selectedObj} options={entities} required={true} valueKey="name" labelKey="name" onChange={this.handleServiceChange.bind(this)} />
+                  <Select placeholder="Select service" value={selectedObj} options={entities} required={true} valueKey="name" labelKey="name" data-stest="serviceSelect" onChange={this.handleServiceChange.bind(this)} />
                 </div>
               </div>
               {

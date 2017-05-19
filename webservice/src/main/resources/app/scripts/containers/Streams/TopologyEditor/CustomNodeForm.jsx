@@ -125,14 +125,15 @@ export default class CustomNodeForm extends Component {
 
   saveStreams(outputStreamToSchema) {
     let self = this;
-    let {topologyId, nodeType, versionId} = this.props;
+    let {topologyId, nodeType, versionId,nodeData} = this.props;
     let streamIds = _.keys(outputStreamToSchema),
       streamData = {},
       streams = [],
       promiseArr = [];
 
     streamIds.map((s) => {
-      streams.push({streamId: s, fields: outputStreamToSchema[s].fields});
+      // nodeID is added to make streamId unique
+      streams.push({streamId: s+'_'+nodeData.nodeId, fields: outputStreamToSchema[s].fields});
     });
 
     streams.map((s) => {

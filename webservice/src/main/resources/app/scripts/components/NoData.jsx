@@ -68,7 +68,7 @@ export default class NoData extends Component {
     const applicationStep_2 = <div className="list">
       <h4>
         <span className="hb success">2</span>
-        &nbsp;Add Topology Name</h4>
+        &nbsp;Add Application Name</h4>
       <div className="intro-content">
         Select Environment
         <br/>

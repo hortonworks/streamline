@@ -54,7 +54,7 @@ const ServiceItems = (props) => {
   let name = item.name.replace('_', ' ');
   return (
     item.manualClusterId
-    ? <li><img src="styles/img/plus.png" alt="plus button" onClick={props.addManualService} data-id={item.manualClusterId}/>Add New</li>
+    ? <li><img src="styles/img/plus.png" alt="plus button" data-stest="plusBtn" onClick={props.addManualService} data-id={item.manualClusterId}/>Add New</li>
     : <li><img src={`styles/img/icon-${item.name.toLowerCase()}.png`}/>{name}</li>
   );
 };
@@ -926,9 +926,12 @@ class ServicePoolContainer extends Component {
         this.setState({shareObj : {}});
       });
       if(flag){
-        FSReactToastr.success(
-          <strong>Services has been shared successfully</strong>
-        );
+        shareCluster.length !== 0
+        ? FSReactToastr.success(
+            <strong>Services has been shared successfully</strong>
+          )
+        : '';
+
       }
     });
   }
@@ -1044,7 +1047,7 @@ class ServicePoolContainer extends Component {
                     : ''}`}>This is not a valid Url</lable>
                 </div>
                 <div className="col-md-2">
-                  <button className="btn btn-default" type="button" onClick={this.addManualCluster}>
+                  <button className="btn btn-default" type="button" data-stest="manualBtn" onClick={this.addManualCluster}>
                     MANUAL
                   </button>
                 </div>

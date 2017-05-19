@@ -63,20 +63,28 @@ export default class FSForm extends Component {
     return (
       <Form className={this.props.className} style={this.props.style}>
         {this.props.children.map((child, i) => {
+          let className = this.props.showRequired == null ? '' :
+            (this.props.showRequired ?
+              (!child.props.fieldJson.isOptional ? '' : 'hidden') :
+                (child.props.fieldJson.isOptional ? '' : 'hidden')
+            );
+          if(!this.props.showRequired) {
+            if(this.props.showSecurity) {
+              className = child.props.fieldJson.hint && child.props.fieldJson.hint.indexOf('security_') > -1 ? '' :'hidden';
+            } else {
+              className = child.props.fieldJson.isOptional ? '' :'hidden';
+              if(child.props.fieldJson.hint && child.props.fieldJson.hint.indexOf('security_') > -1) {
+                className = 'hidden';
+              }
+            }
+          }
           return React.cloneElement(child, {
             ref: child.props
               ? (child.props._ref || i)
               : i,
             key: i,
             data: this.state.FormData,
-            className: this.props.showRequired == null
-              ? ''
-              : this.props.showRequired
-                ? !child.props.fieldJson.isOptional
-                  ? ''
-                  : 'hidden' : child.props.fieldJson.isOptional
-                    ? ''
-                    : 'hidden'
+            className: className
           });
         })}
       </Form>

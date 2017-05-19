@@ -568,9 +568,11 @@ class EnvironmentContainer extends Component {
         this.setState({shareObj : {}});
       });
       if(flag){
-        FSReactToastr.success(
-          <strong>Environment has been shared successfully</strong>
-        );
+        namespaceShare.length !== 0
+        ? FSReactToastr.success(
+            <strong>Environment has been shared successfully</strong>
+          )
+        : '';
       }
     });
   }

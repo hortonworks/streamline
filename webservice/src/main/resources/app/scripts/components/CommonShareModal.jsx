@@ -38,7 +38,7 @@ export default class CommonShareModal extends Component{
       selectedUsers : '',
       selectedUserAccess : '',
       shareObj : props.shareObj || {},
-      accessUserList : [{
+      tempAccessUserList : [{
         user : '',
         accessControl : { label : "Can Edit", value : 'Can Edit'}
       }],
@@ -48,7 +48,7 @@ export default class CommonShareModal extends Component{
       ],
       showUserCaption : '',
       selectedUserList : [],
-      tempUserList : []
+      userAccessList : []
     };
     this.fetchData();
     this.mapCanView  = [];
@@ -77,21 +77,22 @@ export default class CommonShareModal extends Component{
 
       this.userOptions = _.filter(tempOptions, (opt) => {return opt.id !== ownerObj.sidId;});
 
-      stateObj.tempUserList = _.filter(this.userOptions, (user) => {
+      stateObj.userAccessList = _.filter(this.userOptions, (user) => {
         return _.find(stateObj.selectedUserList, (list) => {return list.sidId === user.id;});
       });
 
-      this.sharedUserList = _.cloneDeep(stateObj.tempUserList);
+      this.constSharedUserList = _.cloneDeep(stateObj.userAccessList);
 
-      stateObj.userList = this.filterUserOptions(this.userOptions, stateObj.tempUserList);
+      stateObj.userList = this.filterUserOptions(this.userOptions, stateObj.userAccessList);
 
-      stateObj.showUserCaption = this.getUserListCaption(stateObj.tempUserList);
+      stateObj.showUserCaption = this.getUserListCaption(stateObj.userAccessList);
 
       stateObj.selectedUserAccess = this.state.accessList[0];
-      if(stateObj.tempUserList.length){
-        stateObj.accessUserList = this.generatUserAccessList(stateObj.selectedUserList, stateObj.tempUserList);
+      if(stateObj.userAccessList.length){
+        stateObj.tempAccessUserList = this.generatUserAccessList(stateObj.selectedUserList, stateObj.userAccessList);
+        stateObj.userAccessList = _.cloneDeep(stateObj.tempAccessUserList);
       } else {
-        stateObj.accessUserList = [];
+        stateObj.tempAccessUserList = [];
       }
       stateObj.showLoading = false;
       this.setState(stateObj);
@@ -103,8 +104,8 @@ export default class CommonShareModal extends Component{
     _.map(tempList , (t_list) => {
       const index = _.findIndex(orgList, (org_list) => { return org_list.sidId === t_list.id;});
       if(index !== -1){
-        const permission = TopologyUtils.getPermission(orgList[index].permissions,orgList[index]);
-        const p_string = permission ? "Can View" : "Can Edit";
+        const permission = orgList[index].permissions.toString();  TopologyUtils.getPermission(orgList[index].permissions,orgList[index]);
+        const p_string = permission.includes('WRITE') ? "Can Edit" : "Can View";
         obj.push({
           user : t_list,
           accessControl : { label : p_string, value : p_string}
@@ -133,93 +134,47 @@ export default class CommonShareModal extends Component{
       }
     });
     const len = list.length - string.length;
-    const other = list > 2 ? `and ${len} others..    ` : '';
-    return `${list.length > 0 ? 'Shared with ' : ''} ${string.join(', ')} ${list > 2 ? other : ''}`;
+    const other = list.length > 2 ? `and ${len} others..    ` : '';
+    return `${list.length > 0 ? 'Shared with ' : ''} ${string.join(', ')} ${list.length > 2 ? other : ''}`;
   }
 
   handleUserChange = (arrList) => {
-    let tempArr= [];
-    const {selectedUserList} = this.state;
-    let tempSelected = _.cloneDeep(this.state.tempUserList);
-    let tempAccessUser = _.cloneDeep(this.state.accessUserList);
-    let newUserList = [];
-    _.map(arrList, (a)=>{
-      let o = _.findIndex(tempSelected, (t)=>{return t.id === a.id;});
-      if(o === -1){
-        newUserList.push(a);
-      }
-    });
-    // check if the both has no value
-    if(selectedUserList.length === 0 && arrList.length === 0){
-      tempSelected = [];
-      tempAccessUser =[];
-    }
-    this.mapCanView = arrList;
-    Array.prototype.push.apply(tempSelected, newUserList);
-    let userList = this.filterUserOptions(this.userOptions, tempSelected);
-    if(tempSelected.length > arrList.length && selectedUserList.length === 0){
-      _.map(arrList, (a)=>{
-        let o = _.findIndex(tempSelected, (t)=>{return t.id !== a.id;});
-        if(o !== -1){
-          userList.push(tempSelected[o]);
-          const ind = _.findIndex(tempAccessUser, (f) => {return f.user.id === tempSelected[o].id;});
-          if(ind !== -1){
-            tempAccessUser.splice(ind,1);
-            tempSelected.splice(o,1);
-          }
-        }
-      });
-    }
-    _.map(newUserList, (arr,i) => {
+    const {selectedUserAccess} = this.state;
+    let cloneUserAccessList = _.cloneDeep(this.state.userAccessList);
+    let tempArr=[],tempAccessUser=[];
+    _.map(arrList, (arr,i) => {
       tempArr[i] === undefined
-        ? tempArr[i] = {user : '',accessControl : { label : "Can Edit", value : 'Can Edit'}}
+        ? tempArr[i] = {user : '',accessControl : { label : selectedUserAccess.value, value : selectedUserAccess.value}}
         : '';
       tempArr[i].user = arr;
     });
 
-    const mergeAccessList = _.concat(tempAccessUser,tempArr);
-    this.setState({selectedUsers : arrList , accessUserList : mergeAccessList, tempUserList: tempSelected, userList: userList});
+    Array.prototype.push.apply(tempArr,cloneUserAccessList);
+
+    this.setState({selectedUsers : arrList, tempAccessUserList : tempArr});
   }
 
   handleUserCanEdit = (type,key,index,obj) => {
     if(!_.isEmpty(obj)){
-      let tempAccessUser = _.cloneDeep(this.state.accessUserList);
+      let invitedUser = _.cloneDeep(this.state.selectedUsers);
+      let tempAccessUser = _.cloneDeep(this.state.tempAccessUserList);
       if(type === "user"){
-        // _.map(this.mapCanView, (can) => {
-        //   const _index = _.findIndex(tempAccessUser, (t) => {return t.user.id === can.id;});
-        //   if(_index !== -1){
-        //
-        //   }
-        // });
-        this.setState({selectedUserAccess : obj});
+        _.map(invitedUser, (invite) => {
+          const _index = _.findIndex(tempAccessUser, (t) => {return t.user.id === invite.id;});
+          if(_index !== -1){
+            tempAccessUser[_index].accessControl = {label : obj.value , value : obj.value};
+          }
+        });
+        this.setState({selectedUserAccess : obj,tempAccessUserList : tempAccessUser});
       } else {
         tempAccessUser[index].accessControl = {label : key , value : key};
-        this.setState({accessUserList : tempAccessUser});
+        this.setState({tempAccessUserList : tempAccessUser});
       }
     }
   }
 
   changeAccess = () => {
     this.setState({accessControl : true});
-  }
-
-  splitPostUser = (accessList,selectList) => {
-    let postList=[],putList=[];
-    _.map(accessList, (acs,i) => {
-      const index = _.findIndex(selectList, (list) => { return list.name === acs.user.name;});
-      if(index !== -1){
-        postList.push(acs);
-      } else {
-        putList.push(acs);
-      }
-    });
-    return {postList,putList};
-  }
-
-  splitPustUser = (accessList,selectList) => {
-    return _.filter(accessList, (acs) => {
-      return _.find(selectList, (list) => { return list.name !== acs.user.name;});
-    });
   }
 
   generetOutPutObj = (objList,type) => {
@@ -255,14 +210,54 @@ export default class CommonShareModal extends Component{
     return _.find(orgUserList , (user) => {return user.sidId === o.user.id;});
   }
 
+  getTempUserAccessObj = (tempAccessList,list) => {
+    let obj=[];
+    _.map(tempAccessList, (accesslist) => {
+      const index = _.findIndex(list , (l) => { return l.id === accesslist.user.id;});
+      if(index !== -1){
+        obj.push(accesslist);
+      }
+    });
+    return obj;
+  }
+
+  getSharedObj = (selectedUserList,list) => {
+    return _.find(selectedUserList, (sharedUser) => { return sharedUser.sidId === list.id;});
+  }
+
+  generateOutputFields = (constList,sharedList) => {
+    let arr=[];
+    _.map(constList, (list) => {
+      const dObj =  this.getSharedObj(sharedList,list);
+      const data = this.generatUserAccessList([dObj],[list]);
+      arr.push(data[0]);
+    });
+    return arr;
+  }
+
+  splitPostUser = (accessList,selectList) => {
+    let postList=[],putList=[];
+    _.map(accessList, (acs,i) => {
+      const index = _.findIndex(selectList, (list) => { return list.name === acs.user.name;});
+      if(index !== -1){
+        postList.push(acs);
+      } else {
+        putList.push(acs);
+      }
+    });
+    return {postList,putList};
+  }
+
   handleSave = () => {
     let postData=[],putData=[],deleteData=[],deletedObjArr=[];
-    const {selectedUsers,accessUserList,selectedUserList} = this.state;
+    const {selectedUsers,selectedUserList,tempAccessUserList} = this.state;
+    let putObjArr=[];
     // this postObjArr is for POST
-    let {postList,putList} = this.splitPostUser(accessUserList,selectedUsers);
+    let {postList,putList} = this.splitPostUser(tempAccessUserList,selectedUsers);
 
     let postObjArr = postList;
-    let putObjArr = putList;
+
+    Array.prototype.push.apply(putObjArr, putList);
 
     if(postObjArr.length){
       const tempPost = _.cloneDeep(postObjArr);
@@ -282,7 +277,7 @@ export default class CommonShareModal extends Component{
       _.map(selectedUserList, (list) => {
         const index = _.findIndex(putObjArr, (pObj) => { return pObj.user.id === list.sidId; });
         if(index === -1){
-          const dObj = _.find(this.sharedUserList, (sharedUser) => { return sharedUser.id === list.sidId;});
+          const dObj = _.find(this.constSharedUserList, (sharedUser) => { return sharedUser.id === list.sidId;});
           const data = this.generatUserAccessList([list],[dObj]);
           deletedObjArr.push(data[0]);
         }
@@ -292,6 +287,11 @@ export default class CommonShareModal extends Component{
 
     if(deletedObjArr.length){
       deleteData = this.generetOutPutObj(deletedObjArr,'delete');
+    }
+
+    if(postObjArr.length === 0 && putObjArr.length === 0 && deletedObjArr.length === 0 && this.constSharedUserList.length !== 0){
+      const arr = this.generateOutputFields(this.constSharedUserList,selectedUserList);
+      deleteData = this.generetOutPutObj(arr,'delete');
     }
 
     let promiseArr=[];
@@ -312,31 +312,32 @@ export default class CommonShareModal extends Component{
   }
 
   deleteAccessUserControl = (index) => {
-    let tempAccessUser = _.cloneDeep(this.state.accessUserList);
-    let tempSelectedUser = _.cloneDeep(this.state.selectedUsers);
-    //find user
+    let selectedUserArr = _.cloneDeep(this.state.selectedUsers);
+    let cloneUserAccessList = _.cloneDeep(this.state.userAccessList);
+    let tempAccessUser = _.cloneDeep(this.state.tempAccessUserList);
+    let options = _.cloneDeep(this.state.userList);
+
     const tempUser = tempAccessUser[index].user;
 
-    //add user into dropdown again
-    let userList = this.state.userList;
-    userList.push(tempUser);
+    const userIndex = _.findIndex(selectedUserArr, (selectUser) => {return selectUser.id === tempUser.id;});
 
-    //remove from tempuserlist
-    let tempUserList = this.state.tempUserList;
-    const i = _.findIndex(tempUserList , (t) => { return t.id === tempUser.id;});
-    tempUserList.splice(i, 1);
-
-    const userIndex = _.findIndex(tempSelectedUser , (selectedUser) => { return selectedUser.name === tempUser.name;});
     if(userIndex !== -1){
-      tempSelectedUser.splice(userIndex , 1);
+      selectedUserArr.splice(userIndex , 1);
+    } else {
+      const cIndex = _.findIndex(cloneUserAccessList, (c) => {return c.user.id === tempUser.id;});
+      if(cIndex !== -1){
+        cloneUserAccessList.splice(cIndex,1);
+      }
+      options.push(tempUser);
     }
-    tempAccessUser.splice(index , 1);
-    this.setState({accessUserList : tempAccessUser, selectedUsers : tempSelectedUser, tempUserList:tempUserList, userList: userList});
+
+    tempAccessUser.splice(index, 1);
+    this.setState({selectedUsers:selectedUserArr,userAccessList:cloneUserAccessList,tempAccessUserList:tempAccessUser,userList:options});
   }
 
 
   render(){
-    const {showLoading,accessControl,userList,selectedUsers,selectedUserAccess,accessList,accessUserList,showUserCaption} = this.state;
+    const {showLoading,accessControl,userList,selectedUsers,selectedUserAccess,accessList,tempAccessUserList,showUserCaption} = this.state;
 
     return(
       <div className="cp-modal-form">
@@ -364,7 +365,7 @@ export default class CommonShareModal extends Component{
                     <Select value={selectedUserAccess} options={accessList}  onChange={this.handleUserCanEdit.bind(this,'user',null,null)} required={true}  valueKey="value" labelKey="value" clearable={false} />
                   </div>
                   {
-                    accessUserList.length !== 0 && !accessControl
+                    tempAccessUserList.length !== 0 && !accessControl
                     ? <span style={{marginLeft:10,fontSize:13}}>
                         {showUserCaption} <a href="javascript:void(0)" onClick={this.changeAccess.bind(this)}>Change Access</a>
                       </span>
@@ -383,7 +384,7 @@ export default class CommonShareModal extends Component{
                         </div>
                       </div>
                       {
-                        _.map(accessUserList , (auList ,i) => {
+                        _.map(tempAccessUserList , (auList ,i) => {
                           return  <div key={i} className="form-group">
                                     <div className="row">
                                       <div className="col-sm-8">
@@ -407,7 +408,7 @@ export default class CommonShareModal extends Component{
                         })
                       }
                       {
-                        accessUserList.length === 0
+                        tempAccessUserList.length === 0
                         ? <div className="row">
                             <div className="col-sm-12">
                               No Record found

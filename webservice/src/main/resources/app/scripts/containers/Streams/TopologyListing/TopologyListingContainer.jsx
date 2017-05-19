@@ -736,9 +736,11 @@ class TopologyListingContainer extends Component {
         this.setState({shareObj : {}});
       });
       if(flag){
-        FSReactToastr.success(
-          <strong>Topology has been shared successfully</strong>
-        );
+        shareTopology.length !== 0
+        ? FSReactToastr.success(
+            <strong>Topology has been shared successfully</strong>
+          )
+        : '';
       }
     });
   }

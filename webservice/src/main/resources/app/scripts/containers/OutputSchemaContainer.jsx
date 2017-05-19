@@ -302,7 +302,7 @@ export default class OutputSchemaContainer extends Component {
                       conditionalArr[i].showCodeMirror
                       ? <ReactCodemirror ref="JSONCodemirror" value={obj.fields} onChange={this.handleSchemaChange.bind(this)} options={jsonoptions}/>
                       : <div ref="browseFileContainer" className={"addSchemaBrowseFileContainer"}>
-                          <div onClick={this.outerDivClicked.bind(this)}>
+                          <div onClick={this.outerDivClicked.bind(this)} data-stest="outputSchemaBox">
                           <div className="main-title">Copy & Paste</div>
                           <div className="sub-title m-t-sm m-b-sm">OR</div>
                           <div className="main-title">Drag & Drop</div>

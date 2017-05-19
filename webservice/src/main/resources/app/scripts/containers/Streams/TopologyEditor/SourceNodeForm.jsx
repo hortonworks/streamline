@@ -44,6 +44,8 @@ export default class SourceNodeForm extends Component {
       streamObj: {},
       description: '',
       showRequired: true,
+      showSecurity: false,
+      hasSecurity: false,
       activeTabKey: 1,
       clusterArr: [],
       configJSON: [],
@@ -61,7 +63,7 @@ export default class SourceNodeForm extends Component {
     ];
 
     Promise.all(promiseArr).then((results) => {
-      let stateObj = {},
+      let stateObj = {}, hasSecurity = false,
         tempArr = [];
       if (results[0].responseMessage !== undefined) {
         FSReactToastr.error(
@@ -104,6 +106,12 @@ export default class SourceNodeForm extends Component {
       stateObj.formData = this.nodeData.config.properties;
       stateObj.description = this.nodeData.description;
       stateObj.fetchLoader = false;
+      stateObj.configJSON.map((config)=>{
+        if(config.hint && config.hint.indexOf("security_") > -1) {
+          hasSecurity = true;
+        }
+      });
+      stateObj.hasSecurity = hasSecurity;
       this.setState(stateObj, () => {
         if (stateObj.formData.cluster !== undefined) {
           this.updateClusterFields(stateObj.formData.cluster);
@@ -234,11 +242,13 @@ export default class SourceNodeForm extends Component {
 
   onSelectTab = (eventKey) => {
     if (eventKey == 1) {
-      this.setState({activeTabKey: 1, showRequired: true});
+      this.setState({activeTabKey: 1, showRequired: true, showSecurity: false});
     } else if (eventKey == 2) {
-      this.setState({activeTabKey: 2, showRequired: false});
+      this.setState({activeTabKey: 2, showRequired: false, showSecurity: false});
     } else if (eventKey == 3) {
       this.setState({activeTabKey: 3});
+    } else if (eventKey == 4) {
+      this.setState({activeTabKey: 4, showRequired: false, showSecurity: true});
     }
   }
 
@@ -262,7 +272,7 @@ export default class SourceNodeForm extends Component {
         <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
           display: "none"
         }}/>}>
-          <Form ref="Form" readOnly={!this.props.editMode} showRequired={this.state.showRequired} className="customFormClass" FormData={formData} populateClusterFields={this.populateClusterFields.bind(this)} callback={this.showOutputStream.bind(this)}>
+          <Form ref="Form" readOnly={!this.props.editMode} showRequired={this.state.showRequired} showSecurity={this.state.showSecurity} className="customFormClass" FormData={formData} populateClusterFields={this.populateClusterFields.bind(this)} callback={this.showOutputStream.bind(this)}>
             {fields}
           </Form>
         </Scrollbars>
@@ -274,6 +284,14 @@ export default class SourceNodeForm extends Component {
           {outputSidebar}
           {form}
         </Tab>
+        {
+        this.state.hasSecurity ?
+        <Tab eventKey={4} title="SECURITY">
+          {outputSidebar}
+          {form}
+        </Tab>
+        : ''
+        }
         <Tab eventKey={2} title="OPTIONAL">
           {outputSidebar}
           {form}

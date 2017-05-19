@@ -48,7 +48,7 @@ export default class AppResourcesContainer extends Component {
             <Tabs id="appResources" className="user-tabs">
               {hasModuleAccess(menuName.CUSTOM_PROCESSOR) ?
                 <Tab eventKey={1} title="Custom Processor">
-                  <CustomProcessorContainer callbackHandler={this.callbackHandler.bind(this)}/>
+                  <CustomProcessorContainer callbackHandler={this.callbackHandler.bind(this)} route={this.props.routes[this.props.routes.length - 1]}/>
                 </Tab>
                 : null
               }

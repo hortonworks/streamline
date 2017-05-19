@@ -87,13 +87,13 @@ class AddManualCluster extends Component{
         <div className="form-group">
             <label>Name<span className="text-danger">*</span>
             </label>
-            <input type="text" className="form-control" placeholder="Cluster Name" ref="clusterName" autoFocus="true" onChange={this.inputChange.bind(this,"name")}/>
+            <input type="text" className="form-control" placeholder="Cluster Name" ref="clusterName" autoFocus="true" data-stest="clusterName" onChange={this.inputChange.bind(this,"name")}/>
             <p className="text-danger"></p>
         </div>
         <div className="form-group">
             <label>Description<span className="text-danger">*</span>
             </label>
-            <input type="text" className="form-control" placeholder="Description" ref="clusterDescription" onChange={this.inputChange.bind(this,"description")}/>
+            <input type="text" className="form-control" placeholder="Description" ref="clusterDescription" data-stest="description" onChange={this.inputChange.bind(this,"description")}/>
             <p className="text-danger"></p>
         </div>
       </form>

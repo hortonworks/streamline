@@ -53,6 +53,8 @@ export default class SinkNodeForm extends Component {
       streamObj: {},
       description: '',
       showRequired: true,
+      showSecurity: false,
+      hasSecurity: false,
       activeTabKey: 1,
       uiSpecification: [],
       clusterArr: [],
@@ -94,7 +96,7 @@ export default class SinkNodeForm extends Component {
 
     }
     Promise.all(promiseArr).then(results => {
-      let stateObj = {},
+      let stateObj = {}, hasSecurity = false,
         tempArr = [];
       this.nodeData = results[0];
       if (results[1].entities) {
@@ -244,6 +246,7 @@ export default class SinkNodeForm extends Component {
         let {configData} = this.props;
         const {topologyComponentUISpecification} = configData;
         let uiFields = topologyComponentUISpecification.fields || [];
+        let hasSecurity = false;
 
         uiFields.map(x => {
           if (x.fieldName === "jarFileName") {
@@ -254,8 +257,11 @@ export default class SinkNodeForm extends Component {
               x.hint = "hidden";
             }
           }
+          if(x.hint !== undefined && x.hint.indexOf('security_') > -1) {
+            hasSecurity = true;
+          }
         });
-        this.setState({uiSpecification: uiFields});
+        this.setState({uiSpecification: uiFields, hasSecurity: hasSecurity});
       }
     }).catch(err => {
       FSReactToastr.error(
@@ -339,11 +345,13 @@ export default class SinkNodeForm extends Component {
 
   onSelectTab = (eventKey) => {
     if (eventKey == 1) {
-      this.setState({activeTabKey: 1, showRequired: true});
+      this.setState({activeTabKey: 1, showRequired: true, showSecurity: false});
     } else if (eventKey == 2) {
-      this.setState({activeTabKey: 2, showRequired: false});
+      this.setState({activeTabKey: 2, showRequired: false, showSecurity: false});
     } else if (eventKey == 3) {
       this.setState({activeTabKey: 3});
+    } else if (eventKey == 4) {
+      this.setState({activeTabKey: 4, showRequired: false, showSecurity: true});
     }
   }
 
@@ -415,7 +423,7 @@ export default class SinkNodeForm extends Component {
         <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
           display: "none"
         }}/>}>
-          <Form ref="Form" readOnly={!this.props.editMode} showRequired={this.state.showRequired} FormData={formData} className="customFormClass" populateClusterFields={this.populateClusterFields.bind(this)}>
+          <Form ref="Form" readOnly={!this.props.editMode} showRequired={this.state.showRequired} showSecurity={this.state.showSecurity} FormData={formData} className="customFormClass" populateClusterFields={this.populateClusterFields.bind(this)}>
             {fields}
           </Form>
         </Scrollbars>
@@ -427,6 +435,14 @@ export default class SinkNodeForm extends Component {
           {inputSidebar}
           {form}
         </Tab>
+        {
+        this.state.hasSecurity ?
+        <Tab eventKey={4} title="SECURITY">
+          {inputSidebar}
+          {form}
+        </Tab>
+        : ''
+        }
         <Tab eventKey={2} title="OPTIONAL">
           {inputSidebar}
           {form}
