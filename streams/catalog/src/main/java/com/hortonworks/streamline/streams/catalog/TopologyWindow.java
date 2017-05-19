@@ -74,32 +74,34 @@ public class TopologyWindow extends BaseTopologyRule {
     }
 
     public TopologyWindow(TopologyWindow other) {
-        setId(other.getId());
-        setVersionId(other.getVersionId());
-        setTopologyId(other.getTopologyId());
-        setName(other.getName());
-        setDescription(other.getDescription());
-        if (other.getStreams() != null) {
-            setStreams(new ArrayList<>(other.getStreams()));
+        if (other != null) {
+            setId(other.getId());
+            setVersionId(other.getVersionId());
+            setTopologyId(other.getTopologyId());
+            setName(other.getName());
+            setDescription(other.getDescription());
+            if (other.getStreams() != null) {
+                setStreams(new ArrayList<>(other.getStreams()));
+            }
+            setCondition(other.getCondition());
+            setParsedRuleStr(other.getParsedRuleStr());
+            if (other.getWindow() != null) {
+                setWindow(new Window(other.getWindow()));
+            }
+            if (other.getActions() != null) {
+                setActions(other.getActions().stream().map(Action::copy).collect(Collectors.toList()));
+            }
+            if (other.getProjections() != null) {
+                setProjections(other.getProjections().stream().map(Projection::new).collect(Collectors.toList()));
+            }
+            if (other.getGroupbykeys() != null) {
+                setGroupbykeys(new ArrayList<>(other.getGroupbykeys()));
+            }
+            if (other.getOutputStreams() != null) {
+                setOutputStreams(new ArrayList<>(other.getOutputStreams()));
+            }
+            setVersionTimestamp(other.getVersionTimestamp());
         }
-        setCondition(other.getCondition());
-        setParsedRuleStr(other.getParsedRuleStr());
-        if (other.getWindow() != null) {
-            setWindow(new Window(other.getWindow()));
-        }
-        if (other.getActions() != null) {
-            setActions(other.getActions().stream().map(Action::copy).collect(Collectors.toList()));
-        }
-        if (other.getProjections() != null) {
-            setProjections(other.getProjections().stream().map(Projection::new).collect(Collectors.toList()));
-        }
-        if (other.getGroupbykeys() != null) {
-            setGroupbykeys(new ArrayList<>(other.getGroupbykeys()));
-        }
-        if (other.getOutputStreams() != null) {
-            setOutputStreams(new ArrayList<>(other.getOutputStreams()));
-        }
-        setVersionTimestamp(other.getVersionTimestamp());
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

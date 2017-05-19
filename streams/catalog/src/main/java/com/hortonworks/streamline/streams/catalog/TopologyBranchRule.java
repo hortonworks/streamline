@@ -78,21 +78,23 @@ public class TopologyBranchRule extends BaseTopologyRule {
     }
 
     public TopologyBranchRule(TopologyBranchRule other) {
-        setId(other.getId());
-        setTopologyId(other.getTopologyId());
-        setVersionId(other.getVersionId());
-        setName(other.getName());
-        setDescription(other.getDescription());
-        setStream(other.getStream());
-        setCondition(other.getCondition());
-        setParsedRuleStr(other.getParsedRuleStr());
-        if (other.getActions() != null) {
-            setActions(other.getActions().stream().map(Action::copy).collect(Collectors.toList()));
+        if (other != null) {
+            setId(other.getId());
+            setTopologyId(other.getTopologyId());
+            setVersionId(other.getVersionId());
+            setName(other.getName());
+            setDescription(other.getDescription());
+            setStream(other.getStream());
+            setCondition(other.getCondition());
+            setParsedRuleStr(other.getParsedRuleStr());
+            if (other.getActions() != null) {
+                setActions(other.getActions().stream().map(Action::copy).collect(Collectors.toList()));
+            }
+            if (other.getOutputStreams() != null) {
+                setOutputStreams(new ArrayList<>(other.getOutputStreams()));
+            }
+            setVersionTimestamp(other.getVersionTimestamp());
         }
-        if (other.getOutputStreams() != null) {
-            setOutputStreams(new ArrayList<>(other.getOutputStreams()));
-        }
-        setVersionTimestamp(other.getVersionTimestamp());
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

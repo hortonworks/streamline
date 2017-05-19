@@ -75,15 +75,17 @@ public class TopologyStream extends AbstractStorable {
 
     // copy ctor
     public TopologyStream(TopologyStream other) {
-        setId(other.getId());
-        setVersionId(other.getVersionId());
-        setStreamId(other.getStreamId());
-        setDescription(other.getDescription());
-        setTopologyId(other.getTopologyId());
-        if (other.getFields() != null) {
-            setFields(other.getFields().stream().map(Field::copy).collect(Collectors.toList()));
+        if (other != null) {
+            setId(other.getId());
+            setVersionId(other.getVersionId());
+            setStreamId(other.getStreamId());
+            setDescription(other.getDescription());
+            setTopologyId(other.getTopologyId());
+            if (other.getFields() != null) {
+                setFields(other.getFields().stream().map(Field::copy).collect(Collectors.toList()));
+            }
+            setVersionTimestamp(other.getVersionTimestamp());
         }
-        setVersionTimestamp(other.getVersionTimestamp());
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

@@ -45,11 +45,13 @@ public class TopologyVersion extends AbstractStorable {
     }
 
     public TopologyVersion(TopologyVersion other) {
-        setId(other.getId());
-        setTopologyId(other.getTopologyId());
-        setName(other.getName());
-        setDescription(other.getDescription());
-        setTimestamp(other.getTimestamp());
+        if (other != null) {
+            setId(other.getId());
+            setTopologyId(other.getTopologyId());
+            setName(other.getName());
+            setDescription(other.getDescription());
+            setTimestamp(other.getTimestamp());
+        }
     }
 
     @JsonIgnore

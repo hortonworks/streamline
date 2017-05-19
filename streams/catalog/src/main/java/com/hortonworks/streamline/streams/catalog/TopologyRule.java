@@ -85,27 +85,29 @@ public class TopologyRule extends BaseTopologyRule {
     }
 
     public TopologyRule(TopologyRule other) {
-        setId(other.getId());
-        setVersionId(other.getVersionId());
-        setTopologyId(other.getTopologyId());
-        setName(other.getName());
-        setDescription(other.getDescription());
-        setCondition(other.getCondition());
-        setSql(other.getSql());
-        setParsedRuleStr(other.getParsedRuleStr());
-        if (other.getWindow() != null) {
-            setWindow(new Window(other.getWindow()));
+        if (other != null) {
+            setId(other.getId());
+            setVersionId(other.getVersionId());
+            setTopologyId(other.getTopologyId());
+            setName(other.getName());
+            setDescription(other.getDescription());
+            setCondition(other.getCondition());
+            setSql(other.getSql());
+            setParsedRuleStr(other.getParsedRuleStr());
+            if (other.getWindow() != null) {
+                setWindow(new Window(other.getWindow()));
+            }
+            if (other.getStreams() != null) {
+                setStreams(new ArrayList<>(other.getStreams()));
+            }
+            if (other.getActions() != null) {
+                setActions(other.getActions().stream().map(Action::copy).collect(Collectors.toList()));
+            }
+            if (other.getOutputStreams() != null) {
+                setOutputStreams(new ArrayList<>(other.getOutputStreams()));
+            }
+            setVersionTimestamp(other.getVersionTimestamp());
         }
-        if (other.getStreams() != null) {
-            setStreams(new ArrayList<>(other.getStreams()));
-        }
-        if (other.getActions() != null) {
-            setActions(other.getActions().stream().map(Action::copy).collect(Collectors.toList()));
-        }
-        if (other.getOutputStreams() != null) {
-            setOutputStreams(new ArrayList<>(other.getOutputStreams()));
-        }
-        setVersionTimestamp(other.getVersionTimestamp());
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

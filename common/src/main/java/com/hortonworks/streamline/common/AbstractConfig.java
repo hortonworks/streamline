@@ -31,7 +31,9 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     public AbstractConfig(AbstractConfig other) {
-        properties.putAll(other.properties);
+        if (other != null) {
+            properties.putAll(other.properties);
+        }
     }
 
     public AbstractConfig(Map<String, ?> properties) {

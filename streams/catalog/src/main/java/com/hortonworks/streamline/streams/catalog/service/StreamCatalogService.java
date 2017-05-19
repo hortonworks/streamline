@@ -720,11 +720,15 @@ public class StreamCatalogService {
         // import topology editor metadata
         TopologyEditorMetadata topologyEditorMetadata = topologyData.getTopologyEditorMetadata();
         topologyEditorMetadata.setTopologyId(newTopology.getId());
-        TopologyUIData topologyUIData = new ObjectMapper().readValue(topologyEditorMetadata.getData(), TopologyUIData.class);
-        topologyUIData.getSources().forEach(c -> c.setId(oldToNewComponentIds.get(c.getId())));
-        topologyUIData.getProcessors().forEach(c -> c.setId(oldToNewComponentIds.get(c.getId())));
-        topologyUIData.getSinks().forEach(c -> c.setId(oldToNewComponentIds.get(c.getId())));
-        topologyEditorMetadata.setData(new ObjectMapper().writeValueAsString(topologyUIData));
+        if (topologyEditorMetadata.getData() != null) {
+            TopologyUIData topologyUIData = new ObjectMapper().readValue(topologyEditorMetadata.getData(), TopologyUIData.class);
+            topologyUIData.getSources().forEach(c -> c.setId(oldToNewComponentIds.get(c.getId())));
+            topologyUIData.getProcessors().forEach(c -> c.setId(oldToNewComponentIds.get(c.getId())));
+            topologyUIData.getSinks().forEach(c -> c.setId(oldToNewComponentIds.get(c.getId())));
+            topologyEditorMetadata.setData(new ObjectMapper().writeValueAsString(topologyUIData));
+        } else {
+            topologyEditorMetadata.setData(StringUtils.EMPTY);
+        }
         addTopologyEditorMetadata(newTopology.getId(), topologyData.getTopologyEditorMetadata());
         return newTopology;
     }
