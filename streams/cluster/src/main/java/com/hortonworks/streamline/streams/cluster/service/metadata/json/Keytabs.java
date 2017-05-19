@@ -14,11 +14,17 @@ public class Keytabs {
         this.keytabs = keytabs;
     }
 
-    public static Keytabs newInstance(ServiceConfiguration serviceConfig) throws IOException {
-        return newInstance(serviceConfig.getConfigurationMap());
+    /**
+     * Instance built from map with Ambari configurations
+     */
+    public static Keytabs fromAmbariConfig(ServiceConfiguration serviceConfig) throws IOException {
+        return fromAmbariConfig(serviceConfig.getConfigurationMap());
     }
 
-    public static Keytabs newInstance(Map<String, String> keytabs) throws IOException {
+    /**
+     * Instance built from map with Ambari configurations
+     */
+    public static Keytabs fromAmbariConfig(Map<String, String> keytabs) throws IOException {
         Map<String, String> kts = keytabs.entrySet()
                 .stream()
                 .filter((e) -> e.getKey().contains("keytab"))
@@ -27,6 +33,27 @@ public class Keytabs {
                             String key = k.getKey().split("keytab")[0];
                             return key.substring(0, key.length() - 1);
                         },
+                        Map.Entry::getValue));
+
+        return new Keytabs(kts);
+    }
+
+    /**
+     * Instance built from map with service (e.g Hive, HBase) properties
+     */
+    public static Keytabs fromServiceProperties(ServiceConfiguration serviceConfig) throws IOException {
+        return fromServiceProperties(serviceConfig.getConfigurationMap());
+    }
+
+    /**
+     * Instance built from map with service (e.g Hive, HBase) properties
+     */
+    public static Keytabs fromServiceProperties(Map<String, String> keytabs) throws IOException {
+        Map<String, String> kts = keytabs.entrySet()
+                .stream()
+                .filter((e) -> e.getKey().contains("keytab"))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
                         Map.Entry::getValue));
 
         return new Keytabs(kts);

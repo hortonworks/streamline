@@ -59,8 +59,8 @@ public class KafkaBrokersInfo<T> {
 
         return  hostPort(hosts, port,
                 new Security(securityContext, new Authorizer(false),
-                        Principals.newInstance(kafkaEnvConfig),
-                        Keytabs.newInstance(kafkaEnvConfig)),
+                        Principals.fromAmbariConfig(kafkaEnvConfig),
+                        Keytabs.fromAmbariConfig(kafkaEnvConfig)),
                 KafkaBrokerListeners.newInstance(brokerConfig, component));
     }
 
@@ -82,8 +82,8 @@ public class KafkaBrokersInfo<T> {
 
         return brokerIds(brokerIds,
                 new Security(securityContext, new Authorizer(false),
-                        Principals.newInstance(kafkaEnvConfig),
-                        Keytabs.newInstance(kafkaEnvConfig)),
+                        Principals.fromAmbariConfig(kafkaEnvConfig),
+                        Keytabs.fromAmbariConfig(kafkaEnvConfig)),
                 KafkaBrokerListeners.newInstance(brokerConfig, component));
     }
 
@@ -92,8 +92,8 @@ public class KafkaBrokersInfo<T> {
 
         final KafkaBrokerListeners listeners = KafkaBrokerListeners.newInstance(brokerConfig, component);
         final Security security = new Security(securityContext, new Authorizer(false),
-                Principals.newInstance(kafkaEnvConfig),
-                Keytabs.newInstance(kafkaEnvConfig));
+                Principals.fromAmbariConfig(kafkaEnvConfig),
+                Keytabs.fromAmbariConfig(kafkaEnvConfig));
 
         return brokerInfo == null
                 ? new KafkaBrokersInfo<>(Collections.<String>emptyList(), security, listeners.getProtocolToHostsWithPort())

@@ -14,11 +14,14 @@ public class Principals {
         this.principals = principals;
     }
 
-    public static Principals newInstance(ServiceConfiguration serviceConfig) throws IOException {
-        return newInstance(serviceConfig.getConfigurationMap());
+    public static Principals fromAmbariConfig(ServiceConfiguration serviceConfig) throws IOException {
+        return fromAmbariConfig(serviceConfig.getConfigurationMap());
     }
 
-    public static Principals newInstance(Map<String, String> principals) throws IOException {
+    /**
+     * Instance built from map with Ambari configurations
+     */
+    public static Principals fromAmbariConfig(Map<String, String> principals) throws IOException {
         final Map<String, String> princs = principals.entrySet()
                 .stream()
                 .filter((e) -> e.getKey().contains("principal"))
@@ -27,6 +30,27 @@ public class Principals {
                             String key = e.getKey().split("principal")[0];
                             return key.substring(0, key.length()-1);
                         },
+                        (e) -> SecurityUtil.getUserName(e.getValue())));
+
+        return new Principals(princs);
+    }
+
+    /**
+     * Instance built from map with service (e.g Hive, HBase) properties
+     */
+    public static Principals fromServiceProperties(ServiceConfiguration serviceConfig) throws IOException {
+        return fromServiceProperties(serviceConfig.getConfigurationMap());
+    }
+
+    /**
+     * Instance built from map with service (e.g Hive, HBase) properties
+     */
+    public static Principals fromServiceProperties(Map<String, String> principals) throws IOException {
+        final Map<String, String> princs = principals.entrySet()
+                .stream()
+                .filter((e) -> e.getKey().contains("principal"))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
                         (e) -> SecurityUtil.getUserName(e.getValue())));
 
         return new Principals(princs);

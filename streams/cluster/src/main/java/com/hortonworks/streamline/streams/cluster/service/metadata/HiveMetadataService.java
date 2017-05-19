@@ -168,11 +168,11 @@ public class HiveMetadataService implements AutoCloseable {
     }
 
     public Keytabs getKeytabs() throws InterruptedException, IOException, PrivilegedActionException {
-        return executeSecure(() -> Keytabs.newInstance(hiveConf.getValByRegex(HIVE_METASTORE_KERBEROS_KEYTAB_FILE)));
+        return executeSecure(() -> Keytabs.fromServiceProperties(hiveConf.getValByRegex(HIVE_METASTORE_KERBEROS_KEYTAB_FILE)));
     }
 
     public Principals getPrincipals() throws InterruptedException, IOException, PrivilegedActionException {
-        return executeSecure(() -> Principals.newInstance(hiveConf.getValByRegex(HIVE_METASTORE_KERBEROS_PRINCIPAL)));
+        return executeSecure(() -> Principals.fromServiceProperties(hiveConf.getValByRegex(HIVE_METASTORE_KERBEROS_PRINCIPAL)));
     }
 
     @Override
