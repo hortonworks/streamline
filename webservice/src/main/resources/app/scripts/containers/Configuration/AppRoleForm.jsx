@@ -141,6 +141,16 @@ export default class AppRoleForm extends Component {
       dashboardPermission = dashboard ? dashboard.value : "None";
     return (
       <div className="user-role-form">
+        {
+        this.props.showFormLoading ?
+        <div className="col-sm-12">
+          <div className="loading-img text-center" style={{
+            marginTop: "100px"
+          }}>
+            <img src="styles/img/start-loader.gif" alt="loading"/>
+          </div>
+        </div>
+        :
         <div className="panel-registry-body">
           <div className="row">
           <div className="col-md-10 user-role-form-container">
@@ -240,6 +250,7 @@ export default class AppRoleForm extends Component {
           </div>
           </div>
         </div>
+        }
       </div>
     );
   }

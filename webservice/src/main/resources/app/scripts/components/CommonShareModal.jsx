@@ -15,7 +15,7 @@
 import React, {Component, PropTypes} from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
-import {OverlayTrigger, Popover} from 'react-bootstrap';
+import {OverlayTrigger, Popover,DropdownButton,MenuItem} from 'react-bootstrap';
 import {observer} from 'mobx-react';
 import Select from 'react-select';
 import UserRoleREST from '../rest/UserRoleREST';
@@ -32,10 +32,10 @@ export default class CommonShareModal extends Component{
   constructor(props){
     super(props);
     this.state = {
-      showLoading : false,
+      showLoading : true,
       accessControl : false,
       userList : [],
-      selectedUsers : [],
+      selectedUsers : '',
       selectedUserAccess : '',
       shareObj : props.shareObj || {},
       accessUserList : [{
@@ -51,6 +51,7 @@ export default class CommonShareModal extends Component{
       tempUserList : []
     };
     this.fetchData();
+    this.mapCanView  = [];
   }
 
   fetchData = () => {
@@ -65,16 +66,22 @@ export default class CommonShareModal extends Component{
             <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
         }
       });
-      let stateObj={},userACl=[];
+      let stateObj={},userACl=[],ownerObj={};
       userACl = results[0].entities;
       stateObj.selectedUserList = _.filter(userACl, (acl) => {
+        acl.owner === true ? ownerObj = acl : "";
         return acl.owner === false ;
       });
-      this.userOptions = results[1].entities;
+
+      const tempOptions = results[1].entities;
+
+      this.userOptions = _.filter(tempOptions, (opt) => {return opt.id !== ownerObj.sidId;});
 
       stateObj.tempUserList = _.filter(this.userOptions, (user) => {
         return _.find(stateObj.selectedUserList, (list) => {return list.sidId === user.id;});
       });
+
+      this.sharedUserList = _.cloneDeep(stateObj.tempUserList);
 
       stateObj.userList = this.filterUserOptions(this.userOptions, stateObj.tempUserList);
 
@@ -83,7 +90,10 @@ export default class CommonShareModal extends Component{
       stateObj.selectedUserAccess = this.state.accessList[0];
       if(stateObj.tempUserList.length){
         stateObj.accessUserList = this.generatUserAccessList(stateObj.selectedUserList, stateObj.tempUserList);
+      } else {
+        stateObj.accessUserList = [];
       }
+      stateObj.showLoading = false;
       this.setState(stateObj);
     });
   }
@@ -93,7 +103,7 @@ export default class CommonShareModal extends Component{
     _.map(tempList , (t_list) => {
       const index = _.findIndex(orgList, (org_list) => { return org_list.sidId === t_list.id;});
       if(index !== -1){
-        const permission = TopologyUtils.getPermission(orgList[index].permissions);
+        const permission = TopologyUtils.getPermission(orgList[index].permissions,orgList[index]);
         const p_string = permission ? "Can View" : "Can Edit";
         obj.push({
           user : t_list,
@@ -123,14 +133,15 @@ export default class CommonShareModal extends Component{
       }
     });
     const len = list.length - string.length;
-    const other = len > 2 ? `and ${len} others..` : '';
-    return `Shared with ${string.join(', ')} ${len > 2 ? other : ''}`;
+    const other = list > 2 ? `and ${len} others..    ` : '';
+    return `${list.length > 0 ? 'Shared with ' : ''} ${string.join(', ')} ${list > 2 ? other : ''}`;
   }
 
   handleUserChange = (arrList) => {
     let tempArr= [];
     const {selectedUserList} = this.state;
     let tempSelected = _.cloneDeep(this.state.tempUserList);
+    let tempAccessUser = _.cloneDeep(this.state.accessUserList);
     let newUserList = [];
     _.map(arrList, (a)=>{
       let o = _.findIndex(tempSelected, (t)=>{return t.id === a.id;});
@@ -138,9 +149,27 @@ export default class CommonShareModal extends Component{
         newUserList.push(a);
       }
     });
+    // check if the both has no value
+    if(selectedUserList.length === 0 && arrList.length === 0){
+      tempSelected = [];
+      tempAccessUser =[];
+    }
+    this.mapCanView = arrList;
     Array.prototype.push.apply(tempSelected, newUserList);
     let userList = this.filterUserOptions(this.userOptions, tempSelected);
-    let tempAccessUser = _.cloneDeep(this.state.accessUserList);
+    if(tempSelected.length > arrList.length && selectedUserList.length === 0){
+      _.map(arrList, (a)=>{
+        let o = _.findIndex(tempSelected, (t)=>{return t.id !== a.id;});
+        if(o !== -1){
+          userList.push(tempSelected[o]);
+          const ind = _.findIndex(tempAccessUser, (f) => {return f.user.id === tempSelected[o].id;});
+          if(ind !== -1){
+            tempAccessUser.splice(ind,1);
+            tempSelected.splice(o,1);
+          }
+        }
+      });
+    }
     _.map(newUserList, (arr,i) => {
       tempArr[i] === undefined
         ? tempArr[i] = {user : '',accessControl : { label : "Can Edit", value : 'Can Edit'}}
@@ -152,13 +181,19 @@ export default class CommonShareModal extends Component{
     this.setState({selectedUsers : arrList , accessUserList : mergeAccessList, tempUserList: tempSelected, userList: userList});
   }
 
-  handleUserCanEdit = (type,index,obj) => {
+  handleUserCanEdit = (type,key,index,obj) => {
     if(!_.isEmpty(obj)){
       let tempAccessUser = _.cloneDeep(this.state.accessUserList);
       if(type === "user"){
+        // _.map(this.mapCanView, (can) => {
+        //   const _index = _.findIndex(tempAccessUser, (t) => {return t.user.id === can.id;});
+        //   if(_index !== -1){
+        //
+        //   }
+        // });
         this.setState({selectedUserAccess : obj});
       } else {
-        tempAccessUser[index].accessControl = obj;
+        tempAccessUser[index].accessControl = {label : key , value : key};
         this.setState({accessUserList : tempAccessUser});
       }
     }
@@ -168,24 +203,17 @@ export default class CommonShareModal extends Component{
     this.setState({accessControl : true});
   }
 
-  validate = () => {
-    const {selectedUsers,accessUserList} = this.state;
-    let validate = [];
-    if(selectedUsers.length === 0 ){
-      validate.push(false);
-    }
-    _.map(accessUserList, (userList) => {
-      if(userList.user.name === ''){
-        validate.push(false);
+  splitPostUser = (accessList,selectList) => {
+    let postList=[],putList=[];
+    _.map(accessList, (acs,i) => {
+      const index = _.findIndex(selectList, (list) => { return list.name === acs.user.name;});
+      if(index !== -1){
+        postList.push(acs);
+      } else {
+        putList.push(acs);
       }
     });
-    return validate.length === 0 ? true : false;
-  }
-
-  splitPostUser = (accessList,selectList) => {
-    return _.filter(accessList, (acs) => {
-      return _.find(selectList, (list) => { return list.name === acs.user.name;});
-    });
+    return {postList,putList};
   }
 
   splitPustUser = (accessList,selectList) => {
@@ -228,22 +256,42 @@ export default class CommonShareModal extends Component{
   }
 
   handleSave = () => {
-    let postData = [],putData=[];
+    let postData=[],putData=[],deleteData=[],deletedObjArr=[];
     const {selectedUsers,accessUserList,selectedUserList} = this.state;
     // this postObjArr is for POST
-    const postObjArr = this.splitPostUser(accessUserList,selectedUsers);
+    let {postList,putList} = this.splitPostUser(accessUserList,selectedUsers);
 
-    const putObjArr = this.splitPustUser(accessUserList,selectedUsers);
+    let postObjArr = postList;
+    let putObjArr = putList;
 
     if(postObjArr.length){
-      postData = this.generetOutPutObj(postObjArr,'post');
+      const tempPost = _.cloneDeep(postObjArr);
+      _.map(tempPost, (pObj,i) => {
+        const index = _.findIndex(selectedUserList, (list) => { return list.sidId === pObj.user.id;});
+        if(index  !== -1){
+          putObjArr.push(pObj);
+          postObjArr.splice(i,1);
+        }
+      });
+      postObjArr.length > 0
+        ? postData = this.generetOutPutObj(postObjArr,'post')
+        : '';
     }
+
     if(putObjArr.length){
-      const obj =[];
       _.map(selectedUserList, (list) => {
-        // const index = _.findIndex
+        const index = _.findIndex(putObjArr, (pObj) => { return pObj.user.id === list.sidId; });
+        if(index === -1){
+          const dObj = _.find(this.sharedUserList, (sharedUser) => { return sharedUser.id === list.sidId;});
+          const data = this.generatUserAccessList([list],[dObj]);
+          deletedObjArr.push(data[0]);
+        }
       });
       putData = this.generetOutPutObj(putObjArr,'put');
+    }
+
+    if(deletedObjArr.length){
+      deleteData = this.generetOutPutObj(deletedObjArr,'delete');
     }
 
     let promiseArr=[];
@@ -254,6 +302,10 @@ export default class CommonShareModal extends Component{
 
     _.map(putData , (d) => {
       promiseArr.push(UserRoleREST.putACL(d.id, {body : JSON.stringify(d)}));
+    });
+
+    _.map(deleteData, (dLData) => {
+      promiseArr.push(UserRoleREST.deleteACL(dLData.id, {body : JSON.stringify(dLData)}));
     });
 
     return Promise.all(promiseArr);
@@ -282,6 +334,7 @@ export default class CommonShareModal extends Component{
     this.setState({accessUserList : tempAccessUser, selectedUsers : tempSelectedUser, tempUserList:tempUserList, userList: userList});
   }
 
+
   render(){
     const {showLoading,accessControl,userList,selectedUsers,selectedUserAccess,accessList,accessUserList,showUserCaption} = this.state;
 
@@ -299,21 +352,20 @@ export default class CommonShareModal extends Component{
                 <div className="row">
                   <div className="col-sm-12">
                     <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Invite users</Popover>}>
-                      <label>INVITE USERS
-                      </label>
+                      <label>INVITE USERS</label>
                     </OverlayTrigger>
                   </div>
                 </div>
                 <div className="row">
                   <div className="col-sm-9">
-                    <Select value={selectedUsers} options={userList} onChange={this.handleUserChange.bind(this)} multi={true} required={true}  valueKey="name" labelKey="name"  clearable={false}/>
+                    <Select placeholder="Enter Names" value={selectedUsers} options={userList} onChange={this.handleUserChange.bind(this)} multi={true} required={true}  valueKey="name" labelKey="name"  clearable={false} />
                   </div>
                   <div className="col-sm-3">
-                    <Select value={selectedUserAccess} options={accessList}  onChange={this.handleUserCanEdit.bind(this,'user',null)} required={true}  valueKey="value" labelKey="value" clearable={false} />
+                    <Select value={selectedUserAccess} options={accessList}  onChange={this.handleUserCanEdit.bind(this,'user',null,null)} required={true}  valueKey="value" labelKey="value" clearable={false} />
                   </div>
                   {
                     accessUserList.length !== 0 && !accessControl
-                    ? <span style={{marginLeft:10,fontSize:12}}>
+                    ? <span style={{marginLeft:10,fontSize:13}}>
                         {showUserCaption} <a href="javascript:void(0)" onClick={this.changeAccess.bind(this)}>Change Access</a>
                       </span>
                     : ''
@@ -326,10 +378,7 @@ export default class CommonShareModal extends Component{
                     <div className="form-group">
                         <div className="row">
                           <div className="col-sm-12">
-                            <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Access control</Popover>}>
-                              <label>ACCESS CONTROL
-                              </label>
-                            </OverlayTrigger>
+                            <h6>ACCESS CONTROL</h6>
                           </div>
                         </div>
                       </div>
@@ -338,13 +387,20 @@ export default class CommonShareModal extends Component{
                           return  <div key={i} className="form-group">
                                     <div className="row">
                                       <div className="col-sm-8">
-                                        <input type="text" className="form-control" disabled={true} value={auList.user.name}disabled={true} />
+                                        <label style={{textTransform : "none", fontSize : 14}}>{auList.user.name}</label>
                                       </div>
-                                      <div className="col-sm-3">
-                                        <Select value={auList.accessControl} options={accessList} onChange={this.handleUserCanEdit.bind(this ,'userAccess',i)} required={true}  valueKey="label" labelKey="label"  clearable={false} />
+                                      <div className="col-sm-3 accessControl">
+                                        <DropdownButton title={auList.accessControl.value}  id="accessControl" className="dropdown-toggle" bsStyle="link">
+                                          <MenuItem active={auList.accessControl.value === "Can Edit" ? true : false} title="Can Edit" onClick={this.handleUserCanEdit.bind(this ,'userAccess','Can Edit',i,auList)}>
+                                            Can Edit
+                                          </MenuItem>
+                                          <MenuItem active={auList.accessControl.value === "Can View" ? true : false} title="Can View" onClick={this.handleUserCanEdit.bind(this ,'userAccess','Can View',i,auList)}>
+                                            Can View
+                                          </MenuItem>
+                                        </DropdownButton>
                                       </div>
                                       <div className="col-sm-1">
-                                        <a href="javascript:void(0)" onClick={this.deleteAccessUserControl.bind(this, i)}><i className="fa fa-times"></i></a>
+                                        <a href="javascript:void(0)" className="crossIcon" onClick={this.deleteAccessUserControl.bind(this, i)}><i className="fa fa-times"></i></a>
                                       </div>
                                     </div>
                                   </div>;

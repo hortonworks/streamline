@@ -304,6 +304,16 @@ export default class UserForm extends Component {
     let {appOptionsArr, serviceOptionsArr, environmentOptionsArr} = this.getOptionsArr();
     return (
       <div className="user-role-form">
+        {
+        this.props.showFormLoading ?
+        <div className="col-sm-12">
+          <div className="loading-img text-center" style={{
+            marginTop: "100px"
+          }}>
+            <img src="styles/img/start-loader.gif" alt="loading"/>
+          </div>
+        </div>
+        :
         <div className="panel-registry-body">
           <div className="row">
           <div className="col-md-10 user-role-form-container">
@@ -334,7 +344,7 @@ export default class UserForm extends Component {
                   <div className="col-md-5 text-center">
                     {aclObj.owner ? "Is Owner" :
                     (
-                      <DropdownButton title={permissionTitle} id="user-form-dropdown">
+                      <DropdownButton title={permissionTitle} id="user-form-dropdown" bsStyle="link">
                         <MenuItem active={permissionTitle === "Can Edit" ? true :false} onClick={this.changeAppPermission.bind(this, aclObj, key, 'edit')}>
                           &nbsp;Can Edit
                         </MenuItem>
@@ -345,7 +355,7 @@ export default class UserForm extends Component {
                     )
                     }
                   </div>
-                  <div className="col-md-2"><a href="javascript:void(0);" onClick={this.deleteAppPermission.bind(this, aclObj, key)}><i className="fa fa-close pull-right"></i></a></div>
+                  <div className="col-md-2"><a href="javascript:void(0);" className="crossIcon" onClick={this.deleteAppPermission.bind(this, aclObj, key)}><i className="fa fa-close pull-right"></i></a></div>
                 </div>
                 </div>,
                 <hr/>]
@@ -370,7 +380,7 @@ export default class UserForm extends Component {
                       </MenuItem>
                     </DropdownButton>
                   </div>
-                  <div className="col-md-2"><a href="javascript:void(0);" onClick={this.deleteAppPermission.bind(this, aclObj, key)}><i className="fa fa-close pull-right"></i></a></div>
+                  <div className="col-md-2"><a href="javascript:void(0);" className="crossIcon" onClick={this.deleteAppPermission.bind(this, aclObj, key)}><i className="fa fa-close pull-right"></i></a></div>
                 </div>
                 </div>,
                 <hr/>]
@@ -413,7 +423,7 @@ export default class UserForm extends Component {
                     )
                   }
                   </div>
-                  <div className="col-md-2"><a href="javascript:void(0);" onClick={this.deleteServicePermission.bind(this, aclObj, key)}><i className="fa fa-close pull-right"></i></a></div>
+                  <div className="col-md-2"><a href="javascript:void(0);" className="crossIcon" onClick={this.deleteServicePermission.bind(this, aclObj, key)}><i className="fa fa-close pull-right"></i></a></div>
                 </div>
                 </div>,
                 <hr/>]
@@ -438,7 +448,7 @@ export default class UserForm extends Component {
                       </MenuItem>
                     </DropdownButton>
                   </div>
-                  <div className="col-md-2"><a href="javascript:void(0);" onClick={this.deleteServicePermission.bind(this, aclObj, key)}><i className="fa fa-close pull-right"></i></a></div>
+                  <div className="col-md-2"><a href="javascript:void(0);" className="crossIcon" onClick={this.deleteServicePermission.bind(this, aclObj, key)}><i className="fa fa-close pull-right"></i></a></div>
                 </div>
                 </div>,
                 <hr/>]
@@ -481,7 +491,7 @@ export default class UserForm extends Component {
                     )
                   }
                   </div>
-                  <div className="col-md-2"><a href="javascript:void(0);" onClick={this.deleteEnvironmentPermission.bind(this, aclObj, key)}><i className="fa fa-close pull-right"></i></a></div>
+                  <div className="col-md-2"><a href="javascript:void(0);" className="crossIcon" onClick={this.deleteEnvironmentPermission.bind(this, aclObj, key)}><i className="fa fa-close pull-right"></i></a></div>
                 </div>
                 </div>,
                 <hr/>]
@@ -506,7 +516,7 @@ export default class UserForm extends Component {
                       </MenuItem>
                     </DropdownButton>
                   </div>
-                  <div className="col-md-2"><a href="javascript:void(0);" onClick={this.deleteEnvironmentPermission.bind(this, aclObj, key)}><i className="fa fa-close pull-right"></i></a></div>
+                  <div className="col-md-2"><a href="javascript:void(0);" className="crossIcon" onClick={this.deleteEnvironmentPermission.bind(this, aclObj, key)}><i className="fa fa-close pull-right"></i></a></div>
                 </div>
                 </div>,
                 <hr/>]
@@ -525,6 +535,7 @@ export default class UserForm extends Component {
           </div>
           </div>
         </div>
+        }
       </div>
     );
   }

@@ -128,7 +128,7 @@ class CustomProcessorForm extends Component {
           jarFileName,
           inputSchema,
           outputStreamToSchema,
-          showCodeMirror : false,
+          showCodeMirror : true,
           expandCodemirror : false
         };
         obj.topologyComponentUISpecification = topologyComponentUISpecification.fields;

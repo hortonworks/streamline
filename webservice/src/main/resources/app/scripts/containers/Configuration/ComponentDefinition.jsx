@@ -108,9 +108,8 @@ export default class ComponentDefinition extends Component {
               >
               {
                 fetchLoader
-                ?  <CommonLoaderSign
-                      imgName={"default"}
-                  />
+                ? [<div key={"1"} className="loader-overlay"></div>,
+                  <CommonLoaderSign key={"2"} imgName={"default"}/>]
                 : <div>
                   {
                     ((filterValue && filteredEntities.length === 0) || filteredEntities !== 0)

@@ -71,7 +71,8 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
                 .forEach(name -> {
                     User user = new User();
                     user.setName(name);
-                    user.setEmail(name + "@auto-generated");
+                    user.setEmail(name + "@auto-generated.com");
+                    user.setMetadata("\"metadata\":\"{\\\"colorCode\\\":\\\"#8261be\\\",\\\"colorLabel\\\":\\\"purple\\\",\\\"icon\\\":\\\"gears\\\"]}\"");
                     User addedUser = catalogService.addUser(user);
                     LOG.info("Added admin user entry: {}", addedUser);
                 });

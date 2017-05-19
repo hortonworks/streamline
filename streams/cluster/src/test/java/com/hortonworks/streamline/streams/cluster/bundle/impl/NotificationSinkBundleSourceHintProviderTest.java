@@ -58,7 +58,7 @@ public class NotificationSinkBundleSourceHintProviderTest {
 
         provider.init(environmentService);
 
-        Map<String, Object> hints = provider.getHintsOnCluster(cluster);
+        Map<String, Object> hints = provider.getHintsOnCluster(cluster, null, null);
         Assert.assertNotNull(hints);
         Assert.assertEquals("svr1", hints.get(NotificationSinkBundleHintProvider.FIELD_NAME_HOST));
         Assert.assertEquals("1111", hints.get(NotificationSinkBundleHintProvider.FIELD_NAME_PORT));

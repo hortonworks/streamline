@@ -55,6 +55,40 @@
             "defaultValue": "hdfs://localhost:9000/tmp/hbase"
           }
         ]
+      },
+      {
+        "uiName": "Clusters Security Config",
+        "fieldName": "clustersSecurityConfig",
+        "tooltip": "Clusters Security Configuration",
+        "isOptional": true,
+        "type": "array.object",
+        "defaultValue": null,
+        "fields": [
+          {
+            "uiName": "Cluster Name",
+            "fieldName": "clusterName",
+            "tooltip": "Name of the cluster (same as service pool)",
+            "isOptional": false,
+            "type": "string",
+            "defaultValue": null
+          },
+          {
+            "uiName": "Principal",
+            "fieldName": "principal",
+            "tooltip": "The principal for auto delegation token",
+            "isOptional": false,
+            "type": "string",
+            "defaultValue": null
+          },
+          {
+            "uiName": "Keytab Path",
+            "fieldName": "keytabPath",
+            "tooltip": "The path of keytab file in Nimbus node to log in with provided principal",
+            "isOptional": false,
+            "type": "string",
+            "defaultValue": null
+          }
+        ]
       }
     ]
   }

@@ -52,6 +52,7 @@ export default class UsersListingContainer extends Component {
       servicePoolOptions: [],
       environmentOptions: []
     };
+    this.showDefault = true;
   }
   componentWillMount() {
     this.fetchData();
@@ -142,8 +143,8 @@ export default class UsersListingContainer extends Component {
             });
           });
           var defaultEntity = userEntities[0];
-          this.setState({users: userEntities, fetchLoader: false, roles: roleOptions, applicationOptions: applicationOptions, showUserForm: true,
-            servicePoolOptions: servicePoolOptions, environmentOptions: environmentOptions, editData: defaultEntity, activePanel: defaultEntity.id});
+          this.setState({users: userEntities, fetchLoader: false, roles: roleOptions, applicationOptions: applicationOptions, showUserForm: this.showDefault ? true : false,
+            servicePoolOptions: servicePoolOptions, environmentOptions: environmentOptions, editData: this.showDefault ? defaultEntity : {}, activePanel: this.showDefault ? defaultEntity.id : ''});
         }
       });
   }
@@ -191,6 +192,8 @@ export default class UsersListingContainer extends Component {
 
   handleSave = () => {
     if (this.refs.UserForm.validateData()) {
+      this.setState({showFormLoading: true});
+      this.showDefault = false;
       this.refs.UserForm.handleSave()
         .then((data)=>{
           if(data.responseMessage !== undefined){
@@ -210,7 +213,7 @@ export default class UsersListingContainer extends Component {
                 } else {
                   FSReactToastr.success(<strong>User added successfully</strong>);
                 }
-                this.setState({showUserForm: false, editData: {}});
+                this.setState({showUserForm: false, editData: {}, showFormLoading: false});
                 this.fetchData();
               });
           }
@@ -238,6 +241,9 @@ export default class UsersListingContainer extends Component {
       <button type="button" onClick={this.handleAdd} href="javascript:void(0);" className="hb lg success pull-right"><i className="fa fa-plus"></i></button>
       </div>
       <div className="row">
+        {this.state.showFormLoading || fetchLoader?
+          <div className="loader-overlay"></div> : ''
+        }
         {fetchLoader ?
         <div className="col-sm-12">
           <div className="loading-img text-center">
@@ -313,6 +319,7 @@ export default class UsersListingContainer extends Component {
           saveCallback={this.handleSave.bind(this)}
           cancelCallback={this.handleCancel.bind(this)}
           deleteCallback={this.handleDeleteUser.bind(this, editData.id)}
+          showFormLoading={this.state.showFormLoading}
         />
         : ''
       }

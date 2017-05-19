@@ -1100,20 +1100,29 @@ const findSingleAclObj = (id,aclArr) => {
 
 const getPermissionAndObj = (topologyId,arr) => {
   const aclObject =  findSingleAclObj(topologyId ,arr);
-  const permission = getPermission(aclObject.permissions);
+  const permission = getPermission(aclObject.permissions,aclObject);
   return {aclObject , permission};
 };
 
-const getPermission = (permissionArray) => {
+const getPermission = (permissionArray,obj) => {
   if(permissionArray === undefined){
     return ;
   }
   const tempPermission = permissionArray.toString();
   return tempPermission.includes('WRITE')
-  ? false
+  ? obj.owner === true
+    ? false
+    : true
   : tempPermission.includes('READ')
     ? true
     : true;
+};
+
+const checkSharingPermission = function(obj){
+  if(obj === undefined){
+    return;
+  }
+  return  obj.owner === true ? true : false;
 };
 
 export default {
@@ -1154,5 +1163,6 @@ export default {
   spliceDeleteNodeArr,
   findSingleAclObj,
   getPermission,
-  getPermissionAndObj
+  getPermissionAndObj,
+  checkSharingPermission
 };

@@ -88,7 +88,7 @@ public class KafkaBundleHintProviderTest {
         cluster.setId(1L);
         cluster.setName("cluster1");
 
-        Map<String, Object> hints = provider.getHintsOnCluster(cluster);
+        Map<String, Object> hints = provider.getHintsOnCluster(cluster, null, null);
         Assert.assertNotNull(hints);
         Assert.assertEquals(5, hints.size());
         Assert.assertEquals(topics, hints.get(KafkaBundleHintProvider.FIELD_NAME_TOPIC));
@@ -125,7 +125,7 @@ public class KafkaBundleHintProviderTest {
         cluster.setId(1L);
         cluster.setName("cluster1");
 
-        Map<String, Object> hints = provider.getHintsOnCluster(cluster);
+        Map<String, Object> hints = provider.getHintsOnCluster(cluster, null, null);
         Assert.assertNotNull(hints);
         Assert.assertEquals(3, hints.size());
         Assert.assertEquals(topics, hints.get(KafkaBundleHintProvider.FIELD_NAME_TOPIC));

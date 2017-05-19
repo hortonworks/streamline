@@ -21,6 +21,8 @@ import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping
 import com.hortonworks.streamline.streams.catalog.exception.ClusterNotFoundException;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 
+import javax.security.auth.Subject;
+import javax.ws.rs.core.SecurityContext;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +38,7 @@ public abstract class AbstractBundleHintProvider implements ComponentBundleHintP
     }
 
     @Override
-    public Map<Long, BundleHintsResponse> provide(Namespace namespace) {
+    public Map<Long, BundleHintsResponse> provide(Namespace namespace, SecurityContext securityContext, Subject subject) {
         Map<Long, BundleHintsResponse> hintMap = new HashMap<>();
 
         Collection<NamespaceServiceClusterMapping> serviceMappings = environmentService.listServiceClusterMapping(
@@ -48,14 +50,14 @@ public abstract class AbstractBundleHintProvider implements ComponentBundleHintP
                 throw new RuntimeException(new ClusterNotFoundException(clusterId));
             }
 
-            BundleHintsResponse response = new BundleHintsResponse(cluster, getHintsOnCluster(cluster));
+            BundleHintsResponse response = new BundleHintsResponse(cluster, getHintsOnCluster(cluster, securityContext, subject));
             hintMap.put(clusterId, response);
         }
 
         return hintMap;
     }
 
-    public abstract Map<String, Object> getHintsOnCluster(Cluster cluster);
+    public abstract Map<String, Object> getHintsOnCluster(Cluster cluster, SecurityContext securityContext, Subject subject);
 
     public abstract String getServiceName();
 }

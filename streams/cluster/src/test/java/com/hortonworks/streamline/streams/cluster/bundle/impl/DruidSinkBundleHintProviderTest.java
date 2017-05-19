@@ -55,7 +55,7 @@ public class DruidSinkBundleHintProviderTest {
 
         provider.init(environmentService);
 
-        Map<String, Object> hints = provider.getHintsOnCluster(cluster);
+        Map<String, Object> hints = provider.getHintsOnCluster(cluster, null, null);
         Assert.assertNotNull(hints);
         Assert.assertEquals("svr1:2181,svr2:2181", hints.get(DruidSinkBundleHintProvider.FIELD_NAME_ZK_CONNECT));
         Assert.assertEquals("druid/overlord", hints.get(DruidSinkBundleHintProvider.FIELD_NAME_INDEX_SERVICE));

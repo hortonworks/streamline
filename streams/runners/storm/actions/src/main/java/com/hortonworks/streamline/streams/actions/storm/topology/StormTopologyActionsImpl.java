@@ -16,8 +16,17 @@
 package com.hortonworks.streamline.streams.actions.storm.topology;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.exception.service.exception.request.TopologyAlreadyExistsOnCluster;
 import com.hortonworks.streamline.streams.actions.TopologyActionContext;
+import com.hortonworks.streamline.streams.cluster.Constants;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+import com.hortonworks.streamline.streams.layout.component.InputComponent;
+import com.hortonworks.streamline.streams.layout.component.OutputComponent;
+import com.hortonworks.streamline.streams.layout.component.impl.HBaseSink;
+import com.hortonworks.streamline.streams.layout.component.impl.HdfsSink;
+import com.hortonworks.streamline.streams.layout.component.impl.HdfsSource;
+import com.hortonworks.streamline.streams.layout.component.impl.HiveSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
@@ -56,6 +65,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +92,28 @@ public class StormTopologyActionsImpl implements TopologyActions {
     private static final String NIMBUS_SEEDS = "nimbus.seeds";
     private static final String NIMBUS_PORT = "nimbus.port";
 
+    public static final String STREAMLINE_TOPOLOGY_CONFIG_CLUSTER_SECURITY_CONFIG = "clustersSecurityConfig";
+    public static final String STREAMLINE_TOPOLOGY_CONFIG_CLUSTER_NAME = "clusterName";
+    public static final String STREAMLINE_TOPOLOGY_CONFIG_PRINCIPAL = "principal";
+    public static final String STREAMLINE_TOPOLOGY_CONFIG_KEYTAB_PATH = "keytabPath";
+
+    public static final String STORM_TOPOLOGY_CONFIG_AUTO_CREDENTIALS = "topology.auto-credentials";
+    public static final String TOPOLOGY_CONFIG_KEY_CLUSTER_KEY_PREFIX_HDFS = "hdfs_";
+    public static final String TOPOLOGY_CONFIG_KEY_CLUSTER_KEY_PREFIX_HBASE = "hbase_";
+    public static final String TOPOLOGY_CONFIG_KEY_CLUSTER_KEY_PREFIX_HIVE = "hive_";
+    public static final String TOPOLOGY_CONFIG_KEY_HDFS_KEYTAB_FILE = "hdfs.keytab.file";
+    public static final String TOPOLOGY_CONFIG_KEY_HBASE_KEYTAB_FILE = "hbase.keytab.file";
+    public static final String TOPOLOGY_CONFIG_KEY_HIVE_KEYTAB_FILE = "hive.keytab.file";
+    public static final String TOPOLOGY_CONFIG_KEY_HDFS_KERBEROS_PRINCIPAL = "hdfs.kerberos.principal";
+    public static final String TOPOLOGY_CONFIG_KEY_HBASE_KERBEROS_PRINCIPAL = "hbase.kerberos.principal";
+    public static final String TOPOLOGY_CONFIG_KEY_HIVE_KERBEROS_PRINCIPAL = "hive.kerberos.principal";
+    public static final String TOPOLOGY_CONFIG_KEY_HDFS_CREDENTIALS_CONFIG_KEYS = "hdfsCredentialsConfigKeys";
+    public static final String TOPOLOGY_CONFIG_KEY_HBASE_CREDENTIALS_CONFIG_KEYS = "hbaseCredentialsConfigKeys";
+    public static final String TOPOLOGY_CONFIG_KEY_HIVE_CREDENTIALS_CONFIG_KEYS = "hiveCredentialsConfigKeys";
+    public static final String TOPOLOGY_AUTO_CREDENTIAL_CLASSNAME_HDFS = "org.apache.storm.hdfs.security.AutoHDFS";
+    public static final String TOPOLOGY_AUTO_CREDENTIAL_CLASSNAME_HBASE = "org.apache.storm.hbase.security.AutoHBase";
+    public static final String TOPOLOGY_AUTO_CREDENTIAL_CLASSNAME_HIVE = "org.apache.storm.hive.security.AutoHive";
+
     private String stormArtifactsLocation = "/tmp/storm-artifacts/";
     private String stormCliPath = "storm";
     private String stormJarLocation;
@@ -94,6 +127,8 @@ public class StormTopologyActionsImpl implements TopologyActions {
     private String thriftTransport;
     private Optional<String> jaasFilePath;
     private String principalToLocal;
+
+    private AutoCredsServiceConfigurationReader serviceConfigurationReader;
 
     public StormTopologyActionsImpl() {
     }
@@ -127,21 +162,22 @@ public class StormTopologyActionsImpl implements TopologyActions {
                 javaJarCommand = "jar";
             }
 
-            String stormApiRootUrl = null;
-            Subject subject = null;
-            if (conf != null) {
-                stormApiRootUrl = (String) conf.get(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY);
-                subject = (Subject) conf.get(TopologyLayoutConstants.SUBJECT_OBJECT);
-            }
+            String stormApiRootUrl = (String) conf.get(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY);
+            Subject subject = (Subject) conf.get(TopologyLayoutConstants.SUBJECT_OBJECT);
             Client restClient = ClientBuilder.newClient(new ClientConfig());
+
             this.client = new StormRestAPIClient(restClient, stormApiRootUrl, subject);
             nimbusSeeds = (String) conf.get(NIMBUS_SEEDS);
             nimbusPort = Integer.valueOf((String) conf.get(NIMBUS_PORT));
+
+            setupSecuredStormCluster(conf);
+
+            EnvironmentService environmentService = (EnvironmentService) conf.get(TopologyLayoutConstants.ENVIRONMENT_SERVICE_OBJECT);
+            Long namespaceId = (Long) conf.get(TopologyLayoutConstants.NAMESPACE_ID);
+            this.serviceConfigurationReader = new AutoCredsServiceConfigurationReader(environmentService, namespaceId);
         }
         File f = new File (stormArtifactsLocation);
         f.mkdirs();
-
-        setupSecuredStormCluster(conf);
     }
 
     private void setupSecuredStormCluster(Map<String, Object> conf) {
@@ -467,12 +503,15 @@ public class StormTopologyActionsImpl implements TopologyActions {
             yamlMap.put(StormTopologyLayoutConstants.YAML_KEY_NAME, generateStormTopologyName(topology));
             TopologyDag topologyDag = topology.getTopologyDag();
             LOG.debug("Initial Topology config {}", topology.getConfig());
-            StormTopologyFluxGenerator fluxGenerator = new StormTopologyFluxGenerator(topology, conf, getExtraJarsLocation(topology));
+            StormTopologyFluxGenerator fluxGenerator = new StormTopologyFluxGenerator(topology, conf,
+                    getExtraJarsLocation(topology));
             topologyDag.traverse(fluxGenerator);
             for (Map.Entry<String, Map<String, Object>> entry: fluxGenerator.getYamlKeysAndComponents()) {
                 addComponentToCollection(yamlMap, entry.getValue(), entry.getKey());
             }
             Config topologyConfig = fluxGenerator.getTopologyConfig();
+            putAutoTokenDelegationConfig(topologyConfig, topologyDag);
+
             LOG.debug("Final Topology config {}", topologyConfig);
             addTopologyConfig(yamlMap, topologyConfig.getProperties());
             DumperOptions options = new DumperOptions();
@@ -487,6 +526,140 @@ public class StormTopologyActionsImpl implements TopologyActions {
             if (fileWriter != null) {
                 fileWriter.close();
             }
+        }
+    }
+
+    private void putAutoTokenDelegationConfig(Config topologyConfig, TopologyDag topologyDag) {
+        Optional<?> securityConfigsOptional = topologyConfig.getAnyOptional(STREAMLINE_TOPOLOGY_CONFIG_CLUSTER_SECURITY_CONFIG);
+        Map<String, Map<String, String>> clusterToConfiguration = new HashMap<>();
+        if (securityConfigsOptional.isPresent()) {
+            List<?> securityConfigurations = (List<?>) securityConfigsOptional.get();
+            securityConfigurations.forEach(securityConfig -> {
+                Map<String, Object> sc = (Map<String, Object>) securityConfig;
+                String clusterName = (String) sc.get(STREAMLINE_TOPOLOGY_CONFIG_CLUSTER_NAME);
+
+                Map<String, String> configurationForCluster = new HashMap<>();
+                configurationForCluster.put(STREAMLINE_TOPOLOGY_CONFIG_PRINCIPAL, (String) sc.get(STREAMLINE_TOPOLOGY_CONFIG_PRINCIPAL));
+                configurationForCluster.put(STREAMLINE_TOPOLOGY_CONFIG_KEYTAB_PATH, (String) sc.get(STREAMLINE_TOPOLOGY_CONFIG_KEYTAB_PATH));
+                clusterToConfiguration.put(clusterName, configurationForCluster);
+            });
+        }
+
+        if (clusterToConfiguration.isEmpty()) {
+            // it will function only when user input keytab path and principal
+            return;
+        }
+
+        // Hive also needs HDFS auto token delegation, so HiveSink is added to the checklist
+        boolean hdfsCredentialNecessary = checkTopologyContainingServiceRelatedComponent(topologyDag,
+                Collections.singletonList(HdfsSource.class),
+                Lists.newArrayList(HdfsSink.class, HiveSink.class));
+
+        boolean hbaseCredentialNecessary = checkTopologyContainingServiceRelatedComponent(topologyDag,
+                Collections.emptyList(),
+                Collections.singletonList(HBaseSink.class));
+
+        boolean hiveCredentialNecessary = checkTopologyContainingServiceRelatedComponent(topologyDag,
+                Collections.emptyList(),
+                Collections.singletonList(HiveSink.class));
+
+        if (hdfsCredentialNecessary) {
+            putServiceSpecificCredentialConfig(topologyConfig, clusterToConfiguration,
+                    Constants.HDFS.SERVICE_NAME,
+                    Collections.emptyList(),
+                    TOPOLOGY_CONFIG_KEY_CLUSTER_KEY_PREFIX_HDFS, TOPOLOGY_CONFIG_KEY_HDFS_KEYTAB_FILE,
+                    TOPOLOGY_CONFIG_KEY_HDFS_KERBEROS_PRINCIPAL,
+                    TOPOLOGY_CONFIG_KEY_HDFS_CREDENTIALS_CONFIG_KEYS, TOPOLOGY_AUTO_CREDENTIAL_CLASSNAME_HDFS);
+        }
+
+        if (hbaseCredentialNecessary) {
+            putServiceSpecificCredentialConfig(topologyConfig, clusterToConfiguration,
+                    Constants.HBase.SERVICE_NAME,
+                    Collections.singletonList(Constants.HDFS.SERVICE_NAME),
+                    TOPOLOGY_CONFIG_KEY_CLUSTER_KEY_PREFIX_HBASE, TOPOLOGY_CONFIG_KEY_HBASE_KEYTAB_FILE,
+                    TOPOLOGY_CONFIG_KEY_HBASE_KERBEROS_PRINCIPAL,
+                    TOPOLOGY_CONFIG_KEY_HBASE_CREDENTIALS_CONFIG_KEYS, TOPOLOGY_AUTO_CREDENTIAL_CLASSNAME_HBASE);
+        }
+
+        if (hiveCredentialNecessary) {
+            putServiceSpecificCredentialConfig(topologyConfig, clusterToConfiguration,
+                    Constants.Hive.SERVICE_NAME,
+                    Collections.singletonList(Constants.HDFS.SERVICE_NAME),
+                    TOPOLOGY_CONFIG_KEY_CLUSTER_KEY_PREFIX_HIVE, TOPOLOGY_CONFIG_KEY_HIVE_KEYTAB_FILE,
+                    TOPOLOGY_CONFIG_KEY_HIVE_KERBEROS_PRINCIPAL,
+                    TOPOLOGY_CONFIG_KEY_HIVE_CREDENTIALS_CONFIG_KEYS, TOPOLOGY_AUTO_CREDENTIAL_CLASSNAME_HIVE);
+        }
+    }
+
+    public boolean checkTopologyContainingServiceRelatedComponent(TopologyDag topologyDag,
+                                                                  List<Class<?>> outputComponentClasses,
+                                                                  List<Class<?>> inputComponentClasses) {
+        boolean componentExists = false;
+        for (OutputComponent outputComponent : topologyDag.getOutputComponents()) {
+            for (Class<?> clazz : outputComponentClasses) {
+                if (outputComponent.getClass().isAssignableFrom(clazz)) {
+                    componentExists = true;
+                    break;
+                }
+            }
+        }
+
+        if (!componentExists) {
+            for (InputComponent inputComponent : topologyDag.getInputComponents()) {
+                for (Class<?> clazz : inputComponentClasses) {
+                    if (inputComponent.getClass().isAssignableFrom(clazz)) {
+                        componentExists = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return componentExists;
+    }
+
+    private void putServiceSpecificCredentialConfig(Config topologyConfig,
+                                                    Map<String, Map<String, String>> clusterToConfiguration,
+                                                    String serviceName,
+                                                    List<String> dependentServiceNames,
+                                                    String clusterKeyPrefix,
+                                                    String keytabPathKeyName, String principalKeyName,
+                                                    String credentialConfigKeyName,
+                                                    String topologyAutoCredentialClassName) {
+        List<String> clusterKeys = new ArrayList<>();
+
+        clusterToConfiguration.keySet()
+                .forEach(clusterName -> {
+                    Map<String, String> conf = serviceConfigurationReader.read(clusterName, serviceName);
+                    // add only when such (cluster, service) pair is available for the namespace
+                    if (!conf.isEmpty()) {
+                        Map<String, String> confForToken = clusterToConfiguration.get(clusterName);
+                        conf.put(principalKeyName, confForToken.get(STREAMLINE_TOPOLOGY_CONFIG_PRINCIPAL));
+                        conf.put(keytabPathKeyName, confForToken.get(STREAMLINE_TOPOLOGY_CONFIG_KEYTAB_PATH));
+
+                        // also includes all configs for dependent services
+                        // note that such services in cluster should also be associated to the namespace
+                        Map<String, String> clusterConf = new HashMap<>();
+                        dependentServiceNames.forEach(depSvcName -> {
+                            Map<String, String> depConf = serviceConfigurationReader.read(clusterName, depSvcName);
+                            clusterConf.putAll(depConf);
+                        });
+                        clusterConf.putAll(conf);
+
+                        String clusterKey = clusterKeyPrefix + clusterName;
+                        topologyConfig.put(clusterKey, clusterConf);
+                        clusterKeys.add(clusterKey);
+                    }
+                });
+
+        topologyConfig.put(credentialConfigKeyName, clusterKeys);
+
+        Optional<List<String>> autoCredentialsOptional = topologyConfig.getAnyOptional(STORM_TOPOLOGY_CONFIG_AUTO_CREDENTIALS);
+        if (autoCredentialsOptional.isPresent()) {
+            List<String> autoCredentials = autoCredentialsOptional.get();
+            autoCredentials.add(topologyAutoCredentialClassName);
+        } else {
+            topologyConfig.put(STORM_TOPOLOGY_CONFIG_AUTO_CREDENTIALS, Lists.newArrayList(topologyAutoCredentialClassName));
         }
     }
 

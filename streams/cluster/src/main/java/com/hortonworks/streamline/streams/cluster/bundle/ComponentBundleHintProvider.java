@@ -19,6 +19,8 @@ import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 
+import javax.security.auth.Subject;
+import javax.ws.rs.core.SecurityContext;
 import java.util.Map;
 
 /**
@@ -58,7 +60,9 @@ public interface ComponentBundleHintProvider {
      * Provide hints on specific component bundle with selected namespace.
      *
      * @param namespace selected namespace
+     * @param securityContext
+     * @param subject
      * @return Hint structures. The structure of map should be cluster id -> (cluster, hints).
      */
-    Map<Long, BundleHintsResponse> provide(Namespace namespace);
+    Map<Long, BundleHintsResponse> provide(Namespace namespace, SecurityContext securityContext, Subject subject);
 }

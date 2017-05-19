@@ -1,0 +1,7 @@
+{
+  "name": "ROLE_SERVICE_POOL_USER",
+  "displayName": "Service Pool User",
+  "description": "Role that can view Service pools",
+  "metadata": "{\"colorCode\":\"#4c979f\",\"colorLabel\":\"blue\",\"icon\":\"bell\"}",
+  "system": true
+}

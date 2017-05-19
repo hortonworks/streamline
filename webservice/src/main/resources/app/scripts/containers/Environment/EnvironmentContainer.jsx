@@ -99,7 +99,12 @@ class EnvironmentCards extends Component {
     if(! _.isEmpty(allACL)){
       const {aclObject,permission} = TopologyUtils.getPermissionAndObj(Number(this.nameSpaceRef.dataset.id),allACL);
       if(!permission){
-        this.props.nameSpaceClicked(eventKey, this.nameSpaceRef.dataset.id,aclObject);
+        if(eventKey.includes('share')){
+          const sharePermission = TopologyUtils.checkSharingPermission(aclObject);
+          sharePermission ? this.props.nameSpaceClicked(eventKey, this.nameSpaceRef.dataset.id,aclObject) : '';
+        } else {
+          this.props.nameSpaceClicked(eventKey, this.nameSpaceRef.dataset.id,aclObject);
+        }
       }
     } else {
       this.props.nameSpaceClicked(eventKey, this.nameSpaceRef.dataset.id);
@@ -551,25 +556,23 @@ class EnvironmentContainer extends Component {
   }
 
   handleShareSave = () => {
-    if(this.refs.CommonShareModal.validate()){
-      this.refs.CommonShareModalRef.hide();
-      this.refs.CommonShareModal.handleSave().then((namespaceShare) => {
-        let flag = true;
-        _.map(namespaceShare, (share) => {
-          if(share.responseMessage !== undefined){
-            flag = false;
-            FSReactToastr.error(
-              <CommonNotification flag="error" content={share.responseMessage}/>, '', toastOpt);
-          }
-          this.setState({shareObj : {}});
-        });
-        if(flag){
-          FSReactToastr.success(
-            <strong>Environment has been shared successfully</strong>
-          );
+    this.refs.CommonShareModalRef.hide();
+    this.refs.CommonShareModal.handleSave().then((namespaceShare) => {
+      let flag = true;
+      _.map(namespaceShare, (share) => {
+        if(share.responseMessage !== undefined){
+          flag = false;
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={share.responseMessage}/>, '', toastOpt);
         }
+        this.setState({shareObj : {}});
       });
-    }
+      if(flag){
+        FSReactToastr.success(
+          <strong>Environment has been shared successfully</strong>
+        );
+      }
+    });
   }
 
   handleShareCancel = () => {
@@ -614,7 +617,7 @@ class EnvironmentContainer extends Component {
         }
         <div className="row">
           {fetchLoader
-            ? <CommonLoaderSign imgName={"environments"}/>
+            ? [<div key={"1"} className="loader-overlay"></div>,<CommonLoaderSign key={"2"} imgName={"environments"}/>]
             : <div>
                 <div className="row">
                   <div className="page-title-box clearfix">

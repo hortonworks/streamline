@@ -43,6 +43,7 @@ import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.security.auth.Subject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -86,12 +87,15 @@ public class TopologyComponentBundleResource {
     private final StreamlineAuthorizer authorizer;
     private final StreamCatalogService catalogService;
     private final EnvironmentService environmentService;
+    private final Subject subject;
     private final ProxyUtil<ComponentBundleHintProvider> hintProviderProxyUtil;
 
-    public TopologyComponentBundleResource(StreamlineAuthorizer authorizer, StreamCatalogService catalogService, EnvironmentService environmentService) {
+    public TopologyComponentBundleResource(StreamlineAuthorizer authorizer, StreamCatalogService catalogService,
+                                           EnvironmentService environmentService, Subject subject) {
         this.authorizer = authorizer;
         this.catalogService = catalogService;
         this.environmentService = environmentService;
+        this.subject = subject;
         this.hintProviderProxyUtil = new ProxyUtil<>(ComponentBundleHintProvider.class);
     }
 
@@ -532,7 +536,8 @@ public class TopologyComponentBundleResource {
                 throw EntityNotFoundException.byId("namespace id: " + namespaceId);
             }
 
-            Map<Long, ComponentBundleHintProvider.BundleHintsResponse> hints = provider.provide(namespace);
+            Map<Long, ComponentBundleHintProvider.BundleHintsResponse> hints = provider.provide(namespace,
+                    securityContext, subject);
             return WSUtils.respondEntity(hints, OK);
         } else {
             return WSUtils.respondEntity(Collections.emptyMap(), OK);

@@ -19,7 +19,6 @@ import {observer} from 'mobx-react';
 import {Nav, Navbar, NavItem, NavDropdown, MenuItem,DropdownButton} from 'react-bootstrap';
 import _ from 'lodash';
 import Modal from './FSModal';
-import UserProfile from './UserProfile';
 
 @observer
 export default class Header extends Component {
