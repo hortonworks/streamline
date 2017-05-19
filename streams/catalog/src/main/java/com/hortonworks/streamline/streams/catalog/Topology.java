@@ -93,13 +93,15 @@ public class Topology implements Storable {
     }
 
     public Topology(Topology other) {
-        setId(other.getId());
-        setVersionId(other.getVersionId());
-        setName(other.getName());
-        setDescription(other.getDescription());
-        setConfig(other.getConfig());
-        setNamespaceId(other.getNamespaceId());
-        setVersionTimestamp(other.getVersionTimestamp());
+        if (other != null) {
+            setId(other.getId());
+            setVersionId(other.getVersionId());
+            setName(other.getName());
+            setDescription(other.getDescription());
+            setConfig(other.getConfig());
+            setNamespaceId(other.getNamespaceId());
+            setVersionTimestamp(other.getVersionTimestamp());
+        }
         // this will be re-generated during deployment.
         topologyDag = null;
     }

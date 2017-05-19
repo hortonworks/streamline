@@ -112,15 +112,17 @@ public class TopologyEdge extends AbstractStorable {
     }
 
     public TopologyEdge(TopologyEdge other) {
-        setId(other.getId());
-        setVersionId(other.getVersionId());
-        setTopologyId(other.getTopologyId());
-        setFromId(other.getFromId());
-        setToId(other.getToId());
-        if (other.getStreamGroupings() != null) {
-            setStreamGroupings(other.getStreamGroupings().stream().map(StreamGrouping::new).collect(Collectors.toList()));
+        if (other != null) {
+            setId(other.getId());
+            setVersionId(other.getVersionId());
+            setTopologyId(other.getTopologyId());
+            setFromId(other.getFromId());
+            setToId(other.getToId());
+            if (other.getStreamGroupings() != null) {
+                setStreamGroupings(other.getStreamGroupings().stream().map(StreamGrouping::new).collect(Collectors.toList()));
+            }
+            setVersionTimestamp(other.getVersionTimestamp());
         }
-        setVersionTimestamp(other.getVersionTimestamp());
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

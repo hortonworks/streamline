@@ -58,14 +58,16 @@ public class TopologyComponent extends AbstractStorable {
     }
 
     public TopologyComponent(TopologyComponent other) {
-        setId(other.getId());
-        setTopologyId(other.getTopologyId());
-        setTopologyComponentBundleId(other.getTopologyComponentBundleId());
-        setVersionId(other.getVersionId());
-        setName(other.getName());
-        setDescription(other.getDescription());
-        setConfig(new Config(other.getConfig()));
-        setVersionTimestamp(other.getVersionTimestamp());
+        if (other != null) {
+            setId(other.getId());
+            setTopologyId(other.getTopologyId());
+            setTopologyComponentBundleId(other.getTopologyComponentBundleId());
+            setVersionId(other.getVersionId());
+            setName(other.getName());
+            setDescription(other.getDescription());
+            setConfig(new Config(other.getConfig()));
+            setVersionTimestamp(other.getVersionTimestamp());
+        }
     }
 
     @JsonIgnore
