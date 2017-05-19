@@ -1,4 +1,5 @@
 ## 0.4
+ * ISSUE-573     : readerSchemaVersion in Kafka config key is marked as optional but effectively required due to Flux
  * ISSUE-570     : Update registry version to 0.3.0-snapshot 
  * STREAMLINE-763: Topology should be able to deployed on Secured Storm cluster
  * STREAMLINE-778: Roles API updates
