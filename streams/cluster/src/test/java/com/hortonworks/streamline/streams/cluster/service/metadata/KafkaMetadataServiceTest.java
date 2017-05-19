@@ -32,6 +32,7 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -81,6 +82,8 @@ public class KafkaMetadataServiceTest {
     private Component kafkaBrokerComponent;
     @Injectable
     private ServiceConfiguration kafkaBrokerConfig;
+    @Injectable
+    private ServiceConfiguration kafkaEnvConfig;
     @Mocked
     private KafkaBrokerListeners.ListenersPropParsed listenersPropParsed;
     @Mocked
@@ -157,7 +160,7 @@ public class KafkaMetadataServiceTest {
             return brokerInfo.getBrokers().stream()
                     .sorted(String::compareTo)
                     .collect(Collectors.toList());
-        } catch (ZookeeperClientException e) {
+        } catch (ZookeeperClientException | IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -179,7 +182,7 @@ public class KafkaMetadataServiceTest {
                     .map(KafkaBrokersInfo.BrokerId::getId)
                     .sorted(String::compareTo)
                     .collect(Collectors.toList());
-        } catch (ZookeeperClientException e) {
+        } catch (ZookeeperClientException | IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -199,7 +202,7 @@ public class KafkaMetadataServiceTest {
             final List<String> actualTopics = kafkaMetadataService.getTopicsFromZk().list();
             Collections.sort(actualTopics);
             return actualTopics;
-        } catch (ZookeeperClientException e) {
+        } catch (ZookeeperClientException | IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -223,7 +226,7 @@ public class KafkaMetadataServiceTest {
 
         // pass started zk to class under test
         kafkaMetadataService = new KafkaMetadataService(
-                zkCli, kafkaZkConnection, securityContext, kafkaBrokerComponent, kafkaBrokerConfig);
+                zkCli, kafkaZkConnection, securityContext, kafkaBrokerComponent, kafkaBrokerConfig, kafkaEnvConfig);
 
         try {
             if (zkNodeData != null) {
@@ -231,7 +234,8 @@ public class KafkaMetadataServiceTest {
                         componentZkLeaves.size(), zkNodeData.size());
             }
 
-            for (int j = 0; j < chRoots.size() - 1; j++) {  // Don't include last index because it adds nothing new to testing and avoids //
+            // Don't include last index because it adds nothing new to testing and avoids //
+            for (int j = 0; j < chRoots.size() - 1; j++) {
                 final String zkRootPath = chRoots.get(j) + "/" + componentZkPath;
                 for (int i = 0; i < componentZkLeaves.size(); i++) {
                     final String zkFullPath = zkRootPath + "/" + componentZkLeaves.get(i);

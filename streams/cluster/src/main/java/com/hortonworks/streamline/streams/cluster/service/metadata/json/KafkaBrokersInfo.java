@@ -6,6 +6,7 @@ import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -53,11 +54,14 @@ public class KafkaBrokersInfo<T> {
     }
 
     public static KafkaBrokersInfo<HostPort> hostPort(List<String> hosts, Integer port,
-          SecurityContext securityContext, ServiceConfiguration config, Component component) {
+          SecurityContext securityContext, ServiceConfiguration brokerConfig, Component component,
+                ServiceConfiguration kafkaEnvConfig) throws IOException {
 
         return  hostPort(hosts, port,
-                new Security(securityContext, new Authorizer(false)),
-                KafkaBrokerListeners.newInstance(config, component));
+                new Security(securityContext, new Authorizer(false),
+                        Principals.newInstance(kafkaEnvConfig),
+                        Keytabs.newInstance(kafkaEnvConfig)),
+                KafkaBrokerListeners.newInstance(brokerConfig, component));
     }
 
     public static KafkaBrokersInfo<KafkaBrokersInfo.BrokerId> brokerIds(List<String> brokerIds, Security security,
@@ -73,18 +77,23 @@ public class KafkaBrokersInfo<T> {
     }
 
     public static KafkaBrokersInfo<KafkaBrokersInfo.BrokerId> brokerIds(List<String> brokerIds,
-            SecurityContext securityContext, ServiceConfiguration config, Component component) {
+            SecurityContext securityContext, ServiceConfiguration brokerConfig,
+                Component component, ServiceConfiguration kafkaEnvConfig) throws IOException {
 
         return brokerIds(brokerIds,
-                new Security(securityContext, new Authorizer(false)),
-                KafkaBrokerListeners.newInstance(config, component));
+                new Security(securityContext, new Authorizer(false),
+                        Principals.newInstance(kafkaEnvConfig),
+                        Keytabs.newInstance(kafkaEnvConfig)),
+                KafkaBrokerListeners.newInstance(brokerConfig, component));
     }
 
     public static KafkaBrokersInfo<String> fromZk(List<String> brokerInfo,SecurityContext securityContext,
-            ServiceConfiguration config, Component component) {
+            ServiceConfiguration brokerConfig, Component component, ServiceConfiguration kafkaEnvConfig) throws IOException {
 
-        final Security security = new Security(securityContext, new Authorizer(false));
-        final KafkaBrokerListeners listeners = KafkaBrokerListeners.newInstance(config, component);
+        final KafkaBrokerListeners listeners = KafkaBrokerListeners.newInstance(brokerConfig, component);
+        final Security security = new Security(securityContext, new Authorizer(false),
+                Principals.newInstance(kafkaEnvConfig),
+                Keytabs.newInstance(kafkaEnvConfig));
 
         return brokerInfo == null
                 ? new KafkaBrokersInfo<>(Collections.<String>emptyList(), security, listeners.getProtocolToHostsWithPort())
@@ -109,6 +118,7 @@ public class KafkaBrokersInfo<T> {
         return "KafkaBrokersInfo{" +
                 "brokers=" + brokers +
                 ", security=" + security +
+                ", protocolToHostsWithPort=" + protocolToHostsWithPort +
                 '}';
     }
 

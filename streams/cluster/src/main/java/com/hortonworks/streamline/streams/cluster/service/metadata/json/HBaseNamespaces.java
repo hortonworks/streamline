@@ -4,9 +4,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import org.apache.hadoop.hbase.NamespaceDescriptor;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.core.SecurityContext;
 
@@ -23,18 +24,14 @@ public class HBaseNamespaces {
         this.security = security;
     }
 
-    public static HBaseNamespaces newInstance(NamespaceDescriptor[] namespaceDescriptors,
-                                              SecurityContext securityContext, boolean isAuthorizerInvoked) {
+    public static HBaseNamespaces newInstance(NamespaceDescriptor[] namespaceDescriptors, SecurityContext securityContext,
+                                              boolean isAuthorizerInvoked, Principals principals, Keytabs keytabs) {
 
         List<String> namespaces = Collections.emptyList();
         if (namespaceDescriptors != null) {
-//            namespaces = Arrays.stream(namespaceDescriptors).map(NamespaceDescriptor::getName).collect(Collectors.toList());
-            namespaces = new ArrayList<>(namespaceDescriptors.length);
-            for (NamespaceDescriptor namespace : namespaceDescriptors) {
-                namespaces.add(namespace.getName());
-            }
+            namespaces = Arrays.stream(namespaceDescriptors).map(NamespaceDescriptor::getName).collect(Collectors.toList());
         }
-        return new HBaseNamespaces(namespaces, new Security(securityContext, new Authorizer(isAuthorizerInvoked)));
+        return new HBaseNamespaces(namespaces, new Security(securityContext, new Authorizer(isAuthorizerInvoked), principals, keytabs));
     }
 
     public List<String> getNamespaces() {

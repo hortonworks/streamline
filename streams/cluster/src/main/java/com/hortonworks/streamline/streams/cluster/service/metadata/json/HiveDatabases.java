@@ -22,8 +22,9 @@ public class HiveDatabases {
         this.security = security;
     }
 
-    public static HiveDatabases newInstance(List<String> databases, SecurityContext securityContext) {
-        final Security security = new Security(securityContext, new Authorizer(false));
+    public static HiveDatabases newInstance(List<String> databases, SecurityContext securityContext,
+                                            Principals principals, Keytabs keytabs) {
+        final Security security = new Security(securityContext, new Authorizer(false), principals, keytabs);
         return databases == null ? new HiveDatabases(Collections.emptyList(), security) : new HiveDatabases(databases, security);
     }
 

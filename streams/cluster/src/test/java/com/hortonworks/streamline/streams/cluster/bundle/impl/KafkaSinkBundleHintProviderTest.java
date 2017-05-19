@@ -90,7 +90,7 @@ public class KafkaSinkBundleHintProviderTest {
         }};
 
         KafkaBrokersInfo<HostPort> brokersInfo = KafkaBrokersInfo.hostPort(
-                hosts, 6667, securityContext, kafkaBrokerConfig, kafkaBrokerComponent);
+                hosts, 6667, securityContext, kafkaBrokerConfig, kafkaBrokerComponent, kafkaBrokerConfig);
         String protocol = "SASL_PLAINTEXT";
 
         new Expectations() {{

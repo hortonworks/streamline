@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import java.util.List;
 
-import javax.ws.rs.core.SecurityContext;
-
 /** Wrapper used to show proper JSON formatting
  * {@code
  *  {
@@ -22,10 +20,6 @@ public class StormTopologies {
     public StormTopologies(List<String> topologies, Security security) {
         this.topologies = topologies;
         this.security = security;
-    }
-
-    public StormTopologies newInstance(List<String> topologies, SecurityContext securityContext) {
-        return new StormTopologies(topologies, new Security(securityContext, new Authorizer(false)));
     }
 
     @JsonGetter("topologies")
