@@ -44,6 +44,10 @@ public class AvroKafkaSpoutTranslator implements RecordTranslator<Object, ByteBu
     private final Integer readerSchemaVersion;
     private transient volatile AvroStreamsSnapshotDeserializer avroStreamsSnapshotDeserializer;
 
+    public AvroKafkaSpoutTranslator (String outputStream, String topic, String dataSourceId, String schemaRegistryUrl) {
+        this(outputStream, topic, dataSourceId, schemaRegistryUrl, null);
+    }
+
     public AvroKafkaSpoutTranslator (String outputStream, String topic, String dataSourceId, String schemaRegistryUrl, Integer readerSchemaVersion) {
         this.outputStream = outputStream;
         this.topic = topic;
@@ -51,6 +55,7 @@ public class AvroKafkaSpoutTranslator implements RecordTranslator<Object, ByteBu
         this.schemaRegistryUrl = schemaRegistryUrl;
         this.readerSchemaVersion = readerSchemaVersion;
     }
+
     @Override
     public List<Object> apply (ConsumerRecord<Object, ByteBuffer> consumerRecord) {
         Map < String, Object > keyValues = (Map<String, Object>) deserializer().deserialize(new ByteBufferInputStream(consumerRecord.value()),
