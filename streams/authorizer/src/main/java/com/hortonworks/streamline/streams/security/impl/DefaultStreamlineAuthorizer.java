@@ -85,8 +85,9 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
                     Role admin = new Role();
                     admin.setName("ROLE_ADMIN");
                     admin.setDisplayName("Admin");
-                    admin.setDescription("");
-                    admin.setSystem(true);
+                    admin.setDescription("Super user role that has all the system roles and privileges");
+                    admin.setMetadata("{\"colorCode\":\"#8261be\",\"colorLabel\":\"purple\",\"icon\":\"gears\", \"menu\": [\"schemaRegistry\", \"modelRegistry\", \"udf\", \"dashboard\", \"topology\", \"authorizer\", \"notifier\", \"customprocessor\", \"servicepool\", \"environments\"], \"capabilities\": [{\"Applications\": \"Edit\"}, {\"Service Pool\": \"Edit\"}, {\"Environments\": \"Edit\"}, {\"Users\": \"Edit\"}, {\"Dashboard\": \"Edit\"}]}");
+                    admin.setSystem(false);
                     return catalogService.addRole(admin);
                 });
         adminUsers.stream()
