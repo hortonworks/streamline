@@ -18,12 +18,15 @@ package com.hortonworks.streamline.streams.cluster.bundle.impl;
 import com.google.common.collect.Lists;
 
 import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.metadata.KafkaMetadataService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.Authentication;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.Authorizer;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaBrokerListeners;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaBrokersInfo;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaTopics;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.Security;
@@ -32,6 +35,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -66,21 +70,37 @@ public class KafkaSinkBundleHintProviderTest {
     @Mocked
     private Security security;
 
+    @Mocked
+    private Component kafkaBrokerComponent;
+
+    @Mocked
+    private ServiceConfiguration kafkaBrokerConfig;
+
+    @Mocked
+    private KafkaBrokerListeners.ListenersPropParsed listenersPropParsed;
+
     @Test
     public void getHintsOnCluster() throws Exception {
         List<String> topics = Lists.newArrayList("test1", "test2", "test3");
         List<String> hosts = Lists.newArrayList("svr1", "svr2");
-        KafkaBrokersInfo<HostPort> brokersInfo = KafkaBrokersInfo.hostPort(hosts, 6667, securityContext);
+
+        new Expectations() {{
+            listenersPropParsed.getParsedProps();
+            result = new LinkedList<>();
+        }};
+
+        KafkaBrokersInfo<HostPort> brokersInfo = KafkaBrokersInfo.hostPort(
+                hosts, 6667, securityContext, kafkaBrokerConfig, kafkaBrokerComponent, kafkaBrokerConfig);
         String protocol = "SASL_PLAINTEXT";
 
         new Expectations() {{
             kafkaMetadataService.getTopicsFromZk();
             result = new KafkaTopics(topics, security);
 
-            kafkaMetadataService.getBrokerHostPortFromStreamsJson(1L);
+            kafkaMetadataService.getBrokerHostPortFromStreamsJson();
             result = brokersInfo;
 
-            kafkaMetadataService.getProtocolFromStreamsJson(1L);
+            kafkaMetadataService.getProtocolFromStreamsJson();
             result = protocol;
         }};
 
@@ -97,8 +117,8 @@ public class KafkaSinkBundleHintProviderTest {
 
         new Verifications() {{
             kafkaMetadataService.getTopicsFromZk();
-            kafkaMetadataService.getBrokerHostPortFromStreamsJson(1L);
-            kafkaMetadataService.getProtocolFromStreamsJson(1L);
+            kafkaMetadataService.getBrokerHostPortFromStreamsJson();
+            kafkaMetadataService.getProtocolFromStreamsJson();
         }};
     }
 
