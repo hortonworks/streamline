@@ -59,6 +59,14 @@
         "hint": "inputFields"
       },
       {
+        "uiName": "Writer schema version",
+        "fieldName": "writerSchemaVersion",
+        "isOptional": true,
+        "tooltip": "Version of schema for topic to use for serializing the message. Default is the latest version for the schema",
+        "type": "string",
+        "defaultValue": null
+      },
+      {
         "uiName": "Ack Mode",
         "fieldName": "ackMode",
         "isOptional": true,

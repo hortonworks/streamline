@@ -209,10 +209,10 @@ public class StormMetadataService {
     }
 
     public Keytabs getKeytabs() throws IOException {
-        return Keytabs.newInstance(stormEnvConfig);
+        return Keytabs.fromAmbariConfig(stormEnvConfig);
     }
 
     public Principals getPrincipals() throws IOException {
-        return Principals.newInstance(stormEnvConfig);
+        return Principals.fromAmbariConfig(stormEnvConfig);
     }
 }

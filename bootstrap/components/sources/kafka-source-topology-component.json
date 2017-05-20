@@ -38,7 +38,7 @@
         "uiName": "Reader schema version",
         "fieldName": "readerSchemaVersion",
         "isOptional": true,
-        "tooltip": "Version of schema for topic to use for deserializing the message",
+        "tooltip": "Version of schema for topic to use for deserializing the message. Default is version used by kafka producer to write the message",
         "type": "string",
         "defaultValue": null
       },

@@ -156,11 +156,11 @@ public class KafkaMetadataService implements AutoCloseable {
     }
 
     public Keytabs getKeytabs() throws IOException {
-        return Keytabs.newInstance(kafkaEnvConfig);
+        return Keytabs.fromAmbariConfig(kafkaEnvConfig);
     }
 
     public Principals getPrincipals() throws IOException {
-        return Principals.newInstance(kafkaEnvConfig);
+        return Principals.fromAmbariConfig(kafkaEnvConfig);
     }
 
     /**

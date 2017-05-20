@@ -164,11 +164,13 @@ public class HBaseMetadataService implements AutoCloseable {
     }
     
     public Keytabs getKeytabs() throws InterruptedException, IOException, PrivilegedActionException {
-        return executeSecure(() -> Keytabs.newInstance(hBaseAdmin.getConfiguration().getValByRegex(HBASE_MASTER_KEYTAB_FILE)));
+        return executeSecure(() -> Keytabs.fromServiceProperties(hBaseAdmin.getConfiguration()
+                .getValByRegex(HBASE_MASTER_KEYTAB_FILE)));
     }
 
     public Principals getPrincipals() throws InterruptedException, IOException, PrivilegedActionException {
-        return executeSecure(() -> Principals.newInstance(hBaseAdmin.getConfiguration().getValByRegex(HBASE_MASTER_KERBEROS_PRINCIPAL)));
+        return executeSecure(() -> Principals.fromServiceProperties(hBaseAdmin.getConfiguration()
+                .getValByRegex(HBASE_MASTER_KERBEROS_PRINCIPAL)));
     }
 
     @Override
