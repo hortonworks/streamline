@@ -2,8 +2,6 @@ package com.hortonworks.streamline.streams.cluster.service.metadata.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.hortonworks.streamline.streams.catalog.Component;
-import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
 
 import java.io.IOException;
@@ -11,8 +9,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import javax.ws.rs.core.SecurityContext;
 
 /**
  * Wrapper used to show proper JSON formatting
@@ -41,7 +37,7 @@ public class KafkaBrokersInfo<T> {
     }
 
     public static KafkaBrokersInfo<HostPort> hostPort(List<String> hosts, Integer port,
-            Security security, KafkaBrokerListeners listeners) {
+            Security security, KafkaBrokerListeners kafkaBrokerListeners) throws IOException {
 
         List<HostPort> hostsPorts = Collections.emptyList();
         if (hosts != null) {
@@ -50,22 +46,12 @@ public class KafkaBrokersInfo<T> {
                 hostsPorts.add(new HostPort(host, port));
             }
         }
-        return new KafkaBrokersInfo<>(hostsPorts, security, listeners.getProtocolToHostsWithPort());
+        return new KafkaBrokersInfo<>(hostsPorts, security, kafkaBrokerListeners.getProtocolToHostsWithPort());
     }
 
-    public static KafkaBrokersInfo<HostPort> hostPort(List<String> hosts, Integer port,
-          SecurityContext securityContext, ServiceConfiguration brokerConfig, Component component,
-                ServiceConfiguration kafkaEnvConfig) throws IOException {
+    public static KafkaBrokersInfo<KafkaBrokersInfo.BrokerId> brokerIds(
+            List<String> brokerIds, Security security, KafkaBrokerListeners kafkaBrokerListeners) throws IOException {
 
-        return  hostPort(hosts, port,
-                new Security(securityContext, new Authorizer(false),
-                        Principals.fromAmbariConfig(kafkaEnvConfig),
-                        Keytabs.fromAmbariConfig(kafkaEnvConfig)),
-                KafkaBrokerListeners.newInstance(brokerConfig, component));
-    }
-
-    public static KafkaBrokersInfo<KafkaBrokersInfo.BrokerId> brokerIds(List<String> brokerIds, Security security,
-                                                                        KafkaBrokerListeners listeners) {
         List<KafkaBrokersInfo.BrokerId> brokerIdsType = Collections.emptyList();
         if (brokerIds != null) {
             brokerIdsType = new ArrayList<>(brokerIds.size());
@@ -73,31 +59,14 @@ public class KafkaBrokersInfo<T> {
                 brokerIdsType.add(new KafkaBrokersInfo.BrokerId(brokerId));
             }
         }
-        return new KafkaBrokersInfo<>(brokerIdsType, security, listeners.getProtocolToHostsWithPort());
+        return new KafkaBrokersInfo<>(brokerIdsType, security, kafkaBrokerListeners.getProtocolToHostsWithPort());
     }
 
-    public static KafkaBrokersInfo<KafkaBrokersInfo.BrokerId> brokerIds(List<String> brokerIds,
-            SecurityContext securityContext, ServiceConfiguration brokerConfig,
-                Component component, ServiceConfiguration kafkaEnvConfig) throws IOException {
-
-        return brokerIds(brokerIds,
-                new Security(securityContext, new Authorizer(false),
-                        Principals.fromAmbariConfig(kafkaEnvConfig),
-                        Keytabs.fromAmbariConfig(kafkaEnvConfig)),
-                KafkaBrokerListeners.newInstance(brokerConfig, component));
-    }
-
-    public static KafkaBrokersInfo<String> fromZk(List<String> brokerInfo,SecurityContext securityContext,
-            ServiceConfiguration brokerConfig, Component component, ServiceConfiguration kafkaEnvConfig) throws IOException {
-
-        final KafkaBrokerListeners listeners = KafkaBrokerListeners.newInstance(brokerConfig, component);
-        final Security security = new Security(securityContext, new Authorizer(false),
-                Principals.fromAmbariConfig(kafkaEnvConfig),
-                Keytabs.fromAmbariConfig(kafkaEnvConfig));
-
+    public static KafkaBrokersInfo<String> fromZk(
+            List<String> brokerInfo, Security security, KafkaBrokerListeners kafkaBrokerListeners) throws IOException {
         return brokerInfo == null
-                ? new KafkaBrokersInfo<>(Collections.<String>emptyList(), security, listeners.getProtocolToHostsWithPort())
-                : new KafkaBrokersInfo<>(brokerInfo, security, listeners.getProtocolToHostsWithPort());
+                ? new KafkaBrokersInfo<>(Collections.<String>emptyList(), security, kafkaBrokerListeners.getProtocolToHostsWithPort())
+                : new KafkaBrokersInfo<>(brokerInfo, security, kafkaBrokerListeners.getProtocolToHostsWithPort());
     }
 
     public List<T> getBrokers() {

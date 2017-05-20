@@ -49,8 +49,8 @@ import mockit.Mocked;
 import mockit.Tested;
 import mockit.integration.junit4.JMockit;
 
-import static com.hortonworks.streamline.streams.cluster.service.metadata.KafkaMetadataService.KAFKA_BROKERS_IDS_ZK_RELATIVE_PATH;
-import static com.hortonworks.streamline.streams.cluster.service.metadata.KafkaMetadataService.KAFKA_TOPICS_ZK_RELATIVE_PATH;
+import static com.hortonworks.streamline.streams.cluster.service.metadata.KafkaMetadataService.ZK_RELATIVE_PATH_KAFKA_BROKERS_IDS;
+import static com.hortonworks.streamline.streams.cluster.service.metadata.KafkaMetadataService.ZK_RELATIVE_PATH_KAFKA_TOPICS;
 import static com.hortonworks.streamline.streams.security.authentication.StreamlineSecurityContext.AUTHENTICATION_SCHEME_NOT_KERBEROS;
 
 @RunWith(JMockit.class)
@@ -64,8 +64,8 @@ public class KafkaMetadataServiceTest {
     private static final List<String> chRoots = Lists.newArrayList("", CHROOT + PATH, CHROOT + PATH + "/");
 
     private static final List<String> expectedChrootPath = Lists.newArrayList("/", CHROOT + PATH + "/");
-    private static final List<String> expectedBrokerIdPath = Lists.newArrayList("/" + KAFKA_BROKERS_IDS_ZK_RELATIVE_PATH,
-            CHROOT + PATH + "/" + KAFKA_BROKERS_IDS_ZK_RELATIVE_PATH);
+    private static final List<String> expectedBrokerIdPath = Lists.newArrayList("/" + ZK_RELATIVE_PATH_KAFKA_BROKERS_IDS,
+            CHROOT + PATH + "/" + ZK_RELATIVE_PATH_KAFKA_BROKERS_IDS);
 
     // Mocks
     @Tested
@@ -112,7 +112,7 @@ public class KafkaMetadataServiceTest {
                 final String zkStrRaw = zkStr + chRoot;
                 LOG.debug("zookeeper.connect=" + zkStrRaw);
                 KafkaMetadataService.KafkaZkConnection kafkaZkConnection = KafkaMetadataService.KafkaZkConnection.newInstance(zkStrRaw);
-                final String zkPath = kafkaZkConnection.buildZkRootPath(KAFKA_BROKERS_IDS_ZK_RELATIVE_PATH);
+                final String zkPath = kafkaZkConnection.buildZkRootPath(ZK_RELATIVE_PATH_KAFKA_BROKERS_IDS);
                 Assert.assertEquals(chRoot.isEmpty() ? expectedBrokerIdPath.get(0) : expectedBrokerIdPath.get(1), zkPath);
             }
         }
@@ -147,7 +147,7 @@ public class KafkaMetadataServiceTest {
                 "{\"jmx_port\":-1,\"timestamp\":\"1475798012574\",\"endpoints\":[\"PLAINTEXT://cn035.l42scl.hortonworks.com:6667\"],\"host\":\"cn035.l42scl.hortonworks.com\",\"version\":3,\"port\":6667}",
                 "{\"jmx_port\":-1,\"timestamp\":\"1475798017180\",\"endpoints\":[\"PLAINTEXT://cn067.l42scl.hortonworks.com:6667\"],\"host\":\"cn067.l42scl.hortonworks.com\",\"version\":3,\"port\":6667}");
 
-        testZkCode(KAFKA_BROKERS_IDS_ZK_RELATIVE_PATH,
+        testZkCode(ZK_RELATIVE_PATH_KAFKA_BROKERS_IDS,
                 brokerIdZkLeaves,
                 this::getActualBrokerData,
                 p -> Assert.assertEquals(brokerZkData, p),
@@ -168,7 +168,7 @@ public class KafkaMetadataServiceTest {
     @Test
     public void test_GetBrokerIdsFromZk() throws Exception {
         final ArrayList<String> brokerIdZkLeaves = Lists.newArrayList("1001", "1002");
-        testZkCode(KAFKA_BROKERS_IDS_ZK_RELATIVE_PATH,
+        testZkCode(ZK_RELATIVE_PATH_KAFKA_BROKERS_IDS,
                 brokerIdZkLeaves,
                 this::getActualBrokerIds,
                 p -> Assert.assertEquals(brokerIdZkLeaves, p),
@@ -190,7 +190,7 @@ public class KafkaMetadataServiceTest {
     @Test
     public void test_getTopicsFromZk() throws Exception {
         final ArrayList<String> componentZkLeaves = Lists.newArrayList("topic_1", "topic_2");
-        testZkCode(KAFKA_TOPICS_ZK_RELATIVE_PATH,
+        testZkCode(ZK_RELATIVE_PATH_KAFKA_TOPICS,
                 componentZkLeaves,
                 this::getActualTopics,
                 p -> Assert.assertEquals(componentZkLeaves, p),

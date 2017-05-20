@@ -1,62 +1,97 @@
 package com.hortonworks.streamline.streams.cluster.service.metadata.json;
 
+import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
-import com.hortonworks.streamline.streams.security.SecurityUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.security.Principal;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Principals {
-    private Map<String, String> principals;     //Key is the name of the service component of the principal. Val is principal
+    private static final Logger LOG = LoggerFactory.getLogger(Principals.class);
 
-    public Principals(Map<String, String> principals) {
+    /*
+     * The map Key is the principal's service component . Val is list of principals for this service.
+     * Typically it is one principal per host running this service.
+     */
+    private Map<String, List<Principal>> principals;
+
+    public Principals(Map<String, List<Principal>> principals) {
         this.principals = principals;
     }
 
-    public static Principals fromAmbariConfig(ServiceConfiguration serviceConfig) throws IOException {
-        return fromAmbariConfig(serviceConfig.getConfigurationMap());
+    /**
+     * Instance built from services configurations in Ambari
+     */
+    public static Principals fromAmbariConfig(ServiceConfiguration serviceConfig,
+            Map<String, Component> serviceToComponent) throws IOException {
+        return fromAmbariConfig(serviceConfig.getConfigurationMap(), serviceToComponent);
     }
 
     /**
      * Instance built from map with Ambari configurations
      */
-    public static Principals fromAmbariConfig(Map<String, String> principals) throws IOException {
-        final Map<String, String> princs = principals.entrySet()
-                .stream()
-                .filter((e) -> e.getKey().contains("principal"))
-                .collect(Collectors.toMap(
-                        (e) -> {
-                            String key = e.getKey().split("principal")[0];
-                            return key.substring(0, key.length()-1);
-                        },
-                        (e) -> SecurityUtil.getUserName(e.getValue())));
+    public static Principals fromAmbariConfig(Map<String, String> config,
+            Map<String, Component> serviceToComponent) throws IOException {
 
-        return new Principals(princs);
+        final Map<String, List<Principal>> allPrincs = new HashMap<>();
+        for (Map.Entry<String, Component> stc : serviceToComponent.entrySet()) {     // stc - serviceToComponent
+            final String serviceName = stc.getKey();
+            final Map<String, List<Principal>> princs = config.entrySet()
+                    .stream()
+                    .filter((e) -> e.getKey().contains("principal") && e.getKey().replace("_principal_name","").equals(serviceName))
+                    .peek((e) -> LOG.debug("Processing Ambari property [{}]=[{}] for service [{}]", e.getKey(), e.getValue(), serviceName))
+                    .collect(Collectors.toMap(
+                            (e) -> {
+                                // Extracts the principal service component from Ambari property key
+                                String key = e.getKey().split("principal")[0];
+                                return key.substring(0, key.length() - 1);          // remove _ at the end
+                            },
+                            (e) ->  stc.getValue().getHosts()   // get hosts for service component (e.g nimbus, storm_ui, kafka broker)
+                                    .stream()
+                                    .map((host) -> host == null || host.isEmpty()
+                                            ? UserPrincipal.fromPrincipal(e.getValue())
+                                            : ServicePrincipal.forHost(e.getValue(), host))
+                                    .collect(Collectors.toList())));
+
+            LOG.debug("Processed {}", princs);
+            allPrincs.putAll(princs);
+        }
+
+        return new Principals(allPrincs);
     }
 
     /**
-     * Instance built from map with service (e.g Hive, HBase) properties
+     * Instance built from service configuration properties (e.g hive-metastore.xml, hbase-site.xml)
      */
-    public static Principals fromServiceProperties(ServiceConfiguration serviceConfig) throws IOException {
-        return fromServiceProperties(serviceConfig.getConfigurationMap());
+    public static Principals fromServiceProperties(ServiceConfiguration serviceConfig, Component component) throws IOException {
+        return fromServiceProperties(serviceConfig.getConfigurationMap(), component);
     }
 
     /**
-     * Instance built from map with service (e.g Hive, HBase) properties
+     * Instance built from service configuration properties (e.g hive-metastore.xml, hbase-site.xml)
      */
-    public static Principals fromServiceProperties(Map<String, String> principals) throws IOException {
-        final Map<String, String> princs = principals.entrySet()
+    public static Principals fromServiceProperties(Map<String, String> props, Component component) throws IOException {
+        final Map<String, List<Principal>> princs = props.entrySet()
                 .stream()
                 .filter((e) -> e.getKey().contains("principal"))
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        (e) -> SecurityUtil.getUserName(e.getValue())));
+                        (e) ->  component.getHosts()   // get hosts for service component (e.g HBase master or Hive metastore)
+                                .stream()
+                                .map((host) -> ServicePrincipal.forHost(e.getValue(), host))
+                                .collect(Collectors.toList())));
 
         return new Principals(princs);
     }
 
-    public Map<String, String> toMap() {
+    public Map<String, List<Principal>> toMap() {
         return principals;
     }
 

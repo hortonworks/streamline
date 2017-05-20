@@ -25,6 +25,7 @@ import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundExcep
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+import com.hortonworks.streamline.streams.cluster.service.metadata.common.EnvironmentServiceUtil;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.Authorizer;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.Keytabs;
@@ -40,6 +41,8 @@ import java.io.IOException;
 import java.security.PrivilegedActionException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -49,14 +52,15 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.SecurityContext;
 
 public class StormMetadataService {
-    private static final String STREAMS_JSON_SCHEMA_SERVICE_STORM = ServiceConfigurations.STORM.name();
-    private static final String STREAMS_JSON_SCHEMA_COMPONENT_STORM_UI_SERVER = ComponentPropertyPattern.STORM_UI_SERVER.name();
-    public static final String STREAMS_JSON_SCHEMA_CONFIG_STORM_ENV = ServiceConfigurations.STORM.getConfNames()[1];
+    private static final String AMBARI_JSON_SERVICE_STORM = ServiceConfigurations.STORM.name();
+    private static final String AMBARI_JSON_COMPONENT_STORM_UI_SERVER = ComponentPropertyPattern.STORM_UI_SERVER.name();
+    private static final String AMBARI_JSON_COMPONENT_STORM_NIMBUS = ComponentPropertyPattern.NIMBUS.name();
+    private static final String AMBARI_JSON_CONFIG_STORM_ENV = ServiceConfigurations.STORM.getConfNames()[1];
 
     private static final String STORM_REST_API_TOPOLOGIES_DEFAULT_RELATIVE_PATH = "/api/v1/topology/summary";
     private static final String STORM_REST_API_TOPOLOGIES_KEY = "topologies";
     private static final String STORM_REST_API_TOPOLOGY_ID_KEY = "id";
-    public static final String STORM_REST_API_DO_AS_USER_QUERY_PARAM = "doAsUser";
+    public  static final String STORM_REST_API_DO_AS_USER_QUERY_PARAM = "doAsUser";
 
     // used to hack adding / getting Storm View
     public static final String SERVICE_STORM_VIEW = "STORM_VIEW";
@@ -65,20 +69,24 @@ public class StormMetadataService {
     private final SecurityContext securityContext;
     private final Client httpClient;
     private final ServiceConfiguration stormEnvConfig;
+    private final Component nimbus;
+    private final Component stormUi;
     private Subject subject;
     private final String tplgySumUrl;     // http://cn067.l42scl.hortonworks.com:8744/api/v1/topology/summary
     private final String mainPageUrl;     // Views: http://172.12.128.67:8080/main/views/Storm_Monitoring/0.1.0/STORM_CLUSTER_INSTANCE
                                           // UI:    http://pm-eng1-cluster1.field.hortonworks.com:8744
 
-
     public StormMetadataService(Client httpClient, String tplgySumUrl, String mainPageUrl,
-                                SecurityContext securityContext, ServiceConfiguration stormEnvConfig, Subject subject) {
+            SecurityContext securityContext, ServiceConfiguration stormEnvConfig, Subject subject,
+                                Component nimbus, Component stormUi) {
         this.httpClient = httpClient;
         this.tplgySumUrl = tplgySumUrl;
         this.mainPageUrl = mainPageUrl;
         this.securityContext = securityContext;
         this.stormEnvConfig = stormEnvConfig;
         this.subject = subject;
+        this.nimbus = nimbus;
+        this.stormUi = stormUi;
     }
 
     public static class Builder {
@@ -90,7 +98,8 @@ public class StormMetadataService {
         private String username = "";
         private String password = "";
 
-        public Builder(EnvironmentService environmentService, Long clusterId, SecurityContext securityContext, Subject subject) {
+        public Builder(EnvironmentService environmentService, Long clusterId,
+                       SecurityContext securityContext, Subject subject) {
             this.environmentService = environmentService;
             this.clusterId = clusterId;
             this.securityContext = securityContext;
@@ -114,7 +123,15 @@ public class StormMetadataService {
 
         public StormMetadataService build() throws ServiceNotFoundException, ServiceComponentNotFoundException {
             return new StormMetadataService(newHttpClient(), getTopologySummaryRestUrl(),
-                    getMainPageUrl(), securityContext, getServiceConfig(STREAMS_JSON_SCHEMA_CONFIG_STORM_ENV), subject);
+                    getMainPageUrl(), securityContext, getServiceConfig(AMBARI_JSON_CONFIG_STORM_ENV), subject,
+                    getComponent(AMBARI_JSON_COMPONENT_STORM_NIMBUS), getComponent(AMBARI_JSON_COMPONENT_STORM_UI_SERVER));
+        }
+
+        private Component getComponent(String componentName)
+                throws ServiceNotFoundException, ServiceComponentNotFoundException {
+
+            return EnvironmentServiceUtil.getComponent(
+                    environmentService, clusterId, AMBARI_JSON_SERVICE_STORM, componentName);
         }
 
         /**
@@ -142,7 +159,7 @@ public class StormMetadataService {
         }
 
         private ServiceConfiguration getServiceConfig(String configName) throws ServiceNotFoundException {
-            Service stormService = environmentService.getServiceByName(clusterId, STREAMS_JSON_SCHEMA_SERVICE_STORM);
+            Service stormService = environmentService.getServiceByName(clusterId, AMBARI_JSON_SERVICE_STORM);
             if (stormService == null) {
                 throw new ServiceNotFoundException(clusterId, ServiceConfigurations.STORM.name());
             }
@@ -160,7 +177,10 @@ public class StormMetadataService {
 
         private String getTopologySummaryRestUrl() throws ServiceNotFoundException, ServiceComponentNotFoundException {
             final HostPort hostPort = getHostPort();
-            String url = "http://" + hostPort.toString() + (urlRelativePath.startsWith("/") ? urlRelativePath : "/" + urlRelativePath);
+            String url = "http://" + hostPort.toString() + (urlRelativePath.startsWith("/") 
+                    ? urlRelativePath 
+                    : "/" + urlRelativePath);
+            
             if (SecurityUtil.isKerberosAuthenticated(securityContext)) {
                 url += "?" + STORM_REST_API_DO_AS_USER_QUERY_PARAM + "=" + securityContext.getUserPrincipal().getName();
             }
@@ -168,17 +188,9 @@ public class StormMetadataService {
         }
 
         private HostPort getHostPort() throws ServiceNotFoundException, ServiceComponentNotFoundException {
-            final Long serviceId = environmentService.getServiceIdByName(clusterId, STREAMS_JSON_SCHEMA_SERVICE_STORM);
-            if (serviceId == null) {
-                throw new ServiceNotFoundException(clusterId, ServiceConfigurations.STORM.name());
-            }
-
-            final Component stormUiComp = environmentService.getComponentByName(serviceId, STREAMS_JSON_SCHEMA_COMPONENT_STORM_UI_SERVER);
-
-            if (stormUiComp == null) {
-                throw new ServiceComponentNotFoundException(clusterId, ServiceConfigurations.STORM.name(), ComponentPropertyPattern.STORM_UI_SERVER.name());
-            }
-
+            final Component stormUiComp =
+                    EnvironmentServiceUtil.getComponent(
+                            environmentService, clusterId, AMBARI_JSON_SERVICE_STORM, AMBARI_JSON_COMPONENT_STORM_UI_SERVER);
             return new HostPort(stormUiComp.getHosts().get(0), stormUiComp.getPort());
         }
     }
@@ -191,7 +203,8 @@ public class StormMetadataService {
                     final Map<String, ?> jsonAsMap = JsonClientUtil.getEntity(httpClient.target(tplgySumUrl), Map.class);
                     List<String> topologies = Collections.emptyList();
                     if (jsonAsMap != null) {
-                        final List<Map<String, String>> topologiesSummary = (List<Map<String, String>>) jsonAsMap.get(STORM_REST_API_TOPOLOGIES_KEY);
+                        final List<Map<String, String>> topologiesSummary = 
+                                (List<Map<String, String>>) jsonAsMap.get(STORM_REST_API_TOPOLOGIES_KEY);
                         if (topologiesSummary != null) {
                             topologies = new ArrayList<>(topologiesSummary.size());
                             for (Map<String, String> tpSum : topologiesSummary) {
@@ -199,13 +212,14 @@ public class StormMetadataService {
                             }
                         }
                     }
-                    return new StormTopologies(topologies, new Security(securityContext, new Authorizer(false), getPrincipals(), getKeytabs()));
+                    return new StormTopologies(topologies, getSecurity());
                 }
         );
     }
 
     private <T, E extends Exception> T executeSecure(SupplierException<T, E> action) throws PrivilegedActionException, E {
-        return SecurityUtil.execute(action, securityContext, subject);
+        return action.get();    // For now it executes without security context. Uncomment bellow for security context.
+//        return SecurityUtil.execute(action, securityContext, subject);
     }
 
     /**
@@ -227,6 +241,26 @@ public class StormMetadataService {
     }
 
     public Principals getPrincipals() throws IOException {
-        return Principals.fromAmbariConfig(stormEnvConfig);
+        return Principals.fromAmbariConfig(stormEnvConfig, getServiceToComponent());
+    }
+
+    private Map<String, Component> getServiceToComponent() {
+        return new HashMap<String, Component>(){{
+            put("nimbus", nimbus);
+            put("storm_ui", stormUi);
+            put("storm", newSupervisorComponent());
+        }};
+    }
+
+    private Component newSupervisorComponent() {
+        final Component component = new Component();
+        component.setHosts(new LinkedList<String>(){{
+            add("");
+        }});
+        return component;
+    }
+
+    public Security getSecurity() throws IOException {
+        return new Security(securityContext, new Authorizer(false), getPrincipals(), getKeytabs());
     }
 }

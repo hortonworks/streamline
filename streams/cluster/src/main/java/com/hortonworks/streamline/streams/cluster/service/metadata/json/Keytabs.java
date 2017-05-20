@@ -24,8 +24,8 @@ public class Keytabs {
     /**
      * Instance built from map with Ambari configurations
      */
-    public static Keytabs fromAmbariConfig(Map<String, String> keytabs) throws IOException {
-        Map<String, String> kts = keytabs.entrySet()
+    public static Keytabs fromAmbariConfig(Map<String, String> config) throws IOException {
+        Map<String, String> kts = config.entrySet()
                 .stream()
                 .filter((e) -> e.getKey().contains("keytab"))
                 .collect(Collectors.toMap(
@@ -48,8 +48,8 @@ public class Keytabs {
     /**
      * Instance built from map with service (e.g Hive, HBase) properties
      */
-    public static Keytabs fromServiceProperties(Map<String, String> keytabs) throws IOException {
-        Map<String, String> kts = keytabs.entrySet()
+    public static Keytabs fromServiceProperties(Map<String, String> props) throws IOException {
+        Map<String, String> kts = props.entrySet()
                 .stream()
                 .filter((e) -> e.getKey().contains("keytab"))
                 .collect(Collectors.toMap(

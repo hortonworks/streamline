@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 
+import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.SecurityContext;
@@ -75,23 +77,27 @@ public class Security {
 
     @JsonProperty("principals")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Map<String, String> getPrincipalsMap() {
+    public Map<String, List<Principal>> getPrincipalsMap() {
         return getMapIfSecureIfNotEmpty(principals.toMap());
     }
 
     @JsonProperty("keytabs")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Map<String, String> getKeytabsMap() {
-        return getMapIfSecureIfNotEmpty(keytabs.toMap());
+    public Map<String, String > getKeytabsMap() {
+        return getStringsMapIfSecureIfNotEmpty(keytabs.toMap());
     }
 
     /**
      * @return the map specified as argument only if Kerberos authentication is enabled and map !=null && !map.isEmpty()
      */
-    private Map<String, String> getMapIfSecureIfNotEmpty(Map<String, String> map) {
+    private Map<String, List<Principal>> getMapIfSecureIfNotEmpty(Map<String, List<Principal>> map) {
+        return SecurityUtil.isKerberosAuthenticated(securityContext)
+                && map != null && !map.isEmpty() ? map : null;
+    }
+
+    private Map<String, String> getStringsMapIfSecureIfNotEmpty(Map<String, String> map) {
         return SecurityUtil.isKerberosAuthenticated(securityContext) &&
-                map != null &&
-                !map.isEmpty() ? map : null;
+                map != null && !map.isEmpty() ? map : null;
     }
 
     @Override

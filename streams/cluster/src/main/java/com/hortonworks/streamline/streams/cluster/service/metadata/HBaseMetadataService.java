@@ -19,11 +19,15 @@ package com.hortonworks.streamline.streams.cluster.service.metadata;
 import com.google.common.collect.ImmutableList;
 
 import com.hortonworks.streamline.common.function.SupplierException;
+import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.exception.EntityNotFoundException;
+import com.hortonworks.streamline.streams.catalog.exception.ServiceComponentNotFoundException;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+import com.hortonworks.streamline.streams.cluster.service.metadata.common.EnvironmentServiceUtil;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.OverrideHadoopConfiguration;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.HBaseNamespaces;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.Keytabs;
@@ -59,25 +63,31 @@ import javax.ws.rs.core.SecurityContext;
 public class HBaseMetadataService implements AutoCloseable {
     private static final Logger LOG = LoggerFactory.getLogger(HBaseMetadataService.class);
 
-    private static final String HBASE_MASTER_KEYTAB_FILE = "hbase.master.keytab.file";
-    private static final String HBASE_MASTER_KERBEROS_PRINCIPAL = "hbase.master.kerberos.principal";
-    private static final List<String> STREAMS_JSON_SCHEMA_CONFIG_HBASE_SITE =
+    private static final String PROP_HBASE_MASTER_KEYTAB_FILE = "hbase.master.keytab.file";
+    private static final String PROP_HBASE_MASTER_KERBEROS_PRINCIPAL = "hbase.master.kerberos.principal";
+
+    private static final String AMBARI_JSON_SERVICE_HBASE = ServiceConfigurations.HBASE.name();
+    private static final String AMBARI_JSON_COMPONENT_HBASE_MASTER = ComponentPropertyPattern.HBASE_MASTER.name();
+    private static final List<String> AMBARI_JSON_CONFIG_HBASE_SITE =
             ImmutableList.copyOf(new String[] {ServiceConfigurations.HBASE.getConfNames()[2]});
 
-    private Admin hBaseAdmin;
-    private SecurityContext securityContext;
-    private Subject subject;
-    private User user;
+    private final Admin hBaseAdmin;
+    private final SecurityContext securityContext;
+    private final Subject subject;
+    private final User user;
+    private final Component hbaseMaster;
 
     public HBaseMetadataService(Admin hBaseAdmin) {
-        this(hBaseAdmin, null, null, null);
+        this(hBaseAdmin, null, null, null, null);
     }
 
-    public HBaseMetadataService(Admin hBaseAdmin, SecurityContext securityContext, Subject subject, User user) {
+    public HBaseMetadataService(Admin hBaseAdmin, SecurityContext securityContext,
+            Subject subject, User user, Component hbaseMaster) {
         this.hBaseAdmin = hBaseAdmin;
         this.securityContext = securityContext;
         this.subject = subject;
         this.user = user;
+        this.hbaseMaster = hbaseMaster;
         LOG.info("Created {}", this);
     }
 
@@ -110,14 +120,15 @@ public class HBaseMetadataService implements AutoCloseable {
 
             return newInstance(
                     overrideConfig(HBaseConfiguration.create(), environmentService, clusterId),
-                    securityContext, subject);
+                    securityContext, subject, getHbaseMasterComponent(environmentService, clusterId));
     }
 
     /**
      * Creates secure {@link HBaseMetadataService} which delegates to {@link Admin}
      * instantiated with with the {@link Configuration} provided using the first parameter
      */
-    public static HBaseMetadataService newInstance(Configuration hbaseConfig, SecurityContext securityContext, Subject subject)
+    public static HBaseMetadataService newInstance(Configuration hbaseConfig,
+            SecurityContext securityContext, Subject subject, Component hbaseMaster)
                 throws IOException, EntityNotFoundException {
 
         if (SecurityUtil.isKerberosAuthenticated(securityContext)) {
@@ -128,10 +139,17 @@ public class HBaseMetadataService implements AutoCloseable {
             final User user = User.create(proxyUserForImpersonation);
 
             return new HBaseMetadataService(ConnectionFactory.createConnection(hbaseConfig, user)
-                    .getAdmin(), securityContext, subject, user);
+                    .getAdmin(), securityContext, subject, user, hbaseMaster);
         } else {
             return newInstance(hbaseConfig);
         }
+    }
+
+    private static Component getHbaseMasterComponent(EnvironmentService environmentService, Long clusterId)
+            throws ServiceNotFoundException, ServiceComponentNotFoundException {
+
+        return EnvironmentServiceUtil.getComponent(
+                environmentService, clusterId, AMBARI_JSON_SERVICE_HBASE, AMBARI_JSON_COMPONENT_HBASE_MASTER);
     }
 
     /**
@@ -165,12 +183,12 @@ public class HBaseMetadataService implements AutoCloseable {
     
     public Keytabs getKeytabs() throws InterruptedException, IOException, PrivilegedActionException {
         return executeSecure(() -> Keytabs.fromServiceProperties(hBaseAdmin.getConfiguration()
-                .getValByRegex(HBASE_MASTER_KEYTAB_FILE)));
+                .getValByRegex(PROP_HBASE_MASTER_KEYTAB_FILE)));
     }
 
     public Principals getPrincipals() throws InterruptedException, IOException, PrivilegedActionException {
         return executeSecure(() -> Principals.fromServiceProperties(hBaseAdmin.getConfiguration()
-                .getValByRegex(HBASE_MASTER_KERBEROS_PRINCIPAL)));
+                .getValByRegex(PROP_HBASE_MASTER_KERBEROS_PRINCIPAL), hbaseMaster));
     }
 
     @Override
@@ -191,7 +209,7 @@ public class HBaseMetadataService implements AutoCloseable {
     private static Configuration overrideConfig(Configuration hbaseConfig, EnvironmentService environmentService, Long clusterId)
             throws IOException, ServiceConfigurationNotFoundException, ServiceNotFoundException {
         return OverrideHadoopConfiguration.override(environmentService, clusterId,
-                ServiceConfigurations.HBASE, STREAMS_JSON_SCHEMA_CONFIG_HBASE_SITE, hbaseConfig);
+                ServiceConfigurations.HBASE, AMBARI_JSON_CONFIG_HBASE_SITE, hbaseConfig);
     }
 
     /*
@@ -226,6 +244,7 @@ public class HBaseMetadataService implements AutoCloseable {
                 ", securityContext=" + securityContext +
                 ", subject=" + subject +
                 ", user=" + user +
+                ", hbaseMaster=" + hbaseMaster +
                 '}';
     }
 }

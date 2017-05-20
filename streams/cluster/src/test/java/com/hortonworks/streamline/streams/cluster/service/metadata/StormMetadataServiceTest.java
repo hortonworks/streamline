@@ -54,23 +54,27 @@ public class StormMetadataServiceTest {
     StormMetadataService stormService;
 
     @Injectable
-    String url;
-    @Injectable
     Client client;
+    @Injectable
+    String url;
     @Injectable
     String mainPageUrl;
     @Injectable
-    Invocation.Builder builder;
-    @Injectable
-    EnvironmentService environmentService;
-    @Injectable
     SecurityContext securityContext;
-    @Injectable
-    Component stormUiComp;
     @Injectable
     ServiceConfiguration stormEnvConfig;
     @Injectable
     Subject subject;
+    @Injectable
+    Component nimubs;
+    @Injectable
+    Component stormUi;
+
+
+    @Injectable
+    Invocation.Builder builder;
+    @Injectable
+    EnvironmentService environmentService;
 
 
     @Test
@@ -99,8 +103,8 @@ public class StormMetadataServiceTest {
     public void buildUrl_insecureMode_noQueryParam() throws Exception {
         new Expectations() {{
             securityContext.getAuthenticationScheme(); result = AUTHENTICATION_SCHEME_NOT_KERBEROS;
-            stormUiComp.getHosts(); result = Arrays.asList("localhost");
-            stormUiComp.getPort(); result = 8080;
+            stormUi.getHosts(); result = Arrays.asList("localhost");
+            stormUi.getPort(); result = 8080;
         }};
 
         final StormMetadataService stormMetadataService = new StormMetadataService
@@ -116,8 +120,8 @@ public class StormMetadataServiceTest {
         new Expectations() {{
             securityContext.getAuthenticationScheme(); result = StreamlineSecurityContext.KERBEROS_AUTH;
             securityContext.getUserPrincipal().getName(); result = principalUser;
-            stormUiComp.getHosts(); result = Arrays.asList("localhost");
-            stormUiComp.getPort(); result = 8080;
+            stormUi.getHosts(); result = Arrays.asList("localhost");
+            stormUi.getPort(); result = 8080;
         }};
 
         final StormMetadataService stormMetadataService = new StormMetadataService
