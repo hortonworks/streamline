@@ -27,6 +27,7 @@ import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfig
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.Authorizer;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaBrokerListeners;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaBrokersInfo;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaTopics;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.Security;
@@ -56,22 +57,25 @@ public class KafkaMetadataService implements AutoCloseable {
     public static final String KAFKA_BROKERS_IDS_ZK_RELATIVE_PATH = "brokers/ids";
     public static final String KAFKA_ZK_CONNECT_PROP = "zookeeper.connect";
 
-    private final EnvironmentService environmentService;
     private final ZookeeperClient zkCli;
     private final KafkaZkConnection kafkaZkConnection;
-    private SecurityContext securityContext;
+    private final SecurityContext securityContext;
+    private final Component kafkaBrokerComponent;
+    private final ServiceConfiguration kafkaBrokerConfig;
 
     // package protected useful for unit tests
-    KafkaMetadataService(EnvironmentService environmentService, ZookeeperClient zkCli,
-                         KafkaZkConnection kafkaZkConnection, SecurityContext securityContext) {
-        this.environmentService = environmentService;
+    KafkaMetadataService(ZookeeperClient zkCli,
+            KafkaZkConnection kafkaZkConnection, SecurityContext securityContext,
+            Component kafkaBrokerComponent, ServiceConfiguration kafkaBrokerConfig) {
         this.zkCli = zkCli;
         this.kafkaZkConnection = kafkaZkConnection;
         this.securityContext = securityContext;
+        this.kafkaBrokerComponent = kafkaBrokerComponent;
+        this.kafkaBrokerConfig = kafkaBrokerConfig;
     }
 
     public static KafkaMetadataService newInstance(EnvironmentService environmentService, Long clusterId)
-            throws ServiceConfigurationNotFoundException, IOException, ServiceNotFoundException {
+            throws ServiceConfigurationNotFoundException, IOException, ServiceNotFoundException, ServiceComponentNotFoundException {
         return newInstance(environmentService, clusterId, null);
     }
 
@@ -80,22 +84,25 @@ public class KafkaMetadataService implements AutoCloseable {
      * The connection must be closed. See {@link KafkaMetadataService}
      */
     public static KafkaMetadataService newInstance(EnvironmentService environmentService, Long clusterId,
-            SecurityContext securityContext) throws ServiceConfigurationNotFoundException, IOException, ServiceNotFoundException {
+                                                   SecurityContext securityContext)
+            throws ServiceConfigurationNotFoundException, IOException, ServiceNotFoundException, ServiceComponentNotFoundException {
 
         final KafkaZkConnection kafkaZkConnection = KafkaZkConnection.newInstance(getZkStringRaw(environmentService, clusterId));
         final ZookeeperClient zkCli = ZookeeperClient.newInstance(kafkaZkConnection);
         zkCli.start();
-        return new KafkaMetadataService(environmentService, zkCli, kafkaZkConnection, securityContext);
+
+        return new KafkaMetadataService(zkCli, kafkaZkConnection, securityContext,
+                getKafkaBrokerComponent(environmentService, clusterId),
+                getKafkaBrokerConfig(environmentService, clusterId));
     }
 
-    public KafkaBrokersInfo<HostPort> getBrokerHostPortFromStreamsJson(Long clusterId) throws ServiceNotFoundException, ServiceComponentNotFoundException {
-        final Component kafkaBrokerComp = getKafkaBrokerComponent(clusterId);
-        return KafkaBrokersInfo.hostPort(kafkaBrokerComp.getHosts(), kafkaBrokerComp.getPort(), securityContext);
+    public KafkaBrokersInfo<HostPort> getBrokerHostPortFromStreamsJson() throws ServiceNotFoundException, ServiceComponentNotFoundException {
+        return KafkaBrokersInfo.hostPort(kafkaBrokerComponent.getHosts(), kafkaBrokerComponent.getPort(),
+                securityContext, kafkaBrokerConfig, kafkaBrokerComponent);
     }
 
-    public String getProtocolFromStreamsJson(Long clusterId) throws ServiceNotFoundException, ServiceComponentNotFoundException {
-        final Component kafkaBrokerComp = getKafkaBrokerComponent(clusterId);
-        return kafkaBrokerComp.getProtocol();
+    public String getProtocolFromStreamsJson() throws ServiceNotFoundException, ServiceComponentNotFoundException {
+        return kafkaBrokerComponent.getProtocol();
     }
 
     public KafkaBrokersInfo<String> getBrokerInfoFromZk() throws ZookeeperClientException {
@@ -110,18 +117,22 @@ public class KafkaMetadataService implements AutoCloseable {
                 brokerInfo.add(new String(bytes));
             }
         }
-        return KafkaBrokersInfo.fromZk(brokerInfo, securityContext);
+        return KafkaBrokersInfo.fromZk(brokerInfo, securityContext, kafkaBrokerConfig, kafkaBrokerComponent);
     }
 
     public KafkaBrokersInfo<KafkaBrokersInfo.BrokerId> getBrokerIdsFromZk() throws ZookeeperClientException {
         final List<String> brokerIds = zkCli.getChildren(kafkaZkConnection.buildZkRootPath(KAFKA_BROKERS_IDS_ZK_RELATIVE_PATH));
-        return KafkaBrokersInfo.brokerIds(brokerIds, securityContext);
+        return KafkaBrokersInfo.brokerIds(brokerIds, securityContext, kafkaBrokerConfig, kafkaBrokerComponent);
     }
 
     public KafkaTopics getTopicsFromZk() throws ZookeeperClientException {
         final Security security = new Security(securityContext, new Authorizer(false));
         final List<String> topics = zkCli.getChildren(kafkaZkConnection.buildZkRootPath(KAFKA_TOPICS_ZK_RELATIVE_PATH));
         return topics == null ? new KafkaTopics(Collections.<String>emptyList(), security) : new KafkaTopics(topics, security);
+    }
+
+    public KafkaBrokerListeners getKafkaBrokerListeners() {
+        return KafkaBrokerListeners.newInstance(kafkaBrokerConfig, kafkaBrokerComponent);
     }
 
     @Override
@@ -138,17 +149,27 @@ public class KafkaMetadataService implements AutoCloseable {
     private static String getZkStringRaw(EnvironmentService environmentService, Long clusterId)
             throws IOException, ServiceConfigurationNotFoundException, ServiceNotFoundException {
 
+        return getKafkaBrokerConfig(environmentService, clusterId).getConfigurationMap().get(KAFKA_ZK_CONNECT_PROP);
+    }
+
+    private static ServiceConfiguration getKafkaBrokerConfig(EnvironmentService environmentService, Long clusterId)
+            throws ServiceNotFoundException, IOException, ServiceConfigurationNotFoundException {
+
         final ServiceConfiguration kafkaBrokerConfig = environmentService.getServiceConfigurationByName(
                 getKafkaServiceId(environmentService, clusterId), STREAMS_JSON_SCHEMA_CONFIG_KAFKA_BROKER);
+
         if (kafkaBrokerConfig == null || kafkaBrokerConfig.getConfigurationMap() == null) {
             throw new ServiceConfigurationNotFoundException(clusterId, ServiceConfigurations.KAFKA.name(),
                     STREAMS_JSON_SCHEMA_CONFIG_KAFKA_BROKER);
         }
-        return kafkaBrokerConfig.getConfigurationMap().get(KAFKA_ZK_CONNECT_PROP);
+        return kafkaBrokerConfig;
     }
 
-    private Component getKafkaBrokerComponent(Long clusterId) throws ServiceNotFoundException, ServiceComponentNotFoundException {
-        Component component = environmentService.getComponentByName(getKafkaServiceId(environmentService, clusterId), STREAMS_JSON_SCHEMA_COMPONENT_KAFKA_BROKER);
+    private static Component getKafkaBrokerComponent(EnvironmentService environmentService, Long clusterId)
+            throws ServiceNotFoundException, ServiceComponentNotFoundException {
+
+        final Component component = environmentService.getComponentByName(
+                getKafkaServiceId(environmentService, clusterId), STREAMS_JSON_SCHEMA_COMPONENT_KAFKA_BROKER);
         if (component == null) {
             throw new ServiceComponentNotFoundException(clusterId, ServiceConfigurations.KAFKA.name(),
                     ComponentPropertyPattern.KAFKA_BROKER.name());

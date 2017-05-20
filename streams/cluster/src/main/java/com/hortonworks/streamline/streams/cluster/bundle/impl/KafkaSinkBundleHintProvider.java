@@ -47,7 +47,7 @@ public class KafkaSinkBundleHintProvider extends AbstractBundleHintProvider {
             KafkaTopics topics = kafkaMetadataService.getTopicsFromZk();
             hintClusterMap.put(FIELD_NAME_TOPIC, topics.list());
 
-            KafkaBrokersInfo<HostPort> brokerHosts = kafkaMetadataService.getBrokerHostPortFromStreamsJson(cluster.getId());
+            KafkaBrokersInfo<HostPort> brokerHosts = kafkaMetadataService.getBrokerHostPortFromStreamsJson();
             List<HostPort> hosts = brokerHosts.getBrokers();
             if (hosts != null && !hosts.isEmpty()) {
                 List<String> bootstrapServerList = hosts.stream()
@@ -56,7 +56,7 @@ public class KafkaSinkBundleHintProvider extends AbstractBundleHintProvider {
                 hintClusterMap.put(FIELD_NAME_BOOTSTRAP_SERVERS, String.join(",", bootstrapServerList));
             }
 
-            String protocol = kafkaMetadataService.getProtocolFromStreamsJson(cluster.getId());
+            String protocol = kafkaMetadataService.getProtocolFromStreamsJson();
             if (!StringUtils.isEmpty(protocol)) {
                 hintClusterMap.put(FIELD_NAME_SECURITY_PROTOCOL, protocol);
             }

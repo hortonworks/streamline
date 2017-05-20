@@ -59,7 +59,7 @@ public class KafkaMetadataResource {
         SecurityUtil.checkPermissions(authorizer, securityContext, Cluster.NAMESPACE, clusterId, READ);
         try(final KafkaMetadataService kafkaMetadataService = KafkaMetadataService
                 .newInstance(environmentService, clusterId, securityContext)) {
-            return WSUtils.respondEntity(kafkaMetadataService.getBrokerHostPortFromStreamsJson(clusterId), OK);
+            return WSUtils.respondEntity(kafkaMetadataService.getBrokerHostPortFromStreamsJson(), OK);
         } catch (EntityNotFoundException ex) {
             throw com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException.byId(ex.getMessage());
         }

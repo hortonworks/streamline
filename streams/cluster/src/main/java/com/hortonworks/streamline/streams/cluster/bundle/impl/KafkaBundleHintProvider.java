@@ -43,6 +43,7 @@ public class KafkaBundleHintProvider extends AbstractBundleHintProvider {
     public static final String FIELD_NAME_BROKER_ZK_PATH = "zkPath";
     public static final String FIELD_NAME_ZK_SERVERS = "zkServers";
     public static final String FIELD_NAME_ZK_PORT = "zkPort";
+    public static final String FIELD_NAME_BROKER_LISTENERS_PROTOCOL = "protocol";
 
     @Override
     public Map<String, Object> getHintsOnCluster(Cluster cluster, SecurityContext securityContext, Subject subject) {
@@ -67,6 +68,9 @@ public class KafkaBundleHintProvider extends AbstractBundleHintProvider {
             hintClusterMap.put(FIELD_NAME_BROKER_ZK_PATH, brokerPath);
 
             fillZookeeperHints(cluster, hintClusterMap);
+
+            hintClusterMap.put(FIELD_NAME_BROKER_LISTENERS_PROTOCOL,
+                    kafkaMetadataService.getKafkaBrokerListeners().getProtocolToHostsWithPort());
         } catch (ServiceNotFoundException e) {
             // we access it from mapping information so shouldn't be here
             throw new IllegalStateException("Service " + Constants.Kafka.SERVICE_NAME + " in cluster " + cluster.getName() +
