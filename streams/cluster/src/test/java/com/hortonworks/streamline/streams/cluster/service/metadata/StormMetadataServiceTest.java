@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.cluster.service.metadata;
 import com.google.common.collect.Lists;
 
 import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.security.authentication.StreamlineSecurityContext;
 
@@ -65,6 +66,8 @@ public class StormMetadataServiceTest {
     SecurityContext securityContext;
     @Injectable
     Component stormUiComp;
+    @Injectable
+    ServiceConfiguration stormEnvConfig;
 
 
     @Test

@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import java.util.List;
 
-import javax.ws.rs.core.SecurityContext;
-
 /**
  * Wrapper used to show proper JSON formatting
  */
@@ -18,10 +16,6 @@ public class KafkaTopics {
     public KafkaTopics(List<String> topics, Security security) {
         this.topics = topics;
         this.security = security;
-    }
-
-    public KafkaTopics newInstance(List<String> topics, SecurityContext securityContext) {
-        return new KafkaTopics(topics, new Security(securityContext, new Authorizer(false)));
     }
 
     @JsonProperty("topics")

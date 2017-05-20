@@ -26,6 +26,8 @@ import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfig
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.OverrideHadoopConfiguration;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.HBaseNamespaces;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.Keytabs;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.Principals;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.Tables;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 
@@ -57,6 +59,8 @@ import javax.ws.rs.core.SecurityContext;
 public class HBaseMetadataService implements AutoCloseable {
     private static final Logger LOG = LoggerFactory.getLogger(HBaseMetadataService.class);
 
+    private static final String HBASE_MASTER_KEYTAB_FILE = "hbase.master.keytab.file";
+    private static final String HBASE_MASTER_KERBEROS_PRINCIPAL = "hbase.master.kerberos.principal";
     private static final List<String> STREAMS_JSON_SCHEMA_CONFIG_HBASE_SITE =
             ImmutableList.copyOf(new String[] {ServiceConfigurations.HBASE.getConfNames()[2]});
 
@@ -136,7 +140,7 @@ public class HBaseMetadataService implements AutoCloseable {
     public Tables getHBaseTables() throws Exception {
         final TableName[] tableNames = executeSecure(() -> hBaseAdmin.listTableNames());
         LOG.debug("HBase tables {}", Arrays.toString(tableNames));
-        return Tables.newInstance(tableNames, securityContext, true);
+        return Tables.newInstance(tableNames, securityContext, true, getPrincipals(), getKeytabs());
     }
 
     /**
@@ -146,7 +150,7 @@ public class HBaseMetadataService implements AutoCloseable {
     public Tables getHBaseTables(final String namespace) throws IOException, PrivilegedActionException, InterruptedException {
         final TableName[] tableNames = executeSecure(() -> hBaseAdmin.listTableNamesByNamespace(namespace));
         LOG.debug("HBase namespace [{}] has tables {}", namespace, Arrays.toString(tableNames));
-        return Tables.newInstance(tableNames, securityContext, true);
+        return Tables.newInstance(tableNames, securityContext, true, getPrincipals(), getKeytabs());
     }
 
     /**
@@ -154,9 +158,19 @@ public class HBaseMetadataService implements AutoCloseable {
      */
     public HBaseNamespaces getHBaseNamespaces() throws IOException, PrivilegedActionException, InterruptedException {
         final HBaseNamespaces namespaces = HBaseNamespaces.newInstance(
-                executeSecure(() -> hBaseAdmin.listNamespaceDescriptors()), securityContext, true);
+                executeSecure(() -> hBaseAdmin.listNamespaceDescriptors()), securityContext, true, getPrincipals(), getKeytabs());
         LOG.debug("HBase namespaces {}", namespaces);
         return namespaces;
+    }
+    
+    public Keytabs getKeytabs() throws InterruptedException, IOException, PrivilegedActionException {
+        return executeSecure(() -> Keytabs.fromServiceProperties(hBaseAdmin.getConfiguration()
+                .getValByRegex(HBASE_MASTER_KEYTAB_FILE)));
+    }
+
+    public Principals getPrincipals() throws InterruptedException, IOException, PrivilegedActionException {
+        return executeSecure(() -> Principals.fromServiceProperties(hBaseAdmin.getConfiguration()
+                .getValByRegex(HBASE_MASTER_KERBEROS_PRINCIPAL)));
     }
 
     @Override
