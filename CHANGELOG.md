@@ -1,4 +1,5 @@
 ## 0.4
+ * ISSUE-601     : Add "artifacts" feature for JDBC sink bundle
  * ISSUE-597     : Kafka component bundle changes for UI when running in security mode
  * ISSUE-588     : Add null checks to handle null fields in topology creation APIs
  * ISSUE-573     : readerSchemaVersion in Kafka config key is marked as optional but effectively required due to Flux
