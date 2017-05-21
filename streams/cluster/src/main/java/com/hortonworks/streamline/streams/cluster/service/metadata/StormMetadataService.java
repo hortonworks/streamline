@@ -16,6 +16,7 @@
 package com.hortonworks.streamline.streams.cluster.service.metadata;
 
 import com.hortonworks.streamline.common.JsonClientUtil;
+import com.hortonworks.streamline.common.function.SupplierException;
 import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
@@ -36,11 +37,13 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 
 import java.io.IOException;
+import java.security.PrivilegedActionException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import javax.security.auth.Subject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.SecurityContext;
@@ -62,32 +65,36 @@ public class StormMetadataService {
     private final SecurityContext securityContext;
     private final Client httpClient;
     private final ServiceConfiguration stormEnvConfig;
+    private Subject subject;
     private final String tplgySumUrl;     // http://cn067.l42scl.hortonworks.com:8744/api/v1/topology/summary
     private final String mainPageUrl;     // Views: http://172.12.128.67:8080/main/views/Storm_Monitoring/0.1.0/STORM_CLUSTER_INSTANCE
                                           // UI:    http://pm-eng1-cluster1.field.hortonworks.com:8744
 
 
     public StormMetadataService(Client httpClient, String tplgySumUrl, String mainPageUrl,
-                                SecurityContext securityContext, ServiceConfiguration stormEnvConfig) {
+                                SecurityContext securityContext, ServiceConfiguration stormEnvConfig, Subject subject) {
         this.httpClient = httpClient;
         this.tplgySumUrl = tplgySumUrl;
         this.mainPageUrl = mainPageUrl;
         this.securityContext = securityContext;
         this.stormEnvConfig = stormEnvConfig;
+        this.subject = subject;
     }
 
     public static class Builder {
         private EnvironmentService environmentService;
         private Long clusterId;
         private SecurityContext securityContext;
+        private Subject subject;
         private String urlRelativePath = STORM_REST_API_TOPOLOGIES_DEFAULT_RELATIVE_PATH;
         private String username = "";
         private String password = "";
 
-        public Builder(EnvironmentService environmentService, Long clusterId, SecurityContext securityContext) {
+        public Builder(EnvironmentService environmentService, Long clusterId, SecurityContext securityContext, Subject subject) {
             this.environmentService = environmentService;
             this.clusterId = clusterId;
             this.securityContext = securityContext;
+            this.subject = subject;
         }
 
         Builder setUrlRelativePath(String urlRelativePath) {
@@ -107,7 +114,7 @@ public class StormMetadataService {
 
         public StormMetadataService build() throws ServiceNotFoundException, ServiceComponentNotFoundException {
             return new StormMetadataService(newHttpClient(), getTopologySummaryRestUrl(),
-                    getMainPageUrl(), securityContext, getServiceConfig(STREAMS_JSON_SCHEMA_CONFIG_STORM_ENV));
+                    getMainPageUrl(), securityContext, getServiceConfig(STREAMS_JSON_SCHEMA_CONFIG_STORM_ENV), subject);
         }
 
         /**
@@ -179,19 +186,26 @@ public class StormMetadataService {
     /**
      * @return List of storm topologies as returned by Storm's REST API
      */
-    public StormTopologies getTopologies() throws IOException {
-        final Map<String, ?> jsonAsMap = JsonClientUtil.getEntity(httpClient.target(tplgySumUrl), Map.class);
-        List<String> topologies = Collections.emptyList();
-        if (jsonAsMap != null) {
-            final List<Map<String, String>> topologiesSummary = (List<Map<String, String>>) jsonAsMap.get(STORM_REST_API_TOPOLOGIES_KEY);
-            if (topologiesSummary != null) {
-                topologies = new ArrayList<>(topologiesSummary.size());
-                for (Map<String, String> tpSum : topologiesSummary) {
-                    topologies.add(tpSum.get(STORM_REST_API_TOPOLOGY_ID_KEY));
+    public StormTopologies getTopologies() throws IOException, PrivilegedActionException {
+        return executeSecure(() -> {
+                    final Map<String, ?> jsonAsMap = JsonClientUtil.getEntity(httpClient.target(tplgySumUrl), Map.class);
+                    List<String> topologies = Collections.emptyList();
+                    if (jsonAsMap != null) {
+                        final List<Map<String, String>> topologiesSummary = (List<Map<String, String>>) jsonAsMap.get(STORM_REST_API_TOPOLOGIES_KEY);
+                        if (topologiesSummary != null) {
+                            topologies = new ArrayList<>(topologiesSummary.size());
+                            for (Map<String, String> tpSum : topologiesSummary) {
+                                topologies.add(tpSum.get(STORM_REST_API_TOPOLOGY_ID_KEY));
+                            }
+                        }
+                    }
+                    return new StormTopologies(topologies, new Security(securityContext, new Authorizer(false), getPrincipals(), getKeytabs()));
                 }
-            }
-        }
-        return new StormTopologies(topologies, new Security(securityContext, new Authorizer(false), getPrincipals(), getKeytabs()));
+        );
+    }
+
+    private <T, E extends Exception> T executeSecure(SupplierException<T, E> action) throws PrivilegedActionException, E {
+        return SecurityUtil.execute(action, securityContext, subject);
     }
 
     /**

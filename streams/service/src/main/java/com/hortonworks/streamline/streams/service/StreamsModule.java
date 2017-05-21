@@ -157,7 +157,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
     private List<Object> getServiceMetadataResources(StreamlineAuthorizer authorizer, EnvironmentService environmentService, Subject subject) {
         return Arrays.asList(
                 new KafkaMetadataResource(authorizer, environmentService),
-                new StormMetadataResource(authorizer, environmentService),
+                new StormMetadataResource(authorizer, environmentService, subject),
                 new HiveMetadataResource(authorizer, environmentService, subject),
                 new HBaseMetadataResource(authorizer, environmentService, subject)
         );

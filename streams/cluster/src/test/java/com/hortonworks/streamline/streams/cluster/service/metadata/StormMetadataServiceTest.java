@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.security.auth.Subject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.SecurityContext;
@@ -68,6 +69,8 @@ public class StormMetadataServiceTest {
     Component stormUiComp;
     @Injectable
     ServiceConfiguration stormEnvConfig;
+    @Injectable
+    Subject subject;
 
 
     @Test
@@ -101,7 +104,7 @@ public class StormMetadataServiceTest {
         }};
 
         final StormMetadataService stormMetadataService = new StormMetadataService
-                .Builder(environmentService, 1L, securityContext).build();
+                .Builder(environmentService, 1L, securityContext, subject).build();
         final String tpSumUrl = stormMetadataService.getTopologySummaryUrl();
 
         Assert.assertTrue(tpSumUrl.equals(STORM_UI_URL_EXPECTED));
@@ -118,7 +121,7 @@ public class StormMetadataServiceTest {
         }};
 
         final StormMetadataService stormMetadataService = new StormMetadataService
-                .Builder(environmentService, 1L, securityContext).build();
+                .Builder(environmentService, 1L, securityContext, subject).build();
         final String tpSumUrl = stormMetadataService.getTopologySummaryUrl();
 
         Assert.assertTrue(tpSumUrl.equals(STORM_UI_URL_EXPECTED +"?" + StormMetadataService.STORM_REST_API_DO_AS_USER_QUERY_PARAM
