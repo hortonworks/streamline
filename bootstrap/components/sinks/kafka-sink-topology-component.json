@@ -35,11 +35,20 @@
         "hint": "schema,override"
       },
       {
+        "uiName": "Security Protocol",
+        "fieldName": "securityProtocol",
+        "isOptional": false,
+        "tooltip": "Protocol to be used to communicate with Kafka brokers",
+        "type": "enumstring",
+        "options": []
+      },
+      {
         "uiName": "Bootstrap Servers",
         "fieldName": "bootstrapServers",
         "isOptional": false,
         "tooltip": "Comma separated string of host:port kafka brokers",
-        "type": "string"
+        "type": "string",
+        "hint": "dependsOn-securityProtocol"
       },
       {
         "uiName": "Key Serializer",
@@ -165,21 +174,12 @@
         "defaultValue": "30000"
       },
       {
-        "uiName": "Security Protocol",
-        "fieldName": "securityProtocol",
-        "isOptional": true,
-        "tooltip": "Protocol to be used to communicate with Kafka brokers",
-        "type": "enumstring",
-        "options": ["PLAINTEXT", "SSL", "SASL_PLAINTEXT", "SASL_SSL"],
-        "defaultValue": "PLAINTEXT"
-      },
-      {
         "uiName": "Kerberos client principal",
         "fieldName": "principal",
         "isOptional": true,
         "tooltip": "Client principal to use to connect to brokers while using SASL GSSAPI mechanism for Kerberos",
         "type": "string",
-        "hint": "security_kerberos",
+        "hint": "security_kerberos_required",
         "defaultValue": null
       },
       {
@@ -188,7 +188,7 @@
         "isOptional": true,
         "tooltip": "Keytab file location on worker node containing the secret key for client principal while using SASL GSSAPI mechanism for Kerberos",
         "type": "string",
-        "hint": "security_kerberos",
+        "hint": "security_kerberos_required",
         "defaultValue": null
       },
       {
@@ -197,7 +197,7 @@
         "isOptional": true,
         "tooltip": "Service name that Kafka broker is running as",
         "type": "string",
-        "hint": "security_kerberos",
+        "hint": "security_kerberos_required",
         "defaultValue": null
       },
       {
@@ -297,7 +297,7 @@
         "isOptional": true,
         "tooltip": "The location of the trust store file",
         "type": "string",
-        "hint": "security_ssl",
+        "hint": "security_ssl_required",
         "defaultValue": null
       },
       {
