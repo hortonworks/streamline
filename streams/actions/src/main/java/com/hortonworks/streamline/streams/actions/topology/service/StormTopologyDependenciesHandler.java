@@ -17,6 +17,7 @@ package com.hortonworks.streamline.streams.actions.topology.service;
 
 import com.google.common.base.Joiner;
 import com.hortonworks.streamline.common.ComponentTypes;
+import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.streams.catalog.UDF;
 import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
@@ -46,6 +47,7 @@ import java.util.Set;
  */
 public class StormTopologyDependenciesHandler extends TopologyDagVisitor {
     private static final Logger LOG = LoggerFactory.getLogger(StormTopologyDependenciesHandler.class);
+    public static final String COMPONENT_CONFIG_KEY_MAVEN_ARTIFACTS = "mavenArtifacts";
     private final Set<String> extraJars = new HashSet<>();
     private final Set<String> resourceNames = new HashSet<>();
     private Set<TopologyComponentBundle> topologyComponentBundleSet = new HashSet<>();
@@ -119,6 +121,7 @@ public class StormTopologyDependenciesHandler extends TopologyDagVisitor {
         extraJars.addAll(streamlineComponent.getExtraJars());
         resourceNames.addAll(streamlineComponent.getExtraResources());
         handleBundleForStreamlineComponent(streamlineComponent);
+        handleComponentMavenArtifactsConfigForStreamlineComponent(streamlineComponent);
     }
 
     private void handleBundleForStreamlineComponent (StreamlineComponent streamlineComponent) {
@@ -143,6 +146,17 @@ public class StormTopologyDependenciesHandler extends TopologyDagVisitor {
             } catch (IOException e) {
                 LOG.warn("IOException while getting jar file name for custom processor from bundle", topologyComponentBundle);
                 throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private void handleComponentMavenArtifactsConfigForStreamlineComponent(StreamlineComponent streamlineComponent) {
+        Config config = streamlineComponent.getConfig();
+        if (config != null) {
+            String componentMavenArtifacts = config.get(COMPONENT_CONFIG_KEY_MAVEN_ARTIFACTS, "");
+            if (!componentMavenArtifacts.isEmpty()) {
+                LOG.debug("Adding component dependency artifact: %s", componentMavenArtifacts);
+                mavenArtifacts.add(componentMavenArtifacts);
             }
         }
     }
