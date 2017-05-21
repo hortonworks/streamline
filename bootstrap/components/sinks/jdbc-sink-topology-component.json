@@ -9,6 +9,13 @@
   "topologyComponentUISpecification": {
     "fields": [
       {
+        "uiName": "Maven Artifacts",
+        "fieldName": "mavenArtifacts",
+        "isOptional": true,
+        "tooltip": "The maven artifacts to load driver. You can use ',' to separate multiple artifacts and '^' to exclude some transitive artifacts. E.g. mysql:mysql-connector-java:5.1.34",
+        "type": "string"
+      },
+      {
         "uiName": "Driver class name",
         "fieldName": "dataSourceClassName",
         "isOptional": false,
