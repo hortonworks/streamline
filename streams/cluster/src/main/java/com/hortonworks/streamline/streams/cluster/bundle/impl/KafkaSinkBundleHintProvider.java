@@ -16,6 +16,7 @@
 package com.hortonworks.streamline.streams.cluster.bundle.impl;
 
 import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.cluster.bundle.AbstractKafkaBundleHintProvider;
 
 import java.util.Map;
 

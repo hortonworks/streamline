@@ -87,18 +87,13 @@ public class KafkaMetadataService implements AutoCloseable {
         this.kafkaEnvConfig = kafkaEnvConfig;
     }
 
-    public static KafkaMetadataService newInstance(EnvironmentService environmentService, Long clusterId)
-            throws ServiceConfigurationNotFoundException, IOException, ServiceNotFoundException, ServiceComponentNotFoundException {
-        return newInstance(environmentService, clusterId, null);
-    }
-
     /**
      * Creates and starts a {@link ZookeeperClient} connection as part of the object construction process.
      * The connection must be closed. See {@link KafkaMetadataService}
      */
-    public static KafkaMetadataService newInstance(EnvironmentService environmentService, Long clusterId,
-                                                   SecurityContext securityContext)
-            throws ServiceConfigurationNotFoundException, IOException, ServiceNotFoundException, ServiceComponentNotFoundException {
+    public static KafkaMetadataService newInstance(
+            EnvironmentService environmentService, Long clusterId, SecurityContext securityContext)
+                throws ServiceConfigurationNotFoundException, IOException, ServiceNotFoundException, ServiceComponentNotFoundException {
 
         final KafkaZkConnection kafkaZkConnection = KafkaZkConnection.newInstance(
                 getZkStringRaw(environmentService, clusterId, AMBARI_JSON_CONFIG_KAFKA_BROKER));
@@ -143,7 +138,7 @@ public class KafkaMetadataService implements AutoCloseable {
     }
 
     public KafkaTopics getTopicsFromZk() throws ZookeeperClientException, IOException {
-        final Security security = new Security(securityContext, new Authorizer(false), getPrincipals(), getKeytabs());
+        final Security security = getSecurity();
         final List<String> topics = zkCli.getChildren(kafkaZkConnection.buildZkRootPath(ZK_RELATIVE_PATH_KAFKA_TOPICS));
         return topics == null ? new KafkaTopics(Collections.emptyList(), security) : new KafkaTopics(topics, security);
     }
@@ -173,6 +168,10 @@ public class KafkaMetadataService implements AutoCloseable {
         return new HashMap<String, Component>(){{
             put("kafka", kafkaBroker);
         }};
+    }
+
+    public Security getSecurity() throws IOException {
+        return new Security(securityContext, new Authorizer(false), getPrincipals(), getKeytabs());
     }
 
     /**

@@ -18,10 +18,12 @@ package com.hortonworks.streamline.streams.cluster.bundle;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.Security;
+
+import java.util.Map;
 
 import javax.security.auth.Subject;
 import javax.ws.rs.core.SecurityContext;
-import java.util.Map;
 
 /**
  * This interface defines the way to provide hints on specific component bundle.
@@ -46,6 +48,19 @@ public interface ComponentBundleHintProvider {
 
         public Map<String, Object> getHints() {
             return hints;
+        }
+    }
+
+    class SecureBundleHintsResponse extends BundleHintsResponse {
+        private final Security security;
+
+        public SecureBundleHintsResponse(Cluster cluster, Security security, Map<String, Object> hints) {
+            super(cluster, hints);
+            this.security = security;
+        }
+
+        public Security getSecurity() {
+            return security;
         }
     }
 
