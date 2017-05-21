@@ -35,11 +35,20 @@
         "hint": "schema,override"
       },
       {
+        "uiName": "Security Protocol",
+        "fieldName": "securityProtocol",
+        "isOptional": false,
+        "tooltip": "Protocol to be used to communicate with Kafka brokers",
+        "type": "enumstring",
+        "options": []
+      },
+      {
         "uiName": "Bootstrap Servers",
         "fieldName": "bootstrapServers",
         "isOptional": false,
         "tooltip": "Comma separated string of host:port kafka brokers",
-        "type": "string"
+        "type": "string",
+        "hint": "dependsOn-securityProtocol"
       },
       {
         "uiName": "Key Serializer",
@@ -163,14 +172,6 @@
         "tooltip": "Maximum amount of time in milliseconds the producer will wait for the response of a request",
         "type": "string",
         "defaultValue": "30000"
-      },
-      {
-        "uiName": "Security Protocol",
-        "fieldName": "securityProtocol",
-        "isOptional": false,
-        "tooltip": "Protocol to be used to communicate with Kafka brokers",
-        "type": "enumstring",
-        "options": []
       },
       {
         "uiName": "Kerberos client principal",

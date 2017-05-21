@@ -10,11 +10,20 @@
   "topologyComponentUISpecification": {
     "fields": [
       {
+        "uiName": "Security Protocol",
+        "fieldName": "securityProtocol",
+        "isOptional": false,
+        "tooltip": "Protocol to be used to communicate with Kafka brokers",
+        "type": "enumstring",
+        "options": []
+      },
+      {
         "uiName": "Bootstrap servers",
         "fieldName": "bootstrapServers",
         "isOptional": false,
         "tooltip": "A comma separated string of host:port for Kafka brokers",
-        "type": "string"
+        "type": "string",
+        "hint": "dependsOn-securityProtocol"
       },
       {
         "uiName": "Kafka topic",
@@ -24,14 +33,6 @@
         "type": "enumstring",
         "options": [],
         "hint": "schema,override"
-      },
-      {
-        "uiName": "Security Protocol",
-        "fieldName": "securityProtocol",
-        "isOptional": false,
-        "tooltip": "Protocol to be used to communicate with Kafka brokers",
-        "type": "enumstring",
-        "options": []
       },
       {
         "uiName": "Reader schema version",
