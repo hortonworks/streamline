@@ -470,7 +470,7 @@ public class TopologyCatalogResource {
     }
 
     private Response deploy(Topology topology, SecurityContext securityContext) {
-        String asUser = securityContext.isSecure() ? securityContext.getUserPrincipal().getName() : null;
+        String asUser = WSUtils.getUserFromSecurityContext(securityContext);
         try {
             ParallelStreamUtil.runAsync(() -> actionsService.deployTopology(topology, asUser), forkJoinPool);
             return WSUtils.respondEntity(topology, OK);

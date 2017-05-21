@@ -45,6 +45,7 @@ public class WSUtils {
     public static final String NAME = "name";
     public static final String FROM_ID = "fromId";
     public static final String TO_ID = "toId";
+    public static final String AUTH_SCHEME_KERBEROS = "kerberos";
 
     private WSUtils() {
     }
@@ -169,6 +170,15 @@ public class WSUtils {
     }
 
     public static String getUserFromSecurityContext(SecurityContext securityContext) {
-        return securityContext.isSecure() ? securityContext.getUserPrincipal().getName() : null;
+        if (isKerberosAuthenticated(securityContext)) {
+            return securityContext.getUserPrincipal().getName();
+        }
+        return null;
+    }
+
+    public static boolean isKerberosAuthenticated(SecurityContext securityContext) {
+        return securityContext != null
+                && securityContext.getAuthenticationScheme() != null
+                && securityContext.getAuthenticationScheme().equals(AUTH_SCHEME_KERBEROS);
     }
 }
