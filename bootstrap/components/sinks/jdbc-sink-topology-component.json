@@ -17,28 +17,28 @@
       },
       {
         "uiName": "Driver class name",
-        "fieldName": "dataSourceClassName",
+        "fieldName": "driverClassName",
         "isOptional": false,
-        "tooltip": "The driver class name. E.g. com.mysql.jdbc.jdbc2.optional.MysqlDataSource",
+        "tooltip": "The driver class name. E.g. com.mysql.jdbc.Driver",
         "type": "string"
       },
       {
         "uiName": "JDBC Url",
-        "fieldName": "dataSource.url",
+        "fieldName": "jdbcUrl",
         "isOptional": false,
         "tooltip": "JDBC Url, E.g. jdbc:mysql://localhost:3306/test",
         "type": "string"
       },
       {
         "uiName": "Username",
-        "fieldName": "dataSource.user",
+        "fieldName": "username",
         "isOptional": false,
         "tooltip": "Database username",
         "type": "string"
       },
       {
         "uiName": "Password",
-        "fieldName": "dataSource.password",
+        "fieldName": "password",
         "isOptional": false,
         "tooltip": "Database password",
         "type": "string",

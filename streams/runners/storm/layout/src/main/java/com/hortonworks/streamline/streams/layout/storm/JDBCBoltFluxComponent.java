@@ -29,10 +29,10 @@ import java.util.Map;
 public class JDBCBoltFluxComponent extends AbstractFluxComponent {
     private static final String KEY_TABLE_NAME = "tableName";
     private static final String KEY_COLUMNS = "columns";
-    private static final String KEY_DATASOURCE_CLASSNAME = "dataSourceClassName";
-    private static final String KEY_DATASOURCE_URL = "dataSource.url";
-    private static final String KEY_DATASOURCE_USER = "dataSource.user";
-    private static final String KEY_DATASOURCE_PASSWORD = "dataSource.password";
+    private static final String KEY_DRIVER_CLASSNAME = "driverClassName";
+    private static final String KEY_JDBC_URL = "jdbcUrl";
+    private static final String KEY_USERNAME = "username";
+    private static final String KEY_PASSWORD = "password";
 
     @Override
     protected void generateComponent() {
@@ -64,10 +64,10 @@ public class JDBCBoltFluxComponent extends AbstractFluxComponent {
     private String getHikariCPConfigMap() {
         String componentId = "HikariCpConfigMap" + UUID_FOR_COMPONENTS;
         List<Map<String, Object>> configMethods = new ArrayList<>();
-        put(configMethods, KEY_DATASOURCE_CLASSNAME);
-        put(configMethods, KEY_DATASOURCE_URL);
-        put(configMethods, KEY_DATASOURCE_USER);
-        put(configMethods, KEY_DATASOURCE_PASSWORD);
+        put(configMethods, KEY_DRIVER_CLASSNAME);
+        put(configMethods, KEY_JDBC_URL);
+        put(configMethods, KEY_USERNAME);
+        put(configMethods, KEY_PASSWORD);
         String className = "java.util.HashMap";
         addToComponents(createComponent(componentId, className, null, null, configMethods));
         return componentId;
