@@ -16,6 +16,8 @@ import React, {Component, PropTypes} from 'react';
 import ReactDOM, {findDOMNode} from 'react-dom';
 import {Link} from 'react-router';
 import TopologyREST from '../../../rest/TopologyREST';
+import ClusterREST from '../../../rest/ClusterREST';
+import EnvironmentREST from '../../../rest/EnvironmentREST';
 import Utils from '../../../utils/Utils';
 import Form from '../../../libs/form';
 import FSReactToastr from '../../../components/FSReactToastr';
@@ -36,6 +38,7 @@ export default class TopologyConfigContainer extends Component {
       formField: {},
       fetchLoader: true,
       activeTabKey: 1,
+      hasSecurity: false,
       advancedField : [{
         fieldName : '',
         fieldValue : ''
@@ -47,14 +50,64 @@ export default class TopologyConfigContainer extends Component {
   fetchData = () => {
     const {topologyId, versionId} = this.props;
     let promiseArr = [
-      TopologyREST.getTopologyWithoutMetrics(topologyId, versionId)
+      TopologyREST.getTopologyWithoutMetrics(topologyId, versionId),
+      ClusterREST.getAllCluster()
     ];
     Promise.all(promiseArr).then(result => {
       const formField = this.props.uiConfigFields.topologyComponentUISpecification;
       const config = result[0].config;
       const {f_Data,adv_Field}= this.fetchAdvanedField(formField,JSON.parse(config));
       this.namespaceId = result[0].namespaceId;
-      this.setState({formData: f_Data, formField: formField, fetchLoader: false,advancedField : adv_Field});
+      const clustersConfig = result[1].entities;
+      EnvironmentREST.getNameSpace(this.namespaceId)
+        .then((r)=>{
+          let mappings = r.mappings.filter((c)=>{
+            return c.namespaceId === this.namespaceId && (c.serviceName === 'HBASE' || c.serviceName === 'HDFS' || c.serviceName === 'HIVE');
+          });
+          let clusters = [];
+          mappings.map((m)=>{
+            let c = clustersConfig.find((o)=>{return o.cluster.id === m.clusterId;});
+            clusters.push(c.cluster.name);
+          });
+          clusters = _.uniq(clusters);
+          let securityFields = _.find(formField.fields, {"fieldName": "clustersSecurityConfig"}).fields;
+          let fieldObj = _.find(securityFields, {"fieldName": "clusterName"});
+          fieldObj.options = clusters;
+          this.setState({formData: f_Data, formField: formField, fetchLoader: false,advancedField : adv_Field});
+          let mapObj = r.mappings.find((m) => {
+            return m.serviceName.toLowerCase() === 'storm';
+          });
+          if (mapObj) {
+            var stormClusterId = mapObj.clusterId;
+            let hasSecurity = false, principalsArr = [], keyTabsArr = [];
+            ClusterREST.getStormSecurityDetails(stormClusterId)
+              .then((entity)=>{
+                if(entity.responseMessage !== undefined) {
+                  FSReactToastr.error(<CommonNotification flag="error" content={entity.responseMessage}/>, '', toastOpt);
+                } else {
+                  if(entity.security.authentication.enabled) {
+                    hasSecurity = true;
+                  }
+                  _.keys(entity.security.principals).map((p)=>{
+                    entity.security.principals[p].map((o)=>{
+                      principalsArr.push(o.name);
+                    });
+                  });
+
+                  _.keys(entity.security.keytabs).map((kt)=>{
+                    keyTabsArr.push(entity.security.keytabs[kt]);
+                  });
+
+                  let principalFieldObj = _.find(securityFields, {"fieldName": "principal"});
+                  principalFieldObj.options = principalsArr;
+
+                  let keyTabFieldObj = _.find(securityFields, {"fieldName": "keytabPath"});
+                  keyTabFieldObj.options = keyTabsArr;
+                  this.setState({hasSecurity: hasSecurity, formField: formField});
+                }
+              });
+          }
+        });
     }).catch(err => {
       this.setState({fetchLoader: false});
       FSReactToastr.error(
@@ -69,9 +122,15 @@ export default class TopologyConfigContainer extends Component {
       if(index !== -1){
         f_Data[key] = config[key];
       } else {
-        adv_Field.push({fieldName : key , fieldValue : config[key]});
+        adv_Field.push({fieldName : key , fieldValue : config[key] instanceof Array ? JSON.stringify(config[key]) : config[key]});
       }
     });
+    if(adv_Field.length === 0){
+      adv_Field.push({
+        fieldName : '',
+        fieldValue : ''
+      });
+    }
 
     return {f_Data,adv_Field};
   }
@@ -135,6 +194,8 @@ export default class TopologyConfigContainer extends Component {
       this.setState({activeTabKey: 1});
     } else if (eventKey == 2) {
       this.setState({activeTabKey: 2});
+    } else if (eventKey == 3) {
+      this.setState({activeTabKey: 3});
     }
   }
 
@@ -183,6 +244,21 @@ export default class TopologyConfigContainer extends Component {
                   </Scrollbars>
                 </div>
               </Tab>
+              {
+              this.state.hasSecurity ?
+              <Tab eventKey={3} title="SECURITY">
+                <div className="source-modal-form" style={{width : 580}}>
+                  <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
+                    display: "none"
+                  }}/>}>
+                    <Form ref="Form" FormData={formData} readOnly={disabledFields} showRequired={null} showSecurity={true} className="modal-form config-modal-form">
+                      {fields}
+                    </Form>
+                  </Scrollbars>
+                </div>
+              </Tab>
+              : ''
+              }
               <Tab eventKey={2} title="ADVANCED">
                 <form className="source-modal-form" style={{width : 580}}>
                   <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{

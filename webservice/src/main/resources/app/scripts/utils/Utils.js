@@ -212,7 +212,7 @@ const inputFieldsData = function(inputFields) {
   return inputFieldsArr;
 };
 
-const checkNestedInputFields = function(inputObj, fieldsData) {
+const checkNestedInputFields = function(inputObj, fieldsData,securityType) {
   // if the inputObj doesn't have options and hint the inputObj return it self
   if (!inputObj.options && inputObj.hint === undefined) {
     return inputObj;
@@ -238,17 +238,40 @@ const checkNestedInputFields = function(inputObj, fieldsData) {
         } else if (obj.hint.toLowerCase().indexOf("override") !== -1 && obj.type === "enumstring") {
           obj.type = "creatableField";
         }
-      };
+      }
+      obj.validators = [];
+      switch(securityType){
+      case 'SSL' :
+        if(obj.hint.toLowerCase().indexOf('security_ssl_required')!== -1 && obj.hint !== undefined){
+          obj.isOptional = false;
+          obj.validators.push("required");
+        }
+        break;
+      case 'SASL_PLAINTEXT' :
+        if(obj.hint.toLowerCase().indexOf('security_kerberos_required') !== -1 && obj.hint !== undefined){
+          obj.isOptional = false;
+          obj.validators.push("required");
+        }
+        break;
+      case 'SASL_SSL':
+        if(obj.hint.toLowerCase().indexOf('security_ssl_required') !== -1 ||  obj.hint.toLowerCase().indexOf('security_kerberos_required') !== -1 && obj.hint !== undefined){
+          obj.isOptional = false;
+          obj.validators.push("required");
+        }
+        break;
+      default : '';
+        break;
+      }
       return obj;
     }
   };
   return populateFields(JSON.parse(JSON.stringify(inputObj)));
 };
 
-const genFields = function(fieldsJSON, _fieldName = [], FormData = {}, inputFields = []) {
+const genFields = function(fieldsJSON, _fieldName = [], FormData = {}, inputFields = [],securityType) {
   const fields = [];
   fieldsJSON.forEach((d, i) => {
-    d = checkNestedInputFields(d, inputFields);
+    d = checkNestedInputFields(d, inputFields,securityType);
     const Comp = Fields[d.type.split('.').join('')] || null;
     let _name = [
       ..._fieldName,
@@ -452,7 +475,13 @@ const mergeFormDataFields = function(name, clusterArr,clusterName,formData,uiSpe
                     // OR
                     // if (!name) this means user had change the cluster name
                     if (!formData[k] || !name) {
-                      _.set(data,k,_.get(formData,k,clusterArr[x].hints[k]));
+                      let fieldValue = clusterArr[x].hints[k];
+                      if(Object.prototype.toString.call(clusterArr[x].hints[k]) === "[object Object]" && list.hint.indexOf('dependsOn-') !== -1){
+                        const key = list.hint.split('-')[1];
+                        // securityProtocal index 0 is taken because one can't have multiple security on clusters;
+                        fieldValue = formData[key] || '';
+                      }
+                      _.set(data,k,_.get(formData,k,fieldValue));
                     }
                   }
                 }
@@ -502,6 +531,9 @@ const eventLogNumberId = function(num){
 };
 
 const checkTypeAndReturnValue = function(data){
+  if(typeof(data) === "boolean"){
+    data = data.toString();
+  }
   if(!data){
     return;
   }
@@ -526,6 +558,27 @@ const checkTypeAndReturnValue = function(data){
       return JSON.parse(data);
     }
   }
+};
+
+const mapSecurityProtocol = function(clusterName,securityKey,formData,clusterArr){
+  let tempFormData = _.cloneDeep(formData);
+  const bootstrapServerObj = _.find(clusterArr, (c) => {
+    return c.cluster.id === Number(clusterName);
+  });
+  tempFormData["bootstrapServers"] = bootstrapServerObj.hints["bootstrapServers"][securityKey];
+  return tempFormData;
+};
+
+const skipSecurityFields = function(configJSON){
+  let arr=[];
+  _.map(configJSON, (config) => {
+    config.hint !== undefined && config.hint.indexOf('security_ssl_required') === -1 && config.hint.indexOf('security_kerberos_required') === -1
+    ? arr.push(config)
+    : config.hint === undefined
+      ? arr.push(config)
+      : '';
+  });
+  return arr;
 };
 
 export default {
@@ -555,5 +608,7 @@ export default {
   mergeFormDataFields,
   handleNestedFormDataEmptyObj,
   eventLogNumberId,
-  checkTypeAndReturnValue
+  checkTypeAndReturnValue,
+  mapSecurityProtocol,
+  skipSecurityFields
 };

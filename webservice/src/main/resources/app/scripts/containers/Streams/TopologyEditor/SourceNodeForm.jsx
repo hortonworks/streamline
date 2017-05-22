@@ -50,7 +50,8 @@ export default class SourceNodeForm extends Component {
       clusterArr: [],
       configJSON: [],
       clusterName: '',
-      fetchLoader: true
+      fetchLoader: true,
+      securityType : ''
     };
   }
 
@@ -95,6 +96,9 @@ export default class SourceNodeForm extends Component {
               };
               tempArr.push(obj);
             }
+            if(k === "security"){
+              hasSecurity = clusters[x][k].authentication.enabled;
+            }
           });
         });
         stateObj.clusterArr = clusters;
@@ -106,12 +110,8 @@ export default class SourceNodeForm extends Component {
       stateObj.formData = this.nodeData.config.properties;
       stateObj.description = this.nodeData.description;
       stateObj.fetchLoader = false;
-      stateObj.configJSON.map((config)=>{
-        if(config.hint && config.hint.indexOf("security_") > -1) {
-          hasSecurity = true;
-        }
-      });
       stateObj.hasSecurity = hasSecurity;
+      stateObj.securityType = stateObj.formData.securityProtocol || '';
       this.setState(stateObj, () => {
         if (stateObj.formData.cluster !== undefined) {
           this.updateClusterFields(stateObj.formData.cluster);
@@ -256,10 +256,23 @@ export default class SourceNodeForm extends Component {
     this.setState({description: description});
   }
 
+  handleSecurityProtocol = (securityKey) => {
+    const {clusterArr,formData,clusterName} = this.state;
+    const {cluster} = formData;
+    if(clusterName !== undefined){
+      const tempData =  Utils.mapSecurityProtocol(clusterName,securityKey,formData,clusterArr);
+      this.setState({formData : tempData ,securityType : securityKey});
+    }
+  }
+
   render() {
-    const {configJSON, fetchLoader} = this.state;
+    const {configJSON, fetchLoader,securityType,activeTabKey} = this.state;
     let formData = this.state.formData;
-    let fields = Utils.genFields(configJSON, [], formData);
+    let tempConfigJSON  = [];
+    if(activeTabKey === 1){
+      tempConfigJSON = Utils.skipSecurityFields(configJSON);
+    }
+    let fields = Utils.genFields(tempConfigJSON.length !== 0 ? tempConfigJSON : configJSON, [], formData,[],securityType);
     const form = fetchLoader
       ? <div className="col-sm-12">
           <div className="loading-img text-center" style={{
@@ -272,7 +285,7 @@ export default class SourceNodeForm extends Component {
         <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
           display: "none"
         }}/>}>
-          <Form ref="Form" readOnly={!this.props.editMode} showRequired={this.state.showRequired} showSecurity={this.state.showSecurity} className="customFormClass" FormData={formData} populateClusterFields={this.populateClusterFields.bind(this)} callback={this.showOutputStream.bind(this)}>
+          <Form ref="Form" readOnly={!this.props.editMode} showRequired={this.state.showRequired} showSecurity={this.state.showSecurity} className="customFormClass" FormData={formData} populateClusterFields={this.populateClusterFields.bind(this)} callback={this.showOutputStream.bind(this)} handleSecurityProtocol={this.handleSecurityProtocol.bind(this)}>
             {fields}
           </Form>
         </Scrollbars>

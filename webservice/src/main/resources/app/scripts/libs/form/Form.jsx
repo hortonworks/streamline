@@ -68,7 +68,7 @@ export default class FSForm extends Component {
               (!child.props.fieldJson.isOptional ? '' : 'hidden') :
                 (child.props.fieldJson.isOptional ? '' : 'hidden')
             );
-          if(!this.props.showRequired) {
+          if(this.props.showRequired === false){
             if(this.props.showSecurity) {
               className = child.props.fieldJson.hint && child.props.fieldJson.hint.indexOf('security_') > -1 ? '' :'hidden';
             } else {
@@ -76,6 +76,13 @@ export default class FSForm extends Component {
               if(child.props.fieldJson.hint && child.props.fieldJson.hint.indexOf('security_') > -1) {
                 className = 'hidden';
               }
+            }
+          }
+          if(this.props.showRequired == null){
+            if(this.props.showSecurity == true) {
+              className = child.props.fieldJson.hint && child.props.fieldJson.hint.indexOf('security_') > -1 ? '' :'hidden';
+            } else {
+              className = child.props.fieldJson.hint && child.props.fieldJson.hint.indexOf('security_') > -1 ? 'hidden' :'';
             }
           }
           return React.cloneElement(child, {

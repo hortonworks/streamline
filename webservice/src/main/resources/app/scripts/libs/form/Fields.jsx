@@ -304,6 +304,10 @@ export class enumstring extends BaseField {
     Form.setState(Form.state, () => {
       if (this.validate() && (this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase().indexOf("schema") !== -1)) {
         this.getSchema(this.props.data[this.props.value]);
+      } else if (this.props.fieldJson.fieldName === "securityProtocol"){
+        if(this.context.Form.props.handleSecurityProtocol){
+          this.context.Form.props.handleSecurityProtocol(val.value);
+        }
       }
     });
   }
@@ -466,7 +470,7 @@ export class creatableField extends BaseField {
       ? this.props.data.nodeType
       : '';
     Form.setState(Form.state, () => {
-      if (this.validate() && (this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase().indexOf("schema") !== -1 && nodeType.toLowerCase() !== "sink")) {
+      if (this.validate() && (this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase().indexOf("schema") !== -1)) {
         this.getSchema(this.props.data[this.props.value]);
       }
     });

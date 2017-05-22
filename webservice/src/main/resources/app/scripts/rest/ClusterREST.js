@@ -107,6 +107,15 @@ const ClusterREST = {
         return response.json();
       });
   },
+  getStormSecurityDetails(clusterId, options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + clusterBaseURL + '/' + clusterId + '/services/storm/topologies', options)
+      .then((response) => {
+        return response.json();
+      });
+  },
   postAmbariClusterVerifyURL(options) {
     options = options || {};
     options.method = options.method || 'POST';

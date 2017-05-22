@@ -88,7 +88,8 @@ const menuName = {
   CUSTOM_PROCESSOR: 'customprocessor',
   SERVICE_POOL: 'servicepool',
   ENVIRONMENT: 'environments',
-  AUTHORIZER: 'authorizer'
+  AUTHORIZER: 'authorizer',
+  COMPONENT_DEFINITIONS: 'componentDefinitions'
 };
 const accessCapabilities = {
   APPLICATION: 'Applications',

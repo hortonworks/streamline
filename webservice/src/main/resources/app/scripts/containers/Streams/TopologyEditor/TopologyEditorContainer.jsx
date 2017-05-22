@@ -842,8 +842,7 @@ class TopologyEditorContainer extends Component {
       };
 
       if (newEdge.target.currentType.toLowerCase() === 'window'
-          || newEdge.target.currentType.toLowerCase() === 'join'
-          || newEdge.target.currentType.toLowerCase() === 'projection') {
+          || newEdge.target.currentType.toLowerCase() === 'join') {
         edgeData.streamGroupings[0].grouping = 'FIELDS';
         edgeData.streamGroupings[0].fields = null;
       }

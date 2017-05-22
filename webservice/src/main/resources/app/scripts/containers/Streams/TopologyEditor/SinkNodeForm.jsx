@@ -59,7 +59,10 @@ export default class SinkNodeForm extends Component {
       uiSpecification: [],
       clusterArr: [],
       clusterName: '',
-      fetchLoader: true
+      fetchLoader: true,
+      securityType : '',
+      hasSecurity: false,
+      validSchema: false
     };
     this.fetchNotifier().then(() => {
       this.fetchData();
@@ -90,10 +93,6 @@ export default class SinkNodeForm extends Component {
       _.map(sourceNodes, (sourceNode) => {
         sourceNodePromiseArr.push(TopologyREST.getNode(topologyId, versionId ,TopologyUtils.getNodeType(sourceNode.parentType) ,sourceNode.nodeId));
       });
-
-      // sourceNodeType = TopologyUtils.getNodeType(sourceNodes[0].parentType);
-      // promiseArr.push(TopologyREST.getNode(topologyId, versionId, sourceNodeType, sourceNodes[0].nodeId));
-
     }
     Promise.all(promiseArr).then(results => {
       let stateObj = {}, hasSecurity = false,
@@ -129,6 +128,9 @@ export default class SinkNodeForm extends Component {
               };
               tempArr.push(obj);
             }
+            if(k === "security"){
+              hasSecurity = clusters[x][k].authentication.enabled;
+            }
           });
         });
         stateObj.clusterArr = clusters;
@@ -140,6 +142,9 @@ export default class SinkNodeForm extends Component {
       stateObj.description = this.nodeData.description;
       stateObj.formData.nodeType = this.props.nodeData.parentType;
       stateObj.fetchLoader = false;
+      stateObj.securityType = stateObj.formData.securityProtocol || '';
+      stateObj.hasSecurity = hasSecurity;
+      stateObj.validSchema = true;
       this.setState(stateObj, () => {
         if (stateObj.formData.cluster !== undefined) {
           const keyName = this.getClusterKey(stateObj.formData.cluster);
@@ -246,7 +251,6 @@ export default class SinkNodeForm extends Component {
         let {configData} = this.props;
         const {topologyComponentUISpecification} = configData;
         let uiFields = topologyComponentUISpecification.fields || [];
-        let hasSecurity = false;
 
         uiFields.map(x => {
           if (x.fieldName === "jarFileName") {
@@ -257,11 +261,8 @@ export default class SinkNodeForm extends Component {
               x.hint = "hidden";
             }
           }
-          if(x.hint !== undefined && x.hint.indexOf('security_') > -1) {
-            hasSecurity = true;
-          }
         });
-        this.setState({uiSpecification: uiFields, hasSecurity: hasSecurity});
+        this.setState({uiSpecification: uiFields});
       }
     }).catch(err => {
       FSReactToastr.error(
@@ -275,6 +276,9 @@ export default class SinkNodeForm extends Component {
       if (this.refs.Form.validate()) {
         validDataFlag = true;
         this.setState({activeTabKey: 1, showRequired: true});
+      }
+      if(!this.state.validSchema){
+        validDataFlag = false;
       }
     }
     return validDataFlag;
@@ -295,36 +299,6 @@ export default class SinkNodeForm extends Component {
     })
     ];
 
-    // Check hint schema is present in the uiSpecification fields
-    let schemaName ='',clusterOption=[];
-    uiSpecification.map((x) => {
-      if(x.hint !== undefined && x.hint.indexOf('schema') !== -1){
-        _.keys(data).map((k) => {
-          if(x.fieldName === k && !_.isEmpty(data[k])){
-            clusterOption = x.options;
-            schemaName = data[k];
-          }
-        });
-      }
-    });
-    const _index = _.findIndex(clusterOption, (opt) => {return opt.uiName === schemaName;});
-    // if the hint schema is present then create the schema by POST request
-    if(schemaName && _index === -1){
-      const schemaData = {
-        schemaMetadata: {
-          type: "avro",
-          schemaGroup: 'Kafka',
-          name: schemaName.indexOf(":v") === -1 ? schemaName+":v" : schemaName,
-          description: "auto_description",
-          compatibility: "BACKWARD"
-        },
-        schemaVersion: {
-          description : 'auto_description',
-          schemaText : JSON.stringify(_.uniqBy(_.flattenDeep(this.tempStreamFieldArr),'name'))
-        }
-      };
-      promiseArr.push(TopologyREST.createSchema({body : JSON.stringify(schemaData)}));
-    }
     if (this.allSourceChildNodeData && this.allSourceChildNodeData.length > 0) {
       this.allSourceChildNodeData.map((childData,index) => {
         let child = childData;
@@ -402,15 +376,39 @@ export default class SinkNodeForm extends Component {
     this.setState({uiSpecification: obj, formData: tempData});
   }
 
+  validateTopic(resultArr){
+    if(resultArr.length > 0){
+      this.setState({validSchema: true});
+    } else {
+      this.setState({validSchema: false});
+    }
+  }
+
+  handleSecurityProtocol = (securityKey) => {
+    const {clusterArr,formData,clusterName} = this.state;
+    const {cluster} = formData;
+    if(clusterName !== undefined){
+      const tempData =  Utils.mapSecurityProtocol(clusterName,securityKey,formData,clusterArr);
+      this.setState({formData : tempData ,securityType : securityKey});
+    }
+  }
+
   render() {
     let {
       formData,
       streamObj = {},
       streamObjArr = [],
       uiSpecification,
-      fetchLoader
+      fetchLoader,
+      securityType,
+      activeTabKey
     } = this.state;
-    let fields = Utils.genFields(uiSpecification, [], formData, _.uniqBy(_.flattenDeep(this.tempStreamFieldArr),'name'));
+    let tempConfigJSON  = [];
+    if(activeTabKey === 1){
+      tempConfigJSON = Utils.skipSecurityFields(uiSpecification);
+    }
+
+    let fields = Utils.genFields(tempConfigJSON.length !== 0 ? tempConfigJSON : uiSpecification, [], formData, _.uniqBy(_.flattenDeep(this.tempStreamFieldArr),'name'),securityType);
     const form = fetchLoader
       ? <div className="col-sm-12">
           <div className="loading-img text-center" style={{
@@ -423,7 +421,7 @@ export default class SinkNodeForm extends Component {
         <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
           display: "none"
         }}/>}>
-          <Form ref="Form" readOnly={!this.props.editMode} showRequired={this.state.showRequired} showSecurity={this.state.showSecurity} FormData={formData} className="customFormClass" populateClusterFields={this.populateClusterFields.bind(this)}>
+          <Form ref="Form" readOnly={!this.props.editMode} showRequired={this.state.showRequired} showSecurity={this.state.showSecurity} FormData={formData} className="customFormClass" populateClusterFields={this.populateClusterFields.bind(this)}  callback={this.validateTopic.bind(this)} handleSecurityProtocol={this.handleSecurityProtocol.bind(this)}>
             {fields}
           </Form>
         </Scrollbars>

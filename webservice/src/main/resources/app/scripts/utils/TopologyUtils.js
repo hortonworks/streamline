@@ -425,8 +425,8 @@ const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, in
       });
       if (edgeAPISuccess) {
         let processorsPromiseArr = [];
-        //Delete Rules incase of Rule Processor
-        if (nodeData.type.toLowerCase() === 'rule') {
+        //Delete Rules incase of Rule Processor or Projection Processor
+        if (nodeData.type.toLowerCase() === 'rule' || nodeData.type.toLowerCase() === 'projection') {
           if (nodeData.config.properties.rules) {
             nodeData.config.properties.rules.map(ruleId => {
               processorsPromiseArr.push(TopologyREST.deleteNode(topologyId, 'rules', ruleId));
@@ -435,10 +435,10 @@ const deleteNode = function(topologyId, versionId, currentNode, nodes, edges, in
         }
 
         //Delete Window incase of Window Processor
-        if (nodeData.type.toLowerCase() === 'window' || nodeData.type.toLowerCase() === 'projection') {
+        if (nodeData.type.toLowerCase() === 'window') {
           if (nodeData.config.properties.rules) {
             nodeData.config.properties.rules.map(ruleId => {
-              processorsPromiseArr.push(TopologyREST.deleteNode(topologyId, nodeData.type.toLowerCase() === 'window' ? 'windows' : 'rules', ruleId));
+              processorsPromiseArr.push(TopologyREST.deleteNode(topologyId, 'windows', ruleId));
             });
           }
         }

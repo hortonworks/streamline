@@ -63,30 +63,37 @@
         "isOptional": true,
         "type": "array.object",
         "defaultValue": null,
+        "hint": "security_",
         "fields": [
           {
             "uiName": "Cluster Name",
             "fieldName": "clusterName",
             "tooltip": "Name of the cluster (same as service pool)",
             "isOptional": false,
-            "type": "string",
-            "defaultValue": null
+            "type": "enumstring",
+            "defaultValue": null,
+            "options": [],
+            "hint": "security_"
           },
           {
             "uiName": "Principal",
             "fieldName": "principal",
             "tooltip": "The principal for auto delegation token",
             "isOptional": false,
-            "type": "string",
-            "defaultValue": null
+            "type": "enumstring",
+            "defaultValue": null,
+            "options": [],
+            "hint": "override,security_"
           },
           {
             "uiName": "Keytab Path",
             "fieldName": "keytabPath",
             "tooltip": "The path of keytab file in Nimbus node to log in with provided principal",
             "isOptional": false,
-            "type": "string",
-            "defaultValue": null
+            "type": "enumstring",
+            "defaultValue": null,
+            "options": [],
+            "hint": "override,security_"
           }
         ]
       }
