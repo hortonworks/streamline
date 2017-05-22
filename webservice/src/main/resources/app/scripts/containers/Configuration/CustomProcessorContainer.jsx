@@ -50,15 +50,23 @@ export default class CustomProcessorContainer extends Component {
     };
   }
 
-  fetchData() {
+  fetchData(keepLoadingOn) {
     CustomProcessorREST.getAllProcessors().then((processors) => {
       if (processors.responseMessage !== undefined) {
         FSReactToastr.error(
           <CommonNotification flag="error" content={processors.responseMessage}/>, '', toastOpt);
-        this.setState({fetchLoader: false});
+        if(!keepLoadingOn){
+          this.setState({fetchLoader: false});
+        }
       } else {
         let data = processors.entities;
-        this.setState({entities: data, fetchLoader: false});
+        let stateObj = {
+          entities: data
+        };
+        if(!keepLoadingOn){
+          stateObj.fetchLoader = false;
+        }
+        this.setState(stateObj);
       }
     });
   }
@@ -69,7 +77,7 @@ export default class CustomProcessorContainer extends Component {
 
   handleCancel() {
     window.removeEventListener('keyup', this.handleKeyPress.bind(this), false);
-    this.fetchData();
+    this.fetchData(true);
     this.setState({showListing: true});
   }
 
