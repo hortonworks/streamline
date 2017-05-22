@@ -218,8 +218,7 @@ public class StormMetadataService {
     }
 
     private <T, E extends Exception> T executeSecure(SupplierException<T, E> action) throws PrivilegedActionException, E {
-        return action.get();    // For now it executes without security context. Uncomment bellow for security context.
-//        return SecurityUtil.execute(action, securityContext, subject);
+        return SecurityUtil.execute(action, securityContext, subject);
     }
 
     /**
