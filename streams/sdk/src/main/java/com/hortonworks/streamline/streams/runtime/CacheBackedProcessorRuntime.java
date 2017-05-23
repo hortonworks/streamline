@@ -129,7 +129,7 @@ public abstract class CacheBackedProcessorRuntime<K, V> implements CustomProcess
     // be part of the cache module. I am also going to try to provide a default implementation
     // that can be used to create the cache from it's configuration, without requiring the user
     // to have to know all the details of how to create a cache object.
-    interface CacheFactory<K,V> {
+    public interface CacheFactory<K,V> {
         Cache<K,V> create();
     }
 }
