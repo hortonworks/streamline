@@ -116,42 +116,74 @@ export default class CustomNodeForm extends Component {
 
       if (this.nodeData.outputStreams.length === 0) {
         this.saveStreams(outputStreamToSchema);
-      } else {
+      }else if(this.nodeData.outputStreams.length !== outputStreamToSchema.length){
+        this.saveStreams(outputStreamToSchema);
+      } else{
         this.context.ParentForm.setState({outputStreamObj: this.nodeData.outputStreams[0]});
       }
       this.setState(stateObj);
     });
   }
 
-  saveStreams(outputStreamToSchema) {
+  updateNode = (id) => {
+    let {topologyId, nodeType, versionId,nodeData} = this.props;
+    TopologyREST.updateNode(topologyId, versionId, nodeType, id, {
+      body: JSON.stringify(this.nodeData)
+    }).then((node) => {
+      this.nodeData = node;
+      this.setState({showSchema: true});
+      this.context.ParentForm.setState({outputStreamObj: node.outputStreams[0]});
+    });
+  }
+
+  saveStreams = (outputStreamToSchema) => {
     let self = this;
     let {topologyId, nodeType, versionId,nodeData} = this.props;
     let streamIds = _.keys(outputStreamToSchema),
       streamData = {},
       streams = [],
-      promiseArr = [];
+      promiseArr = [],
+      tempStreamArr=[];
 
-    streamIds.map((s) => {
-      // nodeID is added to make streamId unique
-      streams.push({streamId: s+'_'+nodeData.nodeId, fields: outputStreamToSchema[s].fields});
-    });
-
-    streams.map((s) => {
-      promiseArr.push(TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(s)}));
-    });
-
-    Promise.all(promiseArr).then(results => {
-      self.nodeData.outputStreamIds = [];
-      results.map(result => {
-        self.nodeData.outputStreamIds.push(result.id);
+    TopologyREST.getAllNodes(topologyId, versionId,'streams').then((allStreams) => {
+      _.map(streamIds, (streamID) => {
+        const index = _.findIndex(allStreams.entities , (stream) => {
+          return stream.streamId === streamID;
+        });
+        if(index !== -1){
+          tempStreamArr.push(allStreams.entities[index]);
+        }
       });
-      TopologyREST.updateNode(topologyId, versionId, nodeType, self.nodeData.id, {
-        body: JSON.stringify(this.nodeData)
-      }).then((node) => {
-        self.nodeData = node;
-        self.setState({showSchema: true});
-        this.context.ParentForm.setState({outputStreamObj: node.outputStreams[0]});
+
+      streamIds.map((s) => {
+        let o = {streamId: s, fields: outputStreamToSchema[s].fields};
+        if(s.id){
+          o.id = s.id;
+        } else {
+          const obj = _.find(tempStreamArr,(t_stream) => {return t_stream.streamId === s;});
+          if(!_.isEmpty(obj)){
+            o.id = obj.id;
+          }
+        }
+        streams.push(o);
       });
+
+      if(tempStreamArr.length){
+        this.nodeData.outputStreams = streams;
+        this.updateNode(this.nodeData.id);
+      } else {
+        streams.map((s) => {
+          promiseArr.push(TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(s)}));
+        });
+
+        Promise.all(promiseArr).then(results => {
+          self.nodeData.outputStreamIds = [];
+          results.map(result => {
+            self.nodeData.outputStreamIds.push(result.id);
+          });
+          this.updateNode(self.nodeData.id);
+        });
+      }
     });
   }
 
