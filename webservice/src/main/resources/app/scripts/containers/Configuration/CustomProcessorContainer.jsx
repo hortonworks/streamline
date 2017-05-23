@@ -155,7 +155,7 @@ export default class CustomProcessorContainer extends Component {
   }
   handleKeyPress(event) {
     if (!this.state.childPopUpFlag && this.refs.CustomProcessorForm) {
-      if (event.key === "Enter") {
+      if (event.key === "Enter" && event.target.nodeName.toLowerCase() != "textarea") {
         this.handleSave();
       }
     }

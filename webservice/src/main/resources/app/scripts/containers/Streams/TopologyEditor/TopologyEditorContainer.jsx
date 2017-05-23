@@ -53,6 +53,7 @@ class TopologyEditorContainer extends Component {
     this.lastUpdatedTime = '';
     this.customProcessors = [];
     this.fetchData();
+    this.getDeploymentState();
     this.nextRoutes = '';
     this.navigateFlag = false;
     this.tempIntervalArr = [];
@@ -67,6 +68,7 @@ class TopologyEditorContainer extends Component {
     state.showComponentNodeContainer = true;
   }
   componentWillUnmount() {
+    clearInterval(this.interval);
     document.getElementsByTagName('body')[0].classList.remove('graph-bg');
     document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay displayNone";
     document.querySelector('.editorHandler').setAttribute("class", "editorHandler contentEditor-wrapper animated fadeIn ");
@@ -260,6 +262,54 @@ class TopologyEditorContainer extends Component {
         }
       }
     };
+  }
+  //To check if a user is deploying the topology
+  getDeploymentState(topology) {
+    this.interval = setInterval(() => {
+      TopologyREST.deployTopologyState(this.topologyId).then((topologyState) => {
+        if(topologyState.responseMessage === undefined){
+          if(topologyState.name.indexOf('TOPOLOGY_STATE_DEPLOYED')  !== -1){
+            this.setState({deployStatus : topologyState.name}, () => {
+              const clearTimer = setTimeout(() => {
+                clearInterval(this.interval);
+                this.refs.deployLoadingModal.hide();
+                if(topology) {
+                  this.saveTopologyVersion(topology.timestamp);
+                } else {
+                  this.setState({topologyStatus: this.topologyMetric.status || 'NOT RUNNING', progressCount: 0});
+                  this.fetchData();
+                }
+              },1000);
+            });
+          } else if (topologyState.name.indexOf('TOPOLOGY_STATE_DEPLOYMENT_FAILED') !== -1 || topologyState.name.indexOf('TOPOLOGY_STATE_SUSPENDED') !== -1 || topologyState.name.indexOf('TOPOLOGY_STATE_INITIAL') !== -1) {
+            this.setState({deployStatus : topologyState.name}, () => {
+              const clearTimer = setTimeout(() => {
+                clearInterval(this.interval);
+                this.refs.deployLoadingModal.hide();
+                if(topology) {
+                  FSReactToastr.error(
+                    <CommonNotification flag="error" content={topologyState.description}/>, '', toastOpt);
+                } else {
+                  this.setState({topologyStatus: this.topologyMetric.status || 'NOT RUNNING', progressCount: 0});
+                }
+              },1000);
+            },1000);
+          } else {
+            if(topology === undefined) {
+              this.refs.deployLoadingModal.show();
+              this.setState({topologyStatus: 'DEPLOYING...', progressCount: 12});
+            }
+          }
+          this.setState({deployStatus : topologyState.name});
+        } else {
+          if(topology) {
+            FSReactToastr.error(
+              <CommonNotification flag="error" content={topologyState.responseMessage}/>, '', toastOpt);
+          }
+          clearInterval(this.interval);
+        }
+      });
+    },3000);
   }
 
   // get the default time sec of topologyName
@@ -572,35 +622,7 @@ class TopologyEditorContainer extends Component {
             this.refs.deployLoadingModal.hide();
             this.setState({topologyStatus: status});
           } else {
-            let interval = setInterval(() => {
-              TopologyREST.deployTopologyState(this.topologyId).then((topologyState) => {
-                if(topologyState.responseMessage !== undefined){
-                  clearInterval(interval);
-                  FSReactToastr.error(
-                    <CommonNotification flag="error" content={topologyState.responseMessage}/>, '', toastOpt);
-                }else{
-                  if(topologyState.name.indexOf('TOPOLOGY_STATE_DEPLOYED')  !== -1){
-                    this.setState({deployStatus : topologyState.name}, () => {
-                      const clearTimer = setTimeout(() => {
-                        clearInterval(interval);
-                        this.refs.deployLoadingModal.hide();
-                        this.saveTopologyVersion(topology.timestamp);
-                      },1000);
-                    });
-                  } else if (topologyState.name.indexOf('TOPOLOGY_STATE_DEPLOYMENT_FAILED','TOPOLOGY_STATE_SUSPENDED') !== -1) {
-                    this.setState({deployStatus : topologyState.name}, () => {
-                      const clearTimer = setTimeout(() => {
-                        clearInterval(interval);
-                        this.refs.deployLoadingModal.hide();
-                        FSReactToastr.error(
-                          <CommonNotification flag="error" content={topologyState.description}/>, '', toastOpt);
-                      },1000);
-                    });
-                  }
-                  this.setState({deployStatus : topologyState.name});
-                }
-              });
-            },3000);
+            this.getDeploymentState(topology);
           }
         });
       }

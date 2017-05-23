@@ -54,7 +54,7 @@ export default class TopologyConfigContainer extends Component {
       ClusterREST.getAllCluster()
     ];
     Promise.all(promiseArr).then(result => {
-      const formField = this.props.uiConfigFields.topologyComponentUISpecification;
+      const formField = JSON.parse(JSON.stringify(this.props.uiConfigFields.topologyComponentUISpecification));
       const config = result[0].config;
       const {f_Data,adv_Field}= this.fetchAdvanedField(formField,JSON.parse(config));
       this.namespaceId = result[0].namespaceId;
@@ -64,15 +64,18 @@ export default class TopologyConfigContainer extends Component {
           let mappings = r.mappings.filter((c)=>{
             return c.namespaceId === this.namespaceId && (c.serviceName === 'HBASE' || c.serviceName === 'HDFS' || c.serviceName === 'HIVE');
           });
-          let clusters = [];
+          let clusters = [], clusterNames = [];
           mappings.map((m)=>{
             let c = clustersConfig.find((o)=>{return o.cluster.id === m.clusterId;});
-            clusters.push(c.cluster.name);
+            clusters.push({id: c.cluster.id, name: c.cluster.name});
           });
-          clusters = _.uniq(clusters);
+          clusters = _.uniqBy(clusters, 'id');
+          clusters.map((o)=>{
+            clusterNames.push(o.name);
+          });
           let securityFields = _.find(formField.fields, {"fieldName": "clustersSecurityConfig"}).fields;
           let fieldObj = _.find(securityFields, {"fieldName": "clusterName"});
-          fieldObj.options = clusters;
+          fieldObj.options = clusterNames;
           this.setState({formData: f_Data, formField: formField, fetchLoader: false,advancedField : adv_Field});
           let mapObj = r.mappings.find((m) => {
             return m.serviceName.toLowerCase() === 'storm';
@@ -103,6 +106,18 @@ export default class TopologyConfigContainer extends Component {
 
                   let keyTabFieldObj = _.find(securityFields, {"fieldName": "keytabPath"});
                   keyTabFieldObj.options = keyTabsArr;
+                  //removing security related fields for non-secure mode
+                  if(hasSecurity === false) {
+                    if(formField.fields && formField.fields.length > 0) {
+                      formField.fields = _.filter(formField.fields, (f)=>{
+                        if(f.hint && f.hint.indexOf('security_') !== -1) {
+                          return false;
+                        } else {
+                          return true;
+                        }
+                      });
+                    }
+                  }
                   this.setState({hasSecurity: hasSecurity, formField: formField});
                 }
               });
