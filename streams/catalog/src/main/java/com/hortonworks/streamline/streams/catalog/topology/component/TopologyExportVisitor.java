@@ -62,13 +62,16 @@ public final class TopologyExportVisitor extends TopologyDagVisitor {
     private Map<String, RulesHandler> createRuleHandlerMap() {
         ImmutableMap.Builder<String, RulesHandler> rulesHandlerBuilder = ImmutableMap.builder();
 
-        rulesHandlerBuilder.put(ComponentTypes.RULE, new RulesHandler() {
+        RulesHandler rulesHandler = new RulesHandler() {
             @Override
             public void handle(Rule rule) throws Exception {
                 TopologyRule topologyRule = streamCatalogService.getRule(topologyId, rule.getId());
                 topologyData.addRule(topologyRule);
             }
-        });
+        };
+
+        rulesHandlerBuilder.put(ComponentTypes.RULE, rulesHandler);
+        rulesHandlerBuilder.put(ComponentTypes.PROJECTION, rulesHandler);
 
         rulesHandlerBuilder.put(ComponentTypes.BRANCH, new RulesHandler() {
             @Override
@@ -85,8 +88,10 @@ public final class TopologyExportVisitor extends TopologyDagVisitor {
                 topologyData.addWindow(topologyWindow);
             }
         });
+
         return rulesHandlerBuilder.build();
     }
+
     public void visit(RulesProcessor rulesProcessor) {
         try {
             TopologyComponentBundle componentBundle = streamCatalogService.getTopologyComponentBundle(

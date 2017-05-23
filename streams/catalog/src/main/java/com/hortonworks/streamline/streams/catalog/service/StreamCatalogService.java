@@ -677,7 +677,8 @@ public class StreamCatalogService {
             ruleListObj.ifPresent(ruleList -> {
                 List<Long> ruleIds = new ObjectMapper().convertValue(ruleList, new TypeReference<List<Long>>() {});
                 List<Long> updatedRuleIds = new ArrayList<>();
-                if (bundle.getSubType().equals(ComponentTypes.RULE)) {
+                if (ComponentTypes.RULE.equals(bundle.getSubType())
+                        || ComponentTypes.PROJECTION.equals(bundle.getSubType())) {
                     ruleIds.forEach(ruleId -> updatedRuleIds.add(oldToNewRuleIds.get(ruleId)));
                 } else if (bundle.getSubType().equals(ComponentTypes.BRANCH)) {
                     ruleIds.forEach(ruleId -> updatedRuleIds.add(oldToNewBranchRuleIds.get(ruleId)));
