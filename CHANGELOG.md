@@ -1,4 +1,5 @@
 ## 0.4
+ * ISSUE-613     : Cloning projection processors with respective configuration as part of Rule
  * ISSUE-609     : Added export/import of projection processor
  * ISSUE-601     : Add "artifacts" feature for JDBC sink bundle
  * ISSUE-597     : Kafka component bundle changes for UI when running in security mode
