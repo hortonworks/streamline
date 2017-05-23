@@ -180,10 +180,10 @@ export default class NoData extends Component {
                         <h4>
                           <span className="hb success">3</span>
                           &nbsp;Go to&nbsp;
-                          <Link to="/">Application</Link>
+                          <Link to="/">My Applications</Link>
                         </h4>
                         <div className="intro-content">
-                          Add your first Application...
+                          Add your first Application
                         </div>
                       </div>
 }
