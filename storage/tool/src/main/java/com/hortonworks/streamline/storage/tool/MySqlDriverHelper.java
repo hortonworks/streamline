@@ -33,7 +33,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class MySqlDriverHelper {
-    public static final String MYSQL_JAR_FILE_PATTERN = "mysql-connector-java-.*?-bin.jar";
+    public static final String MYSQL_JAR_FILE_PATTERN = "mysql-connector-java.*?.jar";
 
     public static void downloadMySQLJarIfNeeded(StorageProviderConfiguration storageProperties, String bootstrapDirPath, String mysqlJarUrl) throws Exception {
         /* Due to license issues we will not be able to ship mysql driver.
