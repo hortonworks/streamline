@@ -2260,8 +2260,8 @@ public class StreamCatalogService {
         if (projections != null) {
             return join("SELECT ", projections.stream()
                     .map(p -> {
-                        Projection res = new Projection(convertNested(streams, p.expr), p.functionName,
-                                convertNested(streams, p.args), p.outputFieldName);
+                        Projection res = new Projection(convertNested(streams, p.getExpr()), p.getFunctionName(),
+                                convertNested(streams, p.getArgs()), p.getOutputFieldName());
                         return res.toString();
                     })
                     .collect(Collectors.toList()));

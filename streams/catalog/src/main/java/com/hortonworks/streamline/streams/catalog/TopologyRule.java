@@ -94,6 +94,9 @@ public class TopologyRule extends BaseTopologyRule {
             setCondition(other.getCondition());
             setSql(other.getSql());
             setParsedRuleStr(other.getParsedRuleStr());
+            if(other.getProjections() != null) {
+                setProjections(new ArrayList<>(other.getProjections()));
+            }
             if (other.getWindow() != null) {
                 setWindow(new Window(other.getWindow()));
             }

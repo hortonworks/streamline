@@ -44,10 +44,10 @@ import java.util.List;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Projection {
-    public String expr;
-    public String functionName;
-    public List<String> args;
-    public String outputFieldName;
+    private String expr;
+    private String functionName;
+    private List<String> args;
+    private String outputFieldName;
 
     // for jackson
     public Projection() {
@@ -69,6 +69,22 @@ public class Projection {
             this.args = new ArrayList<>(args);
         }
         this.outputFieldName = outputFieldName;
+    }
+
+    public String getExpr() {
+        return expr;
+    }
+
+    public String getFunctionName() {
+        return functionName;
+    }
+
+    public List<String> getArgs() {
+        return args;
+    }
+
+    public String getOutputFieldName() {
+        return outputFieldName;
     }
 
     @Override
