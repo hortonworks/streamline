@@ -101,8 +101,13 @@ public class NotifierInfoCatalogResource {
             notifiers = catalogService.listNotifierInfos(queryParams);
         }
         if (notifiers != null) {
-            Collection<Notifier> result = SecurityUtil.filter(authorizer, securityContext, Notifier.NAMESPACE, notifiers, READ);
-            return WSUtils.respondEntities(result, OK);
+            boolean notifierUser = SecurityUtil.hasRole(authorizer, securityContext, Roles.ROLE_NOTIFIER_USER);
+            if (notifierUser) {
+                LOG.debug("Returning all Notifiers since user has role: {}", Roles.ROLE_NOTIFIER_USER);
+            } else {
+                notifiers = SecurityUtil.filter(authorizer, securityContext, Notifier.NAMESPACE, notifiers, READ);
+            }
+            return WSUtils.respondEntities(notifiers, OK);
         }
 
         throw EntityNotFoundException.byFilter(queryParams.toString());
@@ -112,7 +117,12 @@ public class NotifierInfoCatalogResource {
     @Path("/notifiers/{id}")
     @Timed
     public Response getNotifierById(@PathParam("id") Long id, @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Notifier.NAMESPACE, id, READ);
+        boolean notifierUser = SecurityUtil.hasRole(authorizer, securityContext, Roles.ROLE_NOTIFIER_USER);
+        if (notifierUser) {
+            LOG.debug("Allowing get Notifier, since user has role: {}", Roles.ROLE_NOTIFIER_USER);
+        } else {
+            SecurityUtil.checkPermissions(authorizer, securityContext, Notifier.NAMESPACE, id, READ);
+        }
         Notifier result = catalogService.getNotifierInfo(id);
         if (result != null) {
             return WSUtils.respondEntity(result, OK);

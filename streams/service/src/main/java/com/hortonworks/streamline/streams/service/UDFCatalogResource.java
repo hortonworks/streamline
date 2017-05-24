@@ -138,7 +138,12 @@ public class UDFCatalogResource {
             udfs = catalogService.listUDFs(queryParams);
         }
         if (udfs != null) {
-            udfs = SecurityUtil.filter(authorizer, securityContext, UDF.NAMESPACE, udfs, READ);
+            boolean udfUser = SecurityUtil.hasRole(authorizer, securityContext, Roles.ROLE_UDF_USER);
+            if (udfUser) {
+                LOG.debug("Returning all UDFs since user has role: {}", Roles.ROLE_UDF_USER);
+            } else {
+                udfs = SecurityUtil.filter(authorizer, securityContext, UDF.NAMESPACE, udfs, READ);
+            }
             return WSUtils.respondEntities(udfs, OK);
         }
 
@@ -169,7 +174,12 @@ public class UDFCatalogResource {
     @Path("/udfs/{id}")
     @Timed
     public Response getUDFById(@PathParam("id") Long id, @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, UDF.NAMESPACE, id, READ);
+        boolean udfUser = SecurityUtil.hasRole(authorizer, securityContext, Roles.ROLE_UDF_USER);
+        if (udfUser) {
+            LOG.debug("Allowing get UDF, since user has role: {}", Roles.ROLE_UDF_USER);
+        } else {
+            SecurityUtil.checkPermissions(authorizer, securityContext, UDF.NAMESPACE, id, READ);
+        }
         UDF result = catalogService.getUDF(id);
         if (result != null) {
             return WSUtils.respondEntity(result, OK);

@@ -1,0 +1,7 @@
+{
+  "name": "ROLE_UDF_USER",
+  "displayName": "UDF User",
+  "description": "Role that can view and use uploaded UDFs and UDAFs",
+  "metadata": "{\"colorCode\":\"#4c979f\",\"colorLabel\":\"blue\",\"icon\":\"bell\"}",
+  "system": true
+}
