@@ -157,8 +157,14 @@ public class SearchCatalogResource {
 
     private <T extends Comparable<T>> int compare(Storable s1, Storable s2, String fieldName, Boolean desc) {
         try {
-            int res = ReflectionHelper.<T>invokeGetter(fieldName, s1)
-                    .compareTo(ReflectionHelper.invokeGetter(fieldName, s2));
+            Comparable<T> field1 = ReflectionHelper.<T>invokeGetter(fieldName, s1);
+            T field2 = ReflectionHelper.invokeGetter(fieldName, s2);
+            int res;
+            if (field1 instanceof String && field2 instanceof String) {
+                res = ((String) field1).compareToIgnoreCase((String) field2);
+            } else {
+                res = field1.compareTo(field2);
+            }
             return (desc != null && desc) ? -res : res;
         } catch (Exception ex) {
             LOG.error("Got exception trying to get value for " + fieldName, ex);
