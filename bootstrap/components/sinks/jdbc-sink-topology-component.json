@@ -16,6 +16,18 @@
         "type": "string"
       },
       {
+        "uiName": "Database Type",
+        "fieldName": "dbType",
+        "isOptional": false,
+        "tooltip": "The type of target database.",
+        "type": "enumstring",
+        "options": [
+          "mysql",
+          "postgresql",
+          "phoenix"
+        ]
+      },
+      {
         "uiName": "Driver class name",
         "fieldName": "driverClassName",
         "isOptional": false,
