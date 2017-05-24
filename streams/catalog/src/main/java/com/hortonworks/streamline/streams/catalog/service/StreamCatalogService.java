@@ -669,9 +669,19 @@ public class StreamCatalogService {
             Long oldComponentId = topologyProcessor.getId();
             topologyProcessor.setId(null);
             topologyProcessor.setTopologyId(newTopology.getId());
-            TopologyComponentBundle bundle = getCurrentTopologyComponentBundle(
-                    TopologyComponentBundle.TopologyComponentType.PROCESSOR,
-                    topologyData.getBundleIdToType().get(topologyProcessor.getTopologyComponentBundleId().toString()));
+            TopologyComponentBundle bundle;
+            String subType = topologyData.getBundleIdToType().get(topologyProcessor.getTopologyComponentBundleId().toString());
+            if (TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_SUB_TYPE.equals(subType)) {
+                QueryParam queryParam = new QueryParam(CustomProcessorInfo.NAME, topologyProcessor.getConfig().get(CustomProcessorInfo.NAME));
+                Collection<TopologyComponentBundle> result = listCustomProcessorBundlesWithFilter(Collections.singletonList(queryParam));
+                if (result == null || result.size() != 1) {
+                    throw new IllegalStateException("Not able to find topology component bundle for custom processor :" + topologyProcessor.getConfig().get
+                            (CustomProcessorInfo.NAME));
+                }
+                bundle = result.iterator().next();
+            } else {
+                bundle = getCurrentTopologyComponentBundle(TopologyComponentBundle.TopologyComponentType.PROCESSOR, subType);
+            }
             topologyProcessor.setTopologyComponentBundleId(bundle.getId());
             Optional<Object> ruleListObj = topologyProcessor.getConfig().getAnyOptional(RulesProcessor.CONFIG_KEY_RULES);
             ruleListObj.ifPresent(ruleList -> {
