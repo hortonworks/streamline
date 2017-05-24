@@ -1,0 +1,7 @@
+{
+  "name": "ROLE_NOTIFIER_USER",
+  "displayName": "Notifier User",
+  "description": "Role that can view and use uploaded notifiers",
+  "metadata": "{\"colorCode\":\"#4c979f\",\"colorLabel\":\"blue\",\"icon\":\"bell\"}",
+  "system": true
+}
