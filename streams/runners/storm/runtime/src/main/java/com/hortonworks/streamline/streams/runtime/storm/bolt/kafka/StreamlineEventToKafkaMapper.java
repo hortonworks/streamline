@@ -30,6 +30,9 @@ public class StreamlineEventToKafkaMapper implements TupleToKafkaMapper {
 
     @Override
     public Object getKeyFromTuple (Tuple tuple) {
+        if ((keyName == null) || keyName.isEmpty()) {
+            return null;
+        }
         StreamlineEvent streamlineEvent = (StreamlineEvent) tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
         return StreamlineRuntimeUtil.getFieldValue(streamlineEvent, keyName);
     }
