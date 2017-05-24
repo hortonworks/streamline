@@ -3398,3 +3398,24 @@ a.crossIcon{
   line-height :30px;
   font-size: 16px;
 }
+.nodeTypeToolTip{
+  padding : 0 2px;
+  border-radius: 10px;
+  background-color:rgba(230, 230, 230, 0.95);
+  color: #666;
+  box-shadow: 2px 2px 2px -1px;
+}
+.nodeTypeToolTip.e:after{
+  border-color: rgba(230, 230, 230, 0);
+  border-right-color: rgba(230, 230, 230, 0.95);
+  border-width: 8px;
+  margin-top: -8px;
+}
+.showType-tooltip {
+  width: auto;
+  height: auto;
+}
+.showType-tooltip h3{
+  font-size: 12px;
+  margin: 8px 10px;
+}

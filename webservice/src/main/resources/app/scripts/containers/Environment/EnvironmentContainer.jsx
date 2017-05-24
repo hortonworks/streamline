@@ -314,8 +314,6 @@ class EnvironmentContainer extends Component {
       stateObj.namespaceIdToEdit = null;
       stateObj.checkServices = serviceFlag;
 
-      // stateObj.allACL = [{"id":7,"objectId":1,"objectNamespace":"topology","sidId":3,"sidType":"USER","permissions":["READ","WRITE","EXECUTE","DELETE"],"owner":true,"grant":true,"timestamp":1494868999112},
-      // {"id":10,"objectId":2,"objectNamespace":"topology","sidId":2,"sidType":"USER","permissions":["READ"],"owner":false,"grant":false,"timestamp":1494869390535}];
       // If the application is in secure mode result[2]
       if(results[2]){
         stateObj.allACL = results[2].entities;

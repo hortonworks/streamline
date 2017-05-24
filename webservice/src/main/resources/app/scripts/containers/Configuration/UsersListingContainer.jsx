@@ -183,6 +183,8 @@ export default class UsersListingContainer extends Component {
   }
 
   handleSelect(entity, k, e) {
+    // to clear error from FORM if user shift the tab from selection..
+    this.refs.UserForm.refs.UserForm.clearErrors();
     this.setState({showUserForm: true, editData: JSON.parse(JSON.stringify(entity)), activePanel: entity.id});
   }
 

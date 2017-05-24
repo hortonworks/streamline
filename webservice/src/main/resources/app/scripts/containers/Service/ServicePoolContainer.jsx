@@ -237,7 +237,9 @@ class ServicePoolContainer extends Component {
       idCheck: '',
       showFields: false,
       showInputErr: true,
-      clusterData: {},
+      clusterData: {
+        ambariUrl: "http://ambari_host:port/api/v1/clusters/CLUSTER_NAME"
+      },
       fetchLoader: true,
       pageIndex: 0,
       pageSize: 6,
@@ -344,7 +346,7 @@ class ServicePoolContainer extends Component {
     const {showInputErr} = this.state;
     const val = this.refs.addURLInput.value.trim();
 
-    if (Utils.validateURL(val) && val.length !== 0) {
+    if (Utils.validateURL(val) && val.length !== 0 && val.indexOf('ambari_host:port') == -1) {
       const name = this.sliceClusterUrl(val);
       const tempObj = Object.assign(this.state.clusterData, {
         clusterName: name,
@@ -641,7 +643,8 @@ class ServicePoolContainer extends Component {
     };
     const tempArr = refIdArr;
     tempArr.push(idCheck);
-    this.setState({refIdArr: tempArr});
+    const t_clusterData = {ambariUrl: "http://ambari_host:port/api/v1/clusters/CLUSTER_NAME"};
+    this.setState({refIdArr: tempArr, clusterData: t_clusterData});
     // Post call for import cluster from ambari
     ClusterREST.postAmbariCluster({body: JSON.stringify(importClusterData)}).then((ambarClusters) => {
       let obj = {};
@@ -773,6 +776,12 @@ class ServicePoolContainer extends Component {
             ? this.addManualServiceSave()
             : '';
     }
+  }
+
+  handleChange = (event) => {
+    let {clusterData} = this.state;
+    clusterData.ambariUrl = event.target.value;
+    this.setState({clusterData: clusterData});
   }
 
   /*
@@ -1035,7 +1044,7 @@ class ServicePoolContainer extends Component {
                   <div className="input-group">
                     <input data-stest="url" type="text" ref="addURLInput" onKeyPress={this.handleKeyPress} className={`form-control ${showInputErr
                       ? ''
-                      : 'invalidInput'}`} placeholder="http://ambari_host:port/api/v1/clusters/CLUSTER_NAME"/>
+                      : 'invalidInput'}`} placeholder="http://ambari_host:port/api/v1/clusters/CLUSTER_NAME" value={ambariUrl} onChange={this.handleChange}/>
                     <span className="input-group-btn">
                       <button className="btn btn-success" type="button" onClick={this.addBtnClicked}>
                         AUTO ADD
@@ -1044,7 +1053,7 @@ class ServicePoolContainer extends Component {
                   </div>
                   <lable data-stest="validationMsg" className={`text-danger ${showInputErr
                     ? 'hidden'
-                    : ''}`}>This is not a valid Url</lable>
+                    : ''}`}>This is not a valid Ambari URL. Please follow the convention - http://ambari_host:port/api/v1/clusters/CLUSTER_NAME</lable>
                 </div>
                 <div className="col-md-2">
                   <button className="btn btn-default" type="button" data-stest="manualBtn" onClick={this.addManualCluster}>

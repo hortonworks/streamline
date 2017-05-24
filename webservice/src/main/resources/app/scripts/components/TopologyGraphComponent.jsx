@@ -779,6 +779,21 @@ export default class TopologyGraphComponent extends Component {
     thisGraph.toolTip.show(data ,node);
   }
 
+  showNodeTypeToolTip(d,node){
+    let thisGraph = this;
+    thisGraph.toolTip.attr("class","d3-tip nodeTypeToolTip").html(function(d) {
+      return (
+        "<div class='showType-tooltip clearfix'>"+
+          "<h3>"+d.uiname+"</h3>"+
+        "</div>"
+      );
+    });
+    clearTimeout(timeOut);
+    let timeOut = setTimeout(function(){
+      thisGraph.toolTip.show(d ,node);
+    },700);
+  }
+
   updateGraph() {
     let that = this;
     var duplicateLinks = document.getElementsByClassName('visible-link');
@@ -1194,6 +1209,7 @@ export default class TopologyGraphComponent extends Component {
         return ((constants.rectangleHeight / 2) - 2);
       }).on("mouseover", function(d) {
         if (thisGraph.editMode) {
+          !thisGraph.testRunActivated ? thisGraph.showNodeTypeToolTip.call(thisGraph,d, this) : '';
           d3.select(this.parentElement).select('text.fa.fa-times').style('display', thisGraph.testRunActivated ? 'none' : 'block');
         } else {
           TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, d3.select(this.parentElement).select('rect')));

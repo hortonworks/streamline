@@ -47,20 +47,10 @@ export default class UserForm extends Component {
   }
 
   validateData = () => {
-    let validDataFlag = true;
-    let {
-      name,
-      email,
-      roles
-    } = this.refs.UserForm.state.FormData;
-    if(name.trim() === '' || email.trim() === '') {
-      validDataFlag = false;
+    let validDataFlag = false;
+    if(this.refs.UserForm.validate()){
+      validDataFlag = true;
     }
-    if(email.trim() !== '') {
-      const pattern = /[a-z0-9](\.?[a-z0-9_-]){0,}@[a-z0-9-]+\.([a-z]{1,6}\.)?[a-z]{2,6}$/;
-      validDataFlag = pattern.test(email) ? true : false;
-    }
-
     return validDataFlag;
   }
 

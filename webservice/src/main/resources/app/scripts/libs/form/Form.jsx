@@ -26,10 +26,6 @@ import {
 } from 'react-bootstrap';
 
 export default class FSForm extends Component {
-  /*state = {
-        FormData: {},
-        Errors: {}
-    }*/
   constructor(props) {
     super(props);
     this.state = {
@@ -37,25 +33,27 @@ export default class FSForm extends Component {
       Errors: props.Errors
     };
   }
-  componentDidMount = () => {
-    this.setState({Errors : {}});
-  }
+  componentDidMount = () => {}
   componentWillReceiveProps = (nextProps) => {
     if (this.props.FormData != nextProps.FormData) {
       this.updateFormData(nextProps.FormData);
     }
   }
+
   updateFormData(newFormData) {
-
-    for (let key in this.state.Errors) {
-      delete this.state.Errors[key];
-    }
-
     this.setState({
       FormData: _.assignInWith(this.state.FormData, _.cloneDeep(newFormData)),
       Errors: this.state.Errors
     });
   }
+
+  clearErrors(){
+    for (let key in this.state.Errors) {
+      delete this.state.Errors[key];
+    }
+    this.forceUpdate();
+  }
+
   getChildContext() {
     return {Form: this};
   }
@@ -84,6 +82,13 @@ export default class FSForm extends Component {
             } else {
               className = child.props.fieldJson.hint && child.props.fieldJson.hint.indexOf('security_') > -1 ? 'hidden' :'';
             }
+          }
+          if(this.props.showRequired === true && child.props.fieldJson.isOptional === false ){
+            className = child.props.fieldJson.hint && child.props.fieldJson.hint.indexOf('security_ssl_required') !== -1
+                        ? 'hidden'
+                        : child.props.fieldJson.hint && child.props.fieldJson.hint.indexOf('security_kerberos_required') !== -1
+                          ? 'hidden'
+                          : '';
           }
           return React.cloneElement(child, {
             ref: child.props

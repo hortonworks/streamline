@@ -114,6 +114,8 @@ export default class RolesListingContainer extends Component {
   }
 
   handleSelect(entity, k, e) {
+    // to clear error from FORM if user shift the tab from selection..
+    this.refs.AppRoleForm.refs.RoleForm.clearErrors();
     this.setState({showRoleForm: true, editData: JSON.parse(JSON.stringify(entity)), activePanel: entity.id});
   }
 

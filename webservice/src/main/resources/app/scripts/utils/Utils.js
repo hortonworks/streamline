@@ -489,7 +489,8 @@ const mergeFormDataFields = function(name, clusterArr,clusterName,formData,uiSpe
             };
             nestedKeys(k);
           });
-          data.clusters = clusterArr[name || clusterName].cluster.name;
+          data.cluster = clusterArr[name || clusterName] === undefined ? clusterArr[x].cluster.id.toString() : name || clusterName;
+          data.clusters = clusterArr[name || clusterName] === undefined ? clusterArr[x].cluster.name : clusterArr[name || clusterName].cluster.name;
           return list;
         });
       };
@@ -563,22 +564,10 @@ const checkTypeAndReturnValue = function(data){
 const mapSecurityProtocol = function(clusterName,securityKey,formData,clusterArr){
   let tempFormData = _.cloneDeep(formData);
   const bootstrapServerObj = _.find(clusterArr, (c) => {
-    return c.cluster.id === Number(clusterName);
+    return c.cluster.id === Number(clusterName || tempFormData.cluster);
   });
   tempFormData["bootstrapServers"] = bootstrapServerObj.hints["bootstrapServers"][securityKey];
   return tempFormData;
-};
-
-const skipSecurityFields = function(configJSON){
-  let arr=[];
-  _.map(configJSON, (config) => {
-    config.hint !== undefined && config.hint.indexOf('security_ssl_required') === -1 && config.hint.indexOf('security_kerberos_required') === -1
-    ? arr.push(config)
-    : config.hint === undefined
-      ? arr.push(config)
-      : '';
-  });
-  return arr;
 };
 
 export default {
@@ -609,6 +598,5 @@ export default {
   handleNestedFormDataEmptyObj,
   eventLogNumberId,
   checkTypeAndReturnValue,
-  mapSecurityProtocol,
-  skipSecurityFields
+  mapSecurityProtocol
 };

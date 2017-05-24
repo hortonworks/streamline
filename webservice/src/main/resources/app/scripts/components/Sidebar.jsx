@@ -63,12 +63,7 @@ export default class Sidebar extends Component {
     }
   }
   handleClickOnRegistry(key, e) {
-    if (this.props.routes[this.props.routes.length - 1].name === "Application Editor") {
-      this.refs.leaveEditable.show();
-    } else {
-      this.navigateToRegistry();
-      app_state.sidebar_activeKey = key;
-    }
+    app_state.sidebar_activeKey = key;
   }
   handleClickOnDashboard(key, e) {
     if (this.props.routes[this.props.routes.length - 1].name === "Application Editor") {
@@ -78,11 +73,6 @@ export default class Sidebar extends Component {
       app_state.sidebar_activeKey = key;
     }
   }
-  navigateToRegistry() {
-    let config = app_state.streamline_config;
-    let registryURL = window.location.protocol + "//" + config.registry.host + ":" + config.registry.port;
-    window.location = registryURL + '/#/schema-registry';
-  }
   navigateToDashboard() {
     let config = app_state.streamline_config;
     window.location = config.dashboard.url;
@@ -90,17 +80,19 @@ export default class Sidebar extends Component {
   confirmLeave(flag) {
     if (flag) {
       this.refs.leaveEditable.hide();
-      this.navigateToRegistry();
+      this.navigateToDashboard();
     }
   }
   handleKeyPress(event) {
     if (event.key === "Enter") {
       this.refs.leaveEditable.state.show
-        ? this.handleClickOnRegistry(this, 2)
+        ? this.handleClickOnDashboard(this, 4)
         : '';
     }
   }
   render() {
+    let config = app_state.streamline_config;
+    let registryURL = window.location.protocol + "//" + config.registry.host + ":" + config.registry.port + '/#/schema-registry';
     return (
       <aside className="main-sidebar">
         <section className="sidebar">
@@ -131,7 +123,7 @@ export default class Sidebar extends Component {
               <li className={app_state.sidebar_activeKey === 2
                 ? 'active'
                 : ''} onClick={this.handleClickOnRegistry.bind(this, 2)}>
-                <a href="javascript:void(0);">
+                <a href={registryURL} target="_blank">
                   <i className="fa fa-file-code-o"></i>
                   <span>Schema Registry</span>
                 </a>

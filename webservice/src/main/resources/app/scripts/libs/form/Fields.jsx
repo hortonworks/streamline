@@ -305,8 +305,8 @@ export class enumstring extends BaseField {
       if (this.validate() && (this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase().indexOf("schema") !== -1)) {
         this.getSchema(this.props.data[this.props.value]);
       } else if (this.props.fieldJson.fieldName === "securityProtocol"){
-        if(this.context.Form.props.handleSecurityProtocol){
-          this.context.Form.props.handleSecurityProtocol(val.value);
+        if(Form.props.handleSecurityProtocol){
+          Form.props.handleSecurityProtocol(val.value);
         }
       }
     });

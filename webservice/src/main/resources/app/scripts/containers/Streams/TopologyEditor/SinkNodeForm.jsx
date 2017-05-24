@@ -62,7 +62,8 @@ export default class SinkNodeForm extends Component {
       fetchLoader: true,
       securityType : '',
       hasSecurity: false,
-      validSchema: false
+      validSchema: false,
+      formErrors:{}
     };
     this.fetchNotifier().then(() => {
       this.fetchData();
@@ -135,7 +136,7 @@ export default class SinkNodeForm extends Component {
         });
         stateObj.clusterArr = clusters;
       }
-      if (!_.isEmpty(stateObj.clusterArr) && _.keys(stateObj.clusterArr).length > 1) {
+      if (!_.isEmpty(stateObj.clusterArr) && _.keys(stateObj.clusterArr).length > 0) {
         stateObj.uiSpecification = this.pushClusterFields(tempArr);
       }
       stateObj.formData = this.nodeData.config.properties;
@@ -147,8 +148,7 @@ export default class SinkNodeForm extends Component {
       stateObj.validSchema = true;
       this.setState(stateObj, () => {
         if (stateObj.formData.cluster !== undefined) {
-          const keyName = this.getClusterKey(stateObj.formData.cluster);
-          this.updateClusterFields(keyName);
+          this.updateClusterFields(stateObj.formData.cluster);
         }
         if (_.keys(stateObj.clusterArr).length === 1) {
           stateObj.formData.cluster = _.keys(stateObj.clusterArr)[0];
@@ -318,15 +318,27 @@ export default class SinkNodeForm extends Component {
   }
 
   onSelectTab = (eventKey) => {
+    let stateObj={},activeTabKey =1,showRequired=true,showSecurity=false;
+    stateObj.formData = Utils.deepmerge(this.state.formData,this.refs.Form.state.FormData);
     if (eventKey == 1) {
-      this.setState({activeTabKey: 1, showRequired: true, showSecurity: false});
+      activeTabKey =1;
+      showRequired=true;
+      showSecurity=false;
     } else if (eventKey == 2) {
-      this.setState({activeTabKey: 2, showRequired: false, showSecurity: false});
+      activeTabKey =2;
+      showRequired=false;
+      showSecurity=false;
     } else if (eventKey == 3) {
-      this.setState({activeTabKey: 3});
+      activeTabKey =3;
     } else if (eventKey == 4) {
-      this.setState({activeTabKey: 4, showRequired: false, showSecurity: true});
+      activeTabKey =4;
+      showRequired=false;
+      showSecurity=true;
     }
+    stateObj.activeTabKey = activeTabKey;
+    stateObj.showRequired = showRequired;
+    stateObj.showSecurity = showSecurity;
+    this.setState(stateObj);
   }
 
   handleNotesChange(description) {
@@ -359,7 +371,10 @@ export default class SinkNodeForm extends Component {
 
   updateClusterFields(name) {
     const {clusterArr, clusterName, formData,uiSpecification} = this.state;
-    let tempFormData = _.cloneDeep(formData);
+    const {FormData} = this.refs.Form.state;
+
+    const mergeData = Utils.deepmerge(formData,FormData);
+    let tempFormData = _.cloneDeep(mergeData);
 
     /*
       Utils.mergeFormDataFields method accept params
@@ -387,8 +402,12 @@ export default class SinkNodeForm extends Component {
   handleSecurityProtocol = (securityKey) => {
     const {clusterArr,formData,clusterName} = this.state;
     const {cluster} = formData;
+    let {Errors,FormData} = this.refs.Form.state;
+    let tempObj = Utils.deepmerge(formData,FormData);
     if(clusterName !== undefined){
-      const tempData =  Utils.mapSecurityProtocol(clusterName,securityKey,formData,clusterArr);
+      const tempData =  Utils.mapSecurityProtocol(clusterName,securityKey,tempObj,clusterArr);
+      delete Errors.bootstrapServers;
+      this.refs.Form.setState({Errors});
       this.setState({formData : tempData ,securityType : securityKey});
     }
   }
@@ -401,14 +420,11 @@ export default class SinkNodeForm extends Component {
       uiSpecification,
       fetchLoader,
       securityType,
-      activeTabKey
+      activeTabKey,
+      formErrors
     } = this.state;
-    let tempConfigJSON  = [];
-    if(activeTabKey === 1){
-      tempConfigJSON = Utils.skipSecurityFields(uiSpecification);
-    }
 
-    let fields = Utils.genFields(tempConfigJSON.length !== 0 ? tempConfigJSON : uiSpecification, [], formData, _.uniqBy(_.flattenDeep(this.tempStreamFieldArr),'name'),securityType);
+    let fields = Utils.genFields(uiSpecification, [], formData, _.uniqBy(_.flattenDeep(this.tempStreamFieldArr),'name'),securityType);
     const form = fetchLoader
       ? <div className="col-sm-12">
           <div className="loading-img text-center" style={{
@@ -421,7 +437,7 @@ export default class SinkNodeForm extends Component {
         <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
           display: "none"
         }}/>}>
-          <Form ref="Form" readOnly={!this.props.editMode} showRequired={this.state.showRequired} showSecurity={this.state.showSecurity} FormData={formData} className="customFormClass" populateClusterFields={this.populateClusterFields.bind(this)}  callback={this.validateTopic.bind(this)} handleSecurityProtocol={this.handleSecurityProtocol.bind(this)}>
+          <Form ref="Form" readOnly={!this.props.editMode} showRequired={this.state.showRequired} showSecurity={this.state.showSecurity} FormData={formData} Errors={formErrors} className="customFormClass" populateClusterFields={this.populateClusterFields.bind(this)}  callback={this.validateTopic.bind(this)} handleSecurityProtocol={this.handleSecurityProtocol.bind(this)}>
             {fields}
           </Form>
         </Scrollbars>
@@ -431,19 +447,19 @@ export default class SinkNodeForm extends Component {
       <Tabs id="SinkForm" activeKey={this.state.activeTabKey} className="modal-tabs" onSelect={this.onSelectTab}>
         <Tab eventKey={1} title="REQUIRED">
           {inputSidebar}
-          {form}
+          {this.state.activeTabKey == 1 ? form : null}
         </Tab>
         {
         this.state.hasSecurity ?
         <Tab eventKey={4} title="SECURITY">
           {inputSidebar}
-          {form}
+          {this.state.activeTabKey == 4 ? form : null}
         </Tab>
         : ''
         }
         <Tab eventKey={2} title="OPTIONAL">
           {inputSidebar}
-          {form}
+          {this.state.activeTabKey == 2 ? form : null}
         </Tab>
         <Tab eventKey={3} title="NOTES">
           <NotesForm ref="NotesForm" description={this.state.description} onChangeDescription={this.handleNotesChange.bind(this)}/>
