@@ -152,11 +152,11 @@ export default class NoData extends Component {
                         ? <div className="list">
                             <h4>
                               <span className="hb success">2</span>
-                              &nbsp;Select Clusters</h4>
+                              &nbsp;Select Services</h4>
                             <div className="intro-content">
-                              Add Cluster Services
+                              Add services from
                               <br/>
-                              for your environments.
+                              the Service Pools
                             </div>
                           </div>
                         : (environmentFlag && imgName === "applications")
