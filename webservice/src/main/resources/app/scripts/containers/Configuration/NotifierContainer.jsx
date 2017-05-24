@@ -163,7 +163,7 @@ export default class NotifierContainer extends Component {
               ? <div className="row"><NoData imgName={"default-white"} searchVal={filterValue}/></div>
               : <div className="row">
                   <div className="col-sm-12">
-                    <Table className="table table-hover table-bordered" noDataText="No records found." currentPage={0} itemsPerPage={filteredEntities.length > pageSize
+                    <Table className="table table-hover table-bordered table-notifiers" noDataText="No records found." currentPage={0} itemsPerPage={filteredEntities.length > pageSize
                       ? pageSize
                       : 0} pageButtonLimit={5}>
                         <Thead>

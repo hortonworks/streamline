@@ -550,7 +550,8 @@ class EnvironmentContainer extends Component {
           key: eventKey,
           text: Utils.sortByKey(eventKey)
         };
-        this.setState({searchLoader: false, entities: namespace.entities, sorted: sortObj});
+        const mappingList = this.customMapping(namespace.entities);
+        this.setState({searchLoader: false, entities: mappingList, sorted: sortObj});
       }
     });
   }

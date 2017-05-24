@@ -856,6 +856,10 @@ label {
   margin-right: 3px;
 }
 
+.table-notifiers tr td {
+    word-break: break-all;
+}
+
 .schema-stats>i.fa, .schema-stats>div {
   float: left;
 }
