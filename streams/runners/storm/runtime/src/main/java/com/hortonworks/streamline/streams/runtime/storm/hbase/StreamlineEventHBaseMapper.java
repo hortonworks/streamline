@@ -17,6 +17,7 @@ package com.hortonworks.streamline.streams.runtime.storm.hbase;
 
 import com.google.common.base.Charsets;
 import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.runtime.storm.StreamlineRuntimeUtil;
 import org.apache.storm.hbase.bolt.mapper.HBaseMapper;
 import org.apache.storm.hbase.common.ColumnList;
 import org.apache.storm.tuple.Tuple;
@@ -28,15 +29,21 @@ import static org.apache.storm.hbase.common.Utils.toBytes;
 
 public class StreamlineEventHBaseMapper implements HBaseMapper {
     private final byte[] columnFamily;
+    private final String rowKeyField;
 
     public StreamlineEventHBaseMapper(String columnFamily) {
+        this(columnFamily, null);
+    }
+
+    public StreamlineEventHBaseMapper(String columnFamily, String rowKeyField) {
         this.columnFamily = columnFamily.getBytes(Charsets.UTF_8);
+        this.rowKeyField = rowKeyField;
     }
 
     @Override
     public byte[] rowKey(Tuple tuple) {
         StreamlineEvent event = (StreamlineEvent) tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
-        return toBytes(event.getId());
+        return toBytes((rowKeyField != null && !rowKeyField.isEmpty()) ? StreamlineRuntimeUtil.getFieldValue(event, rowKeyField) : event.getId());
     }
 
     @Override

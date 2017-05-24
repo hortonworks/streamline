@@ -34,6 +34,16 @@
         "type": "string"
       },
       {
+        "uiName": "Row key field",
+        "fieldName": "rowKeyField",
+        "isOptional": true,
+        "tooltip": "Field to be used as row key for table",
+        "type": "enumstring",
+        "options": [],
+        "defaultValue": null,
+        "hint": "inputFields"
+      },
+      {
         "uiName": "Batch Size",
         "fieldName": "batchSize",
         "isOptional": false,

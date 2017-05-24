@@ -66,7 +66,7 @@ public class HbaseBoltFluxComponent extends AbstractFluxComponent {
 
         //constructor args
         String[] constructorArgNames = {
-            TopologyLayoutConstants.JSON_KEY_COLUMN_FAMILY
+            TopologyLayoutConstants.JSON_KEY_COLUMN_FAMILY, TopologyLayoutConstants.JSON_KEY_ROW_KEY
         };
         List<Object> hbaseMapperConstructorArgs = getConstructorArgsYaml
                 (constructorArgNames);

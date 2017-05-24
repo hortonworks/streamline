@@ -51,7 +51,7 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_ROOT_DIR = "rootDir";
     public final static String JSON_KEY_TABLE = "table";
     public final static String JSON_KEY_COLUMN_FAMILY = "columnFamily";
-    public final static String JSON_KEY_ROW_KEY = "rowKey";
+    public final static String JSON_KEY_ROW_KEY = "rowKeyField";
     public final static String JSON_KEY_MAPPER_IMPL =
             "hBaseMapperImplClassName";
     public final static String JSON_KEY_WRITE_TO_WAL = "writeToWAL";
