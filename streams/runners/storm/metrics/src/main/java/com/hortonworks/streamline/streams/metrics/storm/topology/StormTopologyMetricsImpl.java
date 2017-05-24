@@ -78,7 +78,7 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
     private static final String FRAMEWORK = "STORM";
     private static final int MAX_SIZE_TOPOLOGY_CACHE = 10;
     private static final int MAX_SIZE_COMPONENT_CACHE = 50;
-    private static final int CACHE_DURATION_SECS = 30;
+    private static final int CACHE_DURATION_SECS = 5;
     private static final int FORK_JOIN_POOL_PARALLELISM = 50;
 
     // shared across the metrics instances
