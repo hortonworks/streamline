@@ -59,6 +59,9 @@ public class KafkaBoltFluxComponent extends AbstractFluxComponent {
         String mapperClassName = "com.hortonworks.streamline.streams.runtime.storm.bolt.kafka.StreamlineEventToKafkaMapper";
         String[] constructorArgNames = { "keyField" };
         List<Object> constructorArgs = getConstructorArgsYaml(constructorArgNames);
+        if (constructorArgs.isEmpty()) {
+            constructorArgs.add("");
+        }
         addToComponents(createComponent(mapperComponentId, mapperClassName, null, constructorArgs, null));
         return mapperComponentId;
     }
@@ -118,14 +121,14 @@ public class KafkaBoltFluxComponent extends AbstractFluxComponent {
 
     private String getKeySerializer () {
         String keySerializer = (String) conf.get("keySerializer");
-        if ("String".equals(keySerializer)) {
+        if ((keySerializer == null) || "ByteArray".equals(keySerializer)) {
+            return "org.apache.kafka.common.serialization.ByteArraySerializer";
+        } else if ("String".equals(keySerializer)) {
             return "org.apache.kafka.common.serialization.StringSerializer";
         } else if ("Integer".equals(keySerializer)) {
             return "org.apache.kafka.common.serialization.IntegerSerializer";
         } else if ("Long".equals(keySerializer)) {
             return "org.apache.kafka.common.serialization.LongSerializer";
-        } else if ("ByteArray".equals(keySerializer)) {
-            return "org.apache.kafka.common.serialization.ByteArraySerializer";
         } else {
             throw new IllegalArgumentException("Key serializer for kafka sink is not supported: " + keySerializer);
         }
