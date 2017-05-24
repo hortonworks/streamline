@@ -23,6 +23,7 @@ import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologySink;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.security.Roles;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 
@@ -112,7 +113,8 @@ public class TopologySinkCatalogResource {
     }
 
     private Response listTopologySinks(List<QueryParam> queryParams, Long topologyId, SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
         Collection<TopologySink> sinks = catalogService.listTopologySinks(queryParams);
         if (sinks != null) {
             return WSUtils.respondEntities(sinks, OK);
@@ -150,7 +152,8 @@ public class TopologySinkCatalogResource {
     @Timed
     public Response getTopologySinkById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sinkId,
                                         @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
         TopologySink sink = catalogService.getTopologySink(topologyId, sinkId);
         if (sink != null) {
             return WSUtils.respondEntity(sink, OK);
@@ -166,7 +169,8 @@ public class TopologySinkCatalogResource {
                                                   @PathParam("id") Long sourceId,
                                                   @PathParam("versionId") Long versionId,
                                                   @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
         TopologySink sink = catalogService.getTopologySink(topologyId, sourceId, versionId);
         if (sink != null) {
             return WSUtils.respondEntity(sink, OK);
@@ -216,7 +220,8 @@ public class TopologySinkCatalogResource {
     @Timed
     public Response addTopologySink(@PathParam("topologyId") Long topologyId, TopologySink topologySink,
                                     @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
+                Topology.NAMESPACE, topologyId, WRITE);
         TopologySink createdSink = catalogService.addTopologySink(topologyId, topologySink);
         return WSUtils.respondEntity(createdSink, CREATED);
     }
@@ -260,7 +265,8 @@ public class TopologySinkCatalogResource {
     @Timed
     public Response addOrUpdateTopologySink(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sinkId,
                                             TopologySink topologySink, @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
+                Topology.NAMESPACE, topologyId, WRITE);
         TopologySink createdTopologySink = catalogService.addOrUpdateTopologySink(topologyId, sinkId, topologySink);
         return WSUtils.respondEntity(createdTopologySink, CREATED);
     }
@@ -294,7 +300,8 @@ public class TopologySinkCatalogResource {
     public Response removeTopologySink(@PathParam("topologyId") Long topologyId, @PathParam("id") Long sinkId,
                                        @javax.ws.rs.QueryParam("removeEdges") boolean removeEdges,
                                        @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
+                Topology.NAMESPACE, topologyId, WRITE);
         TopologySink topologySink = catalogService.removeTopologySink(topologyId, sinkId, removeEdges);
         if (topologySink != null) {
             return WSUtils.respondEntity(topologySink, OK);

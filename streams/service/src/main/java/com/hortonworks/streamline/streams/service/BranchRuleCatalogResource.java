@@ -23,6 +23,7 @@ import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyBranchRule;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.layout.component.rule.Rule;
+import com.hortonworks.streamline.streams.security.Roles;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 
@@ -113,7 +114,8 @@ public class BranchRuleCatalogResource {
     }
 
     private Response listTopologyBranchRules(List<QueryParam> queryParams, Long topologyId, SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
         Collection<TopologyBranchRule> topologyBranchRules = catalogService.listBranchRules(queryParams);
         if (topologyBranchRules != null) {
             return WSUtils.respondEntities(topologyBranchRules, OK);
@@ -146,7 +148,8 @@ public class BranchRuleCatalogResource {
     @Timed
     public Response getTopologyBranchRuleById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId,
                                               @Context SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
         TopologyBranchRule brRuleInfo = catalogService.getBranchRule(topologyId, ruleId);
         if (brRuleInfo != null && brRuleInfo.getTopologyId().equals(topologyId)) {
             return WSUtils.respondEntity(brRuleInfo, OK);
@@ -162,7 +165,8 @@ public class BranchRuleCatalogResource {
                                                         @PathParam("id") Long ruleId,
                                                         @PathParam("versionId") Long versionId,
                                                         @Context SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
         TopologyBranchRule topologyBranchRule = catalogService.getBranchRule(topologyId, ruleId, versionId);
         if (topologyBranchRule != null) {
             return WSUtils.respondEntity(topologyBranchRule, OK);
@@ -215,7 +219,8 @@ public class BranchRuleCatalogResource {
     @Timed
     public Response addTopologyRule(@PathParam("topologyId") Long topologyId, TopologyBranchRule brRuleInfo,
                                     @Context SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
+                Topology.NAMESPACE, topologyId, WRITE);
         TopologyBranchRule createdTopologyBranchRule = catalogService.addBranchRule(topologyId, brRuleInfo);
         return WSUtils.respondEntity(createdTopologyBranchRule, CREATED);
     }
@@ -253,7 +258,8 @@ public class BranchRuleCatalogResource {
     @Timed
     public Response addOrUpdateRule(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId,
                                     TopologyBranchRule brRuleInfo, @Context SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
+                Topology.NAMESPACE, topologyId, WRITE);
         TopologyBranchRule createdRuleInfo = catalogService.addOrUpdateBranchRule(topologyId, ruleId, brRuleInfo);
         return WSUtils.respondEntity(createdRuleInfo, CREATED);
     }
@@ -284,7 +290,8 @@ public class BranchRuleCatalogResource {
     @Timed
     public Response removeRule(@PathParam("topologyId") Long topologyId, @PathParam("id") Long ruleId,
                                @Context SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
+                Topology.NAMESPACE, topologyId, WRITE);
         TopologyBranchRule ruleInfo = catalogService.removeBranchRule(topologyId, ruleId);
         if (ruleInfo != null) {
             return WSUtils.respondEntity(ruleInfo, OK);

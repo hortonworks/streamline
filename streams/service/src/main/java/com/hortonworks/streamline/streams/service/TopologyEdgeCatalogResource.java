@@ -23,6 +23,7 @@ import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyEdge;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.security.Roles;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 
@@ -113,7 +114,8 @@ public class TopologyEdgeCatalogResource {
     }
 
     private Response listTopologyEdges(List<QueryParam> queryParams, Long topologyId, SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
         Collection<TopologyEdge> edges = catalogService.listTopologyEdges(queryParams);
         if (edges != null) {
             return WSUtils.respondEntities(edges, OK);
@@ -151,7 +153,8 @@ public class TopologyEdgeCatalogResource {
     @Timed
     public Response getTopologyEdgeById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long edgeId,
                                         @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
         TopologyEdge edge = catalogService.getTopologyEdge(topologyId, edgeId);
         if (edge != null) {
             return WSUtils.respondEntity(edge, OK);
@@ -167,7 +170,8 @@ public class TopologyEdgeCatalogResource {
                                                   @PathParam("id") Long edgeId,
                                                   @PathParam("versionId") Long versionId,
                                                   @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
         TopologyEdge edge = catalogService.getTopologyEdge(topologyId, edgeId, versionId);
         if (edge != null) {
             return WSUtils.respondEntity(edge, OK);
@@ -215,7 +219,8 @@ public class TopologyEdgeCatalogResource {
     @Timed
     public Response addTopologyEdge(@PathParam("topologyId") Long topologyId, TopologyEdge edge,
                                     @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
+                Topology.NAMESPACE, topologyId, WRITE);
         TopologyEdge createdEdge = catalogService.addTopologyEdge(topologyId, edge);
         return WSUtils.respondEntity(createdEdge, CREATED);
     }
@@ -256,7 +261,8 @@ public class TopologyEdgeCatalogResource {
     @Timed
     public Response addOrUpdateTopologyEdge(@PathParam("topologyId") Long topologyId, @PathParam("id") Long edgeId,
                                             TopologyEdge edge, @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
+                Topology.NAMESPACE, topologyId, WRITE);
         TopologyEdge createdEdge = catalogService.addOrUpdateTopologyEdge(topologyId, edgeId, edge);
         return WSUtils.respondEntity(createdEdge, CREATED);
     }
@@ -290,7 +296,8 @@ public class TopologyEdgeCatalogResource {
     @Timed
     public Response removeTopologyEdge(@PathParam("topologyId") Long topologyId, @PathParam("id") Long edgeId,
                                        @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
+                Topology.NAMESPACE, topologyId, WRITE);
         TopologyEdge removedEdge = catalogService.removeTopologyEdge(topologyId, edgeId);
         if (removedEdge != null) {
             return WSUtils.respondEntity(removedEdge, OK);

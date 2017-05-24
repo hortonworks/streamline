@@ -138,12 +138,7 @@ public class ClusterCatalogResource {
     public Response getClusterById(@PathParam("id") Long clusterId,
                                    @javax.ws.rs.QueryParam("detail") Boolean detail,
                                    @Context SecurityContext securityContext) {
-        boolean servicePoolUser = SecurityUtil.hasRole(authorizer, securityContext, Roles.ROLE_SERVICE_POOL_USER);
-        if (servicePoolUser) {
-            LOG.debug("Allowing get service pool, since user has role: {}", Roles.ROLE_SERVICE_POOL_USER);
-        } else {
-            SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, clusterId, READ);
-        }
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_SERVICE_POOL_USER, NAMESPACE, clusterId, READ);
         Cluster result = environmentService.getCluster(clusterId);
         if (result != null) {
             return buildClusterGetResponse(result, detail);
@@ -175,7 +170,7 @@ public class ClusterCatalogResource {
     @Timed
     public Response removeCluster(@PathParam("id") Long clusterId, @Context SecurityContext securityContext) {
         assertNoNamespaceRefersCluster(clusterId);
-        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, clusterId, DELETE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_SERVICE_POOL_SUPER_ADMIN, NAMESPACE, clusterId, DELETE);
         Cluster removedCluster = environmentService.removeCluster(clusterId);
         if (removedCluster != null) {
             SecurityUtil.removeAcl(authorizer, securityContext, NAMESPACE, clusterId);
@@ -191,7 +186,7 @@ public class ClusterCatalogResource {
     public Response addOrUpdateCluster(@PathParam("id") Long clusterId,
                                        Cluster cluster,
                                        @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, clusterId, WRITE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_SERVICE_POOL_SUPER_ADMIN, NAMESPACE, clusterId, WRITE);
         Cluster newCluster = environmentService.addOrUpdateCluster(clusterId, cluster);
         return WSUtils.respondEntity(newCluster, CREATED);
     }
@@ -236,7 +231,7 @@ public class ClusterCatalogResource {
         if (clusterId == null) {
             throw BadRequestException.missingParameter("clusterId");
         }
-        SecurityUtil.checkPermissions(authorizer, securityContext, NAMESPACE, clusterId, WRITE, EXECUTE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_SERVICE_POOL_SUPER_ADMIN, NAMESPACE, clusterId, WRITE, EXECUTE);
         Cluster retrievedCluster = environmentService.getCluster(clusterId);
         if (retrievedCluster == null) {
             throw EntityNotFoundException.byId(String.valueOf(clusterId));

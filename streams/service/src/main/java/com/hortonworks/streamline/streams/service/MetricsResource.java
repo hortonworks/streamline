@@ -28,6 +28,7 @@ import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.metrics.topology.TopologyMetrics;
 import com.hortonworks.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
 import com.hortonworks.streamline.streams.metrics.topology.service.TopologyMetricsService;
+import com.hortonworks.streamline.streams.security.Roles;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import org.apache.commons.lang3.tuple.Pair;
@@ -50,6 +51,7 @@ import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 
 import static com.hortonworks.streamline.streams.security.Permission.READ;
+import static com.hortonworks.streamline.streams.security.Permission.WRITE;
 import static java.util.stream.Collectors.toMap;
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -78,7 +80,8 @@ public class MetricsResource {
     @Path("/topologies/{id}")
     @Timed
     public Response getTopologyMetricsById(@PathParam("id") Long id, @Context SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, id, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, id, READ);
         Topology topology = catalogService.getTopology(id);
         if (topology != null) {
             String asUser = WSUtils.getUserFromSecurityContext(securityContext);
@@ -96,7 +99,8 @@ public class MetricsResource {
                                                         @QueryParam("from") Long from,
                                                         @QueryParam("to") Long to,
                                                         @Context SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, id, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, id, READ);
         assertTimeRange(from, to);
         Topology topology = catalogService.getTopology(id);
         if (topology != null) {
@@ -117,7 +121,8 @@ public class MetricsResource {
                                        @QueryParam("from") Long from,
                                        @QueryParam("to") Long to,
                                        @Context SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, id, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, id, READ);
         assertTimeRange(from, to);
         Topology topology = catalogService.getTopology(id);
         TopologyComponent topologyComponent = catalogService.getTopologyComponent(id, topologyComponentId);
@@ -140,7 +145,8 @@ public class MetricsResource {
                                       @QueryParam("from") Long from,
                                       @QueryParam("to") Long to,
                                       @Context SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, id, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, id, READ);
         assertTimeRange(from, to);
         Topology topology = catalogService.getTopology(id);
         if (topology != null) {
@@ -179,7 +185,8 @@ public class MetricsResource {
                                       @QueryParam("from") Long from,
                                       @QueryParam("to") Long to,
                                       @Context SecurityContext securityContext) throws IOException {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, id, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, id, READ);
         assertTimeRange(from, to);
         Topology topology = catalogService.getTopology(id);
         TopologyComponent topologyComponent = catalogService.getTopologyComponent(id, topologyComponentId);
@@ -204,7 +211,8 @@ public class MetricsResource {
                                          @QueryParam("from") Long from,
                                          @QueryParam("to") Long to,
                                          @Context SecurityContext securityContext) throws IOException {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, id, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, id, READ);
         assertTimeRange(from, to);
         Topology topology = catalogService.getTopology(id);
         TopologyComponent topologyComponent = catalogService.getTopologyComponent(id, topologyComponentId);
