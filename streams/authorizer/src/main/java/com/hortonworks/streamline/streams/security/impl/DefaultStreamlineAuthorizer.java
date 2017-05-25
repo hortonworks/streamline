@@ -15,6 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.security.impl;
 
+import com.hortonworks.streamline.common.exception.DuplicateEntityException;
 import com.hortonworks.streamline.streams.security.AuthenticationContext;
 import com.hortonworks.streamline.streams.security.AuthorizationException;
 import com.hortonworks.streamline.streams.security.Permission;
@@ -25,6 +26,7 @@ import com.hortonworks.streamline.streams.security.catalog.AclEntry;
 import com.hortonworks.streamline.streams.security.catalog.Role;
 import com.hortonworks.streamline.streams.security.catalog.User;
 import com.hortonworks.streamline.streams.security.service.SecurityCatalogService;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,8 +75,14 @@ public class DefaultStreamlineAuthorizer implements StreamlineAuthorizer {
                     user.setName(name);
                     user.setEmail(name + "@auto-generated.com");
                     user.setMetadata("{\"colorCode\":\"#8261be\",\"colorLabel\":\"purple\",\"icon\":\"gears\"}");
-                    User addedUser = catalogService.addUser(user);
-                    LOG.info("Added admin user entry: {}", addedUser);
+                    try {
+                        User addedUser = catalogService.addUser(user);
+                        LOG.info("Added admin user entry: {}", addedUser);
+                    } catch (DuplicateEntityException exception) {
+                        // In HA setup the other server may have already added the user.
+                        LOG.info("Caught exception: " + ExceptionUtils.getStackTrace(exception));
+                        LOG.info("Admin user entry: {} already exists.", user);
+                    }
                 });
     }
 
