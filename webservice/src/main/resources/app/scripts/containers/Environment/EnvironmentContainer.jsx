@@ -453,7 +453,7 @@ class EnvironmentContainer extends Component {
   }
 
   handleDeleteNameSpace = (id) => {
-    this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete ?'}).then((confirmBox) => {
+    this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete?'}).then((confirmBox) => {
       EnvironmentREST.deleteNameSpace(id).then((nameSpace) => {
         this.initialFetch = false;
         confirmBox.cancel();

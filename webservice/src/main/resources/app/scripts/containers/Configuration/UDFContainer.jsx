@@ -75,7 +75,7 @@ export default class UDFContainer extends Component {
 
   handleDeleteUDF = (id) => {
     let BaseContainer = this.props.callbackHandler();
-    BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete this udf?'}).then((confirmBox) => {
+    BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete this UDF?'}).then((confirmBox) => {
       AggregateUdfREST.deleteUdf(id).then((udf) => {
         this.fetchData();
         confirmBox.cancel();

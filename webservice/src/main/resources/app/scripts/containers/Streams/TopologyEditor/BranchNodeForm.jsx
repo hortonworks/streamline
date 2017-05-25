@@ -192,7 +192,7 @@ export default class BranchNodeForm extends Component {
     let edges = _.filter(this.allEdges, function(e) {
       return e.streamGroupings[0].streamId === transformStream.id || e.streamGroupings[0].streamId === notifierStream.id;
     });
-    this.refs.Confirm.show({title: 'Are you sure you want to delete rule ?'}).then((confirmBox) => {
+    this.refs.Confirm.show({title: 'Are you sure you want to delete rule?'}).then((confirmBox) => {
       let promiseArr = [];
       if (edges.length > 0) {
         edges.map((e) => {

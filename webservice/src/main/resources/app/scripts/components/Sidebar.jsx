@@ -204,8 +204,7 @@ export default class Sidebar extends Component {
             : "fa fa-angle-double-left"}></i>
         </a>
         <Modal ref="leaveEditable" onKeyPress={this.handleKeyPress.bind(this)} data-title="Confirm Box" dialogClassName="confirm-box" data-resolve={this.confirmLeave.bind(this, true)}>
-          {< p > Are you sure want to navigate away from this page
-            ? </p>}
+          {< p > Are you sure want to navigate away from this page? </p>}
         </Modal>
       </aside>
     );

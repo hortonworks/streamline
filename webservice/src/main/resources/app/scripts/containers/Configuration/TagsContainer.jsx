@@ -198,7 +198,7 @@ export default class TagsContainer extends Component {
 
   handleDelete(id) {
     let BaseContainer = this.refs.BaseContainer;
-    BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete ?'}).then((confirmBox) => {
+    BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete?'}).then((confirmBox) => {
       TagREST.deleteTag(id).then((tags) => {
         this.fetchData();
         confirmBox.cancel();

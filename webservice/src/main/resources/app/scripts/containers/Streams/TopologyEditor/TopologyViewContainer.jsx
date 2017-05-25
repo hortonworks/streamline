@@ -302,7 +302,7 @@ class TopologyViewContainer extends Component {
     return obj;
   }
   killTopology() {
-    this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to kill this topology ?'}).then((confirmBox) => {
+    this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to stop this Application?'}).then((confirmBox) => {
       this.setState({topologyStatus: 'KILLING...'});
       TopologyREST.killTopology(this.topologyId).then(topology => {
         if (topology.responseMessage !== undefined) {
@@ -312,7 +312,7 @@ class TopologyViewContainer extends Component {
           this.setState({topologyStatus: status});
         } else {
           FSReactToastr.success(
-            <strong>Topology Killed Successfully</strong>
+            <strong>Application Stopped Successfully</strong>
           );
           TopologyREST.getTopology(this.topologyId, this.versionId).then((result) => {
             let data = result;

@@ -245,7 +245,7 @@ class AddEnvironment extends Component {
             });
             if (r_index !== -1 && r_flag) {
               if (dataObj.serviceName.toLowerCase() === "storm") {
-                this.refs.changeStreamEngine.show({title: 'Are you sure you want to change storm for this environment ?'}).then(() => {
+                this.refs.changeStreamEngine.show({title: 'Are you sure you want to change storm for this environment?'}).then(() => {
                   this.sliceSelectedKeyIndex(storm_id, dataObj.serviceName);
                 }, () => {
                   this.sliceSelectedKeyIndex(dataObj.clusterId, dataObj.serviceName);

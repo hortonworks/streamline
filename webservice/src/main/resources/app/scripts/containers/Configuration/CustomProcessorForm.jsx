@@ -678,7 +678,7 @@ class CustomProcessorForm extends Component {
           {this.modalContent()}
         </Modal>
         <Modal ref="leaveConfigProcessor" onKeyPress={this.handleKeyPress} data-title="Confirm Box" dialogClassName="confirm-box" data-resolve={this.confirmLeave.bind(this, true)} data-reject={this.confirmLeave.bind(this, false)}>
-          {< p > Your Processor Config setting is not saved !Are you sure you want to leave
+          {< p > Your Processor Config setting is not saved! Are you sure you want to leave
             ? </p>}
         </Modal>
       </div>
