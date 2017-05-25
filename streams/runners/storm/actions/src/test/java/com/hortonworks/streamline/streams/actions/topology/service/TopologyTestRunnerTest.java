@@ -16,7 +16,6 @@
 package com.hortonworks.streamline.streams.actions.topology.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
 import com.hortonworks.streamline.streams.actions.TopologyActions;
@@ -54,8 +53,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 import static org.junit.Assert.assertEquals;
@@ -111,6 +108,7 @@ public class TopologyTestRunnerTest {
         testCase.setName("testcase1");
         testCase.setTimestamp(System.currentTimeMillis());
 
+        setTopologyCurrentVersionExpectation(topology);
         setTopologyTestRunCaseExpectations(topology, testCase);
         setTopologyTestRunCaseSinkNotFoundExpectations(topology, testCase);
         setTopologyTestRunHistoryExpectations();
@@ -151,7 +149,7 @@ public class TopologyTestRunnerTest {
             times = 1;
 
             assertEquals(topology.getId(), runHistory.getTopologyId());
-            assertTestRecords(topology, runHistory.getTestRecords());
+            assertEquals(topology.getVersionId(), runHistory.getVersionId());
             assertTrue(runHistory.getFinished());
             assertTrue(runHistory.getSuccess());
             assertNotNull(runHistory.getStartTime());
@@ -196,6 +194,7 @@ public class TopologyTestRunnerTest {
         testCase.setName("testcase1");
         testCase.setTimestamp(System.currentTimeMillis());
 
+        setTopologyCurrentVersionExpectation(topology);
         setTopologyTestRunCaseExpectations(topology, testCase);
         setTopologyTestRunCaseSinkNotFoundExpectations(topology, testCase);
         setTopologyTestRunHistoryExpectations();
@@ -234,7 +233,7 @@ public class TopologyTestRunnerTest {
             times = 1;
 
             assertEquals(topology.getId(), runHistory.getTopologyId());
-            assertTestRecords(topology, runHistory.getTestRecords());
+            assertEquals(topology.getVersionId(), runHistory.getVersionId());
             assertTrue(runHistory.getFinished());
             assertFalse(runHistory.getSuccess());
             assertNotNull(runHistory.getStartTime());
@@ -260,12 +259,7 @@ public class TopologyTestRunnerTest {
         testCase.setName("testcase1");
         testCase.setTimestamp(System.currentTimeMillis());
 
-        Set<String> sinkNames = topology.getTopologyDag().getInputComponents()
-                .stream()
-                .filter(c -> c instanceof StreamlineSink)
-                .map(c -> c.getName())
-                .collect(Collectors.toSet());
-
+        setTopologyCurrentVersionExpectation(topology);
         setTopologyTestRunCaseExpectations(topology, testCase);
         setTopologyTestRunCaseSinkExpectations(topology, testCase);
         setTopologyTestRunHistoryExpectations();
@@ -287,7 +281,7 @@ public class TopologyTestRunnerTest {
             times = 1;
 
             assertEquals(topology.getId(), runHistory.getTopologyId());
-            assertTestRecords(topology, runHistory.getTestRecords());
+            assertEquals(topology.getVersionId(), runHistory.getVersionId());
             assertTrue(runHistory.getFinished());
             assertTrue(runHistory.getSuccess());
             assertNotNull(runHistory.getStartTime());
@@ -313,6 +307,7 @@ public class TopologyTestRunnerTest {
         testCase.setName("testcase1");
         testCase.setTimestamp(System.currentTimeMillis());
 
+        setTopologyCurrentVersionExpectation(topology);
         setTopologyTestRunCaseExpectations(topology, testCase);
         setTopologyTestRunCaseSinkMismatchedRecordsExpectations(topology, testCase);
         setTopologyTestRunHistoryExpectations();
@@ -334,7 +329,7 @@ public class TopologyTestRunnerTest {
             times = 1;
 
             assertEquals(topology.getId(), runHistory.getTopologyId());
-            assertTestRecords(topology, runHistory.getTestRecords());
+            assertEquals(topology.getVersionId(), runHistory.getVersionId());
             assertTrue(runHistory.getFinished());
             assertTrue(runHistory.getSuccess());
             assertNotNull(runHistory.getStartTime());
@@ -343,6 +338,13 @@ public class TopologyTestRunnerTest {
             assertTrue(isNotEmptyJson(runHistory.getExpectedOutputRecords()));
             assertTrue(isNotEmptyJson(runHistory.getActualOutputRecords()));
             assertFalse(runHistory.getMatched());
+        }};
+    }
+
+    private void setTopologyCurrentVersionExpectation(Topology topology) throws Exception {
+        new Expectations() {{
+            catalogService.getCurrentVersionId(topology.getId());
+            result = topology.getVersionId();
         }};
     }
 
@@ -546,19 +548,6 @@ public class TopologyTestRunnerTest {
                 .collect(toMap(c -> Long.valueOf(c.getId()),
                         c -> Collections.singletonMap("default", TopologyTestHelper.createTestRecords()))
                 );
-    }
-
-    private void assertTestRecords(Topology topology, String testRecords) {
-        Map<Long, Map<String, List<Map<String, Object>>>> collectedTestRecords = readTestRecordsFromTestCaseSources(topology);
-
-        try {
-            Map<Long, Map<String, List<Map<String, Object>>>> testRecordsMap = objectMapper.readValue(
-                    testRecords, new TypeReference<Map<Long, Map<String, List<Map<String, Object>>>>>() {});
-
-            assertEquals(collectedTestRecords, testRecordsMap);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private boolean isEmptyJson(String expectedOutputRecords) {

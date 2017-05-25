@@ -25,6 +25,8 @@ import com.hortonworks.streamline.common.exception.service.exception.server.Unha
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
 import com.hortonworks.streamline.streams.catalog.Topology;
+import com.hortonworks.streamline.streams.catalog.TopologySink;
+import com.hortonworks.streamline.streams.catalog.TopologySource;
 import com.hortonworks.streamline.streams.catalog.TopologyTestRunCase;
 import com.hortonworks.streamline.streams.catalog.TopologyTestRunCaseSink;
 import com.hortonworks.streamline.streams.catalog.TopologyTestRunCaseSource;
@@ -244,6 +246,19 @@ public class TopologyTestRunResource {
     public Response addTestRunCase(@PathParam("topologyId") Long topologyId,
                                       TopologyTestRunCase testRunCase) {
         testRunCase.setTopologyId(topologyId);
+        Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
+        testRunCase.setVersionId(currentVersionId);
+        TopologyTestRunCase addedCase = catalogService.addTopologyTestRunCase(testRunCase);
+        return WSUtils.respondEntity(addedCase, CREATED);
+    }
+
+    @POST
+    @Path("/topologies/{topologyId}/versions/{versionId}/testcases")
+    public Response addTestRunCase(@PathParam("topologyId") Long topologyId,
+                                   @PathParam("versionId") Long versionId,
+                                   TopologyTestRunCase testRunCase) {
+        testRunCase.setTopologyId(topologyId);
+        testRunCase.setVersionId(versionId);
         TopologyTestRunCase addedCase = catalogService.addTopologyTestRunCase(testRunCase);
         return WSUtils.respondEntity(addedCase, CREATED);
     }
@@ -277,8 +292,25 @@ public class TopologyTestRunResource {
     public Response listTestRunCases(@Context UriInfo urlInfo,
                                      @PathParam("topologyId") Long topologyId,
                                      @QueryParam("limit") Integer limit) throws Exception {
-        Collection<TopologyTestRunCase> cases = catalogService.listTopologyTestRunCase(topologyId);
+        Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
 
+        Collection<TopologyTestRunCase> cases = catalogService.listTopologyTestRunCase(topologyId, currentVersionId);
+        if (cases == null) {
+            throw EntityNotFoundException.byFilter("topology id " + topologyId);
+        }
+
+        List<TopologyTestRunCase> filteredCases = filterTestRunCases(limit, cases);
+        return WSUtils.respondEntities(filteredCases, OK);
+    }
+
+    @GET
+    @Path("/topologies/{topologyId}/versions/{versionId}/testcases")
+    @Timed
+    public Response listTestRunCases(@Context UriInfo urlInfo,
+                                     @PathParam("topologyId") Long topologyId,
+                                     @PathParam("versionId") Long versionId,
+                                     @QueryParam("limit") Integer limit) throws Exception {
+        Collection<TopologyTestRunCase> cases = catalogService.listTopologyTestRunCase(topologyId, versionId);
         if (cases == null) {
             throw EntityNotFoundException.byFilter("topology id " + topologyId);
         }
@@ -316,11 +348,8 @@ public class TopologyTestRunResource {
     public Response addTestRunCaseSource(@PathParam("topologyId") Long topologyId,
                                          @PathParam("testCaseId") Long testCaseId,
                                          TopologyTestRunCaseSource testRunCaseSource) {
-        TopologyTestRunCase testCase = catalogService.getTopologyTestRunCase(topologyId, testCaseId);
-        if (testCase == null) {
-            throw EntityNotFoundException.byId("Topology test case with topology id " + topologyId +
-                    " and test case id " + testCaseId);
-        }
+        TopologySource topologySource = getAssociatedTopologySource(topologyId, testCaseId, testRunCaseSource.getSourceId());
+        testRunCaseSource.setVersionId(topologySource.getVersionId());
 
         TopologyTestRunCaseSource addedCaseSource = catalogService.addTopologyTestRunCaseSource(testRunCaseSource);
         return WSUtils.respondEntity(addedCaseSource, CREATED);
@@ -332,10 +361,35 @@ public class TopologyTestRunResource {
                                            @PathParam("testCaseId") Long testCaseId,
                                            @PathParam("id") Long id,
                                            TopologyTestRunCaseSource testRunCaseSource) {
-        testRunCaseSource.setTestCaseId(testCaseId);
         testRunCaseSource.setId(id);
+        testRunCaseSource.setTestCaseId(testCaseId);
+
+        TopologySource topologySource = getAssociatedTopologySource(topologyId, testCaseId, testRunCaseSource.getSourceId());
+        testRunCaseSource.setVersionId(topologySource.getVersionId());
+
         TopologyTestRunCaseSource updatedCase = catalogService.addOrUpdateTopologyTestRunCaseSource(testRunCaseSource.getId(), testRunCaseSource);
         return WSUtils.respondEntity(updatedCase, OK);
+    }
+
+    private TopologySource getAssociatedTopologySource(Long topologyId, Long testCaseId, Long topologySourceId) {
+        TopologyTestRunCase testCase = catalogService.getTopologyTestRunCase(topologyId, testCaseId);
+        if (testCase == null) {
+            throw EntityNotFoundException.byId("Topology test case with topology id " + topologyId +
+                    " and test case id " + testCaseId);
+        }
+
+        TopologySource topologySource = catalogService.getTopologySource(topologyId, topologySourceId,
+                testCase.getVersionId());
+
+        if (topologySource == null) {
+            throw EntityNotFoundException.byId("Topology source with topology id " + topologyId +
+                    " and version id " + testCase.getVersionId());
+        } else if (!testCase.getVersionId().equals(topologySource.getVersionId())) {
+            throw new IllegalStateException("Test case and topology source point to the different version id: "
+                    + "version id of test case: " + testCase.getVersionId() + " / "
+                    + "version id of topology source: " + topologySource.getVersionId());
+        }
+        return topologySource;
     }
 
     @GET
@@ -381,11 +435,8 @@ public class TopologyTestRunResource {
     public Response addTestRunCaseSink(@PathParam("topologyId") Long topologyId,
                                          @PathParam("testCaseId") Long testCaseId,
                                          TopologyTestRunCaseSink testRunCaseSink) {
-        TopologyTestRunCase testCase = catalogService.getTopologyTestRunCase(topologyId, testCaseId);
-        if (testCase == null) {
-            throw EntityNotFoundException.byId("Topology test case with topology id " + topologyId +
-                    " and test case id " + testCaseId);
-        }
+        TopologySink topologySink = getAssociatedTopologySink(topologyId, testCaseId, testRunCaseSink.getSinkId());
+        testRunCaseSink.setVersionId(topologySink.getVersionId());
 
         TopologyTestRunCaseSink addedCaseSink = catalogService.addTopologyTestRunCaseSink(testRunCaseSink);
         return WSUtils.respondEntity(addedCaseSink, CREATED);
@@ -397,10 +448,35 @@ public class TopologyTestRunResource {
                                            @PathParam("testCaseId") Long testCaseId,
                                            @PathParam("id") Long id,
                                            TopologyTestRunCaseSink testRunCaseSink) {
-        testRunCaseSink.setTestCaseId(testCaseId);
         testRunCaseSink.setId(id);
+        testRunCaseSink.setTestCaseId(testCaseId);
+
+        TopologySink topologySink = getAssociatedTopologySink(topologyId, testCaseId, testRunCaseSink.getSinkId());
+        testRunCaseSink.setVersionId(topologySink.getVersionId());
+
         TopologyTestRunCaseSink updatedCase = catalogService.addOrUpdateTopologyTestRunCaseSink(testRunCaseSink.getId(), testRunCaseSink);
         return WSUtils.respondEntity(updatedCase, OK);
+    }
+
+    private TopologySink getAssociatedTopologySink(Long topologyId, Long testCaseId, Long topologySinkId) {
+        TopologyTestRunCase testCase = catalogService.getTopologyTestRunCase(topologyId, testCaseId);
+        if (testCase == null) {
+            throw EntityNotFoundException.byId("Topology test case with topology id " + topologyId +
+                    " and test case id " + testCaseId);
+        }
+
+        TopologySink topologySink = catalogService.getTopologySink(topologyId, topologySinkId,
+                testCase.getVersionId());
+
+        if (topologySink == null) {
+            throw EntityNotFoundException.byId("Topology sink with topology id " + topologyId +
+                    " and version id " + testCase.getVersionId());
+        } else if (!testCase.getVersionId().equals(topologySink.getVersionId())) {
+            throw new IllegalStateException("Test case and topology sink point to the different version id: "
+                    + "version id of test case: " + testCase.getVersionId() + " / "
+                    + "version id of topology sink: " + topologySink.getVersionId());
+        }
+        return topologySink;
     }
 
     @GET

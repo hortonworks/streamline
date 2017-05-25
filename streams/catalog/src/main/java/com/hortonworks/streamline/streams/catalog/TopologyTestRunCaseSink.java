@@ -34,8 +34,23 @@ public class TopologyTestRunCaseSink extends AbstractStorable {
     private Long id;
     private Long testCaseId;
     private Long sinkId;
+    private Long versionId;
     private String records;
     private Long timestamp;
+
+    public TopologyTestRunCaseSink() {
+    }
+
+    public TopologyTestRunCaseSink(TopologyTestRunCaseSink other) {
+        if (other != null) {
+            setId(other.getId());
+            setTestCaseId(other.getTestCaseId());
+            setSinkId(other.getSinkId());
+            setVersionId(other.getVersionId());
+            setRecords(other.getRecords());
+            setTimestamp(other.getTimestamp());
+        }
+    }
 
     @JsonIgnore
     @Override
@@ -87,6 +102,17 @@ public class TopologyTestRunCaseSink extends AbstractStorable {
     }
 
     /**
+     * The foreign key reference to the topology sink's version id.
+     */
+    public Long getVersionId() {
+        return versionId;
+    }
+
+    public void setVersionId(Long versionId) {
+        this.versionId = versionId;
+    }
+
+    /**
      * Test expected records for given sink.
      */
     public String getRecords() {
@@ -115,7 +141,8 @@ public class TopologyTestRunCaseSink extends AbstractStorable {
         if (getId() != null ? !getId().equals(that.getId()) : that.getId() != null) return false;
         if (getTestCaseId() != null ? !getTestCaseId().equals(that.getTestCaseId()) : that.getTestCaseId() != null)
             return false;
-        if (getSinkId() != null ? !getSinkId().equals(that.getSinkId()) : that.getSinkId() != null)
+        if (getSinkId() != null ? !getSinkId().equals(that.getSinkId()) : that.getSinkId() != null) return false;
+        if (getVersionId() != null ? !getVersionId().equals(that.getVersionId()) : that.getVersionId() != null)
             return false;
         if (getRecords() != null ? !getRecords().equals(that.getRecords()) : that.getRecords() != null) return false;
         return getTimestamp() != null ? getTimestamp().equals(that.getTimestamp()) : that.getTimestamp() == null;
@@ -126,6 +153,7 @@ public class TopologyTestRunCaseSink extends AbstractStorable {
         int result = getId() != null ? getId().hashCode() : 0;
         result = 31 * result + (getTestCaseId() != null ? getTestCaseId().hashCode() : 0);
         result = 31 * result + (getSinkId() != null ? getSinkId().hashCode() : 0);
+        result = 31 * result + (getVersionId() != null ? getVersionId().hashCode() : 0);
         result = 31 * result + (getRecords() != null ? getRecords().hashCode() : 0);
         result = 31 * result + (getTimestamp() != null ? getTimestamp().hashCode() : 0);
         return result;
@@ -133,10 +161,11 @@ public class TopologyTestRunCaseSink extends AbstractStorable {
 
     @Override
     public String toString() {
-        return "TopologyTestRunCaseSource{" +
+        return "TopologyTestRunCaseSink{" +
                 "id=" + id +
                 ", testCaseId=" + testCaseId +
                 ", sinkId=" + sinkId +
+                ", versionId=" + versionId +
                 ", records='" + records + '\'' +
                 ", timestamp=" + timestamp +
                 '}';

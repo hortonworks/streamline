@@ -434,41 +434,44 @@ CREATE TABLE IF NOT EXISTS topology_test_run_case (
   id BIGINT AUTO_INCREMENT NOT NULL,
   name VARCHAR(256) NOT NULL,
   topologyId BIGINT NOT NULL,
+  versionId BIGINT NOT NULL,
   timestamp BIGINT,
   PRIMARY KEY (id),
-  FOREIGN KEY (topologyId) REFERENCES topology(id)
+  FOREIGN KEY (topologyId, versionId) REFERENCES topology(id, versionId)
 );
 
 CREATE TABLE IF NOT EXISTS topology_test_run_case_source (
   id BIGINT AUTO_INCREMENT NOT NULL,
   testCaseId BIGINT NOT NULL,
   sourceId BIGINT NOT NULL,
+  versionId BIGINT NOT NULL,
   records TEXT NOT NULL,
   occurrence INTEGER NOT NULL,
   timestamp BIGINT,
   PRIMARY KEY (id),
   FOREIGN KEY (testCaseId) REFERENCES topology_test_run_case(id),
-  FOREIGN KEY (sourceId) REFERENCES topology_source(id),
-  UNIQUE KEY `testcase_source` (testCaseId, sourceId)
+  FOREIGN KEY (sourceId, versionId) REFERENCES topology_source(id, versionId),
+  UNIQUE KEY `testcase_source` (testCaseId, sourceId, versionId)
 );
 
 CREATE TABLE IF NOT EXISTS topology_test_run_case_sink (
   id BIGINT AUTO_INCREMENT NOT NULL,
   testCaseId BIGINT NOT NULL,
   sinkId BIGINT NOT NULL,
+  versionId BIGINT NOT NULL,
   records TEXT NOT NULL,
   timestamp BIGINT,
   PRIMARY KEY (id),
   FOREIGN KEY (testCaseId) REFERENCES topology_test_run_case(id),
-  FOREIGN KEY (sinkId) REFERENCES topology_sink(id),
-  UNIQUE KEY `testcase_sink` (testCaseId, sinkId)
+  FOREIGN KEY (sinkId, versionId) REFERENCES topology_sink(id, versionId),
+  UNIQUE KEY `testcase_sink` (testCaseId, sinkId, versionId)
 );
 
 CREATE TABLE IF NOT EXISTS topology_test_run_histories (
   id BIGINT AUTO_INCREMENT NOT NULL,
   topologyId BIGINT NOT NULL,
-  versionId BIGINT,
-  testRecords TEXT NOT NULL,
+  versionId BIGINT NOT NULL,
+  testCaseId BIGINT NOT NULL,
   finished CHAR(5) NOT NULL,
   success CHAR(5) NOT NULL,
   expectedOutputRecords TEXT,
@@ -479,6 +482,6 @@ CREATE TABLE IF NOT EXISTS topology_test_run_histories (
   finishTime BIGINT,
   timestamp BIGINT,
   PRIMARY KEY (id),
-  FOREIGN KEY (topologyId) REFERENCES topology(id),
-  FOREIGN KEY (versionId) REFERENCES topology_version(id)
+  FOREIGN KEY (topologyId, versionId) REFERENCES topology(id, versionId),
+  FOREIGN KEY (testCaseId) REFERENCES topology_test_run_case(id)
 );

@@ -412,38 +412,44 @@ CREATE TABLE IF NOT EXISTS topology_test_run_case (
   "id" SERIAL NOT NULL,
   "name" VARCHAR(256) NOT NULL,
   "topologyId" BIGINT NOT NULL,
+  "versionId" BIGINT NOT NULL,
   "timestamp" BIGINT,
-  PRIMARY KEY (id)
+  PRIMARY KEY ("id"),
+  FOREIGN KEY ("topologyId", "versionId") REFERENCES topology("id", "versionId")
 );
 
 CREATE TABLE IF NOT EXISTS topology_test_run_case_source (
   "id" SERIAL NOT NULL,
   "testCaseId" BIGINT NOT NULL,
   "sourceId" BIGINT NOT NULL,
+  "versionId" BIGINT NOT NULL,
   "records" TEXT NOT NULL,
   "occurrence" BIGINT NOT NULL,
   "timestamp" BIGINT,
-  PRIMARY KEY (id),
-  FOREIGN KEY ("testCaseId") REFERENCES topology_test_run_case(id),
-  CONSTRAINT UK_testcase_source UNIQUE ("testCaseId", "sourceId")
+  PRIMARY KEY ("id"),
+  FOREIGN KEY ("testCaseId") REFERENCES topology_test_run_case("id"),
+  FOREIGN KEY ("sourceId", "versionId") REFERENCES topology_source("id", "versionId"),
+  CONSTRAINT UK_testcase_source UNIQUE ("testCaseId", "sourceId", "versionId")
 );
 
 CREATE TABLE IF NOT EXISTS topology_test_run_case_sink (
   "id" SERIAL NOT NULL,
   "testCaseId" BIGINT NOT NULL,
   "sinkId" BIGINT NOT NULL,
+  "versionId" BIGINT NOT NULL,
   "records" TEXT NOT NULL,
   "timestamp" BIGINT,
-  PRIMARY KEY (id),
+  PRIMARY KEY ("id"),
   FOREIGN KEY ("testCaseId") REFERENCES topology_test_run_case(id),
-  CONSTRAINT UK_testcase_sink UNIQUE ("testCaseId", "sinkId")
+  FOREIGN KEY ("sinkId", "versionId") REFERENCES topology_sink("id", "versionId"),
+  CONSTRAINT UK_testcase_sink UNIQUE ("testCaseId", "sinkId", "versionId")
 );
 
 CREATE TABLE IF NOT EXISTS topology_test_run_histories (
   "id" SERIAL NOT NULL,
   "topologyId" BIGINT NOT NULL,
-  "versionId" BIGINT,
-  "testRecords" TEXT NOT NULL,
+  "versionId" BIGINT NOT NULL,
+  "testCaseId" BIGINT NOT NULL,
   "finished" CHAR(5) NOT NULL,
   "success" CHAR(5) NOT NULL,
   "expectedOutputRecords" TEXT,
@@ -453,6 +459,7 @@ CREATE TABLE IF NOT EXISTS topology_test_run_histories (
   "startTime" BIGINT,
   "finishTime" BIGINT,
   "timestamp" BIGINT,
-  PRIMARY KEY (id),
-  FOREIGN KEY ("topologyId", "versionId") REFERENCES topology("id", "versionId")
+  PRIMARY KEY ("id"),
+  FOREIGN KEY ("topologyId", "versionId") REFERENCES topology("id", "versionId"),
+  FOREIGN KEY ("testCaseId") REFERENCES topology_test_run_case("id")
 );
