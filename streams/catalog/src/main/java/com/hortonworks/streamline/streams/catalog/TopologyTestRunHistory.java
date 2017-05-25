@@ -21,7 +21,7 @@ public class TopologyTestRunHistory extends AbstractStorable {
     public static final String ID = "id";
     public static final String TOPOLOGY_ID = "topologyId";
     public static final String VERSION_ID = "versionId";
-    public static final String TEST_RECORDS = "testRecords";
+    public static final String TEST_CASE_ID = "testCaseId";
     private static final String FINISHED = "finished";
     private static final String SUCCESS = "success";
     private static final String EXPECTED_OUTPUT_RECORDS = "expectedOutputRecords";
@@ -38,7 +38,7 @@ public class TopologyTestRunHistory extends AbstractStorable {
     private Long id;
     private Long topologyId;
     private Long versionId;
-    private String testRecords;
+    private Long testCaseId;
     private Boolean finished = false;
     private Boolean success = false;
     private String expectedOutputRecords;
@@ -99,14 +99,14 @@ public class TopologyTestRunHistory extends AbstractStorable {
     }
 
     /**
-     * Collected test records JSON (source -> stream -> test records).
+     * The foreign key reference to the test case id.
      */
-    public String getTestRecords() {
-        return testRecords;
+    public Long getTestCaseId() {
+        return testCaseId;
     }
 
-    public void setTestRecords(String testRecords) {
-        this.testRecords = testRecords;
+    public void setTestCaseId(Long testCaseId) {
+        this.testCaseId = testCaseId;
     }
 
     /**
@@ -235,7 +235,7 @@ public class TopologyTestRunHistory extends AbstractStorable {
                 new Schema.Field(ID, Schema.Type.LONG),
                 new Schema.Field(TOPOLOGY_ID, Schema.Type.LONG),
                 new Schema.Field(VERSION_ID, Schema.Type.LONG),
-                new Schema.Field(TEST_RECORDS, Schema.Type.STRING),
+                new Schema.Field(TEST_CASE_ID, Schema.Type.LONG),
                 new Schema.Field(FINISHED, Schema.Type.STRING),
                 Schema.Field.optional(SUCCESS, Schema.Type.STRING),
                 Schema.Field.optional(EXPECTED_OUTPUT_RECORDS, Schema.Type.STRING),
@@ -259,7 +259,7 @@ public class TopologyTestRunHistory extends AbstractStorable {
         map.put(ID, id);
         map.put(TOPOLOGY_ID, topologyId);
         map.put(VERSION_ID, versionId);
-        map.put(TEST_RECORDS, testRecords);
+        map.put(TEST_CASE_ID, testCaseId);
 
         if (finished != null) {
             map.put(FINISHED, finished.toString());
@@ -295,7 +295,7 @@ public class TopologyTestRunHistory extends AbstractStorable {
         id = (Long) map.get(ID);
         topologyId = (Long) map.get(TOPOLOGY_ID);
         versionId = (Long) map.get(VERSION_ID);
-        testRecords = (String) map.get(TEST_RECORDS);
+        testCaseId = (Long) map.get(TEST_CASE_ID);
 
         if (map.get(FINISHED) != null) {
             finished = Boolean.valueOf((String) map.get(FINISHED));
@@ -339,7 +339,7 @@ public class TopologyTestRunHistory extends AbstractStorable {
             return false;
         if (getVersionId() != null ? !getVersionId().equals(that.getVersionId()) : that.getVersionId() != null)
             return false;
-        if (getTestRecords() != null ? !getTestRecords().equals(that.getTestRecords()) : that.getTestRecords() != null)
+        if (getTestCaseId() != null ? !getTestCaseId().equals(that.getTestCaseId()) : that.getTestCaseId() != null)
             return false;
         if (getFinished() != null ? !getFinished().equals(that.getFinished()) : that.getFinished() != null)
             return false;
@@ -363,7 +363,7 @@ public class TopologyTestRunHistory extends AbstractStorable {
         int result = getId() != null ? getId().hashCode() : 0;
         result = 31 * result + (getTopologyId() != null ? getTopologyId().hashCode() : 0);
         result = 31 * result + (getVersionId() != null ? getVersionId().hashCode() : 0);
-        result = 31 * result + (getTestRecords() != null ? getTestRecords().hashCode() : 0);
+        result = 31 * result + (getTestCaseId() != null ? getTestCaseId().hashCode() : 0);
         result = 31 * result + (getFinished() != null ? getFinished().hashCode() : 0);
         result = 31 * result + (getSuccess() != null ? getSuccess().hashCode() : 0);
         result = 31 * result + (getExpectedOutputRecords() != null ? getExpectedOutputRecords().hashCode() : 0);
@@ -382,7 +382,7 @@ public class TopologyTestRunHistory extends AbstractStorable {
                 "id=" + id +
                 ", topologyId=" + topologyId +
                 ", versionId=" + versionId +
-                ", testRecords='" + testRecords + '\'' +
+                ", testCaseId=" + testCaseId +
                 ", finished=" + finished +
                 ", success=" + success +
                 ", expectedOutputRecords='" + expectedOutputRecords + '\'' +

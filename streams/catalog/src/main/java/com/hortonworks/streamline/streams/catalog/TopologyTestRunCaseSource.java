@@ -34,9 +34,25 @@ public class TopologyTestRunCaseSource extends AbstractStorable {
     private Long id;
     private Long testCaseId;
     private Long sourceId;
+    private Long versionId;
     private String records;
     private Integer occurrence;
     private Long timestamp;
+
+    public TopologyTestRunCaseSource() {
+    }
+
+    public TopologyTestRunCaseSource(TopologyTestRunCaseSource other) {
+        if (other != null) {
+            setId(other.getId());
+            setTestCaseId(other.getTestCaseId());
+            setSourceId(other.getSourceId());
+            setVersionId(other.getVersionId());
+            setRecords(other.getRecords());
+            setOccurrence(other.getOccurrence());
+            setTimestamp(other.getTimestamp());
+        }
+    }
 
     @JsonIgnore
     @Override
@@ -88,6 +104,17 @@ public class TopologyTestRunCaseSource extends AbstractStorable {
     }
 
     /**
+     * The foreign key reference to the topology source's version id.
+     */
+    public Long getVersionId() {
+        return versionId;
+    }
+
+    public void setVersionId(Long versionId) {
+        this.versionId = versionId;
+    }
+
+    /**
      * Test records for given source.
      */
     public String getRecords() {
@@ -130,7 +157,11 @@ public class TopologyTestRunCaseSource extends AbstractStorable {
             return false;
         if (getSourceId() != null ? !getSourceId().equals(that.getSourceId()) : that.getSourceId() != null)
             return false;
+        if (getVersionId() != null ? !getVersionId().equals(that.getVersionId()) : that.getVersionId() != null)
+            return false;
         if (getRecords() != null ? !getRecords().equals(that.getRecords()) : that.getRecords() != null) return false;
+        if (getOccurrence() != null ? !getOccurrence().equals(that.getOccurrence()) : that.getOccurrence() != null)
+            return false;
         return getTimestamp() != null ? getTimestamp().equals(that.getTimestamp()) : that.getTimestamp() == null;
     }
 
@@ -139,7 +170,9 @@ public class TopologyTestRunCaseSource extends AbstractStorable {
         int result = getId() != null ? getId().hashCode() : 0;
         result = 31 * result + (getTestCaseId() != null ? getTestCaseId().hashCode() : 0);
         result = 31 * result + (getSourceId() != null ? getSourceId().hashCode() : 0);
+        result = 31 * result + (getVersionId() != null ? getVersionId().hashCode() : 0);
         result = 31 * result + (getRecords() != null ? getRecords().hashCode() : 0);
+        result = 31 * result + (getOccurrence() != null ? getOccurrence().hashCode() : 0);
         result = 31 * result + (getTimestamp() != null ? getTimestamp().hashCode() : 0);
         return result;
     }
@@ -150,7 +183,9 @@ public class TopologyTestRunCaseSource extends AbstractStorable {
                 "id=" + id +
                 ", testCaseId=" + testCaseId +
                 ", sourceId=" + sourceId +
+                ", versionId=" + versionId +
                 ", records='" + records + '\'' +
+                ", occurrence=" + occurrence +
                 ", timestamp=" + timestamp +
                 '}';
     }

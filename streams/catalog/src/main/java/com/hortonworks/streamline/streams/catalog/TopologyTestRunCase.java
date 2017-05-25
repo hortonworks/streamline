@@ -35,7 +35,21 @@ public class TopologyTestRunCase extends AbstractStorable {
     private Long id;
     private String name;
     private Long topologyId;
+    private Long versionId;
     private Long timestamp;
+
+    public TopologyTestRunCase() {
+    }
+
+    public TopologyTestRunCase(TopologyTestRunCase other) {
+        if (other != null) {
+            setId(other.getId());
+            setName(other.getName());
+            setTopologyId(other.getTopologyId());
+            setVersionId(other.getVersionId());
+            setTimestamp(other.getTimestamp());
+        }
+    }
 
     @JsonIgnore
     @Override
@@ -86,6 +100,17 @@ public class TopologyTestRunCase extends AbstractStorable {
         this.topologyId = topologyId;
     }
 
+    /**
+     * The foreign key reference to the topology version id.
+     */
+    public Long getVersionId() {
+        return versionId;
+    }
+
+    public void setVersionId(Long versionId) {
+        this.versionId = versionId;
+    }
+
     public Long getTimestamp() {
         return timestamp;
     }
@@ -102,8 +127,10 @@ public class TopologyTestRunCase extends AbstractStorable {
         TopologyTestRunCase that = (TopologyTestRunCase) o;
 
         if (getId() != null ? !getId().equals(that.getId()) : that.getId() != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (getName() != null ? !getName().equals(that.getName()) : that.getName() != null) return false;
         if (getTopologyId() != null ? !getTopologyId().equals(that.getTopologyId()) : that.getTopologyId() != null)
+            return false;
+        if (getVersionId() != null ? !getVersionId().equals(that.getVersionId()) : that.getVersionId() != null)
             return false;
         return getTimestamp() != null ? getTimestamp().equals(that.getTimestamp()) : that.getTimestamp() == null;
     }
@@ -111,8 +138,9 @@ public class TopologyTestRunCase extends AbstractStorable {
     @Override
     public int hashCode() {
         int result = getId() != null ? getId().hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
         result = 31 * result + (getTopologyId() != null ? getTopologyId().hashCode() : 0);
+        result = 31 * result + (getVersionId() != null ? getVersionId().hashCode() : 0);
         result = 31 * result + (getTimestamp() != null ? getTimestamp().hashCode() : 0);
         return result;
     }
@@ -123,7 +151,9 @@ public class TopologyTestRunCase extends AbstractStorable {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", topologyId=" + topologyId +
+                ", versionId=" + versionId +
                 ", timestamp=" + timestamp +
                 '}';
     }
+
 }

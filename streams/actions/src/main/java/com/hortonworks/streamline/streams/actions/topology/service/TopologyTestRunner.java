@@ -163,7 +163,7 @@ public class TopologyTestRunner {
                     }
                 }));
 
-        TopologyTestRunHistory history = initializeTopologyTestRunHistory(topology, testRecordsForEachSources,
+        TopologyTestRunHistory history = initializeTopologyTestRunHistory(topology, testCase,
                 expectedOutputRecordsMap, eventLogFilePath);
         catalogService.addTopologyTestRunHistory(history);
 
@@ -256,13 +256,16 @@ public class TopologyTestRunner {
     }
 
     private TopologyTestRunHistory initializeTopologyTestRunHistory(Topology topology,
-                                                                    Map<Long, Map<String, List<Map<String, Object>>>> collectedTestRecords,
+                                                                    TopologyTestRunCase testRunCase,
                                                                     Map<String, List<Map<String, Object>>> expectedOutputRecords,
                                                                     String eventLogFilePath)
             throws JsonProcessingException {
+        Long topologyVersionId = catalogService.getCurrentVersionId(topology.getId());
+
         TopologyTestRunHistory history = new TopologyTestRunHistory();
         history.setTopologyId(topology.getId());
-        history.setTestRecords(objectMapper.writeValueAsString(collectedTestRecords));
+        history.setVersionId(topologyVersionId);
+        history.setTestCaseId(testRunCase.getId());
 
         if (expectedOutputRecords != null) {
             String expectedOutputRecordsJson = objectMapper.writeValueAsString(expectedOutputRecords);
