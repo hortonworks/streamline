@@ -337,26 +337,34 @@ public class StreamCatalogService {
     }
 
     public Topology addTopology(Topology topology) {
+        validateTopology(topology);
+
+        boolean storedPlaceholderVersionTopology = false;
         if (topology.getId() == null) {
             topology.setId(this.dao.nextId(TOPOLOGY_NAMESPACE));
+            topology.setVersionId(PLACEHOLDER_ID);
+            this.dao.add(topology);
+            LOG.debug("Added topology {} with placeholder version", topology);
+
+            storedPlaceholderVersionTopology = true;
         }
-        validateTopology(topology);
-        topology.setVersionId(PLACEHOLDER_ID);
-        this.dao.add(topology);
-        LOG.debug("Added topology {}", topology);
+
         long timestamp = System.currentTimeMillis();
         topology.setVersionTimestamp(timestamp);
         TopologyVersion versionInfo = addCurrentTopologyVersionInfo(topology.getId(), timestamp);
         LOG.debug("Added version info {}", versionInfo);
 
-        // remove topology with placeholder version first
-        // WARN: don't use removeTopology since it also removes PLACEHOLDER topology version info!
-        removeOnlyTopologyEntity(topology.getId(), topology.getVersionId());
+        if (storedPlaceholderVersionTopology) {
+            // remove topology with placeholder version first
+            // WARN: don't use removeTopology since it also removes PLACEHOLDER topology version info!
+            removeOnlyTopologyEntity(topology.getId(), topology.getVersionId());
+        }
 
         // put actual version id
         topology.setVersionId(versionInfo.getId());
 
         this.dao.addOrUpdate(topology);
+        LOG.debug("Added topology {}", topology);
         return topology;
     }
 
