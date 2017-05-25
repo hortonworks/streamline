@@ -32,10 +32,10 @@
         "defaultValue": 30
       },
       {
-        "uiName": "Worker JVM options",
-        "fieldName": "worker.childopts",
+        "uiName": "Topology Worker JVM options",
+        "fieldName": "topology.worker.childopts",
         "isOptional": true,
-        "tooltip": "The jvm options provided to workers ",
+        "tooltip": "The jvm options provided to workers in topology. The value will be appended to the cluster's worker.childopts.",
         "type": "string"
       },
       {
