@@ -65,6 +65,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -266,6 +267,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
         commands.addAll(getExtraJarsArg(testTopology));
         commands.addAll(getMavenArtifactsRelatedArgs(mavenArtifacts));
         commands.addAll(getNimbusConf());
+        commands.addAll(getTempWorkerArtifactArgs());
         commands.add("org.apache.storm.flux.Flux");
         commands.add("--local");
         commands.add("-s");
@@ -434,6 +436,16 @@ public class StormTopologyActionsImpl implements TopologyActions {
             args.add("-c");
             args.add("storm.doAsUser=" + asUser);
         }
+
+        return args;
+    }
+
+    private List<String> getTempWorkerArtifactArgs() throws IOException {
+        List<String> args = new ArrayList<>();
+
+        Path tempArtifacts = Files.createTempDirectory("worker-artifacts-");
+        args.add("-c");
+        args.add("storm.workers.artifacts.dir=" + tempArtifacts.toFile().getAbsolutePath());
 
         return args;
     }
