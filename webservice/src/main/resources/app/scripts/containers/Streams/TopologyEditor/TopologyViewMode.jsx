@@ -23,6 +23,7 @@ import Utils from '../../../utils/Utils';
 import TopologyREST from '../../../rest/TopologyREST';
 import EnvironmentREST from '../../../rest/EnvironmentREST';
 import ClusterREST from '../../../rest/ClusterREST';
+import TopologyUtils from '../../../utils/TopologyUtils';
 
 class TopologyViewMode extends Component {
   constructor(props) {
@@ -83,7 +84,8 @@ class TopologyViewMode extends Component {
       topologyMetric,
       timestamp,
       topologyVersion,
-      versionsArr = []
+      versionsArr = [],
+      allACL
     } = this.props;
     const {metric} = topologyMetric || {
       metric: (topologyMetric === '')
@@ -108,6 +110,7 @@ class TopologyViewMode extends Component {
         stormViewUrl = stormViewUrl + '?viewpath=%23!%2Ftopology%2F' + encodeURIComponent(topologyMetric.runtimeTopologyId);
       }
     }
+    const {aclObject , permission = false} = TopologyUtils.getPermissionAndObj(Number(topologyId), allACL || []);
     return (
       <div>
         <div className="page-title-box row">
@@ -160,7 +163,7 @@ class TopologyViewMode extends Component {
                 onClick = {
                   killTopology
                 }> STOP </button>,
-                <Link style={{marginLeft: '10px'}} key={2} className="btn btn-success" to={`applications/${topologyId}/edit`}>EDIT</Link>]
+                !permission ? <Link style={{marginLeft: '10px'}} key={2} className="btn btn-success" to={`applications/${topologyId}/edit`}>EDIT</Link> : null]
             :
               <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip">Set this version as current version. If another version of topology is deployed, kill it first to set this one.</Tooltip>}>
                 <div style={{display: 'inline-block', cursor: 'not-allowed'}}>

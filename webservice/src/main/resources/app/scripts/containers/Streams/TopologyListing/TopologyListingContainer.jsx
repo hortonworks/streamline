@@ -93,7 +93,7 @@ class TopologyItems extends Component {
       const {aclObject ,permission} = TopologyUtils.getPermissionAndObj(Number(this.streamRef.dataset.id),allACL);
       if(!permission){
         if(eventKey.includes('share')){
-          const sharePermission = TopologyUtils.checkSharingPermission(aclObject);
+          const sharePermission = TopologyUtils.checkSharingPermission(aclObject,'click');
           sharePermission ? this.props.topologyAction(eventKey, this.streamRef.dataset.id,aclObject) : '';
         } else {
           this.props.topologyAction(eventKey, this.streamRef.dataset.id,aclObject);
@@ -158,11 +158,7 @@ class TopologyItems extends Component {
     const unitRight = _.slice(latencyWrap, latencyWrap.length / 2, latencyWrap.length);
     const ellipseIcon = <i className="fa fa-ellipsis-v"></i>;
     const {aclObject , permission = false} = TopologyUtils.getPermissionAndObj(topology.id, allACL || []);
-    const rights_share = aclObject.owner !== undefined
-                        ? aclObject.owner
-                          ? false
-                          : true
-                        : false;
+    const rights_share = TopologyUtils.checkSharingPermission(aclObject,"fields");
 
     return (
       <div className="col-sm-4">

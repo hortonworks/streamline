@@ -81,7 +81,7 @@ class PoolItemsCard extends Component {
       const {aclObject,permission} = TopologyUtils.getPermissionAndObj(Number(mClusterId),allACL);
       if(!permission){
         if(eventKey.includes('share')){
-          const sharePermission = TopologyUtils.checkSharingPermission(aclObject);
+          const sharePermission = TopologyUtils.checkSharingPermission(aclObject,'click');
           sharePermission ? this.props.poolActionClicked(eventKey,mClusterId,aclObject) : '';
         } else {
           this.props.poolActionClicked(eventKey,mClusterId,aclObject);
@@ -152,11 +152,7 @@ class PoolItemsCard extends Component {
       serviceWrap.push({service :{name : 'addManualBtn', manualClusterId : clusterList.cluster.id}});
     }
     const {aclObject , permission = false} = TopologyUtils.getPermissionAndObj(cluster.id, allACL || []);
-    const rights_share = aclObject.owner !== undefined
-                        ? aclObject.owner
-                          ? false
-                          : true
-                        : false;
+    const rights_share = TopologyUtils.checkSharingPermission(aclObject,"fields");
 
     return (
       <div className="col-md-4">
@@ -165,32 +161,29 @@ class PoolItemsCard extends Component {
             <h4 className="no-margin">{cluster.name}
               <span className="display-block">{cluster.ambariImportUrl ? cluster.ambariImportUrl : cluster.description}</span>
             </h4>
-            {hasEditCapability(accessCapabilities.SERVICE_POOL) ?
-              <div className="service-action-btn">
-                <DropdownButton noCaret title={ellipseIcon} id="dropdown" bsStyle="link" className="dropdown-toggle" data-stest="service-pool-actions">
-                  {
-                    cluster.ambariImportUrl
-                    ? <MenuItem onClick={this.onActionClick.bind(this, "refresh/")} data-stest="edit-service-pool">
-                        <i className="fa fa-refresh"></i>
-                        &nbsp;Refresh
-                      </MenuItem>
-                    : ''
-                  }
-                  { !_.isEmpty(aclObject)
-                    ? <MenuItem title="Share" disabled={rights_share} onClick={this.onActionClick.bind(this, "share/")}>
-                        <i className="fa fa-share"></i>
-                        &nbsp;Share
-                      </MenuItem>
-                    : ''
-                  }
-                  <MenuItem  disabled={permission}  onClick={this.onActionClick.bind(this, "delete/")} data-stest="delete-service-pool">
-                    <i className="fa fa-trash"></i>
-                    &nbsp;Delete
-                  </MenuItem>
-                </DropdownButton>
-              </div>
-              : null
-            }
+            <div className="service-action-btn">
+              <DropdownButton noCaret title={ellipseIcon} id="dropdown" bsStyle="link" className="dropdown-toggle" data-stest="service-pool-actions">
+                {
+                  cluster.ambariImportUrl
+                  ? <MenuItem onClick={this.onActionClick.bind(this, "refresh/")} data-stest="edit-service-pool">
+                      <i className="fa fa-refresh"></i>
+                      &nbsp;Refresh
+                    </MenuItem>
+                  : ''
+                }
+                { !_.isEmpty(aclObject)
+                  ? <MenuItem title="Share" disabled={rights_share} onClick={this.onActionClick.bind(this, "share/")}>
+                      <i className="fa fa-share"></i>
+                      &nbsp;Share
+                    </MenuItem>
+                  : ''
+                }
+                <MenuItem  disabled={permission}  onClick={this.onActionClick.bind(this, "delete/")} data-stest="delete-service-pool">
+                  <i className="fa fa-trash"></i>
+                  &nbsp;Delete
+                </MenuItem>
+              </DropdownButton>
+            </div>
           </div>
           <div className="service-body clearfix">
             {(this.checkRefId(cluster.id))
@@ -282,8 +275,6 @@ class ServicePoolContainer extends Component {
       stateObj.fetchLoader = false;
       stateObj.pageIndex = 0;
 
-      // stateObj.allACL = [{"id":7,"objectId":1,"objectNamespace":"topology","sidId":3,"sidType":"USER","permissions":["READ","WRITE","EXECUTE","DELETE"],"owner":true,"grant":true,"timestamp":1494868999112},
-      // {"id":10,"objectId":2,"objectNamespace":"topology","sidId":2,"sidType":"USER","permissions":["READ"],"owner":false,"grant":false,"timestamp":1494869390535}];
       // If the application is in secure mode result[1]
       if(results[1]){
         stateObj.allACL = results[1].entities;

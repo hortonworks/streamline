@@ -34,6 +34,9 @@ import CommonNotification from '../../../utils/CommonNotification';
 import TopologyViewMode from './TopologyViewMode';
 import MetricsContainer from '../Metrics/MetricsContainer';
 import CommonLoaderSign from '../../../components/CommonLoaderSign';
+import ErrorStatus from '../../../components/ErrorStatus';
+import app_state from '../../../app_state';
+import UserRoleREST from '../../../rest/UserRoleREST';
 
 function collect(connect, monitor) {
   return {connectDropTarget: connect.dropTarget()};
@@ -83,6 +86,7 @@ class TopologyViewContainer extends Component {
     this.versionName = '';
     this.customProcessors = [];
     this.fetchData();
+    this.checkAuth = true;
   }
 
   componentWillUnmount() {
@@ -132,6 +136,10 @@ class TopologyViewContainer extends Component {
         promiseArr.push(TopologyREST.getAllVersions(this.topologyId));
         promiseArr.push(EnvironmentREST.getNameSpace(data.topology.namespaceId));
 
+        if(app_state.streamline_config.secureMode){
+          promiseArr.push(UserRoleREST.getAllACL('topology',app_state.user_profile.id,'USER'));
+        }
+
         Promise.all(promiseArr).then((resultsArr) => {
           let allNodes = [];
           this.topologyName = data.topology.name;
@@ -171,13 +179,22 @@ class TopologyViewContainer extends Component {
           versions.splice(0, 0, versions.splice(versions.length - 1, 1)[0]);
 
           let namespaceData = resultsArr[10];
-          if (namespaceData.mappings.length) {
-            let mapObj = namespaceData.mappings.find((m) => {
-              return m.serviceName.toLowerCase() === 'storm';
-            });
-            if (mapObj) {
-              this.stormClusterId = mapObj.clusterId;
+          if(namespaceData.responseMessage !== undefined){
+            this.checkAuth = false;
+          } else {
+            if (namespaceData.mappings.length) {
+              let mapObj = namespaceData.mappings.find((m) => {
+                return m.serviceName.toLowerCase() === 'storm';
+              });
+              if (mapObj) {
+                this.stormClusterId = mapObj.clusterId;
+              }
             }
+          }
+
+          // If the application is in secure mode result[11]
+          if(resultsArr[11]){
+            this.allACL = resultsArr[11].entities;
           }
 
           this.graphData.nodes = TopologyUtils.syncNodeData(sourcesNode, processorsNode, sinksNode, this.graphData.metaInfo, this.sourceConfigArr, this.processorConfigArr, this.sinkConfigArr);
@@ -204,8 +221,10 @@ class TopologyViewContainer extends Component {
             topologyVersion: this.versionId,
             stormClusterId: this.stormClusterId,
             versionsArr: versions,
-            availableTimeSeriesDb: namespaceData.namespace.timeSeriesDB
-              ? true
+            availableTimeSeriesDb: namespaceData.nameSpace !== undefined
+              ? namespaceData.namespace.timeSeriesDB
+                ? true
+                : false
               : false,
             bundleArr: {
               sourceBundle: this.sourceConfigArr,
@@ -213,7 +232,8 @@ class TopologyViewContainer extends Component {
               sinksBundle: this.sinkConfigArr
             },
             fetchLoader: false,
-            unknown
+            unknown,
+            allACL : this.allACL || []
           });
           this.customProcessors = this.getCustomProcessors();
         });
@@ -389,7 +409,7 @@ class TopologyViewContainer extends Component {
     }
   }
   render() {
-    const {fetchLoader} = this.state;
+    const {fetchLoader,allACL} = this.state;
     let nodeType = this.node
       ? this.node.currentType
       : '';
@@ -399,10 +419,14 @@ class TopologyViewContainer extends Component {
           {fetchLoader
             ? [<div key={"1"} className="loader-overlay"></div>,<CommonLoaderSign key={"2"} imgName={"viewMode"}/>]
             : <div>
-              <TopologyViewMode {...this.state} topologyId={this.topologyId} killTopology={this.killTopology.bind(this)} handleVersionChange={this.handleVersionChange.bind(this)} setCurrentVersion={this.setCurrentVersion.bind(this)} stormClusterId={this.state.stormClusterId} nameSpaceName={this.nameSpace} namespaceId={this.namespaceId}/>
-              <div id="viewMode" className="graph-bg">
-                <EditorGraph ref="EditorGraph" graphData={this.graphData} viewMode={this.viewMode} topologyId={this.topologyId} versionId={this.versionId} versionsArr={this.state.versionsArr} getModalScope={this.getModalScope.bind(this)} setModalContent={this.setModalContent.bind(this)}/>
-              </div>
+              {
+                this.checkAuth
+                ? [<TopologyViewMode allACL={allACL} key={"1"} {...this.state} topologyId={this.topologyId} killTopology={this.killTopology.bind(this)} handleVersionChange={this.handleVersionChange.bind(this)} setCurrentVersion={this.setCurrentVersion.bind(this)} stormClusterId={this.state.stormClusterId} nameSpaceName={this.nameSpace} namespaceId={this.namespaceId}/>,
+                  <div id="viewMode" className="graph-bg" key={"2"}>
+                    <EditorGraph ref="EditorGraph" graphData={this.graphData} viewMode={this.viewMode} topologyId={this.topologyId} versionId={this.versionId} versionsArr={this.state.versionsArr} getModalScope={this.getModalScope.bind(this)} setModalContent={this.setModalContent.bind(this)}/>
+                  </div>]
+                : <ErrorStatus imgName={"viewMode"} />
+              }
             </div>
 }
         </div>

@@ -23,8 +23,26 @@ var container = document.createElement('div');
 var body = document.getElementsByTagName('body').item(0);
 body.appendChild(container);
 
+class CustomToastContainer extends ToastContainer{
+  success(msg, title, opts){
+    super.success(msg.props.children, msg, opts);
+  }
+
+  error(msg, title, opts){
+    super.error(msg.props.children, msg, opts);
+  }
+
+  info(msg, title, opts){
+    super.info(msg.props.children, msg, opts);
+  }
+
+  warning(msg, title, opts){
+    super.warning(msg.props.children, msg, opts);
+  }
+}
+
 const FSReactToastr = render(
-        <ToastContainer
+        <CustomToastContainer
 		toastMessageFactory={ToastMessageFactory}
 		className="toast-top-right" />, container
 );

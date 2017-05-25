@@ -37,7 +37,7 @@ export default class UserForm extends Component {
   }
 
   componentWillReceiveProps(newProps) {
-    if(this.props !== newProps) {
+    if(this.props !== newProps && !newProps.showFormLoading) {
       this.setState({
         applicationsACL: _.clone(newProps.editData.applicationsACL),
         servicePoolACL: _.clone(newProps.editData.servicePoolACL),

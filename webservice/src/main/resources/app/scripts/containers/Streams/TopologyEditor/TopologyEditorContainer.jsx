@@ -1034,36 +1034,41 @@ class TopologyEditorContainer extends Component {
   */
   runTestClicked(){
     if(!this.state.testRunActivated){
-      TestRunREST.getAllTestRun(this.topologyId).then((testList) => {
-        if(testList.responseMessage !== undefined){
-          FSReactToastr.error(
-            <CommonNotification flag="error" content={testList.responseMessage}/>, '', toastOpt);
-        } else {
-          const entities = testList.entities;
-          let stateObj = {
-            testCaseList : entities,
-            testCaseLoader : false,
-            testRunActivated : true,
-            selectedTestObj : entities.length > 0 ? entities[0] : '',
-            nodeListArr : this.graphData.nodes
-          };
-          if(stateObj.testCaseList.length === 0){
-            stateObj.nodeData = this.graphData.nodes[0].parentType.toLowerCase() === 'source' ? this.graphData.nodes[0] : '';
-            if(_.isEmpty(stateObj.nodeData)){
-              const sourceNode = _.filter(this.graphData.nodes, (node) => {
-                return node.parentType.toLowerCase() === 'source';
-              });
-              stateObj.nodeData = sourceNode[0];
+      if(this.graphData.nodes.length){
+        TestRunREST.getAllTestRun(this.topologyId).then((testList) => {
+          if(testList.responseMessage !== undefined){
+            FSReactToastr.error(
+              <CommonNotification flag="error" content={testList.responseMessage}/>, '', toastOpt);
+          } else {
+            const entities = testList.entities;
+            let stateObj = {
+              testCaseList : entities,
+              testCaseLoader : false,
+              testRunActivated : true,
+              selectedTestObj : entities.length > 0 ? entities[0] : '',
+              nodeListArr : this.graphData.nodes
+            };
+            if(stateObj.testCaseList.length === 0){
+              stateObj.nodeData = this.graphData.nodes[0].parentType.toLowerCase() === 'source' ? this.graphData.nodes[0] : '';
+              if(_.isEmpty(stateObj.nodeData)){
+                const sourceNode = _.filter(this.graphData.nodes, (node) => {
+                  return node.parentType.toLowerCase() === 'source';
+                });
+                stateObj.nodeData = sourceNode[0];
+              }
+              this.modalTitle = 'TEST-'+stateObj.nodeData.parentType;
             }
-            this.modalTitle = 'TEST-'+stateObj.nodeData.parentType;
+            this.setState(stateObj, () => {
+              if(this.state.testCaseList.length === 0){
+                this.refs.TestSourceNodeModal.show();
+              }
+            });
           }
-          this.setState(stateObj, () => {
-            if(this.state.testCaseList.length === 0){
-              this.refs.TestSourceNodeModal.show();
-            }
-          });
-        }
-      });
+        });
+      } else {
+        FSReactToastr.info(
+          <CommonNotification flag="error" content={"please configure some nodes before switching to test mode"}/>, '', toastOpt);
+      }
     } else {
       this.setState({testRunActivated : false ,activeLogRowArr : [],testHistory : [] ,selectedTestObj : {}, eventLogData : [] , hideEventLog : true , testCompleted : false});
     }

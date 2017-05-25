@@ -86,7 +86,10 @@ export default class TopologyConfigContainer extends Component {
             ClusterREST.getStormSecurityDetails(stormClusterId)
               .then((entity)=>{
                 if(entity.responseMessage !== undefined) {
-                  FSReactToastr.error(<CommonNotification flag="error" content={entity.responseMessage}/>, '', toastOpt);
+                  let msg = entity.responseMessage.indexOf('StreamlinePrincipal') !== -1
+                  ? " Please contact admin to get access for this application's services."
+                  : entity.responseMessage;
+                  FSReactToastr.error(<CommonNotification flag="error" content={msg}/>, '', toastOpt);
                 } else {
                   if(entity.security.authentication.enabled) {
                     hasSecurity = true;

@@ -1110,19 +1110,23 @@ const getPermission = (permissionArray,obj) => {
   }
   const tempPermission = permissionArray.toString();
   return tempPermission.includes('WRITE')
-  ? obj.owner === true
-    ? false
-    : true
+  ? false
   : tempPermission.includes('READ')
     ? true
     : true;
 };
 
-const checkSharingPermission = function(obj){
-  if(obj === undefined){
+const checkSharingPermission = function(obj,string){
+  if(obj === undefined || string === ''){
     return;
   }
-  return  obj.owner === true ? true : false;
+  return  obj.owner === true
+            ? string === 'fields'
+              ? false
+              : true
+            : string === 'fields'
+              ? true
+              : false;
 };
 
 export default {

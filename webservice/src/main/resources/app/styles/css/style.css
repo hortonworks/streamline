@@ -3419,3 +3419,6 @@ a.crossIcon{
   font-size: 12px;
   margin: 8px 10px;
 }
+.toast-message {
+  display: none;
+}

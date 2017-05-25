@@ -100,7 +100,7 @@ class EnvironmentCards extends Component {
       const {aclObject,permission} = TopologyUtils.getPermissionAndObj(Number(this.nameSpaceRef.dataset.id),allACL);
       if(!permission){
         if(eventKey.includes('share')){
-          const sharePermission = TopologyUtils.checkSharingPermission(aclObject);
+          const sharePermission = TopologyUtils.checkSharingPermission(aclObject,'click');
           sharePermission ? this.props.nameSpaceClicked(eventKey, this.nameSpaceRef.dataset.id,aclObject) : '';
         } else {
           this.props.nameSpaceClicked(eventKey, this.nameSpaceRef.dataset.id,aclObject);
@@ -127,18 +127,13 @@ class EnvironmentCards extends Component {
     };
 
     const {aclObject , permission = false} = TopologyUtils.getPermissionAndObj(namespace.id, allACL || []);
-    const rights_share = aclObject.owner !== undefined
-                        ? aclObject.owner
-                          ? false
-                          : true
-                        : false;
+    const rights_share = TopologyUtils.checkSharingPermission(aclObject,"fields");
 
     return (
       <div className="col-environment">
         <div className="service-box environment-box" data-id={namespace.id} ref={(ref) => this.nameSpaceRef = ref}>
           <div className="service-head clearfix">
             <h4 className="pull-left no-margin" title={namespace.name}>{Utils.ellipses(namespace.name, 15)}</h4>
-            {hasEditCapability(accessCapabilities.ENVIRONMENT) ?
               <div className="pull-right">
                 <DropdownButton noCaret title={ellipseIcon} id="dropdown" bsStyle="link" className="dropdown-toggle" data-stest="environment-actions">
                   <MenuItem  disabled={permission}  onClick={this.onActionClick.bind(this, "edit/")} data-stest="edit-environment">
@@ -158,8 +153,6 @@ class EnvironmentCards extends Component {
                   </MenuItem>
                 </DropdownButton>
               </div>
-              : null
-            }
           </div>
           {(this.checkRefId(namespace.id))
             ? <div className="service-components">

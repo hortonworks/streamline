@@ -162,6 +162,13 @@ export class string extends BaseField {
     });
   }
 
+  handleOnBlur = () => {
+    const value = this.refs.input.value.trim();
+    const {Form} = this.context;
+    this.props.data[this.props.value] = value;
+    Form.forceUpdate();
+  }
+
   getSchema(val) {
     if (val != '') {
       clearTimeout(this.topicTimer);
@@ -217,7 +224,7 @@ export class string extends BaseField {
                 : "text"
             : "text"} className={this.context.Form.state.Errors[this.props.valuePath]
             ? "form-control invalidInput"
-            : "form-control"} ref="input" value={this.props.data[this.props.value] || ''} disabled={disabledField} {...this.props.attrs} onChange={this.handleChange}/>
+            : "form-control"} ref="input" value={this.props.data[this.props.value] || ''} disabled={disabledField} {...this.props.attrs} onChange={this.handleChange} onBlur={this.handleOnBlur}/>
     );
   }
 }
