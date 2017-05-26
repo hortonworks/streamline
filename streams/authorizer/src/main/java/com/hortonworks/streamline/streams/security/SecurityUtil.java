@@ -74,6 +74,16 @@ public final class SecurityUtil {
         }
     }
 
+    public static void checkRoleOrPermissions(StreamlineAuthorizer authorizer, SecurityContext securityContext,
+                                              String role, String targetEntityNamespace, Long targetEntityId,
+                                              Permission first, Permission... rest) {
+        if (!SecurityUtil.hasRole(authorizer, securityContext, role)) {
+            SecurityUtil.checkPermissions(authorizer, securityContext, targetEntityNamespace, targetEntityId, first, rest);
+        } else {
+            LOG.debug("Allowing since user has role: '{}'", role);
+        }
+    }
+
     public static void addAcl(StreamlineAuthorizer authorizer, SecurityContext securityContext,
                               String targetEntityNamespace, Long targetEntityId,
                               EnumSet<Permission> permissions) {

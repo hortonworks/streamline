@@ -21,8 +21,11 @@ import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyEditorMetadata;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.security.Roles;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -45,6 +48,8 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologyEditorMetadataResource {
+    private static final Logger LOG = LoggerFactory.getLogger(TopologyEditorMetadataResource.class);
+
     private final StreamlineAuthorizer authorizer;
     private final StreamCatalogService catalogService;
 
@@ -59,9 +64,14 @@ public class TopologyEditorMetadataResource {
     public Response listTopologyEditorMetadata (@Context SecurityContext securityContext) {
         Collection<TopologyEditorMetadata> result = catalogService.listTopologyEditorMetadata();
         if (result != null) {
-            return WSUtils.respondEntities(
-                    SecurityUtil.filter(authorizer, securityContext, Topology.NAMESPACE, result,
-                            TopologyEditorMetadata::getTopologyId, READ), OK);
+            boolean topologyUser = SecurityUtil.hasRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER);
+            if (topologyUser) {
+                LOG.debug("Returning all topology editor metadata since user has role: {}", Roles.ROLE_TOPOLOGY_USER);
+            } else {
+                result = SecurityUtil.filter(authorizer, securityContext, Topology.NAMESPACE, result,
+                        TopologyEditorMetadata::getTopologyId, READ);
+            }
+            return WSUtils.respondEntities(result, OK);
         }
 
         throw EntityNotFoundException.byFilter("");
@@ -71,7 +81,8 @@ public class TopologyEditorMetadataResource {
     @Path("/system/topologyeditormetadata/{id}")
     @Timed
     public Response getTopologyEditorMetadataByTopologyId (@PathParam("id") Long topologyId, @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
         TopologyEditorMetadata result = catalogService.getTopologyEditorMetadata(topologyId);
         if (result != null) {
             return WSUtils.respondEntity(result, OK);
@@ -86,7 +97,8 @@ public class TopologyEditorMetadataResource {
     public Response getTopologyEditorMetadataByTopologyIdAndVersionId(@PathParam("versionId") Long versionId,
                                                                       @PathParam("id") Long topologyId,
                                                                       @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
         TopologyEditorMetadata result = catalogService.getTopologyEditorMetadata(topologyId, versionId);
         if (result != null) {
             return WSUtils.respondEntity(result, OK);
@@ -99,7 +111,8 @@ public class TopologyEditorMetadataResource {
     @Path("/system/topologyeditormetadata")
     @Timed
     public Response addTopologyEditorMetadata (TopologyEditorMetadata topologyEditorMetadata, @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyEditorMetadata.getTopologyId(), WRITE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
+                Topology.NAMESPACE, topologyEditorMetadata.getTopologyId(), WRITE);
         TopologyEditorMetadata addedTopologyEditorMetadata = catalogService.addTopologyEditorMetadata(
                 topologyEditorMetadata.getTopologyId(), topologyEditorMetadata);
         return WSUtils.respondEntity(addedTopologyEditorMetadata, CREATED);
@@ -109,7 +122,8 @@ public class TopologyEditorMetadataResource {
     @Path("/system/topologyeditormetadata/{id}")
     @Timed
     public Response removeTopologyEditorMetadata (@PathParam("id") Long topologyId, @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
+                Topology.NAMESPACE, topologyId, WRITE);
         TopologyEditorMetadata removedTopologyEditorMetadata = catalogService.removeTopologyEditorMetadata(topologyId);
         if (removedTopologyEditorMetadata != null) {
             return WSUtils.respondEntity(removedTopologyEditorMetadata, OK);
@@ -123,7 +137,8 @@ public class TopologyEditorMetadataResource {
     @Timed
     public Response addOrUpdateTopologyEditorMetadata (@PathParam("id") Long topologyId, TopologyEditorMetadata topologyEditorMetadata,
                                                        @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
+                Topology.NAMESPACE, topologyId, WRITE);
         TopologyEditorMetadata newTopologyEditorMetadata = catalogService.addOrUpdateTopologyEditorMetadata(topologyId, topologyEditorMetadata);
         return WSUtils.respondEntity(topologyEditorMetadata, OK);
     }

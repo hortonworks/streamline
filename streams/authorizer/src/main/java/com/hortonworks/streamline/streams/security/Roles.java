@@ -18,12 +18,17 @@ package com.hortonworks.streamline.streams.security;
 public class Roles {
     public static final String ROLE_ADMIN = "ROLE_ADMIN";
     public static final String ROLE_SECURITY_ADMIN = "ROLE_SECURITY_ADMIN";
+    public static final String ROLE_TOPOLOGY_SUPER_ADMIN = "ROLE_TOPOLOGY_SUPER_ADMIN";
+    public static final String ROLE_TOPOLOGY_USER = "ROLE_TOPOLOGY_USER";
     public static final String ROLE_TOPOLOGY_ADMIN = "ROLE_TOPOLOGY_ADMIN";
     public static final String ROLE_TOPOLOGY_COMPONENT_BUNDLE_USER = "ROLE_TOPOLOGY_COMPONENT_BUNDLE_USER";
     public static final String ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN = "ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN";
+    public static final String ROLE_SERVICE_POOL_SUPER_ADMIN = "ROLE_SERVICE_POOL_SUPER_ADMIN";
     public static final String ROLE_SERVICE_POOL_ADMIN = "ROLE_SERVICE_POOL_ADMIN";
     public static final String ROLE_SERVICE_POOL_USER = "ROLE_SERVICE_POOL_USER";
+    public static final String ROLE_ENVIRONMENT_SUPER_ADMIN = "ROLE_ENVIRONMENT_SUPER_ADMIN";
     public static final String ROLE_ENVIRONMENT_ADMIN = "ROLE_ENVIRONMENT_ADMIN";
+    public static final String ROLE_ENVIRONMENT_USER = "ROLE_ENVIRONMENT_USER";
     public static final String ROLE_UDF_ADMIN = "ROLE_UDF_ADMIN";
     public static final String ROLE_UDF_USER = "ROLE_UDF_USER";
     public static final String ROLE_NOTIFIER_ADMIN = "ROLE_NOTIFIER_ADMIN";

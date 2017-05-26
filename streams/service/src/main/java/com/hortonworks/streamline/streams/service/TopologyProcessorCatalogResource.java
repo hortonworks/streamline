@@ -23,6 +23,7 @@ import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyProcessor;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.security.Roles;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 
@@ -113,7 +114,8 @@ public class TopologyProcessorCatalogResource {
     }
 
     private Response listTopologyProcessors(List<QueryParam> queryParams, Long topologyId, SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
         Collection<TopologyProcessor> sources = catalogService.listTopologyProcessors(queryParams);
         if (sources != null) {
             return WSUtils.respondEntities(sources, OK);
@@ -151,7 +153,8 @@ public class TopologyProcessorCatalogResource {
     @Timed
     public Response getTopologyProcessorById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long processorId,
                                              @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
         TopologyProcessor source = catalogService.getTopologyProcessor(topologyId, processorId);
         if (source != null) {
             return WSUtils.respondEntity(source, OK);
@@ -167,7 +170,8 @@ public class TopologyProcessorCatalogResource {
                                                        @PathParam("id") Long processorId,
                                                        @PathParam("versionId") Long versionId,
                                                        @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
         TopologyProcessor processor = catalogService.getTopologyProcessor(topologyId, processorId, versionId);
         if (processor != null) {
             return WSUtils.respondEntity(processor, OK);
@@ -220,7 +224,8 @@ public class TopologyProcessorCatalogResource {
     @Timed
     public Response addTopologyProcessor(@PathParam("topologyId") Long topologyId, TopologyProcessor topologyProcessor,
                                          @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
+                Topology.NAMESPACE, topologyId, WRITE);
         TopologyProcessor createdProcessor = catalogService.addTopologyProcessor(topologyId, topologyProcessor);
         return WSUtils.respondEntity(createdProcessor, CREATED);
     }
@@ -266,7 +271,8 @@ public class TopologyProcessorCatalogResource {
     @Timed
     public Response addOrUpdateTopologyProcessor(@PathParam("topologyId") Long topologyId, @PathParam("id") Long processorId,
                                                  TopologyProcessor topologyProcessor, @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
+                Topology.NAMESPACE, topologyId, WRITE);
         TopologyProcessor createdTopologyProcessor = catalogService.addOrUpdateTopologyProcessor(
                 topologyId, processorId, topologyProcessor);
         return WSUtils.respondEntity(createdTopologyProcessor, CREATED);
@@ -302,7 +308,8 @@ public class TopologyProcessorCatalogResource {
     public Response removeTopologyProcessor(@PathParam("topologyId") Long topologyId, @PathParam("id") Long processorId,
                                             @javax.ws.rs.QueryParam("removeEdges") boolean removeEdges,
                                             @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
+                Topology.NAMESPACE, topologyId, WRITE);
         TopologyProcessor topologyProcessor = catalogService.removeTopologyProcessor(topologyId, processorId, removeEdges);
         if (topologyProcessor != null) {
             return WSUtils.respondEntity(topologyProcessor, OK);

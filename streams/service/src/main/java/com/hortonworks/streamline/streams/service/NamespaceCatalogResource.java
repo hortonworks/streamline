@@ -34,6 +34,8 @@ import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.streams.exception.TopologyNotAliveException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -69,6 +71,8 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class NamespaceCatalogResource {
+  private static final Logger LOG = LoggerFactory.getLogger(NamespaceCatalogResource.class);
+
   private final StreamlineAuthorizer authorizer;
   private final StreamCatalogService catalogService;
   private final TopologyActionsService topologyActionsService;
@@ -106,8 +110,13 @@ public class NamespaceCatalogResource {
       namespaces = environmentService.listNamespaces(queryParams);
     }
     if (namespaces != null) {
-      return buildNamespacesGetResponse(SecurityUtil.filter(authorizer, securityContext, Namespace.NAMESPACE,
-              namespaces, READ), detail);
+      boolean environmentUser = SecurityUtil.hasRole(authorizer, securityContext, Roles.ROLE_ENVIRONMENT_USER);
+      if (environmentUser) {
+        LOG.debug("Returning all environments since user has role: {}", Roles.ROLE_ENVIRONMENT_USER);
+      } else {
+        namespaces = SecurityUtil.filter(authorizer, securityContext, Namespace.NAMESPACE, namespaces, READ);
+      }
+      return buildNamespacesGetResponse(namespaces, detail);
     }
 
     throw EntityNotFoundException.byFilter(queryParams.toString());
@@ -119,7 +128,8 @@ public class NamespaceCatalogResource {
   public Response getNamespaceById(@PathParam("id") Long namespaceId,
                                    @javax.ws.rs.QueryParam("detail") Boolean detail,
                                    @Context SecurityContext securityContext) {
-    SecurityUtil.checkPermissions(authorizer, securityContext, Namespace.NAMESPACE, namespaceId, READ);
+    SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_ENVIRONMENT_USER,
+            Namespace.NAMESPACE, namespaceId, READ);
     Namespace result = environmentService.getNamespace(namespaceId);
     if (result != null) {
       return buildNamespaceGetResponse(result, detail);
@@ -136,7 +146,8 @@ public class NamespaceCatalogResource {
                                      @Context SecurityContext securityContext) {
     Namespace result = environmentService.getNamespaceByName(namespaceName);
     if (result != null) {
-      SecurityUtil.checkPermissions(authorizer, securityContext, Namespace.NAMESPACE, result.getId(), READ);
+      SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_ENVIRONMENT_USER,
+              Namespace.NAMESPACE, result.getId(), READ);
       return buildNamespaceGetResponse(result, detail);
     }
 
@@ -166,7 +177,8 @@ public class NamespaceCatalogResource {
   @Path("/namespaces/{id}")
   @Timed
   public Response removeNamespace(@PathParam("id") Long namespaceId, @Context SecurityContext securityContext) {
-    SecurityUtil.checkPermissions(authorizer, securityContext, Namespace.NAMESPACE, namespaceId, DELETE);
+    SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_ENVIRONMENT_SUPER_ADMIN,
+            Namespace.NAMESPACE, namespaceId, DELETE);
     assertNoTopologyRefersNamespace(namespaceId);
     Namespace removed = environmentService.removeNamespace(namespaceId);
     if (removed != null) {
@@ -181,7 +193,8 @@ public class NamespaceCatalogResource {
   @Timed
   public Response addOrUpdateNamespace(@PathParam("id") Long namespaceId,
       Namespace namespace, @Context SecurityContext securityContext) {
-    SecurityUtil.checkPermissions(authorizer, securityContext, Namespace.NAMESPACE, namespaceId, WRITE);
+    SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_ENVIRONMENT_SUPER_ADMIN,
+            Namespace.NAMESPACE, namespaceId, WRITE);
     try {
       Namespace newNamespace = environmentService.addOrUpdateNamespace(namespaceId, namespace);
       return WSUtils.respondEntity(newNamespace, OK);
@@ -194,7 +207,8 @@ public class NamespaceCatalogResource {
   @Path("/namespaces/{id}/mapping")
   @Timed
   public Response listServiceToClusterMappingInNamespace(@PathParam("id") Long namespaceId, @Context SecurityContext securityContext) {
-    SecurityUtil.checkPermissions(authorizer, securityContext, Namespace.NAMESPACE, namespaceId, READ);
+    SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_ENVIRONMENT_USER,
+            Namespace.NAMESPACE, namespaceId, READ);
     Namespace namespace = environmentService.getNamespace(namespaceId);
     if (namespace == null) {
       throw EntityNotFoundException.byId(namespaceId.toString());
@@ -214,7 +228,8 @@ public class NamespaceCatalogResource {
   public Response findServicesToClusterMappingInNamespace(@PathParam("id") Long namespaceId,
                                                           @PathParam("serviceName") String serviceName,
                                                           @Context SecurityContext securityContext) {
-    SecurityUtil.checkPermissions(authorizer, securityContext, Namespace.NAMESPACE, namespaceId, READ);
+    SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_ENVIRONMENT_USER,
+            Namespace.NAMESPACE, namespaceId, READ);
     Namespace namespace = environmentService.getNamespace(namespaceId);
     if (namespace == null) {
       throw EntityNotFoundException.byId("Namespace: " + namespaceId.toString());
@@ -234,7 +249,8 @@ public class NamespaceCatalogResource {
   public Response setServicesToClusterInNamespace(@PathParam("id") Long namespaceId,
                                                   List<NamespaceServiceClusterMapping> mappings,
                                                   @Context SecurityContext securityContext) {
-    SecurityUtil.checkPermissions(authorizer, securityContext, Namespace.NAMESPACE, namespaceId, WRITE);
+    SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_ENVIRONMENT_SUPER_ADMIN,
+            Namespace.NAMESPACE, namespaceId, WRITE);
     Namespace namespace = environmentService.getNamespace(namespaceId);
     if (namespace == null) {
       throw EntityNotFoundException.byId(namespaceId.toString());
@@ -276,7 +292,8 @@ public class NamespaceCatalogResource {
   @Timed
   public Response mapServiceToClusterInNamespace(@PathParam("id") Long namespaceId,
             NamespaceServiceClusterMapping mapping, @Context SecurityContext securityContext) {
-    SecurityUtil.checkPermissions(authorizer, securityContext, Namespace.NAMESPACE, namespaceId, WRITE);
+    SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_ENVIRONMENT_SUPER_ADMIN,
+            Namespace.NAMESPACE, namespaceId, WRITE);
     Namespace namespace = environmentService.getNamespace(namespaceId);
     if (namespace == null) {
       throw EntityNotFoundException.byId(namespaceId.toString());
@@ -304,7 +321,8 @@ public class NamespaceCatalogResource {
                                                    @PathParam("serviceName") String serviceName,
                                                    @PathParam("clusterId") Long clusterId,
                                                    @Context SecurityContext securityContext) {
-    SecurityUtil.checkPermissions(authorizer, securityContext, Namespace.NAMESPACE, namespaceId, WRITE);
+    SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_ENVIRONMENT_SUPER_ADMIN,
+            Namespace.NAMESPACE, namespaceId, WRITE);
     Namespace namespace = environmentService.getNamespace(namespaceId);
     if (namespace == null) {
       throw EntityNotFoundException.byId(namespaceId.toString());
@@ -332,7 +350,8 @@ public class NamespaceCatalogResource {
   @Timed
   public Response unmapAllServicesToClusterInNamespace(@PathParam("id") Long namespaceId,
                                                        @Context SecurityContext securityContext) {
-    SecurityUtil.checkPermissions(authorizer, securityContext, Namespace.NAMESPACE, namespaceId, WRITE);
+    SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_ENVIRONMENT_SUPER_ADMIN,
+            Namespace.NAMESPACE, namespaceId, WRITE);
     Namespace namespace = environmentService.getNamespace(namespaceId);
     if (namespace == null) {
       throw EntityNotFoundException.byId(namespaceId.toString());

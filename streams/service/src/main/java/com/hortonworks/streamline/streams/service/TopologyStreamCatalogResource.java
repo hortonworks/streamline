@@ -23,6 +23,7 @@ import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyStream;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.security.Roles;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 
@@ -117,7 +118,8 @@ public class TopologyStreamCatalogResource {
     }
 
     private Response listTopologyStreams(List<QueryParam> queryParams, Long topologyId, SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
         Collection<TopologyStream> sources = catalogService.listStreamInfos(queryParams);
         if (sources != null) {
             return WSUtils.respondEntities(sources, OK);
@@ -157,7 +159,8 @@ public class TopologyStreamCatalogResource {
     @Timed
     public Response getStreamInfoById(@PathParam("topologyId") Long topologyId, @PathParam("id") Long streamId,
                                       @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
         TopologyStream topologyStream = catalogService.getStreamInfo(topologyId, streamId);
         if (topologyStream != null) {
             return WSUtils.respondEntity(topologyStream, OK);
@@ -173,7 +176,8 @@ public class TopologyStreamCatalogResource {
                                       @PathParam("versionId") Long versionId,
                                       @PathParam("id") Long streamId,
                                       @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, READ);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
         TopologyStream topologyStream = catalogService.getStreamInfo(topologyId, streamId, versionId);
         if (topologyStream != null) {
             return WSUtils.respondEntity(topologyStream, OK);
@@ -228,7 +232,8 @@ public class TopologyStreamCatalogResource {
     @Timed
     public Response addStreamInfo(@PathParam("topologyId") Long topologyId, TopologyStream topologyStream,
                                   @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
+                Topology.NAMESPACE, topologyId, WRITE);
         TopologyStream createdStream = catalogService.addStreamInfo(topologyId, topologyStream);
         return WSUtils.respondEntity(createdStream, CREATED);
     }
@@ -288,7 +293,8 @@ public class TopologyStreamCatalogResource {
     @Timed
     public Response addOrUpdateStreamInfo(@PathParam("topologyId") Long topologyId, @PathParam("id") Long id,
                                           TopologyStream topologyStream, @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
+                Topology.NAMESPACE, topologyId, WRITE);
         TopologyStream newTopologyStream = catalogService.addOrUpdateStreamInfo(topologyId, id, topologyStream);
         return WSUtils.respondEntity(newTopologyStream, OK);
     }
@@ -328,7 +334,8 @@ public class TopologyStreamCatalogResource {
     @Timed
     public Response removeStreamInfo(@PathParam("topologyId") Long topologyId, @PathParam("id") Long id,
                                      @Context SecurityContext securityContext) {
-        SecurityUtil.checkPermissions(authorizer, securityContext, Topology.NAMESPACE, topologyId, WRITE);
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
+                Topology.NAMESPACE, topologyId, WRITE);
         TopologyStream removedStream = catalogService.removeStreamInfo(topologyId, id);
         if (removedStream != null) {
             return WSUtils.respondEntity(removedStream, OK);

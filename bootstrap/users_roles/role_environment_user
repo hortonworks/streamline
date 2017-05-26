@@ -1,0 +1,7 @@
+{
+  "name": "ROLE_ENVIRONMENT_USER",
+  "displayName": "Environment User",
+  "description": "Role that can view environments",
+  "metadata": "{\"colorCode\":\"#ce761b\",\"colorLabel\":\"orange\",\"icon\":\"lock\", \"menu\": [\"environments\"]}",
+  "system": true
+}

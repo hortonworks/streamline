@@ -1,0 +1,7 @@
+{
+  "name": "ROLE_TOPOLOGY_SUPER_ADMIN",
+  "displayName": "Topology Super Admin",
+  "description": "Role that can create and manage ALL topologies",
+  "metadata": "{\"colorCode\":\"#ce761b\",\"colorLabel\":\"orange\",\"icon\":\"lock\", \"menu\": [\"environments\"]}",
+  "system": true
+}
