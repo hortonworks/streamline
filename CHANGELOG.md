@@ -1,4 +1,5 @@
 ## 0.4
+ * ISSUE-666     : Make kafka streamline event serializer not dependent on registry API
  * ISSUE-607     : JDBC sink should build UPSERT query instead of using JdbcInsertBolt default INSERT query
  * ISSUE-613     : Cloning projection processors with respective configuration as part of Rule
  * ISSUE-609     : Added export/import of projection processor
