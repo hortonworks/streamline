@@ -17,6 +17,7 @@ package com.hortonworks.streamline.streams.runtime.storm.bolt.kafka;
 
 import com.hortonworks.registries.schemaregistry.SchemaVersionInfo;
 import com.hortonworks.registries.schemaregistry.SchemaVersionKey;
+import com.hortonworks.registries.schemaregistry.avro.AvroSchemaProvider;
 import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
 import com.hortonworks.registries.schemaregistry.errors.SchemaNotFoundException;
 import org.apache.avro.Schema;
@@ -25,7 +26,6 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.common.serialization.Serializer;
 import com.hortonworks.registries.schemaregistry.SchemaMetadata;
 import com.hortonworks.registries.schemaregistry.serdes.avro.AvroSnapshotSerializer;
-import com.hortonworks.registries.schemaregistry.serdes.avro.kafka.Utils;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +60,7 @@ public class StreamlineEventSerializer implements Serializer<StreamlineEvent> {
 
     @Override
     public byte[] serialize(String topic, StreamlineEvent streamlineEvent) {
-        SchemaMetadata schemaMetadata = Utils.getSchemaKey(topic, false);
+        SchemaMetadata schemaMetadata = getSchemaKey(topic, false);
         SchemaVersionInfo schemaVersionInfo;
         try {
             schemaMetadata = schemaRegistryClient.getSchemaMetadataInfo(schemaMetadata.getName()).getSchemaMetadata();
@@ -79,6 +79,11 @@ public class StreamlineEventSerializer implements Serializer<StreamlineEvent> {
             return avroSnapshotSerializer.serialize(getAvroRecord(streamlineEvent, new Schema.Parser().parse(schemaVersionInfo.getSchemaText())),
                     schemaMetadata);
         }
+    }
+
+    private SchemaMetadata getSchemaKey(String topic, boolean isKey) {
+        String name = isKey ? topic+":k" : topic;
+        return new SchemaMetadata.Builder(name).type(AvroSchemaProvider.TYPE).schemaGroup("kafka").build();
     }
 
     @Override
