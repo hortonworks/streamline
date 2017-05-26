@@ -39,24 +39,6 @@
         "type": "string"
       },
       {
-        "uiName": "HBase config",
-        "fieldName": "hbaseConf",
-        "tooltip": "Basic configuration for Hbase",
-        "isOptional": false,
-        "type": "object",
-        "defaultValue": null,
-        "fields": [
-          {
-            "uiName":"HBase root directory",
-            "fieldName": "hbase.rootdir",
-            "tooltip": "Hbase root directory",
-            "isOptional": false,
-            "type": "string",
-            "defaultValue": "hdfs://localhost:9000/tmp/hbase"
-          }
-        ]
-      },
-      {
         "uiName": "Clusters Security Config",
         "fieldName": "clustersSecurityConfig",
         "tooltip": "Clusters Security Configuration",

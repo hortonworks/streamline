@@ -106,20 +106,20 @@ export default class TopologyConfigContainer extends Component {
 
                   let keyTabFieldObj = _.find(securityFields, {"fieldName": "keytabPath"});
                   keyTabFieldObj.options = keyTabsArr;
-                  //removing security related fields for non-secure mode
-                  if(hasSecurity === false) {
-                    if(formField.fields && formField.fields.length > 0) {
-                      formField.fields = _.filter(formField.fields, (f)=>{
-                        if(f.hint && f.hint.indexOf('security_') !== -1) {
-                          return false;
-                        } else {
-                          return true;
-                        }
-                      });
-                    }
-                  }
-                  this.setState({hasSecurity: hasSecurity, formField: formField});
                 }
+                //removing security related fields for non-secure mode
+                if(hasSecurity === false) {
+                  if(formField.fields && formField.fields.length > 0) {
+                    formField.fields = _.filter(formField.fields, (f)=>{
+                      if(f.hint && f.hint.indexOf('security_') !== -1) {
+                        return false;
+                      } else {
+                        return true;
+                      }
+                    });
+                  }
+                }
+                this.setState({hasSecurity: hasSecurity, formField: formField});
               });
           }
         });

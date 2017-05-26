@@ -52,7 +52,7 @@ public class HbaseBoltFluxComponent extends AbstractFluxComponent {
          * "hbaseConf" with the required hbase config.
          */
         configMethodNames.add("withConfigKey");
-        values.add("hbaseConf");
+        values.add(StormTopologyLayoutConstants.YAML_KEY_HBASE_CONF);
         List<Map<String, Object>> configMethods = getConfigMethodsYaml(configMethodNames.toArray(new String[0]), values.toArray());
         component = createComponent(boltId, boltClassName, null, boltConstructorArgs, configMethods);
         addParallelismToComponent();

@@ -690,6 +690,8 @@ public class StormTopologyActionsImpl implements TopologyActions {
     private void addTopologyConfig (Map<String, Object> yamlMap, Map<String, Object> topologyConfig) {
         Map<String, Object> config = new LinkedHashMap<>();
         config.put(StormTopologyLayoutConstants.YAML_KEY_CATALOG_ROOT_URL, catalogRootUrl);
+        //Hack to work around HBaseBolt expecting this map in prepare method. Fix HBaseBolt and get rid of this. We use hbase-site.xml conf from ambari
+        config.put(StormTopologyLayoutConstants.YAML_KEY_HBASE_CONF, new HashMap<>());
         if (topologyConfig != null) {
             config.putAll(topologyConfig);
         }

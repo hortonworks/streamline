@@ -35,8 +35,7 @@ public final class StormTopologyLayoutConstants {
     public static final String YAML_KEY_LOCAL_PARSER_JAR_PATH = "local.parser.jar.path";
     // TODO: add hbase conf to topology config when processing data sinks
     public static final String YAML_KEY_CONFIG = "config";
-    public static final String YAML_KEY_HBASE_CONF = "hbase.conf";
-    public static final String YAML_KEY_HBASE_ROOT_DIR = "hbase.root.dir";
+    public static final String YAML_KEY_HBASE_CONF = "hbaseConf";
     public static final String YAML_KEY_COMPONENTS = "components";
     public static final String YAML_KEY_SPOUTS = "spouts";
     public static final String YAML_KEY_BOLTS = "bolts";

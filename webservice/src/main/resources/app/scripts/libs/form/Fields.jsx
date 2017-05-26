@@ -351,7 +351,7 @@ export class enumstring extends BaseField {
     const fieldsShown = _.filter(this.context.Form.props.children, (x) => {
       return x.props.fieldJson.isOptional == false;
     });
-    const lastChild = _.last(fieldsShown);
+    const lastChild = _.last(fieldsShown) || {props: {}};
     let disabledField = this.context.Form.props.readOnly;
     if (this.props.fieldJson.isUserInput !== undefined) {
       disabledField = disabledField || !this.props.fieldJson.isUserInput;
@@ -440,7 +440,7 @@ export class arraystring extends BaseField {
     const fieldsShown = _.filter(this.context.Form.props.children, (x) => {
       return x.props.fieldJson.isOptional == false;
     });
-    const lastChild = _.last(fieldsShown);
+    const lastChild = _.last(fieldsShown) || {props: {}};
     const arr = [];
     let dataArr = this.props.data[this.props.value];
     if (dataArr && dataArr instanceof Array) {
@@ -513,7 +513,7 @@ export class creatableField extends BaseField {
     const fieldsShown = _.filter(this.context.Form.props.children, (x) => {
       return x.props.fieldJson.isOptional == false;
     });
-    const lastChild = _.last(fieldsShown);
+    const lastChild = _.last(fieldsShown) || {props: {}};
     const val = {
       value: this.props.data[this.props.value]
     };
@@ -556,7 +556,7 @@ export class arrayenumstring extends BaseField {
     const fieldsShown = _.filter(this.context.Form.props.children, (x) => {
       return x.props.fieldJson.isOptional == false;
     });
-    const lastChild = _.last(fieldsShown);
+    const lastChild = _.last(fieldsShown) || {props: {}};
     let disabledField = this.context.Form.props.readOnly;
     if (this.props.fieldJson.isUserInput !== undefined) {
       disabledField = disabledField || !this.props.fieldJson.isUserInput;
@@ -586,11 +586,13 @@ export class object extends BaseField {
   }
   render() {
     const {className} = this.props;
-    return (
-      <fieldset className={className + " fieldset-default"}>
-        <legend>{this.props.label}</legend>
-        {this.getField()}
-      </fieldset>
+    const inputHint = this.props.fieldJson.hint || null;
+    return (inputHint !== null && inputHint.toLowerCase().indexOf("hidden") !== -1
+      ? null
+      : <fieldset className={className + " fieldset-default"}>
+          <legend>{this.props.label}</legend>
+          {this.getField()}
+        </fieldset>
     );
   }
   getField = () => {
