@@ -488,7 +488,7 @@ class TopologyListingContainer extends Component {
   }
 
   deleteSingleTopology = (id) => {
-    this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete ?'}).then((confirmBox) => {
+    this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete?'}).then((confirmBox) => {
       this.setState({fetchLoader: true});
       TopologyREST.deleteTopology(id).then((topology) => {
         // TopologyREST.deleteMetaInfo(id);
@@ -520,7 +520,7 @@ class TopologyListingContainer extends Component {
   }
 
   exportTopologyAction = (id) => {
-    this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to export the topology ?'}).then((confirmBox) => {
+    this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to export the topology?'}).then((confirmBox) => {
       TopologyREST.getExportTopology(id).then((exportTopology) => {
         if (exportTopology.responseMessage !== undefined) {
           let errorMag = exportTopology.responseMessage.indexOf('NoSuchElementException') !== -1

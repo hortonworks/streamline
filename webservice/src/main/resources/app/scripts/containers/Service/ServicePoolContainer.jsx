@@ -434,7 +434,7 @@ class ServicePoolContainer extends Component {
     to delete a cluster through an API call by using id
   */
   handleDeleteCluster = (id) => {
-    this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete ?'}).then((confirmBox) => {
+    this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete?'}).then((confirmBox) => {
       ClusterREST.deleteCluster(id).then((cluster) => {
         this.initialFetch = false;
         confirmBox.cancel();

@@ -500,7 +500,7 @@ class TopologyEditorContainer extends Component {
             <CommonNotification flag="error" content={errorMag}/>, '', toastOpt);
         } else {
           FSReactToastr.success(
-            <strong>Topology name updated successfully</strong>
+            <strong>Application name updated successfully</strong>
           );
           this.topologyName = topology.name;
           this.topologyConfig = JSON.parse(topology.config);
@@ -603,7 +603,7 @@ class TopologyEditorContainer extends Component {
     return obj;
   }
   deployTopology() {
-    // this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to deploy this topology ?'}).then((confirmBox) => {
+    // this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to deploy this Application?'}).then((confirmBox) => {
     this.refs.deployLoadingModal.show();
     this.setState({topologyStatus: 'DEPLOYING...', progressCount: 12,deployFlag : false});
     TopologyREST.validateTopology(this.topologyId, this.versionId).then(result => {
@@ -632,7 +632,7 @@ class TopologyEditorContainer extends Component {
   }
   saveTopologyVersion(timestamp){
     FSReactToastr.success(
-      <strong>Topology Deployed Successfully</strong>
+      <strong>Application Deployed Successfully</strong>
     );
     this.lastUpdatedTime = new Date(timestamp);
     this.setState({
@@ -667,7 +667,7 @@ class TopologyEditorContainer extends Component {
     });
   }
   killTopology() {
-    this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to kill this topology ?'}).then((confirmBox) => {
+    this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to stop this Application?'}).then((confirmBox) => {
       document.getElementsByClassName('loader-overlay')[0].className = "loader-overlay";
       this.setState({topologyStatus: 'KILLING...'});
       TopologyREST.killTopology(this.topologyId).then(topology => {
@@ -680,7 +680,7 @@ class TopologyEditorContainer extends Component {
         } else {
           this.lastUpdatedTime = new Date(topology.timestamp);
           FSReactToastr.success(
-            <strong>Topology Killed Successfully</strong>
+            <strong>Application Stopped Successfully</strong>
           );
           TopologyREST.getTopology(this.topologyId, this.versionId).then((result) => {
             let data = result;
@@ -1310,7 +1310,7 @@ class TopologyEditorContainer extends Component {
   handleDownloadTestFile(){
     const {testHistory,eventLogData} = this.state;
     if(testHistory.id && eventLogData.length){
-      this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to download the Test file ?'}).then((confirmBox) => {
+      this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to download the Test file?'}).then((confirmBox) => {
         this.downloadTestFileCallBack(this.topologyId,testHistory.id);
         confirmBox.cancel();
       });
@@ -1401,7 +1401,7 @@ class TopologyEditorContainer extends Component {
 }
           </div>
         </div>
-        <Modal ref="TopologyConfigModal" data-title={deployFlag ? " Are you sure want to continue with this configuration" : "Application Configuration"}  onKeyPress={this.handleKeyPress.bind(this)} data-resolve={this.handleSaveConfig.bind(this)} data-reject={this.handleCancelConfig.bind(this)}>
+        <Modal ref="TopologyConfigModal" data-title={deployFlag ? "Are you sure want to continue with this configuration?" : "Application Configuration"}  onKeyPress={this.handleKeyPress.bind(this)} data-resolve={this.handleSaveConfig.bind(this)} data-reject={this.handleCancelConfig.bind(this)}>
           <TopologyConfig ref="topologyConfig" topologyId={this.topologyId} versionId={this.versionId} data={mapTopologyConfig} topologyName={this.state.topologyName} uiConfigFields={this.topologyConfigData} testRunActivated={this.state.testRunActivated}/>
         </Modal>
         {/* NodeModal for Development Mode for source*/}
@@ -1444,12 +1444,12 @@ class TopologyEditorContainer extends Component {
 
         {/*ConfirmBox to Change Mode to Dev || Test*/}
         <Modal ref="modeChangeModal" data-title="Confirm Box" dialogClassName="confirm-box" data-resolve={this.modeChangeConfirmModal.bind(this, true)} data-reject={this.modeChangeConfirmModal.bind(this, false)}>
-          {<p> Are you sure you want change mode ?</p>}
+          {<p> Are you sure you want change mode?</p>}
         </Modal>
 
         {/*ConfirmBox to Run TestCase*/}
         <Modal ref="confirmRunTestModal" data-title="Confirm Box" dialogClassName="confirm-box" data-resolve={this.confirmRunTest.bind(this, true)} data-reject={this.confirmRunTest.bind(this, false)}>
-          {<p> Are you sure you want to run the test case ?</p>}
+          {<p> Are you sure you want to run the test case?</p>}
         </Modal>
 
         <Modal ref="leaveEditable" onKeyPress={this.handleKeyPress.bind(this)} data-title="Confirm Box" dialogClassName="confirm-box" data-resolve={this.confirmLeave.bind(this, true)} data-reject={this.confirmLeave.bind(this, false)}>
