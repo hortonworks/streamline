@@ -46,7 +46,8 @@ export default class CustomProcessorContainer extends Component {
       showListing: true,
       filterValue: '',
       childPopUpFlag: false,
-      fetchLoader: true
+      fetchLoader: true,
+      uploadingData: false
     };
   }
 
@@ -83,10 +84,10 @@ export default class CustomProcessorContainer extends Component {
 
   handleSave() {
     if (this.refs.CustomProcessorForm.getWrappedInstance().validateData()) {
-      this.setState({fetchLoader: true});
+      this.setState({fetchLoader: true, uploadingData: true});
       this.handleCancel();
       this.refs.CustomProcessorForm.getWrappedInstance().handleSave().then((processor) => {
-        this.setState({fetchLoader: false});
+        this.setState({fetchLoader: false, uploadingData: false});
         if (processor.responseMessage !== undefined) {
           let errorMsg = processor.responseMessage.indexOf('already exists') !== -1
             ? "The jar file already exists"
@@ -165,7 +166,7 @@ export default class CustomProcessorContainer extends Component {
   }
 
   render() {
-    let {entities, filterValue, fetchLoader} = this.state;
+    let {entities, filterValue, fetchLoader, uploadingData} = this.state;
     const filteredEntities = Utils.filterByName(entities, filterValue);
 
     return (
@@ -174,7 +175,7 @@ export default class CustomProcessorContainer extends Component {
           ? <div className="row">
               <div className="page-title-box clearfix">
                 <div className="loader-overlay"></div>
-                <CommonLoaderSign imgName={"default-white"}/>
+                <CommonLoaderSign imgName={"default-white"} loadingText={uploadingData ? "Uploading Custom Processor. This might take a few minutes" : null}/>
               </div>
             </div>
           : <div>

@@ -1099,13 +1099,13 @@ const findSingleAclObj = (id,aclArr) => {
   return obj !== undefined ? obj : {};
 };
 
-const getPermissionAndObj = (topologyId,arr) => {
+const getPermissionAndObj = (topologyId,userInfo,arr) => {
   const aclObject =  findSingleAclObj(topologyId ,arr);
-  const permission = getPermission(aclObject.permissions,aclObject);
+  const permission = getPermission(aclObject.permissions,userInfo,aclObject);
   return {aclObject , permission};
 };
 
-const getPermission = (permissionArray,obj) => {
+const getPermission = (permissionArray,userInfo,obj) => {
   if(permissionArray === undefined){
     return ;
   }
@@ -1113,11 +1113,13 @@ const getPermission = (permissionArray,obj) => {
   return tempPermission.includes('WRITE')
   ? false
   : tempPermission.includes('READ')
-    ? true
+    ? userInfo
+      ? false
+      : true
     : true;
 };
 
-const checkSharingPermission = function(obj,string){
+const checkSharingPermission = function(obj,userInfo,string){
   if(obj === undefined || string === ''){
     return;
   }
@@ -1126,7 +1128,9 @@ const checkSharingPermission = function(obj,string){
               ? false
               : true
             : string === 'fields'
-              ? true
+              ? userInfo
+                ? false
+                : true
               : false;
 };
 

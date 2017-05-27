@@ -163,9 +163,6 @@ class AddTopology extends Component {
               ? "form-control"
               : "form-control invalidInput"} onKeyUp={this.handleOnChange} autoFocus="true"/>
           </div>
-          <Form ref="Form" FormData={formData} className="hidden">
-            {fields}
-          </Form>
         </div>
         <div className="form-group">
           <label data-stest="selectEnvLabel">Environment
@@ -177,6 +174,9 @@ class AddTopology extends Component {
               : ""} required={true} clearable={false} labelKey="name" valueKey="id"/>
           </div>
         </div>
+        <Form ref="Form" FormData={formData} className="hidden">
+          {fields}
+        </Form>
       </div>
     );
   }

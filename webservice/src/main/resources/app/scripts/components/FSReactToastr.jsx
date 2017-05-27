@@ -14,7 +14,7 @@
 import React, {Component}from 'react';
 import { render } from 'react-dom';
 import ReactToastr, {ToastMessage, ToastContainer} from "react-toastr";
-
+import CustomToastContainer from './CustomToastContainer';
 var {animation}  = ToastMessage;
 
 var ToastMessageFactory = React.createFactory(animation);
@@ -22,24 +22,6 @@ var ToastMessageFactory = React.createFactory(animation);
 var container = document.createElement('div');
 var body = document.getElementsByTagName('body').item(0);
 body.appendChild(container);
-
-class CustomToastContainer extends ToastContainer{
-  success(msg, title, opts){
-    super.success(msg.props.children, msg, opts);
-  }
-
-  error(msg, title, opts){
-    super.error(msg.props.children, msg, opts);
-  }
-
-  info(msg, title, opts){
-    super.info(msg.props.children, msg, opts);
-  }
-
-  warning(msg, title, opts){
-    super.warning(msg.props.children, msg, opts);
-  }
-}
 
 const FSReactToastr = render(
         <CustomToastContainer

@@ -128,6 +128,9 @@ export default class FSForm extends Component {
           isFieldValid = component.props.fieldJson.hint.indexOf(component.props.value.split('.')[component.props.value.split('.').length - 1]) !== -1 ? true : false;
         } else {
           isFieldValid = component.validate();
+          if(_.isObject(isFieldValid)){
+            isFieldValid = isFieldValid.isFormValid;
+          }
         }
         if (isFormValid) {
           isFormValid = isFieldValid;

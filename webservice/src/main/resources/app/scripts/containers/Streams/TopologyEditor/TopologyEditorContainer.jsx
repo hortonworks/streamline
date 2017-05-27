@@ -519,7 +519,8 @@ class TopologyEditorContainer extends Component {
     });
   }
   handleSaveConfig() {
-    if (this.refs.topologyConfig.validate()) {
+    const {isFormValid, invalidFields} = this.refs.topologyConfig.refs.Form.validate();
+    if (isFormValid) {
       this.refs.topologyConfig.handleSave().then(config => {
         this.refs.TopologyConfigModal.hide();
         if (config.responseMessage !== undefined) {
@@ -539,6 +540,18 @@ class TopologyEditorContainer extends Component {
           });
         }
       });
+    } else {
+      const invalidField = invalidFields[0];
+      if(invalidField.props.fieldJson.hint
+          && invalidField.props.fieldJson.hint.indexOf('security_') > -1){
+        this.refs.topologyConfig.setState({
+          activeTabKey: 3
+        });
+      }else{
+        this.refs.topologyConfig.setState({
+          activeTabKey: 1
+        });
+      }
     }
   }
   getModalScope(node) {
@@ -1330,6 +1343,7 @@ class TopologyEditorContainer extends Component {
   }
 
   handleCancelConfig = () => {
+    this.refs.topologyConfig.refs.Form.clearErrors();
     this.setState({deployFlag : false}, () => {
       this.refs.TopologyConfigModal.hide();
     });
@@ -1402,7 +1416,7 @@ class TopologyEditorContainer extends Component {
           </div>
         </div>
         <Modal ref="TopologyConfigModal" data-title={deployFlag ? "Are you sure want to continue with this configuration?" : "Application Configuration"}  onKeyPress={this.handleKeyPress.bind(this)} data-resolve={this.handleSaveConfig.bind(this)} data-reject={this.handleCancelConfig.bind(this)}>
-          <TopologyConfig ref="topologyConfig" topologyId={this.topologyId} versionId={this.versionId} data={mapTopologyConfig} topologyName={this.state.topologyName} uiConfigFields={this.topologyConfigData} testRunActivated={this.state.testRunActivated}/>
+          <TopologyConfig ref="topologyConfig" topologyId={this.topologyId} versionId={this.versionId} data={mapTopologyConfig} topologyName={this.state.topologyName} uiConfigFields={this.topologyConfigData} testRunActivated={this.state.testRunActivated} topologyNodes={this.graphData.nodes}/>
         </Modal>
         {/* NodeModal for Development Mode for source*/}
         <Modal ref="NodeModal" onKeyPress={this.handleKeyPress.bind(this)} bsSize={this.processorNode && nodeType.toLowerCase() !== 'join'

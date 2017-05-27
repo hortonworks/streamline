@@ -121,6 +121,20 @@ export default class TopologyConfigContainer extends Component {
                       }
                     });
                   }
+                } else {
+                  let nodes = this.props.topologyNodes.filter((c)=>{
+                    return c.currentType.toLowerCase() === 'hbase' || c.currentType.toLowerCase() === 'hdfs' || c.currentType.toLowerCase() === 'hive';
+                  });
+                  if(nodes.length == 0) {
+                    let nameField = _.find(securityFields, {"fieldName": "clusterName"});
+                    nameField.isOptional = true;
+
+                    let principalField = _.find(securityFields, {"fieldName": "principal"});
+                    principalField.isOptional = true;
+
+                    let keyTabField = _.find(securityFields, {"fieldName": "keytabPath"});
+                    keyTabField.isOptional = true;
+                  }
                 }
                 this.setState({hasSecurity: hasSecurity, formField: formField});
               });
@@ -161,6 +175,24 @@ export default class TopologyConfigContainer extends Component {
       const {isFormValid, invalidFields} = this.refs.Form.validate();
       if (isFormValid) {
         validDataFlag = true;
+      } else {
+        const invalidField = invalidFields[0];
+
+        if(invalidField.props.fieldJson.isOptional === false
+            && invalidField.props.fieldJson.hint
+            && invalidField.props.fieldJson.hint.indexOf('security_') > -1){
+          this.setState({
+            activeTabKey: 3,
+            showRequired: false,
+            showSecurity: true
+          });
+        }else if(invalidField.props.fieldJson.isOptional === false){
+          this.setState({
+            activeTabKey: 1,
+            showRequired: true,
+            showSecurity: false
+          });
+        }
       }
       if(advancedField.length > 1){
         _.map(advancedField, (adv) => {

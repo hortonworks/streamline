@@ -24,7 +24,10 @@ import TopologyREST from '../../../rest/TopologyREST';
 import EnvironmentREST from '../../../rest/EnvironmentREST';
 import ClusterREST from '../../../rest/ClusterREST';
 import TopologyUtils from '../../../utils/TopologyUtils';
+import app_state from '../../../app_state';
+import {observer} from 'mobx-react';
 
+@observer
 class TopologyViewMode extends Component {
   constructor(props) {
     super(props);
@@ -110,7 +113,8 @@ class TopologyViewMode extends Component {
         stormViewUrl = stormViewUrl + '?viewpath=%23!%2Ftopology%2F' + encodeURIComponent(topologyMetric.runtimeTopologyId);
       }
     }
-    const {aclObject , permission = false} = TopologyUtils.getPermissionAndObj(Number(topologyId), allACL || []);
+    const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin : false;
+    const {aclObject , permission = false} = TopologyUtils.getPermissionAndObj(Number(topologyId),userInfo, allACL || []);
     return (
       <div>
         <div className="page-title-box row">

@@ -19,23 +19,32 @@ const hasModuleAccess = function(name){
   if(!app_state.streamline_config.secureMode){
     return true;
   }
-  const index = app_state.roleInfo.menu.indexOf(name);
-  if(index > -1){
-    return true;
-  }else{
-    return false;
-  }
+  let hasAccess = false;
+  app_state.roleInfo.forEach((role)=>{
+    const {menu} = role.metadata;
+    const index = menu.indexOf(name);
+    if(index > -1 && !hasAccess){
+      hasAccess = true;
+    }
+  });
+  return hasAccess;
 };
 
 const hasCapability = function(module, type){
   if(!app_state.streamline_config.secureMode){
     return true;
   }
-  const {capabilities} = app_state.roleInfo;
-  let obj = _.find(capabilities, (cap) => {
-    return cap[module];
+  let hasCapability = false;
+  app_state.roleInfo.forEach((role)=>{
+    const {capabilities} = role.metadata;
+    let obj = _.find(capabilities, (cap) => {
+      return cap[module];
+    });
+    if(obj && type.toLowerCase() == obj[module].toString().toLowerCase()){
+      hasCapability = true;
+    }
   });
-  return obj && type.toLowerCase() == obj[module].toString().toLowerCase();
+  return hasCapability;
 };
 
 const hasEditCapability = function(module){

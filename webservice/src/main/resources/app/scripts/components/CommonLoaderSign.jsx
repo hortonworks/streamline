@@ -16,7 +16,7 @@ import React, {Component} from 'react';
 
 export default class CommonLoaderSign extends Component {
   render() {
-    const {imgName} = this.props;
+    const {imgName, loadingText} = this.props;
     const imgUrl = `styles/img/back-${imgName}.png`;
     const divStyle = {
       backgroundImage: 'url(' + imgUrl + ')',
@@ -27,7 +27,7 @@ export default class CommonLoaderSign extends Component {
     };
     return (
       <div className="col-sm-12 text-center" style={divStyle}>
-        <p className="loading-text">Loading</p>
+        <p className="loading-text">{loadingText ? loadingText : "Loading"}</p>
       </div>
     );
   }

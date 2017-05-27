@@ -627,6 +627,15 @@ label {
 .profileDropdown ul.dropdown-menu > li > a {
   padding: 1px 5px;
   white-space: normal;
+  cursor: default;
+}
+
+.profileDropdown ul.dropdown-menu > li > a:hover  {
+  background-color: #fff;
+}
+
+.profileDropdown ul {
+  left: -45px;
 }
 
 .stream-box .stream-body {

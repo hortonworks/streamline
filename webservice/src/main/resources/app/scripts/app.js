@@ -61,7 +61,7 @@ class App extends Component {
                 FSReactToastr.error(<CommonNotification flag="error" content={userProfile.responseMessage}/>, '', toastOpt);
               } else {
                 app_state.user_profile = userProfile;
-                this.syncSidebarMenu(userProfile.roles[0]);
+                this.syncSidebarMenu(userProfile.roles);
               }
             });
           } else {
@@ -70,10 +70,12 @@ class App extends Component {
         }
       });
   }
-  syncSidebarMenu(role) {
-    UserRoleREST.getRoleByRoleName(role).then(response=>{
-      let roleInfo = JSON.parse(response.entities[0].metadata);
-      roleInfo.displayName = response.entities[0].displayName;
+  syncSidebarMenu(roles) {
+    UserRoleREST.getAllRoles().then(response=>{
+      const roleInfo = response.entities.filter((e)=>{
+        e.metadata = JSON.parse(e.metadata);
+        return roles.indexOf(e.name) > -1;
+      });
       app_state.roleInfo = roleInfo;
       this.setState({showLoading: false});
     });

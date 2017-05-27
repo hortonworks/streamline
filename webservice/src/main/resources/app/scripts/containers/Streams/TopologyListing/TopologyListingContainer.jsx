@@ -90,11 +90,16 @@ class TopologyItems extends Component {
   onActionClick = (eventKey) => {
     const {allACL} = this.props;
     if(! _.isEmpty(allACL)){
-      const {aclObject ,permission} = TopologyUtils.getPermissionAndObj(Number(this.streamRef.dataset.id),allACL);
-      if(!permission){
+      const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin : false;
+      const {aclObject ,permission} = TopologyUtils.getPermissionAndObj(Number(this.streamRef.dataset.id),userInfo,allACL);
+      if(!permission || userInfo || permission){
         if(eventKey.includes('share')){
-          const sharePermission = TopologyUtils.checkSharingPermission(aclObject,'click');
-          sharePermission ? this.props.topologyAction(eventKey, this.streamRef.dataset.id,aclObject) : '';
+          const sharePermission = TopologyUtils.checkSharingPermission(aclObject,userInfo,'click');
+          if(!userInfo){
+            sharePermission ? this.props.topologyAction(eventKey, this.streamRef.dataset.id,aclObject) : '';
+          } else {
+            this.props.topologyAction(eventKey, this.streamRef.dataset.id,aclObject);
+          }
         } else {
           this.props.topologyAction(eventKey, this.streamRef.dataset.id,aclObject);
         }
@@ -109,9 +114,10 @@ class TopologyItems extends Component {
     if ((event.target.nodeName !== 'BUTTON' && event.target.nodeName !== 'I' && event.target.nodeName !== 'A')) {
       this.context.router.push('applications/' + id + '/view');
     } else if (event.target.title === "Edit") {
-      const {permission} = TopologyUtils.getPermissionAndObj(id,allACL);
+      const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin : false;
+      const {permission} = TopologyUtils.getPermissionAndObj(id,userInfo,allACL);
       if(! _.isEmpty(allACL)){
-        if(!permission){
+        if(!permission || userInfo){
           this.context.router.push('applications/' + id + '/edit');
         }
       } else {
@@ -157,8 +163,9 @@ class TopologyItems extends Component {
     const unitLeft = _.slice(latencyWrap, 0, latencyWrap.length / 2);
     const unitRight = _.slice(latencyWrap, latencyWrap.length / 2, latencyWrap.length);
     const ellipseIcon = <i className="fa fa-ellipsis-v"></i>;
-    const {aclObject , permission = false} = TopologyUtils.getPermissionAndObj(topology.id, allACL || []);
-    const rights_share = TopologyUtils.checkSharingPermission(aclObject,"fields");
+    const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin : false;
+    const {aclObject , permission = false} = TopologyUtils.getPermissionAndObj(topology.id,userInfo, allACL || []);
+    const rights_share = TopologyUtils.checkSharingPermission(aclObject,userInfo,"fields");
 
     return (
       <div className="col-sm-4">
@@ -199,7 +206,7 @@ class TopologyItems extends Component {
                     <i className="fa fa-pencil"></i>
                     &nbsp;Edit
                   </MenuItem>
-                  { !_.isEmpty(aclObject)
+                  { !_.isEmpty(aclObject) || userInfo
                     ? <MenuItem title="Share" disabled={rights_share} onClick={this.onActionClick.bind(this, "share/" + topology.id)}>
                         <i className="fa fa-share"></i>
                         &nbsp;Share
@@ -500,7 +507,7 @@ class TopologyListingContainer extends Component {
             <CommonNotification flag="error" content={topology.responseMessage}/>, '', toastOpt);
         } else {
           FSReactToastr.success(
-            <strong>Topology deleted successfully</strong>
+            <strong>Application deleted successfully</strong>
           );
         }
       }).catch((err) => {
@@ -656,7 +663,7 @@ class TopologyListingContainer extends Component {
         } else {
           this.addTopologyRef.saveMetadata(topology.id).then(() => {
             FSReactToastr.success(
-              <strong>Topology added successfully</strong>
+              <strong>Application added successfully</strong>
             );
             this.context.router.push('applications/' + topology.id + '/edit');
           });
@@ -676,7 +683,7 @@ class TopologyListingContainer extends Component {
             <CommonNotification flag="error" content={errorMag}/>, '', toastOpt);
         } else {
           FSReactToastr.success(
-            <strong>Topology imported successfully</strong>
+            <strong>Application imported successfully</strong>
           );
           this.context.router.push('applications/' + topology.id + '/edit');
         }
@@ -697,7 +704,7 @@ class TopologyListingContainer extends Component {
             <CommonNotification flag="error" content={errorMag}/>, '', toastOpt);
         } else {
           FSReactToastr.success(
-            <strong>Topology cloned successfully</strong>
+            <strong>Application cloned successfully</strong>
           );
           this.context.router.push('applications/' + topology.id + '/edit');
         }
@@ -734,7 +741,7 @@ class TopologyListingContainer extends Component {
       if(flag){
         shareTopology.length !== 0
         ? FSReactToastr.success(
-            <strong>Topology has been shared successfully</strong>
+            <strong>Application has been shared successfully</strong>
           )
         : '';
       }

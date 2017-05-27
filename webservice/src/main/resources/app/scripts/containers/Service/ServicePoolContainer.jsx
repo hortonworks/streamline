@@ -78,11 +78,16 @@ class PoolItemsCard extends Component {
     const {allACL} = this.props;
     const mClusterId =  this.clusterRef.dataset.id;
     if(! _.isEmpty(allACL)){
-      const {aclObject,permission} = TopologyUtils.getPermissionAndObj(Number(mClusterId),allACL);
-      if(!permission){
+      const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin : false;
+      const {aclObject,permission} = TopologyUtils.getPermissionAndObj(Number(mClusterId),userInfo,allACL);
+      if(!permission || userInfo  || permission){
         if(eventKey.includes('share')){
-          const sharePermission = TopologyUtils.checkSharingPermission(aclObject,'click');
-          sharePermission ? this.props.poolActionClicked(eventKey,mClusterId,aclObject) : '';
+          const sharePermission = TopologyUtils.checkSharingPermission(aclObject,userInfo,'click');
+          if(!userInfo){
+            sharePermission ? this.props.poolActionClicked(eventKey, this.streamRef.dataset.id,aclObject) : '';
+          } else {
+            this.props.poolActionClicked(eventKey, this.streamRef.dataset.id,aclObject);
+          }
         } else {
           this.props.poolActionClicked(eventKey,mClusterId,aclObject);
         }
@@ -116,8 +121,9 @@ class PoolItemsCard extends Component {
     const {allACL} = this.props;
     const mClusterId = (event.target.nodeName !== 'I') ? parseInt(event.target.dataset.id) : parseInt(event.target.parentElement.dataset.id);
     if(! _.isEmpty(allACL)){
-      const {permission} = TopologyUtils.getPermissionAndObj(Number(mClusterId),allACL);
-      if(!permission){
+      const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin : false;
+      const {permission} = TopologyUtils.getPermissionAndObj(Number(mClusterId),userInfo,allACL);
+      if(!permission || userInfo){
         this.props.addManualServiceHandler(mClusterId);
       }
     } else {
@@ -151,8 +157,9 @@ class PoolItemsCard extends Component {
     if(manual_index === -1 && clusterList.cluster.ambariImportUrl === ''){
       serviceWrap.push({service :{name : 'addManualBtn', manualClusterId : clusterList.cluster.id}});
     }
-    const {aclObject , permission = false} = TopologyUtils.getPermissionAndObj(cluster.id, allACL || []);
-    const rights_share = TopologyUtils.checkSharingPermission(aclObject,"fields");
+    const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin : false;
+    const {aclObject , permission = false} = TopologyUtils.getPermissionAndObj(cluster.id, userInfo,allACL || []);
+    const rights_share = TopologyUtils.checkSharingPermission(aclObject,userInfo,"fields");
 
     return (
       <div className="col-md-4">
@@ -171,7 +178,7 @@ class PoolItemsCard extends Component {
                     </MenuItem>
                   : ''
                 }
-                { !_.isEmpty(aclObject)
+                { !_.isEmpty(aclObject) || userInfo
                   ? <MenuItem title="Share" disabled={rights_share} onClick={this.onActionClick.bind(this, "share/")}>
                       <i className="fa fa-share"></i>
                       &nbsp;Share

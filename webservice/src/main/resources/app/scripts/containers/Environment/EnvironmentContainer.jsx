@@ -97,11 +97,16 @@ class EnvironmentCards extends Component {
   onActionClick = (eventKey) => {
     const {allACL} = this.props;
     if(! _.isEmpty(allACL)){
-      const {aclObject,permission} = TopologyUtils.getPermissionAndObj(Number(this.nameSpaceRef.dataset.id),allACL);
-      if(!permission){
+      const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin : false;
+      const {aclObject,permission} = TopologyUtils.getPermissionAndObj(Number(this.nameSpaceRef.dataset.id),userInfo,allACL);
+      if(!permission || userInfo  || permission){
         if(eventKey.includes('share')){
-          const sharePermission = TopologyUtils.checkSharingPermission(aclObject,'click');
-          sharePermission ? this.props.nameSpaceClicked(eventKey, this.nameSpaceRef.dataset.id,aclObject) : '';
+          const sharePermission = TopologyUtils.checkSharingPermission(aclObject,userInfo,'click');
+          if(!userInfo){
+            sharePermission ? this.props.nameSpaceClicked(eventKey, this.nameSpaceRef.dataset.id,aclObject) : '';
+          } else {
+            his.props.nameSpaceClicked(eventKey, this.nameSpaceRef.dataset.id,aclObject);
+          }
         } else {
           this.props.nameSpaceClicked(eventKey, this.nameSpaceRef.dataset.id,aclObject);
         }
@@ -125,9 +130,9 @@ class EnvironmentCards extends Component {
       });
       return count;
     };
-
-    const {aclObject , permission = false} = TopologyUtils.getPermissionAndObj(namespace.id, allACL || []);
-    const rights_share = TopologyUtils.checkSharingPermission(aclObject,"fields");
+    const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin : false;
+    const {aclObject , permission = false} = TopologyUtils.getPermissionAndObj(namespace.id,userInfo, allACL || []);
+    const rights_share = TopologyUtils.checkSharingPermission(aclObject,userInfo,"fields");
 
     return (
       <div className="col-environment">
@@ -140,7 +145,7 @@ class EnvironmentCards extends Component {
                     <i className="fa fa-pencil"></i>
                     &nbsp;Edit
                   </MenuItem>
-                  { !_.isEmpty(aclObject)
+                  { !_.isEmpty(aclObject) || userInfo
                     ? <MenuItem title="Share" disabled={rights_share} onClick={this.onActionClick.bind(this, "share/")}>
                         <i className="fa fa-share"></i>
                         &nbsp;Share

@@ -19,6 +19,7 @@ import {observer} from 'mobx-react';
 import {Nav, Navbar, NavItem, NavDropdown, MenuItem,DropdownButton} from 'react-bootstrap';
 import _ from 'lodash';
 import Modal from './FSModal';
+import {rolePriorities} from '../utils/Constants';
 
 @observer
 export default class Header extends Component {
@@ -35,8 +36,18 @@ export default class Header extends Component {
   }
 
   render() {
+    let displayNames = [];
+    let metadata = "", priority = 0;
+    app_state.roleInfo.forEach((role)=>{
+      let obj = rolePriorities.find((o)=>{return o.name === role.name;});
+      if(obj.priority > priority) {
+        priority = obj.priority;
+        metadata = role.metadata;
+      }
+      displayNames.push(role.displayName);
+    });
     const {showProfile} = this.state;
-    const testIcon = <span><span className={`hb ${app_state.roleInfo.colorLabel} ${app_state.roleInfo.size ? app_state.roleInfo.size.toLowerCase() : ""} role-icon`}><i className={`fa fa-${app_state.roleInfo.icon}`}></i></span>&nbsp; {app_state.user_profile.name}</span>;
+    const testIcon = <span><span className={`hb ${metadata.colorLabel} ${metadata.size ? metadata.size.toLowerCase() : ""} role-icon`}><i className={`fa fa-${metadata.icon}`}></i></span>&nbsp; {app_state.user_profile.name}</span>;
     // const userIcon = <i className="fa fa-user" style={{marginRight : 3}}> {app_state.user_profile.name}</i>;
     const bigIcon = <i className="fa fa-caret-down"></i>;
     const config = <i className="fa fa-cog"></i>;
@@ -70,9 +81,9 @@ export default class Header extends Component {
                         <i className="fa fa-envelope-o"></i>
                         &nbsp;{app_state.user_profile.email}
                       </MenuItem>
-                      <MenuItem title={app_state.roleInfo.displayName}>
+                      <MenuItem title={displayNames.join(', ')}>
                         <i className="fa fa-bookmark-o"></i>
-                        &nbsp;{app_state.roleInfo.displayName}
+                        &nbsp;{displayNames.join(', ')}
                       </MenuItem>
                     </DropdownButton>
                   </li>

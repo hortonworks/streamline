@@ -11,24 +11,26 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
 **/
+import React, {Component}from 'react';
+import { render } from 'react-dom';
+import ReactToastr, {ToastMessage, ToastContainer} from "react-toastr";
 
-import {
-  observable
-} from 'mobx';
-
-class app_state {
-  @observable sidebar_isCollapsed = true
-  @observable sidebar_activeKey = ''
-  @observable sidebar_toggleFlag = false
-  @observable streamline_config = {
-    registry: {},
-    dashboard: {},
-    secureMode: false
+class CustomToastContainer extends ToastContainer{
+  success(msg, title, opts){
+    super.success(msg.props.children, msg, opts);
   }
-  @observable showComponentNodeContainer = true
-  @observable showSpotlightSearch = false
-  @observable user_profile = {}
-  @observable roleInfo = []
+
+  error(msg, title, opts){
+    super.error(msg.props.children, msg, opts);
+  }
+
+  info(msg, title, opts){
+    super.info(msg.props.children, msg, opts);
+  }
+
+  warning(msg, title, opts){
+    super.warning(msg.props.children, msg, opts);
+  }
 }
 
-export default new app_state();
+export default CustomToastContainer;

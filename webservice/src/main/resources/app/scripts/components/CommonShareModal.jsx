@@ -73,7 +73,13 @@ export default class CommonShareModal extends Component{
         return acl.owner === false ;
       });
 
-      const tempOptions = results[1].entities;
+      // remove admin user from the user options
+      let tempOptions = _.filter(results[1].entities, (entity) => {
+        const role = entity.roles.toString();
+        return role.indexOf("ROLE_ADMIN") === -1;
+      });
+
+      // const tempOptions = results[1].entities;
 
       this.userOptions = _.filter(tempOptions, (opt) => {return opt.id !== ownerObj.sidId;});
 
@@ -274,11 +280,11 @@ export default class CommonShareModal extends Component{
     }
 
     if(putObjArr.length){
-      _.map(selectedUserList, (list) => {
-        const index = _.findIndex(putObjArr, (pObj) => { return pObj.user.id === list.sidId; });
+      _.map(putObjArr, (pObj) => {
+        const index = _.findIndex(selectedUserList, (list) => { return list.sidId === pObj.user.id; });
         if(index === -1){
           const dObj = _.find(this.constSharedUserList, (sharedUser) => { return sharedUser.id === list.sidId;});
-          const data = this.generatUserAccessList([list],[dObj]);
+          const data = this.generatUserAccessList([pObj],[dObj]);
           deletedObjArr.push(data[0]);
         }
       });
