@@ -178,12 +178,12 @@ export default class Sidebar extends Component {
                     </li>
                     : null
                   }
-                  {hasModuleAccess(menuName.COMPONENT_DEFINITIONS) ?
+                  {/*hasModuleAccess(menuName.COMPONENT_DEFINITIONS) ?
                     <li onClick={this.handleClick.bind(this, 3)}>
                       <Link to="/component-definition">Component Definitions</Link>
                     </li>
                     : null
-                  }
+                  */}
                   {hasModuleAccess(menuName.AUTHORIZER) ?
                     (app_state.streamline_config.secureMode ?
                       <li onClick={this.handleClick.bind(this, 3)}>

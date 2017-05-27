@@ -101,8 +101,10 @@ class AddEnvironment extends Component {
     super(props);
     this.state = {
       entities: [],
-      fetchLoader: true
+      fetchLoader: true,
+      hadoopService:{}
     };
+    this.multipleHadoopService = false;
     this.selectionList = {};
     this.fetchData();
   }
@@ -120,6 +122,7 @@ class AddEnvironment extends Component {
           FSReactToastr.error(
             <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
         } else {
+
           if (i === 0) {
             result.entities.map(x => {
               if (this.selectionList[x.cluster.id] === undefined) {
@@ -128,12 +131,20 @@ class AddEnvironment extends Component {
             });
             this.setState({fetchLoader: false, entities: result.entities});
           } else if (i === 1) {
+            let hadoopService={};
             this.nameRef.value = result.namespace.name;
             this.descRef.value = result.namespace.description;
             result.mappings.map((o) => {
+              const sName = o.serviceName.toLowerCase();
+              if(sName === 'hive' || sName === 'hbase' || sName === 'hdfs'){
+                hadoopService[o.clusterId] === undefined
+                ? hadoopService[o.clusterId] = [sName]
+                : hadoopService[o.clusterId].push(sName);
+              }
               document.querySelector('[data-id="' + o.clusterId + '@' + o.serviceName + '"]').className = "activeImg";
               this.mapSelectionHandler(o);
             });
+            this.setState({hadoopService});
           }
         }
       });
@@ -212,12 +223,26 @@ class AddEnvironment extends Component {
   }
 
   mapSelectionHandler = (dataObj) => {
+    let stateObj={};
+    stateObj.hadoopService = _.cloneDeep(this.state.hadoopService);
     const index = this.selectionList[dataObj.clusterId].findIndex((x) => {
       return x.serviceName == dataObj.serviceName;
     });
 
     if (index !== -1) {
       this.selectionList[dataObj.clusterId].splice(index, 1);
+      if(!_.isEmpty(stateObj.hadoopService)){
+        let ck = _.keys(stateObj.hadoopService);
+        if(Number(ck[0]) === dataObj.clusterId && stateObj.hadoopService[ck[0]].length > 1){
+          const sIndex = _.findIndex(stateObj.hadoopService[ck[0]], (h) => {return h === dataObj.serviceName.toLowerCase();});
+          if(sIndex !== -1){
+            stateObj.hadoopService[ck[0]].splice(sIndex,1);
+          }
+        } else if(Number(ck[0]) === dataObj.clusterId && stateObj.hadoopService[ck[0]].length === 1){
+          stateObj.hadoopService = {};
+        }
+        this.setState(stateObj);
+      }
     } else {
       if (dataObj.serviceName.toLowerCase() === "storm" || dataObj.serviceName.toLowerCase() === "ambari_metrics") {
         let t_clusterId,
@@ -257,9 +282,43 @@ class AddEnvironment extends Component {
             }
           });
         }
+      } else if(dataObj.serviceName.toLowerCase() === "hive" || dataObj.serviceName.toLowerCase() === "hbase" || dataObj.serviceName.toLowerCase() === 'hdfs'){
+        this.multipleHadoopService = false;
+        const s_name = dataObj.serviceName.toLowerCase();
+        if(_.isEmpty(stateObj.hadoopService)){
+          stateObj.hadoopService[dataObj.clusterId] = [s_name];
+          if(s_name !== 'hdfs'){
+            this.pushHdfsIntoSelectionList(dataObj);
+          }
+        } else {
+          const clusterKey = _.keys(stateObj.hadoopService);
+          if(Number(clusterKey[0]) === dataObj.clusterId){
+            stateObj.hadoopService[dataObj.clusterId].push(s_name);
+            if(s_name !== 'hdfs'){
+              this.pushHdfsIntoSelectionList(dataObj);
+            }
+          } else {
+            document.querySelector('[data-id="' + dataObj.clusterId + '@' + dataObj.serviceName + '"]').className = "";
+            this.multipleHadoopService = true;
+          }
+        }
+
+
       }
-      this.selectionList[dataObj.clusterId].push(dataObj);
+      !this.multipleHadoopService
+        ? this.selectionList[dataObj.clusterId].push(dataObj)
+        : '';
+      this.setState(stateObj);
     }
+  }
+
+  pushHdfsIntoSelectionList = (dataObj) => {
+    const obj = {
+      clusterId : dataObj.clusterId,
+      serviceName : 'HDFS'
+    };
+    document.querySelector('[data-id="' + dataObj.clusterId + '@' + 'HDFS' + '"]').className = "activeImg";
+    this.selectionList[dataObj.clusterId].push(obj);
   }
 
   sliceSelectedKeyIndex = (r_serviceId, r_serviceName) => {
@@ -300,6 +359,12 @@ class AddEnvironment extends Component {
                 (Atleast one streaming engine (eg: STORM) must be selected.)</small>
             : ''
 }
+          {
+            this.multipleHadoopService
+            ? [<br key={1} /> ,<small key={2} className="text-danger">
+                ( please select HIVE 'OR' HBASE and HDFS from same cluster.)</small>]
+            : null
+          }
           <div className="row environment-modal-services">
             {fetchLoader
               ? <div className="col-sm-12">

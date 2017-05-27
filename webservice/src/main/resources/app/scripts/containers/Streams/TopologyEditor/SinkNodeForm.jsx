@@ -273,9 +273,28 @@ export default class SinkNodeForm extends Component {
   validateData() {
     let validDataFlag = false;
     if (!this.state.fetchLoader) {
-      if (this.refs.Form.validate()) {
+      const {isFormValid, invalidFields} = this.refs.Form.validate();
+      if (isFormValid) {
         validDataFlag = true;
         this.setState({activeTabKey: 1, showRequired: true});
+      }else{
+        const invalidField = invalidFields[0];
+
+        if(invalidField.props.fieldJson.isOptional === false
+            && invalidField.props.fieldJson.hint
+            && invalidField.props.fieldJson.hint.indexOf('security_') > -1){
+          this.setState({
+            activeTabKey: 4,
+            showRequired: false,
+            showSecurity: true
+          });
+        }else if(invalidField.props.fieldJson.isOptional === false){
+          this.setState({
+            activeTabKey: 1,
+            showRequired: true,
+            showSecurity: false
+          });
+        }
       }
       if(!this.state.validSchema){
         validDataFlag = false;
@@ -447,19 +466,19 @@ export default class SinkNodeForm extends Component {
       <Tabs id="SinkForm" activeKey={this.state.activeTabKey} className="modal-tabs" onSelect={this.onSelectTab}>
         <Tab eventKey={1} title="REQUIRED">
           {inputSidebar}
-          {this.state.activeTabKey == 1 ? form : null}
+          {activeTabKey == 1 || activeTabKey == 3 ? form : null}
         </Tab>
         {
         this.state.hasSecurity ?
         <Tab eventKey={4} title="SECURITY">
           {inputSidebar}
-          {this.state.activeTabKey == 4 ? form : null}
+          {activeTabKey == 4 ? form : null}
         </Tab>
         : ''
         }
         <Tab eventKey={2} title="OPTIONAL">
           {inputSidebar}
-          {this.state.activeTabKey == 2 ? form : null}
+          {activeTabKey == 2 ? form : null}
         </Tab>
         <Tab eventKey={3} title="NOTES">
           <NotesForm ref="NotesForm" description={this.state.description} onChangeDescription={this.handleNotesChange.bind(this)}/>

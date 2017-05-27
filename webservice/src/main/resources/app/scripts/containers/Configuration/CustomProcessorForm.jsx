@@ -233,7 +233,7 @@ class CustomProcessorForm extends Component {
     let obj = this.state.topologyComponentUISpecification.find((o) => o.id === id);
 
     this.modalContent = () => {
-      return <ConfigFieldsForm ref="addField" id={id} fieldData={obj}/>;
+      return <ConfigFieldsForm ref="addField" id={id} fieldData={JSON.parse(JSON.stringify(obj))}/>;
     };
     this.setState({
       fieldId: id,
@@ -302,7 +302,7 @@ class CustomProcessorForm extends Component {
       }
     }
 
-    if (streamingEngine === '' || name === '' || description === '' || customProcessorImpl === '' || jarFileName === '' || inputSchema === '' || outputStreams.length === 0 || topologyComponentUISpecification.length === 0) {
+    if (streamingEngine === '' || name === '' || description === '' || customProcessorImpl === '' || jarFileName === '' || inputSchema === '' || outputStreams.length === 0) {
       validDataFlag = false;
     }
     return validDataFlag;
@@ -315,7 +315,6 @@ class CustomProcessorForm extends Component {
       description,
       customProcessorImpl,
       jarFileName,
-      topologyComponentUISpecification,
       inputSchema,
       fieldsChk
     } = this.state;
@@ -325,10 +324,9 @@ class CustomProcessorForm extends Component {
       description,
       customProcessorImpl,
       jarFileName,
-      topologyComponentUISpecification,
       inputSchema
     ];
-    if (streamingEngine === '' || name === '' || description === '' || customProcessorImpl === '' || jarFileName === '' || inputSchema === '' || outputStreams.length === 0 || topologyComponentUISpecification.length === 0) {
+    if (streamingEngine === '' || name === '' || description === '' || customProcessorImpl === '' || jarFileName === '' || inputSchema === '' || outputStreams.length === 0 ) {
       if (fieldsChk) {
         let filterVal = emptyVal.filter(val => {
           return val.length !== 0;
@@ -482,7 +480,8 @@ class CustomProcessorForm extends Component {
       mode: "application/json",
       styleActiveLine: true,
       gutters: ["CodeMirror-lint-markers"],
-      lint: true
+      lint: true,
+      autofocus: true
     };
     return (
       <div>
@@ -575,26 +574,18 @@ class CustomProcessorForm extends Component {
                     <div className="col-sm-5">
                       <button type="button" className="btn btn-sm btn-primary" onClick={this.handleAddFields.bind(this)}>Add Config Fields</button>
                     </div>
-                    {this.state.topologyComponentUISpecification.length === 0
-                      ? (
-                        <div className="col-sm-4">
-                          <p className="form-control-static text-danger">Please add Config Fields</p>
-                        </div>
-                      )
-                      : null}
                   </div>
                   <div className="row">
                     <div className="col-sm-10 col-sm-offset-2">
-                      <Table className="table table-hover table-bordered" noDataText="No records found." currentPage={0} itemsPerPage={this.state.topologyComponentUISpecification.length > pageSize
+                      <Table className="table table-hover table-bordered table-CP-configFields" noDataText="No records found." currentPage={0} itemsPerPage={this.state.topologyComponentUISpecification.length > pageSize
                         ? pageSize
                         : 0} pageButtonLimit={5}>
                         <Thead>
                           <Th column="fieldName">Field Name</Th>
                           <Th column="uiName">UI Name</Th>
-                          <Th column="isOptional">Is Optional</Th>
+                          <Th column="isOptional">Optional</Th>
                           <Th column="type">Type</Th>
                           <Th column="defaultValue">Default Value</Th>
-                          <Th column="isUserInput">Is User Input</Th>
                           <Th column="tooltip">Tooltip</Th>
                           <Th column="action">Actions</Th>
                         </Thead>
@@ -606,7 +597,6 @@ class CustomProcessorForm extends Component {
                               <Td column="isOptional">{obj.isOptional}</Td>
                               <Td column="type">{obj.type}</Td>
                               <Td column="defaultValue">{obj.defaultValue}</Td>
-                              <Td column="isUserInput">{obj.isUserInput}</Td>
                               <Td column="tooltip">{obj.tooltip}</Td>
                               <Td column="action">
                                 <div className="btn-action">
@@ -674,7 +664,7 @@ class CustomProcessorForm extends Component {
             </div>
           </div>
         </div>
-        <Modal ref="ConfigFieldModal" onKeyPress={this.handleKeyPress} data-title={this.state.modalTitle} data-resolve={this.handleSaveConfigFieldModal.bind(this)}>
+        <Modal ref="ConfigFieldModal" onKeyPress={this.handleKeyPress} data-title={this.state.modalTitle} data-resolve={this.handleSaveConfigFieldModal.bind(this)} data-reject={()=>{this.refs.addField.refs.ConfigForm.clearErrors(); this.refs.ConfigFieldModal.hide();}}>
           {this.modalContent()}
         </Modal>
         <Modal ref="leaveConfigProcessor" onKeyPress={this.handleKeyPress} data-title="Confirm Box" dialogClassName="confirm-box" data-resolve={this.confirmLeave.bind(this, true)} data-reject={this.confirmLeave.bind(this, false)}>

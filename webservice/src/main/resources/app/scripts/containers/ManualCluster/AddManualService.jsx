@@ -81,7 +81,8 @@ class AddManualService extends Component{
   validate = () => {
     let validDataFlag = false;
     const {selectedObj} = this.state;
-    if (this.refs.Form.validate() && selectedObj.name !== '') {
+    const {isFormValid, invalidFields} = this.refs.Form.validate();
+    if (isFormValid && selectedObj.name !== '') {
       validDataFlag = true;
     }
     return validDataFlag;

@@ -104,6 +104,7 @@ export default class FSForm extends Component {
   }
   validate() {
     let isFormValid = true;
+    const invalidFields = [];
     for (let key in this.refs) {
       let component = this.refs[key];
       if (component.type == "FormField") {
@@ -131,10 +132,13 @@ export default class FSForm extends Component {
         if (isFormValid) {
           isFormValid = isFieldValid;
         }
+        if(!isFieldValid){
+          invalidFields.push(component);
+        }
       }
     }
 
-    return isFormValid;
+    return {isFormValid, invalidFields};
   }
 }
 

@@ -251,7 +251,8 @@ export default class OutputSchemaContainer extends Component {
       mode: "application/json",
       styleActiveLine: true,
       gutters: ["CodeMirror-lint-markers"],
-      lint: true
+      lint: true,
+      autofocus: true
     };
     this.streamNamesList = [];
     return (
@@ -300,7 +301,7 @@ export default class OutputSchemaContainer extends Component {
                       </a>
                     {
                       conditionalArr[i].showCodeMirror
-                      ? <ReactCodemirror ref="JSONCodemirror" value={obj.fields} onChange={this.handleSchemaChange.bind(this)} options={jsonoptions}/>
+                      ? <ReactCodemirror ref="JSONCodemirror1" value={obj.fields} onChange={this.handleSchemaChange.bind(this)} options={jsonoptions}/>
                       : <div ref="browseFileContainer" className={"addSchemaBrowseFileContainer"}>
                           <div onClick={this.outerDivClicked.bind(this)} data-stest="outputSchemaBox">
                           <div className="main-title">Copy & Paste</div>

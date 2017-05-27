@@ -860,6 +860,10 @@ label {
     word-break: break-all;
 }
 
+.table-CP-configFields tr.reactable-column-header th {
+  text-align: center;
+}
+
 .schema-stats>i.fa, .schema-stats>div {
   float: left;
 }
@@ -1006,6 +1010,9 @@ label {
 }
 .display-block {
   display: block !important;
+}
+.display-inline {
+  display: inline !important;
 }
 
 .topology-status {

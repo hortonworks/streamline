@@ -158,7 +158,8 @@ export default class TopologyConfigContainer extends Component {
     let validDataFlag = false,validateError=[];
     const {advancedField} = this.state;
     if (!this.state.fetchLoader) {
-      if (this.refs.Form.validate()) {
+      const {isFormValid, invalidFields} = this.refs.Form.validate();
+      if (isFormValid) {
         validDataFlag = true;
       }
       if(advancedField.length > 1){

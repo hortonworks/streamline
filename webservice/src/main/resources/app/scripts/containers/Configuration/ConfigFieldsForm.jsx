@@ -15,6 +15,8 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import Select from 'react-select';
+import Form from '../../libs/form';
+import * as Fields from '../../libs/form/Fields';
 
 export default class ConfigFieldsForm extends Component {
 
@@ -23,6 +25,10 @@ export default class ConfigFieldsForm extends Component {
     this.state = JSON.parse(JSON.stringify(this.defaultObj));
     if (this.props.fieldData) {
       this.state = this.props.fieldData;
+      this.state.errors = {};
+      if(this.props.fieldData.type === 'number'){
+        this.state.defaultValueType = "number";
+      }
     }
     this.typeArray = [
       {
@@ -46,12 +52,23 @@ export default class ConfigFieldsForm extends Component {
     defaultValue: '',
     isUserInput: true,
     tooltip: '',
-    id: this.props.id
+    defaultValueType: 'text',
+    id: this.props.id,
+    errors: {}
   };
 
   handleValueChange(e) {
     let obj = {};
-    obj[e.target.name] = e.target.value;
+    let {errors} = this.state;
+    obj[e.target.name] = e.target.value.trim();
+    if(obj[e.target.name] === ''){
+      errors[e.target.name] = true;
+    } else {
+      if(errors[e.target.name]){
+        delete errors[e.target.name];
+      }
+    }
+    obj.errors = errors;
     this.setState(obj);
   }
 
@@ -62,11 +79,25 @@ export default class ConfigFieldsForm extends Component {
   }
 
   handleTypeChange(obj) {
+    const configForm = this.refs.ConfigForm;
     if (obj) {
-      this.setState({type: obj.value});
+      let stateObj = {
+        type: obj.value
+      };
+      if(obj.value === 'number'){
+        configForm.state.FormData.defaultValue = '';
+      } else if(obj.value === 'string'){
+        configForm.state.FormData.defaultValue = '';
+      } else {
+        configForm.state.FormData.defaultValue = true;
+      }
+      configForm.state.FormData.type = obj.value;
     } else {
-      this.setState({type: ''});
+      configForm.state.FormData.type = '';
+      configForm.state.FormData.defaultValue = '';
     }
+    configForm.refs.type.validate(obj);
+    this.forceUpdate();
   }
 
   getConfigField() {
@@ -79,7 +110,7 @@ export default class ConfigFieldsForm extends Component {
       isUserInput,
       tooltip,
       id
-    } = this.state;
+    } = this.refs.ConfigForm.state.FormData;
     let obj = {
       fieldName,
       uiName,
@@ -90,84 +121,32 @@ export default class ConfigFieldsForm extends Component {
       tooltip,
       id
     };
-    if (obj.defaultValue !== '' && obj.type != 'string') {
-      if (obj.type === 'number') {
-        obj.defaultValue = Number(obj.defaultValue);
-      } else if (obj.type === 'boolean') {
-        obj.defaultValue = obj.defaultValue === 'false'
-          ? false
-          : true;
-      }
-    }
     return obj;
   }
 
   validate() {
-    let {uiName, type, tooltip, fieldName} = this.state;
-    if (uiName.trim() !== "" && type.trim() !== "" && tooltip.trim() !== "" && fieldName.trim() !== "") {
-      return true;
-    } else {
-      return false;
-    }
+    const {isFormValid, invalidFields} = this.refs.ConfigForm.validate();
+    return isFormValid;
   }
 
   render() {
+    const type = this.refs.ConfigForm ? this.refs.ConfigForm.state.FormData.type : '';
     return (
-      <form className="modal-form cp-modal-form">
-        <div className="form-group">
-          <label>Field Name
-            <span className="text-danger">*</span>
-          </label>
-          <div>
-            <input name="fieldName" placeholder="Name" onChange={this.handleValueChange.bind(this)} type="text" className={this.state.fieldName.trim() == ""
-              ? "form-control invalidInput"
-              : "form-control"} value={this.state.fieldName} required={true}/>
-          </div>
-        </div>
-        <div className="form-group">
-          <label>UI Name
-            <span className="text-danger">*</span>
-          </label>
-          <div>
-            <input name="uiName" placeholder="Name" onChange={this.handleValueChange.bind(this)} type="text" className={this.state.uiName.trim() == ""
-              ? "form-control invalidInput"
-              : "form-control"} value={this.state.uiName} required={true}/>
-          </div>
-        </div>
-        <div className="form-group">
-          <input name="isOptional" onChange={this.handleToggle.bind(this)} type="checkbox" value={this.state.isOptional} checked={this.state.isOptional}/>&nbsp;&nbsp;<label>Is Optional</label>
-        </div>
-        <div className="form-group">
-          <label>Type
-            <span className="text-danger">*</span>
-          </label>
-          <div>
-            <Select onChange={this.handleTypeChange.bind(this)} value={this.state.type} options={this.typeArray} className={this.state.type == ""
-              ? "invalidSelect"
-              : ""} required={true}/>
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Default Value</label>
-          <div>
-            <input name="defaultValue" placeholder="Default Value" onChange={this.handleValueChange.bind(this)} type="text" className="form-control" value={this.state.defaultValue}/>
-          </div>
-        </div>
-        <div className="form-group">
-          <input name="isUserInput" onChange={this.handleToggle.bind(this)} type="checkbox" value={this.state.isUserInput} checked={this.state.isUserInput}/>
-          &nbsp;&nbsp;<label>Is User Input</label>
-        </div>
-        <div className="form-group">
-          <label>Tooltip
-            <span className="text-danger">*</span>
-          </label>
-          <div>
-            <input name="tooltip" placeholder="Tool Tip" onChange={this.handleValueChange.bind(this)} type="text" className={this.state.tooltip.trim() == ""
-              ? "form-control invalidInput"
-              : "form-control"} value={this.state.tooltip} required={true}/>
-          </div>
-        </div>
-      </form>
+      <Form ref="ConfigForm" className="modal-form cp-modal-form" FormData={this.state} showRequired={null}>
+        <Fields.string value="fieldName" label="Field Name" valuePath="fieldName" fieldJson={{isOptional:false, tooltip: 'Field Name'}} validation={["required"]} />
+        <Fields.string value="uiName" label="UI Name" valuePath="uiName" fieldJson={{isOptional:false, tooltip: 'Name to display in UI'}} validation={["required"]} />
+        <Fields.boolean value="isOptional" label="Optional?" valuePath="isOptional" fieldJson={{isOptional:true, tooltip: 'Is this field optional?'}} />
+        <Fields.enumstring _ref="type" value="type" label="Type" fieldJson={{isOptional:false, tooltip: 'Type of field'}} validation={["required"]} fieldAttr={{options: this.typeArray, onChange: this.handleTypeChange.bind(this)}}/>
+        {type === 'number'
+          ? <Fields.number value="defaultValue" label="Default Value" valuePath="defaultValue" fieldJson={{isOptional:true, tooltip: 'Default value of this field'}} />
+        : (type === 'boolean'
+            ? <Fields.boolean value="defaultValue" label="Default Value" valuePath="defaultValue" fieldJson={{isOptional:true, tooltip: 'Default value of this field'}} />
+            : <Fields.string value="defaultValue" label="Default Value" valuePath="defaultValue" fieldJson={{isOptional:true, tooltip: 'Default value of this field'}} />
+          )
+        }
+        <Fields.boolean value="isUserInput" label="User Input?" valuePath="isUserInput" fieldJson={{hint:"hidden", isOptional:true, tooltip: 'Does this field require input from user?'}} />
+        <Fields.string value="tooltip" label="Tooltip" valuePath="tooltip" fieldJson={{isOptional:false, tooltip: 'Tooltip for the field'}} validation={["required"]} />
+      </Form>
     );
   }
 }

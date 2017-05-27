@@ -48,7 +48,8 @@ export default class UserForm extends Component {
 
   validateData = () => {
     let validDataFlag = false;
-    if(this.refs.UserForm.validate()){
+    const {isFormValid, invalidFields} = this.refs.UserForm.validate();
+    if (isFormValid) {
       validDataFlag = true;
     }
     return validDataFlag;
