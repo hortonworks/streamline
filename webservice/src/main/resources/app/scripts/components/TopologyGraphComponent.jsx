@@ -1281,7 +1281,7 @@ export default class TopologyGraphComponent extends Component {
         thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);
         thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
       }).call(thisGraph.drag);
-      el.text(title.trim());
+      el.text(title.trim().toUpperCase());
     });
 
     //Delete Icon

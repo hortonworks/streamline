@@ -21,6 +21,8 @@ import FSReactToastr from '../../components/FSReactToastr';
 import CommonNotification from '../../utils/CommonNotification';
 import {toastOpt} from '../../utils/Constants';
 import AggregateUdfREST from '../../rest/AggregateUdfREST';
+import Form from '../../libs/form';
+import * as Fields from '../../libs/form/Fields';
 
 export default class UDFForm extends Component {
   constructor(props) {
@@ -52,49 +54,9 @@ export default class UDFForm extends Component {
     }
   }
 
-  handleValueChange = (e) => {
-    let obj = {};
-    obj[e.target.name] = e.target.value;
-    this.setState(obj);
-  }
-
-  handleTypeChange = (keyType, data) => {
-    let obj = {};
-    if(data) {
-      obj[keyType] = data.value;
-    }
-    this.setState(obj);
-  }
-
-  handleJarUpload(event) {
-    if (!event.target.files.length || (event.target.files.length && event.target.files[0].name.indexOf('.jar') < 0)) {
-      this.setState(this.state);
-      return;
-    }
-    let fileObj = event.target.files[0];
-    this.setState({udfJarFile: fileObj, fileName: fileObj.name});
-  }
-
-  handleUpload(e) {
-    this.refs.udfJarFile.click();
-  }
   validateData = () => {
-    let validDataFlag = true;
-    let {
-      name,
-      displayName,
-      description,
-      type,
-      className,
-      udfJarFile
-    } = this.state;
-    if(!udfJarFile) {
-      validDataFlag = false;
-    }
-    if(name.trim() === '' || displayName.trim() === '' || description.trim() === '' || type.trim() === '' || className === '') {
-      validDataFlag = false;
-    }
-    return validDataFlag;
+    const {isFormValid, invalidFields} = this.refs.Form.validate();
+    return isFormValid;
   }
 
   handleSave = () => {
@@ -117,92 +79,20 @@ export default class UDFForm extends Component {
     }
   }
 
-  render() {
-    const {id, name, displayName, type, description, typeOptions, className, udfJarFile} = this.state;
+  fetchFileData = (file,fileName) => {
+    this.setState({udfJarFile: file});
+  }
 
+  render() {
     return (
-      <form className="modal-form udf-modal-form">
-        <div className="form-group">
-          <label>Name
-            <span className="text-danger">*</span>
-          </label>
-          <div>
-            <input name="name" placeholder="Name" onChange={this.handleValueChange.bind(this)} type="text" className={name.trim() == ""
-              ? "form-control invalidInput"
-              : "form-control"} value={name} required={true}/>
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Display Name
-            <span className="text-danger">*</span>
-          </label>
-          <div>
-            <input name="displayName" placeholder="Display Name" onChange={this.handleValueChange.bind(this)} type="text" className={displayName.trim() == ""
-              ? "form-control invalidInput"
-              : "form-control"} value={displayName} required={true}/>
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Description
-            <span className="text-danger">*</span>
-          </label>
-          <div>
-            <input name="description" placeholder="Description" onChange={this.handleValueChange.bind(this)} type="text" className={description.trim() == ""
-              ? "form-control invalidInput"
-              : "form-control"} value={description} required={true} />
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Type
-            <span className="text-danger">*</span>
-          </label>
-          <div>
-            <Select value={type} options={typeOptions} onChange={this.handleTypeChange.bind(this, 'type')} required={true} />
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Classname
-            <span className="text-danger">*</span>
-          </label>
-          <div>
-            <input name="className" placeholder="Classname" onChange={this.handleValueChange.bind(this)} type="text" className={className.trim() == ""
-              ? "form-control invalidInput"
-              : "form-control"} value={className} required={true}/>
-          </div>
-        </div>
-        <div className="form-group">
-          <label>UDF jar
-            <span className="text-danger">*</span>
-          </label>
-          <div>
-            <input type="file" name="udfJarFile" placeholder="Select Jar" accept=".jar" className="hidden-file-input" ref="udfJarFile"
-              onChange={(event) => {
-                this.handleJarUpload.call(this, event);
-              }}
-              required={true}/>
-            <div>
-              <InputGroup>
-                <InputGroup.Addon className="file-upload">
-                  <Button
-                    type="button"
-                    className="browseBtn btn-primary"
-                    onClick={this.handleUpload.bind(this)}
-                  >
-                    <i className="fa fa-folder-open-o"></i>&nbsp;Browse
-                  </Button>
-                </InputGroup.Addon>
-                <FormControl
-                  type="text"
-                  placeholder="No file chosen"
-                  disabled={true}
-                  value={this.state.fileName}
-                  className={this.state.udfJarFile == "" ? "form-control invalidInput" : "form-control"}
-                />
-              </InputGroup>
-            </div>
-          </div>
-        </div>
-      </form>
+      <Form ref="Form" className="modal-form udf-modal-form" FormData={this.state} fetchFileData={this.fetchFileData} showRequired={null}>
+        <Fields.string value="name" label="Name" valuePath="name" fieldJson={{isOptional:false, tooltip: 'Name of UDF.'}} validation={["required"]} />
+        <Fields.string value="displayName" label="Display Name" valuePath="displayName" fieldJson={{isOptional:false, tooltip: 'Name of UDF to display in forms.'}} validation={["required"]} />
+        <Fields.string value="description" label="Description" valuePath="description" fieldJson={{isOptional:false, tooltip: 'Description of UDF.'}} validation={["required"]} />
+        <Fields.enumstring value="type" label="Type" fieldJson={{isOptional:false, tooltip: 'Type of UDF'}} validation={["required"]} fieldAttr={{options: this.state.typeOptions}}/>
+        <Fields.string value="className" label="Classname" valuePath="className" fieldJson={{isOptional:false, tooltip: 'Classname within the UDF jar.'}} validation={["required"]} />
+        <Fields.file value="fileName" label="UDF jar" valuePath="fileName" fieldJson={{isOptional:false, tooltip: 'Upload UDF Jar File', hint: 'jar'}} validation={["required"]} />
+      </Form>
     );
   }
 }

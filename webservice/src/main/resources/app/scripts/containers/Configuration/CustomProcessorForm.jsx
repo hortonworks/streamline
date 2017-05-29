@@ -75,7 +75,14 @@ class CustomProcessorForm extends Component {
     modalTitle: 'Add Config  Field',
     showNameError: false,
     showCodeMirror : false,
-    expandCodemirror : false
+    expandCodemirror : false,
+    fieldsError : {
+      whiteSpaceError:false,
+      pName : false,
+      desc : false,
+      classNameType : false,
+      fileError : false
+    }
   };
 
   constructor(props) {
@@ -176,21 +183,30 @@ class CustomProcessorForm extends Component {
     }
   }
 
-  handleValueChange(e) {
+  handleValueChange(type,e) {
     let obj = {};
+    obj.fieldsError = this.state.fieldsError;
     obj[e.target.name] = e.target.value;
+    e.target.value.trim() === '' && type !== null
+      ? obj.fieldsError[type] = true
+      : obj.fieldsError[type] = false;
     this.setState(obj);
   }
 
-  handleNameChange(e) {
+  handleNameChange(type,e) {
     let obj = this.validateName(e.target.value);
+    obj.fieldsError = this.state.fieldsError;
     obj[e.target.name] = e.target.value;
+    e.target.value.trim() === ''
+    ? obj.fieldsError[type] = true
+    : obj.fieldsError[type] = false;
     this.setState(obj);
   }
   validateName(name) {
     let {processors, id} = this.props;
     let stateObj = {
-      showNameError: false
+      showNameError: false,
+      fieldsError : this.state.fieldsError
     };
     if (name !== '') {
       let hasProcessor = processors.filter((o) => {
@@ -199,17 +215,24 @@ class CustomProcessorForm extends Component {
       if (hasProcessor.length === 1 && name !== id) {
         stateObj.showNameError = true;
       }
+      Utils.checkWhiteSpace(name)
+        ? stateObj.fieldsError.whiteSpaceError = true
+        : stateObj.fieldsError.whiteSpaceError = false;
     }
     return stateObj;
   }
 
   handleJarUpload(event) {
+    const {fieldsError} = this.state;
+    let fileObj = {};
     if (!event.target.files.length) {
-      this.setState(JSON.parse(JSON.stringify(this.defaultObj)));
-      return;
+      fileObj.name='';
+      fieldsError.fileError = true;
+    } else {
+      fileObj = event.target.files[0];
+      fieldsError.fileError = false;
     }
-    let fileObj = event.target.files[0];
-    this.setState({jarFileName: fileObj, fileName: fileObj.name});
+    this.setState({jarFileName: fileObj, fileName: fileObj.name,fieldsError:fieldsError});
   }
 
   handleUpload(e) {
@@ -278,7 +301,8 @@ class CustomProcessorForm extends Component {
       customProcessorImpl,
       jarFileName,
       topologyComponentUISpecification,
-      inputSchema
+      inputSchema,
+      fieldsError
     } = this.state;
     let outputStreams = this.refs.OutputSchemaContainer.getOutputStreams();
     let outputStreamFlag = false;
@@ -302,7 +326,11 @@ class CustomProcessorForm extends Component {
       }
     }
 
-    if (streamingEngine === '' || name === '' || description === '' || customProcessorImpl === '' || jarFileName === '' || inputSchema === '' || outputStreams.length === 0) {
+    if (streamingEngine === '' || name === '' || description === '' || customProcessorImpl === '' || jarFileName === '' || inputSchema === '' || outputStreams.length === 0 || Utils.checkWhiteSpace(name)) {
+      name === '' ? fieldsError.pName = true : ''  ;
+      description === '' ? fieldsError.desc = true :  '';
+      customProcessorImpl === '' ? fieldsError.classNameType = true : '' ;
+      jarFileName === '' ? fieldsError.fileError = true : '';
       validDataFlag = false;
     }
     return validDataFlag;
@@ -453,6 +481,8 @@ class CustomProcessorForm extends Component {
     } else {
       if(e.target.files.length){
         this.handleFileChange(e.target.files[0]);
+      } else {
+        cnosole.log();
       }
     }
   }
@@ -474,7 +504,8 @@ class CustomProcessorForm extends Component {
   }
 
   render() {
-    const {showCodeMirror,expandCodemirror} = this.state;
+    const {showCodeMirror,expandCodemirror,fieldsError} = this.state;
+    const {whiteSpaceError,pName ,desc,classNameType,fileError} = fieldsError;
     const jsonoptions = {
       lineNumbers: true,
       mode: "application/json",
@@ -495,7 +526,7 @@ class CustomProcessorForm extends Component {
                       <span className="text-danger">*</span>
                     </label>
                     <div className="col-sm-5">
-                      <input name="streamingEngine" placeholder="Streaming Engine" onChange={this.handleValueChange.bind(this)} type="text" className={this.state.streamingEngine.trim() == ""
+                      <input name="streamingEngine" placeholder="Streaming Engine" onChange={this.handleValueChange.bind(this,null)} type="text" className={this.state.streamingEngine.trim() == ""
                         ? "form-control invalidInput"
                         : "form-control"} value={this.state.streamingEngine} disabled={true} required={true}/>
                     </div>
@@ -505,7 +536,7 @@ class CustomProcessorForm extends Component {
                       <span className="text-danger">*</span>
                     </label>
                     <div className="col-sm-5">
-                      <input name="name" placeholder="Name" onChange={this.handleNameChange.bind(this)} type="text" className={this.state.name.trim() == ""
+                      <input name="name" placeholder="Name" onChange={this.handleNameChange.bind(this,'pName')} type="text" className={pName
                         ? "form-control invalidInput"
                         : "form-control"} value={this.state.name} required={true} disabled={this.props.id
                         ? true
@@ -514,13 +545,18 @@ class CustomProcessorForm extends Component {
                     {this.state.showNameError
                       ? <p className="text-danger">Processor with this name is already present</p>
                       : ''}
+                    {
+                      whiteSpaceError
+                      ? <p className="text-danger">Processor name with space is not allow.</p>
+                      : ''
+                    }
                   </div>
                   <div className="form-group">
                     <label className="col-sm-2 control-label" data-stest="descriptionLabel">Description
                       <span className="text-danger">*</span>
                     </label>
                     <div className="col-sm-5">
-                      <input name="description" placeholder="Description" onChange={this.handleValueChange.bind(this)} type="text" className={this.state.description.trim() == ""
+                      <input name="description" placeholder="Description" onChange={this.handleValueChange.bind(this,'desc')} type="text" className={desc
                         ? "form-control invalidInput"
                         : "form-control"} value={this.state.description} required={true}/>
                     </div>
@@ -530,7 +566,7 @@ class CustomProcessorForm extends Component {
                       <span className="text-danger">*</span>
                     </label>
                     <div className="col-sm-5">
-                      <input name="customProcessorImpl" placeholder="Classname" onChange={this.handleValueChange.bind(this)} type="text" className={this.state.customProcessorImpl.trim() == ""
+                      <input name="customProcessorImpl" placeholder="Classname" onChange={this.handleValueChange.bind(this,'classNameType')} type="text" className={classNameType
                         ? "form-control invalidInput"
                         : "form-control"} value={this.state.customProcessorImpl} required={true}/>
                     </div>
@@ -561,7 +597,7 @@ class CustomProcessorForm extends Component {
                             placeholder="No file chosen"
                             disabled={true}
                             value={this.state.fileName}
-                            className={this.state.jarFileName == "" ? "form-control invalidInput" : "form-control"}
+                            className={fileError ? "form-control invalidInput" : "form-control"}
                           />
                         </InputGroup>
                       </div>

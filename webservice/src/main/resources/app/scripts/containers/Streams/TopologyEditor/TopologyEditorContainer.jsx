@@ -1279,7 +1279,7 @@ class TopologyEditorContainer extends Component {
     confirmMode method show the modeChangeModal
   */
   confirmMode = () => {
-    this.refs.modeChangeModal.show();
+    // this.refs.modeChangeModal.show();
   }
 
   handleEventLogHide = (flag,panel) => {

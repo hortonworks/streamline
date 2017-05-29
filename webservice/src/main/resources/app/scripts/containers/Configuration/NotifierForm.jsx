@@ -20,6 +20,8 @@ import FSReactToastr from '../../components/FSReactToastr';
 import CommonNotification from '../../utils/CommonNotification';
 import {toastOpt} from '../../utils/Constants';
 import ClusterREST from '../../rest/ClusterREST';
+import Form from '../../libs/form';
+import * as Fields from '../../libs/form/Fields';
 
 export default class NotifierForm extends Component {
   constructor(props) {
@@ -45,40 +47,12 @@ export default class NotifierForm extends Component {
           });
     }
   }
-  handleValueChange = (e) => {
-    let obj = {};
-    obj[e.target.name] = e.target.value;
-    this.setState(obj);
-  }
-  handleJarUpload(event) {
-    if (!event.target.files.length || (event.target.files.length && event.target.files[0].name.indexOf('.jar') < 0)) {
-      this.setState(this.state);
-      return;
-    }
-    let fileObj = event.target.files[0];
-    this.setState({notifierJarFile: fileObj, fileName: fileObj.name});
-  }
-  handleUpload(e) {
-    this.refs.notifierJarFile.click();
-  }
   validateData = () => {
-    let validDataFlag = true;
-    let {
-      name,
-      description,
-      className,
-      notifierJarFile
-    } = this.state;
-    if(!notifierJarFile) {
-      validDataFlag = false;
-    }
-    if(name.trim() === '' || description.trim() === '' || className === '') {
-      validDataFlag = false;
-    }
-    return validDataFlag;
+    const {isFormValid, invalidFields} = this.refs.NotifierForm.validate();
+    return isFormValid;
   }
   handleSave = () => {
-    let {name, description, className, notifierJarFile } = this.state;
+    let {name, description, className, notifierJarFile } = this.refs.NotifierForm.state.FormData;
     let notifierConfig = {
       name,
       description,
@@ -95,74 +69,18 @@ export default class NotifierForm extends Component {
     }
   }
 
-  render() {
-    const {id, name, description, className, notifierJarFile} = this.state;
+  fetchFileData = (file,fileName) => {
+    this.setState({notifierJarFile: file});
+  }
 
+  render() {
     return (
-      <form className="modal-form udf-modal-form">
-        <div className="form-group">
-          <label>Name
-            <span className="text-danger">*</span>
-          </label>
-          <div>
-            <input name="name" placeholder="Name" onChange={this.handleValueChange.bind(this)} type="text" className={name.trim() == ""
-              ? "form-control invalidInput"
-              : "form-control"} value={name} required={true}/>
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Description
-            <span className="text-danger">*</span>
-          </label>
-          <div>
-            <input name="description" placeholder="Description" onChange={this.handleValueChange.bind(this)} type="text" className={description.trim() == ""
-              ? "form-control invalidInput"
-              : "form-control"} value={description} required={true} />
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Classname
-            <span className="text-danger">*</span>
-          </label>
-          <div>
-            <input name="className" placeholder="Classname" onChange={this.handleValueChange.bind(this)} type="text" className={className.trim() == ""
-              ? "form-control invalidInput"
-              : "form-control"} value={className} required={true}/>
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Notifier jar
-            <span className="text-danger">*</span>
-          </label>
-          <div>
-            <input type="file" name="notifierJarFile" placeholder="Select Jar" accept=".jar" className="hidden-file-input" ref="notifierJarFile"
-              onChange={(event) => {
-                this.handleJarUpload.call(this, event);
-              }}
-              required={true}/>
-            <div>
-              <InputGroup>
-                <InputGroup.Addon className="file-upload">
-                  <Button
-                    type="button"
-                    className="browseBtn btn-primary"
-                    onClick={this.handleUpload.bind(this)}
-                  >
-                    <i className="fa fa-folder-open-o"></i>&nbsp;Browse
-                  </Button>
-                </InputGroup.Addon>
-                <FormControl
-                  type="text"
-                  placeholder="No file chosen"
-                  disabled={true}
-                  value={this.state.fileName}
-                  className={this.state.notifierJarFile == "" ? "form-control invalidInput" : "form-control"}
-                />
-              </InputGroup>
-            </div>
-          </div>
-        </div>
-      </form>
+      <Form ref="NotifierForm" className="modal-form udf-modal-form" FormData={this.state} fetchFileData={this.fetchFileData} showRequired={null}>
+        <Fields.string value="name" label="Name" valuePath="name" fieldJson={{isOptional:false, tooltip: 'Name of the notifier.'}} validation={["required"]} />
+        <Fields.string value="description" label="Description" valuePath="description" fieldJson={{isOptional:false, tooltip: 'Description for the notifier.'}} validation={["required"]} />
+        <Fields.string value="className" label="className" valuePath="className" fieldJson={{isOptional:false, tooltip: 'Classname within the notifier jar.'}} validation={["required"]} />
+        <Fields.file value="fileName" label="Notifier jar" valuePath="fileName" fieldJson={{isOptional:false, tooltip: 'Upload Notifier Jar File', hint: 'jar'}} validation={["required"]} />
+      </Form>
     );
   }
 }

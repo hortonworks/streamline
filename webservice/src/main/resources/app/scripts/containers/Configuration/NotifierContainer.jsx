@@ -115,6 +115,11 @@ export default class NotifierContainer extends Component {
     }
   }
 
+  handleCancel = () => {
+    this.refs.NotifierForm.refs.NotifierForm.clearErrors();
+    this.refs.NotifierModal.hide();
+  }
+
   handleKeyPress = (event) => {
     if(event.key === "Enter"){
       this.refs.NotifierForm.state.show ? this.handleSave() : '';
@@ -202,7 +207,8 @@ export default class NotifierContainer extends Component {
         <Modal ref="NotifierModal"
           data-title={editData.id ? "Edit Notifier" : "Add Notifier"}
           onKeyPress={this.handleKeyPress}
-          data-resolve={this.handleSave}>
+          data-resolve={this.handleSave}
+          data-reject={this.handleCancel}>
           <NotifierForm
             ref="NotifierForm"
             editData={editData}

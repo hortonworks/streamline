@@ -833,6 +833,15 @@ label {
 .hb.xl i {
   font-size: 26px;
 }
+.hb.xs, .hb.xs:before, .hb.xs:after {
+  height: 13px;
+  width: 22px;
+}
+
+.hb.xs{
+  font-size: 14px;
+  line-height: 16px;
+}
 
 .hb.lg, .hb.lg:before, .hb.lg:after {
   height: 26px;
@@ -1058,6 +1067,7 @@ label {
   /*color: #fff;*/
   background-color: transparent;
   border: none;
+  line-height: normal;
 }
 
 #applicationName>.btn-link.btn-success {
@@ -2396,7 +2406,8 @@ span.alpha-badge {
 
 .intro-content {
   font-size: 16px;
-  margin-left: 45px;
+  margin-left: 28px;
+  margin-bottom:25px;
 }
 
 .wizard-body {
@@ -2857,7 +2868,7 @@ height: 14px;
   color: #555;
   padding: 10px 50px;
   border-radius: 0px;
-  text-transform: uppercase;
+  /*text-transform: uppercase;*/
   letter-spacing: 1px;
 }
 .user-tabs .nav-tabs > li > a:hover {
@@ -3437,4 +3448,7 @@ a.crossIcon{
 }
 .toast-message {
   display: none;
+}
+.list > h4{
+  margin-bottom: 1px;
 }

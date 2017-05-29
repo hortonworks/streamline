@@ -308,10 +308,10 @@ export default class UserForm extends Component {
         <div className="panel-registry-body">
           <div className="row">
           <div className="col-md-10 user-role-form-container">
-          <Form ref="UserForm" FormData={this.props.editData} showRequired={null}>
+          <Form ref="UserForm" FormData={this.props.editData} showRequired={null} >
             <Fields.string value="name" label="Name" valuePath="name" fieldJson={{isOptional:false, tooltip: 'User Name'}} validation={["required"]} />
             <Fields.string value="email" label="Email" valuePath="email" fieldJson={{isOptional:false, tooltip: 'Email ID', hint: 'email'}} validation={["required","email"]}/>
-            <Fields.arrayenumstring value="roles" label="Roles" fieldJson={{isOptional:false, tooltip: 'Roles'}} fieldAttr={{options: roleOptions}}/>
+            <Fields.arrayenumstringSelectAll value="roles" label="Roles" fieldJson={{isOptional:false, tooltip: 'Roles'}} fieldAttr={{options: roleOptions}}/>
           </Form>
           <div>
             <div className="">

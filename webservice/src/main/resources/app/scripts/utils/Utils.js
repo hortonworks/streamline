@@ -440,7 +440,7 @@ const deepmergeAll = function deepmergeAll(array, optionsArgument) {
 
 const mergeFormDataFields = function(name, clusterArr,clusterName,formData,uiSpecification){
   let data = {},
-    obj = [];
+    obj = [],securityKey='';
   let config = uiSpecification;
   _.keys(clusterArr).map((x) => {
     if (name || clusterName === x) {
@@ -469,6 +469,17 @@ const mergeFormDataFields = function(name, clusterArr,clusterName,formData,uiSpe
                       }
                     }
                   }
+                  // auto select fields if options length is one only
+                  // if(list.options && list.options.length === 1){
+                  //   formData[k] = list.options[0].uiName;
+                  // } else if(list.options && list.options.length > 1){
+                  //   if(formData[k] !== undefined && formData[k] !== ''){
+                  //     const obj = _.find(list.options, (l) => {return l.uiName === formData[k];});
+                  //     obj === undefined &&  _.isEmpty(obj)
+                  //     ? formData[k] = ''
+                  //     : '';
+                  //   }
+                  // }
                 } else {
                   if (!_.isArray(clusterArr[x].hints[k])) {
                     // if (!formData[k]) this means it has come first time
@@ -480,6 +491,12 @@ const mergeFormDataFields = function(name, clusterArr,clusterName,formData,uiSpe
                         const key = list.hint.split('-')[1];
                         // securityProtocal index 0 is taken because one can't have multiple security on clusters;
                         fieldValue = formData[key] || '';
+                        //fieldValue is for default if there is undefined
+                        // if(key === "securityProtocol"){
+                        //   securityKey = formData[key] || '';
+                        // }
+                        // fieldValue = fieldValue[formData[key]] || '';
+                        // formData[k] = fieldValue[formData[key]] ;
                       }
                       _.set(data,k,_.get(formData,k,fieldValue));
                     }
@@ -570,6 +587,27 @@ const mapSecurityProtocol = function(clusterName,securityKey,formData,clusterArr
   return tempFormData;
 };
 
+const checkWhiteSpace = function(str){
+  if(!str || str === ''){
+    return;
+  }
+  return  /\s/g.test(str);
+};
+
+const segregateVersions = function(versionsArr){
+  let deploy_v={},allVersion=versionsArr;
+  let current_v = _.find(versionsArr, (v) => {return v.name === "CURRENT";});
+  const tempVer = _.filter(versionsArr, (ver) => {return ver.name !== "CURRENT";});
+  _.map(tempVer, (t,i) => {
+    const v = t.name.split('V');
+    const len = tempVer.length > 1 ? tempVer.length - 1 : 1;
+    if(Number(v[1]) === len ){
+      deploy_v = t;
+    }
+  });
+  return {current_v,deploy_v,allVersion};
+};
+
 export default {
   sortArray,
   numberToMilliseconds,
@@ -598,5 +636,7 @@ export default {
   handleNestedFormDataEmptyObj,
   eventLogNumberId,
   checkTypeAndReturnValue,
-  mapSecurityProtocol
+  mapSecurityProtocol,
+  checkWhiteSpace,
+  segregateVersions
 };

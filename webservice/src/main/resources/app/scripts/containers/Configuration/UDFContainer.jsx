@@ -115,6 +115,11 @@ export default class UDFContainer extends Component {
     }
   }
 
+  handleCancel = () => {
+    this.refs.UDFForm.refs.Form.clearErrors();
+    this.refs.UDFModal.hide();
+  }
+
   handleKeyPress = (event) => {
     if(event.key === "Enter"){
       this.refs.UDFModal.state.show ? this.handleSave() : '';
@@ -216,7 +221,8 @@ export default class UDFContainer extends Component {
         <Modal ref="UDFModal"
           data-title={editData.id ? "Edit UDF" : "Add UDF"}
           onKeyPress={this.handleKeyPress}
-          data-resolve={this.handleSave}>
+          data-resolve={this.handleSave}
+          data-reject={this.handleCancel}>
           <UDFForm
             ref="UDFForm"
             editData={editData}
