@@ -64,18 +64,21 @@ export default class TopologyConfigContainer extends Component {
           let mappings = r.mappings.filter((c)=>{
             return c.namespaceId === this.namespaceId && (c.serviceName === 'HBASE' || c.serviceName === 'HDFS' || c.serviceName === 'HIVE');
           });
-          let clusters = [], clusterNames = [];
+          let clusters = [];
           mappings.map((m)=>{
             let c = clustersConfig.find((o)=>{return o.cluster.id === m.clusterId;});
-            clusters.push({id: c.cluster.id, name: c.cluster.name});
+            const obj = {
+              id: c.cluster.id,
+              fieldName: c.cluster.name + '@#$' + c.cluster.ambariImportUrl,
+              uiName: c.cluster.name
+            };
+            clusters.push(obj);
           });
           clusters = _.uniqBy(clusters, 'id');
-          clusters.map((o)=>{
-            clusterNames.push(o.name);
-          });
           let securityFields = _.find(formField.fields, {"fieldName": "clustersSecurityConfig"}).fields;
           let fieldObj = _.find(securityFields, {"fieldName": "clusterName"});
-          fieldObj.options = clusterNames;
+          fieldObj.options = clusters;
+          fieldObj.type = 'CustomEnumstring';
           this.setState({formData: f_Data, formField: formField, fetchLoader: false,advancedField : adv_Field});
           let mapObj = r.mappings.find((m) => {
             return m.serviceName.toLowerCase() === 'storm';
@@ -167,6 +170,15 @@ export default class TopologyConfigContainer extends Component {
     return {f_Data,adv_Field};
   }
 
+  populateClusterFields(val) {
+    if(val) {
+      const name = val.split('@#$')[0];
+      let clusterSecurityConfig = this.refs.Form.state.FormData["clustersSecurityConfig"];
+      let i = clusterSecurityConfig.findIndex((c)=>{return c.clusterName && c.clusterName.indexOf('@#$') > -1;});
+      clusterSecurityConfig[i].clusterName = name;
+      this.setState({formData: this.refs.Form.state.FormData});
+    }
+  }
 
   validate() {
     let validDataFlag = false,validateError=[];
@@ -302,7 +314,7 @@ export default class TopologyConfigContainer extends Component {
                   <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
                     display: "none"
                   }}/>}>
-                    <Form ref="Form" FormData={formData} readOnly={disabledFields} showRequired={null} showSecurity={true} className="modal-form config-modal-form">
+                    <Form ref="Form" FormData={formData} readOnly={disabledFields} showRequired={null} showSecurity={true} populateClusterFields={this.populateClusterFields.bind(this)} className="modal-form config-modal-form">
                       {fields}
                     </Form>
                   </Scrollbars>

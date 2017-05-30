@@ -322,7 +322,7 @@ export default class SinkNodeForm extends Component {
       this.allSourceChildNodeData.map((childData,index) => {
         let child = childData;
         let obj = child.actions.find((o) => {
-          return o.outputStreams[0] == inputStreamArr[index].streamId && o.name === 'notifierAction';
+          return o.outputStreams[0] == (inputStreamArr[index] !== undefined ? inputStreamArr[index].streamId : '') && o.name === 'notifierAction';
         });
         if (obj) {
           if (nodeData.currentType.toLowerCase() == 'notification') {

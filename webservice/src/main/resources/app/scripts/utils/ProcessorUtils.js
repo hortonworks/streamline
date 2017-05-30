@@ -401,6 +401,18 @@ const generateOutputStreamsArr = function(fieldList,_level){
   return generateOutputStreams(fieldList,_level);
 };
 
+const getNestedKeyFromGroup = function(str){
+  if(!str){
+    return;
+  }
+  if(str.includes('[')){
+    const t = str.replace(/([.'\[\]\/\\])/g," ").split(' ');
+    const m = _.compact(t);
+    str = m[m.length - 1];
+  }
+  return str;
+};
+
 
 export default {
   getSchemaFields,
@@ -415,5 +427,6 @@ export default {
   createOutputFieldsObjArr,
   selectAllOutputFields,
   splitNestedKey,
-  generateOutputStreamsArr
+  generateOutputStreamsArr,
+  getNestedKeyFromGroup
 };

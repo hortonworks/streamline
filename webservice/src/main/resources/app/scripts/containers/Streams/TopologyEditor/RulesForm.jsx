@@ -23,6 +23,7 @@ import FSReactToastr from '../../../components/FSReactToastr';
 import CommonNotification from '../../../utils/CommonNotification';
 import {toastOpt} from '../../../utils/Constants';
 import _ from 'lodash';
+import ProcessorUtils from '../../../utils/ProcessorUtils';
 
 class RuleFormula extends Component {
   constructor(props) {
@@ -191,7 +192,7 @@ class RuleFormula extends Component {
           <Select placeholder="Logical operators" value={d.logicalOp} options={this.logicalOperator} onChange={this.handleChange.bind(this, 'logicalOp', i)} labelKey="name" valueKey="name"/>
         </div>
         <div className="col-sm-3">
-          <Select placeholder="Select field name" value={d.field1} options={fields} onChange={this.handleChange.bind(this, 'field1', i)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+          <Select placeholder="Select field name" value={ProcessorUtils.getNestedKeyFromGroup(d.field1)} options={fields} onChange={this.handleChange.bind(this, 'field1', i)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
         </div>
         <div className="col-sm-3">
           <Select placeholder="Select operations" value={d.operator} options={this.operators} onChange={this.handleChange.bind(this, 'operator', i)} labelKey="label" valueKey="name"/>
