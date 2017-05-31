@@ -94,6 +94,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     private static final String NIMBUS_PORT = "nimbus.port";
 
     public static final String STREAMLINE_TOPOLOGY_CONFIG_CLUSTER_SECURITY_CONFIG = "clustersSecurityConfig";
+    public static final String STREAMLINE_TOPOLOGY_CONFIG_CLUSTER_ID = "clusterId";
     public static final String STREAMLINE_TOPOLOGY_CONFIG_CLUSTER_NAME = "clusterName";
     public static final String STREAMLINE_TOPOLOGY_CONFIG_PRINCIPAL = "principal";
     public static final String STREAMLINE_TOPOLOGY_CONFIG_KEYTAB_PATH = "keytabPath";
@@ -543,18 +544,18 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     private void putAutoTokenDelegationConfig(Config topologyConfig, TopologyDag topologyDag) {
         Optional<?> securityConfigsOptional = topologyConfig.getAnyOptional(STREAMLINE_TOPOLOGY_CONFIG_CLUSTER_SECURITY_CONFIG);
-        Map<String, Map<String, String>> clusterToConfiguration = new HashMap<>();
+        Map<Long, Map<String, String>> clusterToConfiguration = new HashMap<>();
         if (securityConfigsOptional.isPresent()) {
             List<?> securityConfigurations = (List<?>) securityConfigsOptional.get();
             securityConfigurations.forEach(securityConfig -> {
                 Map<String, Object> sc = (Map<String, Object>) securityConfig;
                 if ((sc != null) && !sc.isEmpty()) {
-                    String clusterName = (String) sc.get(STREAMLINE_TOPOLOGY_CONFIG_CLUSTER_NAME);
+                    Long clusterId = (Long) sc.get(STREAMLINE_TOPOLOGY_CONFIG_CLUSTER_ID);
 
                     Map<String, String> configurationForCluster = new HashMap<>();
                     configurationForCluster.put(STREAMLINE_TOPOLOGY_CONFIG_PRINCIPAL, (String) sc.get(STREAMLINE_TOPOLOGY_CONFIG_PRINCIPAL));
                     configurationForCluster.put(STREAMLINE_TOPOLOGY_CONFIG_KEYTAB_PATH, (String) sc.get(STREAMLINE_TOPOLOGY_CONFIG_KEYTAB_PATH));
-                    clusterToConfiguration.put(clusterName, configurationForCluster);
+                    clusterToConfiguration.put(clusterId, configurationForCluster);
                 }
             });
         }
@@ -633,7 +634,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     }
 
     private void putServiceSpecificCredentialConfig(Config topologyConfig,
-                                                    Map<String, Map<String, String>> clusterToConfiguration,
+                                                    Map<Long, Map<String, String>> clusterToConfiguration,
                                                     String serviceName,
                                                     List<String> dependentServiceNames,
                                                     String clusterKeyPrefix,
@@ -643,11 +644,11 @@ public class StormTopologyActionsImpl implements TopologyActions {
         List<String> clusterKeys = new ArrayList<>();
 
         clusterToConfiguration.keySet()
-                .forEach(clusterName -> {
-                    Map<String, String> conf = serviceConfigurationReader.read(clusterName, serviceName);
+                .forEach(clusterId -> {
+                    Map<String, String> conf = serviceConfigurationReader.read(clusterId, serviceName);
                     // add only when such (cluster, service) pair is available for the namespace
                     if (!conf.isEmpty()) {
-                        Map<String, String> confForToken = clusterToConfiguration.get(clusterName);
+                        Map<String, String> confForToken = clusterToConfiguration.get(clusterId);
                         conf.put(principalKeyName, confForToken.get(STREAMLINE_TOPOLOGY_CONFIG_PRINCIPAL));
                         conf.put(keytabPathKeyName, confForToken.get(STREAMLINE_TOPOLOGY_CONFIG_KEYTAB_PATH));
 
@@ -655,12 +656,12 @@ public class StormTopologyActionsImpl implements TopologyActions {
                         // note that such services in cluster should also be associated to the namespace
                         Map<String, String> clusterConf = new HashMap<>();
                         dependentServiceNames.forEach(depSvcName -> {
-                            Map<String, String> depConf = serviceConfigurationReader.read(clusterName, depSvcName);
+                            Map<String, String> depConf = serviceConfigurationReader.read(clusterId, depSvcName);
                             clusterConf.putAll(depConf);
                         });
                         clusterConf.putAll(conf);
 
-                        String clusterKey = clusterKeyPrefix + clusterName;
+                        String clusterKey = clusterKeyPrefix + clusterId;
                         topologyConfig.put(clusterKey, clusterConf);
                         clusterKeys.add(clusterKey);
                     }
