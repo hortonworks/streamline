@@ -19,6 +19,7 @@ import com.hortonworks.streamline.streams.rule.UDAF2;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -51,7 +52,7 @@ public class Topn<T extends Comparable<T>> implements UDAF2<PriorityQueue<T>, In
     @Override
     public List<T> result(PriorityQueue<T> aggregate) {
         List<T> res = new ArrayList<>(aggregate);
-        Collections.reverse(res);
+        res.sort(Comparator.reverseOrder());
         return res;
     }
 }
