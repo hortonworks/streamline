@@ -33,6 +33,7 @@ fi
 # Streamline env script
 . $STREAMLINE_HOME/conf/streamline-env.sh
 
+STREAMLINE_VERSION=$STREAMLINE_HOME/VERSION
 #Streamline PID
 PID=0
 
@@ -77,12 +78,18 @@ function main {
       setup)
           streamlineSetup
           ;;
+      version)
+          streamlineVersion
+          ;;
+      git-hash)
+          streamlineGitHash
+          ;;
       bootstrap)
           streamlineBootstrap
           ;;
 
       *)
-         printf "Usage: $0 {start|stop|status|clean|setup|bootstrap}\n"
+         printf "Usage: $0 {start|stop|status|clean|setup|bootstrap|version|git-hash}\n"
          ;;
    esac
 }
@@ -180,6 +187,25 @@ function streamlineBootstrap {
     fi
     su $STREAMLINE_USER -c "$STREAMLINE_BOOTSTRAP_CMD"
 }
+
+function streamlineVersion {
+    while IFS='=' read -r key value
+    do
+      key=$(echo $key | tr '.' '_')
+      eval "${key}='${value}'"
+    done < "$STREAMLINE_VERSION"
+    echo ${version}
+}
+
+function streamlineGitHash {
+    while IFS='=' read -r key value
+    do
+      key=$(echo $key)
+      eval "${key}='${value}'"
+    done < "$STREAMLINE_VERSION"
+    echo ${git}
+}
+
 
 # Returns 0 if the Knox is running and sets the $PID variable.
 function getPID {

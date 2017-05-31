@@ -79,6 +79,8 @@ if [ -z "$STREAMLINE_KERBEROS_PARAMS" ]; then
     STREAMLINE_KERBEROS_PARAMS=""
 fi
 
+STREAMLINE_VERSION_FILE="-Dstreamline.version.file=$base_dir/VERSION"
+
 COMMAND=$1
 case $COMMAND in
   -name)
@@ -111,7 +113,7 @@ fi
 
 # Launch mode
 if [ "x$DAEMON_MODE" = "xtrue" ]; then
-  nohup $JAVA $STREAMLINE_HEAP_OPTS $STREAMLINE_JVM_PERFORMANCE_OPTS $STREAMLINE_KERBEROS_PARAMS -cp $CLASSPATH $STREAMLINE_OPTS "com.hortonworks.streamline.webservice.StreamlineApplication" "server" "$@" > "$CONSOLE_OUTPUT_FILE" 2>&1 < /dev/null &
+  nohup $JAVA $STREAMLINE_HEAP_OPTS $STREAMLINE_JVM_PERFORMANCE_OPTS $STREAMLINE_KERBEROS_PARAMS $STREAMLINE_VERSION_FILE -cp $CLASSPATH $STREAMLINE_OPTS "com.hortonworks.streamline.webservice.StreamlineApplication" "server" "$@" > "$CONSOLE_OUTPUT_FILE" 2>&1 < /dev/null &
 else
-  exec $JAVA $STREAMLINE_HEAP_OPTS $STREAMLINE_JVM_PERFORMANCE_OPTS $STREAMLINE_KERBEROS_PARAMS -cp $CLASSPATH $STREAMLINE_OPTS "com.hortonworks.streamline.webservice.StreamlineApplication" "server" "$@"
+  exec $JAVA $STREAMLINE_HEAP_OPTS $STREAMLINE_JVM_PERFORMANCE_OPTS $STREAMLINE_KERBEROS_PARAMS $STREAMLINE_VERSION_FILE -cp $CLASSPATH $STREAMLINE_OPTS "com.hortonworks.streamline.webservice.StreamlineApplication" "server" "$@"
 fi

@@ -30,10 +30,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -52,6 +56,8 @@ public class StreamlineConfigurationResource {
     private final String CONFIG_PORT = "port";
     private final String CONFIG_DASHBOARD = "dashboard";
     private final String CONFIG_AUTHORIZER = "authorizer";
+    private final String CONFIG_VERSION = "version";
+    private final String CONFIG_GIT = "git";
 
 
 
@@ -76,6 +82,14 @@ public class StreamlineConfigurationResource {
         // do not add any storage configuration as we don't want to return username and passwords through api
         conf.put(Constants.CONFIG_MODULES, streamlineConfiguration.getModules());
         conf.put(Constants.CONFIG_CATALOG_ROOT_URL, streamlineConfiguration.getCatalogRootUrl());
+        Properties props = readStreamlineVersion();
+
+        if (props.containsKey(CONFIG_VERSION)) {
+            conf.put(CONFIG_VERSION, props.get(CONFIG_VERSION));
+        }
+        if (props.containsKey(CONFIG_GIT)) {
+            conf.put(CONFIG_GIT, props.get(CONFIG_GIT));
+        }
 
         //adding schema regisry details to make it easier for UI to parser the host & port.
         Map<String, String> registryConf = new HashMap<>();
@@ -96,6 +110,22 @@ public class StreamlineConfigurationResource {
         conf.put(CONFIG_REGISTRY, registryConf);
         conf.put(CONFIG_DASHBOARD, streamlineConfiguration.getDashboardConfiguration());
         conf.put(CONFIG_AUTHORIZER, streamlineConfiguration.getAuthorizerConfiguration());
+    }
+
+    private Properties readStreamlineVersion() {
+        String versionFilePath = System.getProperty("streamline.version.file");
+        File versionFile = new File(versionFilePath);
+        Properties props = new Properties();
+        if (versionFile.exists()) {
+            try {
+                FileInputStream fileInput = new FileInputStream(versionFile);
+                props.load(fileInput);
+                fileInput.close();
+            } catch (IOException ie) {
+                LOG.info("Failed to read VERSION file");
+            }
+        }
+        return props;
     }
 
 
