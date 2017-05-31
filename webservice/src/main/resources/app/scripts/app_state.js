@@ -23,7 +23,8 @@ class app_state {
   @observable streamline_config = {
     registry: {},
     dashboard: {},
-    secureMode: false
+    secureMode: false,
+    version: ''
   }
   @observable showComponentNodeContainer = true
   @observable showSpotlightSearch = false

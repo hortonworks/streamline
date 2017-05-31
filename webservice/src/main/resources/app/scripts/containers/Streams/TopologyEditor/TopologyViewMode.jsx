@@ -88,10 +88,8 @@ class TopologyViewMode extends Component {
       timestamp,
       topologyVersion,
       versionsArr = [],
-      allACL,
-      topologyStatus
+      allACL
     } = this.props;
-    const {current_v,deploy_v} = Utils.segregateVersions(versionsArr);
 
     const {metric} = topologyMetric || {
       metric: (topologyMetric === '')
@@ -107,10 +105,7 @@ class TopologyViewMode extends Component {
     const latencyText = Utils.secToMinConverter(metric.latency, "graph").split('/');
     const emittedText = Utils.kFormatter(misc.emitted).toString();
     const transferred = Utils.kFormatter(misc.transferred).toString();
-    let versionName = '';
-    unknown === "RUNNING" && topologyStatus === "ACTIVE"
-      ? versionName = this.getTitleFromId(deploy_v.id)
-      : versionName = this.getTitleFromId(current_v.id);
+    let versionName = this.getTitleFromId(topologyVersion);
 
     if (topologyMetric && topologyMetric.runtimeTopologyId && stormViewUrl.length) {
       if (stormViewUrl.indexOf('/main/views/') == -1) {
@@ -154,7 +149,7 @@ class TopologyViewMode extends Component {
                 {versionsArr.map((v, i) => {
                   return <MenuItem active={versionName === v.name ? true : false} eventKey={i} key={i} data-version-id={v.id}>{v.name}</MenuItem>;
                 })
-}
+              }
               </DropdownButton>
             </div>
           </div>

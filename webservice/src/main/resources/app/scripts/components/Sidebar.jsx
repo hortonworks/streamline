@@ -199,6 +199,7 @@ export default class Sidebar extends Component {
           </ul>
         </section>
         <a href="javascript:void(0);" className="sidebar-toggle" onClick={this.toggleSidebar.bind(this)} data-toggle="offcanvas" role="button">
+          {!app_state.sidebar_isCollapsed ? <span>Version: {config.version} </span> : null}
           <i className={app_state.sidebar_isCollapsed
             ? "fa fa-angle-double-right"
             : "fa fa-angle-double-left"}></i>

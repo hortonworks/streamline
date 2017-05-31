@@ -42,7 +42,8 @@ export default class TopologyConfigContainer extends Component {
       advancedField : [{
         fieldName : '',
         fieldValue : ''
-      }]
+      }],
+      clustersArr: []
     };
     this.fetchData();
   }
@@ -76,10 +77,22 @@ export default class TopologyConfigContainer extends Component {
           });
           clusters = _.uniqBy(clusters, 'id');
           let securityFields = _.find(formField.fields, {"fieldName": "clustersSecurityConfig"}).fields;
-          let fieldObj = _.find(securityFields, {"fieldName": "clusterName"});
+          let fieldObj = _.find(securityFields, {"fieldName": "clusterId"});
           fieldObj.options = clusters;
           fieldObj.type = 'CustomEnumstring';
-          this.setState({formData: f_Data, formField: formField, fetchLoader: false,advancedField : adv_Field});
+          /*
+            setting value of cluster name in form data from corresponding id
+          */
+          if(f_Data.clustersSecurityConfig) {
+            f_Data.clustersSecurityConfig.map((c)=>{
+              if(c.clusterId) {
+                c.id = c.clusterId;
+                let clusterObj = clusters.find((o)=>{return o.id === c.clusterId;});
+                c.clusterId = clusterObj.uiName;
+              }
+            });
+          }
+          this.setState({formData: f_Data, formField: formField, fetchLoader: false,advancedField : adv_Field, clustersArr: clusters});
           let mapObj = r.mappings.find((m) => {
             return m.serviceName.toLowerCase() === 'storm';
           });
@@ -129,7 +142,7 @@ export default class TopologyConfigContainer extends Component {
                     return c.currentType.toLowerCase() === 'hbase' || c.currentType.toLowerCase() === 'hdfs' || c.currentType.toLowerCase() === 'hive';
                   });
                   if(nodes.length == 0) {
-                    let nameField = _.find(securityFields, {"fieldName": "clusterName"});
+                    let nameField = _.find(securityFields, {"fieldName": "clusterId"});
                     nameField.isOptional = true;
 
                     let principalField = _.find(securityFields, {"fieldName": "principal"});
@@ -174,8 +187,10 @@ export default class TopologyConfigContainer extends Component {
     if(val) {
       const name = val.split('@#$')[0];
       let clusterSecurityConfig = this.refs.Form.state.FormData["clustersSecurityConfig"];
-      let i = clusterSecurityConfig.findIndex((c)=>{return c.clusterName && c.clusterName.indexOf('@#$') > -1;});
-      clusterSecurityConfig[i].clusterName = name;
+      let i = clusterSecurityConfig.findIndex((c)=>{return c.clusterId && c.clusterId.indexOf('@#$') > -1;});
+      clusterSecurityConfig[i].clusterId = name;
+      let obj = this.state.clustersArr.find((o)=>{return o.fieldName === val;});
+      clusterSecurityConfig[i].id = obj.id;
       this.setState({formData: this.refs.Form.state.FormData});
     }
   }
@@ -242,6 +257,17 @@ export default class TopologyConfigContainer extends Component {
     // check if advancedField doesn't has empty field and ready to mergeData
     if(this.checkAdvancedField(advancedField)){
       data = Utils.deepmerge(data , this.generateOutputFields(advancedField));
+    }
+
+    if(data.clustersSecurityConfig) {
+      data.clustersSecurityConfig.map((c, i)=>{
+        if(c.clusterId) {
+          c.clusterId = c.id;
+        } else {
+          delete c.clusterId;
+        }
+        delete c.id;
+      });
     }
 
     let dataObj = {

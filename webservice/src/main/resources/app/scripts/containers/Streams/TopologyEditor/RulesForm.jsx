@@ -198,7 +198,7 @@ class RuleFormula extends Component {
           <Select placeholder="Select operations" value={d.operator} options={this.operators} onChange={this.handleChange.bind(this, 'operator', i)} labelKey="label" valueKey="name"/>
         </div>
         <div className="col-sm-3">
-          <Creatable placeholder="Select field name" value={d.field2} options={fields2Arr} onChange={this.handleChange.bind(this, 'field2', i)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+          <Creatable placeholder="Select field name" value={ProcessorUtils.getNestedKeyFromGroup(d.field2)} options={fields2Arr} onChange={this.handleChange.bind(this, 'field2', i)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
        </div>
         <div className="col-sm-1">
           <button className="btn btn-danger btn-sm" type="button" onClick={this.handleRowDelete.bind(this, i)}>

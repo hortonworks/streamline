@@ -35,7 +35,10 @@ import ClusterREST from '../../rest/ClusterREST';
 import NoData from '../../components/NoData';
 import CommonLoaderSign from '../../components/CommonLoaderSign';
 import {hasEditCapability, hasViewCapability} from '../../utils/ACLUtils';
+import app_state from '../../app_state';
+import {observer} from 'mobx-react';
 
+@observer
 export default class NotifierContainer extends Component {
   constructor(props) {
     super(props);
@@ -186,13 +189,16 @@ export default class NotifierContainer extends Component {
                               <Td column="jarFileName">{obj.jarFileName}</Td>
                               <Td column="className"><div className="wordBreak">{obj.className}</div></Td>
                               <Td column="actions">
-                              {obj.builtin === true ?
-                                ''
-                                :
-                                <div className="btn-action">
-                                  <BtnEdit callback={this.handleEditNotifier.bind(this, obj.id)}/>
-                                  <BtnDelete callback={this.handleDeleteNotifier.bind(this, obj.id)}/>
-                                </div>
+                              {obj.builtin === true
+                                ? app_state.user_profile.admin
+                                  ? <div className="btn-action">
+                                      <BtnEdit callback={this.handleEditNotifier.bind(this, obj.id)}/>
+                                    </div>
+                                  : ''
+                                : <div className="btn-action">
+                                    <BtnEdit callback={this.handleEditNotifier.bind(this, obj.id)}/>
+                                    <BtnDelete callback={this.handleDeleteNotifier.bind(this, obj.id)}/>
+                                  </div>
                               }
                               </Td>
                             </Tr>

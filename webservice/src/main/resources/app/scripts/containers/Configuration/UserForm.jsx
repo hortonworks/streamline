@@ -289,7 +289,7 @@ export default class UserForm extends Component {
   }
 
   render() {
-    const {roleOptions} = this.props;
+    const {roleOptions,editData} = this.props;
     let {applicationOptions, servicePoolOptions, environmentOptions} = this.props;
     let {applicationsACL, servicePoolACL, environmentsACL, addNewApp, addNewService, addNewEnvironment} = this.state;
     let {appOptionsArr, serviceOptionsArr, environmentOptionsArr} = this.getOptionsArr();
@@ -308,10 +308,10 @@ export default class UserForm extends Component {
         <div className="panel-registry-body">
           <div className="row">
           <div className="col-md-10 user-role-form-container">
-          <Form ref="UserForm" FormData={this.props.editData} showRequired={null} >
-            <Fields.string value="name" label="Name" valuePath="name" fieldJson={{isOptional:false, tooltip: 'User Name'}} validation={["required"]} />
+          <Form ref="UserForm" FormData={editData} showRequired={null} >
+            <Fields.string value="name" label="Name" valuePath="name" fieldJson={{isOptional:false, tooltip: 'User Name',isUserInput : editData && editData.name ? false : true}} validation={["required"]} />
             <Fields.string value="email" label="Email" valuePath="email" fieldJson={{isOptional:false, tooltip: 'Email ID', hint: 'email'}} validation={["required","email"]}/>
-            <Fields.arrayenumstringSelectAll value="roles" label="Roles" fieldJson={{isOptional:false, tooltip: 'Roles'}} fieldAttr={{options: roleOptions}}/>
+            <Fields.arrayenumstringSelectAll value="roles" label="Roles" fieldJson={{isOptional:false, tooltip: 'Roles'}} fieldAttr={{options: roleOptions, valueKey : 'name',labelKey : "displayName"}}/>
           </Form>
           <div>
             <div className="">

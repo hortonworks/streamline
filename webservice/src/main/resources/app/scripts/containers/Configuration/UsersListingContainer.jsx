@@ -38,7 +38,11 @@ import EnvironmentREST from '../../rest/EnvironmentREST';
 import UserForm from './UserForm';
 import NoData from '../../components/NoData';
 import CommonLoaderSign from '../../components/CommonLoaderSign';
+import {observer} from 'mobx-react';
+import app_state from '../../app_state';
+import {rolePriorities} from '../../utils/Constants';
 
+@observer
 export default class UsersListingContainer extends Component {
   constructor(props) {
     super(props);
@@ -91,7 +95,8 @@ export default class UsersListingContainer extends Component {
                 label: e.name,
                 value: e.name,
                 system: e.system,
-                metadata: e.metadata
+                metadata: e.metadata,
+                displayName:e.displayName
               });
             }
             this.setState({roles: roleOptions});
@@ -204,6 +209,13 @@ export default class UsersListingContainer extends Component {
             FSReactToastr.error(
               <CommonNotification flag="error" content={data.responseMessage}/>, '', toastOpt);
           } else {
+            if(data.id === app_state.user_profile.id){
+              app_state.user_profile.name = data.name;
+              app_state.user_profile.email = data.email;
+              app_state.user_profile.roles = data.roles;
+              app_state.user_profile.metadata = data.metadata;
+              this.updateUserRole(data.roles);
+            }
             this.refs.UserForm.saveACL(data.id)
               .then((aclResults)=>{
                 _.map(aclResults, (result)=>{
@@ -223,6 +235,31 @@ export default class UsersListingContainer extends Component {
           }
         });
     }
+  }
+
+  updateUserRole = (roles) => {
+    const roleInfo = this.state.roles.filter((e)=>{
+      e.metadata = JSON.parse(e.metadata);
+      return roles.indexOf(e.name) > -1;
+    });
+    app_state.roleInfo = JSON.parse(JSON.stringify(roleInfo));
+  }
+
+  getMetadataFromRoleInfo = (roles) => {
+    let metadata = {}, priority = 0;
+    if(roles.length){
+      const tempRole = _.filter(this.state.roles , (role) => {
+        return _.findIndex(roles, (o) => { return o === role.name;}) !== -1;
+      });
+      tempRole.forEach((role)=>{
+        let obj = rolePriorities.find((o)=>{return o.name === role.name;});
+        if(obj.priority > priority) {
+          priority = obj.priority;
+          metadata = _.isString(role.metadata) ? JSON.parse(role.metadata) : role.metadata;
+        }
+      });
+    }
+    return metadata;
   }
 
   render() {
@@ -278,7 +315,8 @@ export default class UsersListingContainer extends Component {
             }
             {
               users.map((entity, i)=>{
-                var metadata = entity.metadata ? JSON.parse(entity.metadata) : {};
+                var tempData = this.getMetadataFromRoleInfo(entity.roles);
+                var metadata = _.isEmpty(tempData) ? entity.metadata ? JSON.parse(entity.metadata) : {} : tempData;
                 var btnClass = metadata.colorLabel || 'success';
                 var iconClass = metadata.icon || 'user';
                 var sizeClass = metadata.size || '';

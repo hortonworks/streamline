@@ -43,7 +43,8 @@ class App extends Component {
           app_state.streamline_config = {
             registry: results[0].registry,
             dashboard: results[0].dashboard,
-            secureMode: results[0].authorizer ? true : false
+            secureMode: results[0].authorizer ? true : false,
+            version: results[0].version || ''
           };
           if(app_state.streamline_config.secureMode){
             // let userProfile = {

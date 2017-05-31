@@ -995,7 +995,7 @@ class TopologyEditorContainer extends Component {
         <Link to="/">My Applications</Link>
         &nbsp;/&nbsp;
         <Editable id="applicationName" ref="topologyNameEditable" inline={true} resolve={this.saveTopologyName.bind(this)} reject={this.handleRejectTopologyName.bind(this)}>
-          <input ref={this.focusInput} defaultValue={this.state.topologyName} onChange={this.handleNameChange.bind(this)}/>
+          <input ref={this.focusInput} defaultValue={this.state.topologyName} onKeyPress={this.handleKeyPress.bind(this)} onChange={this.handleNameChange.bind(this)}/>
         </Editable>
       </span>
     );
@@ -1013,7 +1013,9 @@ class TopologyEditorContainer extends Component {
   }
   handleKeyPress(event) {
     const that = this;
-    if (event.key === "Enter" && event.target.nodeName.toLowerCase() != "textarea" && event.target.nodeName.toLowerCase() != 'button') {
+    if(event.key === "Enter" && event.target.nodeName.toLowerCase() === "input"){
+      this.saveTopologyName(this);
+    }else if (event.key === "Enter" && event.target.nodeName.toLowerCase() != "textarea" && event.target.nodeName.toLowerCase() != 'button') {
       this.refs.TopologyConfigModal.state.show
         ? this.handleSaveConfig(this)
         : '';

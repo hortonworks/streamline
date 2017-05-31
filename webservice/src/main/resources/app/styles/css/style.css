@@ -635,7 +635,7 @@ label {
 }
 
 .profileDropdown ul {
-  left: -45px;
+  left: -79px;
 }
 
 .stream-box .stream-body {
@@ -1961,11 +1961,13 @@ rect.extent {
   width: 100%;
   position: absolute;
   bottom: 0;
-  font-size: 16px;
+  font-size: 14px;
   text-align: center;
   padding: 10px;
   background-color: #303c52;
   color: #3b8c47;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .sidebar-toggle:hover, .sidebar-toggle:focus {

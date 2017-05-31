@@ -47,8 +47,8 @@ export default class Header extends Component {
       displayNames.push(role.displayName);
     });
     const {showProfile} = this.state;
-    const testIcon = <span><span className={`hb ${metadata.colorLabel} ${metadata.size ? metadata.size.toLowerCase() : ""} role-icon`}><i className={`fa fa-${metadata.icon}`}></i></span>&nbsp; {app_state.user_profile.name}</span>;
-    // const userIcon = <i className="fa fa-user" style={{marginRight : 3}}> {app_state.user_profile.name}</i>;
+    // const testIcon = <span><span className={`hb ${metadata.colorLabel} ${metadata.size ? metadata.size.toLowerCase() : ""} role-icon`}><i className={`fa fa-${metadata.icon}`}></i></span>&nbsp; {/*app_state.user_profile.name*/}</span>;
+    const testIcon = <i className="fa fa-user" style={{marginRight : 3}}></i>;
     const bigIcon = <i className="fa fa-caret-down"></i>;
     const config = <i className="fa fa-cog"></i>;
     const users = <i className="fa fa-users"></i>;

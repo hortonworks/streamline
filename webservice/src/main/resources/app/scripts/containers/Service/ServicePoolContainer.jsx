@@ -84,9 +84,9 @@ class PoolItemsCard extends Component {
         if(eventKey.includes('share')){
           const sharePermission = TopologyUtils.checkSharingPermission(aclObject,userInfo,'click');
           if(!userInfo){
-            sharePermission ? this.props.poolActionClicked(eventKey, this.streamRef.dataset.id,aclObject) : '';
+            sharePermission ? this.props.poolActionClicked(eventKey, mClusterId,aclObject) : '';
           } else {
-            this.props.poolActionClicked(eventKey, this.streamRef.dataset.id,aclObject);
+            this.props.poolActionClicked(eventKey, mClusterId,aclObject);
           }
         } else {
           this.props.poolActionClicked(eventKey,mClusterId,aclObject);
@@ -446,13 +446,13 @@ class ServicePoolContainer extends Component {
         this.initialFetch = false;
         confirmBox.cancel();
         if (cluster.responseMessage !== undefined) {
-          if (cluster.responseMessage.indexOf('Namespace refers the cluster') !== 1) {
-            FSReactToastr.info(
-              <CommonNotification flag="info" content={"This cluster is shared with some environment. So it can't be deleted."}/>, '', toastOpt);
-          } else {
-            FSReactToastr.error(
-              <CommonNotification flag="error" content={cluster.responseMessage}/>, '', toastOpt);
-          }
+          let errorMsg = cluster.responseMessage.indexOf('Namespace refers the cluster') !== -1
+                          ? "This cluster is shared with some environment. So it can't be deleted."
+                          : cluster.responseMessage.indexOf('Principal') !== -1
+                            ? "Please contact admin to get appropriate access for Services"
+                            : cluster.responseMessage;
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={errorMsg}/>, '', toastOpt);
         } else {
           this.setState({
             fetchLoader: true

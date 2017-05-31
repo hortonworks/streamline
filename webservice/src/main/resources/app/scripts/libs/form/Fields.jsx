@@ -622,7 +622,7 @@ export class arrayenumstringSelectAll extends arrayenumstring{
                   : null}
                 </label>
               </OverlayTrigger>
-              <a className="pull-right" href="javascript:void(0)" onClick={this.handleSelectAll}>selectAll</a>
+              <a className="pull-right" href="javascript:void(0)" onClick={this.handleSelectAll}>Select All</a>
             </span> ;
   }
 }

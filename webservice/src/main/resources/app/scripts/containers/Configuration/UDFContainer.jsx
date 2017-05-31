@@ -35,7 +35,10 @@ import AggregateUdfREST from '../../rest/AggregateUdfREST';
 import NoData from '../../components/NoData';
 import CommonLoaderSign from '../../components/CommonLoaderSign';
 import {hasEditCapability, hasViewCapability} from '../../utils/ACLUtils';
+import app_state from '../../app_state';
+import {observer} from 'mobx-react';
 
+@observer
 export default class UDFContainer extends Component {
   constructor(props) {
     super(props);
@@ -130,6 +133,7 @@ export default class UDFContainer extends Component {
     let {entities, filterValue, editData, fetchLoader} = this.state;
     const filteredEntities = Utils.filterByName(entities, filterValue);
     const pageSize = 8;
+    console.log(app_state.user_profile);
     return (
       <div>
         {fetchLoader
@@ -172,8 +176,7 @@ export default class UDFContainer extends Component {
                       ? pageSize
                       : 0} pageButtonLimit={5}>
                         <Thead>
-                          <Th column="name">Name</Th>
-                          <Th column="displayName">Display Name</Th>
+                          <Th column="Name">Name</Th>
                           <Th column="description">Description</Th>
                           <Th column="type">Type</Th>
                           <Th column="className">Class Name</Th>
@@ -184,8 +187,7 @@ export default class UDFContainer extends Component {
                         {filteredEntities.map((obj, i) => {
                           return (
                             <Tr key={`${obj.name}${i}`}>
-                              <Td column="name">{obj.name}</Td>
-                              <Td column="displayName">{obj.displayName}</Td>
+                              <Td column="Name">{obj.displayName}</Td>
                               <Td column="description">{obj.description}</Td>
                               <Td column="type">{obj.type}</Td>
                               <Td column="className">
@@ -200,13 +202,16 @@ export default class UDFContainer extends Component {
                               </Td>
                               <Td column="returnType">{obj.returnType ? obj.returnType : '-'}</Td>
                               <Td column="actions">
-                                {obj.builtin === true ?
-                                ''
-                                :
-                                <div className="btn-action">
-                                  <BtnEdit callback={this.handleEditUDF.bind(this, obj.id)}/>
-                                  <BtnDelete callback={this.handleDeleteUDF.bind(this, obj.id)}/>
-                                </div>
+                                {obj.builtin === true
+                                ? app_state.user_profile.admin
+                                  ? <div className="btn-action">
+                                      <BtnEdit callback={this.handleEditUDF.bind(this, obj.id)}/>
+                                    </div>
+                                  :''
+                                : <div className="btn-action">
+                                    <BtnEdit callback={this.handleEditUDF.bind(this, obj.id)}/>
+                                    <BtnDelete callback={this.handleDeleteUDF.bind(this, obj.id)}/>
+                                  </div>
                                 }
                               </Td>
                             </Tr>
