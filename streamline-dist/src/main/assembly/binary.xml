@@ -160,5 +160,9 @@
             <source>${project.basedir}./README.md</source>
             <outputDirectory>/</outputDirectory>
         </file>
+        <file>
+            <source>${project.basedir}./VERSION</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
     </files>
 </assembly>
