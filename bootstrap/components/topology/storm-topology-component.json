@@ -49,7 +49,7 @@
         "fields": [
           {
             "uiName": "Cluster Name",
-            "fieldName": "clusterName",
+            "fieldName": "clusterId",
             "tooltip": "Name of the cluster (same as service pool)",
             "isOptional": false,
             "type": "enumstring",

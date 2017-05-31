@@ -1,12 +1,9 @@
 package com.hortonworks.streamline.streams.actions.storm.topology;
 
-import com.google.common.collect.Lists;
-import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
-import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.storm.common.ServiceConfigurationReadable;
 
@@ -17,7 +14,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -75,6 +71,11 @@ public class AutoCredsServiceConfigurationReader implements ServiceConfiguration
 
     @Override
     public Map<String, String> read(Long clusterId, String serviceName) {
+        Cluster cluster = environmentService.getCluster(clusterId);
+        if (cluster == null) {
+            throw new IllegalArgumentException("Cluster with id " + clusterId + " doesn't exist.");
+        }
+
         Collection<NamespaceServiceClusterMapping> mappings = environmentService.listServiceClusterMapping(namespaceId, serviceName);
         boolean associated = mappings.stream().anyMatch(map -> map.getClusterId().equals(clusterId));
         if (!associated) {
@@ -112,18 +113,5 @@ public class AutoCredsServiceConfigurationReader implements ServiceConfiguration
                 });
 
         return flattenConfig;
-    }
-
-    @Override
-    public Map<String, String> read(String clusterName, String serviceName) {
-        Collection<Cluster> clusters = environmentService.listClusters(
-                Lists.newArrayList(new QueryParam("name", clusterName)));
-
-        if (clusters.isEmpty()) {
-            throw new IllegalArgumentException("Cluster with name " + clusterName + " doesn't exist.");
-        }
-
-        Cluster cluster = clusters.iterator().next();
-        return read(cluster.getId(), serviceName);
     }
 }
