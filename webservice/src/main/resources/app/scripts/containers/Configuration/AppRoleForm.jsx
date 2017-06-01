@@ -130,15 +130,15 @@ export default class AppRoleForm extends Component {
       });
     }
     let applications = capabilities.find((o)=>{return o.name == "Applications";}),
-      appPermission = applications ? applications.value : "None",
+      appPermission = applications ? 'Can ' + applications.value : "None",
       servicePool = capabilities.find((o)=>{return o.name == "Service Pool";}),
-      servicePermission = servicePool ? servicePool.value : "None",
+      servicePermission = servicePool ? 'Can ' + servicePool.value : "None",
       environment = capabilities.find((o)=>{return o.name == "Environments";}),
-      envPermission = environment ? environment.value : "None",
+      envPermission = environment ? 'Can ' + environment.value : "None",
       usersAccess = capabilities.find((o)=>{return o.name == "Users";}),
-      userPermission = usersAccess ? usersAccess.value : "None",
+      userPermission = usersAccess ? 'Can ' + usersAccess.value : "None",
       dashboard = capabilities.find((o)=>{return o.name == "Dashboard";}),
-      dashboardPermission = dashboard ? dashboard.value : "None";
+      dashboardPermission = dashboard ? 'Can ' + dashboard.value : "None";
     return (
       <div className="user-role-form">
         {
@@ -229,7 +229,7 @@ export default class AppRoleForm extends Component {
             </div>
           </div>
           <div>
-            <h5>Access Control</h5>
+            <h5><span>Access Control</span><span className="pull-right">Permission</span></h5>
             <hr/>
             <div className="row">
             <div className="col-md-12">

@@ -21,7 +21,6 @@ import Select from 'react-select';
 import UserRoleREST from '../rest/UserRoleREST';
 import FSReactToastr from './FSReactToastr';
 import {toastOpt} from '../utils/Constants';
-import TopologyUtils from '../utils/TopologyUtils';
 
 /* component import */
 import NoData from './NoData';
@@ -110,7 +109,7 @@ export default class CommonShareModal extends Component{
     _.map(tempList , (t_list) => {
       const index = _.findIndex(orgList, (org_list) => { return org_list.sidId === t_list.id;});
       if(index !== -1){
-        const permission = orgList[index].permissions.toString();  TopologyUtils.getPermission(orgList[index].permissions,orgList[index]);
+        const permission = orgList[index].permissions.toString();
         const p_string = permission.includes('WRITE') ? "Can Edit" : "Can View";
         obj.push({
           user : t_list,

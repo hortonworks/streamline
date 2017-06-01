@@ -314,8 +314,9 @@ export default class UserForm extends Component {
             <Fields.arrayenumstringSelectAll value="roles" label="Roles" fieldJson={{isOptional:false, tooltip: 'Roles'}} fieldAttr={{options: roleOptions, valueKey : 'name',labelKey : "displayName"}}/>
           </Form>
           <div>
-            <div className="">
-              <span>Applications</span>
+            <div className="row">
+              <span className="col-md-5">Applications</span>
+              <span className="col-md-5 text-center">Permission</span>
               {appOptionsArr.length > 0 ?
               <a href="javascript:void(0);" className="pull-right" onClick={this.handleAddNewApp.bind(this)}>
                 <i className="fa fa-plus"></i> ADD
@@ -382,8 +383,9 @@ export default class UserForm extends Component {
           </div>
           <br/>
           <div>
-            <div className="">
-              <span>Service Pool</span>
+            <div className="row">
+              <span className="col-md-5">Service Pool</span>
+              <span className="col-md-5 text-center">Permission</span>
               {serviceOptionsArr.length > 0 ?
               <a href="javascript:void(0);" className="pull-right" onClick={this.handleAddNewService.bind(this)}>
                 <i className="fa fa-plus"></i> ADD
@@ -450,8 +452,9 @@ export default class UserForm extends Component {
           </div>
           <br />
           <div>
-            <div className="">
-              <span>Environments</span>
+            <div className="row">
+              <span className="col-md-5">Environments</span>
+              <span className="col-md-5 text-center">Permission</span>
               {environmentOptionsArr.length > 0 ?
               <a href="javascript:void(0);" className="pull-right" onClick={this.handleAddNewEnvironment.bind(this)}>
                 <i className="fa fa-plus"></i> ADD

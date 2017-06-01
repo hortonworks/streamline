@@ -182,30 +182,11 @@ export default class RolesListingContainer extends Component {
                     });
                   });
                 }
-                let applications = capabilities.find((o)=>{return o.name == "Applications";}),
-                  appPermission = applications ? applications.value : "None",
-                  servicePool = capabilities.find((o)=>{return o.name == "Service Pool";}),
-                  servicePermission = servicePool ? servicePool.value : "None",
-                  environment = capabilities.find((o)=>{return o.name == "Environments";}),
-                  envPermission = environment ? environment.value : "None",
-                  users = capabilities.find((o)=>{return o.name == "Users";}),
-                  userPermission = users ? users.value : "None",
-                  dashboard = capabilities.find((o)=>{return o.name == "Dashboard";}),
-                  dashboardPermission = dashboard ? dashboard.value : "None";
                 var header = (
                   <div key={i}>
                   <span className={`hb ${btnClass} ${sizeClass.toLowerCase()} role-icon`}><i className={`fa fa-${iconClass}`}></i></span>
                   <div className="panel-sections first">
                       <h4 ref="roleName" className="role-name" title={entity.displayName}>{entity.displayName}</h4>
-                  </div>
-                  <div className="panel-sections second">
-                    <div className="status-list">
-                      <i className={"fa fa-stop " + appPermission.toLowerCase() + " m-r-xs"} title={"Applications: "+appPermission}></i>
-                      <i className={"fa fa-stop " + servicePermission.toLowerCase() + " m-r-xs"} title={"Service Pool: "+servicePermission}></i>
-                      <i className={"fa fa-stop " + envPermission.toLowerCase() + " m-r-xs"} title={"Environments: "+envPermission}></i>
-                      <i className={"fa fa-stop " + dashboardPermission.toLowerCase() + " m-r-xs"} title={"Dashboard: "+dashboardPermission}></i>
-                      <i className={"fa fa-stop " + userPermission.toLowerCase() + " m-r-xs"} title={"Users: "+userPermission}></i>
-                    </div>
                   </div>
                   <div className="panel-sections pull-right">
                     <h6 className="role-th">USERS</h6>

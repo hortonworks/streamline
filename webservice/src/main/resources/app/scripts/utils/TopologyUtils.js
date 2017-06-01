@@ -216,7 +216,7 @@ const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callb
       }
       return d.source === newEdge.source && d.target === newEdge.target;
     });
-    if (d.currentType.toLowerCase() === 'rule' || d.currentType.toLowerCase() === 'window' || d.currentType.toLowerCase() === 'projection' || d.currentType.toLowerCase() === 'pmml' || d.currentType.toLowerCase() === 'branch') {
+    if (d.currentType.toLowerCase() === 'rule' || d.currentType.toLowerCase() === 'window' || d.currentType.toLowerCase() === 'projection' || d.currentType.toLowerCase() === 'pmml' || d.currentType.toLowerCase() === 'branch' || d.currentType.toLowerCase() === 'custom') {
       let filtEdges = paths.filter(function(d) {
         return newEdge.target === d.target;
       });
@@ -1093,47 +1093,6 @@ const updateGraphEdges = function(graphEdges, newEdges) {
   });
 };
 
-const findSingleAclObj = (id,aclArr) => {
-  let obj = {};
-  obj = _.find(aclArr, (acl) => {return acl.objectId === id;});
-  return obj !== undefined ? obj : {};
-};
-
-const getPermissionAndObj = (topologyId,userInfo,arr) => {
-  const aclObject =  findSingleAclObj(topologyId ,arr);
-  const permission = getPermission(aclObject.permissions,userInfo,aclObject);
-  return {aclObject , permission};
-};
-
-const getPermission = (permissionArray,userInfo,obj) => {
-  if(permissionArray === undefined){
-    return ;
-  }
-  const tempPermission = permissionArray.toString();
-  return tempPermission.includes('WRITE')
-  ? false
-  : tempPermission.includes('READ')
-    ? userInfo
-      ? false
-      : true
-    : true;
-};
-
-const checkSharingPermission = function(obj,userInfo,string){
-  if(obj === undefined || string === ''){
-    return;
-  }
-  return  obj.owner === true
-            ? string === 'fields'
-              ? false
-              : true
-            : string === 'fields'
-              ? userInfo
-                ? false
-                : true
-              : false;
-};
-
 export default {
   defineMarkers,
   isValidConnection,
@@ -1169,9 +1128,5 @@ export default {
   getEdgeData,
   getNodeStreams,
   updateGraphEdges,
-  spliceDeleteNodeArr,
-  findSingleAclObj,
-  getPermission,
-  getPermissionAndObj,
-  checkSharingPermission
+  spliceDeleteNodeArr
 };

@@ -39,7 +39,7 @@ import {toastOpt, accessCapabilities} from '../../utils/Constants';
 import Paginate from '../../components/Paginate';
 import AddEnvironment from '../../components/AddEnvironment';
 import CommonLoaderSign from '../../components/CommonLoaderSign';
-import {hasEditCapability, hasViewCapability} from '../../utils/ACLUtils';
+import {hasEditCapability, hasViewCapability,findSingleAclObj,handleSecurePermission} from '../../utils/ACLUtils';
 import app_state from '../../app_state';
 import CommonShareModal from '../../components/CommonShareModal';
 
@@ -96,23 +96,31 @@ class EnvironmentCards extends Component {
 
   onActionClick = (eventKey) => {
     const {allACL} = this.props;
-    if(! _.isEmpty(allACL)){
+    const nameSpaceId =  this.nameSpaceRef.dataset.id;
+    if(app_state.streamline_config.secureMode){
+      let permissions = true,rights_share=true;
       const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin : false;
-      const {aclObject,permission} = TopologyUtils.getPermissionAndObj(Number(this.nameSpaceRef.dataset.id),userInfo,allACL);
-      if(!permission || userInfo  || permission){
+      let aclObject = findSingleAclObj(Number(nameSpaceId),allACL || []);
+      if(!_.isEmpty(aclObject)){
+        const {p_permission,r_share} = handleSecurePermission(aclObject,userInfo,"Environments");
+        permissions = p_permission;
+        rights_share = r_share;
+      } else {
+        aclObject = {objectId : nameSpaceId, objectNamespace : "namespace"};
+        permissions = hasEditCapability("Environments");
+      }
+      // permission true only for refresh
+      eventKey.includes('refresh') ? permissions = true : '';
+
+      if(permissions){
         if(eventKey.includes('share')){
-          const sharePermission = TopologyUtils.checkSharingPermission(aclObject,userInfo,'click');
-          if(!userInfo){
-            sharePermission ? this.props.nameSpaceClicked(eventKey, this.nameSpaceRef.dataset.id,aclObject) : '';
-          } else {
-            his.props.nameSpaceClicked(eventKey, this.nameSpaceRef.dataset.id,aclObject);
-          }
+          rights_share ? this.props.nameSpaceClicked(eventKey, nameSpaceId,aclObject) : '';
         } else {
-          this.props.nameSpaceClicked(eventKey, this.nameSpaceRef.dataset.id,aclObject);
+          this.props.nameSpaceClicked(eventKey, nameSpaceId,aclObject);
         }
       }
     } else {
-      this.props.nameSpaceClicked(eventKey, this.nameSpaceRef.dataset.id);
+      this.props.nameSpaceClicked(eventKey, nameSpaceId);
     }
   }
 
@@ -130,9 +138,14 @@ class EnvironmentCards extends Component {
       });
       return count;
     };
-    const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin : false;
-    const {aclObject , permission = false} = TopologyUtils.getPermissionAndObj(namespace.id,userInfo, allACL || []);
-    const rights_share = TopologyUtils.checkSharingPermission(aclObject,userInfo,"fields");
+    const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin :false;
+    let permission=true,rights_share=true,aclObject={};
+    if(app_state.streamline_config.secureMode){
+      aclObject = findSingleAclObj(namespace.id,allACL || []);
+      const {p_permission,r_share} = handleSecurePermission(aclObject,userInfo,"Environments");
+      permission = p_permission;
+      rights_share = r_share;
+    }
 
     return (
       <div className="col-environment">
@@ -141,18 +154,18 @@ class EnvironmentCards extends Component {
             <h4 className="pull-left no-margin" title={namespace.name}>{Utils.ellipses(namespace.name, 15)}</h4>
               <div className="pull-right">
                 <DropdownButton noCaret title={ellipseIcon} id="dropdown" bsStyle="link" className="dropdown-toggle" data-stest="environment-actions">
-                  <MenuItem  disabled={permission}  onClick={this.onActionClick.bind(this, "edit/")} data-stest="edit-environment">
+                  <MenuItem  disabled={!permission}  onClick={this.onActionClick.bind(this, "edit/")} data-stest="edit-environment">
                     <i className="fa fa-pencil"></i>
                     &nbsp;Edit
                   </MenuItem>
                   { !_.isEmpty(aclObject) || userInfo
-                    ? <MenuItem title="Share" disabled={rights_share} onClick={this.onActionClick.bind(this, "share/")}>
+                    ? <MenuItem title="Share" disabled={!rights_share} onClick={this.onActionClick.bind(this, "share/")}>
                         <i className="fa fa-share"></i>
                         &nbsp;Share
                       </MenuItem>
                     : ''
                   }
-                  <MenuItem  disabled={permission}  onClick={this.onActionClick.bind(this, "delete/")} data-stest="delete-environment">
+                  <MenuItem  disabled={!permission}  onClick={this.onActionClick.bind(this, "delete/")} data-stest="delete-environment">
                     <i className="fa fa-trash"></i>
                     &nbsp;Delete
                   </MenuItem>
@@ -454,7 +467,6 @@ class EnvironmentContainer extends Component {
     this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete?'}).then((confirmBox) => {
       EnvironmentREST.deleteNameSpace(id).then((nameSpace) => {
         this.initialFetch = false;
-        confirmBox.cancel();
         if (nameSpace.responseMessage !== undefined) {
           if (nameSpace.responseMessage.indexOf('Namespace refers the cluster') !== 1) {
             FSReactToastr.info(
@@ -477,7 +489,8 @@ class EnvironmentContainer extends Component {
           });
         }
       });
-    });
+      confirmBox.cancel();
+    }, () => {});
   }
 
   getHeaderContent() {

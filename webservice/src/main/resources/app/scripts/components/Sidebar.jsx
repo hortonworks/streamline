@@ -187,7 +187,7 @@ export default class Sidebar extends Component {
                   {hasModuleAccess(menuName.AUTHORIZER) ?
                     (app_state.streamline_config.secureMode ?
                       <li onClick={this.handleClick.bind(this, 3)}>
-                        <Link to="/authorizer">Authorizer</Link>
+                        <Link to="/authorizer">Users</Link>
                       </li>
                       : null)
                     : null

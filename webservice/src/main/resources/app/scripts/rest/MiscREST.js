@@ -13,6 +13,7 @@
 **/
 
 import fetch from 'isomorphic-fetch';
+import Utils from '../utils/Utils';
 
 const MiscREST = {
   getAllConfigs(options) {
@@ -47,9 +48,7 @@ const MiscREST = {
     options.method = options.method || 'GET';
     options.credentials = 'same-origin';
     return fetch('/api/v1/catalog/users/current', options)
-      .then( (response) => {
-        return response.json();
-      });
+      .then(Utils.checkStatus);
   }
 };
 

@@ -781,7 +781,7 @@ export default class TopologyGraphComponent extends Component {
 
   showNodeTypeToolTip(d,node){
     let thisGraph = this;
-    thisGraph.toolTip.attr("class","d3-tip nodeTypeToolTip").html(function(d) {
+    thisGraph.toolTip.attr("class","d3-tip nodeTypeToolTip").direction('n' ).html(function(d) {
       return (
         "<div class='showType-tooltip clearfix'>"+
           "<h3>"+d.uiname+"</h3>"+
@@ -1195,6 +1195,9 @@ export default class TopologyGraphComponent extends Component {
         words = title.split(/\s+/g),
         nwords = words.length,
         nodeTitle = '';
+      for (var i = 0; i < words.length; i++) {
+        nodeTitle += words[i] + ' ';
+      }
       let el = gEl.append("text").attr("class", function(d) {
         return 'node-title ' + TopologyUtils.getNodeRectClass(d);
       }).attr("filter", function(d) {
@@ -1209,7 +1212,7 @@ export default class TopologyGraphComponent extends Component {
         return ((constants.rectangleHeight / 2) - 2);
       }).on("mouseover", function(d) {
         if (thisGraph.editMode) {
-          !thisGraph.testRunActivated ? thisGraph.showNodeTypeToolTip.call(thisGraph,d, this) : '';
+          !thisGraph.testRunActivated && nodeTitle.trim().length > 11 ? thisGraph.showNodeTypeToolTip.call(thisGraph,d, this) : '';
           d3.select(this.parentElement).select('text.fa.fa-times').style('display', thisGraph.testRunActivated ? 'none' : 'block');
         } else {
           TopologyUtils.getNodeStreams(thisGraph.topologyId, thisGraph.versionId, d.nodeId, d.parentType, thisGraph.edges, thisGraph.showNodeStreams.bind(thisGraph, d, d3.select(this.parentElement).select('rect')));
@@ -1230,9 +1233,6 @@ export default class TopologyGraphComponent extends Component {
         thisGraph.rectangleMouseDown.call(thisGraph, d3.select(this.parentNode), d);
         thisGraph.rectangleMouseUp.call(thisGraph, d3.select(this.parentNode), d);
       }).call(thisGraph.drag);
-      for (var i = 0; i < words.length; i++) {
-        nodeTitle += words[i] + ' ';
-      }
       if (nodeTitle.trim().length > 11) {
         nodeTitle = nodeTitle.trim().slice(0, 10) + '...';
       } else {

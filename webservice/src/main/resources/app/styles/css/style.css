@@ -3238,23 +3238,6 @@ div#TestSourceForm > ul {
     white-space: nowrap
 }
 
-.status-list .fa-stop{
-  color: #fff;
-  font-size: 10px;
-  border: 1px solid #d1d1d1;
-  line-height: 9px;
-  zoom: 0.75;
-}
-
-.status-list .fa-stop.edit{
-  color: #1190c0;
-  border-color: #1190c0;
-}
-.status-list .fa-stop.view{
-  color: #82c2d1;
-  border-color: #82c2d1;
-}
-
 .m-r-xs{
   margin-right: 5px;
 }
@@ -3353,6 +3336,10 @@ div#TestSourceForm > ul {
   margin-bottom: 10px;
 }
 
+.m-b-xs {
+  margin-bottom: 5px;
+}
+
 span.warning {
   color: #f0ad4e;
 }
@@ -3428,16 +3415,10 @@ a.crossIcon{
   font-size: 16px;
 }
 .nodeTypeToolTip{
-  padding : 0 2px;
-  border-radius: 10px;
-  background-color:rgba(230, 230, 230, 0.95);
-  color: #666;
+  padding : 0 0px;
+  background: rgba(120, 120, 120, 0.95);
+  color: #fff;
   box-shadow: 2px 2px 2px -1px;
-}
-.nodeTypeToolTip.e:after{
-  border-color: rgba(230, 230, 230, 0);
-  border-right-color: rgba(230, 230, 230, 0.95);
-  border-width: 8px;
   margin-top: -8px;
 }
 .showType-tooltip {
@@ -3446,7 +3427,7 @@ a.crossIcon{
 }
 .showType-tooltip h3{
   font-size: 12px;
-  margin: 8px 10px;
+  margin: 6px 8px;
 }
 .toast-message {
   display: none;

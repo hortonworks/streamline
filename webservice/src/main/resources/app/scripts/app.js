@@ -21,12 +21,14 @@ import MiscREST from './rest/MiscREST';
 import UserRoleREST from './rest/UserRoleREST';
 import app_state from './app_state';
 import CommonNotification from './utils/CommonNotification';
+import UnKnownAccess  from './components/UnKnownAccess';
 
 class App extends Component {
   constructor(){
     super();
     this.state = {
-      showLoading: true
+      showLoading: true,
+      unKnownUser : false
     };
     this.fetchData();
   }
@@ -64,6 +66,15 @@ class App extends Component {
                 app_state.user_profile = userProfile;
                 this.syncSidebarMenu(userProfile.roles);
               }
+            }).catch((err) => {
+              err.message.indexOf('Not Found') !== -1
+                ? this.setState({showLoading: false,unKnownUser : true})
+                : '';
+              err.response.then((res) => {
+                res.responseMessage.indexOf('user database') === -1
+                ? FSReactToastr.error(<CommonNotification flag="error" content={res.responseMessage}/>, '', toastOpt)
+                : '';
+              });
             });
           } else {
             this.setState({showLoading: false});
@@ -82,10 +93,12 @@ class App extends Component {
     });
   }
   render() {
-    const {showLoading} = this.state;
+    const {showLoading,unKnownUser} = this.state;
     const component = showLoading ? <div></div> : <Router ref="router" history={hashHistory} routes={routes} />;
     return (
-      component
+      unKnownUser
+      ? <UnKnownAccess />
+      : component
     );
   }
 }

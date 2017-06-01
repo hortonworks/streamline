@@ -154,6 +154,19 @@ text.id {
   line-height: 20px;
 }
 
+.nodeTypeToolTip:after {
+  color: rgba(120, 120, 120, 0.95);
+  text-align: center;
+  font-size: 17px;
+}
+.nodeTypeToolTip.n:after {
+  color: rgba(120, 120, 120, 0.95);
+  text-align: center;
+  font-size: 17px;
+  margin-top: -5px;
+  transform: scaleX(1.8);
+}
+
 .table-backgrid>thead>tr>th>a {
   color: #707980;
 }

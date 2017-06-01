@@ -55,10 +55,62 @@ const hasViewCapability = function(module){
   return hasCapability(module, 'View');
 };
 
+const findSingleAclObj = (id,aclArr) => {
+  let obj = {};
+  obj = _.find(aclArr, (acl) => {return acl.objectId === id;});
+  return obj !== undefined ? obj : {};
+};
+
+const getPermissionAndObj = (userInfo,aclObject) => {
+  return getPermission(aclObject.permissions,userInfo);
+};
+
+const getPermission = (permissionArray,userInfo) => {
+  if(permissionArray === undefined){
+    return true;
+  }
+  const tempPermission = permissionArray.toString();
+  return tempPermission.includes('WRITE')
+  ? true
+  : tempPermission.includes('READ')
+    ? userInfo
+      ? true
+      : false
+    : false;
+};
+
+
+const checkSharingPermission = function(obj,userInfo,string){
+  if(_.isEmpty(obj) || string === ''){
+    return true;
+  }
+  return  obj.owner === true
+          ? true
+          : userInfo
+            ? true
+            : false;
+};
+
+const handleSecurePermission = function(aclObject,userInfo,moduleType){
+  let p_permission=true,r_share=true;
+  if(!_.isEmpty(aclObject)){
+    p_permission = getPermissionAndObj(userInfo,aclObject);
+    r_share = checkSharingPermission(aclObject,userInfo);
+  } else {
+    p_permission = hasEditCapability(moduleType);
+    r_share = userInfo;
+  }
+  return {p_permission,r_share};
+};
 
 
 export {
   hasModuleAccess,
   hasEditCapability,
-  hasViewCapability
+  hasViewCapability,
+  getPermissionAndObj,
+  findSingleAclObj,
+  getPermission,
+  checkSharingPermission,
+  handleSecurePermission
 };

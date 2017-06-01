@@ -39,7 +39,7 @@ import Paginate from '../../components/Paginate';
 import CommonLoaderSign from '../../components/CommonLoaderSign';
 import AddManualCluster from '../ManualCluster/AddManualCluster';
 import AddManualService from '../ManualCluster/AddManualService';
-import {hasEditCapability, hasViewCapability} from '../../utils/ACLUtils';
+import {hasEditCapability, hasViewCapability,findSingleAclObj,handleSecurePermission} from '../../utils/ACLUtils';
 import app_state from '../../app_state';
 import CommonShareModal from '../../components/CommonShareModal';
 
@@ -77,17 +77,24 @@ class PoolItemsCard extends Component {
   onActionClick = (eventKey) => {
     const {allACL} = this.props;
     const mClusterId =  this.clusterRef.dataset.id;
-    if(! _.isEmpty(allACL)){
+    if(app_state.streamline_config.secureMode){
+      let permissions = true,rights_share=true;
       const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin : false;
-      const {aclObject,permission} = TopologyUtils.getPermissionAndObj(Number(mClusterId),userInfo,allACL);
-      if(!permission || userInfo  || permission){
+      let aclObject = findSingleAclObj(Number(mClusterId),allACL || []);
+      if(!_.isEmpty(aclObject)){
+        const {p_permission,r_share} = handleSecurePermission(aclObject,userInfo,"Service pool");
+        permissions = p_permission;
+        rights_share = r_share;
+      } else {
+        aclObject = {objectId : mClusterId, objectNamespace : "cluster"};
+        permissions = hasEditCapability("Service Pool");
+      }
+      // permission true only for refresh
+      eventKey.includes('refresh') ? permissions = true : '';
+
+      if(permissions){
         if(eventKey.includes('share')){
-          const sharePermission = TopologyUtils.checkSharingPermission(aclObject,userInfo,'click');
-          if(!userInfo){
-            sharePermission ? this.props.poolActionClicked(eventKey, mClusterId,aclObject) : '';
-          } else {
-            this.props.poolActionClicked(eventKey, mClusterId,aclObject);
-          }
+          rights_share ? this.props.poolActionClicked(eventKey,mClusterId,aclObject) : '';
         } else {
           this.props.poolActionClicked(eventKey,mClusterId,aclObject);
         }
@@ -120,10 +127,17 @@ class PoolItemsCard extends Component {
   addManualService = (event) => {
     const {allACL} = this.props;
     const mClusterId = (event.target.nodeName !== 'I') ? parseInt(event.target.dataset.id) : parseInt(event.target.parentElement.dataset.id);
-    if(! _.isEmpty(allACL)){
+    if(app_state.streamline_config.secureMode){
+      let permissions = true,rights_share=true;
       const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin : false;
-      const {permission} = TopologyUtils.getPermissionAndObj(Number(mClusterId),userInfo,allACL);
-      if(!permission || userInfo){
+      const aclObject = findSingleAclObj(Number(mClusterId),allACL || []);
+      if(!_.isEmpty(aclObject)){
+        const {p_permission} = handleSecurePermission(aclObject,userInfo,"Service pool");
+        permissions = p_permission;
+      } else {
+        permissions = hasEditCapability("Service Pool");
+      }
+      if(permissions){
         this.props.addManualServiceHandler(mClusterId);
       }
     } else {
@@ -157,9 +171,14 @@ class PoolItemsCard extends Component {
     if(manual_index === -1 && clusterList.cluster.ambariImportUrl === ''){
       serviceWrap.push({service :{name : 'addManualBtn', manualClusterId : clusterList.cluster.id}});
     }
-    const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin : false;
-    const {aclObject , permission = false} = TopologyUtils.getPermissionAndObj(cluster.id, userInfo,allACL || []);
-    const rights_share = TopologyUtils.checkSharingPermission(aclObject,userInfo,"fields");
+    const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin :false;
+    let permission=true,rights_share=true,aclObject={};
+    if(app_state.streamline_config.secureMode){
+      aclObject = findSingleAclObj(cluster.id,allACL || []);
+      const {p_permission,r_share} = handleSecurePermission(aclObject,userInfo,"Service Pool");
+      permission = p_permission;
+      rights_share = r_share;
+    }
 
     return (
       <div className="col-md-4">
@@ -179,13 +198,13 @@ class PoolItemsCard extends Component {
                   : ''
                 }
                 { !_.isEmpty(aclObject) || userInfo
-                  ? <MenuItem title="Share" disabled={rights_share} onClick={this.onActionClick.bind(this, "share/")}>
+                  ? <MenuItem title="Share" disabled={!rights_share} onClick={this.onActionClick.bind(this, "share/")}>
                       <i className="fa fa-share"></i>
                       &nbsp;Share
                     </MenuItem>
                   : ''
                 }
-                <MenuItem  disabled={permission}  onClick={this.onActionClick.bind(this, "delete/")} data-stest="delete-service-pool">
+                <MenuItem  disabled={!permission}  onClick={this.onActionClick.bind(this, "delete/")} data-stest="delete-service-pool">
                   <i className="fa fa-trash"></i>
                   &nbsp;Delete
                 </MenuItem>
@@ -444,7 +463,6 @@ class ServicePoolContainer extends Component {
     this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete?'}).then((confirmBox) => {
       ClusterREST.deleteCluster(id).then((cluster) => {
         this.initialFetch = false;
-        confirmBox.cancel();
         if (cluster.responseMessage !== undefined) {
           let errorMsg = cluster.responseMessage.indexOf('Namespace refers the cluster') !== -1
                           ? "This cluster is shared with some environment. So it can't be deleted."
@@ -467,7 +485,8 @@ class ServicePoolContainer extends Component {
           });
         }
       });
-    });
+      confirmBox.cancel();
+    }, () => {});
   }
 
   /*

@@ -608,6 +608,16 @@ const segregateVersions = function(versionsArr){
   return {current_v,deploy_v,allVersion};
 };
 
+const checkStatus = function (response) {
+  if (response.status >= 200 && response.status < 300) {
+    return response.json();
+  } else {
+    const error = new Error(response.statusText);
+    error.response = response.json();
+    throw error;
+  }
+};
+
 export default {
   sortArray,
   numberToMilliseconds,
@@ -638,5 +648,6 @@ export default {
   checkTypeAndReturnValue,
   mapSecurityProtocol,
   checkWhiteSpace,
-  segregateVersions
+  segregateVersions,
+  checkStatus
 };

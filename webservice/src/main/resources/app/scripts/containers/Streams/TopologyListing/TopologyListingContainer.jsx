@@ -49,7 +49,7 @@ import CloneTopology from './CloneTopology';
 import CommonLoaderSign from '../../../components/CommonLoaderSign';
 import app_state from '../../../app_state';
 import {observer} from 'mobx-react';
-import {hasEditCapability, hasViewCapability} from '../../../utils/ACLUtils';
+import {hasEditCapability, hasViewCapability,findSingleAclObj,handleSecurePermission} from '../../../utils/ACLUtils';
 import CommonShareModal from '../../../components/CommonShareModal';
 
 class CustPieChart extends PieChart {
@@ -89,23 +89,31 @@ class TopologyItems extends Component {
 
   onActionClick = (eventKey) => {
     const {allACL} = this.props;
-    if(! _.isEmpty(allACL)){
+    const topologyId =  this.streamRef.dataset.id;
+    if(app_state.streamline_config.secureMode){
+      let permissions = true,rights_share=true;
       const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin : false;
-      const {aclObject ,permission} = TopologyUtils.getPermissionAndObj(Number(this.streamRef.dataset.id),userInfo,allACL);
-      if(!permission || userInfo || permission){
+      let aclObject = findSingleAclObj(Number(topologyId),allACL || []);
+      if(!_.isEmpty(aclObject)){
+        const {p_permission,r_share} = handleSecurePermission(aclObject,userInfo,"Applications");
+        permissions = p_permission;
+        rights_share = r_share;
+      } else {
+        aclObject = {objectId : topologyId, objectNamespace : "topology"};
+        permissions = hasEditCapability("Applications");
+      }
+      // permission true only for refresh
+      eventKey.includes('refresh') ? permissions = true : '';
+
+      if(permissions){
         if(eventKey.includes('share')){
-          const sharePermission = TopologyUtils.checkSharingPermission(aclObject,userInfo,'click');
-          if(!userInfo){
-            sharePermission ? this.props.topologyAction(eventKey, this.streamRef.dataset.id,aclObject) : '';
-          } else {
-            this.props.topologyAction(eventKey, this.streamRef.dataset.id,aclObject);
-          }
+          rights_share ? this.props.topologyAction(eventKey,topologyId,aclObject) : '';
         } else {
-          this.props.topologyAction(eventKey, this.streamRef.dataset.id,aclObject);
+          this.props.topologyAction(eventKey,topologyId,aclObject);
         }
       }
     } else {
-      this.props.topologyAction(eventKey, this.streamRef.dataset.id);
+      this.props.topologyAction(eventKey,topologyId);
     }
   }
   streamBoxClick = (id, event) => {
@@ -114,12 +122,20 @@ class TopologyItems extends Component {
     if ((event.target.nodeName !== 'BUTTON' && event.target.nodeName !== 'I' && event.target.nodeName !== 'A')) {
       this.context.router.push('applications/' + id + '/view');
     } else if (event.target.title === "Edit") {
-      const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin : false;
-      const {permission} = TopologyUtils.getPermissionAndObj(id,userInfo,allACL);
-      if(! _.isEmpty(allACL)){
-        if(!permission || userInfo){
+      if(app_state.streamline_config.secureMode){
+        let permissions = true;
+        const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin : false;
+        const aclObject = findSingleAclObj(Number(id),allACL || []);
+        if(!_.isEmpty(aclObject)){
+          const {p_permission} = handleSecurePermission(aclObject,userInfo,"Applications");
+          permissions = p_permission;
+        } else {
+          permissions = hasEditCapability("Applications");
+        }
+        if(permissions){
           this.context.router.push('applications/' + id + '/edit');
         }
+
       } else {
         this.context.router.push('applications/' + id + '/edit');
       }
@@ -163,9 +179,14 @@ class TopologyItems extends Component {
     const unitLeft = _.slice(latencyWrap, 0, latencyWrap.length / 2);
     const unitRight = _.slice(latencyWrap, latencyWrap.length / 2, latencyWrap.length);
     const ellipseIcon = <i className="fa fa-ellipsis-v"></i>;
-    const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin : false;
-    const {aclObject , permission = false} = TopologyUtils.getPermissionAndObj(topology.id,userInfo, allACL || []);
-    const rights_share = TopologyUtils.checkSharingPermission(aclObject,userInfo,"fields");
+    const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin :false;
+    let permission=true,rights_share=true,aclObject={};
+    if(app_state.streamline_config.secureMode){
+      aclObject = findSingleAclObj(topology.id,allACL || []);
+      const {p_permission,r_share} = handleSecurePermission(aclObject,userInfo,"Applications");
+      permission = p_permission;
+      rights_share = r_share;
+    }
 
     return (
       <div className="col-sm-4">
@@ -202,33 +223,33 @@ class TopologyItems extends Component {
                     <i className="fa fa-refresh"></i>
                     &nbsp;Refresh
                   </MenuItem>
-                  <MenuItem title="Edit" disabled={permission} onClick={this.onActionClick.bind(this, "edit/" + topology.id)}>
+                  <MenuItem title="Edit" disabled={!permission} onClick={this.onActionClick.bind(this, "edit/" + topology.id)}>
                     <i className="fa fa-pencil"></i>
                     &nbsp;Edit
                   </MenuItem>
                   { !_.isEmpty(aclObject) || userInfo
-                    ? <MenuItem title="Share" disabled={rights_share} onClick={this.onActionClick.bind(this, "share/" + topology.id)}>
+                    ? <MenuItem title="Share" disabled={!rights_share} onClick={this.onActionClick.bind(this, "share/" + topology.id)}>
                         <i className="fa fa-share"></i>
                         &nbsp;Share
                       </MenuItem>
                     : ''
                   }
-                  <MenuItem title="Clone" disabled={permission}  onClick={this.onActionClick.bind(this, "clone/" + topology.id)}>
+                  <MenuItem title="Clone" disabled={!permission}  onClick={this.onActionClick.bind(this, "clone/" + topology.id)}>
                     <i className="fa fa-clone"></i>
                     &nbsp;Clone
                   </MenuItem>
-                  <MenuItem title="Export" disabled={permission}  onClick={this.onActionClick.bind(this, "export/" + topology.id)}>
+                  <MenuItem title="Export" disabled={!permission}  onClick={this.onActionClick.bind(this, "export/" + topology.id)}>
                     <i className="fa fa-share-square-o"></i>
                     &nbsp;Export
                   </MenuItem>
-                  <MenuItem title="Delete" disabled={permission} onClick={this.onActionClick.bind(this, "delete/" + topology.id)}>
+                  <MenuItem title="Delete" disabled={!permission} onClick={this.onActionClick.bind(this, "delete/" + topology.id)}>
                     <i className="fa fa-trash"></i>
                     &nbsp;Delete
                   </MenuItem>
                 </DropdownButton>
                 {
                   aclObject.owner !== undefined
-                  ? permission
+                  ? !permission
                     ? ''
                     : <a href="javascript:void(0)" title="Delete" className="close" onClick={this.onActionClick.bind(this, "delete/" + topology.id)}>
                         <i className="fa fa-times-circle"></i>
@@ -500,7 +521,6 @@ class TopologyListingContainer extends Component {
       TopologyREST.deleteTopology(id).then((topology) => {
         // TopologyREST.deleteMetaInfo(id);
         this.fetchData();
-        confirmBox.cancel();
         if (topology.responseMessage !== undefined) {
           this.setState({fetchLoader: false});
           FSReactToastr.error(
@@ -510,12 +530,9 @@ class TopologyListingContainer extends Component {
             <strong>Application deleted successfully</strong>
           );
         }
-      }).catch((err) => {
-        this.setState({fetchLoader: false});
-        FSReactToastr.error(
-          <CommonNotification flag="error" content={err.message}/>, '', toastOpt);
       });
-    });
+      confirmBox.cancel();
+    }, () => {});
   }
 
   cloneTopologyAction = (id) => {
@@ -539,7 +556,8 @@ class TopologyListingContainer extends Component {
           this.exportTopologyDownload(id);
         }
       });
-    });
+      confirmBox.cancel();
+    }, () => {});
   }
 
   exportTopologyDownload = (id) => {
@@ -830,7 +848,7 @@ class TopologyListingContainer extends Component {
           {(fetchLoader || searchLoader)
             ? [<div key={"1"} className="loader-overlay"></div>,<CommonLoaderSign key={"2"} imgName={"applications"}/>]
             : (splitData.length === 0)
-              ? <NoData environmentFlag={checkEnvironment} imgName={"applications"} sourceCheck={sourceCheck} searchVal={filterValue}/>
+              ? <NoData environmentFlag={checkEnvironment} imgName={"applications"} sourceCheck={sourceCheck} searchVal={filterValue} userRoles={app_state.user_profile}/>
               : splitData[pageIndex].map((list) => {
                 return <TopologyItems key={list.topology.id} topologyList={list} topologyAction={this.actionHandler} refIdArr={refIdArr} allACL={allACL}/>;
               })

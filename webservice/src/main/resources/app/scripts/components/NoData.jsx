@@ -18,8 +18,9 @@ import _ from 'lodash';
 
 export default class NoData extends Component {
   render() {
-    const {imgName, serviceFlag, environmentFlag, sourceCheck, searchVal} = this.props;
+    const {imgName, serviceFlag, environmentFlag, sourceCheck, searchVal,userRoles} = this.props;
     const tempArr = ["services", "environments", "applications"];
+    const analyst = userRoles !== undefined && userRoles.roles.indexOf("ROLE_ANALYST") !== -1 && userRoles.roles.length === 1;
     const index = _.findIndex(tempArr, function(o) {
       return o === imgName;
     });
@@ -27,7 +28,7 @@ export default class NoData extends Component {
     const divStyle = {
       backgroundImage: 'url(' + imgUrl + ')',
       backgroundRepeat: "no-repeat",
-      backgroundPosition: `${searchVal
+      backgroundPosition: `${searchVal || analyst
         ? "center"
         : (index !== -1)
           ? "right"
@@ -77,12 +78,12 @@ export default class NoData extends Component {
     </div>;
 
     return (
-      <div className={`col-sm-12 ${searchVal
+      <div className={`col-sm-12 ${searchVal || analyst
         ? "text-center"
         : (index !== -1)
           ? ""
           : "text-center"}`} style={divStyle}>
-        {searchVal
+        {searchVal || analyst
           ? <p className="noDataFound-text">No Data Found</p>
           : (index !== -1)
             ? sourceCheck

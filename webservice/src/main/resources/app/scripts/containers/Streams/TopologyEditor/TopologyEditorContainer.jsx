@@ -413,17 +413,17 @@ class TopologyEditorContainer extends Component {
     if (index === -1) {
       this.tempIntervalArr.push({
         id: id,
-        value: slideIntVal + defaultTimeSec
+        value: slideIntVal + 5
       });
     } else {
       timeoutSec = defaultTimeSec;
-      this.tempIntervalArr[index].value = slideIntVal + defaultTimeSec;
+      this.tempIntervalArr[index].value = slideIntVal + 5;
     }
-    const maxObj = _.maxBy(this.tempIntervalArr, "value");
-    const maxVal = maxObj.value;
-    this.topologyConfig["topology.message.timeout.secs"] = timeoutSec >= maxVal
+    const sum = _.sumBy(this.tempIntervalArr, "value");
+    const sumVal = sum + 2; // 2 is for delta
+    this.topologyConfig["topology.message.timeout.secs"] = timeoutSec >= sumVal
       ? timeoutSec
-      : maxVal;
+      : sumVal;
   }
   fetchWindowSlideInterval(obj) {
     if (_.keys(obj.config.properties).length > 0) {
