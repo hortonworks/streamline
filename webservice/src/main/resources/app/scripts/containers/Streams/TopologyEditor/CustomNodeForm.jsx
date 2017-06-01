@@ -21,6 +21,7 @@ import FSReactToastr from '../../../components/FSReactToastr';
 import TopologyREST from '../../../rest/TopologyREST';
 import CustomProcessorREST from '../../../rest/CustomProcessorREST';
 import {Scrollbars} from 'react-custom-scrollbars';
+import ProcessorUtils from '../../../utils/ProcessorUtils';
 
 export default class CustomNodeForm extends Component {
   static propTypes = {
@@ -39,15 +40,19 @@ export default class CustomNodeForm extends Component {
     let {configData, editMode} = props;
     this.customConfig = configData.topologyComponentUISpecification.fields;
     let id = _.find(this.customConfig, {fieldName: "name"}).defaultValue;
-    let parallelism = _.find(this.customConfig, {fieldName: "parallelism"}).defaultValue;
-    this.fetchData(id, parallelism);
-
+    this.parallelism = _.find(this.customConfig, {fieldName: "parallelism"}).defaultValue;
+    this.fetchData(id);
+    this.fetchDataAgain = false;
     var obj = {
       editMode: editMode,
       showSchema: true,
       userInputs: [],
       showError: false,
-      showErrorLabel: false
+      showErrorLabel: false,
+      outputKeys: [],
+      fieldList: [],
+      mappingObj: {},
+      showLoading:true
     };
 
     this.customConfig.map((o) => {
@@ -63,127 +68,115 @@ export default class CustomNodeForm extends Component {
       }
     });
     this.state = obj;
+    this.streamObj={};
   }
 
-  fetchData(id, defaultParallelism) {
-    let {topologyId, nodeType, nodeData, versionId} = this.props;
-    let promiseArr = [
-      CustomProcessorREST.getProcessor(id),
-      TopologyREST.getNode(topologyId, versionId, nodeType, nodeData.nodeId)
-    ];
+  componentWillUpdate() {
+    if(this.context.ParentForm.state.inputStreamOptions.length > 0 && !(this.fetchDataAgain)){
+      this.getDataFromParentFormContext(this.parallelism);
+    }
+  }
 
-    Promise.all(promiseArr).then((results) => {
-      let {
-        name,
-        description,
-        customProcessorImpl,
-        imageFileName,
-        jarFileName,
-        inputSchema,
-        outputStreamToSchema,
-        configFields
-      } = results[0].entities[0];
+  fetchData(id){
+    CustomProcessorREST.getProcessor(id).then((custom) => {
+      if(custom.responseMessage !== undefined){
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={custom.responseMessage}/>, '', toastOpt);
+      } else {
+        let {
+          name,
+          description,
+          customProcessorImpl,
+          imageFileName,
+          jarFileName,
+          inputSchema,
+          outputSchema,
+          configFields
+        } = custom.entities[0];
 
-      this.nodeData = results[1];
-      let properties = results[1].config.properties;
-      if (!properties.parallelism) {
-        properties.parallelism = defaultParallelism;
-      }
+        let stateObj = {
+          name: name,
+          description: description,
+          customProcessorImpl: customProcessorImpl,
+          imageFileName: imageFileName,
+          jarFileName: jarFileName,
+          inputSchema: inputSchema,
+          outputSchema: outputSchema
+        };
 
-      let stateObj = {
-        parallelism: properties.parallelism,
-        localJarPath: properties.localJarPath,
-        name: name,
-        description: description,
-        customProcessorImpl: customProcessorImpl,
-        imageFileName: imageFileName,
-        jarFileName: jarFileName,
-        inputSchema: inputSchema,
-        outputStreamToSchema: outputStreamToSchema
-      };
-
-      this.state.userInputs.map((i) => {
-        if (i.type === "boolean") {
-          stateObj[i.fieldName] = (properties[i.fieldName]) === true
-            ? true
-            : false;
-        } else {
-          stateObj[i.fieldName] = properties[i.fieldName]
-            ? properties[i.fieldName]
-            : (i.defaultValue || '');
+        if(this.context.ParentForm.state.inputStreamOptions.length){
+          this.getDataFromParentFormContext(this.parallelism);
         }
-      });
-
-      if (this.nodeData.outputStreams.length === 0) {
-        this.saveStreams(outputStreamToSchema);
-      }else if(this.nodeData.outputStreams.length !== outputStreamToSchema.length){
-        this.saveStreams(outputStreamToSchema);
-      } else{
-        this.context.ParentForm.setState({outputStreamObj: this.nodeData.outputStreams[0]});
+        this.setState(stateObj);
       }
-      this.setState(stateObj);
     });
   }
 
-  updateNode = (id) => {
-    let {topologyId, nodeType, versionId,nodeData} = this.props;
-    TopologyREST.updateNode(topologyId, versionId, nodeType, id, {
-      body: JSON.stringify(this.nodeData)
-    }).then((node) => {
-      this.nodeData = node;
-      this.setState({showSchema: true});
-      this.context.ParentForm.setState({outputStreamObj: node.outputStreams[0]});
-    });
-  }
+  getDataFromParentFormContext(defaultParallelism){
+    this.fetchDataAgain = true;
+    let stateObj={};
+    this.nodeData = this.context.ParentForm.state.processorNode;
+    let properties = this.nodeData.config.properties;
+    if (!properties.parallelism) {
+      properties.parallelism = defaultParallelism;
+    }
+    stateObj.parallelism = properties.parallelism;
+    stateObj.localJarPath = properties.localJarPath;
 
-  saveStreams = (outputStreamToSchema) => {
+    this.state.userInputs.map((i) => {
+      if (i.type === "boolean") {
+        stateObj[i.fieldName] = (properties[i.fieldName]) === true
+          ? true
+          : false;
+      } else {
+        stateObj[i.fieldName] = properties[i.fieldName]
+          ? properties[i.fieldName]
+          : (i.defaultValue || '');
+      }
+    });
+
+    if (this.nodeData.outputStreams.length === 0) {
+      this.saveStreams();
+    } else {
+      this.streamObj = this.nodeData.outputStreams[0];
+      this.context.ParentForm.setState({outputStreamObj: this.streamObj});
+    }
+    let keysList = this.inputStream = this.context.ParentForm.state.inputStreamOptions[0];
+    if(properties.inputSchemaMap && properties.inputSchemaMap[this.inputStream.streamId]){
+      stateObj.mappingObj = properties.inputSchemaMap[this.inputStream.streamId];
+    }
+    Array.prototype.push.apply(keysList.fields,this.state.outputSchema.fields);
+    stateObj.outputKeys = this.streamObj.fields;
+    stateObj.fieldList = _.unionBy(keysList.fields,'name');
+    stateObj.showLoading = false;
+    this.setState(stateObj);
+  }
+  saveStreams = () => {
     let self = this;
     let {topologyId, nodeType, versionId,nodeData} = this.props;
-    let streamIds = _.keys(outputStreamToSchema),
-      streamData = {},
+    let streamData = {},
       streams = [],
-      promiseArr = [],
-      tempStreamArr=[];
+      promiseArr = [];
+    // nodeID is added to make streamId unique
+    streams.push({streamId: 'custom_processor_stream_'+nodeData.nodeId, fields: [{name:'dummy', type: 'STRING'}]});
 
-    TopologyREST.getAllNodes(topologyId, versionId,'streams').then((allStreams) => {
-      _.map(streamIds, (streamID) => {
-        const index = _.findIndex(allStreams.entities , (stream) => {
-          return stream.streamId === streamID;
-        });
-        if(index !== -1){
-          tempStreamArr.push(allStreams.entities[index]);
-        }
+    streams.map((s) => {
+      promiseArr.push(TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(s)}));
+    });
+
+    Promise.all(promiseArr).then(results => {
+      self.nodeData.outputStreamIds = [];
+      results.map(result => {
+        self.nodeData.outputStreamIds.push(result.id);
       });
 
-      streamIds.map((s) => {
-        let o = {streamId: s, fields: outputStreamToSchema[s].fields};
-        if(s.id){
-          o.id = s.id;
-        } else {
-          const obj = _.find(tempStreamArr,(t_stream) => {return t_stream.streamId === s;});
-          if(!_.isEmpty(obj)){
-            o.id = obj.id;
-          }
-        }
-        streams.push(o);
+      TopologyREST.updateNode(topologyId, versionId, nodeType, self.nodeData.id, {
+        body: JSON.stringify(this.nodeData)
+      }).then((node) => {
+        self.nodeData = node;
+        self.setState({showSchema: true});
+        this.context.ParentForm.setState({outputStreamObj: []});
       });
-
-      if(tempStreamArr.length){
-        this.nodeData.outputStreams = streams;
-        this.updateNode(this.nodeData.id);
-      } else {
-        streams.map((s) => {
-          promiseArr.push(TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(s)}));
-        });
-
-        Promise.all(promiseArr).then(results => {
-          self.nodeData.outputStreamIds = [];
-          results.map(result => {
-            self.nodeData.outputStreamIds.push(result.id);
-          });
-          this.updateNode(self.nodeData.id);
-        });
-      }
     });
   }
 
@@ -248,9 +241,52 @@ export default class CustomNodeForm extends Component {
     this.nodeData.name = name;
     this.nodeData.description = description;
 
+    // outputStreams data is formated for the server
+    const streamFields  = ProcessorUtils.generateOutputStreamsArr(this.streamObj.fields,0);
+
+    if(this.nodeData.outputStreams.length > 0){
+      this.nodeData.outputStreams[0].fields = streamFields;
+    } else {
+      this.nodeData.outputStreams.push({fields: streamFields, streamId: this.streamObj.streamId});
+    }
+
+    this.nodeData.config.properties.outputStreamToSchema = {
+      [this.streamObj.streamId]: {fields: streamFields}
+    };
+
+    this.nodeData.config.properties.inputSchemaMap = {
+      [this.inputStream.streamId]: this.state.mappingObj
+    };
+
     return TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {
       body: JSON.stringify(this.nodeData)
     });
+  }
+
+  handleOutputKeysChange(arr){
+    if(arr.length){
+      this.setState({outputKeys : arr});
+      this.streamObj.fields = arr;
+      this.context.ParentForm.setState({outputStreamObj: this.streamObj});
+    } else {
+      this.setState({outputKeys : []});
+      this.streamObj.fields = [];
+      this.context.ParentForm.setState({outputStreamObj: this.streamObj});
+    }
+  }
+
+  getMappingOptions(fieldObj) {
+    const options = this.state.inputSchema.fields.filter(f=>{
+      return f.type === fieldObj.type;
+    }) || [];
+    const value = this.state.mappingObj[fieldObj.name] || '';
+    return {options, value};
+  }
+
+  handleMappingChange(obj, value){
+    let {mappingObj} = this.state;
+    mappingObj[obj.name] = value.name;
+    this.setState({mappingObj});
   }
 
   render() {
@@ -262,7 +298,7 @@ export default class CustomNodeForm extends Component {
       targetNodes,
       linkShuffleOptions
     } = this.props;
-    let {showSchema, showError, showErrorLabel} = this.state;
+    let {showSchema, showError, showErrorLabel, outputKeys, fieldList,showLoading} = this.state;
     const disabledFields = this.props.testRunActivated ? true : !editMode;
     return (
       <div className="modal-form processor-modal-form">
@@ -270,66 +306,100 @@ export default class CustomNodeForm extends Component {
           display: "none"
         }}/>}>
           <form className="customFormClass">
-            {this.state.userInputs.map((f, i) => {
-              return (
-                <div className="form-group" key={i}>
-                  {f.fieldName !== "parallelism"
-                    ? <label>{f.uiName} {f.isOptional
-                          ? null
-                          : <span className="text-danger">*</span>}
-                      </label>
-                    : ''
-}
-                  <div>
-                    {f.type === "boolean"
-                      ? [< Radio key = "1" inline = {
-                          true
+            {
+              showLoading
+              ? <div className="loading-img text-center">
+                  <img src="styles/img/start-loader.gif" alt="loading" style={{
+                    marginTop: "140px"
+                  }}/>
+                </div>
+              : <div>
+                  {this.state.userInputs.map((f, i) => {
+                    return (
+                      <div className="form-group" key={i}>
+                        {f.fieldName !== "parallelism"
+                          ? <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">{f.tooltip}</Popover>}>
+                              <label>{f.uiName} {f.isOptional
+                                ? null
+                                : <span className="text-danger">*</span>}
+                              </label>
+                            </OverlayTrigger>
+                          : ''
                         }
-                        data-label = "true" data-name = {
-                          f.fieldName
-                        }
-                        onChange = {
-                          this.handleRadioBtn.bind(this)
-                        }
-                        checked = {
-                          this.state[f.fieldName]
-                            ? true
-                            : false
-                        }
-                        disabled = {
-                          disabledFields
-                        }> true </Radio>,
-                        <Radio
-                            key="2"
-                            inline={true}
-                            data-label="false"
-                            data-name={f.name}
-                            onChange={this.handleRadioBtn.bind(this)}
-                            checked={this.state[f.fieldName] ? false : true}
-                            disabled={disabledFields}>false
-                        </Radio>
-                      ]
-                      : f.fieldName !== "parallelism"
-                        ? <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">{f.tooltip}</Popover>}>
-                          <input name={f.fieldName} value={this.state[f.fieldName]} onChange={this.handleValueChange.bind(this, f)} type={f.type} className={!f.isOptional && showError && f.isInvalid
-                            ? "form-control invalidInput"
-                            : "form-control"} required={f.isOptional
-                            ? false
-                            : true} disabled={disabledFields} min={(f.type === "number" && f.fieldName === "parallelism")
-                            ? 1
-                            : f.type === "number"
-                              ? 0
-                              : null} inputMode={f.type === "number"
-                            ? "numeric"
-                            : null}/>
-                          </OverlayTrigger>
-                        : ''
-}
+                        <div>
+                          {f.type === "boolean"
+                            ? [< Radio key = "1" inline = {
+                                true
+                              }
+                              data-label = "true" data-name = {
+                                f.fieldName
+                              }
+                              onChange = {
+                                this.handleRadioBtn.bind(this)
+                              }
+                              checked = {
+                                this.state[f.fieldName]
+                                  ? true
+                                  : false
+                              }
+                              disabled = {
+                                disabledFields
+                              }> true </Radio>,
+                              <Radio
+                                  key="2"
+                                  inline={true}
+                                  data-label="false"
+                                  data-name={f.name}
+                                  onChange={this.handleRadioBtn.bind(this)}
+                                  checked={this.state[f.fieldName] ? false : true}
+                                  disabled={disabledFields}>false
+                              </Radio>
+                            ]
+                            : f.fieldName !== "parallelism"
+                              ? <input name={f.fieldName} value={this.state[f.fieldName]} onChange={this.handleValueChange.bind(this, f)} type={f.type} className={!f.isOptional && showError && f.isInvalid
+                                  ? "form-control invalidInput"
+                                  : "form-control"} required={f.isOptional
+                                  ? false
+                                  : true} disabled={disabledFields} min={(f.type === "number" && f.fieldName === "parallelism")
+                                  ? 1
+                                  : f.type === "number"
+                                    ? 0
+                                    : null} inputMode={f.type === "number"
+                                  ? "numeric"
+                                  : null}/>
+                              : ''
+                            }
+                        </div>
+                      </div>
+                    );
+                  })
+                }
+                <div className="form-group">
+                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Output Fields</Popover>}>
+                    <label>Fields Mapping
+                      {/* <span className="text-danger">*</span> */}
+                    </label>
+                  </OverlayTrigger>
+                  <div className="row">
+                    {this.inputStream && this.inputStream.fields.map((f, i)=>{
+                      const {options, value} = this.getMappingOptions(f);
+                      return <div key={i} className="m-b-xs col-md-12">
+                          <div className="col-md-4" style={{lineHeight: '2.5'}}>{f.name}</div>
+                          <div className="col-md-8"><Select value={value} options={options} onChange={this.handleMappingChange.bind(this, f)} required={true} disabled={disabledFields} valueKey="name" labelKey="name" /></div>
+                        </div>;
+                    })}
                   </div>
                 </div>
-              );
-            })
-}
+                <div className="form-group">
+                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Output Fields</Popover>}>
+                  <label>Output Fields
+                    <span className="text-danger">*</span>
+                  </label>
+                  </OverlayTrigger>
+                    <Select className="menu-outer-top" value={outputKeys} options={fieldList} onChange={this.handleOutputKeysChange.bind(this)} multi={true} required={true} disabled={disabledFields} valueKey="name" labelKey="name"/>
+                </div>
+                </div>
+            }
           </form>
         </Scrollbars>
       </div>

@@ -28,7 +28,6 @@ import {FormGroup,InputGroup,FormControl,Button} from 'react-bootstrap';
 import {BtnDelete, BtnEdit} from '../../components/ActionButtons';
 import ConfigFieldsForm from './ConfigFieldsForm';
 import CustomProcessorREST from '../../rest/CustomProcessorREST';
-import OutputSchemaContainer from '../OutputSchemaContainer';
 import {pageSize, toastOpt} from '../../utils/Constants';
 import FSReactToastr from '../../components/FSReactToastr';
 import ReactCodemirror from 'react-codemirror';
@@ -69,13 +68,15 @@ class CustomProcessorForm extends Component {
     jarFileName: '',
     fileName: '',
     inputSchema: '',
-    outputStreamToSchema: [],
+    outputSchema: '',
     topologyComponentUISpecification: [],
     fieldId: null,
     modalTitle: 'Add Config  Field',
     showNameError: false,
-    showCodeMirror : false,
-    expandCodemirror : false,
+    showCodeMirrorInput : false,
+    showCodeMirrorOutput : false,
+    expandCodemirrorInput : false,
+    expandCodemirrorOuput : false,
     fieldsError : {
       whiteSpaceError:false,
       pName : false,
@@ -111,19 +112,11 @@ class CustomProcessorForm extends Component {
           customProcessorImpl,
           jarFileName,
           inputSchema,
-          outputStreamToSchema,
+          outputSchema,
           topologyComponentUISpecification
         } = processor.entities[0];
         inputSchema = JSON.stringify(inputSchema.fields, null, "  ");
-        let arr = [],
-          streamIds = _.keys(outputStreamToSchema);
-        streamIds.map((key) => {
-          arr.push({
-            streamId: key,
-            fields: JSON.stringify(outputStreamToSchema[key].fields, null, "  ")
-          });
-        });
-        outputStreamToSchema = arr;
+        outputSchema = JSON.stringify(outputSchema.fields, null, "  ");
         topologyComponentUISpecification.fields.map((o) => {
           o.id = this.idCount++;
         });
@@ -134,9 +127,11 @@ class CustomProcessorForm extends Component {
           customProcessorImpl,
           jarFileName,
           inputSchema,
-          outputStreamToSchema,
-          showCodeMirror : true,
-          expandCodemirror : false
+          outputSchema,
+          showCodeMirrorInput : true,
+          expandCodemirrorInput : false,
+          showCodeMirrorOutput : true,
+          expandCodemirrorOutput : false
         };
         obj.topologyComponentUISpecification = topologyComponentUISpecification.fields;
         CustomProcessorREST.getCustomProcessorFile(jarFileName)
@@ -302,22 +297,9 @@ class CustomProcessorForm extends Component {
       jarFileName,
       topologyComponentUISpecification,
       inputSchema,
+      outputSchema,
       fieldsError
     } = this.state;
-    let outputStreams = this.refs.OutputSchemaContainer.getOutputStreams();
-    let outputStreamFlag = false;
-    outputStreams.map((o) => {
-      let schema = o.fields.length > 0 ? JSON.parse(o.fields) : "";
-      if (!(schema instanceof Array) || schema.length <= 0) {
-        outputStreamFlag = true;
-      }
-    });
-    if (outputStreamFlag) {
-      FSReactToastr.warning(
-        <strong>Output streams needs to be an array with atleast one field object.</strong>
-      );
-      validDataFlag = false;
-    }
 
     if (name !== '') {
       let errorObj = this.validateName(name);
@@ -326,7 +308,7 @@ class CustomProcessorForm extends Component {
       }
     }
 
-    if (streamingEngine === '' || name === '' || description === '' || customProcessorImpl === '' || jarFileName === '' || inputSchema === '' || outputStreams.length === 0 || Utils.checkWhiteSpace(name)) {
+    if (streamingEngine === '' || name === '' || description === '' || customProcessorImpl === '' || jarFileName === '' || inputSchema === '' || outputSchema === '' || Utils.checkWhiteSpace(name)) {
       name === '' ? fieldsError.pName = true : ''  ;
       description === '' ? fieldsError.desc = true :  '';
       customProcessorImpl === '' ? fieldsError.classNameType = true : '' ;
@@ -344,9 +326,9 @@ class CustomProcessorForm extends Component {
       customProcessorImpl,
       jarFileName,
       inputSchema,
+      outputSchema,
       fieldsChk
     } = this.state;
-    let outputStreams = this.refs.OutputSchemaContainer.getOutputStreams();
     const emptyVal = [
       name,
       description,
@@ -354,13 +336,13 @@ class CustomProcessorForm extends Component {
       jarFileName,
       inputSchema
     ];
-    if (streamingEngine === '' || name === '' || description === '' || customProcessorImpl === '' || jarFileName === '' || inputSchema === '' || outputStreams.length === 0 ) {
+    if (streamingEngine === '' || name === '' || description === '' || customProcessorImpl === '' || jarFileName === '' || inputSchema === '' || outputSchema === '' ) {
       if (fieldsChk) {
         let filterVal = emptyVal.filter(val => {
           return val.length !== 0;
         });
         (filterVal.length !== emptyVal.length)
-          ? (filterVal.length === 0 && outputStreams.length === 1)
+          ? (filterVal.length === 0)
             ? this.navigateFlag = true
             : this.setState({
               fieldsChk: false
@@ -385,14 +367,9 @@ class CustomProcessorForm extends Component {
       let inputSchema = {
         fields: JSON.parse(this.state.inputSchema)
       };
-      let obj = {};
-      let outputStreams = this.refs.OutputSchemaContainer.getOutputStreams();
-      outputStreams.map((o) => {
-        obj[o.streamId] = {
-          fields: JSON.parse(o.fields)
-        };
-      });
-      let outputStreamToSchema = obj;
+      let outputSchema = {
+        fields: JSON.parse(this.state.outputSchema)
+      };
 
       let configFieldsArr = topologyComponentUISpecification.map((o) => {
         let {
@@ -421,7 +398,7 @@ class CustomProcessorForm extends Component {
         description,
         customProcessorImpl,
         inputSchema,
-        outputStreamToSchema,
+        outputSchema,
         topologyComponentUISpecification: {
           fields: configFieldsArr
         },
@@ -445,6 +422,9 @@ class CustomProcessorForm extends Component {
   handleInputSchemaChange(json) {
     this.setState({inputSchema: json});
   }
+  handleOutputSchemaChange(json) {
+    this.setState({outputSchema: json});
+  }
 
   handleKeyPress = (event) => {
     if (event.key === "Enter") {
@@ -457,54 +437,81 @@ class CustomProcessorForm extends Component {
     }
   }
 
-  handleFileChange = (file) => {
+  handleFileChange = (file, field) => {
     if(file){
       const fileName = file.name;
       const reader = new FileReader();
       reader.onload = function(e) {
         if(Utils.validateJSON(reader.result)) {
-          const tempInputSchema = JSON.stringify(JSON.parse(reader.result),null,"  ");
-          this.setState({inputSchema : tempInputSchema,showCodeMirror:true});
+          const tempSchema = JSON.stringify(JSON.parse(reader.result),null,"  ");
+          let stateObj = {};
+          if(field == 'inputSchema'){
+            stateObj.showCodeMirrorInput = true;
+            stateObj.inputSchema = tempSchema;
+          } else {
+            stateObj.showCodeMirrorOutput = true;
+            stateObj.outputSchema = tempSchema;
+          }
+          this.setState(stateObj);
         }
       }.bind(this);
       reader.readAsText(file);
     }
   }
 
-  fileHandler = (type,e) => {
+  fileHandler = (type, field, e) => {
     e.preventDefault();
     e.stopPropagation();
     if(type === 'drop'){
       if(e.dataTransfer.files.length){
-        this.handleFileChange(e.dataTransfer.files[0]);
+        this.handleFileChange(e.dataTransfer.files[0], field);
       }
     } else {
       if(e.target.files.length){
-        this.handleFileChange(e.target.files[0]);
+        this.handleFileChange(e.target.files[0], field);
       } else {
         cnosole.log();
       }
     }
   }
 
-  hideCodeMirror = (e) => {
+  hideCodeMirror = (field, e) => {
     e.preventDefault();
-    this.setState({inputSchema : '',showCodeMirror:false});
+    let stateObj = {};
+    if(field == 'inputSchema'){
+      stateObj.showCodeMirrorInput = false;
+      stateObj.inputSchema = '';
+    } else {
+      stateObj.showCodeMirrorOutput = false;
+      stateObj.outputSchema = '';
+    }
+    this.setState(stateObj);
   }
 
-  outerDivClicked = (e) => {
+  outerDivClicked = (field, e) => {
     e.preventDefault();
-    this.setState({showCodeMirror:true});
+    let stateObj = {};
+    if(field == 'inputSchema'){
+      stateObj.showCodeMirrorInput = true;
+    } else {
+      stateObj.showCodeMirrorOutput = true;
+    }
+    this.setState(stateObj);
   }
 
-  handleExpandClick = (e) => {
+  handleExpandClick = (field, e) => {
     e.preventDefault();
-    const {expandCodemirror} = this.state;
-    this.setState({expandCodemirror :!expandCodemirror});
+    let stateObj = {};
+    if(field == 'inputSchema'){
+      stateObj.expandCodemirrorInput = !this.state.expandCodemirrorInput;
+    } else {
+      stateObj.expandCodemirrorOutput = !this.state.expandCodemirrorOutput;
+    }
+    this.setState(stateObj);
   }
 
   render() {
-    const {showCodeMirror,expandCodemirror,fieldsError} = this.state;
+    const {showCodeMirrorInput, showCodeMirrorOutput, expandCodemirrorInput, expandCodemirrorOutput, fieldsError} = this.state;
     const {whiteSpaceError,pName ,desc,classNameType,fileError} = fieldsError;
     const jsonoptions = {
       lineNumbers: true,
@@ -650,21 +657,21 @@ class CustomProcessorForm extends Component {
                     <label className="col-sm-2 control-label" data-stest="inputSchemaLable">Input Schema
                       <span className="text-danger">*</span>
                     </label>
-                    <div className={`${expandCodemirror ? 'col-md-10' : 'col-sm-6'}`}  onDrop={this.fileHandler.bind(this,'drop')} onDragOver={(e) => {
+                    <div className={`${expandCodemirrorInput ? 'col-md-10' : 'col-sm-6'}`}  onDrop={this.fileHandler.bind(this,'drop', 'inputSchema')} onDragOver={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                       return false;
                     }}>
-                      <a className="pull-right clear-link" href="javascript:void(0)" onClick={this.hideCodeMirror.bind(this)}> CLEAR </a>
+                      <a className="pull-right clear-link" href="javascript:void(0)" onClick={this.hideCodeMirror.bind(this, 'inputSchema')}> CLEAR </a>
                       <span className="pull-right" style={{margin: '-1px 5px 0'}}>|</span>
-                      <a className="pull-right" href="javascript:void(0)" onClick={this.handleExpandClick.bind(this)}>
-                        {expandCodemirror ? <i className="fa fa-compress"></i> : <i className="fa fa-expand"></i>}
+                      <a className="pull-right" href="javascript:void(0)" onClick={this.handleExpandClick.bind(this, 'inputSchema')}>
+                        {expandCodemirrorInput ? <i className="fa fa-compress"></i> : <i className="fa fa-expand"></i>}
                       </a>
                       {
-                        showCodeMirror
+                        showCodeMirrorInput
                         ? <ReactCodemirror ref="JSONCodemirror" value={this.state.inputSchema} onChange={this.handleInputSchemaChange.bind(this)} options={jsonoptions}/>
                         : <div ref="browseFileContainer" className={"addSchemaBrowseFileContainer"}>
-                            <div onClick={this.outerDivClicked.bind(this)} data-stest="inputSchemaBox">
+                            <div onClick={this.outerDivClicked.bind(this, 'inputSchema')} data-stest="inputSchemaBox">
                             <div className="main-title">Copy & Paste</div>
                             <div className="sub-title m-t-sm m-b-sm">OR</div>
                             <div className="main-title">Drag & Drop</div>
@@ -673,7 +680,7 @@ class CustomProcessorForm extends Component {
                             <div  className="m-t-md">
                               <input type="file" ref="browseFile" accept=".json" className="inputfile" onClick={(e) => {
                                 e.stopPropagation();
-                              }} onChange={this.fileHandler.bind(this,'browser')}/>
+                              }} onChange={this.fileHandler.bind(this,'browser', 'inputSchema')}/>
                               <label htmlFor="file" className="btn btn-success">BROWSE</label>
                               </div>
                             </div>
@@ -685,8 +692,35 @@ class CustomProcessorForm extends Component {
                     <label className="col-sm-2 control-label" data-stest="outputSchemaLable">Output Schema
                       <span className="text-danger">*</span>
                     </label>
-                    <div className="col-sm-10">
-                      <OutputSchemaContainer ref="OutputSchemaContainer" streamData={this.state.outputStreamToSchema}/>
+                    <div className={`${expandCodemirrorOutput ? 'col-md-10' : 'col-sm-6'}`}  onDrop={this.fileHandler.bind(this,'drop', 'outputSchema')} onDragOver={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    }}>
+                      <a className="pull-right clear-link" href="javascript:void(0)" onClick={this.hideCodeMirror.bind(this, 'outputSchema')}> CLEAR </a>
+                      <span className="pull-right" style={{margin: '-1px 5px 0'}}>|</span>
+                      <a className="pull-right" href="javascript:void(0)" onClick={this.handleExpandClick.bind(this, 'outputSchema')}>
+                        {expandCodemirrorOutput ? <i className="fa fa-compress"></i> : <i className="fa fa-expand"></i>}
+                      </a>
+                      {
+                        showCodeMirrorOutput
+                        ? <ReactCodemirror ref="JSONCodemirror" value={this.state.outputSchema} onChange={this.handleOutputSchemaChange.bind(this)} options={jsonoptions}/>
+                        : <div ref="browseFileContainer" className={"addSchemaBrowseFileContainer"}>
+                            <div onClick={this.outerDivClicked.bind(this, 'outputSchema')} data-stest="outputSchemaBox">
+                            <div className="main-title">Copy & Paste</div>
+                            <div className="sub-title m-t-sm m-b-sm">OR</div>
+                            <div className="main-title">Drag & Drop</div>
+                            <div className="sub-title" style={{"marginTop": "-4px"}}>Files Here</div>
+                            <div className="sub-title m-t-sm m-b-sm">OR</div>
+                            <div  className="m-t-md">
+                              <input type="file" ref="browseFile" accept=".json" className="inputfile" onClick={(e) => {
+                                e.stopPropagation();
+                              }} onChange={this.fileHandler.bind(this,'browser', 'outputSchema')}/>
+                              <label htmlFor="file" className="btn btn-success">BROWSE</label>
+                              </div>
+                            </div>
+                          </div>
+                      }
                     </div>
                   </div>
                   <div className="form-group">
