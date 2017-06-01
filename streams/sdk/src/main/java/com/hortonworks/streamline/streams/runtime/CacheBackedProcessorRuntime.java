@@ -52,8 +52,8 @@ public abstract class CacheBackedProcessorRuntime<K, V> implements CustomProcess
      * with the logic to compute the results should go in {@link CacheBackedProcessorRuntime#processResults(StreamlineEvent)}.
      */
     @Override
-    public final List<Result> process(StreamlineEvent event) throws ProcessingException {
-        List<Result> results;
+    public final List<StreamlineEvent> process(StreamlineEvent event) throws ProcessingException {
+        List<StreamlineEvent> results;
         final K key = getKey(event);
         V val = cache.get(key);
 
@@ -71,7 +71,7 @@ public abstract class CacheBackedProcessorRuntime<K, V> implements CustomProcess
      * @param event to be processed.
      * @return The list wrapping the results of processing the event specified in argument
      */
-    protected abstract List<Result> processResults(StreamlineEvent event);
+    protected abstract List<StreamlineEvent> processResults(StreamlineEvent event);
 
     /**
      * Computes a list of results form the value in cache. If the list of values is stored in cache directly,
@@ -79,7 +79,7 @@ public abstract class CacheBackedProcessorRuntime<K, V> implements CustomProcess
      * @param val the value stored into the cache
      * @return A list of results created from the value in cache.
      */
-    protected abstract List<Result> getResultsForCachedValue(V val);
+    protected abstract List<StreamlineEvent> getResultsForCachedValue(V val);
 
     /**
      * @param event for which to build the key that is to be used to store values in the cache
@@ -96,7 +96,7 @@ public abstract class CacheBackedProcessorRuntime<K, V> implements CustomProcess
      * @param event that is to be used to create the value to store into the cache
      * @return The value to be stored into the cache.
      */
-    protected abstract V getVal(StreamlineEvent event, List<Result> results);
+    protected abstract V getVal(StreamlineEvent event, List<StreamlineEvent> results);
 
     /**
      * @return A CacheFactory object that is used to create the cache instance used by this
@@ -111,14 +111,14 @@ public abstract class CacheBackedProcessorRuntime<K, V> implements CustomProcess
      * {@link CacheBackedProcessorRuntime#processResults(StreamlineEvent)}
      * @param <K> Type of the key used to cache values
      */
-    public static abstract class CacheResults<K> extends CacheBackedProcessorRuntime<K, List<Result>> {
+    public static abstract class CacheResults<K> extends CacheBackedProcessorRuntime<K, List<StreamlineEvent>> {
         @Override
-        protected List<Result> getResultsForCachedValue(List<Result> results) {
+        protected List<StreamlineEvent> getResultsForCachedValue(List<StreamlineEvent> results) {
             return results;
         }
 
         @Override
-        protected List<Result> getVal(StreamlineEvent event, List<Result> results) {
+        protected List<StreamlineEvent> getVal(StreamlineEvent event, List<StreamlineEvent> results) {
             return results;
         }
     }

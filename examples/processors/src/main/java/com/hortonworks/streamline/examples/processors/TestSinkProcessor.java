@@ -58,7 +58,7 @@ public class TestSinkProcessor implements CustomProcessorRuntime {
         LOG.debug("Config valid ");
     }
 
-    public List<Result> process(StreamlineEvent streamlineEvent) throws ProcessingException {
+    public List<StreamlineEvent> process(StreamlineEvent streamlineEvent) throws ProcessingException {
         try {
             LOG.debug("Processing {}", streamlineEvent);
             JSONObject json = new JSONObject();

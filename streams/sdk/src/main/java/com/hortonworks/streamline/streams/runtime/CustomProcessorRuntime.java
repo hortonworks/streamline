@@ -15,14 +15,17 @@
  **/
 package com.hortonworks.streamline.streams.runtime;
 
+import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.streams.exception.ProcessingException;
 
+import java.util.List;
 import java.util.Map;
 
 /**
  * An interface for supporting custom processor components in an Streamline topology
  */
-public interface CustomProcessorRuntime extends ProcessorRuntime {
+public interface CustomProcessorRuntime {
 
     /**
      * Validate configuration provided and throw a {@link ConfigException} if missing or invalid configuration
@@ -30,5 +33,24 @@ public interface CustomProcessorRuntime extends ProcessorRuntime {
      * @param config
      */
     void validateConfig(Map<String, Object> config) throws ConfigException;
+
+    /**
+     * Process the {@link StreamlineEvent} and throw a {@link ProcessingException} if an error arises during processing
+     * @param event to be processed
+     * @return List of events to be emitted for the input streamline event adhering to the output schema defined while registering the CP implementation
+     * @throws ProcessingException
+     */
+    List<StreamlineEvent> process (StreamlineEvent event) throws ProcessingException;
+
+    /**
+     * Initialize any necessary resources needed for the implementation
+     * @param config
+     */
+    void initialize(Map<String, Object> config);
+
+    /**
+     * Clean up any necessary resources needed for the implementation
+     */
+    void cleanup();
 
 }

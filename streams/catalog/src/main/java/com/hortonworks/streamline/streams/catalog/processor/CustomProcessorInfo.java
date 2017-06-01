@@ -39,7 +39,7 @@ public class CustomProcessorInfo {
     public static final String DESCRIPTION = "description";
     public static final String JAR_FILE_NAME = "jarFileName";
     public static final String INPUT_SCHEMA = "inputSchema";
-    public static final String OUTPUT_STREAM_TO_SCHEMA = "outputStreamToSchema";
+    public static final String OUTPUT_SCHEMA = "outputSchema";
     public static final String CUSTOM_PROCESSOR_IMPL = "customProcessorImpl";
 
     private String streamingEngine;
@@ -48,7 +48,7 @@ public class CustomProcessorInfo {
     private String jarFileName;
     private TopologyComponentUISpecification topologyComponentUISpecification;
     private Schema inputSchema;
-    private Map<String, Schema> outputStreamToSchema;
+    private Schema outputSchema;
     private String customProcessorImpl;
 
     @Override
@@ -60,7 +60,7 @@ public class CustomProcessorInfo {
                 ", jarFileName='" + jarFileName + '\'' +
                 ", topologyComponentUISpecification='" + topologyComponentUISpecification+ '\'' +
                 ", inputSchema=" + inputSchema +
-                ", outputStreamToSchema=" + outputStreamToSchema +
+                ", outputSchema=" + outputSchema +
                 ", customProcessorImpl='" + customProcessorImpl + '\'' +
                 '}';
     }
@@ -80,7 +80,7 @@ public class CustomProcessorInfo {
                 .topologyComponentUISpecification != null)
             return false;
         if (inputSchema != null ? !inputSchema.equals(that.inputSchema) : that.inputSchema != null) return false;
-        if (outputStreamToSchema != null ? !outputStreamToSchema.equals(that.outputStreamToSchema) : that.outputStreamToSchema != null) return false;
+        if (outputSchema != null ? !outputSchema.equals(that.outputSchema) : that.outputSchema != null) return false;
         return !(customProcessorImpl != null ? !customProcessorImpl.equals(that.customProcessorImpl) : that.customProcessorImpl != null);
 
     }
@@ -93,17 +93,17 @@ public class CustomProcessorInfo {
         result = 31 * result + (jarFileName != null ? jarFileName.hashCode() : 0);
         result = 31 * result + (topologyComponentUISpecification != null ? topologyComponentUISpecification.hashCode() : 0);
         result = 31 * result + (inputSchema != null ? inputSchema.hashCode() : 0);
-        result = 31 * result + (outputStreamToSchema != null ? outputStreamToSchema.hashCode() : 0);
+        result = 31 * result + (outputSchema != null ? outputSchema.hashCode() : 0);
         result = 31 * result + (customProcessorImpl != null ? customProcessorImpl.hashCode() : 0);
         return result;
     }
 
-    public Map<String, Schema> getOutputStreamToSchema() {
-        return outputStreamToSchema;
+    public Schema getOutputSchema() {
+        return outputSchema;
     }
 
-    public void setOutputStreamToSchema(Map<String, Schema> outputStreamToSchema) {
-        this.outputStreamToSchema = outputStreamToSchema;
+    public void setOutputSchema(Schema outputSchema) {
+        this.outputSchema = outputSchema;
     }
 
     public String getStreamingEngine() {
@@ -173,9 +173,7 @@ public class CustomProcessorInfo {
             this.setJarFileName(config.get(JAR_FILE_NAME));
             this.setCustomProcessorImpl(config.get(CUSTOM_PROCESSOR_IMPL));
             this.setInputSchema(Utils.getSchemaFromConfig(config.get(INPUT_SCHEMA)));
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, Schema> outputStreamToSchema = objectMapper.readValue(config.get(OUTPUT_STREAM_TO_SCHEMA), new TypeReference<Map<String, Schema>>() {});
-            this.setOutputStreamToSchema(outputStreamToSchema);
+            this.setOutputSchema(Utils.getSchemaFromConfig(config.get(OUTPUT_SCHEMA)));
             this.setTopologyComponentUISpecification(getCustomProcessorUISpecification(topologyComponentUISpecification));
         }
         return this;
@@ -206,8 +204,8 @@ public class CustomProcessorInfo {
         ObjectMapper objectMapper = new ObjectMapper();
         uiFields.add(this.createUIField(INPUT_SCHEMA, INPUT_SCHEMA, false, false, "Custom processor input schema", TopologyComponentUISpecification
                 .UIFieldType.STRING, objectMapper.writeValueAsString(this.inputSchema)));
-        uiFields.add(this.createUIField(OUTPUT_STREAM_TO_SCHEMA, OUTPUT_STREAM_TO_SCHEMA, false, false, "Custom processor output schema",
-                TopologyComponentUISpecification.UIFieldType.STRING, objectMapper.writeValueAsString(this.outputStreamToSchema)));
+        uiFields.add(this.createUIField(OUTPUT_SCHEMA, OUTPUT_SCHEMA, false, false, "Custom processor output schema",
+                TopologyComponentUISpecification.UIFieldType.STRING, objectMapper.writeValueAsString(this.outputSchema)));
         TopologyComponentUISpecification topologyComponentUISpecification = new TopologyComponentUISpecification();
         topologyComponentUISpecification.setFields(uiFields);
         result.setTopologyComponentUISpecification(topologyComponentUISpecification);
@@ -256,7 +254,7 @@ public class CustomProcessorInfo {
         result.add(DESCRIPTION);
         result.add(JAR_FILE_NAME);
         result.add(INPUT_SCHEMA);
-        result.add(OUTPUT_STREAM_TO_SCHEMA);
+        result.add(OUTPUT_SCHEMA);
         result.add(CUSTOM_PROCESSOR_IMPL);
         return result;
     }

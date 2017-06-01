@@ -77,7 +77,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -940,7 +939,7 @@ public class RestIntegrationTest {
         customProcessorInfo.setCustomProcessorImpl(ConsoleCustomProcessor.class.getCanonicalName());
         customProcessorInfo.setStreamingEngine(TopologyLayoutConstants.STORM_STREAMING_ENGINE);
         customProcessorInfo.setInputSchema(getSchema());
-        customProcessorInfo.setOutputStreamToSchema(getOutputStreamsToSchema());
+        customProcessorInfo.setOutputSchema(getSchema());
         return customProcessorInfo;
     }
 
@@ -954,12 +953,6 @@ public class RestIntegrationTest {
 
     private Schema getSchema () {
         return new Schema.SchemaBuilder().field(new Schema.Field("field1", Schema.Type.INTEGER)).build();
-    }
-
-    private Map<String, Schema> getOutputStreamsToSchema() {
-        Map<String, Schema> outputStreamToSchema = new HashMap<>();
-        outputStreamToSchema.put("outputStream", getSchema());
-        return outputStreamToSchema;
     }
 
     private java.io.File getCpJarFile () throws IOException {

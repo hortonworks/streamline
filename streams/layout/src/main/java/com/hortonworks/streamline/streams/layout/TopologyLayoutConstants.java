@@ -143,6 +143,7 @@ public final class TopologyLayoutConstants {
     public final static String JSON_KEY_NORMALIZATION_PROCESSOR_CONFIG ="normalizationProcessorConfig";
 
     public final static String JSON_KEY_INPUT_SCHEMA = "inputSchema";
+    public final static String JSON_KEY_INPUT_SCHEMA_MAP = "inputSchemaMap";
     public final static String JSON_KEY_OUTPUT_STREAMS_SCHEMA = "outputStreamToSchema";
     public final static String JSON_KEY_CUSTOM_PROCESSOR_DESCRIPTION = "description";
     public final static String JSON_KEY_CUSTOM_PROCESSOR_IMPL = "customProcessorImpl";

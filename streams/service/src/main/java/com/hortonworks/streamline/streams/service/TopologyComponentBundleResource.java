@@ -421,9 +421,9 @@ public class TopologyComponentBundleResource {
                 throw BadRequestException.missingParameter(missingParam);
             }
             CustomProcessorInfo customProcessorInfo = new ObjectMapper().readValue(customProcessorInfoStr, CustomProcessorInfo.class);
-            if (!isValidOutputSchema(customProcessorInfo.getOutputStreamToSchema())) {
+            if (!isValidOutputSchema(customProcessorInfo.getOutputSchema())) {
                 LOG.debug("Output schema is missing while adding custom processor");
-                throw BadRequestException.missingParameter(CustomProcessorInfo.OUTPUT_STREAM_TO_SCHEMA);
+                throw BadRequestException.missingParameter(CustomProcessorInfo.OUTPUT_SCHEMA);
             }
             if (!verifyCustomProcessorImplFromJar(new ByteArrayInputStream(jarBytes), customProcessorInfo)) {
                 String message = "Custom Processor jar file is missing customProcessorImpl class " + customProcessorInfo.getCustomProcessorImpl();
@@ -466,9 +466,9 @@ public class TopologyComponentBundleResource {
                 throw BadRequestException.missingParameter(missingParam);
             }
             CustomProcessorInfo customProcessorInfo = new ObjectMapper().readValue(customProcessorInfoStr, CustomProcessorInfo.class);
-            if (!isValidOutputSchema(customProcessorInfo.getOutputStreamToSchema())) {
+            if (!isValidOutputSchema(customProcessorInfo.getOutputSchema())) {
                 LOG.debug("Output schema is missing while updating custom processor");
-                throw BadRequestException.missingParameter(CustomProcessorInfo.OUTPUT_STREAM_TO_SCHEMA);
+                throw BadRequestException.missingParameter(CustomProcessorInfo.OUTPUT_SCHEMA);
             }
             if (!verifyCustomProcessorImplFromJar(new ByteArrayInputStream(jarBytes), customProcessorInfo)) {
                 String message = "Custom Processor jar file is missing customProcessorImpl class " + customProcessorInfo.getCustomProcessorImpl();
@@ -611,14 +611,9 @@ public class TopologyComponentBundleResource {
         return result;
     }
 
-    private boolean isValidOutputSchema (Map<String, Schema> outputSchema) {
-        if (outputSchema == null || outputSchema.isEmpty()) {
+    private boolean isValidOutputSchema (Schema outputSchema) {
+        if (outputSchema == null || outputSchema.getFields() == null || outputSchema.getFields().isEmpty()) {
             return false;
-        }
-        for (Schema schema: outputSchema.values()) {
-            if (schema.getFields() == null || schema.getFields().isEmpty()) {
-                return false;
-            }
         }
         return true;
     }

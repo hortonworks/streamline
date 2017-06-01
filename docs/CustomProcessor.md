@@ -22,7 +22,7 @@ description| String| Description of the custom processor
 jarFileName| String| Unique name of the jar file that will be used to upload/download the jar
 customProcessorImpl| String| Fully qualified class name implementing the interface
 inputSchema| Schema| Input schema that this custom processor expects
-outputStreamToSchema| Map<String,Schema>| Output schema per stream that it emits
+outputSchema| Schema| Output schema that it emits
 topologyComponentUISpecification|TopologyComponentUISpecification| List of fields needed from user. Used by UI in topology editor
 
 
@@ -66,25 +66,23 @@ topologyComponentUISpecification|TopologyComponentUISpecification| List of field
                     }
                 ]
             },
-            "outputStreamToSchema":{
-                "stream1":{
-                    "fields":[
-                        {
-                            "name":"childField1",
-                            "type":"INTEGER","optional":false
-                        },
-                        {
-                            "name":"childField2",
-                            "type":"BOOLEAN",
-                            "optional":false
-                        },
-                        {
-                            "name":"topLevelStringField",
-                            "type":"STRING",
-                            "optional":false
-                        }
-                    ]
-                }
+            "outputSchema":{
+                "fields":[
+                    {
+                        "name":"childField1",
+                        "type":"INTEGER","optional":false
+                    },
+                    {
+                        "name":"childField2",
+                        "type":"BOOLEAN",
+                        "optional":false
+                    },
+                    {
+                        "name":"topLevelStringField",
+                        "type":"STRING",
+                        "optional":false
+                    }
+                ]
             },
             "customProcessorImpl":"com.hortonworks.iotas.streams.runtime.processor.ConsoleCustomProcessorRuntime"
         }
@@ -182,7 +180,7 @@ file in the tar should have the same name as the jarFileName property in info.js
   "jarFileName": "streamline-core.jar",
   "topologyComponentUISpecification": {"fields": []},
   "inputSchema": {"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]},
-  "outputStreamToSchema": {"stream1":{"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]}},
+  "outputSchema": {"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]},
   "customProcessorImpl": "com.hortonworks.iotas.streams.runtime.processor.ConsoleCustomProcessorRuntime"
 }
 ```

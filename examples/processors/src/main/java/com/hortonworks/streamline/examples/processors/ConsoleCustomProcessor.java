@@ -54,11 +54,9 @@ public class ConsoleCustomProcessor implements CustomProcessorRuntime {
     }
 
 
-    public List<Result> process(StreamlineEvent event) throws ProcessingException {
+    public List<StreamlineEvent> process(StreamlineEvent event) throws ProcessingException {
         LOG.info("Processing {}", event);
-        List<Result> results = new ArrayList<>();
-        results.add(new Result("stream1",Arrays.asList(event)));
-        return results;
+        return Arrays.asList(event);
     }
 
    

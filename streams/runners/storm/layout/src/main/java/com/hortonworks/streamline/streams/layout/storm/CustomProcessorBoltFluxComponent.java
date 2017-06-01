@@ -40,13 +40,14 @@ public class CustomProcessorBoltFluxComponent extends AbstractFluxComponent {
     protected void generateComponent () {
         String boltId = "customProcessorBolt" + UUID_FOR_COMPONENTS;
         String boltClassName = "com.hortonworks.streamline.streams.runtime.storm.bolt.CustomProcessorBolt";
-        String[] configMethodNames = {"customProcessorImpl", "outputSchema", "inputSchema", "config"};
+        String[] configMethodNames = {"customProcessorImpl", "outputSchema", "inputSchema", "config", "inputSchemaMap"};
         Object[] values = new Object[configMethodNames.length];
         values[0] = conf.get(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_IMPL);
         try {
             values[1] = getOutputSchemaJson();
             values[2] = getInputSchemaJson();
             values[3] = getObjectAsJson(getCustomConfig());
+            values[4] = getInputSchemaMapAsJson();
         } catch (JsonProcessingException e) {
             String message = "Error while parsing input/output/config for custom processor config while generating yaml.";
             LOG.error(message);
@@ -93,6 +94,10 @@ public class CustomProcessorBoltFluxComponent extends AbstractFluxComponent {
 
     private String getInputSchemaJson () throws JsonProcessingException {
         return getObjectAsJson(conf.get(TopologyLayoutConstants.JSON_KEY_INPUT_SCHEMA));
+    }
+
+    private String getInputSchemaMapAsJson () throws JsonProcessingException {
+        return getObjectAsJson(conf.get(TopologyLayoutConstants.JSON_KEY_INPUT_SCHEMA_MAP));
     }
 
     private String getOutputSchemaJson () throws JsonProcessingException {
