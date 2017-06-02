@@ -18,6 +18,7 @@ package com.hortonworks.streamline.webservice;
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.streamline.common.Constants;
 import com.hortonworks.streamline.common.util.WSUtils;
+import org.datanucleus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +49,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 
 public class StreamlineConfigurationResource {
     private static final Logger LOG = LoggerFactory.getLogger(StreamlineConfigurationResource.class);
+    public static final String DEFAULT_VERSION_FILE = "VERSION";
     private Map<String, Object> conf;
 
     private final String CONFIG_REGISTRY = "registry";
@@ -113,7 +115,7 @@ public class StreamlineConfigurationResource {
     }
 
     private Properties readStreamlineVersion() {
-        String versionFilePath = System.getProperty("streamline.version.file");
+        String versionFilePath = System.getProperty("streamline.version.file", DEFAULT_VERSION_FILE);
         File versionFile = new File(versionFilePath);
         Properties props = new Properties();
         if (versionFile.exists()) {
