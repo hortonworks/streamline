@@ -133,7 +133,6 @@ export default class UDFContainer extends Component {
     let {entities, filterValue, editData, fetchLoader} = this.state;
     const filteredEntities = Utils.filterByName(entities, filterValue);
     const pageSize = 8;
-    console.log(app_state.user_profile);
     return (
       <div>
         {fetchLoader

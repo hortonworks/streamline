@@ -77,9 +77,13 @@ export default class TopologyConfigContainer extends Component {
           });
           clusters = _.uniqBy(clusters, 'id');
           let securityFields = _.find(formField.fields, {"fieldName": "clustersSecurityConfig"}).fields;
-          let fieldObj = _.find(securityFields, {"fieldName": "clusterId"});
-          fieldObj.options = clusters;
-          fieldObj.type = 'CustomEnumstring';
+          if(securityFields){
+            let fieldObj = _.find(securityFields, {"fieldName": "clusterId"});
+            if(fieldObj){
+              fieldObj.options = clusters;
+              fieldObj.type = 'CustomEnumstring';
+            }
+          }
           /*
             setting value of cluster name in form data from corresponding id
           */

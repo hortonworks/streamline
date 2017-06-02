@@ -20,7 +20,7 @@ export default class NoData extends Component {
   render() {
     const {imgName, serviceFlag, environmentFlag, sourceCheck, searchVal,userRoles} = this.props;
     const tempArr = ["services", "environments", "applications"];
-    const analyst = userRoles !== undefined && userRoles.roles.indexOf("ROLE_ANALYST") !== -1 && userRoles.roles.length === 1;
+    const analyst = userRoles && userRoles.roles && userRoles.roles.indexOf("ROLE_ANALYST") !== -1 && userRoles.roles.length === 1;
     const index = _.findIndex(tempArr, function(o) {
       return o === imgName;
     });

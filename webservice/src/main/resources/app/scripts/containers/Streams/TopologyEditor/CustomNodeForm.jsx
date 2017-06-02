@@ -138,6 +138,9 @@ export default class CustomNodeForm extends Component {
     if (this.nodeData.outputStreams.length === 0) {
       this.saveStreams();
     } else {
+      if(this.nodeData.outputStreams[0].fields.length === 1 && this.nodeData.outputStreams[0].fields[0].name == 'dummyStrField'){
+        this.nodeData.outputStreams[0].fields.pop();
+      }
       this.streamObj = this.nodeData.outputStreams[0];
       this.context.ParentForm.setState({outputStreamObj: this.streamObj});
     }
@@ -145,6 +148,9 @@ export default class CustomNodeForm extends Component {
     if(properties.inputSchemaMap && properties.inputSchemaMap[this.inputStream.streamId]){
       stateObj.mappingObj = properties.inputSchemaMap[this.inputStream.streamId];
     }
+
+    keysList = JSON.parse(JSON.stringify(keysList));
+
     Array.prototype.push.apply(keysList.fields,this.state.outputSchema.fields);
     stateObj.outputKeys = this.streamObj.fields;
     stateObj.fieldList = _.unionBy(keysList.fields,'name');
@@ -158,7 +164,7 @@ export default class CustomNodeForm extends Component {
       streams = [],
       promiseArr = [];
     // nodeID is added to make streamId unique
-    streams.push({streamId: 'custom_processor_stream_'+nodeData.nodeId, fields: [{name:'dummy', type: 'STRING'}]});
+    streams.push({streamId: 'custom_processor_stream_'+nodeData.nodeId, fields: [{name:'dummyStrField', type: 'STRING'}]});
 
     streams.map((s) => {
       promiseArr.push(TopologyREST.createNode(topologyId, versionId, 'streams', {body: JSON.stringify(s)}));
@@ -276,10 +282,13 @@ export default class CustomNodeForm extends Component {
   }
 
   getMappingOptions(fieldObj) {
-    const options = this.state.inputSchema.fields.filter(f=>{
+    const options = this.inputStream.fields.filter(f=>{
       return f.type === fieldObj.type;
     }) || [];
-    const value = this.state.mappingObj[fieldObj.name] || '';
+    const v = options.find(f=>{
+      return f.name === fieldObj.name;
+    });
+    const value = this.state.mappingObj[fieldObj.name] || (v && v.name || '');
     return {options, value};
   }
 
@@ -381,7 +390,7 @@ export default class CustomNodeForm extends Component {
                     </label>
                   </OverlayTrigger>
                   <div className="row">
-                    {this.inputStream && this.inputStream.fields.map((f, i)=>{
+                    {this.state.inputSchema.fields && this.state.inputSchema.fields.map((f, i)=>{
                       const {options, value} = this.getMappingOptions(f);
                       return <div key={i} className="m-b-xs col-md-12">
                           <div className="col-md-4" style={{lineHeight: '2.5'}}>{f.name}</div>

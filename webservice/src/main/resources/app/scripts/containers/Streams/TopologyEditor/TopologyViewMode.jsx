@@ -25,6 +25,7 @@ import EnvironmentREST from '../../../rest/EnvironmentREST';
 import ClusterREST from '../../../rest/ClusterREST';
 import TopologyUtils from '../../../utils/TopologyUtils';
 import app_state from '../../../app_state';
+import {hasEditCapability, hasViewCapability,findSingleAclObj,handleSecurePermission} from '../../../utils/ACLUtils';
 import {observer} from 'mobx-react';
 
 @observer
@@ -116,7 +117,12 @@ class TopologyViewMode extends Component {
       }
     }
     const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin : false;
-    const {aclObject , permission = false} = TopologyUtils.getPermissionAndObj(Number(topologyId),userInfo, allACL || []);
+    let permission=true, aclObject={};
+    if(app_state.streamline_config.secureMode){
+      aclObject = findSingleAclObj(topologyId, allACL || []);
+      const {p_permission} = handleSecurePermission(aclObject,userInfo,"Applications");
+      permission = p_permission;
+    }
     return (
       <div>
         <div className="page-title-box row">
@@ -169,7 +175,7 @@ class TopologyViewMode extends Component {
                 onClick = {
                   killTopology
                 }> STOP </button>,
-                !permission ? <Link style={{marginLeft: '10px'}} key={2} className="btn btn-success" to={`applications/${topologyId}/edit`}>EDIT</Link> : null]
+                permission ? <Link style={{marginLeft: '10px'}} key={2} className="btn btn-success" to={`applications/${topologyId}/edit`}>EDIT</Link> : null]
             :
               <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip">Set this version as current version. If another version of topology is deployed, kill it first to set this one.</Tooltip>}>
                 <div style={{display: 'inline-block', cursor: 'not-allowed'}}>
