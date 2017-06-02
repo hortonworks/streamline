@@ -175,8 +175,9 @@ public class StormTopologyActionsImpl implements TopologyActions {
             setupSecuredStormCluster(conf);
 
             EnvironmentService environmentService = (EnvironmentService) conf.get(TopologyLayoutConstants.ENVIRONMENT_SERVICE_OBJECT);
-            Long namespaceId = (Long) conf.get(TopologyLayoutConstants.NAMESPACE_ID);
-            this.serviceConfigurationReader = new AutoCredsServiceConfigurationReader(environmentService, namespaceId);
+            Number namespaceId = (Number) conf.get(TopologyLayoutConstants.NAMESPACE_ID);
+            this.serviceConfigurationReader = new AutoCredsServiceConfigurationReader(environmentService,
+                    namespaceId.longValue());
         }
         File f = new File (stormArtifactsLocation);
         f.mkdirs();
