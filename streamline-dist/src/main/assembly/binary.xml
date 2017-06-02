@@ -161,7 +161,7 @@
             <outputDirectory>/</outputDirectory>
         </file>
         <file>
-            <source>${project.basedir}./VERSION</source>
+            <source>${project.basedir}./streamline-dist/VERSION</source>
             <outputDirectory>/</outputDirectory>
         </file>
     </files>
