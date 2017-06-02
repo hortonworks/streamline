@@ -76,7 +76,6 @@ export default class RolesListingContainer extends Component {
           if(!role.system){
             applicationRoles.push(role);
             // rolesPromiseArr.push(UserRoleREST.getRoleChildren(role.id));
-            userPromiseArr.push(UserRoleREST.getRoleUsers(role.id));
             roleOptions.push({
               name: role.name,
               label: role.name,
@@ -84,6 +83,7 @@ export default class RolesListingContainer extends Component {
               id: role.id
             });
           }
+          userPromiseArr.push(UserRoleREST.getRoleUsers(role.id));
         });
 
         results[1].entities.map((u)=>{

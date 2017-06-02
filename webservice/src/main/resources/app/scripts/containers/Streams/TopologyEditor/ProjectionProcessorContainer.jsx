@@ -239,6 +239,13 @@ export default class ProjectionProcessorContainer extends Component {
 
       // assign mainStreamObj value to "this.tempStreamContextData" make available for further methods
       this.tempStreamContextData = mainStreamObj;
+      if(!argsFieldsArrObj.length){
+        argsFieldsArrObj.push({
+          functionName: '',
+          args: [],
+          outputFieldName: ''
+        });
+      }
       this.setState({outputFieldsArr :argsFieldsArrObj,outputStreamFields: outputFieldsObj,projectionKeys:keys,projectionSelectedKey:keyData,projectionGroupByKeys : gKeys,argumentKeysGroup :argsGroupKeys,showLoading : false});
       this.context.ParentForm.setState({outputStreamObj: mainStreamObj});
     } else {
@@ -285,13 +292,9 @@ export default class ProjectionProcessorContainer extends Component {
       return false;
     }
     _.map(outputFieldsArr, (field) => {
-      _.map(_.keys(field), (key) => {
-        if(_.isArray(field[key])){
-          field[key].length === 0 ? validData.push(false) :'';
-        }else{
-          field[key] === "" ? validData.push(false)  : '';
-        }
-      });
+      if(!((field.functionName.length == 0 && field.args.length == 0 && field.outputFieldName.length == 0) || (field.functionName.length > 0 && field.args.length > 0 && field.outputFieldName.length > 0))){
+        validData.push(field);
+      }
     });
     return validData.length > 0 ? false : true;
   }
@@ -360,6 +363,9 @@ export default class ProjectionProcessorContainer extends Component {
       const {topologyId, versionId,nodeType,nodeData} = this.props;
       _.map(tempArr, (temp,index) => {
         tempArr[index].args = argumentKeysGroup[index];
+      });
+      tempArr = tempArr.filter((f) => {
+        return f.functionName.length && f.args.length && f.outputFieldName.length;
       });
       const exprObj = projectionGroupByKeys.map((field) => {return {expr: field};});
       const mergeTempArr = _.concat(tempArr,exprObj);
@@ -454,13 +460,12 @@ export default class ProjectionProcessorContainer extends Component {
     And SET functionName of outputFieldsArr
   */
   handleFieldChange(index, obj) {
-    if(obj){
-      let tempArr = _.cloneDeep(this.state.outputFieldsArr);
-      tempArr[index].functionName = obj.name;
-      this.setState({outputFieldsArr : tempArr}, () => {
-        this.setParentContextOutputStream(index);
-      });
-    }
+    obj = obj || {name: ''};
+    let tempArr = _.cloneDeep(this.state.outputFieldsArr);
+    tempArr[index].functionName = obj.name;
+    this.setState({outputFieldsArr : tempArr}, () => {
+      this.setParentContextOutputStream(index);
+    });
   }
 
   /*
@@ -618,20 +623,34 @@ export default class ProjectionProcessorContainer extends Component {
                   </div>
                 </div>
                 {outputFieldsArr.map((obj, i) => {
+                  const functionClass = [];
+                  const argumentsClass = [];
+                  const nameClass = ['form-control'];
+
+                  if(obj.functionName.length == 0 && (obj.args.length > 0 || obj.outputFieldName.length > 0)){
+                    functionClass.push('invalidSelect');
+                  }
+                  if(obj.args.length == 0 && (obj.functionName.length > 0 || obj.outputFieldName.length > 0)){
+                    argumentsClass.push('invalidSelect');
+                  }
+                  if(obj.outputFieldName.length == 0 && (obj.args.length > 0 || obj.functionName.length > 0)){
+                    nameClass.push('invalidInput');
+                  }
+
+                  if(outputFieldsArr.length === i){
+                    functionClass.push('menu-outer-top');
+                    argumentsClass.push('menu-outer-top');
+                  }
                   return (
                     <div key={i} className="row form-group">
                       <div className="col-sm-3">
-                        <Select className={outputFieldsArr.length === i
-                          ? "menu-outer-top"
-                          : ''} value={obj.functionName} options={functionListArr} onChange={this.handleFieldChange.bind(this, i)} required={true} disabled={disabledFields} valueKey="name" labelKey="name"/>
+                        <Select className={functionClass.join(' ')} value={obj.functionName} options={functionListArr} onChange={this.handleFieldChange.bind(this, i)} required={true} disabled={disabledFields} valueKey="name" labelKey="name"/>
                       </div>
                       <div className="col-sm-4">
-                        <Select className={outputFieldsArr.length === i
-                          ? "menu-outer-top"
-                          : ''} value={obj.args} options={fieldList} onChange={this.handleFieldsKeyChange.bind(this, i)} clearable={false} multi={true} required={true} disabled={disabledFields} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+                        <Select className={argumentsClass.join(' ')} value={obj.args} options={fieldList} onChange={this.handleFieldsKeyChange.bind(this, i)} clearable={false} multi={true} required={true} disabled={disabledFields} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
                       </div>
                       <div className="col-sm-3">
-                        <input name="outputFieldName" value={obj.outputFieldName} ref="outputFieldName" onChange={this.handleFieldNameChange.bind(this, i)} type="text" className={invalidInput ? "form-control invalidInput" : "form-control" }  required={true} disabled={disabledFields}/>
+                        <input name="outputFieldName" className={nameClass.join(' ')} value={obj.outputFieldName} ref="outputFieldName" onChange={this.handleFieldNameChange.bind(this, i)} type="text" required={true} disabled={disabledFields}/>
                       </div>
                       {editMode
                         ? <div className="col-sm-2">

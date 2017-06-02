@@ -194,7 +194,7 @@ class TopologyItems extends Component {
           ? ''
           : metricWrap.status || 'NOTRUNNING'}`} data-id={topology.id} ref={(ref) => this.streamRef = ref} onClick={this.streamBoxClick.bind(this, topology.id)}>
           <div className="stream-head clearfix">
-            <div className="pull-left">
+            <div className="pull-left m-t-xs">
               <Link to={`applications/${topology.id}/view`}>
                 <h4>
                   <i className={`fa fa-exclamation-${ (metricWrap.status || 'NOTRUNNING') === "KILLED"

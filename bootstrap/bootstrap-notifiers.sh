@@ -55,12 +55,12 @@ curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -X P
 
 echo
 
-echo "Adding Console notifier"
-curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -X POST "${CATALOG_ROOT_URL}/notifiers" -F notifierJarFile=@${jarFile} -F notifierConfig='{
-  "name": "console_notifier",
-  "description": "testing",
-  "className": "com.hortonworks.streamline.streams.notifiers.ConsoleNotifier",
-  "builtin": true
-};type=application/json'
+#echo "Adding Console notifier"
+#curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -X POST "${CATALOG_ROOT_URL}/notifiers" -F notifierJarFile=@${jarFile} -F notifierConfig='{
+#  "name": "console_notifier",
+#  "description": "testing",
+#  "className": "com.hortonworks.streamline.streams.notifiers.ConsoleNotifier",
+#  "builtin": true
+#};type=application/json'
 
-echo
+#echo

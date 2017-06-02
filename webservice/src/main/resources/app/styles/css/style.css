@@ -545,7 +545,7 @@ label {
 
 .stream-box .stream-head {
   position: relative;
-  padding: 15px 15px 5px;
+  padding: 10px 15px 5px;
 }
 
 .stream-box .stream-head h4 {
@@ -620,7 +620,7 @@ label {
   left: -70px;
 }
 
-#actionDropdown {
+#actionProfileDropdown {
   margin-top: 10px;
 }
 

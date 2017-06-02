@@ -221,7 +221,7 @@ class TopologyViewContainer extends Component {
             topologyVersion: this.versionId,
             stormClusterId: this.stormClusterId,
             versionsArr: versions,
-            availableTimeSeriesDb: namespaceData.nameSpace !== undefined
+            availableTimeSeriesDb: namespaceData.namespace !== undefined
               ? namespaceData.namespace.timeSeriesDB
                 ? true
                 : false

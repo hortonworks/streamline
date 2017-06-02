@@ -261,6 +261,22 @@ export default class SinkNodeForm extends Component {
               x.hint = "hidden";
             }
           }
+          if (x.fieldName === "notifierName") {
+            x.defaultValue = obj[0].name;
+            if (x.hint !== undefined && x.hint.indexOf('hidden') === -1) {
+              x.hint = x.hint + ',hidden';
+            } else {
+              x.hint = "hidden";
+            }
+          }
+          if (x.fieldName === "className") {
+            x.defaultValue = obj[0].className;
+            if (x.hint !== undefined && x.hint.indexOf('hidden') === -1) {
+              x.hint = x.hint + ',hidden';
+            } else {
+              x.hint = "hidden";
+            }
+          }
         });
         this.setState({uiSpecification: uiFields});
       }

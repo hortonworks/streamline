@@ -72,7 +72,7 @@ export default class Header extends Component {
               {
                 !_.isEmpty(app_state.user_profile)
                 ? <li className="profileDropdown">
-                    <DropdownButton title={testIcon} id="actionDropdown" className="dropdown-toggle" noCaret bsStyle="link">
+                    <DropdownButton title={testIcon} id="actionProfileDropdown" className="dropdown-toggle" noCaret bsStyle="link">
                       <MenuItem title={app_state.user_profile.name}>
                         <i className="fa fa-user"></i>
                         &nbsp;{app_state.user_profile.name}

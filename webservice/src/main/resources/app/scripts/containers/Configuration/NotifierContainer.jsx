@@ -144,7 +144,7 @@ export default class NotifierContainer extends Component {
             </div>
           : <div>
             {hasEditCapability(accessCapabilities.APPLICATION) ?
-              <a href="javascript:void(0);" className="hb pull-right success actionDropdown" onClick={this.handleAdd}>
+              <a href="javascript:void(0);" className="hb pull-right success actionDropdown displayNone" onClick={this.handleAdd}>
                 <i className="fa fa-plus"></i>
               </a>
               : null

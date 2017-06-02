@@ -35,24 +35,44 @@ const nodeTarget = {
     // Get vertical middle
     const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
 
+    // Get horizontal middle
+    const hoverMiddleX = (hoverBoundingRect.right - hoverBoundingRect.left) / 2;
+
     // Determine mouse position
     const clientOffset = monitor.getClientOffset();
 
     // Get pixels to the top
     const hoverClientY = clientOffset.y - hoverBoundingRect.top;
 
+    //Get pixels to the right
+    const hoverClientX = clientOffset.x - hoverBoundingRect.left;
+
+    if(props.isChildren) {
+    // Dragging left
+      if (dragIndex < hoverIndex && hoverClientX < hoverMiddleX && monitor.getItem().dataArr == props.dataArr) {
+        return;
+      }
+
+    // Dragging right
+      if (dragIndex > hoverIndex && hoverClientX > hoverMiddleX && monitor.getItem().dataArr == props.dataArr) {
+        return;
+      }
+    } else {
+
     // Only perform the move when the mouse has crossed half of the items height
     // When dragging downwards, only move when the cursor is below 50%
     // When dragging upwards, only move when the cursor is above 50%
 
     // Dragging downwards
-    if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY && monitor.getItem().dataArr == props.dataArr) {
-      return;
-    }
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY && monitor.getItem().dataArr == props.dataArr) {
+        return;
+      }
 
     // Dragging upwards
-    if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY && monitor.getItem().dataArr == props.dataArr) {
-      return;
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY && monitor.getItem().dataArr == props.dataArr) {
+        return;
+      }
+
     }
 
     // Time to actually perform the action
@@ -69,6 +89,7 @@ const nodeTarget = {
     return canDrop;
   },
   drop(props, monitor) {
+    if(props.isChildren && monitor.getItem().isChildren) {return;}
     props.onDrop(...arguments);
   }
 };
@@ -86,7 +107,7 @@ function collect(connect, monitor) {
   return {connectDragSource: connect.dragSource(), isDragging: monitor.isDragging()};
 }
 
-@DropTarget(props => {return (props.accepts == ItemTypes.Nodes || props.isChildren) ? 'noDrop' : props.accepts;}, nodeTarget, (connect, monitor) => ({
+@DropTarget(props => {return (props.accepts == ItemTypes.Nodes) ? 'noDrop' : props.accepts;}, nodeTarget, (connect, monitor) => ({
   connectDropTarget: connect.dropTarget(),
   isOver: monitor.isOver(),
   canDrop: monitor.canDrop()
@@ -134,7 +155,7 @@ export default class NodeContainer extends Component {
     } = this.props;
     const showHighlight = canDrop && isOver;
     let className = [];
-    if(showHighlight){
+    if(showHighlight && !this.props.isChildren){
       className.push('highlight');
     }
     if((!viewType && accepts != ItemTypes.Nodes) || (viewType == 'folder' && accepts != '')){
