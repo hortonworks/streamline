@@ -230,7 +230,9 @@ public class UDF extends AbstractStorable {
         setClassName((String) map.get(CLASSNAME));
         setJarStoragePath((String) map.get(JARSTORAGEPATH));
         setDigest((String) map.get(DIGEST));
-        setBuiltin(Boolean.valueOf((String) map.get(BUILTIN)));
+        if (map.get(BUILTIN) != null) {
+            setBuiltin(Boolean.valueOf(((String) map.get(BUILTIN)).trim()));
+        }
 
         String typeStr = (String) map.get(TYPE);
         try {

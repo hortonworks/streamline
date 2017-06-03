@@ -207,7 +207,9 @@ public class TopologyComponentBundle implements Storable {
         }
         fieldHintProviderClass = (String) map.get(FIELD_HINT_PROVIDER_CLASS);
         transformationClass = (String) map.get(TRANSFORMATION_CLASS);
-        builtin = Boolean.valueOf((String) map.get(BUILTIN));
+        if (map.get(BUILTIN) != null) {
+            setBuiltin(Boolean.valueOf(((String) map.get(BUILTIN)).trim()));
+        }
         mavenDeps = (String) map.get(MAVEN_DEPS);
         return this;
     }
