@@ -182,6 +182,14 @@
         "defaultValue": 10000
       },
       {
+        "uiName": "Consumer startup delay(ms)",
+        "fieldName": "consumerStartupDelayMs",
+        "isOptional": true,
+        "tooltip": "Delay in milliseconds after which Kafka will be polled for records",
+        "type": "number",
+        "defaultValue": 60000
+      },
+      {
         "uiName": "SSL keystore location",
         "fieldName": "sslKeystoreLocation",
         "isOptional": true,
