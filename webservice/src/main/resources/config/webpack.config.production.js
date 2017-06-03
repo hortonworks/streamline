@@ -37,6 +37,9 @@ module.exports = merge(config, {
     new CopyWebpackPlugin([{
       from: path.join(__dirname, '../app/styles/img'),
       to: 'styles/img'
+    },{
+      from: path.join(__dirname, '../custom_error_pages'),
+      to: './'
     }]),
     // Avoid publishing files when compilation fails
     new webpack.NoErrorsPlugin(),
