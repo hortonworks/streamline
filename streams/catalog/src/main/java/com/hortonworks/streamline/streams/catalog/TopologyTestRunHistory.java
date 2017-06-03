@@ -298,13 +298,13 @@ public class TopologyTestRunHistory extends AbstractStorable {
         testCaseId = (Long) map.get(TEST_CASE_ID);
 
         if (map.get(FINISHED) != null) {
-            finished = Boolean.valueOf((String) map.get(FINISHED));
+            finished = Boolean.valueOf(((String) map.get(FINISHED)).trim());
         } else {
             finished = null;
         }
 
         if (map.get(SUCCESS) != null) {
-            success = Boolean.valueOf((String) map.get(SUCCESS));
+            success = Boolean.valueOf(((String) map.get(SUCCESS)).trim());
         } else {
             success = null;
         }
@@ -313,7 +313,7 @@ public class TopologyTestRunHistory extends AbstractStorable {
         actualOutputRecords = (String) map.get(ACTUAL_OUTPUT_RECORDS);
 
         if (map.get(MATCHED) != null) {
-            matched = Boolean.valueOf((String) map.get(MATCHED));
+            matched = Boolean.valueOf(((String) map.get(MATCHED)).trim());
         } else {
             matched = null;
         }
