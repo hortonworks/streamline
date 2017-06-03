@@ -23,7 +23,7 @@ import {
     Td,
     unsafe
 } from 'reactable';
-import {BtnEdit, BtnDelete} from '../../components/ActionButtons';
+import {BtnEdit, BtnDelete, BtnShare} from '../../components/ActionButtons';
 import FSReactToastr from '../../components/FSReactToastr';
 import Modal from '../../components/FSModal';
 import {FormGroup, InputGroup, FormControl, Button} from 'react-bootstrap';
@@ -37,6 +37,9 @@ import CommonLoaderSign from '../../components/CommonLoaderSign';
 import {hasEditCapability, hasViewCapability} from '../../utils/ACLUtils';
 import app_state from '../../app_state';
 import {observer} from 'mobx-react';
+import UserRoleREST from '../../rest/UserRoleREST';
+import CommonShareModal from '../../components/CommonShareModal';
+import ActionButtonGroup from '../../components/ActionButtonGroup';
 
 @observer
 export default class UDFContainer extends Component {
@@ -47,22 +50,35 @@ export default class UDFContainer extends Component {
       entities: [],
       filterValue: '',
       editData: {},
-      fetchLoader: true
+      fetchLoader: true,
+      shareObj : {}
     };
   }
   fetchData = () => {
-    AggregateUdfREST.getAllUdfs()
-      .then((result) => {
-        let tempEntities = [];
-        if (result.responseMessage !== undefined) {
+    let promiseArr = [AggregateUdfREST.getAllUdfs()];
+    if(app_state.streamline_config.secureMode){
+      promiseArr.push(UserRoleREST.getAllACL('udf',app_state.user_profile.id,'USER'));
+    }
+
+    Promise.all(promiseArr).then((results) => {
+      let stateObj={};
+      _.map(results, (result) => {
+        if(result.responseMessage !== undefined){
           FSReactToastr.error(<CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
           this.setState({fetchLoader: false});
-        } else {
-          Array.prototype.push.apply(tempEntities, Utils.sortArray(result.entities, 'name', true));
         }
-        this.setState({entities: tempEntities, fetchLoader: false});
       });
+      let tempEntities = [];
+      Array.prototype.push.apply(tempEntities, Utils.sortArray(results[0].entities, 'name', true));
+      stateObj.entities = tempEntities;
+      if(results[1]){
+        stateObj.allACL = results[1].entities;
+      }
+      stateObj.fetchLoader = false;
+      this.setState(stateObj);
+    });
   }
+
   onFilterChange = (e) => {
     this.setState({filterValue: e.target.value.trim()});
   }
@@ -129,10 +145,44 @@ export default class UDFContainer extends Component {
     }
   }
 
+  handleShareUDF = (obj) => {
+    this.setState({shareObj : obj},() => {
+      this.refs.CommonShareModalRef.show();
+    });
+  }
+
+  handleShareSave = () => {
+    this.refs.CommonShareModalRef.hide();
+    this.refs.CommonShareModal.handleSave().then((shareCluster) => {
+      let flag = true;
+      _.map(shareCluster, (share) => {
+        if(share.responseMessage !== undefined){
+          flag = false;
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={share.responseMessage}/>, '', toastOpt);
+        }
+        this.setState({shareObj : {}});
+      });
+      if(flag){
+        shareCluster.length !== 0
+        ? FSReactToastr.success(
+            <strong>Services has been shared successfully</strong>
+          )
+        : '';
+
+      }
+    });
+  }
+
+  handleShareCancel = () => {
+    this.refs.CommonShareModalRef.hide();
+  }
+
   render() {
-    let {entities, filterValue, editData, fetchLoader} = this.state;
+    let {entities, filterValue, editData, fetchLoader,allACL,shareObj} = this.state;
     const filteredEntities = Utils.filterByName(entities, filterValue);
     const pageSize = 8;
+
     return (
       <div>
         {fetchLoader
@@ -201,17 +251,7 @@ export default class UDFContainer extends Component {
                               </Td>
                               <Td column="returnType">{obj.returnType ? obj.returnType : '-'}</Td>
                               <Td column="actions">
-                                {obj.builtin === true
-                                ? app_state.user_profile.admin
-                                  ? <div className="btn-action">
-                                      <BtnEdit callback={this.handleEditUDF.bind(this, obj.id)}/>
-                                    </div>
-                                  :''
-                                : <div className="btn-action">
-                                    <BtnEdit callback={this.handleEditUDF.bind(this, obj.id)}/>
-                                    <BtnDelete callback={this.handleDeleteUDF.bind(this, obj.id)}/>
-                                  </div>
-                                }
+                                <ActionButtonGroup key={i} type="UDF" allACL={allACL} udfObj={obj} handleEdit={this.handleEditUDF.bind(this)} handleDelete={this.handleDeleteUDF.bind(this)} handleShare={this.handleShareUDF.bind(this)}/>
                               </Td>
                             </Tr>
                           );
@@ -232,6 +272,10 @@ export default class UDFContainer extends Component {
             editData={editData}
             id={editData.id ? editData.id : null}
           />
+        </Modal>
+        {/* CommonShareModal */}
+        <Modal ref={"CommonShareModalRef"} data-title="Share UDF"  data-resolve={this.handleShareSave.bind(this)} data-reject={this.handleShareCancel.bind(this)}>
+          <CommonShareModal ref="CommonShareModal" shareObj={shareObj}/>
         </Modal>
       </div>
     );

@@ -2,6 +2,6 @@
   "name": "ROLE_ANALYST",
   "displayName": "Analyst",
   "description": "Analyst role that has access to specific applications and dashboards",
-  "metadata": "{\"colorCode\":\"#4c979f\",\"colorLabel\":\"blue\",\"icon\":\"eye\", \"menu\": [\"dashboard\", \"topology\"], \"capabilities\": [{\"Dashboard\": \"Edit\"}, {\"Applications\": \"View\"}]}",
+  "metadata": "{\"colorCode\":\"#4c979f\",\"colorLabel\":\"blue\",\"icon\":\"eye\", \"menu\": [\"dashboard\", \"topology\", \"customprocessor\"], \"capabilities\": [{\"Dashboard\": \"Edit\"}, {\"Applications\": \"View\"}, {\"Custom Processor\": \"View\"}]}",
   "system": false
 }

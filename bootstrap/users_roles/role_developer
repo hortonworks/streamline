@@ -2,6 +2,6 @@
   "name": "ROLE_DEVELOPER",
   "displayName": "Application Developer",
   "description": "Developer role that has the necessary privileges to create and submit topologies",
-   "metadata": "{\"colorCode\":\"#dcaa15\",\"colorLabel\":\"yellow\",\"icon\":\"pencil\", \"menu\": [\"schemaRegistry\", \"modelRegistry\", \"udf\", \"topology\", \"notifier\", \"customprocessor\", \"servicepool\", \"environments\"], \"capabilities\": [{\"Applications\": \"Edit\"}, {\"Service Pool\": \"View\"}, {\"Environments\": \"Edit\"}]}",
+   "metadata": "{\"colorCode\":\"#dcaa15\",\"colorLabel\":\"yellow\",\"icon\":\"pencil\", \"menu\": [\"schemaRegistry\", \"modelRegistry\", \"udf\", \"topology\", \"notifier\", \"customprocessor\", \"servicepool\", \"environments\"], \"capabilities\": [{\"Applications\": \"Edit\"}, {\"Service Pool\": \"View\"}, {\"Environments\": \"Edit\"}, {\"UDF\": \"View\"}, {\"Notifier\": \"View\"}, {\"Custom Processor\": \"Edit\"}]}",
   "system": false
 }

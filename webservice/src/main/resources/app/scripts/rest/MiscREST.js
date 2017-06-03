@@ -21,9 +21,7 @@ const MiscREST = {
     options.method = options.method || 'GET';
     options.credentials = 'same-origin';
     return fetch('/api/v1/config/streamline', options)
-      .then( (response) => {
-        return response.json();
-      });
+      .then(Utils.checkStatus);
   },
   searchEntities(namespace, queryStr, filters, options){
     options = options || {};

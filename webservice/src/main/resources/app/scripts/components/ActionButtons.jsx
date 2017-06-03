@@ -53,4 +53,17 @@ class BtnView extends Component {
   }
 }
 
-export {BtnDelete, BtnEdit, BtnView};
+class BtnShare extends Component {
+  constructor(props) {
+    super();
+  }
+  render() {
+    return (
+      <button type="button" onClick={this.props.callback} className="primary">
+        <i className="fa fa-share"></i>
+      </button>
+    );
+  }
+}
+
+export {BtnDelete, BtnEdit, BtnView,BtnShare};

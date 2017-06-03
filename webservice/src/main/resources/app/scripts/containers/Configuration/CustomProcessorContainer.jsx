@@ -35,6 +35,11 @@ import CommonNotification from '../../utils/CommonNotification';
 import NoData from '../../components/NoData';
 import CommonLoaderSign from '../../components/CommonLoaderSign';
 import {hasEditCapability, hasViewCapability} from '../../utils/ACLUtils';
+import app_state from '../../app_state';
+import {observer} from 'mobx-react';
+import UserRoleREST from '../../rest/UserRoleREST';
+import CommonShareModal from '../../components/CommonShareModal';
+import ActionButtonGroup from '../../components/ActionButtonGroup';
 
 export default class CustomProcessorContainer extends Component {
 
@@ -52,23 +57,29 @@ export default class CustomProcessorContainer extends Component {
   }
 
   fetchData(keepLoadingOn) {
-    CustomProcessorREST.getAllProcessors().then((processors) => {
-      if (processors.responseMessage !== undefined) {
-        FSReactToastr.error(
-          <CommonNotification flag="error" content={processors.responseMessage}/>, '', toastOpt);
-        if(!keepLoadingOn){
-          this.setState({fetchLoader: false});
+    let promiseArr = [CustomProcessorREST.getAllProcessors()];
+    if(app_state.streamline_config.secureMode){
+      promiseArr.push(UserRoleREST.getAllACL('udf',app_state.user_profile.id,'USER'));
+    }
+
+    Promise.all(promiseArr).then((results) => {
+      let stateObj={};
+      _.map(results, (result) => {
+        if(result.responseMessage !== undefined){
+          FSReactToastr.error(<CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
+          if(!keepLoadingOn){
+            this.setState({fetchLoader: false});
+          }
         }
-      } else {
-        let data = processors.entities;
-        let stateObj = {
-          entities: data
-        };
-        if(!keepLoadingOn){
-          stateObj.fetchLoader = false;
-        }
-        this.setState(stateObj);
+      });
+      stateObj.entities = results[0].entities;
+      if(results[1]){
+        stateObj.allACL = results[1].entities;
       }
+      if(!keepLoadingOn){
+        stateObj.fetchLoader = false;
+      }
+      this.setState(stateObj);
     });
   }
 
@@ -110,11 +121,11 @@ export default class CustomProcessorContainer extends Component {
     }
   }
 
-  handleEdit(id) {
+  handleEditCP(id) {
     this.setState({showListing: false, processorId: id});
   }
 
-  handleDelete(id) {
+  handleDeleteCP(id) {
     let BaseContainer = this.props.callbackHandler();
     BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete this processor?'}).then((confirmBox) => {
       CustomProcessorREST.deleteProcessor(id).then((processor) => {
@@ -166,7 +177,7 @@ export default class CustomProcessorContainer extends Component {
   }
 
   render() {
-    let {entities, filterValue, fetchLoader, uploadingData} = this.state;
+    let {entities, filterValue, fetchLoader, uploadingData,allACL} = this.state;
     const filteredEntities = Utils.filterByName(entities, filterValue);
 
     return (
@@ -224,10 +235,7 @@ export default class CustomProcessorContainer extends Component {
                                 <Td column="description">{obj.description}</Td>
                                 <Td column="jarFileName">{obj.jarFileName}</Td>
                                 <Td column="action">
-                                  <div className="btn-action">
-                                    <BtnEdit callback={this.handleEdit.bind(this, obj.name)}/>
-                                    <BtnDelete callback={this.handleDelete.bind(this, obj.name)}/>
-                                  </div>
+                                  <ActionButtonGroup processor="custom" key={i} type="Custom Processor" allACL={allACL} udfObj={obj} handleEdit={this.handleEditCP.bind(this)} handleDelete={this.handleDeleteCP.bind(this)}/>
                                 </Td>
                               </Tr>
                             );

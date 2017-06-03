@@ -15,9 +15,20 @@
 import React, {Component} from 'react';
 
 export default class UnKnownAccess extends Component{
+  componentDidMount(){
+    document.body.className = 'login-page';
+  }
+  componentWillUnmount(){
+    document.body.className = '';
+  }
   render(){
     return(
-      <p>Unknown Access Error</p>
+      <div className="login-wrapper text-center">
+        <img src="styles/img/SAM-logo-expanded.png" />
+        <div className="login-notify">
+          Access not enabled for this username.<br /> Please contact your administrator.
+        </div>
+      </div>
     );
   }
 }

@@ -2,6 +2,6 @@
   "name": "ROLE_ADMIN",
   "displayName": "Admin",
   "description": "Super user role that has all the system roles and privileges",
-  "metadata": "{\"colorCode\":\"#8261be\",\"colorLabel\":\"purple\",\"icon\":\"gears\", \"menu\": [\"componentDefinitions\", \"schemaRegistry\", \"modelRegistry\", \"udf\", \"dashboard\", \"topology\", \"authorizer\", \"notifier\", \"customprocessor\", \"servicepool\", \"environments\"], \"capabilities\": [{\"Applications\": \"Edit\"}, {\"Service Pool\": \"Edit\"}, {\"Environments\": \"Edit\"}, {\"Users\": \"Edit\"}, {\"Dashboard\": \"Edit\"}]}",
+  "metadata": "{\"colorCode\":\"#8261be\",\"colorLabel\":\"purple\",\"icon\":\"gears\", \"menu\": [\"componentDefinitions\", \"schemaRegistry\", \"modelRegistry\", \"udf\", \"dashboard\", \"topology\", \"authorizer\", \"notifier\", \"customprocessor\", \"servicepool\", \"environments\"], \"capabilities\": [{\"Applications\": \"Edit\"}, {\"Service Pool\": \"Edit\"}, {\"Environments\": \"Edit\"}, {\"Users\": \"Edit\"}, {\"Dashboard\": \"Edit\"}, {\"UDF\": \"Edit\"}, {\"Notifier\": \"Edit\"}, {\"Custom Processor\": \"Edit\"}]}",
   "system": false
 }

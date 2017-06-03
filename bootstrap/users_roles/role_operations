@@ -2,6 +2,6 @@
   "name": "ROLE_OPERATIONS",
   "displayName": "Operations",
   "description": "Operations role that has the necessary privileges to create service pools, environments and submit topologies",
-  "metadata": "{\"colorCode\":\"#ce761b\",\"colorLabel\":\"orange\",\"icon\":\"globe\", \"menu\":[\"schemaRegistry\", \"modelRegistry\", \"udf\", \"topology\", \"notifier\", \"customprocessor\", \"servicepool\", \"environments\"], \"capabilities\": [{\"Applications\": \"Edit\"}, {\"Service Pool\": \"Edit\"}, {\"Environments\": \"Edit\"}]}",
+  "metadata": "{\"colorCode\":\"#ce761b\",\"colorLabel\":\"orange\",\"icon\":\"globe\", \"menu\":[\"schemaRegistry\", \"modelRegistry\", \"udf\", \"topology\", \"notifier\", \"customprocessor\", \"servicepool\", \"environments\"], \"capabilities\": [{\"Applications\": \"Edit\"}, {\"Service Pool\": \"Edit\"}, {\"Environments\": \"Edit\"}, {\"UDF\": \"View\"}, {\"Notifier\": \"View\"}, {\"Custom Processor\": \"Edit\"}]}",
   "system": false
 }

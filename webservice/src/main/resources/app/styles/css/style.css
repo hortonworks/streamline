@@ -68,6 +68,29 @@ body.edge-details>div:after {
   border-bottom-color: #fff;
 }
 
+
+/* Login */
+.login-page {
+  background: url('../img/login-bg.jpg') no-repeat center center fixed;
+}
+.login-wrapper {
+  width: 400px;
+  background-color: #324766;
+  padding: 30px;
+  height: 220px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -110px;
+  margin-left: -200px;
+}
+.login-notify {
+  background-color: #ffe5c9;
+  color: #5b5c5d;
+  padding: 12px;
+  margin-top: 15px;
+}
+
 footer {
   position: fixed;
   bottom: 0px;

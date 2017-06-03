@@ -67,21 +67,36 @@ class App extends Component {
                 this.syncSidebarMenu(userProfile.roles);
               }
             }).catch((err) => {
-              err.message.indexOf('Not Found') !== -1
-                ? this.setState({showLoading: false,unKnownUser : true})
-                : '';
-              err.response.then((res) => {
-                res.responseMessage.indexOf('user database') === -1
-                ? FSReactToastr.error(<CommonNotification flag="error" content={res.responseMessage}/>, '', toastOpt)
-                : '';
-              });
+              this.errorHandler(err);
             });
           } else {
             this.setState({showLoading: false});
           }
         }
+      }).catch((err) => {
+        this.errorHandler(err);
       });
   }
+
+  errorHandler = (err) => {
+    let errorPage=false;
+    err.message.indexOf('Not Found') !== -1
+      ? errorPage=true
+      : err.message.indexOf('Unauthorized') !== -1
+        ? errorPage=true
+        : '';
+    if(errorPage){
+      this.setState({showLoading: false,unKnownUser : true});
+    }
+    err.response.then((res) => {
+      res.responseMessage.indexOf('user database') === -1
+      ? res.responseMessage.indexOf('Not authorized') === -1
+        ? FSReactToastr.error(<CommonNotification flag="error" content={res.responseMessage}/>, '', toastOpt)
+        : ''
+      : '';
+    });
+  }
+
   syncSidebarMenu(roles) {
     UserRoleREST.getAllRoles().then(response=>{
       const roleInfo = response.entities.filter((e)=>{

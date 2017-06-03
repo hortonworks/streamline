@@ -229,16 +229,7 @@ export default class ProjectionProcessorContainer extends Component {
 
       const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey(keyArrObj);
       const keyData = ProcessorUtils.createSelectedKeysHierarchy(keyArrObj,fieldList);
-      const outputFieldsObj =  this.generateOutputFields(argsFieldsArrObj,0);
 
-      const tempFields = _.concat(keyData,argsFieldsArrObj);
-      let mainStreamObj = {
-        streamId : serverStreamObj.streams[0],
-        fields : this.generateOutputFields(tempFields,0)
-      };
-
-      // assign mainStreamObj value to "this.tempStreamContextData" make available for further methods
-      this.tempStreamContextData = mainStreamObj;
       if(!argsFieldsArrObj.length){
         argsFieldsArrObj.push({
           functionName: '',
@@ -246,8 +237,20 @@ export default class ProjectionProcessorContainer extends Component {
           outputFieldName: ''
         });
       }
-      this.setState({outputFieldsArr :argsFieldsArrObj,outputStreamFields: outputFieldsObj,projectionKeys:keys,projectionSelectedKey:keyData,projectionGroupByKeys : gKeys,argumentKeysGroup :argsGroupKeys,showLoading : false});
-      this.context.ParentForm.setState({outputStreamObj: mainStreamObj});
+      this.setState({outputFieldsArr :argsFieldsArrObj,projectionKeys:keys,projectionSelectedKey:keyData,projectionGroupByKeys : gKeys,argumentKeysGroup :argsGroupKeys,showLoading : false}, () => {
+        const outputFieldsObj =  this.generateOutputFields(argsFieldsArrObj,0);
+        this.setState({outputStreamFields: outputFieldsObj}, () => {
+          const tempFields = _.concat(keyData,argsFieldsArrObj);
+          let mainStreamObj = {
+            streamId : serverStreamObj.streams[0],
+            fields : this.generateOutputFields(tempFields,0)
+          };
+
+          // assign mainStreamObj value to "this.tempStreamContextData" make available for further methods
+          this.tempStreamContextData = mainStreamObj;
+          this.context.ParentForm.setState({outputStreamObj: mainStreamObj});
+        });
+      });
     } else {
       this.setState({showLoading : false});
     }
@@ -305,10 +308,10 @@ export default class ProjectionProcessorContainer extends Component {
   */
   generateOutputFields(fields, level) {
     const {fieldList} = this.state;
-    return fields.map((field) => {
+    return fields.map((field, i) => {
       let obj = {
         name: field.name || field.outputFieldName ,
-        type: field.type || this.getReturnType(field.functionName, ProcessorUtils.getKeyList(field.args,fieldList))
+        type: field.type || this.getReturnType(field.functionName, ProcessorUtils.getKeyList(field.args[0],fieldList), i, fields)
       };
 
       if (field.type === 'NESTED' && field.fields) {
@@ -398,7 +401,7 @@ export default class ProjectionProcessorContainer extends Component {
     if argList is empty then it return fieldObj.type and call this.checkArgumentError to show Error on UI
     else 'DOUBLE' as default;
   */
-  getReturnType(functionName, fieldObj, index) {
+  getReturnType(functionName, fieldObj, index, fields) {
     let obj = this.state.functionListArr.find((o) => {
       return o.name === functionName;
     });
@@ -406,8 +409,8 @@ export default class ProjectionProcessorContainer extends Component {
       if (obj.argTypes && fieldObj) {
         let argList = obj.argTypes.toString().includes(fieldObj.type);
         (argList)
-          ? this.checkArgumentError(false,fieldObj.name,index)
-          : this.checkArgumentError(true,fieldObj.name,index);
+          ? this.checkArgumentError(false,fieldObj.name,index, fields)
+          : this.checkArgumentError(true,fieldObj.name,index, fields);
         return obj.returnType || fieldObj.type;
       }
     } else if (fieldObj) {
@@ -423,15 +426,15 @@ export default class ProjectionProcessorContainer extends Component {
      if the flag is false it get the diffCheck between the this.argumentErrorArr and outputFieldsArr
      and if diffCheck and outputFieldsArr are both identical it set argumentError = false, this.argumentErrorArr = [];
   */
-  checkArgumentError(flag,fieldName,index){
-    const {outputFieldsArr} = this.state;
+  checkArgumentError(flag,fieldName,index, fields){
+    // const {outputFieldsArr} = this.state;
     if(flag){
       const indexVal = _.findIndex(this.argumentErrorArr ,(x) => x === fieldName);
       indexVal !== -1 ? '' : this.argumentErrorArr.push(fieldName);
       this.setState({argumentError : true});
     }else{
-      const diffCheck = _.difference(outputFieldsArr[index].args, this.argumentErrorArr);
-      if(diffCheck.length === outputFieldsArr[index].args.length){
+      const diffCheck = _.difference(fields[index].args, this.argumentErrorArr);
+      if(diffCheck.length === fields[index].args.length){
         this.argumentErrorArr = [];
         this.setState({argumentError : false});
       }
@@ -514,7 +517,7 @@ export default class ProjectionProcessorContainer extends Component {
     if(outputFieldsArr[index].args.length > 0 && (outputFieldsArr[index].functionName !== undefined && outputFieldsArr[index].functionName !== "")){
       _.map(outputFieldsArr[index].args, (arg) => {
         // set the returnType for function
-        funcReturnType = this.getReturnType(outputFieldsArr[index].functionName, ProcessorUtils.getKeyList(arg,fieldList),index);
+        funcReturnType = this.getReturnType(outputFieldsArr[index].functionName, ProcessorUtils.getKeyList(arg,fieldList),index, outputFieldsArr);
       });
     }
     mainObj[index] = {
@@ -548,11 +551,12 @@ export default class ProjectionProcessorContainer extends Component {
     And delete to fields from the two Array [outputFieldsArr , outputStreamFields]
   */
   deleteProjectionRow(index){
-    const {projectionSelectedKey} = this.state;
+    const {projectionSelectedKey, argumentKeysGroup} = this.state;
     let fieldsArr = _.cloneDeep(this.state.outputFieldsArr);
     let mainOutputFields = _.cloneDeep(this.state.outputStreamFields);
 
     fieldsArr.splice(index,1);
+    argumentKeysGroup.splice(index, 1);
     mainOutputFields.splice(index,1);
 
     const tempStreamData = _.concat(projectionSelectedKey,mainOutputFields);
