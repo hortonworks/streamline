@@ -40,7 +40,7 @@
         "defaultValue": ".txt"
       },
       {
-        "uiName": "Count policy value",
+        "uiName": "Flush Count",
         "fieldName": "countPolicyValue",
         "isOptional": false,
         "tooltip": "Number of records to wait for before flushing to Hdfs",
