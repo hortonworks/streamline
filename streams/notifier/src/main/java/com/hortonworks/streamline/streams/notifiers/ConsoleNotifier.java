@@ -36,7 +36,7 @@ public class ConsoleNotifier implements Notifier {
 
     private void print(String msg) {
         LOG.info(msg);
-        System.out.println();
+        System.out.println(msg);
     }
 
     @Override
