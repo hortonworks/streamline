@@ -46,11 +46,12 @@ public class JsonFileReader extends TextFileReader {
         super(fs, file, conf, startOffset);
     }
 
+    //returns null when EOF is reached
     public List<Object> next() throws IOException, ParseException {
         List<Object> lineTuple = super.next();
-        String jsonLine = (String) lineTuple.get(0);
-        if ( jsonLine==null )
+        if (lineTuple==null)
             return null;
+        String jsonLine = (String) lineTuple.get(0);
         if ( jsonLine.trim().isEmpty() )
             return next();
 
