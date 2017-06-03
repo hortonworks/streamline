@@ -551,7 +551,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
             securityConfigurations.forEach(securityConfig -> {
                 Map<String, Object> sc = (Map<String, Object>) securityConfig;
                 if ((sc != null) && !sc.isEmpty()) {
-                    Long clusterId = (Long) sc.get(STREAMLINE_TOPOLOGY_CONFIG_CLUSTER_ID);
+                    Long clusterId = ((Number) sc.get(STREAMLINE_TOPOLOGY_CONFIG_CLUSTER_ID)).longValue();
 
                     Map<String, String> configurationForCluster = new HashMap<>();
                     configurationForCluster.put(STREAMLINE_TOPOLOGY_CONFIG_PRINCIPAL, (String) sc.get(STREAMLINE_TOPOLOGY_CONFIG_PRINCIPAL));
