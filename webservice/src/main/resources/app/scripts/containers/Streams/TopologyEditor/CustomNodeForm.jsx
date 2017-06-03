@@ -43,6 +43,7 @@ export default class CustomNodeForm extends Component {
     this.parallelism = _.find(this.customConfig, {fieldName: "parallelism"}).defaultValue;
     this.fetchData(id);
     this.fetchDataAgain = false;
+    this.mappingObj = {};
     var obj = {
       editMode: editMode,
       showSchema: true,
@@ -51,7 +52,6 @@ export default class CustomNodeForm extends Component {
       showErrorLabel: false,
       outputKeys: [],
       fieldList: [],
-      mappingObj: {},
       showLoading:true
     };
 
@@ -146,7 +146,7 @@ export default class CustomNodeForm extends Component {
     }
     let keysList = this.inputStream = this.context.ParentForm.state.inputStreamOptions[0];
     if(properties.inputSchemaMap && properties.inputSchemaMap[this.inputStream.streamId]){
-      stateObj.mappingObj = properties.inputSchemaMap[this.inputStream.streamId];
+      this.mappingObj = properties.inputSchemaMap[this.inputStream.streamId];
     }
 
     keysList = JSON.parse(JSON.stringify(keysList));
@@ -257,11 +257,11 @@ export default class CustomNodeForm extends Component {
     }
 
     this.nodeData.config.properties.outputStreamToSchema = {
-      [this.streamObj.streamId]: {fields: streamFields}
+      [this.nodeData.outputStreams[0].streamId]: {fields: streamFields}
     };
 
     this.nodeData.config.properties.inputSchemaMap = {
-      [this.inputStream.streamId]: this.state.mappingObj
+      [this.inputStream.streamId]: this.mappingObj
     };
 
     return TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {
@@ -288,14 +288,14 @@ export default class CustomNodeForm extends Component {
     const v = options.find(f=>{
       return f.name === fieldObj.name;
     });
-    const value = this.state.mappingObj[fieldObj.name] || (v && v.name || '');
+    const value = this.mappingObj[fieldObj.name] || (v && v.name || '');
+    this.mappingObj[fieldObj.name] = value;
     return {options, value};
   }
 
   handleMappingChange(obj, value){
-    let {mappingObj} = this.state;
-    mappingObj[obj.name] = value.name;
-    this.setState({mappingObj});
+    this.mappingObj[obj.name] = value.name;
+    this.forceUpdate();
   }
 
   render() {
@@ -384,10 +384,8 @@ export default class CustomNodeForm extends Component {
                   })
                 }
                 <div className="form-group">
-                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Output Fields</Popover>}>
-                    <label>Fields Mapping
-                      {/* <span className="text-danger">*</span> */}
-                    </label>
+                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Map each field in Custom Processor input schema to a field in incoming event schema</Popover>}>
+                    <label>Input Schema Mapping</label>
                   </OverlayTrigger>
                   <div className="row">
                     {this.state.inputSchema.fields && this.state.inputSchema.fields.map((f, i)=>{
@@ -400,7 +398,7 @@ export default class CustomNodeForm extends Component {
                   </div>
                 </div>
                 <div className="form-group">
-                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Output Fields</Popover>}>
+                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Choose output fields. It can be a field from either incoming event schema or Custom Processor output schema</Popover>}>
                   <label>Output Fields
                     <span className="text-danger">*</span>
                   </label>

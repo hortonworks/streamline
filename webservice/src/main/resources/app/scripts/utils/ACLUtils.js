@@ -56,6 +56,7 @@ const hasViewCapability = function(module){
 };
 
 const findSingleAclObj = (id,aclArr) => {
+  id = parseInt(id);
   let obj = {};
   obj = _.find(aclArr, (acl) => {return acl.objectId === id;});
   return obj !== undefined ? obj : {};
