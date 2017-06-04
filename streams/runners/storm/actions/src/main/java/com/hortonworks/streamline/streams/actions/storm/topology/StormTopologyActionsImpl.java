@@ -228,6 +228,8 @@ public class StormTopologyActionsImpl implements TopologyActions {
         commands.add("org.apache.storm.flux.Flux");
         commands.add("--remote");
         commands.add(fileName);
+        LOG.info("Deploying Application {}", topology.getName());
+        LOG.info(String.join(" ", commands));
         ShellProcessResult shellProcessResult = executeShellProcess(commands);
         int exitValue = shellProcessResult.exitValue;
         if (exitValue != 0) {
