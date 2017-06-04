@@ -377,7 +377,7 @@ export default class EdgeConfigContainer extends Component {
             let actionName = actionObj.name == 'transformAction'
               ? 'transform'
               : 'notifier';
-            let streamID = nodeType + '_' + actionName + '_stream_' + ruleData.id;
+            let streamID = streamObj.value;
 
             var _obj = _.find(ruleData.actions, (a) => {
               return a.__type === actionObj.__type;

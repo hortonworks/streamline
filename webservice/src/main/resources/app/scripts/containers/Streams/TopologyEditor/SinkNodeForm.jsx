@@ -245,7 +245,7 @@ export default class SinkNodeForm extends Component {
           <CommonNotification flag="error" content={notifier.responseMessage}/>, '', toastOpt);
       } else {
         const obj = notifier.entities.filter(x => {
-          return x.name.indexOf("email_notifier") !== -1;
+          return x.name.indexOf("Email Notifier") !== -1;
         });
 
         let {configData} = this.props;
@@ -254,7 +254,7 @@ export default class SinkNodeForm extends Component {
 
         uiFields.map(x => {
           if (x.fieldName === "jarFileName") {
-            x.defaultValue = obj[0].jarFileName;
+            x.defaultValue = obj.length >= 1 ? obj[0].jarFileName : '';
             if (x.hint !== undefined && x.hint.indexOf('hidden') === -1) {
               x.hint = x.hint + ',hidden';
             } else {
@@ -262,7 +262,7 @@ export default class SinkNodeForm extends Component {
             }
           }
           if (x.fieldName === "notifierName") {
-            x.defaultValue = obj[0].name;
+            x.defaultValue = obj.length >= 1 ? obj[0].name : '';
             if (x.hint !== undefined && x.hint.indexOf('hidden') === -1) {
               x.hint = x.hint + ',hidden';
             } else {
@@ -270,7 +270,7 @@ export default class SinkNodeForm extends Component {
             }
           }
           if (x.fieldName === "className") {
-            x.defaultValue = obj[0].className;
+            x.defaultValue = obj.length >= 1 ? obj[0].className : '';
             if (x.hint !== undefined && x.hint.indexOf('hidden') === -1) {
               x.hint = x.hint + ',hidden';
             } else {
