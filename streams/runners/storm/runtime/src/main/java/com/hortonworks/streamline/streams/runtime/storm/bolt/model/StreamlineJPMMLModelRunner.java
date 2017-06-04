@@ -22,7 +22,6 @@ import com.hortonworks.streamline.streams.layout.component.Stream;
 
 import org.apache.storm.pmml.model.ModelOutputs;
 import org.apache.storm.pmml.runner.jpmml.JPmmlModelRunner;
-import org.apache.storm.shade.com.google.common.collect.ImmutableMap;
 import org.apache.storm.tuple.Tuple;
 import org.dmg.pmml.FieldName;
 import org.jpmml.evaluator.Evaluator;
@@ -33,10 +32,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class StreamlineJPMMLModelRunner extends JPmmlModelRunner {
     private static final Logger LOG = LoggerFactory.getLogger(StreamlineJPMMLModelRunner.class);
@@ -78,26 +79,75 @@ public class StreamlineJPMMLModelRunner extends JPmmlModelRunner {
         final Map<FieldName, FieldValue> preProcInputs = preProcessInputs(rawInputs);
         final Map<FieldName, ?> predScores = predictScores(preProcInputs);
 
-        return toStreamLineEvents(predScores);
+        return toStreamLineEvents(predScores, input);
     }
 
-    private Map<String, List<Object>> toStreamLineEvents(Map<FieldName, ?> predScores) {
-        Map<String, List<Object>> streamsToEvents = new HashMap<>();
-        StreamlineEventImpl.Builder eventBuilder = StreamlineEventImpl.builder();
-        for (FieldName predictedField : getPredictedFields()) {
-            Object targetValue = predScores.get(predictedField);
-            eventBuilder.put(predictedField.getValue(), EvaluatorUtil.decode(targetValue));
-        }
+    private Map<String, List<Object>> toStreamLineEvents(Map<FieldName, ?> predScores, final Tuple input) {
+        LOG.debug("Processing tuple {}", input);
+        final Set<String> inserted = new HashSet<>();
+        final Map<String, List<Object>> streamsToEvents = new HashMap<>();
+        final StreamlineEventImpl.Builder eventBuilder = StreamlineEventImpl.builder();
 
-        for (FieldName outputField : getOutputFields()) {
-            Object targetValue = predScores.get(outputField);
-            eventBuilder.put(outputField.getValue(), EvaluatorUtil.decode(targetValue));
-        };
+        // add to StreamlineEvent the predicted scores for PMML model predicted fields
+        putPmmlScoresInEvent(predScores, inserted, eventBuilder, getPredictedFields(),
+                "Added PMML predicted (field,val)=({},{}) to StreamlineEvent");
 
+        // add to StreamlineEvent the predicted scores for PMML model output fields
+        putPmmlScoresInEvent(predScores, inserted, eventBuilder, getOutputFields(),
+                "Added PMML output (field,val)=({},{}) to StreamlineEvent");
+
+        final StreamlineEvent scoredEvent = eventBuilder.build();
+        LOG.debug("Scored StreamlineEvent {}", scoredEvent);
+
+        final StreamlineEvent eventInTuple = getStreamlineEventFromTuple(input);
         for (Stream stream : outputStreams) {
-            streamsToEvents.put(stream.getId(), Collections.singletonList(eventBuilder.dataSourceId(modelId).build()));
-        }
+            // Will contain scored and non scored events that match output fields
+            final StreamlineEventImpl.Builder finalEventBuilder = StreamlineEventImpl.builder();
+            finalEventBuilder.putAll(scoredEvent);
 
+            if (eventInTuple != null) {
+                // Add previous tuple's StreamlineEvent to this tuple's StreamlineEvent to pass it downstream
+                Map<String, Object> nonScoredFieldsEvent = eventInTuple.entrySet().stream()
+                        .filter((e) ->
+                                // include only tuple fields untouched by the PMML model
+                                !inserted.contains(e.getKey())
+                                // include only tuple fields that are in output fields, i.e. were chosen by the user in the UI
+                                && stream.getSchema().getFields().stream().anyMatch((of) -> of.getName().equals(e.getKey())))
+                        .peek((e) -> LOG.debug("Adding entry {} to StreamlineEvent", e))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+                if (nonScoredFieldsEvent != null) {
+                    finalEventBuilder.putAll(nonScoredFieldsEvent);
+                }
+            }
+            streamsToEvents.put(stream.getId(), Collections.singletonList(finalEventBuilder.dataSourceId(modelId).build()));
+        }
         return streamsToEvents;
+    }
+
+    private StreamlineEvent getStreamlineEventFromTuple(Tuple input) {
+        Object event = null;
+        if (input != null && input.contains(StreamlineEvent.STREAMLINE_EVENT)) {
+             event = input.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
+            if(event instanceof StreamlineEvent) {
+                return (StreamlineEvent) event;
+            }
+        }
+        LOG.debug("Ignoring input tuple field [{}] because it does not contain object of type StreamlineEvent [{}]",
+                StreamlineEvent.STREAMLINE_EVENT, event);
+        return null;
+    }
+
+    private void putPmmlScoresInEvent(Map<FieldName, ?> predScores, Set<String> inserted,
+            StreamlineEventImpl.Builder eventBuilder, List<FieldName> predOrOutFields, String msg) {
+
+        for (FieldName predOrOutField : predOrOutFields) {
+            final Object targetValue = predScores.get(predOrOutField);
+            final String fieldName = predOrOutField.getValue();
+            final Object predValue = EvaluatorUtil.decode(targetValue);
+            eventBuilder.put(fieldName, predValue);
+            LOG.debug(msg, fieldName, predValue);
+            inserted.add(fieldName);
+        }
     }
 }
