@@ -26,7 +26,6 @@ import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfig
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
-import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 
 import javax.security.auth.Subject;
 import java.io.File;
@@ -134,7 +133,7 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
         conf.put(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY, buildStormRestApiRootUrl(uiHost, uiPort));
         conf.put(TopologyLayoutConstants.SUBJECT_OBJECT, subject);
 
-        putStormSecurityConfigurations(streamingEngineService, conf);
+        putStormConfigurations(streamingEngineService, conf);
 
         // Topology during run-time will require few critical configs such as schemaRegistryUrl and catalogRootUrl
         // Hence its important to pass StreamlineConfig to TopologyConfig
@@ -148,7 +147,7 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
         return conf;
     }
 
-    private void putStormSecurityConfigurations(Service streamingEngineService, Map<String, Object> conf) {
+    private void putStormConfigurations(Service streamingEngineService, Map<String, Object> conf) {
         ServiceConfiguration storm = getServiceConfiguration(streamingEngineService, SERVICE_CONFIGURATION_STORM)
                 .orElse(new ServiceConfiguration());
         ServiceConfiguration stormEnv = getServiceConfiguration(streamingEngineService, SERVICE_CONFIGURATION_STORM_ENV)
@@ -157,6 +156,11 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
         try {
             Map<String, String> stormConfMap = storm.getConfigurationMap();
             if (stormConfMap != null) {
+                if (stormConfMap.containsKey(TopologyLayoutConstants.NIMBUS_THRIFT_MAX_BUFFER_SIZE)) {
+                    conf.put(TopologyLayoutConstants.NIMBUS_THRIFT_MAX_BUFFER_SIZE,
+                            Long.parseLong(stormConfMap.get(TopologyLayoutConstants.NIMBUS_THRIFT_MAX_BUFFER_SIZE)));
+                }
+
                 if (stormConfMap.containsKey(TopologyLayoutConstants.STORM_THRIFT_TRANSPORT)) {
                     String thriftTransport = stormConfMap.get(TopologyLayoutConstants.STORM_THRIFT_TRANSPORT);
                     if (!thriftTransport.startsWith("{{") && !thriftTransport.endsWith("}}")) {

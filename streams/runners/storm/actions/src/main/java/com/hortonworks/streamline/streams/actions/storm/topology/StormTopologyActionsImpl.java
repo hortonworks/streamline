@@ -95,7 +95,6 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     public static final String STREAMLINE_TOPOLOGY_CONFIG_CLUSTER_SECURITY_CONFIG = "clustersSecurityConfig";
     public static final String STREAMLINE_TOPOLOGY_CONFIG_CLUSTER_ID = "clusterId";
-    public static final String STREAMLINE_TOPOLOGY_CONFIG_CLUSTER_NAME = "clusterName";
     public static final String STREAMLINE_TOPOLOGY_CONFIG_PRINCIPAL = "principal";
     public static final String STREAMLINE_TOPOLOGY_CONFIG_KEYTAB_PATH = "keytabPath";
 
@@ -116,6 +115,8 @@ public class StormTopologyActionsImpl implements TopologyActions {
     public static final String TOPOLOGY_AUTO_CREDENTIAL_CLASSNAME_HBASE = "org.apache.storm.hbase.security.AutoHBase";
     public static final String TOPOLOGY_AUTO_CREDENTIAL_CLASSNAME_HIVE = "org.apache.storm.hive.security.AutoHive";
 
+    private static final Long DEFAULT_NIMBUS_THRIFT_MAX_BUFFER_SIZE = 1048576L;
+
     private String stormArtifactsLocation = "/tmp/storm-artifacts/";
     private String stormCliPath = "storm";
     private String stormJarLocation;
@@ -129,6 +130,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     private String thriftTransport;
     private Optional<String> jaasFilePath;
     private String principalToLocal;
+    private long nimbusThriftMaxBufferSize;
 
     private AutoCredsServiceConfigurationReader serviceConfigurationReader;
 
@@ -171,6 +173,12 @@ public class StormTopologyActionsImpl implements TopologyActions {
             this.client = new StormRestAPIClient(restClient, stormApiRootUrl, subject);
             nimbusSeeds = (String) conf.get(NIMBUS_SEEDS);
             nimbusPort = Integer.valueOf((String) conf.get(NIMBUS_PORT));
+
+            if (conf.containsKey(TopologyLayoutConstants.NIMBUS_THRIFT_MAX_BUFFER_SIZE)) {
+                nimbusThriftMaxBufferSize = (Long) conf.get(TopologyLayoutConstants.NIMBUS_THRIFT_MAX_BUFFER_SIZE);
+            } else {
+                nimbusThriftMaxBufferSize = DEFAULT_NIMBUS_THRIFT_MAX_BUFFER_SIZE;
+            }
 
             setupSecuredStormCluster(conf);
 
@@ -419,6 +427,9 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
         args.add("-c");
         args.add("nimbus.port=" + String.valueOf(nimbusPort));
+
+        args.add("-c");
+        args.add("nimbus.thrift.max_buffer_size" + String.valueOf(nimbusThriftMaxBufferSize));
 
         return args;
     }

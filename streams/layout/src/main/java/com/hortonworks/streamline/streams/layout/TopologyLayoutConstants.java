@@ -18,7 +18,9 @@ package com.hortonworks.streamline.streams.layout;
 public final class TopologyLayoutConstants {
 
 
-  private TopologyLayoutConstants () {}
+
+
+    private TopologyLayoutConstants () {}
     // streaming engines
     public static final String STORM_STREAMING_ENGINE = "STORM";
 
@@ -28,6 +30,7 @@ public final class TopologyLayoutConstants {
     public static final String STORM_SECURED_THRIFT_TRANSPORT = "_storm.thrift.secure.transport";
     public static final String STORM_NONSECURED_THRIFT_TRANSPORT = "_storm.thrift.nonsecure.transport";
     public static final String STORM_PRINCIPAL_TO_LOCAL = "storm.principal.tolocal";
+    public static final String NIMBUS_THRIFT_MAX_BUFFER_SIZE = "nimbus.thrift.max_buffer_size";
 
   // metric
     public static final String STORM_API_ROOT_URL_KEY = "stormApiRootUrl";
