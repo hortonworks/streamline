@@ -78,6 +78,7 @@ import com.hortonworks.streamline.streams.catalog.topology.state.TopologyState;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.streamline.streams.layout.component.Stream;
 import com.hortonworks.streamline.streams.layout.component.TopologyDag;
+import com.hortonworks.streamline.streams.layout.component.impl.NotificationSink;
 import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.rule.Rule;
 import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
@@ -114,6 +115,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.hortonworks.streamline.common.ComponentTypes.NOTIFICATION;
 import static com.hortonworks.streamline.common.util.WSUtils.CURRENT_VERSION;
 import static com.hortonworks.streamline.common.util.WSUtils.buildEdgesFromQueryParam;
 import static com.hortonworks.streamline.common.util.WSUtils.buildEdgesToQueryParam;
@@ -757,6 +759,9 @@ public class StreamCatalogService {
                     TopologyComponentBundle.TopologyComponentType.SINK,
                     topologyData.getBundleIdToType().get(topologySink.getTopologyComponentBundleId().toString()));
             topologySink.setTopologyComponentBundleId(bundle.getId());
+            if (bundle.getSubType().equals(NOTIFICATION)) {
+                updateNotifierJarFileName(topologySink);
+            }
             addTopologySink(newTopology.getId(), topologySink);
             oldToNewComponentIds.put(currentId, topologySink.getId());
         }
@@ -789,6 +794,18 @@ public class StreamCatalogService {
         }
         addTopologyEditorMetadata(newTopology.getId(), topologyData.getTopologyEditorMetadata());
         return newTopology;
+    }
+
+    private void updateNotifierJarFileName(TopologySink sink) {
+        String notifierClassName = sink.getConfig().getString(Notifier.CLASS_NAME, "");
+        if (!notifierClassName.isEmpty()) {
+            Collection<Notifier> notifiers = listNotifierInfos(QueryParam.params(Notifier.CLASS_NAME, notifierClassName));
+            if (notifiers.isEmpty()) {
+                throw new IllegalStateException("No registered notifier in the cluster for class '" + notifierClassName + "'");
+            }
+            Notifier current = notifiers.iterator().next();
+            sink.getConfig().setAny(Notifier.JARFILE_NAME, current.getJarFileName());
+        }
     }
 
     public Topology importTopology(Long namespaceId, TopologyData topologyData) throws Exception {
