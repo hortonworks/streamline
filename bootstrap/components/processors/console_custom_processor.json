@@ -4,8 +4,8 @@
   "description": "Console Custom Processor",
   "jarFileName": "streamline-core.jar",
   "inputSchema": {"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]},
-  "outputStreamToSchema": {"stream1":{"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]}},
-  "customProcessorImpl": "com.hortonworks.streamline.streams.runtime.processor.ConsoleCustomProcessorRuntime"
+  "outputStream": {"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]},
+  "customProcessorImpl": "com.hortonworks.streamline.streams.runtime.processor.ConsoleCustomProcessorRuntime",
   "topologyComponentUISpecification": {
     "fields": [
       {
