@@ -21,9 +21,12 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.security.auth.Subject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
+
+import java.security.PrivilegedAction;
 
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -34,20 +37,28 @@ public final class MLModelRegistryClient {
     private static final Logger LOG = LoggerFactory.getLogger(MLModelRegistryClient.class);
     private final String modelRegistryURL;
     private final Client client;
+    private final Subject subject;
 
-    public MLModelRegistryClient(String catalogURL) {
-        this(catalogURL, ClientBuilder.newClient(new ClientConfig()));
+    public MLModelRegistryClient(String catalogURL, Subject subject) {
+        this(catalogURL, ClientBuilder.newClient(new ClientConfig()), subject);
     }
 
-    public MLModelRegistryClient(String catalogURL, Client client) {
+    public MLModelRegistryClient(String catalogURL, Client client, Subject subject) {
         this.modelRegistryURL = String.join("/", catalogURL, "ml", "models");
         this.client = client;
         client.register(MultiPartFeature.class);
+        this.subject = subject;
     }
 
     public String getMLModelContents(String modelName) {
         try {
-            Response response = client.target(String.format("%s/%s/%s", modelRegistryURL, "pmml", modelName)).request().get();
+            Response response = Subject.doAs(subject, new PrivilegedAction<Response>() {
+                @Override
+                public Response run() {
+                    return client.target(String.format("%s/%s/%s", modelRegistryURL, "pmml", modelName)).request().get();
+                }
+            });
+
             if(response.getStatus() != OK.getStatusCode()) {
                 throw new RuntimeException(
                         String.format("Error occurred while getting the response %s", response.getStatus()));
