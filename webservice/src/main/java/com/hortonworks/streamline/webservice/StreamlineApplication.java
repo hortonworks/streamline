@@ -42,7 +42,6 @@ import com.hortonworks.streamline.streams.security.service.SecurityCatalogServic
 import com.hortonworks.streamline.streams.service.GenericExceptionMapper;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jetty.servlet.ErrorPageErrorHandler;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.slf4j.Logger;
@@ -295,18 +294,10 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
 
         }
 
-
         LOG.info("Registering resources to Jersey environment: [{}]", resourcesToRegister);
         for(Object resource : resourcesToRegister) {
             environment.jersey().register(resource);
         }
         environment.jersey().register(MultiPartFeature.class);
-
-
-        // custom error page handler
-        final ErrorPageErrorHandler errorPageErrorHandler = new ErrorPageErrorHandler();
-        // 400 - Bad Request, leave alone
-        errorPageErrorHandler.addErrorPage(401, "/401.html");
-        environment.getApplicationContext().setErrorHandler(errorPageErrorHandler);
     }
 }
