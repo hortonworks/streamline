@@ -129,7 +129,8 @@ public class StormRestAPIClient {
     }
 
     private String getComponentUrl(String topologyId, String componentId, String asUser) {
-        String baseUrl = getTopologyUrl(topologyId, asUser) + "/component/" + componentId;
+        // we need to pass asUser as empty otherwise we will get mal-formed doAsUser
+        String baseUrl = getTopologyUrl(topologyId, "") + "/component/" + componentId;
         if (StringUtils.isNotEmpty(asUser)) {
             baseUrl += "?doAsUser=" + asUser;
         }
