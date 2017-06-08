@@ -429,7 +429,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
         args.add("nimbus.port=" + String.valueOf(nimbusPort));
 
         args.add("-c");
-        args.add("nimbus.thrift.max_buffer_size" + String.valueOf(nimbusThriftMaxBufferSize));
+        args.add("nimbus.thrift.max_buffer_size=" + String.valueOf(nimbusThriftMaxBufferSize));
 
         return args;
     }
