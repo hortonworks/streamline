@@ -104,6 +104,9 @@ local.properties
 # mpeltonen/sbt-idea plugin
 .idea_modules/
 
+# mac directory metadats files
+.DS_Store
+
 # JIRA plugin
 atlassian-ide-plugin.xml
 
