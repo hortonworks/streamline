@@ -27,6 +27,7 @@
         <module>multilang</module>
         <module>actions</module>
         <module>authorizer</module>
+        <module>sql</module>
     </modules>
 
 

@@ -18,14 +18,12 @@
 package com.hortonworks.streamline.streams.runtime.rule.sql;
 
 import com.hortonworks.streamline.streams.runtime.rule.condition.expression.StormSqlExpression;
-import org.apache.storm.sql.runtime.DataSource;
-import org.apache.storm.sql.runtime.DataSourcesProvider;
-import org.apache.storm.sql.runtime.FieldInfo;
-import org.apache.storm.sql.runtime.ISqlTridentDataSource;
+import com.hortonworks.streamline.streams.sql.runtime.DataSource;
+import com.hortonworks.streamline.streams.sql.runtime.DataSourcesProvider;
+import com.hortonworks.streamline.streams.sql.runtime.FieldInfo;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Properties;
 
 public class RulesDataSourcesProvider implements DataSourcesProvider {
     private static final ThreadLocal<RulesDataSource> dataSource = new ThreadLocal<RulesDataSource>() {
@@ -43,11 +41,6 @@ public class RulesDataSourcesProvider implements DataSourcesProvider {
     @Override
     public DataSource construct(URI uri, String s, String s1, List<FieldInfo> list) {
         return dataSource.get();
-    }
-
-    @Override public ISqlTridentDataSource constructTrident(URI uri, String s, String s1,
-        Properties properties, List<FieldInfo> list) {
-        return null;
     }
 
     public static RulesDataSource getDataSource() {
