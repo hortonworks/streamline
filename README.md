@@ -1,4 +1,6 @@
 # Streaming Analytics Manager
+
+[![Join the chat at https://gitter.im/sam_dev/Lobby](https://badges.gitter.im/sam_dev/Lobby.svg)](https://gitter.im/sam_dev/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 Develop and deploy Streaming Analytics applications visually with bindings for streaming engine and multiple source/sinks, rich set of streaming operators and operational lifecycle management. Streaming Analytics Manager makes it easy to develop, monitor streaming applications and also provides analytics of data thats being processed by streaming application.
 
 ## Getting Help
