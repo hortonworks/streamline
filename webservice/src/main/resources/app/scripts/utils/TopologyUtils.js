@@ -802,6 +802,7 @@ const MouseUpAction = function(topologyId, versionId, d3node, d, metaInfo, inter
   if (mouseDownNode && mouseDownNode !== d) {
     // we're in a different node: create new edge for mousedown edge and add to graph
     if (hasSource.length && d.currentType.toLowerCase() === 'branch') {
+      dragLine.classed("hidden", true);
       FSReactToastr.warning(
         <strong>Edge cannot be connected to Branch.</strong>
       );
