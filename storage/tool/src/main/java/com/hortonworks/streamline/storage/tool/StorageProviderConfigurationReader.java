@@ -30,7 +30,6 @@ public class StorageProviderConfigurationReader {
     private static final String DATA_SOURCE_PASSWORD = "dataSource.password";
     private static final String JDBC_URL = "jdbcUrl";
     private static final String JDBC_DRIVER_CLASS = "jdbcDriverClass";
-    private static final String PHOENIX = "phoenix";
     private static final String MYSQL = "mysql";
     private static final String POSTGRESQL = "postgresql";
 
@@ -58,9 +57,6 @@ public class StorageProviderConfigurationReader {
 
         Map<String, Object> dbProps =  (Map<String, Object>) properties.get(DB_PROPERTIES);
         switch (dbType.toLowerCase()) {
-            case PHOENIX:
-                return readPhoenixProperties(dbProps);
-
             case MYSQL:
                 return readMySQLProperties(dbProps);
 
@@ -89,23 +85,6 @@ public class StorageProviderConfigurationReader {
         String password = (String) dbProperties.getOrDefault(DATA_SOURCE_PASSWORD, "");
 
         return StorageProviderConfiguration.mysql(jdbcDriverClass, jdbcUrl, user, password);
-    }
-
-    /**
-     * storageProviderConfiguration:
-     *   providerClass: "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager"
-     *   properties:
-     *     db.type: "phoenix"
-     *     queryTimeoutInSecs: 30
-     *     db.properties:
-     *       jdbcDriverClass: "org.apache.phoenix.jdbc.PhoenixDriver"
-     *       jdbcUrl: "jdbc:phoenix:localhost:2181"
-     */
-    private static StorageProviderConfiguration readPhoenixProperties(Map<String, Object> dbProperties) {
-        String jdbcDriverClass = (String) dbProperties.get(JDBC_DRIVER_CLASS);
-        String jdbcUrl = (String) dbProperties.get(JDBC_URL);
-
-        return StorageProviderConfiguration.phoenix(jdbcDriverClass, jdbcUrl);
     }
 
     /**
