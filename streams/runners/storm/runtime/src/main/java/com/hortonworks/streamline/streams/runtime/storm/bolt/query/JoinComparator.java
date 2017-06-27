@@ -21,7 +21,9 @@ package com.hortonworks.streamline.streams.runtime.storm.bolt.query;
 
 import org.apache.storm.tuple.Tuple;
 
-abstract class JoinComparator {
+import java.io.Serializable;
+
+public abstract class JoinComparator implements Serializable {
     private final String fieldStr1; // 1st arg
     private final String fieldStr2; // 2nd arg
 

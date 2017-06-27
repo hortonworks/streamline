@@ -409,26 +409,6 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
     }
 
 
-    private void processJoinStreamTuple2(Tuple tuple, long currTime) throws InvalidTuple {
-        // 1- join against buffered fromStream and emit results if any
-        boolean matchFound = false;
-        String key = getJoinStreamKey(tuple);
-        List<TupleInfo> matches = joinInfos[0].findMatches(key);  // match with fromStream
-        if (matches!=null && !matches.isEmpty()) {  // match found
-            for (TupleInfo lookupTuple : matches) {
-                lookupTuple.matched = true;
-                List<Object> outputTuple = doProjection(lookupTuple.tuple, tuple);
-                emit(outputTuple, tuple, lookupTuple.tuple);
-            }
-            matchFound = true;
-        }
-        // 2- add to joinStream buffer
-        Tuple expired = joinInfos[1].addTuple(key, tuple, matchFound, currTime);
-        if (expired!=null)
-            collector.ack(expired);
-    }
-
-
     /**
      *  Get the composite key for the tuple from the From Stream
      * @param tuple
@@ -517,7 +497,6 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
         final JoinComparator[] comparators;   // null for first stream defined via from()
         boolean emitUnmatchedTuples = false;
 
-//        final LinkedHashMap<String, Long> timeTracker;        // for time based retention. Tracks time at which the tuples were received
         final LinkedListMultimap<String, TupleInfo> buffer;   // retention window. A [key->tuple] map.
 
         public JoinInfo(JoinType joinType, Long retentionTimeMs, Integer retentionCount, Boolean unique, JoinComparator... comparators) {
