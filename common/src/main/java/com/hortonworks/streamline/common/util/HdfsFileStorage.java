@@ -88,4 +88,14 @@ public class HdfsFileStorage implements FileStorage {
     public boolean deleteFile(String name) throws IOException {
         return hdfsFileSystem.delete(new Path(directory, name), true);
     }
+
+    @Override
+    public boolean exists(String name) {
+        try {
+            return hdfsFileSystem.exists(new Path(directory, name));
+        } catch (Exception ex) {
+            // ignore
+        }
+        return false;
+    }
 }
