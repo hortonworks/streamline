@@ -16,6 +16,11 @@ modules:
       # schema registry configuration
       schemaRegistryUrl: "http://localhost:9090/api/v1"
       mavenRepoUrl: "hwx-public^http://repo.hortonworks.com/content/groups/public/,hwx-private^http://nexus-private.hortonworks.com/nexus/content/groups/public/"
+      # Proxy server configuration for downloading artifacts (optional)
+      # proxyUrl: "http://proxyHost:proxyPort"
+      # You can provide username and password when proxy server requires basic auth
+      # proxyUsername: "username"
+      # proxyPassword: "password"
 
 catalogRootUrl: "http://localhost:8080/api/v1/catalog"
 

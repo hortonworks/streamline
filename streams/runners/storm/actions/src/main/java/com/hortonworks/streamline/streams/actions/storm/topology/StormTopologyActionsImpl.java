@@ -392,6 +392,22 @@ public class StormTopologyActionsImpl implements TopologyActions {
             args.add(mavenArtifacts);
             args.add("--artifactRepositories");
             args.add((String) conf.get("mavenRepoUrl"));
+
+            String proxyUrl = (String) conf.get("proxyUrl");
+            if (StringUtils.isNotEmpty(proxyUrl)) {
+                args.add("--proxyUrl");
+                args.add(proxyUrl);
+
+                String proxyUsername = (String) conf.get("proxyUsername");
+                String proxyPassword = (String) conf.get("proxyPassword");
+                if (proxyUsername != null && proxyPassword != null) {
+                    // allow empty string but not null
+                    args.add("--proxyUsername");
+                    args.add(proxyUsername);
+                    args.add("--proxyPassword");
+                    args.add(proxyPassword);
+                }
+            }
         }
         return args;
     }
