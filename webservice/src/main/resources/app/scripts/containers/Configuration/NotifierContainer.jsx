@@ -182,7 +182,7 @@ export default class NotifierContainer extends Component {
   render() {
     let {entities, filterValue, editData, fetchLoader,allACL,shareObj} = this.state;
     const filteredEntities = Utils.filterByName(entities, filterValue);
-    const pageSize = 8;
+    const pageSize = 20;
     return (
       <div>
         {fetchLoader

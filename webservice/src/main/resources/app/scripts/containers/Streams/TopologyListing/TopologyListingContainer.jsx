@@ -201,10 +201,8 @@ class TopologyItems extends Component {
                     ? 'circle KILLED'
                     : (metricWrap.status || 'NOTRUNNING') === "NOTRUNNING"
                       ? 'triangle NOTRUNNING'
-                      : ''}`}></i>{window.outerWidth < 1440
-                    ? Utils.ellipses(topology.name, !app_state.sidebar_isCollapsed ? 10 : 15)
-                    : topology.name}
-                  <small>{namespaceName}</small>
+                      : ''} pull-left`}></i><div title={topology.name} className="pull-left app-name">{topology.name}</div>
+                  <div className="environment-name" title={namespaceName}><small>{namespaceName}</small></div>
                 </h4>
               </Link>
               <h5>

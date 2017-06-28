@@ -180,9 +180,12 @@ export default class UDFContainer extends Component {
 
   render() {
     let {entities, filterValue, editData, fetchLoader,allACL,shareObj} = this.state;
-    const filteredEntities = Utils.filterByName(entities, filterValue);
-    const pageSize = 8;
-
+    var filteredEntities = Utils.filterByName(entities, filterValue);
+    const pageSize = 20;
+    let userFunctions = _.filter(filteredEntities, {'builtin': false});
+    let functionsWithClassname = _.filter(filteredEntities, (e)=>{return e.builtin && e.className !== "builtin";});
+    let builtinFunctions = _.filter(filteredEntities, {'builtin': true, 'className': "builtin"});
+    filteredEntities = [...userFunctions, ...functionsWithClassname, ...builtinFunctions];
     return (
       <div>
         {fetchLoader
@@ -234,11 +237,13 @@ export default class UDFContainer extends Component {
                           <Th column="actions">Actions</Th>
                         </Thead>
                         {filteredEntities.map((obj, i) => {
+                          let argTypesArr = obj.argTypes.length > 0 ? obj.argTypes[0].split("|") : [];
+                          argTypesArr = argTypesArr.map((t)=>{return _.upperFirst(_.camelCase(t));});
                           return (
                             <Tr key={`${obj.name}${i}`}>
                               <Td column="Name">{obj.displayName}</Td>
                               <Td column="description">{obj.description}</Td>
-                              <Td column="type">{obj.type}</Td>
+                              <Td column="type">{_.upperFirst(_.camelCase(obj.type))}</Td>
                               <Td column="className">
                                 <div className="wordBreak">
                                   {obj.className}
@@ -246,10 +251,10 @@ export default class UDFContainer extends Component {
                               </Td>
                               <Td column="argTypes">
                                 <div className="wordBreak">
-                                  {obj.argTypes.length > 0 ? obj.argTypes[0].split("|").join(', ') : ''}
+                                  {obj.argTypes.length > 0 ? argTypesArr.join(', ') : ''}
                                 </div>
                               </Td>
-                              <Td column="returnType">{obj.returnType ? obj.returnType : '-'}</Td>
+                              <Td column="returnType">{obj.returnType ? _.upperFirst(_.camelCase(obj.returnType)) : '-'}</Td>
                               <Td column="actions">
                                 <ActionButtonGroup key={i} type="UDF" allACL={allACL} udfObj={obj} handleEdit={this.handleEditUDF.bind(this)} handleDelete={this.handleDeleteUDF.bind(this)} handleShare={this.handleShareUDF.bind(this)}/>
                               </Td>
