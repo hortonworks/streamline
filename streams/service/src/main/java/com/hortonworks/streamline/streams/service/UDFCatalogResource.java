@@ -22,6 +22,7 @@ import com.google.common.collect.Collections2;
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.registries.common.exception.ParserException;
 import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityAlreadyExistsException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.exception.service.exception.request.UnsupportedMediaTypeException;
 import com.hortonworks.streamline.common.util.FileStorage;
@@ -337,7 +338,13 @@ public class UDFCatalogResource {
             String digest = Hex.encodeHexString(md.digest());
             LOG.debug("Digest: {}", digest);
             udf.setDigest(digest);
-            String jarPath = getExistingJarPath(digest).orElse(uploadJar(new FileInputStream(tmpFile), udf.getName()));
+            String jarPath = getExistingJarPath(digest).orElseGet(() -> uploadJar(tmpFile, udf.getName()));
+            if (!fileStorage.exists(jarPath)) {
+                String msg = String.format("The jar path '%s' does not exist. " +
+                        "You may have to reset the db and run bootstrap again.", jarPath);
+                LOG.error(msg);
+                throw new RuntimeException(msg);
+            }
             udf.setJarStoragePath(jarPath);
         }
     }
@@ -401,16 +408,15 @@ public class UDFCatalogResource {
         return null;
     }
 
-    private String uploadJar(InputStream is, String udfName) throws IOException {
+    private String uploadJar(File inputFile, String udfName) {
         String jarFileName;
-        if (is != null) {
+        try (InputStream is = new FileInputStream(inputFile)) {
             jarFileName = String.format("streamline-functions-%s.jar", UUID.randomUUID().toString());
             String uploadedPath = this.fileStorage.uploadFile(is, jarFileName);
             LOG.debug("Jar uploaded to {}", uploadedPath);
-        } else {
-            String message = String.format("Udf %s jar content is missing.", udfName);
-            LOG.error(message);
-            throw new IllegalArgumentException(message);
+        } catch (IOException ex) {
+            LOG.error("Got exception when uploading jar", ex);
+            throw new RuntimeException(ex);
         }
         return jarFileName;
     }
@@ -429,7 +435,8 @@ public class UDFCatalogResource {
         Collection<UDF> existing = catalogService.listUDFs(
                 Collections.singletonList(new QueryParam(UDF.NAME, udf.getName())));
         if (!existing.isEmpty()) {
-            throw new RuntimeException("UDF with the same name already exists, use update (PUT) api instead");
+            LOG.warn("UDF with name {} already exists", udf.getName());
+            throw EntityAlreadyExistsException.byName(udf.getName());
         }
     }
 
