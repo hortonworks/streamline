@@ -335,7 +335,7 @@ export default class WindowingAggregateNodeForm extends Component {
     let {selectedKeys, windowNum, outputFieldsArr, tsField, lagMs, argumentError} = this.state;
     let validData = true;
     if (argumentError) {return false;}
-    if (selectedKeys.length === 0 || windowNum === '') {
+    if (windowNum === '') {
       validData = false;
     }
     if(tsField !== '' && tsField !== 'processingTime' && lagMs === '') {
@@ -758,12 +758,10 @@ export default class WindowingAggregateNodeForm extends Component {
               : <form className="customFormClass">
                 <div className="form-group">
                   <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Group by keys</Popover>}>
-                    <label>Select Keys
-                      <span className="text-danger">*</span>
-                    </label>
+                    <label>Select Keys</label>
                   </OverlayTrigger>
                   <div>
-                    <Select value={selectedKeys} options={keysList} onChange={this.handleKeysChange.bind(this)} multi={true} required={true} disabled={disabledFields} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption}/>
+                    <Select value={selectedKeys} options={keysList} onChange={this.handleKeysChange.bind(this)} multi={true} disabled={disabledFields} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption}/>
                   </div>
                 </div>
                 <div className="form-group">
