@@ -17,9 +17,7 @@ package com.hortonworks.streamline.storage.tool;
 
 public class StorageProviderConfiguration {
     private static final String MYSQL_DELIMITER = ";";
-    private static final String PHOENIX_DELIMITER = "\n";
     private static final String POSTGRESQL_DELIMITER = ";";
-    private static final String PHOENIX = "phoenix";
     private static final String MYSQL = "mysql";
     private static final String POSTGRESQL = "postgresql";
 
@@ -47,10 +45,6 @@ public class StorageProviderConfiguration {
 
     public static StorageProviderConfiguration mysql(String driverClass, String url, String user, String password) {
         return new StorageProviderConfiguration(driverClass, url, user, password, MYSQL, MYSQL_DELIMITER);
-    }
-
-    public static StorageProviderConfiguration phoenix(String driverClass, String url) {
-        return new StorageProviderConfiguration(driverClass, url, "", "", PHOENIX, PHOENIX_DELIMITER);
     }
 
     public static StorageProviderConfiguration postgresql(String driverClass, String url, String user, String password) {

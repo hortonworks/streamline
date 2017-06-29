@@ -1,28 +1,22 @@
 package com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.factory;
 
-import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
 import com.hortonworks.streamline.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
-import com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix.query.PhoenixDeleteQuery;
-import com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix.query.PhoenixSelectQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.query.PostgresqlDeleteQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.query.PostgresqlInsertQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.query.PostgresqlSelectQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory.AbstractQueryExecutor;
-import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlInsertQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
 import com.hortonworks.streamline.storage.impl.jdbc.util.Util;
 import com.zaxxer.hikari.HikariConfig;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.query.PostgresqlInsertUpdateDuplicate;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.List;
