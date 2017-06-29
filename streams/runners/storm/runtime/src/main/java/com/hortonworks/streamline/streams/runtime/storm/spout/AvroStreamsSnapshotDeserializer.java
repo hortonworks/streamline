@@ -65,7 +65,10 @@ public class AvroStreamsSnapshotDeserializer extends AvroSnapshotDeserializer {
             List<Schema.Field> fields = indexedRecord.getSchema().getFields();
             ImmutableMap.Builder<String, Object> keyValues = ImmutableMap.builder();
             for (Schema.Field field : fields) {
-                keyValues.put(field.name(), convertValue(indexedRecord.get(field.pos())));
+                Object currentValue = convertValue(indexedRecord.get(field.pos()));
+                if (currentValue != null) {
+                    keyValues.put(field.name(), currentValue);
+                }
             }
             value = keyValues.build();
 
@@ -86,7 +89,10 @@ public class AvroStreamsSnapshotDeserializer extends AvroSnapshotDeserializer {
             Map<Object, Object> map = (Map<Object, Object>) deserializedObj;
             ImmutableMap.Builder<String, Object> keyValues = ImmutableMap.builder();
             for (Map.Entry entry : map.entrySet()) {
-                keyValues.put(entry.getKey().toString(), convertValue(entry.getValue()));
+                Object currentValue = convertValue(entry.getValue());
+                if (currentValue != null) {
+                    keyValues.put(entry.getKey().toString(), currentValue);
+                }
             }
             value = keyValues.build();
 
@@ -94,7 +100,10 @@ public class AvroStreamsSnapshotDeserializer extends AvroSnapshotDeserializer {
             Collection<Object> collection = (Collection<Object>) deserializedObj;
             ImmutableList.Builder<Object> values = ImmutableList.builder();
             for (Object obj : collection) {
-                values.add(convertValue(obj));
+                Object currentValue = convertValue(obj);
+                if (currentValue != null) {
+                    values.add(currentValue);
+                }
             }
             value = values.build();
 
