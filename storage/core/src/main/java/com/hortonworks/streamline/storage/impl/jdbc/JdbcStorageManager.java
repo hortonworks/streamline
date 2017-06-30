@@ -28,7 +28,6 @@ import com.hortonworks.streamline.storage.exception.AlreadyExistsException;
 import com.hortonworks.streamline.storage.exception.IllegalQueryParameterException;
 import com.hortonworks.streamline.storage.exception.StorageException;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.mysql.factory.MySqlExecutor;
-import com.hortonworks.streamline.storage.impl.jdbc.provider.phoenix.factory.PhoenixExecutor;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.factory.PostgresqlExecutor;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.MetadataHelper;
@@ -208,7 +207,7 @@ public class JdbcStorageManager implements StorageManager {
 
         // When we have more providers we can add a layer to have a factory to create respective jdbc storage managers.
         // For now, keeping it simple as there are only 2.
-        if(!"phoenix".equals(type) && !"mysql".equals(type) && !"postgresql".equals(type)) {
+        if(!"mysql".equals(type) && !"postgresql".equals(type)) {
             throw new IllegalArgumentException("Unknown jdbc storage provider type: "+type);
         }
         log.info("jdbc provider type: [{}]", type);
@@ -216,13 +215,6 @@ public class JdbcStorageManager implements StorageManager {
 
         QueryExecutor queryExecutor;
         switch (type) {
-            case "phoenix":
-                try {
-                    queryExecutor = PhoenixExecutor.createExecutor(dbProperties);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-                break;
             case "mysql":
                 queryExecutor = MySqlExecutor.createExecutor(dbProperties);
                 break;

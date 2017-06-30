@@ -15,8 +15,14 @@
 import React, {Component} from 'react';
 
 export default class CommonLoaderSign extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      text : this.props.loadingText || "LOADING"
+    };
+  }
   render() {
-    const {imgName, loadingText} = this.props;
+    const {imgName} = this.props;
     const imgUrl = `styles/img/back-${imgName}.png`;
     const divStyle = {
       backgroundImage: 'url(' + imgUrl + ')',
@@ -25,9 +31,10 @@ export default class CommonLoaderSign extends Component {
       backgroundSize: "50%",
       height: window.innerHeight - 124
     };
+    const load = <span><i className="fa fa-spinner fa-spin"></i> {this.state.text}</span>;
     return (
       <div className="col-sm-12 text-center" style={divStyle}>
-        <p className="loading-text">{loadingText ? loadingText : "Loading"}</p>
+        <p className="loading-text">{load}</p>
       </div>
     );
   }

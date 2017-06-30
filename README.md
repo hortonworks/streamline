@@ -1,8 +1,7 @@
 # Streaming Analytics Manager
-Develop and deploy Streaming Analytics applications visually with bindings for streaming engine and multiple source/sinks, rich set of streaming operators and operational lifecycle management. Streaming Analytics Manager makes it easy to develop, monitor streaming applications and also provides analytics of data thats being processed by streaming application.
 
-## Documentation
-Documentation and tutorials can be found on the Streaming Analytics Manager docs [ReadMeDocs] (http://streamline.readthedocs.io/en/latest/	)
+[![Join the chat at https://gitter.im/sam_dev/Lobby](https://badges.gitter.im/sam_dev/Lobby.svg)](https://gitter.im/sam_dev/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+Develop and deploy Streaming Analytics applications visually with bindings for streaming engine and multiple source/sinks, rich set of streaming operators and operational lifecycle management. Streaming Analytics Manager makes it easy to develop, monitor streaming applications and also provides analytics of data thats being processed by streaming application.
 
 ## Getting Help
 
@@ -10,7 +9,7 @@ SAM users or devs should send a message to [Registry Google Group] (https://grou
 
 ## License
 
-Copyright 2016 Hortonworks.
+Copyright 2016-2017 Hortonworks.
  
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

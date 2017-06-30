@@ -304,8 +304,9 @@ export default class ComponentNodeContainer extends Component {
     return nodeContainer;
   }
   handleClickOutside(){
+    let toolbarfolder = document.querySelector('[data-toolbarfolder]');
     let className = event.target.className;
-    if(this.state.editToolbar && className !== 'popoverTitleEditable'){
+    if(this.state.editToolbar && className !== 'popoverTitleEditable' && !toolbarfolder.contains(event.target)){
       this.doneEditToolbar();
     }
   }

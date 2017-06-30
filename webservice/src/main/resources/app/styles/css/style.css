@@ -578,12 +578,29 @@ label {
   font-size: 17.5px;
 }
 
+.stream-box .stream-head h4 .app-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 140px;
+  margin-right: 5px;
+}
+
+.stream-box .stream-head h4 .environment-name {
+  color: #fff;
+  border-radius: 10px;
+  background-color: #aeaeae;
+  margin-left: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 50px;
+}
+
 .stream-box .stream-head h4 small {
   background-color: #aeaeae;
   color: #fff;
-  margin-left: 5px;
   padding: 2px 5px;
-  border-radius: 10px;
   text-transform: uppercase;
   font-size: 10px;
 }
@@ -890,7 +907,7 @@ label {
 }
 
 .table-stream>tbody>tr>td>.wordBreak {
-  word-break: break-word;
+  word-break: break-all;
 }
 
 .table > tbody > tr > td span.label {
@@ -1838,6 +1855,9 @@ h5.environment-title span, .service-box .service-head h4 span {
   font-size: 10px;
   white-space: normal;
   word-break: break-all;
+  display: inline-block;
+  line-height: 16px;
+  padding-top: 2px;
 }
 
 .environment-components>li {
@@ -2494,7 +2514,7 @@ input[type="checkbox"]:focus {
   font-size: 15px;
 }
 
-.loading-text:after {
+/*.loading-text:after {
   overflow: hidden;
   display: inline-block;
   vertical-align: bottom;
@@ -2502,7 +2522,7 @@ input[type="checkbox"]:focus {
   animation: ellipsis steps(4, end) 900ms infinite;
   content: "\2026";
   width: 0px;
-}
+}*/
 
 @keyframes ellipsis {
   to {

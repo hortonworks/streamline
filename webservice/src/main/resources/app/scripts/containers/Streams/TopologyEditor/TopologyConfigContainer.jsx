@@ -114,10 +114,9 @@ export default class TopologyConfigContainer extends Component {
                   if(entity.security.authentication.enabled) {
                     hasSecurity = true;
                   }
-                  _.keys(entity.security.principals).map((p)=>{
-                    entity.security.principals[p].map((o)=>{
-                      principalsArr.push(o.name);
-                    });
+                  let stormPrincipals = (entity.security.principals && entity.security.principals["storm"]) || [];
+                  stormPrincipals.map((o)=>{
+                    principalsArr.push(o.name);
                   });
 
                   _.keys(entity.security.keytabs).map((kt)=>{

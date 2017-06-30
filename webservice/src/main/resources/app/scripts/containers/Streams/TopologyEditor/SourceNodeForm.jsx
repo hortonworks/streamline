@@ -102,7 +102,7 @@ export default class SourceNodeForm extends Component {
             }
           });
         });
-        stateObj.clusterArr = clusters;
+        stateObj.clusterArr = _.isEmpty(clusters) ? [] : clusters;
       }
       stateObj.configJSON = this.fetchFields(stateObj.clusterArr);
       if (!_.isEmpty(stateObj.clusterArr) && _.keys(stateObj.clusterArr).length > 0) {
@@ -132,19 +132,23 @@ export default class SourceNodeForm extends Component {
         return x.fieldName === 'clusters';
       });
       if (clusterFlag === -1) {
-        const data = {
-          "uiName": "Cluster Name",
-          "fieldName": "clusters",
-          "isOptional": false,
-          "tooltip": "Cluster name to read data from",
-          "type": "CustomEnumstring",
-          "options": []
-        };
-        obj.unshift(data);
+        obj.unshift(this.clusterField());
       }
     }
     return obj;
   }
+
+  clusterField = () => {
+    return {
+      "uiName": "Cluster Name",
+      "fieldName": "clusters",
+      "isOptional": false,
+      "tooltip": "Cluster name to read data from",
+      "type": "CustomEnumstring",
+      "options": []
+    };
+  }
+
   pushClusterFields = (opt, uiSpecification) => {
     const obj = uiSpecification.map(x => {
       if (x.fieldName === 'clusters') {
@@ -157,8 +161,14 @@ export default class SourceNodeForm extends Component {
 
   populateClusterFields(val) {
     const tempObj = Object.assign({}, this.state.formData, {topic: ''});
-    // split the val by (-) to find the key by URL
-    const keyName = this.getClusterKey(val.split('@#$')[1]);
+    // split the val to find the key by URL
+    let splitValues = val.split('@#$');
+    let keyName;
+    if(!_.isEmpty(splitValues[1])){
+      keyName = this.getClusterKey(splitValues[1], false);
+    } else {
+      keyName = this.getClusterKey(splitValues[0], true);
+    }
     this.setState({
       clusterName: keyName,
       streamObj: '',
@@ -168,12 +178,14 @@ export default class SourceNodeForm extends Component {
     });
   }
 
-  getClusterKey(url) {
+  getClusterKey(urlOrName, isManualCluster) {
     const {clusterArr} = this.state;
     let key = '';
     _.keys(clusterArr).map(x => {
       _.keys(clusterArr[x]).map(k => {
-        if (clusterArr[x][k].ambariImportUrl === url) {
+        if(!isManualCluster && clusterArr[x][k].ambariImportUrl === urlOrName){
+          key = x;
+        } else if(isManualCluster && clusterArr[x][k].name === urlOrName){
           key = x;
         }
       });
@@ -187,7 +199,7 @@ export default class SourceNodeForm extends Component {
 
     const mergeData = Utils.deepmerge(formData,FormData);
     let tempFormData = _.cloneDeep(mergeData);
-
+    let stateObj = {};
     /*
       Utils.mergeFormDataFields method accept params
       name =  name of cluster
@@ -199,8 +211,16 @@ export default class SourceNodeForm extends Component {
       and prefetch the value if its already configure
     */
     const {obj,tempData} = Utils.mergeFormDataFields(name,clusterArr, clusterName, tempFormData, configJSON);
-
-    this.setState({configJSON: obj, formData: tempData});
+    stateObj.configJSON = obj;
+    stateObj.formData = tempData;
+    if(clusterArr.length === 0 && formData.cluster !== ''){
+      let tempObj = this.props.configData.topologyComponentUISpecification.fields;
+      tempObj.unshift(this.clusterField());
+      stateObj.configJSON = tempObj;
+      FSReactToastr.error(
+        <CommonNotification flag="error" content={'Kafka cluster is not availabel'}/>, '', toastOpt);
+    }
+    this.setState(stateObj);
   }
 
   validateData() {

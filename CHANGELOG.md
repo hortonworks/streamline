@@ -1,4 +1,7 @@
 ## 0.4
+ * ISSUE-751     : Drop support Phoenix as Streamline storage type  
+ * ISSUE-764     : Remove stack trace when trying to register existing UDF
+ * ISSUE-754     : Streamline artifacts fetch via proxy server
  * ISSUE-666     : Make kafka streamline event serializer not dependent on registry API
  * ISSUE-607     : JDBC sink should build UPSERT query instead of using JdbcInsertBolt default INSERT query
  * ISSUE-613     : Cloning projection processors with respective configuration as part of Rule

@@ -40,8 +40,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 
 /**
@@ -75,7 +77,22 @@ public class EnvironmentService {
     }
 
     public Cluster importClusterServices(ServiceNodeDiscoverer serviceNodeDiscoverer, Cluster cluster) throws Exception {
-        return clusterImporter.importCluster(serviceNodeDiscoverer, cluster);
+        Cluster newCluster = clusterImporter.importCluster(serviceNodeDiscoverer, cluster);
+
+        // invalidate all containers' elements which is associated to the cluster
+        Long clusterId = newCluster.getId();
+        List<QueryParam> queryParams = Collections.singletonList(new QueryParam("clusterId", String.valueOf(clusterId)));
+        Set<Long> namespaceIdSet = new HashSet<>();
+        for (NamespaceServiceClusterMapping namespaceServiceClusterMapping : listServiceClusterMapping(queryParams)) {
+            Long namespaceId = namespaceServiceClusterMapping.getNamespaceId();
+            namespaceIdSet.add(namespaceId);
+        }
+
+        containers.forEach(container -> {
+            namespaceIdSet.forEach(container::invalidateInstance);
+        });
+
+        return newCluster;
     }
 
     public Service initializeService(Cluster cluster, String serviceName) {
@@ -411,6 +428,10 @@ public class EnvironmentService {
         }
         this.dao.addOrUpdate(namespace);
         return namespace;
+    }
+
+    public Collection<NamespaceServiceClusterMapping> listServiceClusterMapping(List<QueryParam> queryParams) {
+        return this.dao.find(NAMESPACE_SERVICE_CLUSTER_MAPPING_NAMESPACE, queryParams);
     }
 
     public Collection<NamespaceServiceClusterMapping> listServiceClusterMapping(Long namespaceId) {

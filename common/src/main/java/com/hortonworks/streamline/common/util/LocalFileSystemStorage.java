@@ -94,4 +94,8 @@ public class LocalFileSystemStorage implements FileStorage {
         return Files.deleteIfExists(path);
     }
 
+    @Override
+    public boolean exists(String name) {
+        return Files.exists(FileSystems.getDefault().getPath(directory, name));
+    }
 }

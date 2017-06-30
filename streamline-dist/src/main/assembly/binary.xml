@@ -109,13 +109,6 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${project.basedir}./bootstrap/sql/phoenix</directory>
-            <outputDirectory>/bootstrap/sql/phoenix</outputDirectory>
-            <includes>
-                <include>**/*.sql</include>
-            </includes>
-        </fileSet>
-        <fileSet>
             <directory>${project.basedir}./bootstrap/sql/postgresql</directory>
             <outputDirectory>/bootstrap/sql/postgresql</outputDirectory>
             <includes>

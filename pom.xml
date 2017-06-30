@@ -52,7 +52,7 @@
         <scala.version>2.10.5</scala.version>
         <schema-registry.version>0.3.0-SNAPSHOT</schema-registry.version>
         <slf4j.version>1.7.12</slf4j.version>
-        <storm.version>1.0.2.3.0.0.0-310</storm.version>
+        <storm.version>1.1.0.3.0.0.0-453</storm.version>
         <woodstox-core-asl.version>4.4.1</woodstox-core-asl.version>
         <druid.tranquility.version>0.8.2</druid.tranquility.version>
         <spring.version>4.3.6.RELEASE</spring.version>

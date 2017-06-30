@@ -67,4 +67,12 @@ public interface FileStorage {
      */
     boolean deleteFile(String name) throws IOException;
 
+    /**
+     * Returns if a file for the given name exists.
+     *
+     * @param name identifier of the file to be checked that was first
+     *             passed during {@link #uploadFile(InputStream, String)}
+     * @return true if the file exists
+     */
+    boolean exists(String name);
 }

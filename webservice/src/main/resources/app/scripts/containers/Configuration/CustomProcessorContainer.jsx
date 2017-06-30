@@ -29,7 +29,7 @@ import {BtnDelete, BtnEdit} from '../../components/ActionButtons';
 import CustomProcessorForm from './CustomProcessorForm';
 import CustomProcessorREST from '../../rest/CustomProcessorREST';
 import FSReactToastr from '../../components/FSReactToastr';
-import {pageSize, accessCapabilities, toastOpt} from '../../utils/Constants';
+import {accessCapabilities, toastOpt} from '../../utils/Constants';
 import Utils from '../../utils/Utils';
 import CommonNotification from '../../utils/CommonNotification';
 import NoData from '../../components/NoData';
@@ -179,6 +179,7 @@ export default class CustomProcessorContainer extends Component {
   render() {
     let {entities, filterValue, fetchLoader, uploadingData,allACL} = this.state;
     const filteredEntities = Utils.filterByName(entities, filterValue);
+    const pageSize = 20;
 
     return (
       <div>

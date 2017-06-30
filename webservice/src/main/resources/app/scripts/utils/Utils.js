@@ -456,7 +456,10 @@ const mergeFormDataFields = function(name, clusterArr,clusterName,formData,uiSpe
                 mk.length > 1 ? mk.splice(0, 1) : '' ;
                 nestedKeys(mk.join('.'));
               } else if (list.fieldName === pk) {
-                if (_.isArray(clusterArr[x].hints[k]) && (name || clusterName) === x) {
+                if((clusterArr[x].hints[k] === "true" || clusterArr[x].hints[k] === "false") && (name || clusterName) === x){
+                  let fieldValue = clusterArr[x].hints[k];
+                  _.set(data,k, (fieldValue === "true" ? true : false));
+                } else if (_.isArray(clusterArr[x].hints[k]) && (name || clusterName) === x) {
                   list.options = clusterArr[x].hints[k].map(v => {
                     return {fieldName: v, uiName: v};
                   });
@@ -498,7 +501,11 @@ const mergeFormDataFields = function(name, clusterArr,clusterName,formData,uiSpe
                         // fieldValue = fieldValue[formData[key]] || '';
                         // formData[k] = fieldValue[formData[key]] ;
                       }
-                      _.set(data,k,_.get(formData,k,fieldValue));
+                      let val = fieldValue;
+                      if(val === ''){
+                        val = _.get(formData, k);
+                      }
+                      _.set(data,k,val);
                     }
                   }
                 }

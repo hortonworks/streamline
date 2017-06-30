@@ -44,7 +44,7 @@ public abstract class JdbcStorageManagerIntegrationTest extends AbstractStoreMan
     protected static Database database;
     protected static ConnectionBuilder connectionBuilder;
 
-    protected enum Database {MYSQL, H2, PHOENIX}
+    protected enum Database {MYSQL, H2}
 
     // ===== Tests Setup ====
     // Class level initialization is done in the implementing subclasses
