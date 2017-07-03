@@ -131,7 +131,7 @@ export default class NodeContainer extends Component {
   getPopover() {
     const {name, children, editToolbar, onFolderNameChange, data} = this.props;
     const popover = (
-      <Popover id="popover-positioned-right" data-toolbarfolder title={editToolbar ? <input value={name} className={name.trim() === '' ? "popoverTitleEditable invalidName" : "popoverTitleEditable"} onChange={(e) => onFolderNameChange(e, data)}/> : name}>
+      <Popover id="popover-positioned-right" data-toolbarfolder title={editToolbar ? <input value={name} className={name.trim() === '' ? "popoverTitleEditable invalidName" : "popoverTitleEditable"} onChange={(e) => onFolderNameChange(e, data)} onKeyPress={(e) => {if(e.key === 'Enter') {this.refs.folderOverlay.hide();}}}/> : name}>
         <ul className="nodeContainerFolderPopover">{children}</ul>
       </Popover>
     );
@@ -169,7 +169,7 @@ export default class NodeContainer extends Component {
           this.refs.img.src = defaultImagePath;
         }}/></div>
         :
-        <OverlayTrigger trigger="click" rootClose placement="right" overlay={this.getPopover()}>
+        <OverlayTrigger trigger="click" rootClose placement="right" ref="folderOverlay" overlay={this.getPopover()}>
           <div className={"nodeContainerFolder"}>
             {children.map((child, i) => {
               return <img src={child.props.imgPath} key={i}/>;

@@ -25,7 +25,6 @@ import Utils from '../../../utils/Utils';
 import {Scrollbars} from 'react-custom-scrollbars';
 import TopologyREST from '../../../rest/TopologyREST';
 import {observer} from 'mobx-react';
-import enhanceWithClickOutside from 'react-click-outside';
 
 const nodeSource = {
   beginDrag(props, monitor, component) {
@@ -40,7 +39,6 @@ function collect(connect, monitor) {
 
 @DragSource(ItemTypes.ComponentNodes, nodeSource, collect)
 @observer
-@enhanceWithClickOutside
 export default class ComponentNodeContainer extends Component {
   static propTypes = {
     connectDragSource: PropTypes.func.isRequired,
@@ -302,13 +300,6 @@ export default class ComponentNodeContainer extends Component {
       }
     });
     return nodeContainer;
-  }
-  handleClickOutside(){
-    let toolbarfolder = document.querySelector('[data-toolbarfolder]');
-    let className = event.target.className;
-    if(this.state.editToolbar && className !== 'popoverTitleEditable' && !toolbarfolder.contains(event.target)){
-      this.doneEditToolbar();
-    }
   }
   doneEditToolbar(){
     if(this.state.invalidName) {
