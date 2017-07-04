@@ -1,4 +1,5 @@
 ## 0.4
+ * ISSUE-770     : Remove properties and fieldvalues from notifier bootstrap
  * ISSUE-751     : Drop support Phoenix as Streamline storage type  
  * ISSUE-764     : Remove stack trace when trying to register existing UDF
  * ISSUE-754     : Streamline artifacts fetch via proxy server
