@@ -36,21 +36,8 @@ curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -X P
   "description": "Sends email notifications",
   "className": "com.hortonworks.streamline.streams.notifiers.EmailNotifier",
   "builtin": true,
-  "properties": {
-    "username": "hwemailtest@gmail.com",
-    "password": "testing12",
-    "host": "smtp.gmail.com",
-    "port": "587",
-    "starttls": "true",
-    "debug": "true"
-  },
-  "fieldValues": {
-    "from": "hwemailtest@gmail.com",
-    "to": "hwemailtest@gmail.com",
-    "subject": "Testing email notifications",
-    "contentType": "text/plain",
-    "body": "default body"
-  }
+  "properties": {},
+  "fieldValues": {}
 };type=application/json'
 
 echo
