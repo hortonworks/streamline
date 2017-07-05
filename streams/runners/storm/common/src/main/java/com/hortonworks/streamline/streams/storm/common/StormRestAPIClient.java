@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.util.Map;
 
+import static com.hortonworks.streamline.common.util.WSUtils.encode;
+
 public class StormRestAPIClient {
     private static final Logger LOG = LoggerFactory.getLogger(StormRestAPIClient.class);
 
@@ -45,29 +47,29 @@ public class StormRestAPIClient {
     }
 
     public Map getTopologySummary(String asUser) {
-        return doGetRequest(getTopologySummaryUrl(asUser));
+        return doGetRequest(getTopologySummaryUrl(encode(asUser)));
     }
 
     public Map getTopology(String topologyId, String asUser) {
-        return doGetRequest(getTopologyUrl(topologyId, asUser));
+        return doGetRequest(getTopologyUrl(encode(topologyId), encode(asUser)));
     }
 
     public Map getComponent(String topologyId, String componentId, String asUser) {
-        return doGetRequest(getComponentUrl(topologyId, componentId, asUser));
+        return doGetRequest(getComponentUrl(encode(topologyId), encode(componentId), encode(asUser)));
     }
 
     public boolean killTopology(String stormTopologyId, String asUser, int waitTime) {
-        Map result = doPostRequestWithEmptyBody(getTopologyKillUrl(stormTopologyId, asUser, waitTime));
+        Map result = doPostRequestWithEmptyBody(getTopologyKillUrl(encode(stormTopologyId), encode(asUser), waitTime));
         return isPostOperationSuccess(result);
     }
 
     public boolean activateTopology(String stormTopologyId, String asUser) {
-        Map result = doPostRequestWithEmptyBody(getTopologyActivateUrl(stormTopologyId, asUser));
+        Map result = doPostRequestWithEmptyBody(getTopologyActivateUrl(encode(stormTopologyId), encode(asUser)));
         return isPostOperationSuccess(result);
     }
 
     public boolean deactivateTopology(String stormTopologyId, String asUser) {
-        Map result = doPostRequestWithEmptyBody(getTopologyDeactivateUrl(stormTopologyId, asUser));
+        Map result = doPostRequestWithEmptyBody(getTopologyDeactivateUrl(encode(stormTopologyId), encode(asUser)));
         return isPostOperationSuccess(result);
     }
 
