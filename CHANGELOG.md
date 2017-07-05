@@ -1,4 +1,5 @@
 ## 0.4
+ * ISSUE-777     : Prevent deleting topology if topology is running
  * ISSUE-751     : Drop support Phoenix as Streamline storage type  
  * ISSUE-764     : Remove stack trace when trying to register existing UDF
  * ISSUE-754     : Streamline artifacts fetch via proxy server
