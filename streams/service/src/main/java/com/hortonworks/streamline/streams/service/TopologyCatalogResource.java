@@ -22,6 +22,7 @@ import com.google.common.base.Stopwatch;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.exception.service.exception.request.TopologyAlreadyExistsOnCluster;
+import com.hortonworks.streamline.common.exception.service.exception.server.StreamingEngineNotReachableException;
 import com.hortonworks.streamline.common.util.ParallelStreamUtil;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.actions.TopologyActions;
@@ -31,11 +32,13 @@ import com.hortonworks.streamline.streams.catalog.TopologyVersion;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyData;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+import com.hortonworks.streamline.streams.exception.TopologyNotAliveException;
 import com.hortonworks.streamline.streams.metrics.topology.service.TopologyMetricsService;
 import com.hortonworks.streamline.streams.security.Permission;
 import com.hortonworks.streamline.streams.security.Roles;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
+import com.hortonworks.streamline.streams.storm.common.StormNotReachableException;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
@@ -55,6 +58,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -243,9 +247,31 @@ public class TopologyCatalogResource {
     @Timed
     public Response removeTopology(@PathParam("topologyId") Long topologyId,
                                    @javax.ws.rs.QueryParam("onlyCurrent") boolean onlyCurrent,
-                                   @Context SecurityContext securityContext) {
+                                   @javax.ws.rs.QueryParam("force") boolean force,
+                                   @Context SecurityContext securityContext) throws Exception {
         SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
                 NAMESPACE, topologyId, DELETE);
+
+        if (!force) {
+            Topology result = catalogService.getTopology(topologyId);
+            if (result == null) {
+                throw EntityNotFoundException.byId(topologyId.toString());
+            }
+            String asUser = WSUtils.getUserFromSecurityContext(securityContext);
+            try {
+                String runtimeTopologyId = actionsService.getRuntimeTopologyId(result, asUser);
+                if (StringUtils.isNotEmpty(runtimeTopologyId)) {
+                    throw BadRequestException.message("Can't remove topology while Topology is running - topology id: " + topologyId);
+                }
+            } catch (TopologyNotAliveException e) {
+                // OK to continue
+            } catch (StormNotReachableException | IOException e) {
+                // We don't know whether topology is running or not
+                // users need to make a request with force parameter on
+                throw new StreamingEngineNotReachableException(e.getMessage(), e);
+            }
+        }
+
         Response response;
         if (onlyCurrent) {
             response = removeCurrentTopologyVersion(topologyId);

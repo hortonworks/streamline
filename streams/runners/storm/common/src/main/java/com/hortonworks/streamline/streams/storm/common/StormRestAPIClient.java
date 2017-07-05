@@ -80,14 +80,17 @@ public class StormRestAPIClient {
                     return JsonClientUtil.getEntity(client.target(requestUrl), STORM_REST_API_MEDIA_TYPE, Map.class);
                 }
             });
-        } catch (javax.ws.rs.ProcessingException e) {
-            if (e.getCause() instanceof IOException) {
-                throw new StormNotReachableException("Exception while requesting " + requestUrl, e);
+        } catch (RuntimeException ex) {
+            // JsonClientUtil wraps exception, so need to compare
+            if (ex.getCause() instanceof javax.ws.rs.ProcessingException) {
+                if (ex.getCause().getCause() instanceof IOException) {
+                    throw new StormNotReachableException("Exception while requesting " + requestUrl, ex);
+                }
+            } else if (ex.getCause() instanceof WebApplicationException) {
+                throw WrappedWebApplicationException.of((WebApplicationException) ex.getCause());
             }
 
-            throw e;
-        } catch (WebApplicationException e) {
-            throw WrappedWebApplicationException.of(e);
+            throw ex;
         }
     }
 
