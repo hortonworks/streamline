@@ -98,3 +98,5 @@ logging:
 #     kerberos.principal: "HTTP/streamline-ui-host.com"
 #     kerberos.keytab: "/vagrant/keytabs/http.keytab"
 #     kerberos.name.rules: "RULE:[2:$1@$0]([jt]t@.*EXAMPLE.COM)s/.*/$MAPRED_USER/ RULE:[2:$1@$0]([nd]n@.*EXAMPLE.COM)s/.*/$HDFS_USER/DEFAULT"
+#     token.validity: "36000"
+#     cookie.path: "/"
