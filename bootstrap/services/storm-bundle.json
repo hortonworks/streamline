@@ -4,33 +4,62 @@
   "serviceUISpecification": {
     "fields": [
       {
+        "uiName": "Nimbuses hostnames",
+        "fieldName": "nimbus.seeds",
+        "isOptional": false,
+        "tooltip": "A comma separated string of Nimbuses hostnames used for leader nimbus discovery.",
+        "type": "string"
+      },
+      {
+        "uiName": "Nimbus port",
+        "fieldName": "nimbus.thrift.port",
+        "isOptional": false,
+        "tooltip": "The Nimbus Thrift port",
+        "type": "number",
+        "defaultValue": 6627
+      },
+      {
         "uiName": "UI server hostname",
-        "fieldName": "uiServerHostname",
+        "fieldName": "ui.host",
         "isOptional": false,
         "tooltip": "Hostname of Storm UI server",
         "type": "string"
       },
       {
-        "uiName": "Nimbuses hostnames",
-        "fieldName": "nimbusesHostnames",
+        "uiName": "UI port",
+        "fieldName": "ui.port",
         "isOptional": false,
-        "tooltip": "Hostnames of Nimbuses",
-        "type": "array.string"
+        "tooltip": "The port of UI",
+        "type": "number",
+        "defaultValue": 8080
       },
       {
-        "uiName": "Nimbus Principal",
-        "fieldName": "nimbusPrincipalName",
+        "uiName": "Thrift max buffer size",
+        "fieldName": "nimbus.thrift.max.buffer.size",
         "isOptional": true,
-        "tooltip": "The principal of Nimbus (only for secured cluster)",
+        "tooltip": "The maximum buffer size thrift should use when reading messages",
+        "type": "number"
+      },
+      {
+        "uiName": "Thrift Transport plug-in",
+        "fieldName": "storm.thrift.transport",
+        "isOptional": true,
+        "tooltip": "The transport plug-in for Thrift client/server communication",
         "type": "string"
       },
       {
-        "uiName": "Storm config file (storm.yaml)",
-        "fieldName": "storm.yaml",
-        "hint" : "yaml",
-        "isOptional": false,
-        "tooltip": "Upload storm.yaml file used by Storm cluster",
-        "type": "file"
+        "uiName": "Principal to local plug-in",
+        "fieldName": "storm.principal.tolocal",
+        "isOptional": true,
+        "tooltip": "The plugin that will convert a principal to a local user",
+        "type": "string"
+      },
+      {
+        "uiName": "Nimbus Kerberos Principal",
+        "fieldName": "nimbus_principal_name",
+        "isOptional": true,
+        "tooltip": "The principal of Nimbus (only for secured cluster)",
+        "type": "string"
       }
     ]
   }

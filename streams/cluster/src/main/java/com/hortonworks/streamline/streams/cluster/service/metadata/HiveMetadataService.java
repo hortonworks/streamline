@@ -19,6 +19,7 @@ import com.google.common.collect.Lists;
 
 import com.hortonworks.streamline.common.function.SupplierException;
 import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.exception.EntityNotFoundException;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceComponentNotFoundException;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
@@ -33,6 +34,7 @@ import com.hortonworks.streamline.streams.cluster.service.metadata.json.Principa
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.Tables;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 
+import org.apache.commons.math3.util.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -47,6 +49,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.PrivilegedActionException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -74,17 +77,20 @@ public class HiveMetadataService implements AutoCloseable {
     private final SecurityContext securityContext;
     private final Subject subject;
     private final Component hiveMetastore;
+    private final Collection<ComponentProcess> hiveMetastoreProcesses;
 
     /**
      * @param hiveConf The hive configuration used to instantiate {@link HiveMetaStoreClient}
      */
     public HiveMetadataService(HiveMetaStoreClient metaStoreClient, HiveConf hiveConf,
-                                SecurityContext securityContext, Subject subject, Component hiveMetastore) {
+                               SecurityContext securityContext, Subject subject, Component hiveMetastore,
+                               Collection<ComponentProcess> hiveMetastoreProcesses) {
         this.metaStoreClient = metaStoreClient;
         this.hiveConf = hiveConf;
         this.securityContext = securityContext;
         this.subject = subject;
         this.hiveMetastore = hiveMetastore;
+        this.hiveMetastoreProcesses = hiveMetastoreProcesses;
         LOG.info("Created {}", this);
     }
 
@@ -98,7 +104,8 @@ public class HiveMetadataService implements AutoCloseable {
             throws MetaException, IOException, EntityNotFoundException, PrivilegedActionException {
 
         return newInstance(overrideConfig(environmentService, clusterId),
-                securityContext, subject, getHbaseMasterComponent(environmentService, clusterId));
+                securityContext, subject, getHiveMetastoreComponent(environmentService, clusterId),
+                getHiveMetastores(environmentService, clusterId));
     }
 
     private static HiveConf overrideConfig(EnvironmentService environmentService, Long clusterId)
@@ -112,7 +119,8 @@ public class HiveMetadataService implements AutoCloseable {
      * instantiated with the {@link HiveConf} provided using the first parameter
      */
     public static HiveMetadataService newInstance(HiveConf hiveConf, SecurityContext securityContext,
-            Subject subject, Component hiveMetastore)
+                                                  Subject subject, Component hiveMetastore,
+                                                  Collection<ComponentProcess> hiveMetastoreProcesses)
                 throws MetaException, IOException, EntityNotFoundException, PrivilegedActionException {
 
         if (SecurityUtil.isKerberosAuthenticated(securityContext)) {
@@ -121,16 +129,23 @@ public class HiveMetadataService implements AutoCloseable {
 
             return new HiveMetadataService(
                     SecurityUtil.execute(() -> new HiveMetaStoreClient(hiveConf), securityContext, subject),
-                        hiveConf, securityContext, subject, hiveMetastore);
+                        hiveConf, securityContext, subject, hiveMetastore, hiveMetastoreProcesses);
         } else {
-            return new HiveMetadataService(new HiveMetaStoreClient(hiveConf), hiveConf, securityContext, subject, hiveMetastore);
+            return new HiveMetadataService(new HiveMetaStoreClient(hiveConf), hiveConf, securityContext, subject,
+                    hiveMetastore, hiveMetastoreProcesses);
         }
     }
 
-    private static Component getHbaseMasterComponent(EnvironmentService environmentService, Long clusterId)
+    private static Component getHiveMetastoreComponent(EnvironmentService environmentService, Long clusterId)
             throws ServiceNotFoundException, ServiceComponentNotFoundException {
 
         return EnvironmentServiceUtil.getComponent(
+                environmentService, clusterId, AMBARI_JSON_SERVICE_HIVE, AMBARI_JSON_COMPONENT_HIVE_METASTORE);
+    }
+
+    private static Collection<ComponentProcess> getHiveMetastores(EnvironmentService environmentService, Long clusterId)
+            throws ServiceNotFoundException, ServiceComponentNotFoundException {
+        return EnvironmentServiceUtil.getComponentProcesses(
                 environmentService, clusterId, AMBARI_JSON_SERVICE_HIVE, AMBARI_JSON_COMPONENT_HIVE_METASTORE);
     }
 
@@ -167,7 +182,7 @@ public class HiveMetadataService implements AutoCloseable {
 
     public Principals getPrincipals() throws InterruptedException, IOException, PrivilegedActionException {
         return executeSecure(() -> Principals.fromServiceProperties(
-                hiveConf.getValByRegex(PROP_HIVE_METASTORE_KERBEROS_PRINCIPAL), hiveMetastore));
+                hiveConf.getValByRegex(PROP_HIVE_METASTORE_KERBEROS_PRINCIPAL), new Pair<>(hiveMetastore, hiveMetastoreProcesses)));
     }
 
     @Override

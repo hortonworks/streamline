@@ -338,7 +338,8 @@ CREATE TABLE IF NOT EXISTS service (
   name VARCHAR(255) NOT NULL,
   description TEXT,
   timestamp BIGINT,
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+  FOREIGN KEY (clusterId) REFERENCES cluster (id)
 );
 
 CREATE TABLE IF NOT EXISTS service_configuration (
@@ -349,18 +350,28 @@ CREATE TABLE IF NOT EXISTS service_configuration (
   description TEXT,
   filename VARCHAR(255),
   timestamp BIGINT,
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+  FOREIGN KEY (serviceId) REFERENCES service (id)
 );
 
 CREATE TABLE IF NOT EXISTS component (
   id BIGINT AUTO_INCREMENT NOT NULL,
   serviceId BIGINT NOT NULL,
   name VARCHAR(255) NOT NULL,
-  hosts TEXT NOT NULL,
+  timestamp BIGINT,
+  PRIMARY KEY (id),
+  FOREIGN KEY (serviceId) REFERENCES service (id)
+);
+
+CREATE TABLE IF NOT EXISTS component_process (
+  id BIGINT AUTO_INCREMENT NOT NULL,
+  componentId BIGINT NOT NULL,
+  host VARCHAR(255) NOT NULL,
   protocol VARCHAR(255),
   port INTEGER,
   timestamp BIGINT,
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+  FOREIGN KEY (componentId) REFERENCES component (id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_state (

@@ -19,6 +19,7 @@ package com.hortonworks.streamline.streams.cluster.service.metadata;
 import com.google.common.collect.ImmutableList;
 import com.hortonworks.streamline.common.function.SupplierException;
 import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.exception.EntityNotFoundException;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceComponentNotFoundException;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
@@ -33,6 +34,8 @@ import com.hortonworks.streamline.streams.cluster.service.metadata.json.Keytabs;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.Principals;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.Tables;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
+
+import org.apache.commons.math3.util.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -54,6 +57,7 @@ import java.io.IOException;
 import java.security.PrivilegedActionException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -79,18 +83,20 @@ public class HBaseMetadataService implements AutoCloseable {
     private final Subject subject;
     private final User user;
     private final Component hbaseMaster;
+    private final Collection<ComponentProcess> hbaseMasterProcesses;
 
     public HBaseMetadataService(Admin hBaseAdmin) {
-        this(hBaseAdmin, null, null, null, null);
+        this(hBaseAdmin, null, null, null, null, null);
     }
 
     public HBaseMetadataService(Admin hBaseAdmin, SecurityContext securityContext,
-            Subject subject, User user, Component hbaseMaster) {
+            Subject subject, User user, Component hbaseMaster, Collection<ComponentProcess> hbaseMasterProcesses) {
         this.hBaseAdmin = hBaseAdmin;
         this.securityContext = securityContext;
         this.subject = subject;
         this.user = user;
         this.hbaseMaster = hbaseMaster;
+        this.hbaseMasterProcesses = hbaseMasterProcesses;
         LOG.info("Created {}", this);
     }
 
@@ -123,7 +129,8 @@ public class HBaseMetadataService implements AutoCloseable {
 
             return newInstance(
                     overrideConfig(HBaseConfiguration.create(), environmentService, clusterId),
-                    securityContext, subject, getHbaseMasterComponent(environmentService, clusterId));
+                    securityContext, subject, getHbaseMasterComponent(environmentService, clusterId),
+                    getHbaseMasterComponentProcesses(environmentService, clusterId));
     }
 
     /**
@@ -131,7 +138,8 @@ public class HBaseMetadataService implements AutoCloseable {
      * instantiated with with the {@link Configuration} provided using the first parameter
      */
     public static HBaseMetadataService newInstance(Configuration hbaseConfig,
-            SecurityContext securityContext, Subject subject, Component hbaseMaster)
+            SecurityContext securityContext, Subject subject, Component hbaseMaster,
+                                                   Collection<ComponentProcess> hbaseMasterProcesses)
                 throws IOException, EntityNotFoundException {
 
         if (SecurityUtil.isKerberosAuthenticated(securityContext)) {
@@ -142,7 +150,7 @@ public class HBaseMetadataService implements AutoCloseable {
             final User user = User.create(proxyUserForImpersonation);
 
             return new HBaseMetadataService(ConnectionFactory.createConnection(hbaseConfig, user)
-                    .getAdmin(), securityContext, subject, user, hbaseMaster);
+                    .getAdmin(), securityContext, subject, user, hbaseMaster, hbaseMasterProcesses);
         } else {
             return newInstance(hbaseConfig);
         }
@@ -152,6 +160,12 @@ public class HBaseMetadataService implements AutoCloseable {
             throws ServiceNotFoundException, ServiceComponentNotFoundException {
 
         return EnvironmentServiceUtil.getComponent(
+                environmentService, clusterId, AMBARI_JSON_SERVICE_HBASE, AMBARI_JSON_COMPONENT_HBASE_MASTER);
+    }
+
+    private static Collection<ComponentProcess> getHbaseMasterComponentProcesses(EnvironmentService environmentService, Long clusterId)
+            throws ServiceNotFoundException, ServiceComponentNotFoundException {
+        return EnvironmentServiceUtil.getComponentProcesses(
                 environmentService, clusterId, AMBARI_JSON_SERVICE_HBASE, AMBARI_JSON_COMPONENT_HBASE_MASTER);
     }
 
@@ -191,7 +205,7 @@ public class HBaseMetadataService implements AutoCloseable {
 
     public Principals getPrincipals() throws InterruptedException, IOException, PrivilegedActionException {
         return executeSecure(() -> Principals.fromServiceProperties(hBaseAdmin.getConfiguration()
-                .getValByRegex(PROP_HBASE_MASTER_KERBEROS_PRINCIPAL), hbaseMaster));
+                .getValByRegex(PROP_HBASE_MASTER_KERBEROS_PRINCIPAL), new Pair<>(hbaseMaster, hbaseMasterProcesses)));
     }
 
     @Override

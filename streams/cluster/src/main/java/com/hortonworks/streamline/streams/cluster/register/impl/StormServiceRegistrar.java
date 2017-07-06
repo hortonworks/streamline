@@ -20,11 +20,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
-import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
+import org.apache.commons.math3.util.Pair;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,10 +38,20 @@ import static java.util.stream.Collectors.toList;
 public class StormServiceRegistrar extends AbstractServiceRegistrar {
     public static final String COMPONENT_STORM_UI_SERVER = ComponentPropertyPattern.STORM_UI_SERVER.name();
     public static final String COMPONENT_NIMBUS = ComponentPropertyPattern.NIMBUS.name();
-    public static final String PARAM_STORM_UI_SERVER_HOSTNAME = "uiServerHostname";
-    public static final String PARAM_NIMBUS_HOSTNAMES = "nimbusesHostnames";
-    public static final String PARAM_NIMBUS_PRINCIPAL_NAME = "nimbusPrincipalName";
-    public static final String STORM_ENV = ServiceConfigurations.STORM.getConfNames()[1];
+
+    public static final String PARAM_NIMBUS_SEEDS = "nimbus.seeds";
+    public static final String PARAM_NIMBUS_THRIFT_PORT = "nimbus.thrift.port";
+    public static final String PARAM_UI_HOST = "ui.host";
+    public static final String PARAM_UI_PORT = "ui.port";
+    public static final String PARAM_NIMBUS_THRIFT_MAX_BUFFER_SIZE = "nimbus.thrift.max.buffer.size";
+    public static final String PARAM_THRIFT_TRANSPORT = "storm.thrift.transport";
+    public static final String PARAM_PRINCIPAL_TO_LOCAL = "storm.principal.tolocal";
+    public static final String PARAM_NIMBUS_PRINCIPAL_NAME = "nimbus_principal_name";
+
+    public static final String CONF_STORM = ServiceConfigurations.STORM.getConfNames()[0];
+    public static final String CONF_STORM_ENV = ServiceConfigurations.STORM.getConfNames()[1];
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     protected String getServiceName() {
@@ -48,58 +59,42 @@ public class StormServiceRegistrar extends AbstractServiceRegistrar {
     }
 
     @Override
-    protected List<Component> createComponents(Config config, Map<String, String> flattenConfigMap) {
-        Component stormUIServer = createStormUIServerComponent(config, flattenConfigMap);
-        Component nimbus = createNimbusComponent(config, flattenConfigMap);
+    protected Map<Component, List<ComponentProcess>> createComponents(Config config, Map<String, String> flattenConfigMap) {
+        Map<Component, List<ComponentProcess>> components = new HashMap<>();
 
-        return Lists.newArrayList(stormUIServer, nimbus);
+        Pair<Component, List<ComponentProcess>> stormUIServer = createStormUIServerComponent(config, flattenConfigMap);
+        Pair<Component, List<ComponentProcess>> nimbus = createNimbusComponent(config, flattenConfigMap);
+
+        components.put(stormUIServer.getFirst(), stormUIServer.getSecond());
+        components.put(nimbus.getFirst(), nimbus.getSecond());
+
+        return components;
     }
 
     @Override
     protected List<ServiceConfiguration> createServiceConfigurations(Config config) {
-        ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
-        serviceConfiguration.setName(STORM_ENV);
+        ServiceConfiguration storm = buildStormServiceConfiguration(config);
+        ServiceConfiguration stormEnv = buildStormEnvServiceConfiguration(config);
 
-        Map<String, String> confMap = new HashMap<>();
-
-        if (config.contains(PARAM_NIMBUS_PRINCIPAL_NAME)) {
-            String principal = config.get(PARAM_NIMBUS_PRINCIPAL_NAME);
-            confMap.put(TopologyLayoutConstants.STORM_NIMBUS_PRINCIPAL_NAME, principal);
-        }
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            String json = objectMapper.writeValueAsString(confMap);
-            serviceConfiguration.setConfiguration(json);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-
-        return Collections.singletonList(serviceConfiguration);
+        return Lists.newArrayList(storm, stormEnv);
     }
 
     @Override
-    protected boolean validateComponents(List<Component> components) {
+    protected boolean validateComponents(Map<Component, List<ComponentProcess>> components) {
         // requirements
         // 1. STORM_UI_SERVER should be available, and it should have one host and one port
         // 2. NIMBUS should be available, and it should have one or multiple hosts and one port
 
         // filter out components which don't ensure requirements
-        long filteredComponentCount = components.stream().filter(component -> {
-            boolean validComponent = true;
-            if (component.getName().equals(COMPONENT_STORM_UI_SERVER)) {
-                if (component.getHosts().size() <= 0 || component.getHosts().size() > 1 || component.getPort() == null) {
-                    validComponent = false;
-                }
-            } else if (component.getName().equals(COMPONENT_NIMBUS)) {
-                // check hosts and port
-                if (component.getHosts().size() <= 0 || component.getPort() == null) {
-                    validComponent = false;
-                }
+        long filteredComponentCount = components.entrySet().stream().filter(componentEntry -> {
+            Component component = componentEntry.getKey();
+            List<ComponentProcess> componentProcesses = componentEntry.getValue();
+
+            if (component.getName().equals(COMPONENT_STORM_UI_SERVER) || component.getName().equals(COMPONENT_NIMBUS)) {
+                return isComponentProcessesValid(componentProcesses);
             } else {
-                validComponent = false;
+                return false;
             }
-            return validComponent;
         }).count();
 
         return filteredComponentCount == 2;
@@ -117,42 +112,119 @@ public class StormServiceRegistrar extends AbstractServiceRegistrar {
         return true;
     }
 
-    private Component createStormUIServerComponent(Config config, Map<String, String> flattenConfigMap) {
-        if (!config.contains(PARAM_STORM_UI_SERVER_HOSTNAME)) {
-            throw new IllegalArgumentException("Required parameter " + PARAM_STORM_UI_SERVER_HOSTNAME + " not present.");
+    private ServiceConfiguration buildStormServiceConfiguration(Config config) {
+        ServiceConfiguration storm = new ServiceConfiguration();
+        storm.setName(CONF_STORM);
+
+        Map<String, String> confMap = new HashMap<>();
+
+        if (config.contains(PARAM_NIMBUS_THRIFT_MAX_BUFFER_SIZE)) {
+            Number thriftMaxBufferSize = readNumberFromConfig(config, PARAM_NIMBUS_THRIFT_MAX_BUFFER_SIZE);
+            confMap.put(PARAM_NIMBUS_THRIFT_MAX_BUFFER_SIZE, String.valueOf(thriftMaxBufferSize));
+        }
+
+        if (config.contains(PARAM_THRIFT_TRANSPORT)) {
+            confMap.put(PARAM_THRIFT_TRANSPORT, config.getString(PARAM_THRIFT_TRANSPORT));
+        }
+
+        if (config.contains(PARAM_PRINCIPAL_TO_LOCAL)) {
+            confMap.put(PARAM_PRINCIPAL_TO_LOCAL, config.getString(PARAM_PRINCIPAL_TO_LOCAL));
+        }
+
+        try {
+            String json = objectMapper.writeValueAsString(confMap);
+            storm.setConfiguration(json);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return storm;
+    }
+
+    private ServiceConfiguration buildStormEnvServiceConfiguration(Config config) {
+        Map<String, String> confMap;
+        ServiceConfiguration stormEnv = new ServiceConfiguration();
+        stormEnv.setName(CONF_STORM_ENV);
+
+        confMap = new HashMap<>();
+
+        if (config.contains(PARAM_NIMBUS_PRINCIPAL_NAME)) {
+            confMap.put(PARAM_NIMBUS_PRINCIPAL_NAME, config.get(PARAM_NIMBUS_PRINCIPAL_NAME));
+        }
+
+        try {
+            String json = objectMapper.writeValueAsString(confMap);
+            stormEnv.setConfiguration(json);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return stormEnv;
+    }
+
+    private Pair<Component, List<ComponentProcess>> createNimbusComponent(Config config, Map<String, String> flatConfigMap) {
+        if (!config.contains(PARAM_NIMBUS_SEEDS)) {
+            throw new IllegalArgumentException("Required parameter " + PARAM_NIMBUS_SEEDS + " not present.");
+        }
+
+        if (!config.contains(PARAM_NIMBUS_THRIFT_PORT)) {
+            throw new IllegalArgumentException("Required parameter " + PARAM_NIMBUS_THRIFT_PORT + " not present.");
+        }
+
+        String nimbusSeeds;
+        try {
+            nimbusSeeds = config.getString(PARAM_NIMBUS_SEEDS);
+        } catch (ClassCastException e) {
+            throw new IllegalArgumentException("Required parameter " + PARAM_NIMBUS_SEEDS + " should be a string.");
+        }
+
+        Number nimbusThriftPort = readNumberFromConfig(config, PARAM_NIMBUS_THRIFT_PORT);
+
+        Component nimbus = new Component();
+        nimbus.setName(COMPONENT_NIMBUS);
+
+        List<ComponentProcess> componentProcesses = Arrays.stream(nimbusSeeds.split(",")).map(nimbusHost -> {
+            ComponentProcess cp = new ComponentProcess();
+            cp.setHost(nimbusHost);
+            cp.setPort(nimbusThriftPort.intValue());
+            return cp;
+        }).collect(toList());
+
+        return new Pair<>(nimbus, componentProcesses);
+    }
+
+    private Pair<Component, List<ComponentProcess>> createStormUIServerComponent(Config config, Map<String, String> flattenConfigMap) {
+        if (!config.contains(PARAM_UI_HOST)) {
+            throw new IllegalArgumentException("Required parameter " + PARAM_UI_HOST + " not present.");
+        }
+
+        if (!config.contains(PARAM_UI_PORT)) {
+            throw new IllegalArgumentException("Required parameter " + PARAM_UI_PORT + " not present.");
         }
 
         String stormUiServerHost;
         try {
-            stormUiServerHost = config.getString(PARAM_STORM_UI_SERVER_HOSTNAME);
+            stormUiServerHost = config.getString(PARAM_UI_HOST);
         } catch (ClassCastException e) {
-            throw new IllegalArgumentException("Required parameter " + PARAM_STORM_UI_SERVER_HOSTNAME + " should be string.");
+            throw new IllegalArgumentException("Required parameter " + PARAM_UI_HOST + " should be a string.");
         }
+
+        Number stormUiServerPort = readNumberFromConfig(config, PARAM_UI_PORT);
 
         Component stormUiServer = new Component();
         stormUiServer.setName(COMPONENT_STORM_UI_SERVER);
-        stormUiServer.setHosts(Collections.singletonList(stormUiServerHost));
-        environmentService.injectProtocolAndPortToComponent(flattenConfigMap, stormUiServer);
-        return stormUiServer;
+
+        ComponentProcess uiProcess = new ComponentProcess();
+        uiProcess.setHost(stormUiServerHost);
+        uiProcess.setPort(stormUiServerPort.intValue());
+
+        return new Pair<>(stormUiServer, Collections.singletonList(uiProcess));
     }
 
-    private Component createNimbusComponent(Config config, Map<String, String> flatConfigMap) {
-        if (!config.contains(PARAM_NIMBUS_HOSTNAMES)) {
-            throw new IllegalArgumentException("Required parameter " + PARAM_NIMBUS_HOSTNAMES + " not present.");
-        }
-
-        List<String> stormNimbusServerHosts;
+    private Number readNumberFromConfig(Config config, String parameterName) {
         try {
-            stormNimbusServerHosts = config.getAny(PARAM_NIMBUS_HOSTNAMES);
+            return config.getAny(parameterName);
         } catch (ClassCastException e) {
-            throw new IllegalArgumentException("Required parameter " + PARAM_NIMBUS_HOSTNAMES + " should be list of string.");
+            throw new IllegalArgumentException("Required parameter " + parameterName + " should be a number.");
         }
-
-        Component nimbus = new Component();
-        nimbus.setName(COMPONENT_NIMBUS);
-        nimbus.setHosts(stormNimbusServerHosts);
-        environmentService.injectProtocolAndPortToComponent(flatConfigMap, nimbus);
-        return nimbus;
     }
 
 }

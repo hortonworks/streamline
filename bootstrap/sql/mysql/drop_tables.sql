@@ -24,6 +24,7 @@ DROP TABLE IF EXISTS topology_stream;
 DROP TABLE IF EXISTS topology_version;
 DROP TABLE IF EXISTS udf;
 DROP TABLE IF EXISTS service_configuration;
+DROP TABLE IF EXISTS component_process;
 DROP TABLE IF EXISTS component;
 DROP TABLE IF EXISTS cluster;
 DROP TABLE IF EXISTS service;

@@ -16,6 +16,7 @@
 package com.hortonworks.streamline.streams.metrics.container;
 
 import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.metrics.container.mapping.MappedTimeSeriesQuerierImpl;
@@ -29,6 +30,7 @@ import com.hortonworks.streamline.streams.metrics.TimeSeriesQuerier;
 import com.hortonworks.streamline.streams.metrics.topology.TopologyMetrics;
 
 import javax.security.auth.Subject;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -118,8 +120,15 @@ public class TopologyMetricsContainer extends NamespaceAwareContainer<TopologyMe
 
         Component uiServer = getComponent(streamingEngineService, COMPONENT_NAME_STORM_UI_SERVER)
                 .orElseThrow(() -> new RuntimeException(streamingEngine + " doesn't have " + COMPONENT_NAME_STORM_UI_SERVER + " as component"));
-        String uiHost = uiServer.getHosts().get(0);
-        Integer uiPort = uiServer.getPort();
+
+        Collection<ComponentProcess> uiServerProcesses = environmentService.listComponentProcesses(uiServer.getId());
+        if (uiServerProcesses.isEmpty()) {
+            throw new RuntimeException(streamingEngine + " doesn't have any process for " + COMPONENT_NAME_STORM_UI_SERVER + " as component");
+        }
+
+        ComponentProcess uiServerProcess = uiServerProcesses.iterator().next();
+        String uiHost = uiServerProcess.getHost();
+        Integer uiPort = uiServerProcess.getPort();
 
         assertHostAndPort(uiServer.getName(), uiHost, uiPort);
 
@@ -139,8 +148,15 @@ public class TopologyMetricsContainer extends NamespaceAwareContainer<TopologyMe
 
         Component metricsCollector = getComponent(timeSeriesDBService, COMPONENT_NAME_METRICS_COLLECTOR)
                 .orElseThrow(() -> new RuntimeException(timeSeriesDB + " doesn't have " + COMPONENT_NAME_METRICS_COLLECTOR + " as component"));
-        String metricsCollectorHost = metricsCollector.getHosts().get(0);
-        Integer metricsCollectorPort = metricsCollector.getPort();
+
+        Collection<ComponentProcess> metricsCollectorProcesses = environmentService.listComponentProcesses(metricsCollector.getId());
+        if (metricsCollectorProcesses.isEmpty()) {
+            throw new RuntimeException(timeSeriesDB + " doesn't have any process for " + COMPONENT_NAME_METRICS_COLLECTOR + " as component");
+        }
+
+        ComponentProcess metricsCollectorProcess = metricsCollectorProcesses.iterator().next();
+        String metricsCollectorHost = metricsCollectorProcess.getHost();
+        Integer metricsCollectorPort = metricsCollectorProcess.getPort();
 
         assertHostAndPort(COMPONENT_NAME_METRICS_COLLECTOR, metricsCollectorHost, metricsCollectorPort);
 

@@ -1,17 +1,22 @@
 package com.hortonworks.streamline.streams.cluster.service.metadata.json;
 
 import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 
+import org.apache.commons.math3.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 public class Principals {
     private static final Logger LOG = LoggerFactory.getLogger(Principals.class);
@@ -30,7 +35,7 @@ public class Principals {
      * Instance built from services configurations in Ambari
      */
     public static Principals fromAmbariConfig(ServiceConfiguration serviceConfig,
-            Map<String, Component> serviceToComponent) throws IOException {
+            Map<String, Pair<Component, Collection<ComponentProcess>>> serviceToComponent) throws IOException {
         return fromAmbariConfig(serviceConfig.getConfigurationMap(), serviceToComponent);
     }
 
@@ -38,11 +43,14 @@ public class Principals {
      * Instance built from map with Ambari configurations
      */
     public static Principals fromAmbariConfig(Map<String, String> config,
-            Map<String, Component> serviceToComponent) throws IOException {
+            Map<String, Pair<Component, Collection<ComponentProcess>>> serviceToComponent) throws IOException {
 
         final Map<String, List<Principal>> allPrincs = new HashMap<>();
-        for (Map.Entry<String, Component> stc : serviceToComponent.entrySet()) {     // stc - serviceToComponent
+        for (Map.Entry<String, Pair<Component, Collection<ComponentProcess>>> stc : serviceToComponent.entrySet()) {     // stc - serviceToComponent
             final String serviceName = stc.getKey();
+            final Pair<Component, Collection<ComponentProcess>> componentAndProcesses = stc.getValue();
+            final Collection<String> hosts = componentAndProcesses.getSecond().stream()
+                    .map(cp -> cp.getHost()).collect(toList());
             final Map<String, List<Principal>> princs = config.entrySet()
                     .stream()
                     .filter((e) -> e.getKey().contains("principal") && e.getKey().replace("_principal_name","").equals(serviceName))
@@ -53,12 +61,11 @@ public class Principals {
                                 String key = e.getKey().split("principal")[0];
                                 return key.substring(0, key.length() - 1);          // remove _ at the end
                             },
-                            (e) ->  stc.getValue().getHosts()   // get hosts for service component (e.g nimbus, storm_ui, kafka broker)
-                                    .stream()
+                            (e) ->  hosts.stream()   // get hosts for service component (e.g nimbus, storm_ui, kafka broker)
                                     .map((host) -> host == null || host.isEmpty()
                                             ? UserPrincipal.fromPrincipal(e.getValue())
                                             : ServicePrincipal.forHost(e.getValue(), host))
-                                    .collect(Collectors.toList())));
+                                    .collect(toList())));
 
             LOG.debug("Processed {}", princs);
             allPrincs.putAll(princs);
@@ -70,23 +77,24 @@ public class Principals {
     /**
      * Instance built from service configuration properties (e.g hive-metastore.xml, hbase-site.xml)
      */
-    public static Principals fromServiceProperties(ServiceConfiguration serviceConfig, Component component) throws IOException {
+    public static Principals fromServiceProperties(ServiceConfiguration serviceConfig, Pair<Component, Collection<ComponentProcess>> component) throws IOException {
         return fromServiceProperties(serviceConfig.getConfigurationMap(), component);
     }
 
     /**
      * Instance built from service configuration properties (e.g hive-metastore.xml, hbase-site.xml)
      */
-    public static Principals fromServiceProperties(Map<String, String> props, Component component) throws IOException {
+    public static Principals fromServiceProperties(Map<String, String> props, Pair<Component, Collection<ComponentProcess>> component) throws IOException {
+        final List<String> hosts = component.getSecond().stream().map(ComponentProcess::getHost).collect(toList());
         final Map<String, List<Principal>> princs = props.entrySet()
                 .stream()
                 .filter((e) -> e.getKey().contains("principal"))
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        (e) ->  component.getHosts()   // get hosts for service component (e.g HBase master or Hive metastore)
+                        (e) ->  hosts   // get hosts for service component (e.g HBase master or Hive metastore)
                                 .stream()
                                 .map((host) -> ServicePrincipal.forHost(e.getValue(), host))
-                                .collect(Collectors.toList())));
+                                .collect(toList())));
 
         return new Principals(princs);
     }
