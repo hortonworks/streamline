@@ -136,7 +136,11 @@ class CustomProcessorForm extends Component {
         obj.topologyComponentUISpecification = topologyComponentUISpecification.fields;
         CustomProcessorREST.getCustomProcessorFile(jarFileName)
           .then((response)=>{
-            let f = new File([response], jarFileName);
+            // https://stackoverflow.com/questions/40911927/instantiate-file-object-in-microsoft-edge
+            // work around for edge browser
+            let fb = new Blob([response],{type : jarFileName});
+            let f = new Blob([fb],{type : ""});
+            f.name = jarFileName;
             obj.jarFileName = f;
             obj.fileName = f.name;
             this.setState(obj);
