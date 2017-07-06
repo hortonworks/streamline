@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.cluster.service.metadata;
 import com.hortonworks.streamline.common.JsonClientUtil;
 import com.hortonworks.streamline.common.function.SupplierException;
 import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceComponentNotFoundException;
@@ -34,12 +35,14 @@ import com.hortonworks.streamline.streams.cluster.service.metadata.json.Security
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.StormTopologies;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 
+import org.apache.commons.math3.util.Pair;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 
 import java.io.IOException;
 import java.security.PrivilegedActionException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -71,6 +74,8 @@ public class StormMetadataService {
     private final ServiceConfiguration stormEnvConfig;
     private final Component nimbus;
     private final Component stormUi;
+    private final Collection<ComponentProcess> nimbusProcesses;
+    private final Collection<ComponentProcess> stormUiProcesses;
     private Subject subject;
     private final String tplgySumUrl;     // http://cn067.l42scl.hortonworks.com:8744/api/v1/topology/summary
     private final String mainPageUrl;     // Views: http://172.12.128.67:8080/main/views/Storm_Monitoring/0.1.0/STORM_CLUSTER_INSTANCE
@@ -78,7 +83,8 @@ public class StormMetadataService {
 
     public StormMetadataService(Client httpClient, String tplgySumUrl, String mainPageUrl,
             SecurityContext securityContext, ServiceConfiguration stormEnvConfig, Subject subject,
-                                Component nimbus, Component stormUi) {
+                                Component nimbus, Collection<ComponentProcess> nimbusProcesses,
+                                Component stormUi, Collection<ComponentProcess> stormUiProcesses) {
         this.httpClient = httpClient;
         this.tplgySumUrl = tplgySumUrl;
         this.mainPageUrl = mainPageUrl;
@@ -86,7 +92,9 @@ public class StormMetadataService {
         this.stormEnvConfig = stormEnvConfig;
         this.subject = subject;
         this.nimbus = nimbus;
+        this.nimbusProcesses = nimbusProcesses;
         this.stormUi = stormUi;
+        this.stormUiProcesses = stormUiProcesses;
     }
 
     public static class Builder {
@@ -124,13 +132,21 @@ public class StormMetadataService {
         public StormMetadataService build() throws ServiceNotFoundException, ServiceComponentNotFoundException {
             return new StormMetadataService(newHttpClient(), getTopologySummaryRestUrl(),
                     getMainPageUrl(), securityContext, getServiceConfig(AMBARI_JSON_CONFIG_STORM_ENV), subject,
-                    getComponent(AMBARI_JSON_COMPONENT_STORM_NIMBUS), getComponent(AMBARI_JSON_COMPONENT_STORM_UI_SERVER));
+                    getComponent(AMBARI_JSON_COMPONENT_STORM_NIMBUS),
+                    getComponentProcesses(AMBARI_JSON_COMPONENT_STORM_NIMBUS),
+                    getComponent(AMBARI_JSON_COMPONENT_STORM_UI_SERVER),
+                    getComponentProcesses(AMBARI_JSON_COMPONENT_STORM_UI_SERVER));
         }
 
         private Component getComponent(String componentName)
                 throws ServiceNotFoundException, ServiceComponentNotFoundException {
-
             return EnvironmentServiceUtil.getComponent(
+                    environmentService, clusterId, AMBARI_JSON_SERVICE_STORM, componentName);
+        }
+
+        private Collection<ComponentProcess> getComponentProcesses(String componentName)
+                throws ServiceNotFoundException, ServiceComponentNotFoundException {
+            return EnvironmentServiceUtil.getComponentProcesses(
                     environmentService, clusterId, AMBARI_JSON_SERVICE_STORM, componentName);
         }
 
@@ -188,10 +204,12 @@ public class StormMetadataService {
         }
 
         private HostPort getHostPort() throws ServiceNotFoundException, ServiceComponentNotFoundException {
-            final Component stormUiComp =
-                    EnvironmentServiceUtil.getComponent(
+            final Collection<ComponentProcess> stormUiComp =
+                    EnvironmentServiceUtil.getComponentProcesses(
                             environmentService, clusterId, AMBARI_JSON_SERVICE_STORM, AMBARI_JSON_COMPONENT_STORM_UI_SERVER);
-            return new HostPort(stormUiComp.getHosts().get(0), stormUiComp.getPort());
+
+            ComponentProcess ui = stormUiComp.iterator().next();
+            return new HostPort(ui.getHost(), ui.getPort());
         }
     }
 
@@ -243,19 +261,17 @@ public class StormMetadataService {
         return Principals.fromAmbariConfig(stormEnvConfig, getServiceToComponent());
     }
 
-    private Map<String, Component> getServiceToComponent() {
-        return new HashMap<String, Component>(){{
-            put("nimbus", nimbus);
-            put("storm_ui", stormUi);
-            put("storm", newSupervisorComponent());
+    private Map<String, Pair<Component, Collection<ComponentProcess>>> getServiceToComponent() {
+        return new HashMap<String, Pair<Component, Collection<ComponentProcess>>>(){{
+            put("nimbus", new Pair<>(nimbus, nimbusProcesses));
+            put("storm_ui", new Pair<>(stormUi, stormUiProcesses));
+            put("storm", new Pair<>(newSupervisorComponent(), new ArrayList<>()));
         }};
     }
 
     private Component newSupervisorComponent() {
         final Component component = new Component();
-        component.setHosts(new LinkedList<String>(){{
-            add("");
-        }});
+        component.setName("SUPERVISOR");
         return component;
     }
 

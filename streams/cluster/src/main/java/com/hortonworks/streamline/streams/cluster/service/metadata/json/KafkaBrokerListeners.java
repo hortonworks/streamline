@@ -2,18 +2,26 @@ package com.hortonworks.streamline.streams.cluster.service.metadata.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 
+import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 public class KafkaBrokerListeners {
     public static String KAFKA_BROKER_PROP_INTER_BROKER_SECURITY_PROTOCOL = "security.inter.broker.protocol";
@@ -28,20 +36,22 @@ public class KafkaBrokerListeners {
         this.protocolToHostsWithPort = protocolToHostsWithPort;
     }
 
-    public static KafkaBrokerListeners newInstance(ServiceConfiguration config, Component component) {
+    public static KafkaBrokerListeners newInstance(ServiceConfiguration config, Component component,
+                                                   Collection<ComponentProcess> brokers) {
         Objects.requireNonNull(config);
         Objects.requireNonNull(component);
 
-        final List<String> hosts = component.getHosts();
+        Map<Protocol, List<String>> protocolToHostsWithPort = new HashMap<>();
 
-        final Map<Protocol, List<String>> protocolToHostsWithPort = new ListenersPropParsed(config).getParsedProps()
-                .stream()
-                .peek((lpe) -> LOG.debug("Processing Kafka property [listeners={}]", lpe))
-                .collect(Collectors.toMap(
-                        (lpe) -> lpe.protocol,              // lpe aka ListenersPropEntry
-                        (lpe) -> hosts.stream()
-                                .map((host) -> host + ":" + (lpe.port))
-                                .collect(Collectors.toList())));
+        brokers.forEach(broker -> {
+            String protocol = broker.getProtocol();
+            List<String> hostAndPorts = protocolToHostsWithPort.get(Protocol.find(protocol));
+            if (hostAndPorts == null) {
+                hostAndPorts = new ArrayList<>();
+                protocolToHostsWithPort.put(Protocol.find(protocol), hostAndPorts);
+            }
+            hostAndPorts.add(broker.getHost() + ":" + broker.getPort());
+        });
 
         return new KafkaBrokerListeners(protocolToHostsWithPort);
     }
@@ -55,7 +65,19 @@ public class KafkaBrokerListeners {
 
         public ListenersPropParsed(ServiceConfiguration config) {
             try {
-                final Map<String, String> configMap = config.getConfigurationMap();
+                Map<String, String> confMap = config.getConfigurationMap();
+                parseProps(confMap);
+            } catch (IOException e) {
+                throw new RuntimeException("Fail to read configuration map while parsing properties.");
+            }
+        }
+
+        public ListenersPropParsed(Map<String, String> configMap) {
+            parseProps(configMap);
+        }
+
+        private void parseProps(Map<String, String> configMap) {
+            try {
                 final String brokerSecurityProtocol = configMap.get(KAFKA_BROKER_PROP_INTER_BROKER_SECURITY_PROTOCOL);
                 final String listenersStr = configMap.get(KAFKA_BROKER_PROP_LISTENERS);
                 LOG.debug("Parsing Kafka properties [{}={}, {}={}]", KAFKA_BROKER_PROP_LISTENERS, listenersStr,
@@ -68,7 +90,6 @@ public class KafkaBrokerListeners {
                     parsedProps = Arrays.stream(listeners)
                             .map((listener) -> listener.split(":"))     // splits on : --> index 0 is protocol, 1 is host, 2 is port
                             .map((split) -> {
-                                List<ListenersPropEntry> parsedProps = new ArrayList<>(listeners.length);
                                 // Handle Ambari bug that in the scenario handled bellow sets listeners=PLAINTEXT
                                 // when it set it to listeners=PLAINTEXTSASL
                                 Protocol protocol = listeners.length == 1 && Protocol.SASL_PLAINTEXT.hasAlias(brokerSecurityProtocol)
@@ -79,10 +100,9 @@ public class KafkaBrokerListeners {
                                 int port = Integer.parseInt(split[2]);
 
                                 final ListenersPropEntry e = new ListenersPropEntry(host, port, protocol);
-                                parsedProps.add(e);
                                 LOG.debug("Added {}", e);
-                                return parsedProps;
-                            }).findFirst().get();
+                                return e;
+                            }).collect(toList());
                 }
             } catch (Exception e) {
                 throw new RuntimeException(String.format("Invalid values found for Kafka properties [%s, %s]",
@@ -104,6 +124,14 @@ public class KafkaBrokerListeners {
             this.host = host;
             this.port = port;
             this.protocol = protocol;
+        }
+
+        public String getHost() {
+            return host;
+        }
+
+        public int getPort() {
+            return port;
         }
 
         public Protocol getProtocol() {

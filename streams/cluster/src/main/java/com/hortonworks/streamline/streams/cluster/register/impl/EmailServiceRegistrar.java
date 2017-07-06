@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
@@ -44,8 +45,8 @@ public class EmailServiceRegistrar extends AbstractServiceRegistrar {
     }
 
     @Override
-    protected List<Component> createComponents(Config config, Map<String, String> flattenConfigMap) {
-        return Collections.emptyList();
+    protected Map<Component, List<ComponentProcess>> createComponents(Config config, Map<String, String> flattenConfigMap) {
+        return Collections.emptyMap();
     }
 
     @Override
@@ -73,7 +74,7 @@ public class EmailServiceRegistrar extends AbstractServiceRegistrar {
     }
 
     @Override
-    protected boolean validateComponents(List<Component> components) {
+    protected boolean validateComponents(Map<Component, List<ComponentProcess>> components) {
         // no component required, we will just use properties
         return true;
     }

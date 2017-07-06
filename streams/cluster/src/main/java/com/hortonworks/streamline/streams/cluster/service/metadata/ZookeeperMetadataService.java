@@ -16,6 +16,7 @@
 package com.hortonworks.streamline.streams.cluster.service.metadata;
 
 import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceComponentNotFoundException;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
@@ -23,6 +24,7 @@ import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPo
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -52,11 +54,9 @@ public class ZookeeperMetadataService {
                     ComponentPropertyPattern.ZOOKEEPER_SERVER.name());
         }
 
-        if (zookeeperServer.getHosts() != null) {
-            return zookeeperServer.getHosts().stream()
-                    .map(host -> new HostPort(host, zookeeperServer.getPort()))
-                    .collect(Collectors.toList());
-        }
-        return Collections.emptyList();
+        final Collection<ComponentProcess> zookeeperServers = environmentService.listComponentProcessesInComponent(zookeeperServer.getId());
+        return zookeeperServers.stream()
+                .map(cp -> new HostPort(cp.getHost(), cp.getPort()))
+                .collect(Collectors.toList());
     }
 }

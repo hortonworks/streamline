@@ -16,24 +16,29 @@
 package com.hortonworks.streamline.streams.cluster.register.impl;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.Constants;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
 public class ZookeeperServiceRegistrarTest extends AbstractServiceRegistrarTest<ZookeeperServiceRegistrar> {
-    public static final String ZOO_CFG = "zoo.cfg";
-    public static final String ZOO_CFG_FILE_PATH = REGISTER_RESOURCE_DIRECTORY + ZOO_CFG;
-    public static final String ZOO_CFG_BADCASE_FILE_PATH = REGISTER_BADCASE_RESOURCE_DIRECTORY + ZOO_CFG;
-    private static final String CONFIGURATION_NAME_ZOO_CFG = "zoo";
+    private static final String CONFIGURATION_NAME_ZOO_CFG = "zoo.cfg";
 
     public ZookeeperServiceRegistrarTest() {
         super(ZookeeperServiceRegistrar.class);
@@ -50,65 +55,35 @@ public class ZookeeperServiceRegistrarTest extends AbstractServiceRegistrarTest<
 
         ZookeeperServiceRegistrar registrar = initializeServiceRegistrar();
 
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream(ZOO_CFG_FILE_PATH)) {
-            Config config = new Config();
-            config.put(ZookeeperServiceRegistrar.PARAM_ZOOKEEPER_SERVER_HOSTNAMES, Lists.newArrayList("zookeeper-1", "zookeeper-2"));
-            ManualServiceRegistrar.ConfigFileInfo zooCfg = new ManualServiceRegistrar.ConfigFileInfo(ZOO_CFG, is);
-            registrar.register(cluster, config, Lists.newArrayList(zooCfg));
-        }
+        Config config = new Config();
+        config.put(ZookeeperServiceRegistrar.PARAM_ZOOKEEPER_SERVER_HOSTNAMES, Lists.newArrayList("zookeeper-1", "zookeeper-2"));
+        config.put(ZookeeperServiceRegistrar.PARAM_ZOOKEEPER_PORT, (Object) 2181);
+        registrar.register(cluster, config, Collections.emptyList());
 
         Service zkService = environmentService.getServiceByName(cluster.getId(), Constants.Zookeeper.SERVICE_NAME);
         assertNotNull(zkService);
+
+        Component zkServer = environmentService.getComponentByName(zkService.getId(), ComponentPropertyPattern.ZOOKEEPER_SERVER.name());
+        assertNotNull(zkServer);
+
+        Collection<ComponentProcess> zkServerProcesses = environmentService.listComponentProcessesInComponent(zkServer.getId());
+        assertEquals(Sets.newHashSet("zookeeper-1", "zookeeper-2"),
+                zkServerProcesses.stream().map(ComponentProcess::getHost).collect(Collectors.toSet()));
+        assertEquals(Sets.newHashSet(2181, 2181),
+                zkServerProcesses.stream().map(ComponentProcess::getPort).collect(Collectors.toSet()));
+
         ServiceConfiguration zooConf = environmentService.getServiceConfigurationByName(zkService.getId(), CONFIGURATION_NAME_ZOO_CFG);
         assertNotNull(zooConf);
     }
 
     @Test
-    public void testRegister_requiredPropertyNotPresent() throws Exception {
-        Cluster cluster = getTestCluster(1L);
-
-        ZookeeperServiceRegistrar registrar = initializeServiceRegistrar();
-
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream(ZOO_CFG_BADCASE_FILE_PATH)) {
-            Config config = new Config();
-            config.put(ZookeeperServiceRegistrar.PARAM_ZOOKEEPER_SERVER_HOSTNAMES, Lists.newArrayList("zookeeper-1", "zookeeper-2"));
-            ManualServiceRegistrar.ConfigFileInfo zooCfg = new ManualServiceRegistrar.ConfigFileInfo(ZOO_CFG, is);
-            registrar.register(cluster, config, Lists.newArrayList(zooCfg));
-            fail("Should throw IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
-            // OK
-            Service zkService = environmentService.getServiceByName(cluster.getId(), Constants.Zookeeper.SERVICE_NAME);
-            assertNull(zkService);
-        }
-    }
-
-    @Test
-    public void testRegister_component_zookeeper_server_notPresent() throws Exception {
-        Cluster cluster = getTestCluster(1L);
-
-        ZookeeperServiceRegistrar registrar = initializeServiceRegistrar();
-
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream(ZOO_CFG_FILE_PATH)) {
-            ManualServiceRegistrar.ConfigFileInfo zooCfg = new ManualServiceRegistrar.ConfigFileInfo(ZOO_CFG, is);
-            registrar.register(cluster, new Config(), Lists.newArrayList(zooCfg));
-            fail("Should throw IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
-            // OK
-            Service zkService = environmentService.getServiceByName(cluster.getId(), Constants.Zookeeper.SERVICE_NAME);
-            assertNull(zkService);
-        }
-    }
-
-    @Test
-    public void testRegister_zoo_cfg_notPresent() throws Exception {
+    public void testRegisterZookeeperServerPropertyNotPresent() throws Exception {
         Cluster cluster = getTestCluster(1L);
 
         ZookeeperServiceRegistrar registrar = initializeServiceRegistrar();
 
         try {
-            Config config = new Config();
-            config.put(ZookeeperServiceRegistrar.PARAM_ZOOKEEPER_SERVER_HOSTNAMES, Lists.newArrayList("zookeeper-1", "zookeeper-2"));
-            registrar.register(cluster, config, Lists.newArrayList());
+            registrar.register(cluster, new Config(), Collections.emptyList());
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
@@ -116,5 +91,4 @@ public class ZookeeperServiceRegistrarTest extends AbstractServiceRegistrarTest<
             assertNull(zkService);
         }
     }
-
 }

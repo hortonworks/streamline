@@ -882,10 +882,8 @@ public class RestIntegrationTest {
 
     private Component createComponent(Long serviceId, Long id, String name) {
         Component component = new Component();
-        component.setHosts(Lists.newArrayList("host-1","host-2"));
         component.setId(id);
         component.setName(name);
-        component.setPort(8080);
         component.setServiceId(serviceId);
         component.setTimestamp(System.currentTimeMillis());
         return component;
@@ -953,6 +951,8 @@ public class RestIntegrationTest {
         Namespace namespace = new Namespace();
         namespace.setId(id);
         namespace.setName(name);
+        namespace.setStreamingEngine(ServiceConfigurations.STORM.name());
+        namespace.setTimeSeriesDB(ServiceConfigurations.AMBARI_METRICS.name());
         namespace.setTimestamp(System.currentTimeMillis());
         namespace.setStreamingEngine(ServiceConfigurations.STORM.name());
         namespace.setTimeSeriesDB(ServiceConfigurations.AMBARI_METRICS.name());

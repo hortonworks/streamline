@@ -25,6 +25,8 @@ import com.hortonworks.streamline.common.exception.service.exception.request.Ent
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
 import com.hortonworks.streamline.streams.catalog.Service;
@@ -172,6 +174,24 @@ public class ClusterCatalogResource {
     public Response removeCluster(@PathParam("id") Long clusterId, @Context SecurityContext securityContext) {
         assertNoNamespaceRefersCluster(clusterId);
         SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_SERVICE_POOL_SUPER_ADMIN, NAMESPACE, clusterId, DELETE);
+
+        // remove all services / service configurations / components / component processes in this cluster
+        Collection<Service> services = environmentService.listServices(clusterId);
+        services.forEach(svc -> {
+            environmentService.listServiceConfigurations(svc.getId())
+                    .forEach(sc -> environmentService.removeServiceConfiguration(sc.getId()));
+
+            Collection<Component> components = environmentService.listComponents(svc.getId());
+            components.forEach(component -> {
+                environmentService.listComponentProcessesInComponent(component.getId())
+                        .forEach(componentProcess -> environmentService.removeComponentProcess(componentProcess.getId()));
+
+                environmentService.removeComponent(component.getId());
+            });
+
+            environmentService.removeService(svc.getId());
+        });
+
         Cluster removedCluster = environmentService.removeCluster(clusterId);
         if (removedCluster != null) {
             SecurityUtil.removeAcl(authorizer, securityContext, NAMESPACE, clusterId);

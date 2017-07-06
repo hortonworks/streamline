@@ -4,12 +4,25 @@
   "serviceUISpecification": {
     "fields": [
       {
-        "uiName": "Druid config file (common.runtime.properties)",
-        "fieldName": "common.runtime.properties",
-        "hint" : "properties",
+        "uiName": "Zookeeper connection string",
+        "fieldName": "druid.zk.service.host",
         "isOptional": false,
-        "tooltip": "Upload common.runtime.properties file used by Druid cluster",
-        "type": "file"
+        "tooltip": "A comma separated string of host:port of Zookeeper",
+        "type": "string"
+      },
+      {
+        "uiName": "Indexing Service name",
+        "fieldName": "druid.selectors.indexing.serviceName",
+        "isOptional": true,
+        "tooltip": "The druid.service name of the indexing service Overlord node",
+        "type": "string"
+      },
+      {
+        "uiName": "Service discovery path",
+        "fieldName": "druid.discovery.curator.path",
+        "isOptional": true,
+        "tooltip": "Services announce themselves under this ZooKeeper path",
+        "type": "string"
       }
     ]
   }

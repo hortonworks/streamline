@@ -18,22 +18,25 @@ package com.hortonworks.streamline.streams.cluster.register.impl;
 import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.Constants;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
 public class KafkaServiceRegistrarTest extends AbstractServiceRegistrarTest<KafkaServiceRegistrar> {
-    public static final String SERVER_PROPERTIES = "server.properties";
-    public static final String SERVER_PROPERTIES_FILE_PATH = REGISTER_RESOURCE_DIRECTORY + SERVER_PROPERTIES;
-    public static final String SERVER_PROPERTIES_BADCASE_FILE_PATH = REGISTER_BADCASE_RESOURCE_DIRECTORY + SERVER_PROPERTIES;
-    public static final String COMPONENT_KAFKA_BROKER = "KAFKA_BROKER";
     private static final String CONFIGURATION_NAME_SERVER_PROPERTIES = "server";
 
     public KafkaServiceRegistrarTest() {
@@ -51,65 +54,90 @@ public class KafkaServiceRegistrarTest extends AbstractServiceRegistrarTest<Kafk
 
         KafkaServiceRegistrar registrar = initializeServiceRegistrar();
 
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream(SERVER_PROPERTIES_FILE_PATH)) {
-            Config config = new Config();
-            config.put(KafkaServiceRegistrar.PARAM_KAFKA_BROKER_HOSTNAMES, Lists.newArrayList("kafka-1","kafka-2"));
-            ManualServiceRegistrar.ConfigFileInfo serverProperties = new ManualServiceRegistrar.ConfigFileInfo(SERVER_PROPERTIES, is);
-            registrar.register(cluster, config, Lists.newArrayList(serverProperties));
-        }
+        Config config = new Config();
+        config.put(KafkaServiceRegistrar.PARAM_ZOOKEEPER_CONNECT, "zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181");
+        config.put(KafkaServiceRegistrar.PARAM_LISTENERS, "SASL_PLAINTEXT://kafka-1:6668,PLAINTEXT://kafka-2:6669,SSL://kafka-3:6670,SASL_SSL://kafka-4:6671");
+        config.put(KafkaServiceRegistrar.PARAM_SECURITY_INTER_BROKER_PROTOCOL, "SSL");
+        registrar.register(cluster, config, Collections.emptyList());
 
         Service kafkaService = environmentService.getServiceByName(cluster.getId(), Constants.Kafka.SERVICE_NAME);
         assertNotNull(kafkaService);
+
+        Component broker = environmentService.getComponentByName(kafkaService.getId(), ComponentPropertyPattern.KAFKA_BROKER.name());
+        assertNotNull(broker);
+
+        Collection<ComponentProcess> brokerProcesses = environmentService.listComponentProcessesInComponent(broker.getId());
+        assertEquals(4, brokerProcesses.size());
+        assertTrue(brokerProcesses.stream().anyMatch(p -> p.getHost().equals("kafka-1") && p.getPort().equals(6668) && p.getProtocol().equals("SASL_PLAINTEXT")));
+        assertTrue(brokerProcesses.stream().anyMatch(p -> p.getHost().equals("kafka-2") && p.getPort().equals(6669) && p.getProtocol().equals("PLAINTEXT")));
+        assertTrue(brokerProcesses.stream().anyMatch(p -> p.getHost().equals("kafka-3") && p.getPort().equals(6670) && p.getProtocol().equals("SSL")));
+        assertTrue(brokerProcesses.stream().anyMatch(p -> p.getHost().equals("kafka-4") && p.getPort().equals(6671) && p.getProtocol().equals("SASL_SSL")));
+
         ServiceConfiguration serverPropertiesConf = environmentService.getServiceConfigurationByName(kafkaService.getId(), CONFIGURATION_NAME_SERVER_PROPERTIES);
         assertNotNull(serverPropertiesConf);
+        Map<String, String> serverPropertiesConfMap = serverPropertiesConf.getConfigurationMap();
+        assertEquals(config.get(KafkaServiceRegistrar.PARAM_SECURITY_INTER_BROKER_PROTOCOL),
+                serverPropertiesConfMap.get(KafkaServiceRegistrar.PARAM_SECURITY_INTER_BROKER_PROTOCOL));
     }
 
     @Test
-    public void testRegister_requiredPropertyNotPresent() throws Exception {
+    public void testRegisterWithoutOptionalParams() throws Exception {
         Cluster cluster = getTestCluster(1L);
 
         KafkaServiceRegistrar registrar = initializeServiceRegistrar();
 
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream(SERVER_PROPERTIES_BADCASE_FILE_PATH)) {
-            Config config = new Config();
-            config.put(KafkaServiceRegistrar.PARAM_KAFKA_BROKER_HOSTNAMES, "kafka-1,kafka-2");
-            ManualServiceRegistrar.ConfigFileInfo serverProperties = new ManualServiceRegistrar.ConfigFileInfo(SERVER_PROPERTIES, is);
-            registrar.register(cluster, config, Lists.newArrayList(serverProperties));
-            fail("Should throw IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
-            // OK
-            Service kafkaService = environmentService.getServiceByName(cluster.getId(), Constants.Kafka.SERVICE_NAME);
-            assertNull(kafkaService);
-        }
+        Config config = new Config();
+        config.put(KafkaServiceRegistrar.PARAM_ZOOKEEPER_CONNECT, "zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181");
+        config.put(KafkaServiceRegistrar.PARAM_LISTENERS, "PLAINTEXT://kafka-1:9092");
+        registrar.register(cluster, config, Collections.emptyList());
+
+        Service kafkaService = environmentService.getServiceByName(cluster.getId(), Constants.Kafka.SERVICE_NAME);
+        assertNotNull(kafkaService);
+
+        Component broker = environmentService.getComponentByName(kafkaService.getId(), ComponentPropertyPattern.KAFKA_BROKER.name());
+        assertNotNull(broker);
+
+        Collection<ComponentProcess> brokerProcesses = environmentService.listComponentProcessesInComponent(broker.getId());
+        assertEquals(1, brokerProcesses.size());
+        assertTrue(brokerProcesses.stream().anyMatch(p -> p.getHost().equals("kafka-1") && p.getPort().equals(9092) && p.getProtocol().equals("PLAINTEXT")));
+
+        ServiceConfiguration serverPropertiesConf = environmentService.getServiceConfigurationByName(kafkaService.getId(), CONFIGURATION_NAME_SERVER_PROPERTIES);
+        assertNotNull(serverPropertiesConf);
+        Map<String, String> serverPropertiesConfMap = serverPropertiesConf.getConfigurationMap();
+        assertFalse(serverPropertiesConfMap.containsKey(KafkaServiceRegistrar.PARAM_SECURITY_INTER_BROKER_PROTOCOL));
     }
 
     @Test
-    public void testRegister_component_kafka_broker_notPresent() throws Exception {
-        Cluster cluster = getTestCluster(1L);
-
-        KafkaServiceRegistrar registrar = initializeServiceRegistrar();
-
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream(SERVER_PROPERTIES_FILE_PATH)) {
-            ManualServiceRegistrar.ConfigFileInfo serverProperties = new ManualServiceRegistrar.ConfigFileInfo(SERVER_PROPERTIES, is);
-            registrar.register(cluster, new Config(), Lists.newArrayList(serverProperties));
-            fail("Should throw IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
-            // OK
-            Service kafkaService = environmentService.getServiceByName(cluster.getId(), Constants.Kafka.SERVICE_NAME);
-            assertNull(kafkaService);
-        }
-    }
-
-    @Test
-    public void testRegister_server_properties_notPresent() throws Exception {
+    public void testRegister_component_zookeeper_connect_notPresent() throws Exception {
         Cluster cluster = getTestCluster(1L);
 
         KafkaServiceRegistrar registrar = initializeServiceRegistrar();
 
         try {
             Config config = new Config();
-            config.put(KafkaServiceRegistrar.PARAM_KAFKA_BROKER_HOSTNAMES, "kafka-1,kafka-2");
-            registrar.register(cluster, config, Lists.newArrayList());
+            config.put(KafkaServiceRegistrar.PARAM_LISTENERS, "PLAINTEXT://kafka-1:9092");
+            config.put(KafkaServiceRegistrar.PARAM_SECURITY_INTER_BROKER_PROTOCOL, "SSL");
+            registrar.register(cluster, config, Collections.emptyList());
+            fail("Should throw IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // OK
+            Service kafkaService = environmentService.getServiceByName(cluster.getId(), Constants.Kafka.SERVICE_NAME);
+            assertNull(kafkaService);
+        }
+    }
+
+    @Test
+    public void testRegister_component_listeners_notPresent() throws Exception {
+        Cluster cluster = getTestCluster(1L);
+
+        KafkaServiceRegistrar registrar = initializeServiceRegistrar();
+
+        try {
+            Config config = new Config();
+            config.put(KafkaServiceRegistrar.PARAM_ZOOKEEPER_CONNECT, "zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181");
+            config.put(KafkaServiceRegistrar.PARAM_SECURITY_INTER_BROKER_PROTOCOL, "SSL");
+            registrar.register(cluster, config, Collections.emptyList());
+            fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK
             Service kafkaService = environmentService.getServiceByName(cluster.getId(), Constants.Kafka.SERVICE_NAME);

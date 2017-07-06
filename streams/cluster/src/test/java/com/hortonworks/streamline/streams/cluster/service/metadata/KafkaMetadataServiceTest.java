@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.cluster.service.metadata;
 import com.google.common.collect.Lists;
 
 import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.catalog.exception.ZookeeperClientException;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
@@ -25,6 +26,7 @@ import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPo
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaBrokerListeners;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaBrokersInfo;
 
+import mockit.Deencapsulation;
 import org.apache.curator.test.TestingServer;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -81,6 +84,8 @@ public class KafkaMetadataServiceTest {
     @Injectable
     private Component kafkaBrokerComponent;
     @Injectable
+    private Collection<ComponentProcess> kafkaBrokerProcesses;
+    @Injectable
     private ServiceConfiguration kafkaBrokerConfig;
     @Injectable
     private ServiceConfiguration kafkaEnvConfig;
@@ -94,6 +99,9 @@ public class KafkaMetadataServiceTest {
 
     @Test
     public void test_KafkaZkConnection_wellInitialized() throws Exception {
+        List<ComponentProcess> brokerProcesses = getBrokerComponentProcesses();
+        Deencapsulation.setField(kafkaMetadataService, "kafkaBrokerProcesses", brokerProcesses);
+
         for (String zkStr : zkStrs) {
             for (String chRoot : chRoots) {
                 final String zkStrRaw = zkStr + chRoot;
@@ -107,6 +115,9 @@ public class KafkaMetadataServiceTest {
 
     @Test
     public void test_KafkaZkConnection_createPath() throws Exception {
+        List<ComponentProcess> brokerProcesses = getBrokerComponentProcesses();
+        Deencapsulation.setField(kafkaMetadataService, "kafkaBrokerProcesses", brokerProcesses);
+
         for (String zkStr : zkStrs) {
             for (String chRoot : chRoots) {
                 final String zkStrRaw = zkStr + chRoot;
@@ -118,30 +129,28 @@ public class KafkaMetadataServiceTest {
         }
     }
 
-    @Test
-    public void test_getBrokerHostPortFromStreamsJson() throws Exception {
-        final List<String> expectedHosts = Lists.newArrayList("hostname1", "hostname2");
-        final Integer expectedPort = 1234;
+    private List<ComponentProcess> getBrokerComponentProcesses() {
+        ComponentProcess broker1 = new ComponentProcess();
+        broker1.setHost("hostname1");
+        broker1.setPort(1234);
+        broker1.setProtocol("PLAINTEXT");
 
-        new Expectations() {{
-            kafkaBrokerComponent.getHosts(); result = expectedHosts;
-            kafkaBrokerComponent.getPort(); result = expectedPort;
-            // Means test run in insecure mode as they did before adding security
-            securityContext.getAuthenticationScheme(); result = AUTHENTICATION_SCHEME_NOT_KERBEROS;
-            listenersPropParsed.getParsedProps(); result = new LinkedList<>();
-        }};
+        ComponentProcess broker2 = new ComponentProcess();
+        broker2.setHost("hostname2");
+        broker2.setPort(1234);
+        broker2.setProtocol("PLAINTEXT");
 
-        final KafkaBrokersInfo<HostPort> brokerHostPort = kafkaMetadataService.getBrokerHostPortFromStreamsJson();
-        // verify host
-        Assert.assertEquals(expectedHosts.get(0), brokerHostPort.getBrokers().get(0).getHost());
-        Assert.assertEquals(expectedHosts.get(1), brokerHostPort.getBrokers().get(1).getHost());
-        // verify port
-        Assert.assertEquals(expectedPort, brokerHostPort.getBrokers().get(0).getPort());
-        Assert.assertEquals(expectedPort, brokerHostPort.getBrokers().get(1).getPort());
+        List<ComponentProcess> brokerProcesses = new ArrayList<>();
+        brokerProcesses.add(broker1);
+        brokerProcesses.add(broker2);
+        return brokerProcesses;
     }
 
     @Test
     public void test_getBrokerInfoFromZk() throws Exception {
+        List<ComponentProcess> brokerProcesses = getBrokerComponentProcesses();
+        Deencapsulation.setField(kafkaMetadataService, "kafkaBrokerProcesses", brokerProcesses);
+
         final ArrayList<String> brokerIdZkLeaves = Lists.newArrayList("1001", "1002");
         final ArrayList<String> brokerZkData = Lists.newArrayList(
                 "{\"jmx_port\":-1,\"timestamp\":\"1475798012574\",\"endpoints\":[\"PLAINTEXT://cn035.l42scl.hortonworks.com:6667\"],\"host\":\"cn035.l42scl.hortonworks.com\",\"version\":3,\"port\":6667}",
@@ -167,6 +176,9 @@ public class KafkaMetadataServiceTest {
 
     @Test
     public void test_GetBrokerIdsFromZk() throws Exception {
+        List<ComponentProcess> brokerProcesses = getBrokerComponentProcesses();
+        Deencapsulation.setField(kafkaMetadataService, "kafkaBrokerProcesses", brokerProcesses);
+
         final ArrayList<String> brokerIdZkLeaves = Lists.newArrayList("1001", "1002");
         testZkCode(ZK_RELATIVE_PATH_KAFKA_BROKERS_IDS,
                 brokerIdZkLeaves,
@@ -189,6 +201,9 @@ public class KafkaMetadataServiceTest {
 
     @Test
     public void test_getTopicsFromZk() throws Exception {
+        List<ComponentProcess> brokerProcesses = getBrokerComponentProcesses();
+        Deencapsulation.setField(kafkaMetadataService, "kafkaBrokerProcesses", brokerProcesses);
+
         final ArrayList<String> componentZkLeaves = Lists.newArrayList("topic_1", "topic_2");
         testZkCode(ZK_RELATIVE_PATH_KAFKA_TOPICS,
                 componentZkLeaves,
@@ -224,9 +239,12 @@ public class KafkaMetadataServiceTest {
 
         startZk();
 
+        List<ComponentProcess> brokerProcesses = getBrokerComponentProcesses();
+
         // pass started zk to class under test
+        // don't use mocked Collection implementation: it is problematic when using with stream
         kafkaMetadataService = new KafkaMetadataService(
-                zkCli, kafkaZkConnection, securityContext, kafkaBrokerComponent, kafkaBrokerConfig, kafkaEnvConfig);
+                zkCli, kafkaZkConnection, securityContext, kafkaBrokerComponent, brokerProcesses, kafkaBrokerConfig, kafkaEnvConfig);
 
         try {
             if (zkNodeData != null) {

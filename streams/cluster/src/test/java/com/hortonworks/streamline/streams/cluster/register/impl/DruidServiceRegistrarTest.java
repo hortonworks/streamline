@@ -15,29 +15,26 @@
  **/
 package com.hortonworks.streamline.streams.cluster.register.impl;
 
-import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.Constants;
-import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import mockit.integration.junit4.JMockit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.InputStream;
+import java.util.Collections;
+import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 @RunWith(JMockit.class)
 public class DruidServiceRegistrarTest extends AbstractServiceRegistrarTest<DruidServiceRegistrar> {
-    public static final String DRUID_COMMON_RUNTIME_PROPERTIES = "common.runtime.properties";
-    public static final String DRUID_COMMON_RUNTIME_PROPERTIES_FILE_PATH = REGISTER_RESOURCE_DIRECTORY + DRUID_COMMON_RUNTIME_PROPERTIES;
-    public static final String DRUID_COMMON_RUNTIME_PROPERTIES_BADCASE_FILE_PATH = REGISTER_BADCASE_RESOURCE_DIRECTORY + DRUID_COMMON_RUNTIME_PROPERTIES;
     private static final String CONFIGURATION_NAME_COMMON_RUNTIME_PROPERTIES = "common.runtime";
 
     public DruidServiceRegistrarTest() {
@@ -50,47 +47,63 @@ public class DruidServiceRegistrarTest extends AbstractServiceRegistrarTest<Drui
     }
 
     @Test
-    public void testRegister_happyCase() throws Exception {
+    public void testRegister() throws Exception {
         Cluster cluster = getTestCluster(1L);
 
         DruidServiceRegistrar registerer = initializeServiceRegistrar();
 
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream(DRUID_COMMON_RUNTIME_PROPERTIES_FILE_PATH)) {
-            ManualServiceRegistrar.ConfigFileInfo hiveSiteXml = new ManualServiceRegistrar.ConfigFileInfo(DRUID_COMMON_RUNTIME_PROPERTIES, is);
-            registerer.register(cluster, new Config(), Lists.newArrayList(hiveSiteXml));
-        }
+        Config config = new Config();
+        config.put(DruidServiceRegistrar.PARAM_ZOOKEEPER_CONNECTION_STRING, "zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181");
+        config.put(DruidServiceRegistrar.PARAM_INDEXING_SERVICE_NAME, "druid/overlord");
+        config.put(DruidServiceRegistrar.PARAM_DISCOVERY_CURATOR_PATH, "/prod/discovery");
+
+        registerer.register(cluster, config, Collections.emptyList());
 
         Service druidService = environmentService.getServiceByName(cluster.getId(), Constants.Druid.SERVICE_NAME);
         assertNotNull(druidService);
+
         ServiceConfiguration commonRuntimePropertiesConf = environmentService.getServiceConfigurationByName(druidService.getId(), CONFIGURATION_NAME_COMMON_RUNTIME_PROPERTIES);
         assertNotNull(commonRuntimePropertiesConf);
+
+        Map<String, String> confMap = commonRuntimePropertiesConf.getConfigurationMap();
+        assertEquals(config.get(DruidServiceRegistrar.PARAM_ZOOKEEPER_CONNECTION_STRING), confMap.get(DruidServiceRegistrar.PARAM_ZOOKEEPER_CONNECTION_STRING));
+        assertEquals(config.get(DruidServiceRegistrar.PARAM_INDEXING_SERVICE_NAME), confMap.get(DruidServiceRegistrar.PARAM_INDEXING_SERVICE_NAME));
+        assertEquals(config.get(DruidServiceRegistrar.PARAM_DISCOVERY_CURATOR_PATH), confMap.get(DruidServiceRegistrar.PARAM_DISCOVERY_CURATOR_PATH));
     }
 
     @Test
-    public void testRegister_requiredPropertyNotPresented() throws Exception {
+    public void testRegisterWithoutOptionalParams() throws Exception {
         Cluster cluster = getTestCluster(1L);
 
         DruidServiceRegistrar registerer = initializeServiceRegistrar();
 
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream(DRUID_COMMON_RUNTIME_PROPERTIES_BADCASE_FILE_PATH)) {
-            ManualServiceRegistrar.ConfigFileInfo hiveSiteXml = new ManualServiceRegistrar.ConfigFileInfo(DRUID_COMMON_RUNTIME_PROPERTIES, is);
-            registerer.register(cluster, new Config(), Lists.newArrayList(hiveSiteXml));
-            fail("Should throw IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
-            // OK
-            Service druidService = environmentService.getServiceByName(cluster.getId(), Constants.Druid.SERVICE_NAME);
-            assertNull(druidService);
-        }
+        Config config = new Config();
+        config.put(DruidServiceRegistrar.PARAM_ZOOKEEPER_CONNECTION_STRING, "zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181");
+
+        registerer.register(cluster, config, Collections.emptyList());
+
+        Service druidService = environmentService.getServiceByName(cluster.getId(), Constants.Druid.SERVICE_NAME);
+        assertNotNull(druidService);
+
+        ServiceConfiguration commonRuntimePropertiesConf = environmentService.getServiceConfigurationByName(druidService.getId(), CONFIGURATION_NAME_COMMON_RUNTIME_PROPERTIES);
+        assertNotNull(commonRuntimePropertiesConf);
+
+        Map<String, String> confMap = commonRuntimePropertiesConf.getConfigurationMap();
+        assertEquals(config.get(DruidServiceRegistrar.PARAM_ZOOKEEPER_CONNECTION_STRING), confMap.get(DruidServiceRegistrar.PARAM_ZOOKEEPER_CONNECTION_STRING));
     }
 
     @Test
-    public void testRegister_common_runtime_properties_notPresent() throws Exception {
+    public void testRegister_zookeeper_connection_notPresent() throws Exception {
         Cluster cluster = getTestCluster(1L);
 
         DruidServiceRegistrar registerer = initializeServiceRegistrar();
 
         try {
-            registerer.register(cluster, new Config(), Lists.newArrayList());
+            Config config = new Config();
+            config.put(DruidServiceRegistrar.PARAM_INDEXING_SERVICE_NAME, "druid/overlord");
+            config.put(DruidServiceRegistrar.PARAM_DISCOVERY_CURATOR_PATH, "/prod/discovery");
+
+            registerer.register(cluster, config, Collections.emptyList());
             fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // OK

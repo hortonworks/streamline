@@ -2,13 +2,18 @@ package com.hortonworks.streamline.streams.cluster.service.metadata.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Wrapper used to show proper JSON formatting
@@ -36,16 +41,13 @@ public class KafkaBrokersInfo<T> {
         this.protocolToHostsWithPort = protocolToHostsWithPort;
     }
 
-    public static KafkaBrokersInfo<HostPort> hostPort(List<String> hosts, Integer port,
-            Security security, KafkaBrokerListeners kafkaBrokerListeners) throws IOException {
+    public static KafkaBrokersInfo<HostPort> hostPort(Collection<ComponentProcess> componentProcesses,
+                                                      Security security, KafkaBrokerListeners kafkaBrokerListeners)
+            throws IOException {
 
-        List<HostPort> hostsPorts = Collections.emptyList();
-        if (hosts != null) {
-            hostsPorts = new ArrayList<>(hosts.size());
-            for (String host : hosts) {
-                hostsPorts.add(new HostPort(host, port));
-            }
-        }
+        List<HostPort> hostsPorts = componentProcesses.stream()
+                .map(cp -> new HostPort(cp.getHost(), cp.getPort()))
+                .collect(toList());
         return new KafkaBrokersInfo<>(hostsPorts, security, kafkaBrokerListeners.getProtocolToHostsWithPort());
     }
 

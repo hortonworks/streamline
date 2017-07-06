@@ -202,8 +202,6 @@ CREATE TABLE IF NOT EXISTS topology_source_stream_mapping (
     FOREIGN KEY ("streamId", "versionId") REFERENCES topology_stream("id", "versionId")
 );
 
-
-
 CREATE TABLE IF NOT EXISTS topology_processor (
     "id" SERIAL NOT NULL,
     "versionId" BIGINT NOT NULL,
@@ -317,7 +315,8 @@ CREATE TABLE IF NOT EXISTS service (
   "name" VARCHAR(255) NOT NULL,
   "description" TEXT,
   "timestamp" BIGINT,
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+  FOREIGN KEY ("clusterId") REFERENCES cluster(id)
 );
 
 CREATE TABLE IF NOT EXISTS service_configuration (
@@ -328,18 +327,28 @@ CREATE TABLE IF NOT EXISTS service_configuration (
   "description" TEXT,
   "filename" VARCHAR(255),
   "timestamp" BIGINT,
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+  FOREIGN KEY ("serviceId") REFERENCES service(id)
 );
 
 CREATE TABLE IF NOT EXISTS component (
   "id" SERIAL NOT NULL,
   "serviceId" BIGINT NOT NULL,
   "name" VARCHAR(255) NOT NULL,
-  "hosts" TEXT NOT NULL,
-  "protocol" VARCHAR(255),
+  "timestamp" BIGINT,
+  PRIMARY KEY (id),
+  FOREIGN KEY ("serviceId") REFERENCES service(id)
+);
+
+CREATE TABLE IF NOT EXISTS component_process (
+  "id" SERIAL NOT NULL,
+  "componentId" BIGINT NOT NULL,
+  "host" VARCHAR(256) NOT NULL,
+  "protocol" VARCHAR(256),
   "port" INTEGER,
   "timestamp" BIGINT,
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+  FOREIGN KEY ("componentId") REFERENCES component (id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_state (

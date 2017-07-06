@@ -17,6 +17,7 @@ package com.hortonworks.streamline.streams.actions.container;
 
 import com.hortonworks.streamline.streams.actions.TopologyActions;
 import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.actions.container.mapping.MappedTopologyActionsImpl;
@@ -31,9 +32,11 @@ import javax.security.auth.Subject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyActions> {
 
@@ -101,15 +104,30 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
 
         Component uiServer = getComponent(streamingEngineService, COMPONENT_NAME_STORM_UI_SERVER)
                 .orElseThrow(() -> new RuntimeException(streamingEngine + " doesn't have " + COMPONENT_NAME_STORM_UI_SERVER + " as component"));
-        String uiHost = uiServer.getHosts().get(0);
-        Integer uiPort = uiServer.getPort();
+
+        Collection<ComponentProcess> uiServerProcesses = environmentService.listComponentProcessesInComponent(uiServer.getId());
+        if (uiServerProcesses.isEmpty()) {
+            throw new RuntimeException(streamingEngine + " doesn't have any process for " + COMPONENT_NAME_STORM_UI_SERVER + " as component");
+        }
+
+        ComponentProcess uiServerProcess = uiServerProcesses.iterator().next();
+        String uiHost = uiServerProcess.getHost();
+        Integer uiPort = uiServerProcess.getPort();
 
         assertHostAndPort(uiServer.getName(), uiHost, uiPort);
 
         Component nimbus = getComponent(streamingEngineService, COMPONENT_NAME_NIMBUS)
                 .orElseThrow(() -> new RuntimeException(streamingEngine + " doesn't have " + COMPONENT_NAME_NIMBUS + " as component"));
-        List<String> nimbusHosts = nimbus.getHosts();
-        Integer nimbusPort = nimbus.getPort();
+
+        Collection<ComponentProcess> nimbusProcesses = environmentService.listComponentProcessesInComponent(nimbus.getId());
+        if (nimbusProcesses.isEmpty()) {
+            throw new RuntimeException(streamingEngine + " doesn't have any process for " + COMPONENT_NAME_NIMBUS + " as component");
+        }
+
+        List<String> nimbusHosts = nimbusProcesses.stream().map(ComponentProcess::getHost)
+                .collect(Collectors.toList());
+        Integer nimbusPort = nimbusProcesses.stream().map(ComponentProcess::getPort)
+                .findAny().get();
 
         assertHostsAndPort(nimbus.getName(), nimbusHosts, nimbusPort);
 

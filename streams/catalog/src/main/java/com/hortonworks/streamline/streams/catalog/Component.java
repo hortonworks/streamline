@@ -37,25 +37,9 @@ import java.util.Map;
 public class Component extends AbstractStorable {
     private static final String NAMESPACE = "component";
 
-    public static final String ID = "id";
-    public static final String SERVICEID = "serviceId";
-    public static final String NAME = "name";
-    public static final String HOSTS = "hosts";
-    public static final String PROTOCOL = "protocol";
-    public static final String PORT = "port";
-    public static final String TIMESTAMP = "timestamp";
-
-
     private Long id;
     private Long serviceId;
     private String name;
-    private List<String> hosts;
-
-    // The protocol for communicating with this port.
-    // Its representation is up to component.
-    // For example. protocols for KAFKA are PLAINTEXT, SSL, etc.
-    private String protocol;
-    private Integer port;
     private Long timestamp;
 
     /**
@@ -93,39 +77,6 @@ public class Component extends AbstractStorable {
         this.name = name;
     }
 
-    /**
-     * The set of hosts where the component runs.
-     */
-    public List<String> getHosts() {
-        return hosts;
-    }
-
-    public void setHosts(List<String> hosts) {
-        this.hosts = hosts;
-    }
-
-    /**
-     * The protocol where the component communicates. (optional)
-     */
-    public String getProtocol() {
-        return protocol;
-    }
-
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
-    }
-
-    /**
-     * The port where the component listens. (optional)
-     */
-    public Integer getPort() {
-        return port;
-    }
-
-    public void setPort(Integer port) {
-        this.port = port;
-    }
-
     @JsonIgnore
     public String getNameSpace() {
         return NAMESPACE;
@@ -153,24 +104,11 @@ public class Component extends AbstractStorable {
 
         Component component = (Component) o;
 
-        if (getId() != null ? !getId().equals(component.getId()) : component.getId() != null)
+        if (getId() != null ? !getId().equals(component.getId()) : component.getId() != null) return false;
+        if (getServiceId() != null ? !getServiceId().equals(component.getServiceId()) : component.getServiceId() != null)
             return false;
-        if (getServiceId() != null ?
-            !getServiceId().equals(component.getServiceId()) :
-            component.getServiceId() != null) return false;
-        if (getName() != null ?
-            !getName().equals(component.getName()) :
-            component.getName() != null) return false;
-        if (getHosts() != null ?
-            !getHosts().equals(component.getHosts()) :
-            component.getHosts() != null) return false;
-        if (getPort() != null ?
-            !getPort().equals(component.getPort()) :
-            component.getPort() != null) return false;
-        return getTimestamp() != null ?
-            getTimestamp().equals(component.getTimestamp()) :
-            component.getTimestamp() == null;
-
+        if (getName() != null ? !getName().equals(component.getName()) : component.getName() != null) return false;
+        return getTimestamp() != null ? getTimestamp().equals(component.getTimestamp()) : component.getTimestamp() == null;
     }
 
     @Override
@@ -178,8 +116,6 @@ public class Component extends AbstractStorable {
         int result = getId() != null ? getId().hashCode() : 0;
         result = 31 * result + (getServiceId() != null ? getServiceId().hashCode() : 0);
         result = 31 * result + (getName() != null ? getName().hashCode() : 0);
-        result = 31 * result + (getHosts() != null ? getHosts().hashCode() : 0);
-        result = 31 * result + (getPort() != null ? getPort().hashCode() : 0);
         result = 31 * result + (getTimestamp() != null ? getTimestamp().hashCode() : 0);
         return result;
     }
@@ -187,62 +123,10 @@ public class Component extends AbstractStorable {
     @Override
     public String toString() {
         return "Component{" +
-            "id=" + id +
-            ", serviceId=" + serviceId +
-            ", name='" + name + '\'' +
-            ", hosts=" + hosts +
-            ", port=" + port +
-            ", timestamp=" + timestamp +
-            '}';
+                "id=" + id +
+                ", serviceId=" + serviceId +
+                ", name='" + name + '\'' +
+                ", timestamp=" + timestamp +
+                '}';
     }
-
-    @JsonIgnore
-    @Override
-    public Schema getSchema() {
-        return Schema.of(
-                Schema.Field.of(ID, Schema.Type.LONG),
-                Schema.Field.of(SERVICEID, Schema.Type.LONG),
-                Schema.Field.of(NAME, Schema.Type.STRING),
-                Schema.Field.of(HOSTS, Schema.Type.STRING),
-                Schema.Field.of(PROTOCOL, Schema.Type.STRING),
-                Schema.Field.of(PORT, Schema.Type.INTEGER),
-                Schema.Field.of(TIMESTAMP, Schema.Type.LONG)
-        );
-    }
-
-
-    @Override
-    public Map<String, Object> toMap() {
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, Object> map = super.toMap();
-        try {
-            map.put(HOSTS, hosts != null ? mapper.writeValueAsString(hosts) : "");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return map;
-    }
-
-    @Override
-    public Storable fromMap(Map<String, Object> map) {
-        setId((Long) map.get(ID));
-        setServiceId((Long) map.get(SERVICEID));
-        setName((String) map.get(NAME));
-        setProtocol((String) map.get(PROTOCOL));
-        setPort((Integer) map.get(PORT));
-        setTimestamp((Long) map.get(TIMESTAMP));
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            String hostsStr = (String) map.get(HOSTS);
-            if (!StringUtils.isEmpty(hostsStr)) {
-                List<String> hosts = mapper.readValue(hostsStr, new TypeReference<List<String>>() {
-                });
-                setHosts(hosts);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return this;
-    }
-
 }

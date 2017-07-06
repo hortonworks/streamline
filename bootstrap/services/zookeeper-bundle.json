@@ -7,16 +7,16 @@
         "uiName": "Zookeeper servers hostnames",
         "fieldName": "zkServersHostnames",
         "isOptional": false,
-        "tooltip": "Hostnames of Zookeeper servers",
+        "tooltip": "The hostnames of Zookeeper servers",
         "type": "array.string"
       },
       {
-        "uiName": "Zookeeper config file (zoo.cfg)",
-        "fieldName": "zoo.cfg",
-        "hint" : "cfg",
+        "uiName": "Zookeeper port",
+        "fieldName": "clientPort",
         "isOptional": false,
-        "tooltip": "Upload zoo.cfg file used by Zookeeper cluster",
-        "type": "file"
+        "tooltip": "Port of Zookeeper servers",
+        "type": "number",
+        "defaultValue": 2181
       }
     ]
   }
