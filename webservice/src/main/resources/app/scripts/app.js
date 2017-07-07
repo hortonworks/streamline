@@ -16,19 +16,20 @@ import routes from './routers/routes';
 import { render } from 'react-dom';
 import { Router, browserHistory, hashHistory } from 'react-router';
 import FSReactToastr from './components/FSReactToastr';
-import { toastOpt } from './utils/Constants';
+import { toastOpt, unknownAccessCode } from './utils/Constants';
 import MiscREST from './rest/MiscREST';
 import UserRoleREST from './rest/UserRoleREST';
 import app_state from './app_state';
 import CommonNotification from './utils/CommonNotification';
 import UnKnownAccess  from './components/UnKnownAccess';
+import {observer} from 'mobx-react';
 
+@observer
 class App extends Component {
   constructor(){
     super();
     this.state = {
-      showLoading: true,
-      unKnownUser : false
+      showLoading: true
     };
     this.fetchData();
   }
@@ -86,7 +87,7 @@ class App extends Component {
         ? errorPage=true
         : '';
     if(errorPage){
-      this.setState({showLoading: false,unKnownUser : true});
+      app_state.unKnownUser = unknownAccessCode.unknownUser;
     }
     err.response.then((res) => {
       res.responseMessage.indexOf('user database') === -1
@@ -108,10 +109,10 @@ class App extends Component {
     });
   }
   render() {
-    const {showLoading,unKnownUser} = this.state;
+    const {showLoading} = this.state;
     const component = showLoading ? <div></div> : <Router ref="router" history={hashHistory} routes={routes} />;
     return (
-      unKnownUser
+      (app_state.unKnownUser === unknownAccessCode.unknownUser || app_state.unKnownUser === unknownAccessCode.loggedOut)
       ? <UnKnownAccess />
       : component
     );

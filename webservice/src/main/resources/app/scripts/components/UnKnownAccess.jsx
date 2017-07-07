@@ -13,6 +13,8 @@
 **/
 
 import React, {Component} from 'react';
+import app_state from '../app_state';
+import {unknownAccessCode} from '../utils/Constants';
 
 export default class UnKnownAccess extends Component{
   componentDidMount(){
@@ -26,7 +28,7 @@ export default class UnKnownAccess extends Component{
       <div className="login-wrapper text-center">
         <img src="styles/img/SAM-logo-expanded.png" />
         <div className="login-notify">
-          Access not enabled for this username.<br /> Please contact your administrator.
+          {app_state.unKnownUser === unknownAccessCode.unknownUser ? ['Access not enabled for this username.', <br />, 'Please contact your administrator.'] : 'Logged out successfully.'}
         </div>
       </div>
     );
