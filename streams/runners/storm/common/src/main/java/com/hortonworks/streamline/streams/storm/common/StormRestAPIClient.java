@@ -17,6 +17,7 @@ package com.hortonworks.streamline.streams.storm.common;
 
 import com.hortonworks.streamline.common.JsonClientUtil;
 import com.hortonworks.streamline.common.exception.WrappedWebApplicationException;
+import com.hortonworks.streamline.common.util.WSUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,29 +48,34 @@ public class StormRestAPIClient {
     }
 
     public Map getTopologySummary(String asUser) {
-        return doGetRequest(getTopologySummaryUrl(encode(asUser)));
+        return doGetRequest(generateTopologyUrl(null, asUser, "summary"));
     }
 
     public Map getTopology(String topologyId, String asUser) {
-        return doGetRequest(getTopologyUrl(encode(topologyId), encode(asUser)));
+        // topology/<topologyId>?doAsUser=<asUser>
+        return doGetRequest(generateTopologyUrl(topologyId, asUser, ""));
     }
 
     public Map getComponent(String topologyId, String componentId, String asUser) {
-        return doGetRequest(getComponentUrl(encode(topologyId), encode(componentId), encode(asUser)));
+        // topology/<topologyId>/component/<componentId>?doAsUser=<asUser>
+        return doGetRequest(generateTopologyUrl(topologyId, asUser, "component/" + encode(componentId)));
     }
 
     public boolean killTopology(String stormTopologyId, String asUser, int waitTime) {
-        Map result = doPostRequestWithEmptyBody(getTopologyKillUrl(encode(stormTopologyId), encode(asUser), waitTime));
+        //// topology/<topologyId>/kill/<waitTime>?doAsUser=<asUser>
+        Map result = doPostRequestWithEmptyBody(generateTopologyUrl(stormTopologyId, asUser, "kill/" + waitTime));
         return isPostOperationSuccess(result);
     }
 
     public boolean activateTopology(String stormTopologyId, String asUser) {
-        Map result = doPostRequestWithEmptyBody(getTopologyActivateUrl(encode(stormTopologyId), encode(asUser)));
+        // topology/<topologyId>/activate?doAsUser=<asUser>
+        Map result = doPostRequestWithEmptyBody(generateTopologyUrl(stormTopologyId, asUser, "activate"));
         return isPostOperationSuccess(result);
     }
 
     public boolean deactivateTopology(String stormTopologyId, String asUser) {
-        Map result = doPostRequestWithEmptyBody(getTopologyDeactivateUrl(encode(stormTopologyId), encode(asUser)));
+        // topology/<topologyId>/deactivate?doAsUser=<asUser>
+        Map result = doPostRequestWithEmptyBody(generateTopologyUrl(stormTopologyId, asUser, "deactivate"));
         return isPostOperationSuccess(result);
     }
 
@@ -117,52 +123,21 @@ public class StormRestAPIClient {
         }
     }
 
-    private String getTopologySummaryUrl(String asUser) {
-        String baseUrl = stormApiRootUrl + "/topology/summary";
-        if (StringUtils.isNotEmpty(asUser)) {
-            baseUrl += "?doAsUser=" + asUser;
-        }
-        return baseUrl;
-    }
+    private String generateTopologyUrl(String topologyId, String asUser, String operation) {
+        String baseUrl = stormApiRootUrl + "/topology";
 
-    private String getTopologyUrl(String topologyId, String asUser) {
-        String baseUrl = stormApiRootUrl + "/topology/" + topologyId;
-        if (StringUtils.isNotEmpty(asUser)) {
-            baseUrl += "?doAsUser=" + asUser;
+        if(StringUtils.isNotEmpty(topologyId)) {
+            baseUrl += "/" + WSUtils.encode(topologyId);
         }
-        return baseUrl;
-    }
 
-    private String getComponentUrl(String topologyId, String componentId, String asUser) {
-        // we need to pass asUser as empty otherwise we will get mal-formed doAsUser
-        String baseUrl = getTopologyUrl(topologyId, "") + "/component/" + componentId;
-        if (StringUtils.isNotEmpty(asUser)) {
-            baseUrl += "?doAsUser=" + asUser;
+        if(StringUtils.isNotEmpty(operation)) {
+            baseUrl += "/" + operation;
         }
-        return baseUrl;
-    }
 
-    private String getTopologyKillUrl(String topologyId, String asUser, int waitTime) {
-        String baseUrl = stormApiRootUrl + "/topology/" + topologyId + "/kill/" + waitTime;
         if (StringUtils.isNotEmpty(asUser)) {
-            baseUrl += "?doAsUser=" + asUser;
+            baseUrl += "?doAsUser=" + WSUtils.encode(asUser);
         }
-        return baseUrl;
-    }
 
-    private String getTopologyActivateUrl(String topologyId, String asUser) {
-        String baseUrl = stormApiRootUrl + "/topology/" + topologyId + "/activate";
-        if (StringUtils.isNotEmpty(asUser)) {
-            baseUrl += "?doAsUser=" + asUser;
-        }
-        return baseUrl;
-    }
-
-    private String getTopologyDeactivateUrl(String topologyId, String asUser) {
-        String baseUrl = stormApiRootUrl + "/topology/" + topologyId + "/deactivate";
-        if (StringUtils.isNotEmpty(asUser)) {
-            baseUrl += "?doAsUser=" + asUser;
-        }
         return baseUrl;
     }
 
