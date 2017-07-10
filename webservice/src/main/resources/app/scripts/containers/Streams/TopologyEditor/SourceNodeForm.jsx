@@ -117,8 +117,7 @@ export default class SourceNodeForm extends Component {
         if (stateObj.formData.cluster !== undefined) {
           this.updateClusterFields(stateObj.formData.cluster);
           this.setState({streamObj: this.state.streamObj});
-        }
-        if (_.keys(stateObj.clusterArr).length === 1) {
+        } else if (_.keys(stateObj.clusterArr).length === 1) {
           stateObj.formData.cluster = _.keys(stateObj.clusterArr)[0];
           this.updateClusterFields(stateObj.formData.cluster);
         }
@@ -132,21 +131,10 @@ export default class SourceNodeForm extends Component {
         return x.fieldName === 'clusters';
       });
       if (clusterFlag === -1) {
-        obj.unshift(this.clusterField());
+        obj.unshift(Utils.clusterField());
       }
     }
     return obj;
-  }
-
-  clusterField = () => {
-    return {
-      "uiName": "Cluster Name",
-      "fieldName": "clusters",
-      "isOptional": false,
-      "tooltip": "Cluster name to read data from",
-      "type": "CustomEnumstring",
-      "options": []
-    };
   }
 
   pushClusterFields = (opt, uiSpecification) => {
@@ -160,14 +148,15 @@ export default class SourceNodeForm extends Component {
   }
 
   populateClusterFields(val) {
+    const {clusterArr} = this.state;
     const tempObj = Object.assign({}, this.state.formData, {topic: ''});
     // split the val to find the key by URL
     let splitValues = val.split('@#$');
     let keyName;
     if(!_.isEmpty(splitValues[1])){
-      keyName = this.getClusterKey(splitValues[1], false);
+      keyName = Utils.getClusterKey(splitValues[1], false,clusterArr);
     } else {
-      keyName = this.getClusterKey(splitValues[0], true);
+      keyName = Utils.getClusterKey(splitValues[0], true,clusterArr);
     }
     this.setState({
       clusterName: keyName,
@@ -176,21 +165,6 @@ export default class SourceNodeForm extends Component {
     }, () => {
       this.updateClusterFields();
     });
-  }
-
-  getClusterKey(urlOrName, isManualCluster) {
-    const {clusterArr} = this.state;
-    let key = '';
-    _.keys(clusterArr).map(x => {
-      _.keys(clusterArr[x]).map(k => {
-        if(!isManualCluster && clusterArr[x][k].ambariImportUrl === urlOrName){
-          key = x;
-        } else if(isManualCluster && clusterArr[x][k].name === urlOrName){
-          key = x;
-        }
-      });
-    });
-    return key;
   }
 
   updateClusterFields(name) {
@@ -215,10 +189,10 @@ export default class SourceNodeForm extends Component {
     stateObj.formData = tempData;
     if(clusterArr.length === 0 && formData.cluster !== ''){
       let tempObj = this.props.configData.topologyComponentUISpecification.fields;
-      tempObj.unshift(this.clusterField());
+      tempObj.unshift(Utils.clusterField());
       stateObj.configJSON = tempObj;
       FSReactToastr.error(
-        <CommonNotification flag="error" content={'Kafka cluster is not availabel'}/>, '', toastOpt);
+        <CommonNotification flag="error" content={'Cluster is not available'}/>, '', toastOpt);
     }
     this.setState(stateObj);
   }
