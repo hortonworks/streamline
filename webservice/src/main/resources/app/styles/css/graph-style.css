@@ -267,6 +267,12 @@ text.node-title {
   fill: #666;
 }
 
+@supports (-ms-ime-align:auto) {
+  text.node-title {
+    font-size: 14px;
+  }
+}
+
 text.node-type-label {
   fill: #a9a9a9;
   font-size: 12px;
