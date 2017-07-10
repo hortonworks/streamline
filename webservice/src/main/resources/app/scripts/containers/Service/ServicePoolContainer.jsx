@@ -90,7 +90,7 @@ class PoolItemsCard extends Component {
         permissions = hasEditCapability("Service Pool");
       }
       // permission true only for refresh
-      eventKey.includes('refresh') ? permissions = true : '';
+      // eventKey.includes('refresh') ? permissions = true : '';
 
       if(permissions){
         if(eventKey.includes('share')){
@@ -191,7 +191,7 @@ class PoolItemsCard extends Component {
               <DropdownButton noCaret title={ellipseIcon} id="dropdown" bsStyle="link" className="dropdown-toggle" data-stest="service-pool-actions">
                 {
                   cluster.ambariImportUrl
-                  ? <MenuItem onClick={this.onActionClick.bind(this, "refresh/")} data-stest="edit-service-pool">
+                  ? <MenuItem disabled={!permission} onClick={this.onActionClick.bind(this, "edit/")} data-stest="edit-service-pool">
                       <i className="fa fa-refresh"></i>
                       &nbsp;Refresh
                     </MenuItem>
@@ -396,7 +396,7 @@ class ServicePoolContainer extends Component {
   poolActionClicked = (eventKey, id,obj) => {
     const key = eventKey.split('/');
     switch (key[0].toString()) {
-    case "refresh":
+    case "edit":
       this.handleUpdateCluster(id);
       break;
     case "delete":
