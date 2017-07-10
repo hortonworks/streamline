@@ -30,6 +30,8 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -180,5 +182,16 @@ public class WSUtils {
         return securityContext != null
                 && securityContext.getAuthenticationScheme() != null
                 && securityContext.getAuthenticationScheme().equals(AUTH_SCHEME_KERBEROS);
+    }
+
+    /**
+     * url-encode parts of the url
+     */
+    public static String encode(String part) {
+        try {
+            return part == null ? null : URLEncoder.encode(part, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

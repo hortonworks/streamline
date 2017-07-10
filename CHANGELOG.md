@@ -1,5 +1,8 @@
 ## 0.4
+ * ISSUE-786     : Cleanup api for managing storm topologies
+ * ISSUE-783     : Putting a special character like question mark in any processor name causes exception in App Deployment
  * ISSUE-777     : Prevent deleting topology if topology is running
+ * ISSUE-770     : Remove properties and fieldvalues from notifier bootstrap
  * ISSUE-751     : Drop support Phoenix as Streamline storage type  
  * ISSUE-764     : Remove stack trace when trying to register existing UDF
  * ISSUE-754     : Streamline artifacts fetch via proxy server

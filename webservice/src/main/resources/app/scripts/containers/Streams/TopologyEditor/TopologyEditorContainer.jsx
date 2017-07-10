@@ -276,8 +276,9 @@ class TopologyEditorContainer extends Component {
                 if(topology) {
                   this.saveTopologyVersion(topology.timestamp);
                 } else {
-                  this.setState({topologyStatus: this.topologyMetric.status || 'NOT RUNNING', progressCount: 0});
-                  this.fetchData();
+                  const isAppRunning = this.getAppRunningStatus(this.topologyMetric.status);
+                  this.setState({topologyStatus: this.topologyMetric.status || 'NOT RUNNING', progressCount: 0,isAppRunning});
+                  // this.fetchData();
                 }
               },1000);
             });
@@ -290,7 +291,8 @@ class TopologyEditorContainer extends Component {
                   FSReactToastr.error(
                     <CommonNotification flag="error" content={topologyState.description}/>, '', toastOpt);
                 } else {
-                  this.setState({topologyStatus: this.topologyMetric.status || 'NOT RUNNING', progressCount: 0});
+                  const isAppRunning = this.getAppRunningStatus(this.topologyMetric.status);
+                  this.setState({topologyStatus: this.topologyMetric.status || 'NOT RUNNING', progressCount: 0,isAppRunning});
                 }
               },1000);
             },1000);
@@ -310,6 +312,17 @@ class TopologyEditorContainer extends Component {
         }
       });
     },3000);
+  }
+
+  // get the App Running status
+  getAppRunningStatus = (status) => {
+    let isAppRunning = false;
+    if (status) {
+      if (status === 'ACTIVE' || status === 'INACTIVE') {
+        isAppRunning = true;
+      }
+    }
+    return isAppRunning;
   }
 
   // get the default time sec of topologyName

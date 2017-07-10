@@ -1769,8 +1769,8 @@ span.version {
 .service-components>li, .select-env-service>li, .environment-components>li {
   float: left;
   color: #6f6f6f;
-  margin-right: 8px;
-  margin-bottom: 8px;
+  margin-right: 15px;
+  margin-bottom: 15px;
   text-align: center;
   text-transform: uppercase;
   font-size: 12px;

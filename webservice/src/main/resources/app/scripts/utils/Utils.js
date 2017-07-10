@@ -489,23 +489,21 @@ const mergeFormDataFields = function(name, clusterArr,clusterName,formData,uiSpe
                     // OR
                     // if (!name) this means user had change the cluster name
                     if (!formData[k] || !name) {
-                      let fieldValue = clusterArr[x].hints[k];
+                      let _fieldValue = _.get(formData,k) || clusterArr[x].hints[k];
                       if(Object.prototype.toString.call(clusterArr[x].hints[k]) === "[object Object]" && list.hint.indexOf('dependsOn-') !== -1){
                         const key = list.hint.split('-')[1];
-                        // securityProtocal index 0 is taken because one can't have multiple security on clusters;
-                        fieldValue = formData[key] || '';
-                        //fieldValue is for default if there is undefined
-                        // if(key === "securityProtocol"){
-                        //   securityKey = formData[key] || '';
-                        // }
-                        // fieldValue = fieldValue[formData[key]] || '';
-                        // formData[k] = fieldValue[formData[key]] ;
+                        _fieldValue = k === key ? formData[key] || '' : clusterArr[x].hints[k][formData[key]];
+                      } else if(k.indexOf('.') !== -1){
+                        if(formData[k] === undefined && clusterName !== undefined && !_.isEmpty(clusterName)){
+                          _fieldValue = _.get(clusterArr[x].hints,k);
+                        }
                       }
-                      let val = fieldValue;
+                      let val = _fieldValue;
                       if(val === ''){
                         val = _.get(formData, k);
                       }
-                      _.set(data,k,val);
+                      // only set the value if name || clusterName is same as 'x'
+                      (name || clusterName) === x ? _.set(data,k,val) : null;
                     }
                   }
                 }
@@ -513,8 +511,8 @@ const mergeFormDataFields = function(name, clusterArr,clusterName,formData,uiSpe
             };
             nestedKeys(k);
           });
-          data.cluster = clusterArr[name || clusterName] === undefined ? clusterArr[x].cluster.id.toString() : name || clusterName;
-          data.clusters = clusterArr[name || clusterName] === undefined ? clusterArr[x].cluster.name : clusterArr[name || clusterName].cluster.name;
+          data.cluster = clusterArr[name || clusterName] === undefined ? '' : name || clusterName;
+          data.clusters = clusterArr[name || clusterName] === undefined ? '' : clusterArr[name || clusterName].cluster.name;
           return list;
         });
       };
@@ -625,6 +623,31 @@ const checkStatus = function (response) {
   }
 };
 
+const getClusterKey = function(urlOrName, isManualCluster,clusterArr) {
+  let key = '';
+  _.keys(clusterArr).map(x => {
+    _.keys(clusterArr[x]).map(k => {
+      if(!isManualCluster && clusterArr[x][k].ambariImportUrl === urlOrName){
+        key = x;
+      } else if(isManualCluster && clusterArr[x][k].name === urlOrName){
+        key = x;
+      }
+    });
+  });
+  return key;
+};
+
+const clusterField = function(){
+  return {
+    "uiName": "Cluster Name",
+    "fieldName": "clusters",
+    "isOptional": false,
+    "tooltip": "Cluster name to read data from",
+    "type": "CustomEnumstring",
+    "options": []
+  };
+};
+
 export default {
   sortArray,
   numberToMilliseconds,
@@ -656,5 +679,7 @@ export default {
   mapSecurityProtocol,
   checkWhiteSpace,
   segregateVersions,
-  checkStatus
+  checkStatus,
+  getClusterKey,
+  clusterField
 };

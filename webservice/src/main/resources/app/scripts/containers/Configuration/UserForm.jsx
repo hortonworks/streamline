@@ -136,68 +136,47 @@ export default class UserForm extends Component {
     });
   }
 
-
-  handleAddNewApp() {
-    let {applicationsACL} = this.state;
-    applicationsACL.push({
+  handleAddNewACL(namespaceType) {
+    let {applicationsACL, servicePoolACL, environmentsACL} = this.state;
+    let aclObj = {
       objectId: '',
-      objectNamespace: 'topology',
+      objectNamespace: namespaceType,
       sidType: "USER",
       permissions: ["READ"],
       owner: false,
       grant: false
-    });
-    this.setState({applicationsACL: applicationsACL});
+    };
+    switch(namespaceType) {
+    case 'topology':
+      applicationsACL.push(aclObj);
+      break;
+    case 'cluster':
+      servicePoolACL.push(aclObj);
+      break;
+    case 'namespace':
+      environmentsACL.push(aclObj);
+      break;
+    }
+    this.setState({applicationsACL: applicationsACL, servicePoolACL: servicePoolACL, environmentsACL: environmentsACL});
   }
 
-  handleAddNewService() {
-    let {servicePoolACL} = this.state;
-    servicePoolACL.push({
-      objectId: '',
-      objectNamespace: 'cluster',
-      sidType: "USER",
-      permissions: ["READ"],
-      owner: false,
-      grant: false
-    });
-    this.setState({servicePoolACL: servicePoolACL});
-  }
-
-  handleAddNewEnvironment() {
-    let {environmentsACL} = this.state;
-    environmentsACL.push({
-      objectId: '',
-      objectNamespace: 'namespace',
-      sidType: "USER",
-      permissions: ["READ"],
-      owner: false,
-      grant: false
-    });
-    this.setState({environmentsACL: environmentsACL});
-  }
-
-  handleSelectApplication(key, obj) {
-    let {applicationsACL} = this.state;
-    let aclObj = applicationsACL[key];
+  handleSelectACL(key, namespaceType, obj) {
+    let {applicationsACL, servicePoolACL, environmentsACL} = this.state;
+    let aclObj = {};
+    switch(namespaceType) {
+    case 'topology':
+      aclObj = applicationsACL[key];
+      break;
+    case 'cluster':
+      aclObj = servicePoolACL[key];
+      break;
+    case 'namespace':
+      aclObj = environmentsACL[key];
+      break;
+    }
     aclObj.objectId = obj.id;
-    aclObj.objectNamespace = 'topology';
-    this.setState({applicationsACL: applicationsACL});
-  }
-
-  handleSelectService(key, obj) {
-    let {servicePoolACL} = this.state;
-    let aclObj = servicePoolACL[key];
-    aclObj.objectId = obj.id;
-    aclObj.objectNamespace = 'cluster';
-    this.setState({servicePoolACL: servicePoolACL});
-  }
-
-  handleSelectEnvironment(key, obj) {
-    let {environmentsACL} = this.state;
-    let aclObj = environmentsACL[key];
-    aclObj.objectId = obj.id;
-    aclObj.objectNamespace = 'namespace';
-    this.setState({environmentsACL: environmentsACL});
+    aclObj.objectNamespace = namespaceType;
+    this.setState({applicationsACL: applicationsACL, servicePoolACL: servicePoolACL, environmentsACL: environmentsACL});
   }
 
   getPermissionTitle(permissions) {
@@ -210,43 +189,38 @@ export default class UserForm extends Component {
     return title;
   }
 
-  changeAppPermission(acl, key, type) {
-    let {applicationsACL} = this.state;
-    let aclObj = applicationsACL[key];
+  changePermission(key, type, namespaceType) {
+    let {applicationsACL, servicePoolACL, environmentsACL} = this.state;
+    let aclObj = {};
+    switch(namespaceType) {
+    case 'topology':
+      aclObj = applicationsACL[key];
+      break;
+    case 'cluster':
+      aclObj = servicePoolACL[key];
+      break;
+    case 'namespace':
+      aclObj = environmentsACL[key];
+      break;
+    }
     aclObj.permissions = this.getPermissions(type);
-    this.setState({applicationsACL: applicationsACL});
+    this.setState({applicationsACL: applicationsACL, servicePoolACL: servicePoolACL, environmentsACL: environmentsACL});
   }
 
-  deleteAppPermission(acl, key) {
-    let {applicationsACL} = this.state;
-    applicationsACL.splice(key, 1);
-    this.setState({applicationsACL: applicationsACL});
-  }
-
-  changeServicePermission(acl, key, type) {
-    let {servicePoolACL} = this.state;
-    let aclObj = servicePoolACL[key];
-    aclObj.permissions = this.getPermissions(type);
-    this.setState({servicePoolACL: servicePoolACL});
-  }
-
-  deleteServicePermission(acl, key) {
-    let {servicePoolACL} = this.state;
-    servicePoolACL.splice(key, 1);
-    this.setState({servicePoolACL: servicePoolACL});
-  }
-
-  changeEnvironmentPermission(acl, key, type) {
-    let {environmentsACL} = this.state;
-    let aclObj = environmentsACL[key];
-    aclObj.permissions = this.getPermissions(type);
-    this.setState({environmentsACL: environmentsACL});
-  }
-
-  deleteEnvironmentPermission(acl, key) {
-    let {environmentsACL} = this.state;
-    environmentsACL.splice(key, 1);
-    this.setState({environmentsACL: environmentsACL});
+  deletePermission(key, namespaceType) {
+    let {applicationsACL, servicePoolACL, environmentsACL} = this.state;
+    switch(namespaceType) {
+    case 'topology':
+      applicationsACL.splice(key, 1);
+      break;
+    case 'cluster':
+      servicePoolACL.splice(key, 1);
+      break;
+    case 'namespace':
+      environmentsACL.splice(key, 1);
+      break;
+    }
+    this.setState({applicationsACL: applicationsACL, servicePoolACL: servicePoolACL, environmentsACL: environmentsACL});
   }
 
   getPermissions(type) {
@@ -288,6 +262,79 @@ export default class UserForm extends Component {
     };
   }
 
+  renderPermission(subHeading, aclArray, permissionOptions, optionsArr, namespaceType) {
+    const permissionList = (
+      <div>
+      <div className="row">
+        <span className="col-md-5">{subHeading}</span>
+        <span className="col-md-5 text-center">Permission</span>
+        {optionsArr.length > 0 ?
+        <a href="javascript:void(0);" className="pull-right" onClick={this.handleAddNewACL.bind(this, namespaceType)}>
+          <i className="fa fa-plus"></i> ADD
+        </a>
+        : ''
+        }
+      </div>
+      <hr/>
+      {aclArray.map((aclObj, key)=>{
+        let obj = permissionOptions.find((a)=>{return a.id === aclObj.objectId;});
+        let permissionTitle = this.getPermissionTitle(aclObj.permissions);
+        return (
+        obj && aclObj.id ?
+        [<div className="row">
+          <div className="col-md-12 acl-item">
+            <div className="col-md-5">{obj.label}</div>
+            <div className="col-md-5 text-center">
+              {aclObj.owner ? "Is Owner" :
+              (
+                <DropdownButton title={permissionTitle} id="user-form-dropdown" bsStyle="link">
+                  <MenuItem active={permissionTitle === "Can Edit" ? true :false} onClick={this.changePermission.bind(this, key, 'edit', namespaceType)}>
+                    &nbsp;Can Edit
+                  </MenuItem>
+                  <MenuItem active={permissionTitle === "Can View" ? true :false} onClick={this.changePermission.bind(this, key, 'view', namespaceType)}>
+                    &nbsp;Can View
+                  </MenuItem>
+                </DropdownButton>
+              )
+              }
+            </div>
+            <div className="col-md-2"><a href="javascript:void(0);" className="crossIcon" onClick={this.deletePermission.bind(this, key, namespaceType)}><i className="fa fa-close pull-right"></i></a></div>
+          </div>
+          </div>,
+          <hr/>]
+        : (
+        [<div className="row">
+          <div className="col-md-12 acl-item">
+            <div className="col-md-5">
+              <Select
+                value={obj}
+                options={optionsArr}
+                clearable={false}
+                onChange={this.handleSelectACL.bind(this, key, namespaceType)}
+              />
+            </div>
+            <div className="col-md-5 text-center">
+              <DropdownButton title={permissionTitle} id="user-form-dropdown">
+                <MenuItem active={permissionTitle === "Can Edit" ? true :false} onClick={this.changePermission.bind(this, key, 'edit', namespaceType)}>
+                  &nbsp;Can Edit
+                </MenuItem>
+                <MenuItem active={permissionTitle === "Can View" ? true :false} onClick={this.changePermission.bind(this, key, 'view', namespaceType)}>
+                  &nbsp;Can View
+                </MenuItem>
+              </DropdownButton>
+            </div>
+            <div className="col-md-2"><a href="javascript:void(0);" className="crossIcon" onClick={this.deletePermission.bind(this, key, namespaceType)}><i className="fa fa-close pull-right"></i></a></div>
+          </div>
+          </div>,
+          <hr/>]
+          )
+        );
+      })}
+    </div>
+  );
+    return permissionList;
+  }
+
   render() {
     const {roleOptions,editData} = this.props;
     let {applicationOptions, servicePoolOptions, environmentOptions} = this.props;
@@ -313,212 +360,11 @@ export default class UserForm extends Component {
             <Fields.string value="email" label="Email" valuePath="email" fieldJson={{isOptional:false, tooltip: 'Email ID', hint: 'email'}} validation={["required","email"]}/>
             <Fields.arrayenumstringSelectAll value="roles" label="Roles" fieldJson={{isOptional:false, tooltip: 'Roles'}} fieldAttr={{options: roleOptions, valueKey : 'name',labelKey : "displayName"}}/>
           </Form>
-          <div>
-            <div className="row">
-              <span className="col-md-5">Applications</span>
-              <span className="col-md-5 text-center">Permission</span>
-              {appOptionsArr.length > 0 ?
-              <a href="javascript:void(0);" className="pull-right" onClick={this.handleAddNewApp.bind(this)}>
-                <i className="fa fa-plus"></i> ADD
-              </a>
-              : ''
-              }
-            </div>
-            <hr/>
-            {applicationsACL.map((aclObj, key)=>{
-              let obj = applicationOptions.find((a)=>{return a.id === aclObj.objectId;});
-              let permissionTitle = this.getPermissionTitle(aclObj.permissions);
-              return (
-              obj && aclObj.id ?
-              [<div className="row">
-                <div className="col-md-12 acl-item">
-                  <div className="col-md-5">{obj.label}</div>
-                  <div className="col-md-5 text-center">
-                    {aclObj.owner ? "Is Owner" :
-                    (
-                      <DropdownButton title={permissionTitle} id="user-form-dropdown" bsStyle="link">
-                        <MenuItem active={permissionTitle === "Can Edit" ? true :false} onClick={this.changeAppPermission.bind(this, aclObj, key, 'edit')}>
-                          &nbsp;Can Edit
-                        </MenuItem>
-                        <MenuItem active={permissionTitle === "Can View" ? true :false} onClick={this.changeAppPermission.bind(this, aclObj, key, 'view')}>
-                          &nbsp;Can View
-                        </MenuItem>
-                      </DropdownButton>
-                    )
-                    }
-                  </div>
-                  <div className="col-md-2"><a href="javascript:void(0);" className="crossIcon" onClick={this.deleteAppPermission.bind(this, aclObj, key)}><i className="fa fa-close pull-right"></i></a></div>
-                </div>
-                </div>,
-                <hr/>]
-              : (
-              [<div className="row">
-                <div className="col-md-12 acl-item">
-                  <div className="col-md-5">
-                    <Select
-                      value={obj}
-                      options={appOptionsArr}
-                      clearable={false}
-                      onChange={this.handleSelectApplication.bind(this, key)}
-                    />
-                  </div>
-                  <div className="col-md-5 text-center">
-                    <DropdownButton title={permissionTitle} id="user-form-dropdown">
-                      <MenuItem active={permissionTitle === "Can Edit" ? true :false} onClick={this.changeAppPermission.bind(this, aclObj, key, 'edit')}>
-                        &nbsp;Can Edit
-                      </MenuItem>
-                      <MenuItem active={permissionTitle === "Can View" ? true :false} onClick={this.changeAppPermission.bind(this, aclObj, key, 'view')}>
-                        &nbsp;Can View
-                      </MenuItem>
-                    </DropdownButton>
-                  </div>
-                  <div className="col-md-2"><a href="javascript:void(0);" className="crossIcon" onClick={this.deleteAppPermission.bind(this, aclObj, key)}><i className="fa fa-close pull-right"></i></a></div>
-                </div>
-                </div>,
-                <hr/>]
-                )
-              );
-            })
-            }
-          </div>
+          {this.renderPermission('Applications', applicationsACL, applicationOptions, appOptionsArr, 'topology')}
           <br/>
-          <div>
-            <div className="row">
-              <span className="col-md-5">Service Pool</span>
-              <span className="col-md-5 text-center">Permission</span>
-              {serviceOptionsArr.length > 0 ?
-              <a href="javascript:void(0);" className="pull-right" onClick={this.handleAddNewService.bind(this)}>
-                <i className="fa fa-plus"></i> ADD
-              </a>
-              : ''
-              }
-            </div>
-            <hr/>
-            {servicePoolACL.map((aclObj, key)=>{
-              let obj = servicePoolOptions.find((a)=>{return a.id === aclObj.objectId;});
-              let permissionTitle = this.getPermissionTitle(aclObj.permissions);
-              return (
-              obj && aclObj.id ?
-              [<div className="row">
-                <div className="col-md-12 acl-item">
-                  <div className="col-md-5">{obj.label}</div>
-                  <div className="col-md-5 text-center">
-                  {aclObj.owner ? "Is Owner" :
-                    (
-                      <DropdownButton title={permissionTitle} id="user-form-dropdown">
-                        <MenuItem active={permissionTitle === "Can Edit" ? true :false} onClick={this.changeServicePermission.bind(this, aclObj, key, 'edit')}>
-                          &nbsp;Can Edit
-                        </MenuItem>
-                        <MenuItem active={permissionTitle === "Can View" ? true :false} onClick={this.changeServicePermission.bind(this, aclObj, key, 'view')}>
-                          &nbsp;Can View
-                        </MenuItem>
-                      </DropdownButton>
-                    )
-                  }
-                  </div>
-                  <div className="col-md-2"><a href="javascript:void(0);" className="crossIcon" onClick={this.deleteServicePermission.bind(this, aclObj, key)}><i className="fa fa-close pull-right"></i></a></div>
-                </div>
-                </div>,
-                <hr/>]
-              : (
-              [<div className="row">
-                <div className="col-md-12 acl-item">
-                  <div className="col-md-5">
-                    <Select
-                      value={obj}
-                      options={serviceOptionsArr}
-                      clearable={false}
-                      onChange={this.handleSelectService.bind(this, key)}
-                    />
-                  </div>
-                  <div className="col-md-5 text-center">
-                    <DropdownButton title={permissionTitle} id="user-form-dropdown">
-                      <MenuItem active={permissionTitle === "Can Edit" ? true :false} onClick={this.changeServicePermission.bind(this, aclObj, key, 'edit')}>
-                        &nbsp;Can Edit
-                      </MenuItem>
-                      <MenuItem active={permissionTitle === "Can View" ? true :false} onClick={this.changeServicePermission.bind(this, aclObj, key, 'view')}>
-                        &nbsp;Can View
-                      </MenuItem>
-                    </DropdownButton>
-                  </div>
-                  <div className="col-md-2"><a href="javascript:void(0);" className="crossIcon" onClick={this.deleteServicePermission.bind(this, aclObj, key)}><i className="fa fa-close pull-right"></i></a></div>
-                </div>
-                </div>,
-                <hr/>]
-                )
-              );
-            })
-            }
-          </div>
+          {this.renderPermission('Service Pool', servicePoolACL, servicePoolOptions, serviceOptionsArr, 'cluster')}
           <br />
-          <div>
-            <div className="row">
-              <span className="col-md-5">Environments</span>
-              <span className="col-md-5 text-center">Permission</span>
-              {environmentOptionsArr.length > 0 ?
-              <a href="javascript:void(0);" className="pull-right" onClick={this.handleAddNewEnvironment.bind(this)}>
-                <i className="fa fa-plus"></i> ADD
-              </a>
-              : ''
-              }
-            </div>
-            <hr/>
-            {environmentsACL.map((aclObj, key)=>{
-              let obj = environmentOptions.find((a)=>{return a.id === aclObj.objectId;});
-              let permissionTitle = this.getPermissionTitle(aclObj.permissions);
-              return (
-              obj && aclObj.id ?
-              [<div className="row">
-                <div className="col-md-12 acl-item">
-                  <div className="col-md-5">{obj.label}</div>
-                  <div className="col-md-5 text-center">
-                  {aclObj.owner ? "Is Owner" :
-                    (
-                      <DropdownButton title={permissionTitle} id="user-form-dropdown">
-                        <MenuItem active={permissionTitle === "Can Edit" ? true :false} onClick={this.changeEnvironmentPermission.bind(this, aclObj, key, 'edit')}>
-                          &nbsp;Can Edit
-                        </MenuItem>
-                        <MenuItem active={permissionTitle === "Can View" ? true :false} onClick={this.changeEnvironmentPermission.bind(this, aclObj, key, 'view')}>
-                          &nbsp;Can View
-                        </MenuItem>
-                      </DropdownButton>
-                    )
-                  }
-                  </div>
-                  <div className="col-md-2"><a href="javascript:void(0);" className="crossIcon" onClick={this.deleteEnvironmentPermission.bind(this, aclObj, key)}><i className="fa fa-close pull-right"></i></a></div>
-                </div>
-                </div>,
-                <hr/>]
-              : (
-              [<div className="row">
-                <div className="col-md-12 acl-item">
-                  <div className="col-md-5">
-                    <Select
-                      value={obj}
-                      options={environmentOptionsArr}
-                      clearable={false}
-                      onChange={this.handleSelectEnvironment.bind(this, key)}
-                    />
-                  </div>
-                  <div className="col-md-5 text-center">
-                    <DropdownButton title={permissionTitle} id="user-form-dropdown">
-                      <MenuItem active={permissionTitle === "Can Edit" ? true :false} onClick={this.changeEnvironmentPermission.bind(this, aclObj, key, 'edit')}>
-                        &nbsp;Can Edit
-                      </MenuItem>
-                      <MenuItem active={permissionTitle === "Can View" ? true :false} onClick={this.changeEnvironmentPermission.bind(this, aclObj, key, 'view')}>
-                        &nbsp;Can View
-                      </MenuItem>
-                    </DropdownButton>
-                  </div>
-                  <div className="col-md-2"><a href="javascript:void(0);" className="crossIcon" onClick={this.deleteEnvironmentPermission.bind(this, aclObj, key)}><i className="fa fa-close pull-right"></i></a></div>
-                </div>
-                </div>,
-                <hr/>]
-                )
-              );
-            })
-            }
-          </div>
+          {this.renderPermission('Environments', environmentsACL, environmentOptions, environmentOptionsArr, 'namespace')}
           <div className="form-group">
             <div className="col-md-10">
             <button type="button" className="btn btn-success m-r-xs" onClick={()=>{this.props.saveCallback();}}>SAVE</button>{'\n'}

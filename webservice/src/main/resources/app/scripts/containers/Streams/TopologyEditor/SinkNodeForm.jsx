@@ -134,7 +134,7 @@ export default class SinkNodeForm extends Component {
             }
           });
         });
-        stateObj.clusterArr = clusters;
+        stateObj.clusterArr = _.isEmpty(clusters) ? [] : clusters;
       }
       if (!_.isEmpty(stateObj.clusterArr) && _.keys(stateObj.clusterArr).length > 0) {
         stateObj.uiSpecification = this.pushClusterFields(tempArr);
@@ -149,8 +149,7 @@ export default class SinkNodeForm extends Component {
       this.setState(stateObj, () => {
         if (stateObj.formData.cluster !== undefined) {
           this.updateClusterFields(stateObj.formData.cluster);
-        }
-        if (_.keys(stateObj.clusterArr).length === 1) {
+        } else if (_.keys(stateObj.clusterArr).length === 1) {
           stateObj.formData.cluster = _.keys(stateObj.clusterArr)[0];
           this.updateClusterFields(stateObj.formData.cluster);
         }
@@ -214,15 +213,7 @@ export default class SinkNodeForm extends Component {
       return x.fieldName === 'clusters';
     });
     if (clusterFlag === -1) {
-      const data = {
-        "uiName": "Cluster Name",
-        "fieldName": "clusters",
-        "isOptional": false,
-        "tooltip": "Cluster name to read data from",
-        "type": "CustomEnumstring",
-        "options": []
-      };
-      obj.unshift(data);
+      obj.unshift(Utils.clusterField());
     }
     return obj;
   }
@@ -381,13 +372,14 @@ export default class SinkNodeForm extends Component {
   }
 
   populateClusterFields(val) {
+    const {clusterArr} = this.state;
     const tempObj = Object.assign({}, this.state.formData, {topic: ''});
     let splitValues = val.split('@#$');
     let keyName;
     if(!_.isEmpty(splitValues[1])){
-      keyName = this.getClusterKey(splitValues[1], false);
+      keyName = Utils.getClusterKey(splitValues[1], false,clusterArr);
     } else {
-      keyName = this.getClusterKey(splitValues[0], true);
+      keyName = Utils.getClusterKey(splitValues[0], true,clusterArr);
     }
     this.setState({
       clusterName: keyName,
@@ -397,28 +389,13 @@ export default class SinkNodeForm extends Component {
     });
   }
 
-  getClusterKey(urlOrName, isManualCluster) {
-    const {clusterArr} = this.state;
-    let key = '';
-    _.keys(clusterArr).map(x => {
-      _.keys(clusterArr[x]).map(k => {
-        if(!isManualCluster && clusterArr[x][k].ambariImportUrl === urlOrName){
-          key = x;
-        } else if(isManualCluster && clusterArr[x][k].name === urlOrName){
-          key = x;
-        }
-      });
-    });
-    return key;
-  }
-
   updateClusterFields(name) {
     const {clusterArr, clusterName, formData,uiSpecification} = this.state;
     const {FormData} = this.refs.Form.state;
 
     const mergeData = Utils.deepmerge(formData,FormData);
     let tempFormData = _.cloneDeep(mergeData);
-
+    let stateObj = {};
     /*
       Utils.mergeFormDataFields method accept params
       name =  name of cluster
@@ -430,8 +407,16 @@ export default class SinkNodeForm extends Component {
       and prefetch the value if its already configure
     */
     const {obj,tempData} = Utils.mergeFormDataFields(name,clusterArr, clusterName, tempFormData,uiSpecification);
-
-    this.setState({uiSpecification: obj, formData: tempData});
+    stateObj.uiSpecification = obj;
+    stateObj.formData = tempData;
+    if(clusterArr.length === 0 && formData.cluster !== ''){
+      let tempObj = this.props.configData.topologyComponentUISpecification.fields;
+      tempObj.unshift(Utils.clusterField());
+      stateObj.uiSpecification = tempObj;
+      FSReactToastr.error(
+        <CommonNotification flag="error" content={'Cluster is not available'}/>, '', toastOpt);
+    }
+    this.setState(stateObj);
   }
 
   validateTopic(resultArr){
