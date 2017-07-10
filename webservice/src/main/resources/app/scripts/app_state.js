@@ -15,6 +15,7 @@
 import {
   observable
 } from 'mobx';
+import {unknownAccessCode} from './utils/Constants';
 
 class app_state {
   @observable sidebar_isCollapsed = true
@@ -30,6 +31,7 @@ class app_state {
   @observable showSpotlightSearch = false
   @observable user_profile = {}
   @observable roleInfo = []
+  @observable unKnownUser = unknownAccessCode.loggedIn
 }
 
 export default new app_state();

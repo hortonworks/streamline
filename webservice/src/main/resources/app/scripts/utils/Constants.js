@@ -91,6 +91,11 @@ const accessCapabilities = {
   ENVIRONMENT: 'Environments',
   USER: 'Users'
 };
+const unknownAccessCode = {
+  'unknownUser': 0,
+  'loggedIn': 1,
+  'loggedOut': 2
+};
 
 export {
   baseUrl,
@@ -105,5 +110,6 @@ export {
   iconOptions,
   rolePriorities,
   menuName,
-  accessCapabilities
+  accessCapabilities,
+  unknownAccessCode
 };

@@ -20,6 +20,8 @@ import {Nav, Navbar, NavItem, NavDropdown, MenuItem,DropdownButton} from 'react-
 import _ from 'lodash';
 import Modal from './FSModal';
 import {rolePriorities} from '../utils/Constants';
+import MiscREST from '../rest/MiscREST';
+import {unknownAccessCode} from '../utils/Constants';
 
 @observer
 export default class Header extends Component {
@@ -33,6 +35,13 @@ export default class Header extends Component {
 
   handleUserProfile = (e) => {
     this.setState({showProfile : !this.state.showProfile});
+  }
+
+  handleLogOut = (e) => {
+    MiscREST.userSignOut()
+      .then((r)=>{
+        app_state.unKnownUser = unknownAccessCode.loggedOut;
+      });
   }
 
   render() {
@@ -84,6 +93,10 @@ export default class Header extends Component {
                       <MenuItem title={displayNames.join(', ')}>
                         <i className="fa fa-bookmark-o"></i>
                         &nbsp;{displayNames.join(', ')}
+                      </MenuItem>
+                      <MenuItem title="Log Out" onSelect={this.handleLogOut}>
+                        <i className="fa fa-sign-out"></i>
+                        &nbsp;Log Out
                       </MenuItem>
                     </DropdownButton>
                   </li>
