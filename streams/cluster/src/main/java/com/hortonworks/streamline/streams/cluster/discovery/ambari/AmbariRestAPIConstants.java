@@ -30,6 +30,8 @@ public final class AmbariRestAPIConstants {
   public static final String AMBARI_JSON_SCHEMA_COMMON_VERSIONS = "versions";
   public static final String AMBARI_JSON_SCHEMA_COMMON_INSTANCES = "instances";
   public static final String AMBARI_JSON_SCHEMA_COMMON_VIEW_INSTANCE_INFO = "ViewInstanceInfo";
+  public static final String AMBARI_JSON_SCHEMA_COMMON_CLUSTERS = "Clusters";
+  public static final String AMBARI_JSON_SCHEMA_COMMON_DESIRED_CONFIGS = "desired_configs";
 
 
   public static final String AMBARI_JSON_SCHEMA_SERVICE_INFO = "ServiceInfo";
