@@ -32,6 +32,7 @@ import com.hortonworks.streamline.streams.security.catalog.RoleHierarchy;
 import com.hortonworks.streamline.streams.security.catalog.User;
 import com.hortonworks.streamline.streams.security.catalog.UserRole;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.security.authentication.client.AuthenticatedURL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,19 +44,21 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -341,6 +344,22 @@ public class SecurityCatalogResource {
                                    @Context SecurityContext securityContext) throws Exception {
 
         return WSUtils.respondEntity(getCurrentUser(securityContext), OK);
+    }
+
+
+    @POST
+    @Path("/users/current/logout")
+    @Timed
+    public Response logoutCurrentUser(@Context UriInfo uriInfo,
+                                      @Context SecurityContext securityContext) throws Exception {
+        User currentUser = getCurrentUser(securityContext);
+        // Set-Cookie	hadoop.auth=deleted;Version=1;Path=/;Max-Age=0;HttpOnly;Expires=Thu, 01 Jan 1970 00:00:00 GMT
+        Cookie cookie = new Cookie(AuthenticatedURL.AUTH_COOKIE, "deleted", "/", null);
+        NewCookie newCookie = new NewCookie(cookie, null, 0, new Date(0), securityContext.isSecure(), true);
+        return Response.status(OK)
+                .entity(currentUser)
+                .cookie(newCookie)
+                .build();
     }
 
     private User getCurrentUser(SecurityContext securityContext) {
