@@ -1,4 +1,5 @@
 ## 0.4
+ * ISSUE-745     : Add logout link to invalidate the kerberos authorization cookie
  * ISSUE-786     : Cleanup api for managing storm topologies
  * ISSUE-783     : Putting a special character like question mark in any processor name causes exception in App Deployment
  * ISSUE-777     : Prevent deleting topology if topology is running
