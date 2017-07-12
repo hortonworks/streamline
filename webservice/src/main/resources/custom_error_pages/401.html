@@ -128,13 +128,22 @@ h4 {
             <div class="intro-content">
                 <p><span style="color: #424143; font-size: 15px; font-weight: 500;">Safari:</span> No configuration needed</p>
                 <p><span style="color: #424143; font-size: 15px; font-weight: 500;">Firefox:</span> Go to <span style="color: #424143;">about:config</span> and search for <span style="color: #424143;">network.negotiate-auth.trusted-uris</span> <br/>
-                double-click to add value "<span style="color: #424143;">http://registry-ui-hostname:7788,http://sam-ui-hostname:7799</span>". <br/>
+                double-click to add value "<span style="color: #424143;" id="hostURL"></span>". <br/>
                 You can add multiple comma separated hostnames here. <br/>
                 Make sure you are getting both the hostname and port numbers correct.</p>
                 <p><span style="color: #424143; font-size: 15px; font-weight: 500;">Google-chrome:</span> start from command line with: <br/>
-                <span style="color: #424143;">google-chrome --auth-server-whitelist="*registry-ui-hostname" --auth-negotiate-delegate-whitelist="*registry-ui-hostname"</span></p>
+                <span style="color: #424143;">google-chrome --auth-server-whitelist="<span class="hostName"></span>" --auth-negotiate-delegate-whitelist="<span class="hostName"></span>"</span></p>
             </div>
         </div>
     </div>
+    <script type="text/javascript">
+      (function(){
+        var el = document.getElementsByClassName('hostName');
+        [].slice.call(el).forEach(function (span) {
+            span.innerHTML = '*'+window.location.hostname;
+        });
+        document.getElementById('hostURL').innerHTML = window.location.protocol+'//'+window.location.hostname+':'+window.location.port;
+      })();
+    </script>
   </body>
 </html>

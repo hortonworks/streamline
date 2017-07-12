@@ -47,6 +47,15 @@ const MiscREST = {
     options.credentials = 'same-origin';
     return fetch('/api/v1/catalog/users/current', options)
       .then(Utils.checkStatus);
+  },
+  userSignOut(options) {
+    options = options || {};
+    options.method = options.method || 'POST';
+    options.credentials = 'same-origin';
+    return fetch('/api/v1/catalog/users/current/logout', options)
+      .then((response) => {
+        return response.json();
+      });
   }
 };
 
