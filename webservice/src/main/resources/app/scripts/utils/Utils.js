@@ -212,7 +212,7 @@ const inputFieldsData = function(inputFields) {
   return inputFieldsArr;
 };
 
-const checkNestedInputFields = function(inputObj, fieldsData,securityType) {
+const checkNestedInputFields = function(inputObj, fieldsData, securityType, hasSecurity) {
   // if the inputObj doesn't have options and hint the inputObj return it self
   if (!inputObj.options && inputObj.hint === undefined) {
     return inputObj;
@@ -240,27 +240,15 @@ const checkNestedInputFields = function(inputObj, fieldsData,securityType) {
         }
       }
       obj.validators = [];
-      switch(securityType){
-      case 'SSL' :
-        if(obj.hint.toLowerCase().indexOf('security_ssl_required')!== -1 && obj.hint !== undefined){
+      if(obj.hint !== undefined && hasSecurity) {
+        if(securityType.indexOf('SASL') > -1 && obj.hint.toLowerCase().indexOf('security_kerberos_required') !== -1) {
           obj.isOptional = false;
           obj.validators.push("required");
         }
-        break;
-      case 'SASL_PLAINTEXT' :
-        if(obj.hint.toLowerCase().indexOf('security_kerberos_required') !== -1 && obj.hint !== undefined){
+        if(securityType.indexOf('SSL') > -1 && obj.hint.toLowerCase().indexOf('security_ssl_required') !== -1) {
           obj.isOptional = false;
           obj.validators.push("required");
         }
-        break;
-      case 'SASL_SSL':
-        if(obj.hint.toLowerCase().indexOf('security_ssl_required') !== -1 ||  obj.hint.toLowerCase().indexOf('security_kerberos_required') !== -1 && obj.hint !== undefined){
-          obj.isOptional = false;
-          obj.validators.push("required");
-        }
-        break;
-      default : '';
-        break;
       }
       return obj;
     }
@@ -268,10 +256,10 @@ const checkNestedInputFields = function(inputObj, fieldsData,securityType) {
   return populateFields(JSON.parse(JSON.stringify(inputObj)));
 };
 
-const genFields = function(fieldsJSON, _fieldName = [], FormData = {}, inputFields = [],securityType) {
+const genFields = function(fieldsJSON, _fieldName = [], FormData = {}, inputFields = [], securityType, hasSecurity) {
   const fields = [];
   fieldsJSON.forEach((d, i) => {
-    d = checkNestedInputFields(d, inputFields,securityType);
+    d = checkNestedInputFields(d, inputFields, securityType, hasSecurity);
     const Comp = Fields[d.type.split('.').join('')] || null;
     let _name = [
       ..._fieldName,
