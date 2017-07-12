@@ -17,7 +17,6 @@ package com.hortonworks.streamline.streams.cluster.service.metadata;
 
 
 import com.google.common.collect.ImmutableList;
-
 import com.hortonworks.streamline.common.function.SupplierException;
 import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.exception.EntityNotFoundException;
@@ -34,10 +33,10 @@ import com.hortonworks.streamline.streams.cluster.service.metadata.json.Keytabs;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.Principals;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.Tables;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.NamespaceDescriptor;
 import org.apache.hadoop.hbase.TableName;
@@ -49,19 +48,23 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.security.auth.Subject;
+import javax.ws.rs.core.SecurityContext;
 import java.io.IOException;
 import java.security.PrivilegedActionException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-
-import javax.security.auth.Subject;
-import javax.ws.rs.core.SecurityContext;
+import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Provides HBase databases tables metadata information using {@link org.apache.hadoop.hbase.client.HBaseAdmin}
  */
 public class HBaseMetadataService implements AutoCloseable {
     private static final Logger LOG = LoggerFactory.getLogger(HBaseMetadataService.class);
+
+    public static final int SAM_MAX_HBASE_CLIENT_RETRIES_NUMBER = 3;
 
     private static final String PROP_HBASE_MASTER_KEYTAB_FILE = "hbase.master.keytab.file";
     private static final String PROP_HBASE_MASTER_KERBEROS_PRINCIPAL = "hbase.master.kerberos.principal";
@@ -209,7 +212,14 @@ public class HBaseMetadataService implements AutoCloseable {
     private static Configuration overrideConfig(Configuration hbaseConfig, EnvironmentService environmentService, Long clusterId)
             throws IOException, ServiceConfigurationNotFoundException, ServiceNotFoundException {
         return OverrideHadoopConfiguration.override(environmentService, clusterId,
-                ServiceConfigurations.HBASE, AMBARI_JSON_CONFIG_HBASE_SITE, hbaseConfig);
+                ServiceConfigurations.HBASE, AMBARI_JSON_CONFIG_HBASE_SITE, hbaseConfig, getMaxHBaseClientRetries());
+    }
+
+    public static Map<String, Function<String, String>> getMaxHBaseClientRetries() {
+        return new HashMap<String, Function<String, String>>(){{
+            put(HConstants.HBASE_CLIENT_RETRIES_NUMBER, (propVal) ->
+                String.valueOf(Math.min(SAM_MAX_HBASE_CLIENT_RETRIES_NUMBER, Integer.valueOf(propVal))));
+        }};
     }
 
     /*
