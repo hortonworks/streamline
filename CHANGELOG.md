@@ -1,4 +1,5 @@
 ## 0.4
+ * ISSUE-742     : Make ssl trust store password config field mandatory for kafka source and sink when kafka SSL listener is selected 
  * ISSUE-745     : Add logout link to invalidate the kerberos authorization cookie
  * ISSUE-786     : Cleanup api for managing storm topologies
  * ISSUE-783     : Putting a special character like question mark in any processor name causes exception in App Deployment
