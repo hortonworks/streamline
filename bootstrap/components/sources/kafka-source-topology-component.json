@@ -231,7 +231,7 @@
         "isOptional": true,
         "tooltip": "The password for the trust store file",
         "type": "string",
-        "hint": "security_ssl,password",
+        "hint": "security_ssl_required,password",
         "defaultValue": null
       },
       {
