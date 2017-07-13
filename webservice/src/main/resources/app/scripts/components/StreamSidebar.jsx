@@ -20,7 +20,7 @@ import _ from 'lodash';
 export default class StreamSidebar extends Component {
   static propTypes = {
     // streamObj: PropTypes.object.isRequired,
-    streamType: PropTypes.string.isRequired, //input or output,
+    streamKind: PropTypes.string.isRequired, //input or output,
     inputStreamOptions: PropTypes.array
   };
 
@@ -61,16 +61,16 @@ export default class StreamSidebar extends Component {
   }
 
   render() {
-    const {streamType, streamObj} = this.props;
+    const {streamKind, streamObj} = this.props;
     this.fieldsArr = [];
     if (streamObj.fields) {
       this.getSchemaFields(streamObj.fields, 0);
     }
     return (
-      <div className={streamType === 'input'
+      <div className={streamKind === 'input'
         ? "modal-sidebar-left sidebar-overflow"
         : "modal-sidebar-right sidebar-overflow"}>
-        <h4>{streamType === 'input'
+        <h4>{streamKind === 'input'
             ? 'Input'
             : 'Output'}</h4>
         {this.state.showDropdown && this.props.inputStreamOptions.length > 1
@@ -94,7 +94,7 @@ export default class StreamSidebar extends Component {
               return (
                 <li key={i} style={styleObj}>
                   {
-                    streamType === "output"
+                    streamKind === "output"
                     ? <span title={field.keyPath}>{field.name}</span>
                     : field.name
                   }

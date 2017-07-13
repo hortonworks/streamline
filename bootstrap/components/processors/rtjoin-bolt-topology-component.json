@@ -1,0 +1,71 @@
+{
+  "type": "PROCESSOR",
+  "name": "Realtime Join",
+  "subType": "RT-JOIN",
+  "builtin": true,
+  "streamingEngine": "STORM",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.SLRealtimeJoinBoltFluxComponent",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "First Stream",
+        "fieldName": "from",
+        "isOptional": false,
+        "tooltip": "Name of first stream for the join",
+        "type": "string"
+      },
+      {
+        "uiName": "JoinTypes",
+        "fieldName": "jointype",
+        "isOptional": false,
+        "tooltip": "Type of join",
+        "isUserInput": false,
+        "type": "enumstring",
+        "options": [
+          "INNER",
+          "LEFT",
+          "RIGHT",
+          "OUTER"
+        ]
+      },
+      {
+        "uiName": "Retention Window",
+        "fieldName": "buffer",
+        "isOptional": false,
+        "tooltip": "How long an event in this stream should wait for its matching events on the other stream to arrive",
+        "isUserInput": false,
+        "type": "enumstring",
+        "options": [
+          "milliseconds",
+          "seconds",
+          "minutes",
+          "hours"
+        ]
+      },
+      {
+        "uiName": "Output Fields",
+        "fieldName": "outputKeys",
+        "isOptional": false,
+        "tooltip": "List of output fields",
+        "type": "string"
+      },
+      {
+        "uiName": "Output Stream",
+        "fieldName": "outputStream",
+        "isOptional": false,
+        "tooltip": "Name of output stream",
+        "type": "string"
+      },
+      {
+        "uiName": "Parallelism",
+        "fieldName": "parallelism",
+        "isOptional": true,
+        "tooltip": "Parallelism hint for rule bolt",
+        "type": "number",
+        "defaultValue": 1,
+        "min": 1,
+        "hint": "hidden"
+      }
+    ]
+  }
+}

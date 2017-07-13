@@ -112,8 +112,8 @@ export default class ProcessorNodeForm extends Component {
     return (
       <Tabs id="ProcessorForm" defaultActiveKey={1} className="modal-tabs">
         <Tab eventKey={1} title="CONFIGURATION">
-          <StreamsSidebar ref="StreamSidebarInput" streamObj={streamObj} inputStreamOptions={this.state.inputStreamOptions} streamType="input"/> {childElement}
-          <StreamsSidebar ref="StreamSidebarOutput" streamObj={this.state.outputStreamObj} streamType="output"/>
+          <StreamsSidebar ref="StreamSidebarInput" streamObj={streamObj} inputStreamOptions={this.state.inputStreamOptions} streamKind="input"/> {childElement}
+          <StreamsSidebar ref="StreamSidebarOutput" streamObj={this.state.outputStreamObj} streamKind="output"/>
         </Tab>
         <Tab eventKey={2} title="NOTES">
           <NotesForm ref="NotesForm" testRunActivated={this.props.testRunActivated} description={this.state.description} onChangeDescription={this.handleNotesChange.bind(this)}/>
