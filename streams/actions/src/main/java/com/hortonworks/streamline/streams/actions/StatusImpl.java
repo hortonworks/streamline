@@ -19,8 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class StatusImpl implements TopologyActions.Status {
-    String status = "Unknown"; // default
-    final Map<String, String> extra = new HashMap<>();
+    private String status = STATUS_UNKNOWN; // default
+    private final Map<String, String> extra = new HashMap<>();
 
     public void setStatus(String status) {
         this.status = status;
