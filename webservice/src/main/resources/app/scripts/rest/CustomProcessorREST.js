@@ -16,6 +16,7 @@ import fetch from 'isomorphic-fetch';
 import {
   baseUrl
 } from '../utils/Constants';
+import Utils from '../utils/Utils';
 
 const url = baseUrl + 'streams/componentbundles/PROCESSOR/custom';
 
@@ -43,18 +44,14 @@ const CustomProcessorREST = {
     options.method = options.method || 'POST';
     options.credentials = 'same-origin';
     return fetch(url, options)
-      .then((response) => {
-        return response.json();
-      });
+      .then(Utils.checkStatusForResponseText);
   },
   putProcessor(id, options) {
     options = options || {};
     options.method = options.method || 'PUT';
     options.credentials = 'same-origin';
     return fetch(url, options)
-      .then((response) => {
-        return response.json();
-      });
+      .then(Utils.checkStatusForResponseText);
   },
   deleteProcessor(id, options) {
     options = options || {};

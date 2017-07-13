@@ -84,19 +84,19 @@ export default class CustomProcessorContainer extends Component {
   }
 
   handleAdd(e) {
+    this.refs.CustomProcessorForm.getWrappedInstance().setDefaultValues();
     this.setState({showListing: false, processorId: null});
   }
 
   handleCancel() {
     window.removeEventListener('keyup', this.handleKeyPress.bind(this), false);
     this.fetchData(true);
-    this.setState({showListing: true});
+    this.setState({showListing: true, processorId: null});
   }
 
   handleSave() {
     if (this.refs.CustomProcessorForm.getWrappedInstance().validateData()) {
       this.setState({fetchLoader: true, uploadingData: true});
-      this.handleCancel();
       this.refs.CustomProcessorForm.getWrappedInstance().handleSave().then((processor) => {
         this.setState({fetchLoader: false, uploadingData: false});
         if (processor.responseMessage !== undefined) {
@@ -115,9 +115,31 @@ export default class CustomProcessorContainer extends Component {
                 : "added "}
               successfully</strong>
           );
+          this.handleCancel();
           this.fetchData();
         }
+      })
+      .catch((error)=>{
+        error.response.then((msg) => {
+          this.setState({fetchLoader: false, uploadingData: false});
+          let errorMsg = msg.indexOf('already exists') !== -1
+            ? "The jar file already exists"
+            : msg.indexOf('missing customProcessorImpl class') !== -1
+              ? "Class name doesn't exist in the jar file"
+              : msg;
+          let i = msg.indexOf('com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo');
+          let fieldName = '';
+          if(i > -1) {
+            let s = msg.substr(i), start = s.indexOf('["'), end = s.indexOf('"]');
+            fieldName = _.startCase(s.substr(start + 2, (end - start) - 2));
+          }
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={fieldName.length > 0 ? ('Invalid data entered for ' + fieldName) : errorMsg}/>, '', toastOpt);
+        });
       });
+    } else {
+      FSReactToastr.error(
+        <CommonNotification flag="error" content='Invalid data'/>, '', toastOpt);
     }
   }
 
@@ -183,74 +205,72 @@ export default class CustomProcessorContainer extends Component {
 
     return (
       <div>
-        {fetchLoader
-          ? <div className="row">
+        <div className={fetchLoader ? "row" : "row displayNone"}>
+          <div className="page-title-box clearfix">
+            <div className="loader-overlay"></div>
+            <CommonLoaderSign imgName={"default-white"} loadingText={uploadingData ? "Uploading Custom Processor. This might take a few minutes" : null}/>
+          </div>
+        </div>
+        <div className={fetchLoader ? "displayNone" : ""}>
+          <div className={this.state.showListing ? "" : "displayNone"}>
+            {hasEditCapability(accessCapabilities.APPLICATION) ?
+              <a href="javascript:void(0);" className="hb success pull-right" data-target="#addEnvironment" onClick={this.handleAdd.bind(this)}>
+                <i className="fa fa-plus"></i>
+              </a>
+              : null
+            }
+            <div className="row">
               <div className="page-title-box clearfix">
-                <div className="loader-overlay"></div>
-                <CommonLoaderSign imgName={"default-white"} loadingText={uploadingData ? "Uploading Custom Processor. This might take a few minutes" : null}/>
-              </div>
-            </div>
-          : <div>
-            {this.state.showListing
-              ? <div>
-                  {hasEditCapability(accessCapabilities.APPLICATION) ?
-                    <a href="javascript:void(0);" className="hb success pull-right" data-target="#addEnvironment" onClick={this.handleAdd.bind(this)}>
-                      <i className="fa fa-plus"></i>
-                    </a>
-                    : null
-                  }
-                  <div className="row">
-                    <div className="page-title-box clearfix">
-                      <div className="pull-left col-md-3">
-                        {((filterValue && filteredEntities.length === 0) || filteredEntities.length !== 0)
-                          ? <FormGroup>
-                              <InputGroup>
-                                <FormControl data-stest="searchBox" type="text" placeholder="Search by name" onKeyUp={this.onFilterChange} className=""/>
-                                <InputGroup.Addon>
-                                  <i className="fa fa-search"></i>
-                                </InputGroup.Addon>
-                              </InputGroup>
-                            </FormGroup>
-                          : ''
-                        }
-                      </div>
-                    </div>
-                  </div>
-                  {filteredEntities.length === 0
-                    ? <div className="row"><NoData imgName={"default-white"} searchVal={filterValue}/></div>
-                    : <div className="row">
-                      <div className="col-sm-12">
-                        <Table className="table table-hover table-bordered" noDataText="No records found." currentPage={0} itemsPerPage={filteredEntities.length > pageSize
-                          ? pageSize
-                          : 0} pageButtonLimit={5}>
-                          <Thead>
-                            <Th column="name">Name</Th>
-                            <Th column="description">Description</Th>
-                            <Th column="jarFileName">Jar File Name</Th>
-                            <Th column="action">Actions</Th>
-                          </Thead>
-                          {filteredEntities.map((obj, i) => {
-                            return (
-                              <Tr key={`${obj.name}${i}`}>
-                                <Td column="name">{obj.name}</Td>
-                                <Td column="description">{obj.description}</Td>
-                                <Td column="jarFileName">{obj.jarFileName}</Td>
-                                <Td column="action">
-                                  <ActionButtonGroup processor="custom" key={i} type="Custom Processor" allACL={allACL} udfObj={obj} handleEdit={this.handleEditCP.bind(this)} handleDelete={this.handleDeleteCP.bind(this)}/>
-                                </Td>
-                              </Tr>
-                            );
-                          })
-                        }
-                        </Table>
-                      </div>
-                    </div>
+                <div className="pull-left col-md-3">
+                  {((filterValue && filteredEntities.length === 0) || filteredEntities.length !== 0)
+                    ? <FormGroup>
+                        <InputGroup>
+                          <FormControl data-stest="searchBox" type="text" placeholder="Search by name" onKeyUp={this.onFilterChange} className=""/>
+                          <InputGroup.Addon>
+                            <i className="fa fa-search"></i>
+                          </InputGroup.Addon>
+                        </InputGroup>
+                      </FormGroup>
+                    : ''
                   }
                 </div>
-              : <CustomProcessorForm ref="CustomProcessorForm" onCancel={this.handleCancel.bind(this)} onSave={this.handleSave.bind(this)} id={this.state.processorId} route={this.props.route} processors={this.state.entities} popUpFlag={this.childPopUpFlag}/>
-          }
+              </div>
+            </div>
+            {filteredEntities.length === 0
+              ? <div className="row"><NoData imgName={"default-white"} searchVal={filterValue}/></div>
+              : <div className="row">
+                <div className="col-sm-12">
+                  <Table className="table table-hover table-bordered" noDataText="No records found." currentPage={0} itemsPerPage={filteredEntities.length > pageSize
+                    ? pageSize
+                    : 0} pageButtonLimit={5}>
+                    <Thead>
+                      <Th column="name">Name</Th>
+                      <Th column="description">Description</Th>
+                      <Th column="jarFileName">Jar File Name</Th>
+                      <Th column="action">Actions</Th>
+                    </Thead>
+                    {filteredEntities.map((obj, i) => {
+                      return (
+                        <Tr key={`${obj.name}${i}`}>
+                          <Td column="name">{obj.name}</Td>
+                          <Td column="description">{obj.description}</Td>
+                          <Td column="jarFileName">{obj.jarFileName}</Td>
+                          <Td column="action">
+                            <ActionButtonGroup processor="custom" key={i} type="Custom Processor" allACL={allACL} udfObj={obj} handleEdit={this.handleEditCP.bind(this)} handleDelete={this.handleDeleteCP.bind(this)}/>
+                          </Td>
+                        </Tr>
+                      );
+                    })
+                  }
+                  </Table>
+                </div>
+              </div>
+            }
           </div>
-        }
+        <div className={this.state.fetchLoader ? "displayNone" : (this.state.showListing ? "displayNone" : "")}>
+          <CustomProcessorForm ref="CustomProcessorForm" onCancel={this.handleCancel.bind(this)} onSave={this.handleSave.bind(this)} id={this.state.processorId} route={this.props.route} processors={this.state.entities} popUpFlag={this.childPopUpFlag}/>
+        </div>
+        </div>
       </div>
     );
   }
