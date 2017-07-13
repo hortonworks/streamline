@@ -316,12 +316,16 @@ const TopologyREST = {
         return response.json();
       });
   },
-  getSchemaForKafka(topicName, options) {
+  getSchemaForKafka(topicName,versionsId, options) {
     options = options || {};
     options.method = options.method || 'GET';
     options.credentials = 'same-origin';
     topicName = encodeURIComponent(topicName);
-    return fetch('/api/v1/schemas/' + topicName, options)
+    let url = "/api/v1/schemas/" + topicName+"/versions";
+    if(!!versionsId){
+      url+="/"+versionsId;
+    }
+    return fetch(url, options)
       .then((response) => {
         return response.json();
       });

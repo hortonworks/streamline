@@ -648,6 +648,31 @@ const clusterField = function(){
   };
 };
 
+const matchStringInArr = function(stringArr,str){
+  let match=false;
+  _.map(stringArr.split(','), (s) => {
+    if(s === str){
+      match = true;
+    }
+  });
+  return match;
+};
+
+const populateSchemaVersionOptions = function(resultArr,tempConfig){
+  const versionOptions = _.map(resultArr.entities, (result) => {
+    return {
+      fieldName : +result,
+      uiName : +result
+    };
+  });
+  _.map(tempConfig, (config) => {
+    if(config.hint !== undefined && config.hint.indexOf('schemaVersion') !== -1){
+      config.options = versionOptions;
+    }
+  });
+  return tempConfig;
+};
+
 export default {
   sortArray,
   numberToMilliseconds,
@@ -681,5 +706,7 @@ export default {
   segregateVersions,
   checkStatus,
   getClusterKey,
-  clusterField
+  clusterField,
+  matchStringInArr,
+  populateSchemaVersionOptions
 };
