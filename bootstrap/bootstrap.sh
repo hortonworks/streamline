@@ -109,7 +109,7 @@ while getopts 'hvd:s:p:' flag; do
 done
 
 #Below command to update storm version will be called by RE script. Need to remove later. Adding now for convenience
-update_storm_version_command="$bootstrap_dir/update-storm-version.sh 1.0.2.3.0.0.0-310"
+update_storm_version_command="$bootstrap_dir/update-storm-version.sh 1.1.0.3.0.0.0-453"
 run_cmd $update_storm_version_command
 
 #---------------------------------------------
