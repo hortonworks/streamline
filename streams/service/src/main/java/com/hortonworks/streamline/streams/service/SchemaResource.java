@@ -155,7 +155,7 @@ public class SchemaResource {
             }
         } catch (SchemaNotFoundException e) {
             LOG.error("Schema not found: [{}]", schemaName, e);
-            throw EntityNotFoundException.byId(schemaName);
+            throw EntityNotFoundException.byName(schemaName);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -173,18 +173,18 @@ public class SchemaResource {
                     (version)));
             if (schemaVersionInfo != null) {
                 LOG.debug("######### Received schema version from schema registry: {}", schemaVersionInfo);
-                String schema = schemaVersionInfo != null ? schemaVersionInfo.getSchemaText() : null;
+                String schema = schemaVersionInfo.getSchemaText();
                 if (schema != null && !schema.isEmpty()) {
                     schema = AvroStreamlineSchemaConverter.convertAvroSchemaToStreamlineSchema(schema);
                 }
                 LOG.debug("######### Converted schema: {}", schema);
                 return WSUtils.respondEntity(schema, OK);
             } else {
-                return WSUtils.respondEntity("", NOT_FOUND);
+                throw new SchemaNotFoundException("Version " + version + " of schema " + schemaName + " not found ");
             }
         } catch (SchemaNotFoundException e) {
             LOG.error("Schema not found: [{}]", schemaName, e);
-            throw EntityNotFoundException.byId(schemaName);
+            throw EntityNotFoundException.byName(schemaName);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
