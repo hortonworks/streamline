@@ -299,10 +299,10 @@ export default class SourceNodeForm extends Component {
   }
 
   render() {
-    const {configJSON, fetchLoader,securityType,activeTabKey, formErrors} = this.state;
+    const {configJSON, fetchLoader, securityType, hasSecurity, activeTabKey, formErrors} = this.state;
     let formData = this.state.formData;
 
-    let fields = Utils.genFields(configJSON, [], formData,[],securityType);
+    let fields = Utils.genFields(configJSON, [], formData,[], securityType, hasSecurity);
     const form = fetchLoader
       ? <div className="col-sm-12">
           <div className="loading-img text-center" style={{

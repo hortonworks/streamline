@@ -448,11 +448,12 @@ export default class SinkNodeForm extends Component {
       uiSpecification,
       fetchLoader,
       securityType,
+      hasSecurity,
       activeTabKey,
       formErrors
     } = this.state;
 
-    let fields = Utils.genFields(uiSpecification, [], formData, _.uniqBy(_.flattenDeep(this.tempStreamFieldArr),'name'),securityType);
+    let fields = Utils.genFields(uiSpecification, [], formData, _.uniqBy(_.flattenDeep(this.tempStreamFieldArr),'name'), securityType, hasSecurity);
     const form = fetchLoader
       ? <div className="col-sm-12">
           <div className="loading-img text-center" style={{
