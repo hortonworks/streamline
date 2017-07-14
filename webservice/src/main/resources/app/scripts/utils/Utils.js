@@ -611,6 +611,16 @@ const checkStatus = function (response) {
   }
 };
 
+const checkStatusForResponseText = function (response) {
+  if (response.status >= 200 && response.status < 300) {
+    return response.json();
+  } else {
+    const error = new Error(response.statusText);
+    error.response = response.text();
+    throw error;
+  }
+};
+
 const getClusterKey = function(urlOrName, isManualCluster,clusterArr) {
   let key = '';
   _.keys(clusterArr).map(x => {
@@ -693,6 +703,7 @@ export default {
   checkWhiteSpace,
   segregateVersions,
   checkStatus,
+  checkStatusForResponseText,
   getClusterKey,
   clusterField,
   matchStringInArr,

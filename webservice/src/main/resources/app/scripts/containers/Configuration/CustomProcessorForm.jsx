@@ -99,6 +99,17 @@ class CustomProcessorForm extends Component {
     this.navigateFlag = false;
   }
 
+  setDefaultValues() {
+    this.extendObj = Object.assign({}, this.defaultObj, {fieldsChk: true});
+    this.setState(JSON.parse(JSON.stringify(this.extendObj)));
+  }
+
+  componentWillReceiveProps(newProps) {
+    if (newProps.id && newProps.id !== this.props.id) {
+      this.fetchProcessor(newProps.id);
+    }
+  }
+
   fetchProcessor(id) {
     CustomProcessorREST.getProcessor(id).then((processor) => {
       if (processor.responseMessage !== undefined) {
@@ -317,6 +328,10 @@ class CustomProcessorForm extends Component {
       description === '' ? fieldsError.desc = true :  '';
       customProcessorImpl === '' ? fieldsError.classNameType = true : '' ;
       jarFileName === '' ? fieldsError.fileError = true : '';
+      validDataFlag = false;
+    }
+
+    if(!Utils.validateJSON(inputSchema)|| !Utils.validateJSON(outputSchema)) {
       validDataFlag = false;
     }
     return validDataFlag;
