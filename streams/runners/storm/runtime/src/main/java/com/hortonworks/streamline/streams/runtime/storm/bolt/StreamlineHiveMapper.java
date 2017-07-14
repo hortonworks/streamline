@@ -6,7 +6,6 @@ import org.apache.hive.hcatalog.streaming.HiveEndPoint;
 import org.apache.hive.hcatalog.streaming.RecordWriter;
 import org.apache.hive.hcatalog.streaming.StreamingException;
 import org.apache.hive.hcatalog.streaming.TransactionBatch;
-import org.apache.storm.hive.bolt.mapper.DelimitedRecordHiveMapper;
 import org.apache.storm.hive.bolt.mapper.HiveMapper;
 import org.apache.storm.trident.tuple.TridentTuple;
 import org.apache.storm.tuple.Tuple;
@@ -16,8 +15,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
-public class StreamlineHiveMapper implements HiveMapper {
+  public class StreamlineHiveMapper implements HiveMapper {
     private static final String DEFAULT_FIELD_DELIMITER = ",";
     private final List<String> fields;
     private final List<String> partitionFields;
@@ -35,7 +35,8 @@ public class StreamlineHiveMapper implements HiveMapper {
 
     @Override
     public RecordWriter createRecordWriter(HiveEndPoint hiveEndPoint) throws StreamingException, IOException, ClassNotFoundException {
-        return new DelimitedInputWriter(fields.toArray(new String[0]), fieldDelimiter, hiveEndPoint);
+      List<String> result = fields.stream().map(String::toLowerCase).collect(Collectors.toList());
+      return new DelimitedInputWriter(result.toArray(new String[0]), fieldDelimiter, hiveEndPoint);
     }
 
     @Override
