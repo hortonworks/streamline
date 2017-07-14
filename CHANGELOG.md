@@ -1,4 +1,5 @@
 ## 0.4
+ * ISSUE-774     : Make reader and writer schema version config properties mandatory for Kafka source and sink respectively 
  * ISSUE-742     : Make ssl trust store password config field mandatory for kafka source and sink when kafka SSL listener is selected 
  * ISSUE-745     : Add logout link to invalidate the kerberos authorization cookie
  * ISSUE-786     : Cleanup api for managing storm topologies
