@@ -22,6 +22,7 @@ import FSReactToastr from '../../../components/FSReactToastr';
 import TopologyREST from '../../../rest/TopologyREST';
 import {Scrollbars} from 'react-custom-scrollbars';
 import ProcessorUtils  from '../../../utils/ProcessorUtils';
+import RealTimeJoinStreamComponent  from './RealTimeJoinStreamComponent';
 
 export default class RealTimeJoinNodeProcessor extends Component{
 
@@ -47,26 +48,31 @@ export default class RealTimeJoinNodeProcessor extends Component{
       showLoading : false,
       rtJoinStreamObj:'',
       rtJoinTypes: this.getJoinTypeOptions('jointype'),
-      rtJoinTypeStreamObj : '',
-      rtJoinTypeSelected: '',
       bufferType: 'seconds',
       bufferTypeArr: this.getJoinTypeOptions('buffer'),
-      countVal : 0,
+      countVal : '',
       showInputError : false,
-      rtJoinEqualFields:[
-        {
-          firstKey : '',
-          secondKey : ''
-        }
-      ],
-      firstKeyOptions : [],
-      secondKeyOptions :[],
       outputKeys: [],
       outputKeysObjArr :[],
       outputStreamFields: [],
       outputGroupByDotKeys : [],
-      dropDuplicate : false,
-      rtJoinEqualGroupKeysObjArr : [{firstKey : '',secondKey : ''}]
+      unique : false,
+      rtJoinStreamArr : [{
+        rtJoinTypeSelected : '',
+        rtJoinTypeStreamObj : '',
+        bufferType : '',
+        bufferSize : '',
+        unique : false,
+        conditions : [{
+          firstKey : '',
+          secondKey : '',
+          firstKeyOptions : [],
+          secondKeyOptions : []
+        }],
+        showInputError : false
+      }],
+      joinStreamGroup : [{conditions : [{firstKey : '',secondKey : ''}]}]
+
     };
     this.state = obj;
     this.streamData = {};
@@ -111,6 +117,8 @@ export default class RealTimeJoinNodeProcessor extends Component{
 
     // get the inputStream from parentForm Context
     const inputStreamFromContext = this.context.ParentForm.state.inputStreamOptions;
+
+    let tempJoinStreamArr = _.cloneDeep(this.state.rtJoinStreamArr);
     let fields = [],rtJoinTypeStreamName='',unModifyList=[];
     inputStreamFromContext.map((stream, i) => {
       // modify fields if inputStreamFromContext >  1
@@ -125,7 +133,23 @@ export default class RealTimeJoinNodeProcessor extends Component{
       // UnModify fieldsList
       unModifyList.push(...stream.fields);
 
-
+      // for multiple inputStream
+      if(i > 1){
+        tempJoinStreamArr.push({
+          rtJoinTypeSelected : '',
+          rtJoinTypeStreamObj : '',
+          bufferType : '',
+          bufferSize : '',
+          unique : false,
+          conditions : [{
+            firstKey : '',
+            secondKey : '',
+            firstKeyOptions : [],
+            secondKeyOptions : []
+          }],
+          showInputError : false
+        });
+      }
     });
 
     this.fieldsArr = fields;
@@ -146,7 +170,8 @@ export default class RealTimeJoinNodeProcessor extends Component{
         })
         : undefined,
       inputStreamsArr: inputStreamFromContext,
-      outputFieldsList : tempFieldsArr
+      outputFieldsList : tempFieldsArr,
+      rtJoinStreamArr : tempJoinStreamArr
     };
 
     // prefetchValue is use to call the this.populateOutputStreamsFromServer() after state has been SET
@@ -168,63 +193,103 @@ export default class RealTimeJoinNodeProcessor extends Component{
     });
   }
 
+  getBufferKey = (data) => {
+    let intervalType = '';
+    _.map(_.keys(data),(k) => {
+      _.map(this.state.bufferTypeArr, (buffer) => {
+        if(k === buffer.value.toLowerCase()){
+          intervalType = k.toLowerCase();
+        }
+      });
+    });
+    return intervalType;
+  }
+
+  createGroupFields = (firstStream, secondStream) => {
+    let f_key ='',s_key ='';
+    if(firstStream){
+      const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey([firstStream]);
+      const groupKeysByDots = ProcessorUtils.modifyGroupKeyByDots(gKeys,'removeParent');
+      f_key = groupKeysByDots[0];
+    }
+    if(secondStream){
+      const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey([secondStream]);
+      const groupKeysByDots = ProcessorUtils.modifyGroupKeyByDots(gKeys,'removeParent');
+      s_key = groupKeysByDots[0];
+    }
+
+    return {f_key,s_key};
+  }
+
+  getConditionFields = (conData , inputStreams) => {
+    let conArr = [],streamObj={},conGroup =[];
+    // remove the first index if 'equal' because its hardcoded on save
+    conData.splice(0,1);
+    const f_Stream =  conData[0].split(':');
+    const f_Name = f_Stream[1].split('.').pop();
+    const s_Stream = conData[1].split(':');
+    const s_Name = s_Stream[1].split('.').pop();
+    const f_Obj = _.find(inputStreams, (stream) => {return stream.streamId === f_Stream[0];});
+    const s_Obj = _.find(inputStreams, (stream) => {return stream.streamId === s_Stream[0];});
+    streamObj.firstKeyOptions = ProcessorUtils.getSchemaFields(f_Obj.fields, 0,false);
+    streamObj.secondKeyOptions = ProcessorUtils.getSchemaFields(s_Obj.fields, 0,false);
+    streamObj.firstKey = ProcessorUtils.getKeyList(f_Name ,streamObj.firstKeyOptions );
+    streamObj.secondKey = ProcessorUtils.getKeyList(s_Name ,streamObj.secondKeyOptions );
+    const {f_key,s_key} = this.createGroupFields(streamObj.firstKey , streamObj.secondKey);
+    conGroup.push({firstKey : f_key,secondKey : s_key});
+    conArr.push(streamObj);
+    return {conArr,conGroup};
+  }
+
   populateOutputStreamsFromServer = () => {
     let stateObj = {};
-    const {inputStreamsArr,outputFieldsList,rtJoinTypes,bufferTypeArr,rtJoinEqualGroupKeysObjArr} = this.state;
-
-    const fromData = this.rtJoinProcessorNode.config.properties.from.stream;
-    if(fromData){
-      const streamObj = _.filter(inputStreamsArr, (stream) => {return stream.streamId === fromData;});
+    const {inputStreamsArr,outputFieldsList} = this.state;
+    let tempGroup = _.cloneDeep(this.state.joinStreamGroup);
+    let tempArr = _.cloneDeep(this.state.rtJoinStreamArr);
+    const fromData = this.rtJoinProcessorNode.config.properties.from;
+    if(! _.isEmpty(fromData)){
+      const streamObj = _.filter(inputStreamsArr, (stream) => {return stream.streamId === fromData.stream;});
+      stateObj.unique = fromData.unique;
       stateObj.rtJoinStreamObj = streamObj[0];
-      stateObj.firstKeyOptions = ProcessorUtils.getSchemaFields(stateObj.rtJoinStreamObj.fields, 0,false);
-    }
-
-    const joinData = this.rtJoinProcessorNode.config.properties.join;
-    if(! _.isEmpty(joinData)){
-      let intervalType = '';
-      stateObj.dropDuplicate = joinData.dropDuplicates;
-      _.map(_.keys(joinData),(k) => {
-        _.map(bufferTypeArr, (buffer) => {
-          if(k === buffer.value.toLowerCase()){
-            intervalType = k.toLowerCase();
-          }
-        });
-      });
-
-      if(intervalType === 'count' || intervalType === 'milliseconds'){
-        stateObj.countVal = joinData[intervalType];
+      const type = this.getBufferKey(fromData);
+      if(type === 'milliseconds'){
+        stateObj.countVal = fromData[type];
       } else {
-        const bufferSize = Utils.millisecondsToNumber(joinData[intervalType]);
+        const bufferSize = Utils.millisecondsToNumber(fromData[type]);
         stateObj.countVal = bufferSize.number;
       }
-      stateObj.bufferType = intervalType.toUpperCase();
-      stateObj.rtJoinTypeSelected = _.filter(rtJoinTypes, (join) => {return join.value.toLowerCase() === joinData.type.toLowerCase();})[0].value;
-      stateObj.rtJoinTypeStreamObj = _.filter(inputStreamsArr, (stream) => {return stream.streamId === joinData.stream;})[0];
-      stateObj.secondKeyOptions = ProcessorUtils.getSchemaFields(stateObj.rtJoinTypeStreamObj.fields, 0,false);
+      stateObj.bufferType = type.toUpperCase();
     }
 
-    let tempEqualGroup = [];
-    const equalData = this.rtJoinProcessorNode.config.properties.equal;
-    let tempEqual = [];
-    if(equalData.length){
-      _.map(equalData, (eq,i) => {
-        let firstGroupKey = '',secondObj='';
-        const firstObj = ProcessorUtils.findNestedObj(stateObj.firstKeyOptions,eq.firstKey);
-        if(firstObj){
-          const {gKeys} = ProcessorUtils.getKeysAndGroupKey([firstObj]);
-          const groupKeysByDots = ProcessorUtils.modifyGroupKeyByDots(gKeys,'removeParent');
-          firstGroupKey = groupKeysByDots[0];
+    const joinData = this.rtJoinProcessorNode.config.properties.joins;
+    if(! _.isEmpty(joinData)){
+      _.map(joinData, (join , k) => {
+        const bType = this.getBufferKey(join);
+        tempArr[k].rtJoinTypeStreamObj = _.find(inputStreamsArr, (stream) => {return stream.streamId === join.stream;});
+        tempArr[k].rtJoinTypeSelected = join.type;
+        tempArr[k].unique = join.unique;
+        tempArr[k].bufferType = bType.toUpperCase();
+        if(bType === 'milliseconds'){
+          tempArr[k].bufferSize = join[bType];
+        } else {
+          const bSize = Utils.millisecondsToNumber(join[bType]);
+          tempArr[k].bufferSize = bSize.number;
         }
-        secondObj =  ProcessorUtils.findNestedObj(stateObj.secondKeyOptions,eq.secondKey);
-        const {gKeys} = ProcessorUtils.getKeysAndGroupKey([secondObj]);
-        const groupKeysByDots = ProcessorUtils.modifyGroupKeyByDots(gKeys,'removeParent');
-        const secondGroupKey = groupKeysByDots[0];
-        tempEqualGroup.push({firstKey : firstGroupKey , secondKey : secondGroupKey});
-        tempEqual.push({firstKey : firstObj , secondKey : secondObj});
+        let t_con=[],g_con=[];
+        _.map(join.conditions, (c) => {
+          const {conArr,conGroup} =  this.getConditionFields(c,inputStreamsArr);
+          t_con.push(conArr[0]);
+          g_con.push(conGroup[0]);
+        });
+        tempArr[k].conditions = t_con;
+        tempGroup[k].conditions = g_con;
       });
-      stateObj.rtJoinEqualGroupKeysObjArr = tempEqualGroup;
-      stateObj.rtJoinEqualFields = tempEqual;
+
+      stateObj.rtJoinStreamArr = tempArr;
+      stateObj.joinStreamGroup = tempGroup;
     }
+
+
 
     // set the outputKeys And outputFieldsObj for parentContext
     const outputKeysAFormServer = this.rtJoinProcessorNode.config.properties.outputKeys.map((fieldName)=>{return fieldName.split(' as ')[0];});
@@ -274,77 +339,123 @@ export default class RealTimeJoinNodeProcessor extends Component{
     );
   }
 
-  filterStreamSelected = (obj) => {
+  getFilteredStream = (obj) => {
     const {inputStreamsArr} = this.state;
     return _.filter(inputStreamsArr, (stream) => {return stream.streamId !== obj.streamId;});
   }
 
-  handleCommonStreamChange = (keyType,obj) => {
+  getSelectedStream = (obj) => {
+    const {inputStreamsArr} = this.state;
+    return _.filter(inputStreamsArr, (stream) => {return stream.streamId === obj.streamId;});
+  }
+
+  handleCommonStreamChange = (keyType,p_index,obj) => {
     if(!_.isEmpty(obj)){
-      let tempArr = _.cloneDeep(this.state.rtJoinEqualFields);
-      const rtJoinStream = this.filterStreamSelected(obj);
-      const firstStream = ProcessorUtils.getSchemaFields(obj.fields, 0, false);
-      const secondStream = ProcessorUtils.getSchemaFields(rtJoinStream[0].fields,0,false);
-      tempArr = [
-        {
-          firstKey : '',
-          secondKey : ''
+      const {inputStreamsArr} = this.state;
+      let tempGroup = _.cloneDeep(this.state.joinStreamGroup);
+      let fromStream = _.cloneDeep(this.state.rtJoinStreamObj);
+      let tempArr = _.cloneDeep(this.state.rtJoinStreamArr), secondStream=[];
+      let stream = this.getSelectedStream(obj);
+      let streamOptions = ProcessorUtils.getSchemaFields(obj.fields, 0, false);
+      if(inputStreamsArr.length > 2){
+        // code for multiple stream support
+      } else {
+        secondStream = this.getFilteredStream(stream[0]);
+        if(keyType === "mainStream"){
+          fromStream = stream[0];
+          tempArr[0].rtJoinTypeStreamObj = secondStream[0];
+        } else {
+          fromStream = secondStream[0];
+          tempArr[p_index].rtJoinTypeStreamObj = stream[0];
         }
-      ];
+        const tempCon =[],group=[];
+        _.map(tempArr[0].conditions, (con) => {
+          const confirstKey = con.firstKey;
+          const conSecondKey = con.secondKey;
+          const {f_key,s_key} = this.createGroupFields(conSecondKey , confirstKey);
+          group.push({firstKey : f_key , secondKey : s_key});
+          tempCon.push({
+            firstKey : conSecondKey,
+            secondKey : confirstKey,
+            firstKeyOptions : ProcessorUtils.getSchemaFields(fromStream.fields,0,false),
+            secondKeyOptions: ProcessorUtils.getSchemaFields(tempArr[0].rtJoinTypeStreamObj.fields,0,false)
+          });
+        });
+        tempGroup[0].conditions = group;
+        tempArr[0].conditions = tempCon;
+      }
+
       this.setState({
-        rtJoinStreamObj : keyType === 'mainStream' ?  obj : rtJoinStream[0],
-        rtJoinTypeStreamObj : keyType === 'mainStream' ? rtJoinStream[0] : obj,
-        firstKeyOptions : keyType === 'mainStream' ? firstStream : secondStream,
-        secondKeyOptions : keyType === 'mainStream' ? secondStream : firstStream,
-        rtJoinEqualFields : tempArr
+        rtJoinStreamObj : fromStream,
+        rtJoinStreamArr : tempArr,
+        joinStreamGroup : tempGroup
       });
     }
   }
 
-  commonHandlerChange = (keyType,obj) => {
+  commonHandlerChange = (keyType,type,p_index,obj) => {
     if(! _.isEmpty(obj)){
-      if(keyType === "rtJoinTypes"){
-        this.setState({rtJoinTypeSelected : obj.value});
-      } else if(keyType === 'bufferType') {
+      let tempArr = _.cloneDeep(this.state.rtJoinStreamArr);
+      if(keyType === 'bufferType' && type === 'form') {
         this.setState({bufferType : obj.value});
+      }else {
+        keyType === 'rtJoinTypes'
+        ? tempArr[p_index].rtJoinTypeSelected = obj.value
+        : tempArr[p_index].bufferType = obj.value;
+        this.setState({rtJoinStreamArr : tempArr });
       }
     }
   }
 
-  countInputChange = (event) => {
+  countInputChange = (type,p_index,event) => {
+    let tempArr = _.cloneDeep(this.state.rtJoinStreamArr);
     const val = event.target.value;
-    this.setState({countVal : +val,showInputError : val > 0 ? false : true});
+    if(type === 'form' && p_index === null){
+      this.setState({countVal : +val,showInputError : val > 0 ? false : true});
+    } else {
+      tempArr[p_index].bufferSize = +val;
+      tempArr[p_index].showInputError = val > 0 ? false : true;
+      this.setState({rtJoinStreamArr : tempArr });
+    }
+
   }
 
-  handleEqualFieldChange = (keyString,index,obj) => {
-    let equalGroupKeyArrObj = _.cloneDeep(this.state.rtJoinEqualGroupKeysObjArr);
-    let tempArr = _.cloneDeep(this.state.rtJoinEqualFields);
-    tempArr[index][keyString] = obj;
+  handleConditionFieldChange = (keyString,p_index,index,obj) => {
+    let joinStreamGroup = _.cloneDeep(this.state.joinStreamGroup);
+    let tempArr = _.cloneDeep(this.state.rtJoinStreamArr);
+    tempArr[p_index].conditions[index][keyString] = obj;
     const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey([obj]);
     const groupKeysByDots = ProcessorUtils.modifyGroupKeyByDots(gKeys,'removeParent');
-    if(equalGroupKeyArrObj[index] === undefined){
-      equalGroupKeyArrObj[index] = {};
-    }
-    equalGroupKeyArrObj[index][keyString] = groupKeysByDots[0];
-    this.setState({rtJoinEqualFields : tempArr,rtJoinEqualGroupKeysObjArr : equalGroupKeyArrObj});
+    joinStreamGroup[p_index].conditions[index][keyString] = groupKeysByDots[0];
+    this.setState({rtJoinStreamArr : tempArr,joinStreamGroup : joinStreamGroup});
   }
 
-  addRtJoinEqualFields = () => {
+  addRtJoinEqualFields = (p_index) => {
     if (this.state.editMode) {
       const el = document.querySelector('.processor-modal-form ');
       const targetHt = el.scrollHeight;
       Utils.scrollMe(el, (targetHt + 100), 2000);
 
-      let fieldsArr = this.state.rtJoinEqualFields;
-      fieldsArr.push({firstKey: '', secondKey: ''});
-      this.setState({rtJoinEqualFields: fieldsArr});
+      const {rtJoinStreamObj} = this.state;
+      let joinStreamGroup = _.cloneDeep(this.state.joinStreamGroup);
+      let tempArr = _.cloneDeep(this.state.rtJoinStreamArr);
+      tempArr[p_index].conditions.push({
+        firstKey : '',
+        secondKey : '',
+        firstKeyOptions : ProcessorUtils.getSchemaFields(rtJoinStreamObj.fields, 0, false),
+        secondKeyOptions : ProcessorUtils.getSchemaFields(tempArr[p_index].rtJoinTypeStreamObj.fields, 0, false)
+      });
+      joinStreamGroup[p_index].conditions.push({firstKey: '', secondKey: ''});
+      this.setState({rtJoinStreamArr : tempArr,joinStreamGroup : joinStreamGroup});
     }
   }
 
-  deleteRtJoinEqualFields = (index) => {
-    let fieldsArr = _.cloneDeep(this.state.rtJoinEqualFields);
-    fieldsArr.splice(index,1);
-    this.setState({rtJoinEqualFields : fieldsArr});
+  deleteRtJoinEqualFields = (p_index,index) => {
+    let joinStreamGroup = _.cloneDeep(this.state.joinStreamGroup);
+    let tempArr = _.cloneDeep(this.state.rtJoinStreamArr);
+    tempArr[p_index].conditions.splice(index,1);
+    joinStreamGroup[p_index].conditions.splice(index,1);
+    this.setState({rtJoinStreamArr : tempArr,joinStreamGroup : joinStreamGroup});
   }
 
   handleFieldsChange = (arr) => {
@@ -384,19 +495,35 @@ export default class RealTimeJoinNodeProcessor extends Component{
     this.setOutputFields(allOutPutFields);
   }
 
-  checkBoxChange = (event) => {
-    this.setState({dropDuplicate : event.target.checked});
+  checkBoxChange = (type,p_index,event) => {
+    let tempArr = _.cloneDeep(this.state.rtJoinStreamArr);
+    if(type === 'from' && p_index === null){
+      this.setState({unique : event.target.checked});
+    } else {
+      tempArr[p_index].unique = event.target.checked;
+      this.setState({rtJoinStreamArr : tempArr});
+    }
   }
 
   validateData = () => {
-    const {rtJoinTypeSelected,rtJoinStreamObj,rtJoinTypeStreamObj,countVal,rtJoinEqualFields,outputKeysObjArr,dropDuplicate} = this.state;
+    const {rtJoinStreamObj,countVal,outputKeysObjArr,unique,rtJoinStreamArr,bufferType} = this.state;
     let validation = false, validateArr = [];
-    _.map(rtJoinEqualFields, (fields) => {
-      if(fields.firstKey === '' || fields.secondKey === ''){
-        validateArr.push(false);
-      }
-    });
-    if(rtJoinTypeSelected !== '' && countVal > 0 && validateArr.length === 0 && outputKeysObjArr.length !== 0  && dropDuplicate){
+
+    const checkNestedValidation = function(rtJoinStreamArr){
+      _.map(rtJoinStreamArr, (fields) => {
+        if(fields.rtJoinTypeSelected === '' || fields.rtJoinTypeStreamObj === '' ||
+            fields.bufferType === '' ||  fields.bufferSize === '' ||
+             fields.unique === false || fields.firstKey === '' || fields.secondKey === '' || fields.showInputError){
+          validateArr.push(false);
+        }
+        if(fields.conditions){
+          checkNestedValidation(fields.conditions);
+        }
+      });
+    };
+    checkNestedValidation(rtJoinStreamArr);
+
+    if(countVal > 0 && validateArr.length === 0 && outputKeysObjArr.length !== 0  && unique && bufferType !== ''){
       validation = true;
     }
     return validation;
@@ -404,7 +531,7 @@ export default class RealTimeJoinNodeProcessor extends Component{
 
   updateEdgesForSelectedStream = () => {
     const {currentEdges,topologyId, versionId} = this.props;
-    const {inputStreamsArr,rtJoinEqualGroupKeysObjArr} = this.state;
+    const {inputStreamsArr,joinStreamGroup} = this.state;
     const streamObj = inputStreamsArr.find((s) => {
       return s.streamId === this.rtJoinProcessorNode.config.properties.from.stream;
     });
@@ -413,7 +540,8 @@ export default class RealTimeJoinNodeProcessor extends Component{
       return streamObj.id === e.streamGrouping.streamId;
     });
 
-    const streamFields = _.map(rtJoinEqualGroupKeysObjArr, 'firstKey');
+    // joinStreamGroup is supporting for single streams
+    const streamFields = _.map(joinStreamGroup[0].conditions, 'firstKey');
     let edgeDataWithFormFirst = {
       fromId: edgeObj.source.nodeId,
       toId: edgeObj.target.nodeId,
@@ -430,55 +558,53 @@ export default class RealTimeJoinNodeProcessor extends Component{
   }
 
   updateEdgesForJoinTypeObject = () => {
-    const {inputStreamsArr,rtJoinEqualGroupKeysObjArr} = this.state;
+    const {inputStreamsArr,joinStreamGroup} = this.state;
     const {currentEdges,topologyId, versionId} = this.props;
-    const streamObj = inputStreamsArr.find((s) => {
-      return s.streamId === this.rtJoinProcessorNode.config.properties.join.stream;
+    let edgeDataArr = [],edgeIdArr = [];
+    this.rtJoinProcessorNode.config.properties.joins.map((obj,i) => {
+      const streamObj = inputStreamsArr.find((s) => {
+        return s.streamId === obj.stream;
+      });
+      const edgeObj = currentEdges.find((e) => {
+        return streamObj.id === e.streamGrouping.streamId;
+      });
+      const joinTypeFields = _.map(joinStreamGroup[i].conditions, 'secondKey');
+      let edgeData = {
+        fromId: edgeObj.source.nodeId,
+        toId: edgeObj.target.nodeId,
+        streamGroupings: [
+          {
+            streamId: edgeObj.streamGrouping.streamId,
+            grouping: 'FIELDS',
+            fields: joinTypeFields
+          }
+        ]
+      };
+      edgeIdArr.push(edgeObj.edgeId);
+      edgeDataArr.push(edgeData);
     });
-    const edgeObj = currentEdges.find((e) => {
-      return streamObj.id === e.streamGrouping.streamId;
-    });
-
-    const joinTypeFields = _.map(rtJoinEqualGroupKeysObjArr, 'secondKey');
-    let edgeData = {
-      fromId: edgeObj.source.nodeId,
-      toId: edgeObj.target.nodeId,
-      streamGroupings: [
-        {
-          streamId: edgeObj.streamGrouping.streamId,
-          grouping: 'FIELDS',
-          fields: joinTypeFields
-        }
-      ]
-    };
-    const edgeId = (edgeObj.edgeId);
-    return {edgeId,edgeData};
+    return {edgeIdArr,edgeDataArr};
   }
 
   handleSave = (name, description) => {
     let {topologyId, versionId, nodeType, currentEdges} = this.props;
     let {
-      rtJoinTypeSelected,
       rtJoinStreamObj,
-      rtJoinTypeStreamObj,
       countVal,
-      rtJoinEqualFields,
       outputKeys,
       outputKeysObjArr,
       bufferType,
-      dropDuplicate,
       parallelism,
       outputStreamFields,
       inputStreamsArr,
       fieldList,
-      outputGroupByDotKeys
+      outputGroupByDotKeys,
+      rtJoinStreamArr,
+      joinStreamGroup,
+      unique
     } = this.state;
 
-    const countData = bufferType === 'COUNT' || bufferType === "MILLISECONDS" ? countVal : Utils.numberToMilliseconds(countVal, Utils.capitaliseFirstLetter(bufferType.toLowerCase()));
-
-    const equalTemp = _.map(rtJoinEqualFields, (eq) => {
-      return {firstKey : eq.firstKey.name, secondKey : eq.secondKey.name};
-    });
+    const countData =  bufferType === "MILLISECONDS" ? countVal : Utils.numberToMilliseconds(countVal, Utils.capitaliseFirstLetter(bufferType.toLowerCase()));
 
     // outputStreams data is formated for the server
     const streamFields  = ProcessorUtils.generateOutputStreamsArr(this.streamData.fields,0);
@@ -502,19 +628,36 @@ export default class RealTimeJoinNodeProcessor extends Component{
       }
     });
 
+    // create an array from object value for server
+    const conditionArr = _.map(joinStreamGroup , (streamGroup,k) => {
+      return _.map(streamGroup.conditions, (eq) => {
+        let data = [];
+        data.push("equal");
+        data.push(rtJoinStreamObj.streamId+':'+eq.firstKey);
+        data.push(rtJoinStreamArr[k].rtJoinTypeStreamObj.streamId+':'+eq.secondKey);
+        return data;
+      });
+    });
+
+    let joinObj = [];
+    _.map(rtJoinStreamArr, (joinStream, i) => {
+      joinObj.push({
+        type : joinStream.rtJoinTypeSelected,
+        stream : joinStream.rtJoinTypeStreamObj.streamId,
+        unique : joinStream.unique,
+        conditions : conditionArr[i]
+      });
+      const bVal = joinStream.bufferType === "MILLISECONDS" ? joinStream.bufferSize  : Utils.numberToMilliseconds(joinStream.bufferSize, Utils.capitaliseFirstLetter(joinStream.bufferType.toLowerCase()));
+      joinObj[i][joinStream.bufferType.toLowerCase()] = bVal;
+    });
+
     let configObj = {
-      from :  {"stream": rtJoinStreamObj.streamId},
-      join : {
-        type : rtJoinTypeSelected.toLowerCase(),
-        stream : rtJoinTypeStreamObj.streamId,
-        dropDuplicates : dropDuplicate
-      },
-      equal : equalTemp,
+      from :  {"stream": rtJoinStreamObj.streamId ,"unique" : unique},
+      joins : joinObj,
       outputKeys : finalOutputKeys,
       outputStream : this.streamData.streamId
     };
-
-    configObj.join[bufferType.toLowerCase()] = countData;
+    configObj.from[bufferType.toLowerCase()] = countData;
 
     //this.rtJoinProcessorNode is update with the above data
     this.rtJoinProcessorNode.config.properties = configObj;
@@ -530,10 +673,11 @@ export default class RealTimeJoinNodeProcessor extends Component{
     const {edge_Id,edgeDataWithFormFirst} = this.updateEdgesForSelectedStream();
     promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'edges', edge_Id, {body: JSON.stringify(edgeDataWithFormFirst)}));
 
-
     // update edges with selected rtJoinTypes obj key with particular edgeId for multiple rt-Join using Array of edgeDataArr;
-    const {edgeId,edgeData} = this.updateEdgesForJoinTypeObject();
-    promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'edges',edgeId, {body: JSON.stringify(edgeData)}));
+    const {edgeIdArr,edgeDataArr} = this.updateEdgesForJoinTypeObject();
+    _.map(edgeDataArr, (edgeObj,index) => {
+      promiseArr.push(TopologyREST.updateNode(topologyId, versionId, 'edges', edgeIdArr[index], {body: JSON.stringify(edgeObj)}));
+    });
 
     return Promise.all(promiseArr);
   }
@@ -556,7 +700,8 @@ export default class RealTimeJoinNodeProcessor extends Component{
       secondKeyOptions,
       outputKeysObjArr,
       outputFieldsList,
-      dropDuplicate
+      unique,
+      rtJoinStreamArr
     } = this.state;
 
     const disabledFields = this.props.testRunActivated ? true : !editMode;
@@ -581,113 +726,45 @@ export default class RealTimeJoinNodeProcessor extends Component{
                     </label>
                   </OverlayTrigger>
                   <div>
-                    <Select value={rtJoinStreamObj} options={inputStreamsArr} onChange={this.handleCommonStreamChange.bind(this,'mainStream')} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
+                    <Select value={rtJoinStreamObj} options={inputStreamsArr} onChange={this.handleCommonStreamChange.bind(this,'mainStream',null)} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
                   </div>
                 </div>
-              </div>
-              <div className="form-group row no-margin">
-                <div className="col-sm-3">
-                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Type of join</Popover>}>
-                    <label>Join Type
-                      <span className="text-danger">*</span>
-                    </label>
-                  </OverlayTrigger>
-                </div>
-                <div className="col-sm-3">
-                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Name of join stream</Popover>}>
-                    <label>Select Stream
-                      <span className="text-danger">*</span>
-                    </label>
-                  </OverlayTrigger>
-                </div>
-                <div className="col-sm-3">
+                <div  className="col-sm-3">
                   <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Buffer Type</Popover>}>
                     <label>Buffer Type Interval
                       <span className="text-danger">*</span>
                     </label>
                   </OverlayTrigger>
+                  <div>
+                    <Select value={bufferType} options={bufferTypeArr} onChange={this.commonHandlerChange.bind(this,'bufferType','form',null)} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false}/>
+                  </div>
                 </div>
-                <div className="col-sm-3">
+                <div  className="col-sm-3">
                   <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Buffer Size</Popover>}>
                     <label>Buffer Size
                       <span className="text-danger">*</span>
                     </label>
                   </OverlayTrigger>
+                  <div>
+                    <input type="number" className={`form-control ${showInputError ? 'invalidInput' : ''}`} value={countVal} min={0} max={Number.MAX_SAFE_INTEGER}  onChange={this.countInputChange.bind(this,'form',null)} />
+                  </div>
+                </div>
+                <div  className="col-sm-3 text-center">
+                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">unique</Popover>}>
+                    <label style={{marginBottom : 0, marginTop : "3px"}}>unique
+                      <span className="text-danger">*</span>
+                    </label>
+                  </OverlayTrigger>
+                  <div>
+                    <Checkbox inline checked={unique} onChange={this.checkBoxChange.bind(this,'from',null)}></Checkbox>
+                  </div>
                 </div>
               </div>
-              <div className="form-group row">
-                <div className="col-sm-3">
-                  <Select value={rtJoinTypeSelected} options={rtJoinTypes} onChange={this.commonHandlerChange.bind(this,'rtJoinTypes')} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false}/>
-                </div>
-                <div className="col-sm-3">
-                  <Select value={rtJoinTypeStreamObj} options={inputStreamsArr} onChange={this.handleCommonStreamChange.bind(this,'joinStream')} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
-                </div>
-                <div className="col-sm-3">
-                  <Select value={bufferType} options={bufferTypeArr} onChange={this.commonHandlerChange.bind(this,'bufferType')} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false}/>
-                </div>
-                <div className="col-sm-3">
-                  <input type="number" className={`form-control ${showInputError ? 'invalidInput' : ''}`} value={countVal} min={0} max={Number.MAX_SAFE_INTEGER}  onChange={this.countInputChange} />
-                </div>
-              </div>
-              <div className="form-group row no-margin">
-                <div className="col-sm-3">
-                  <Checkbox inline checked={dropDuplicate} onChange={this.checkBoxChange}>
-                    <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Drop Duplicates</Popover>}>
-                      <label style={{marginBottom : 0, marginTop : "3px"}}>drop Duplicates
-                        <span className="text-danger">*</span>
-                      </label>
-                    </OverlayTrigger>
-                  </Checkbox>
-                </div>
-              </div>
-              <div className="form-group row">
-                <div className="col-sm-12" style={{marginTop : "10px"}}>
-                  <fieldset className="fieldset-default">
-                    <legend>Equal Fields</legend>
-                      <div className="row">
-                        <div className="col-sm-5 outputCaption">
-                          <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">First Key</Popover>}>
-                            <label>First Key
-                              <span className="text-danger">*</span>
-                            </label>
-                          </OverlayTrigger>
-                        </div>
-                        <div className="col-sm-5 outputCaption">
-                          <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Second Key</Popover>}>
-                            <label>Second Key
-                              <span className="text-danger">*</span>
-                            </label>
-                          </OverlayTrigger>
-                        </div>
-                      </div>
-                      {
-                        _.map(rtJoinEqualFields, (eq,i) => {
-                          return(
-                            <div key={i} className="row form-group">
-                              <div className="col-sm-5">
-                                <Select value={eq.firstKey} options={firstKeyOptions} onChange={this.handleEqualFieldChange.bind(this,'firstKey',i)} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
-                              </div>
-                              <div className="col-sm-5">
-                                <Select value={eq.secondKey} options={secondKeyOptions} onChange={this.handleEqualFieldChange.bind(this,'secondKey',i)} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
-                              </div>
-                              {editMode
-                                ? <div className="col-sm-2">
-                                    <button className="btn btn-default btn-sm" disabled={disabledFields} type="button" onClick={this.addRtJoinEqualFields.bind(this)}>
-                                      <i className="fa fa-plus"></i>
-                                    </button>&nbsp; {i > 0
-                                      ? <button className="btn btn-sm btn-danger" type="button" onClick={this.deleteRtJoinEqualFields.bind(this, i)}>
-                                          <i className="fa fa-trash"></i>
-                                        </button>
-                                      : null}
-                                  </div>
-                                : null}
-                            </div>
-                          );
-                        })
-                      }
-                  </fieldset>
-                </div>
-              </div>
+              {
+                _.map(rtJoinStreamArr,(rtJoinStream,i) => {
+                  return <RealTimeJoinStreamComponent key={i+'join'} rtJoinStream={rtJoinStream} disabledFields={disabledFields} rtJoinTypes={rtJoinTypes} inputStreamsArr={inputStreamsArr} bufferTypeArr={bufferTypeArr} pIndex={i} commonHandlerChange={this.commonHandlerChange} handleCommonStreamChange={this.handleCommonStreamChange} countInputChange={this.countInputChange}  addRtJoinEqualFields={this.addRtJoinEqualFields} deleteRtJoinEqualFields={this.deleteRtJoinEqualFields} editMode={editMode} handleConditionFieldChange={this.handleConditionFieldChange} checkBoxChange={this.checkBoxChange}/>;
+                })
+              }
               <div className="form-group">
                 <div className="col-sm-6">
                   <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Output keys</Popover>}>

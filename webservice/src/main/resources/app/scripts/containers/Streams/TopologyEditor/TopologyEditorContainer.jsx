@@ -485,7 +485,7 @@ class TopologyEditorContainer extends Component {
     if (name.trim === '') {
       this.refs.topologyNameEditable.setState({errorMsg: "Topology name cannot be blank"});
       return false;
-    } else if (/[^A-Za-z0-9_-\s]/g.test(name)) { //matches any character that is not a alphanumeric, underscore or hyphen
+    } else if (/[^A-Za-z0-9_\-\s]/g.test(name)) { //matches any character that is not a alphanumeric, underscore or hyphen
       this.refs.topologyNameEditable.setState({errorMsg: "Topology name contains invalid characters"});
       return false;
     } else if (!/[A-Za-z0-9]/g.test(name)) { //to check if name contains only special characters
@@ -759,7 +759,7 @@ class TopologyEditorContainer extends Component {
               : this.refs.NodeModal.show()
         : (this.node.currentType.toLowerCase() === 'rt-join' && currentEdges.length !== 2)
           ? FSReactToastr.info(
-            <CommonNotification flag="error" content={`Please connected atleast two streams for configuring ${this.node.uiname} processor`}/>, '', toastOpt)
+            <CommonNotification flag="error" content={`Two incoming streams are required for configuring ${this.node.uiname} processor`}/>, '', toastOpt)
           :  this.refs.NodeModal.show();
         this.updateGraphMethod = updateGraphMethod;
       });
