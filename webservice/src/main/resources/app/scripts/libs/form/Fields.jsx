@@ -169,7 +169,7 @@ export class string extends BaseField {
     this.props.data[this.props.value] = value;
     Form.setState(Form.state, () => {
       if (this.validate() && (this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase().indexOf("schema") !== -1)) {
-        this.getSchema(this.props.data[this.props.value]);
+        this.getSchema(this.props.data[this.props.value],false);
       }
     });
   }
@@ -181,18 +181,19 @@ export class string extends BaseField {
     Form.forceUpdate();
   }
 
-  getSchema(val) {
+  getSchema(val,flag) {
     if (val != '') {
       clearTimeout(this.topicTimer);
       this.topicTimer = setTimeout(() => {
-        this.getSchemaFromName(val);
+        this.getSchemaFromName(val,flag);
       }, 700);
     }
   }
 
-  getSchemaFromName(topicName) {
+  getSchemaFromName(topicName,flag) {
     let resultArr = [];
-    TopologyREST.getSchemaForKafka(topicName).then(result => {
+    let versionsId =  '';
+    TopologyREST.getSchemaForKafka(topicName,versionsId).then(result => {
       if (result.responseMessage !== undefined) {
         this.refs.input.className = "form-control invalidInput";
         this.context.Form.state.Errors[this.props.valuePath] = 'Schema Not Found';
@@ -203,11 +204,11 @@ export class string extends BaseField {
         if (typeof resultArr === 'string') {
           resultArr = JSON.parse(resultArr);
         }
-        this.context.Form.state.Errors[this.props.valuePath] = '';
+        this.context.Form.state.Errors[this.props.valuePath] =  resultArr.length === 0 ? 'Schema Not Found' : '';
         this.context.Form.setState(this.context.Form.state);
       }
       if (this.context.Form.props.callback) {
-        this.context.Form.props.callback(resultArr);
+        this.context.Form.props.callback(resultArr,flag);
       }
     });
   }
@@ -321,28 +322,32 @@ export class enumstring extends BaseField {
     this.props.data[this.props.value] = val.value;
     const {Form} = this.context;
     Form.setState(Form.state, () => {
-      if (this.validate() && (this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase().indexOf("schema") !== -1)) {
-        this.getSchema(this.props.data[this.props.value]);
+      if (this.validate() && (this.props.fieldJson !== undefined && this.props.fieldJson.hint !== undefined && Utils.matchStringInArr(this.props.fieldJson.hint, 'schema'))) {
+        this.getSchema(this.props.data[this.props.value],null,false);
       } else if (this.props.fieldJson.fieldName === "securityProtocol"){
         if(Form.props.handleSecurityProtocol){
           Form.props.handleSecurityProtocol(val.value);
         }
+      } else if (this.validate() && (this.props.fieldJson !== undefined && this.props.fieldJson.hint !== undefined  && Utils.matchStringInArr(this.props.fieldJson.hint, "schemaVersion"))) {
+        const topicName = this.props.data['topic'];
+        this.getSchema(topicName,this.props.data[this.props.value],true);
       }
     });
   }
 
-  getSchema(val) {
+  getSchema(val,id,flag) {
     if (val != '') {
       clearTimeout(this.topicTimer);
       this.topicTimer = setTimeout(() => {
-        this.getSchemaFromName(val);
+        this.getSchemaFromName(val,id,flag);
       }, 700);
     }
   }
 
-  getSchemaFromName(topicName) {
+  getSchemaFromName(topicName,id,flag) {
     let resultArr = [];
-    TopologyREST.getSchemaForKafka(topicName).then(result => {
+    let versionsId = flag ? id : '';
+    TopologyREST.getSchemaForKafka(topicName,versionsId).then(result => {
       if (result.responseMessage !== undefined) {
         this.refs.select2.className = "form-control invalidInput";
         this.context.Form.state.Errors[this.props.valuePath] = 'Schema Not Found';
@@ -353,11 +358,11 @@ export class enumstring extends BaseField {
         if (typeof resultArr === 'string') {
           resultArr = JSON.parse(resultArr);
         }
-        this.context.Form.state.Errors[this.props.valuePath] = '';
+        this.context.Form.state.Errors[this.props.valuePath] =  resultArr.length === 0 ? 'Schema Not Found' : '';
         this.context.Form.setState(this.context.Form.state);
       }
       if (this.context.Form.props.callback) {
-        this.context.Form.props.callback(resultArr);
+        this.context.Form.props.callback(resultArr,flag);
       }
     });
   }
@@ -490,22 +495,23 @@ export class creatableField extends BaseField {
       : '';
     Form.setState(Form.state, () => {
       if (this.validate() && (this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase().indexOf("schema") !== -1)) {
-        this.getSchema(this.props.data[this.props.value]);
+        this.getSchema(this.props.data[this.props.value],false);
       }
     });
   }
-  getSchema(val) {
+  getSchema(val,flag) {
     if (val != '') {
       clearTimeout(this.topicTimer);
       this.topicTimer = setTimeout(() => {
-        this.getSchemaFromName(val);
+        this.getSchemaFromName(val,flag);
       }, 700);
     }
   }
 
-  getSchemaFromName(topicName) {
+  getSchemaFromName(topicName,flag) {
     let resultArr = [];
-    TopologyREST.getSchemaForKafka(topicName).then(result => {
+    let versionsId = '';
+    TopologyREST.getSchemaForKafka(topicName,versionsId).then(result => {
       if (result.responseMessage !== undefined) {
         this.refs.CustomCreatable.className = "form-control invalidInput";
         this.context.Form.state.Errors[this.props.valuePath] = 'Schema Not Found';
@@ -516,11 +522,11 @@ export class creatableField extends BaseField {
         if (typeof resultArr === 'string') {
           resultArr = JSON.parse(resultArr);
         }
-        this.context.Form.state.Errors[this.props.valuePath] = '';
+        this.context.Form.state.Errors[this.props.valuePath] =  resultArr.length === 0 ? 'Schema Not Found' : '';
         this.context.Form.setState(this.context.Form.state);
       }
       if (this.context.Form.props.callback) {
-        this.context.Form.props.callback(resultArr);
+        this.context.Form.props.callback(resultArr,flag);
       }
     });
   }

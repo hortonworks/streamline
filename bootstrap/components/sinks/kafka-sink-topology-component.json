@@ -35,6 +35,15 @@
         "hint": "schema,override"
       },
       {
+        "uiName": "Writer schema version",
+        "fieldName": "writerSchemaVersion",
+        "isOptional": false,
+        "tooltip": "Version of schema for topic to use for serializing the message. Default is the latest version for the schema",
+        "type": "enumstring",
+        "options": [],
+        "hint": "dependsOn-topic,schemaVersion"
+      },
+      {
         "uiName": "Security Protocol",
         "fieldName": "securityProtocol",
         "isOptional": false,
@@ -68,14 +77,6 @@
         "options": [],
         "defaultValue": null,
         "hint": "inputFields"
-      },
-      {
-        "uiName": "Writer schema version",
-        "fieldName": "writerSchemaVersion",
-        "isOptional": true,
-        "tooltip": "Version of schema for topic to use for serializing the message. Default is the latest version for the schema",
-        "type": "string",
-        "defaultValue": null
       },
       {
         "uiName": "Ack Mode",

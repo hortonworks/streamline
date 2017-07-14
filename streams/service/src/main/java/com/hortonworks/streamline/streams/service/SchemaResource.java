@@ -24,6 +24,7 @@ import com.hortonworks.registries.schemaregistry.SchemaIdVersion;
 import com.hortonworks.registries.schemaregistry.SchemaMetadata;
 import com.hortonworks.registries.schemaregistry.SchemaVersion;
 import com.hortonworks.registries.schemaregistry.SchemaVersionInfo;
+import com.hortonworks.registries.schemaregistry.SchemaVersionKey;
 import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
 import com.hortonworks.registries.schemaregistry.errors.IncompatibleSchemaException;
 import com.hortonworks.registries.schemaregistry.errors.InvalidSchemaException;
@@ -31,14 +32,13 @@ import com.hortonworks.registries.schemaregistry.errors.SchemaNotFoundException;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
-import com.hortonworks.streamline.streams.security.Roles;
-import com.hortonworks.streamline.streams.security.SecurityUtil;
-import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -49,6 +49,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
 /**
@@ -127,6 +128,63 @@ public class SchemaResource {
         } catch (JsonProcessingException ex) {
             LOG.error("Error occurred while retrieving schema with name [{}]", topicName, ex);
             throw ex;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @GET
+    @Path("/{schemaName}/versions")
+    @Timed
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllSchemaVersions(@PathParam("schemaName") String schemaName,
+                                         @Context SecurityContext securityContext) {
+        try {
+            LOG.info("Get all versions for schema : {}", schemaName);
+            Collection<SchemaVersionInfo> schemaVersionInfos = schemaRegistryClient.getAllVersions(schemaName);
+            Collection<String> schemaVersions = new ArrayList<>();
+            if (schemaVersionInfos != null && !schemaVersionInfos.isEmpty()) {
+                LOG.debug("######### Received schema versions from schema registry: {}", schemaVersionInfos);
+                for (SchemaVersionInfo schemaVersionInfo: schemaVersionInfos) {
+                    schemaVersions.add(schemaVersionInfo.getVersion().toString());
+                }
+                return WSUtils.respondEntities(schemaVersions, OK);
+            } else {
+                LOG.debug("######### Received null response for schema versions from schema registry for schema: {}", schemaName);
+                return WSUtils.respondEntity(schemaVersions, NOT_FOUND);
+            }
+        } catch (SchemaNotFoundException e) {
+            LOG.error("Schema not found: [{}]", schemaName, e);
+            throw EntityNotFoundException.byName(schemaName);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @GET
+    @Path("/{schemaName}/versions/{version}")
+    @Timed
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getSchemaForVersion(@PathParam("schemaName") String schemaName, @PathParam("version") String version,
+                                        @Context SecurityContext securityContext) {
+        try {
+            LOG.info("Get schema:version {}", schemaName + ":" + version);
+            SchemaVersionInfo schemaVersionInfo = schemaRegistryClient.getSchemaVersionInfo(new SchemaVersionKey(schemaName, Integer.parseInt
+                    (version)));
+            if (schemaVersionInfo != null) {
+                LOG.debug("######### Received schema version from schema registry: {}", schemaVersionInfo);
+                String schema = schemaVersionInfo.getSchemaText();
+                if (schema != null && !schema.isEmpty()) {
+                    schema = AvroStreamlineSchemaConverter.convertAvroSchemaToStreamlineSchema(schema);
+                }
+                LOG.debug("######### Converted schema: {}", schema);
+                return WSUtils.respondEntity(schema, OK);
+            } else {
+                throw new SchemaNotFoundException("Version " + version + " of schema " + schemaName + " not found ");
+            }
+        } catch (SchemaNotFoundException e) {
+            LOG.error("Schema not found: [{}]", schemaName, e);
+            throw EntityNotFoundException.byName(schemaName);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
