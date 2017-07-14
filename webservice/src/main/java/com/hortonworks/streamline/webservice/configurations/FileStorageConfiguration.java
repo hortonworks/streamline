@@ -13,34 +13,37 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
  **/
+package com.hortonworks.streamline.webservice.configurations;
 
-package com.hortonworks.streamline.webservice;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.Map;
 
 /**
- * This class represents storage provider configuration.
+ * The configuration for jar storage.
+ *
  */
-public class StorageProviderConfiguration {
-    private String providerClass;
+public class FileStorageConfiguration {
 
-    private Map<String, Object> properties;
+    @NotEmpty
+    private String className;
 
-    public StorageProviderConfiguration() {
-    }
-    public String getProviderClass() {
-        return providerClass;
-    }
+    private Map<String, String> properties;
 
-    public void setProviderClass(String providerClass) {
-        this.providerClass = providerClass;
+    public String getClassName() {
+        return className;
     }
 
-    public Map<String, Object> getProperties() {
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
+    public Map<String, String> getProperties() {
         return properties;
     }
 
-    public void setProperties(Map<String, Object> properties) {
-        this.properties = properties;
+    public void setProperties(Map<String, String> config) {
+        this.properties = config;
     }
+
 }
