@@ -51,7 +51,7 @@ import static java.util.stream.Collectors.toList;
 /**
  * Services and nodes discover using Ambari.
  */
-public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
+  public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
   private static final Logger LOG = LoggerFactory.getLogger(AmbariServiceNodeDiscoverer.class);
 
   public static final String CONFIGURATIONS_URL = "/configurations";
@@ -156,11 +156,15 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
     }
 
     List<String> confNameList = createAmbariConfNameList(serviceConfigurations);
+    Map<String, String> desiredTagMap = new HashMap<>();
+    for (String confName: confNameList) {
+       String tag = getDesiredTag(confName);
+       desiredTagMap.put(confName, tag);
+    }
 
+    LOG.debug("desiredTagMap : {}", desiredTagMap);
     Map<String, Map<String, String>> configurations = new HashMap<>();
-
     String targetUrl = apiRootUrl + CONFIGURATIONS_URL;
-
     LOG.debug("configurations URI: {}", targetUrl);
 
     try {
@@ -169,7 +173,7 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
 
       if (items.size() > 0) {
         Map<String, ServiceConfigurationItem> confToItem = extractLatestConfigurationItems(
-                confNameList, items);
+                confNameList, items, desiredTagMap);
 
         for (ServiceConfigurationItem confItem : confToItem.values()) {
           // convert Ambari type to the actual Service's configuration file
@@ -178,7 +182,25 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
         }
       }
 
+      LOG.debug("configurations : {}", configurations);
       return configurations;
+    } catch (WebApplicationException e) {
+      throw WrappedWebApplicationException.of(e);
+    }
+  }
+
+  private String getDesiredTag(String confName) {
+    String targetUrl = apiRootUrl + "?fields=Clusters/desired_configs";
+    try {
+      Map<String, ?> responseMap = JsonClientUtil.getEntity(client.target(targetUrl), AMBARI_REST_API_MEDIA_TYPE, Map.class);
+      Map<String, ?> clustersItem = (Map<String, ?>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_CLUSTERS);
+      Map<String, ?> desiredConfigsItem = (Map<String, ?>) clustersItem.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_DESIRED_CONFIGS);
+      Map<String, ?> desiredTagItem = (Map<String, ?>) desiredConfigsItem.get(confName);
+
+      if (desiredTagItem != null) {
+        return (String) desiredTagItem.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_TAG);
+      }
+      return null;
     } catch (WebApplicationException e) {
       throw WrappedWebApplicationException.of(e);
     }
@@ -257,11 +279,11 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
   }
 
   private Map<String, ServiceConfigurationItem> extractLatestConfigurationItems(List<String> confNameList,
-      List<Map<String, ?>> items) {
+      List<Map<String, ?>> items, Map<String, String> desiredTagMap) {
     Map<String, ServiceConfigurationItem> confToItem = new HashMap<>();
     for (Map<String, ?> item : items) {
       String type = (String) item.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_TYPE);
-      if (!confNameList.contains(type)) {
+      if (!confNameList.contains(type) || !desiredTagMap.keySet().contains(type)) {
         continue;
       }
 
@@ -269,8 +291,7 @@ public class AmbariServiceNodeDiscoverer implements ServiceNodeDiscoverer {
       String tag = (String) item.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_TAG);
       String href = (String) item.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_HREF);
 
-      ServiceConfigurationItem latestItem = confToItem.get(type);
-      if (latestItem == null || latestItem.getVersion() < version) {
+      if(desiredTagMap.get(type).equals(tag)) {
         confToItem.put(type, new ServiceConfigurationItem(type, version, tag, href));
       }
     }

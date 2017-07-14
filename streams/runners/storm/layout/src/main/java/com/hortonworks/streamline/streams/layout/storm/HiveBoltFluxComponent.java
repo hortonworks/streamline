@@ -15,10 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.layout.storm;
 
-import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -86,7 +83,6 @@ public class HiveBoltFluxComponent extends AbstractFluxComponent {
                 KEY_TXNS_PER_BATCH,
                 KEY_MAX_OPEN_CONNECTIONS,
                 KEY_BATCH_SIZE,
-                KEY_IDLE_TIMEOUT,
                 KEY_IDLE_TIMEOUT,
                 KEY_CALL_TIMEOUT,
                 KEY_HEARTBEAT_INTERVAL,
