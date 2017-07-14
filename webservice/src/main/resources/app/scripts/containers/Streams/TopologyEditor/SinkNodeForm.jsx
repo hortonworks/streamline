@@ -146,6 +146,9 @@ export default class SinkNodeForm extends Component {
       stateObj.securityType = stateObj.formData.securityProtocol || '';
       stateObj.hasSecurity = hasSecurity;
       stateObj.validSchema = true;
+      if(!_.isEmpty(stateObj.formData) && !!stateObj.formData.topic){
+        this.fetchSchemaVersions(stateObj.formData);
+      }
       this.setState(stateObj, () => {
         if (stateObj.formData.cluster !== undefined) {
           this.updateClusterFields(stateObj.formData.cluster);
@@ -204,6 +207,14 @@ export default class SinkNodeForm extends Component {
       //     this.allSourceChildNodeData = sourceResults;
       //   });
       // }
+    });
+  }
+
+  fetchSchemaVersions = (data) => {
+    TopologyREST.getSchemaForKafka(data.topic).then((results) => {
+      const {uiSpecification} = this.state;
+      let tempConfigJson =  Utils.populateSchemaVersionOptions(results,uiSpecification);
+      this.setState({uiSpecification : tempConfigJson});
     });
   }
 
@@ -419,11 +430,15 @@ export default class SinkNodeForm extends Component {
     this.setState(stateObj);
   }
 
-  validateTopic(resultArr){
-    if(resultArr.length > 0){
-      this.setState({validSchema: true});
-    } else {
-      this.setState({validSchema: false});
+  validateTopic(resultArr,flag){
+    if(!flag){
+      let configJSON = _.cloneDeep(this.state.uiSpecification);
+      let tempFormData = Utils.deepmerge(this.state.formData,this.refs.Form.state.FormData);
+      configJSON =  Utils.populateSchemaVersionOptions(resultArr,configJSON);
+      let validate =  false;
+      validate = _.isEmpty(resultArr) ? false : true;
+      tempFormData.writerSchemaVersion = '';
+      this.setState({validSchema: validate,uiSpecification :configJSON,formData :tempFormData });
     }
   }
 

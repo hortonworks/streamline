@@ -37,10 +37,11 @@
       {
         "uiName": "Reader schema version",
         "fieldName": "readerSchemaVersion",
-        "isOptional": true,
+        "isOptional": false,
         "tooltip": "Version of schema for topic to use for deserializing the message. Default is version used by kafka producer to write the message",
-        "type": "string",
-        "defaultValue": null
+        "type": "enumstring",
+        "options": [],
+        "hint": "dependsOn-topic,schemaVersion"
       },
       {
         "uiName": "Consumer Group Id",

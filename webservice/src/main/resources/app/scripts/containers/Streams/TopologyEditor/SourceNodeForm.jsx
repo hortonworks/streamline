@@ -109,6 +109,9 @@ export default class SourceNodeForm extends Component {
         stateObj.configJSON = this.pushClusterFields(tempArr, stateObj.configJSON);
       }
       stateObj.formData = this.nodeData.config.properties;
+      if(!_.isEmpty(stateObj.formData) && !!stateObj.formData.topic){
+        this.fetchSchemaVersions(stateObj.formData);
+      }
       stateObj.description = this.nodeData.description;
       stateObj.fetchLoader = false;
       stateObj.hasSecurity = hasSecurity;
@@ -124,6 +127,15 @@ export default class SourceNodeForm extends Component {
       });
     });
   }
+
+  fetchSchemaVersions = (data) => {
+    TopologyREST.getSchemaForKafka(data.topic).then((results) => {
+      const {configJSON} = this.state;
+      let tempConfigJson =  Utils.populateSchemaVersionOptions(results,configJSON);
+      this.setState({configJSON : tempConfigJson});
+    });
+  }
+
   fetchFields = (clusterList) => {
     let obj = this.props.configData.topologyComponentUISpecification.fields;
     if (_.keys(clusterList).length > 0) {
@@ -249,12 +261,24 @@ export default class SourceNodeForm extends Component {
     });
   }
 
-  showOutputStream(resultArr) {
-    this.streamObj = {
+  showOutputStream(resultArr,flag) {
+    let tempConfigJson = _.cloneDeep(this.state.configJSON);
+    let tempFormData = Utils.deepmerge(this.state.formData,this.refs.Form.state.FormData);
+    if(flag){
+      this.streamObj = this.updateStreamObj(resultArr);
+    } else {
+      this.streamObj.fields = [];
+      tempFormData.readerSchemaVersion = '';
+      tempConfigJson = Utils.populateSchemaVersionOptions(resultArr,tempConfigJson);
+    }
+    this.setState({streamObj : this.streamObj, configJSON : tempConfigJson,formData:tempFormData});
+  }
+
+  updateStreamObj = (resultArr) => {
+    return {
       streamId: this.props.configData.subType.toLowerCase() + '_stream_' + this.nodeData.id,
       fields: resultArr
     };
-    this.setState({streamObj: this.streamObj});
   }
 
   onSelectTab = (eventKey) => {
