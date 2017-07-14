@@ -25,6 +25,7 @@ import com.hortonworks.streamline.storage.StorableFactory;
 import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.storage.exception.AlreadyExistsException;
+import com.hortonworks.streamline.storage.exception.ConcurrentUpdateException;
 import com.hortonworks.streamline.storage.exception.IllegalQueryParameterException;
 import com.hortonworks.streamline.storage.exception.StorageException;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.mysql.factory.MySqlExecutor;
@@ -32,9 +33,12 @@ import com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.factory.
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.MetadataHelper;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlSelectQuery;
+import com.hortonworks.streamline.storage.util.StorageUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.Collection;
 import java.util.Collections;
@@ -49,7 +53,6 @@ public class JdbcStorageManager implements StorageManager {
 
     private final StorableFactory storableFactory = new StorableFactory();
     private QueryExecutor queryExecutor;
-
     public JdbcStorageManager() {
     }
 
@@ -78,6 +81,14 @@ public class JdbcStorageManager implements StorageManager {
     public void addOrUpdate(Storable storable) throws StorageException {
         log.debug("Adding or updating storable [{}]", storable);
         queryExecutor.insertOrUpdate(storable);
+    }
+
+    @Override
+    public void update(Storable storable) {
+        if (queryExecutor.update(storable) == 0) {
+            log.warn("Update storable '{}' returned 0 rows, possible concurrent update or invalid primary key");
+            throw new ConcurrentUpdateException("Row could not be updated, possible concurrent update or invalid primary key");
+        }
     }
 
     @Override

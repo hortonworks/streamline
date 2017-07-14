@@ -15,6 +15,7 @@
  **/
 package com.hortonworks.streamline.storage;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.registries.common.Schema;
 
 import java.util.Map;
@@ -84,5 +85,13 @@ public interface Storable {
      * Set unique Id to the storable. This method is for putting auto generated key.
      */
     void setId(Long id);
+
+    /**
+     * Returns if the storable should be cached or not
+     */
+    @JsonIgnore
+    default boolean isCacheable() {
+        return true;
+    }
 
 }

@@ -69,6 +69,14 @@ CREATE TABLE IF NOT EXISTS file (
     UNIQUE KEY `jars_UK_name_version` (name, version)
 );
 
+CREATE TABLE IF NOT EXISTS fileblob (
+    name VARCHAR(255) NOT NULL,
+    version BIGINT NOT NULL,
+    data LONGBLOB NOT NULL,
+    timestamp BIGINT,
+    PRIMARY KEY (name)
+);
+
 CREATE TABLE IF NOT EXISTS namespace (
        id BIGINT AUTO_INCREMENT NOT NULL,
        name VARCHAR(255) NOT NULL,

@@ -68,6 +68,14 @@ public interface StorageManager {
     void addOrUpdate(Storable storable) throws StorageException;
 
     /**
+     * Updates an existing {@link Storable}. Throws {@link StorageException} if the
+     * storable could not be updated.
+     *
+     * @param storable the storable
+     */
+    void update(Storable storable);
+
+    /**
      * Gets the storable entity by using {@code Storable.getPrimaryKey()} as lookup key, return null if no storable entity with
      * the supplied key is found.
      * @param key
@@ -75,6 +83,16 @@ public interface StorageManager {
      * @throws StorageException
      */
     <T extends Storable> T get(StorableKey key) throws StorageException;
+
+    /**
+     * Returns if an entity with the given key exists or not.
+     *
+     * @param key the Storable key
+     * @return true if the entity with given key exists, false otherwise
+     */
+    default boolean exists(StorableKey key) {
+        return get(key) != null;
+    }
 
     /**
      * Get the list of storable entities in the namespace, matching the query params.
