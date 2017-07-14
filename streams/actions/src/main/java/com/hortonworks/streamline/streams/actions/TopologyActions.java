@@ -77,6 +77,7 @@ public interface TopologyActions {
     String getRuntimeTopologyId(TopologyLayout topology, String asUser);
 
     interface Status {
+        String STATUS_UNKNOWN = "Unknown";
         String getStatus();
         Map<String, String> getExtra();
     }

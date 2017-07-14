@@ -20,6 +20,7 @@ import com.hortonworks.streamline.streams.catalog.CatalogToLayoutConverter;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.exception.TopologyNotAliveException;
 import com.hortonworks.streamline.streams.layout.component.TopologyDag;
+import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,24 +109,37 @@ public final class TopologyStates {
     public static final TopologyState TOPOLOGY_STATE_EXTRA_JARS_SETUP = new TopologyState() {
         @Override
         public void deploy(TopologyContext context) throws Exception {
+            TopologyActions topologyActions = context.getTopologyActions();
+            Topology topology = context.getTopology();
+            TopologyDag dag = topology.getTopologyDag();
+            TopologyLayout layout = CatalogToLayoutConverter.getTopologyLayout(topology, dag);
+            if (dag == null) {
+                throw new IllegalStateException("Topology dag not set up");
+            }
             try {
                 context.setCurrentAction("Submitting topology to streaming engine");
-                Topology topology = context.getTopology();
-                TopologyDag dag = topology.getTopologyDag();
-                if (dag == null) {
-                    throw new IllegalStateException("Topology dag not set up");
-                }
-                TopologyActions topologyActions = context.getTopologyActions();
                 String mavenArtifacts = context.getMavenArtifacts();
-                topologyActions.deploy(CatalogToLayoutConverter.getTopologyLayout(topology, dag),
-                        mavenArtifacts, context, context.getAsUser());
+                topologyActions.deploy(layout, mavenArtifacts, context, context.getAsUser());
                 context.setState(TOPOLOGY_STATE_DEPLOYED);
                 context.setCurrentAction("Topology deployed");
             } catch (Exception ex) {
                 LOG.error("Error while trying to deploy the topology in the streaming engine", ex);
+                LOG.error("Trying to kill any running instance of topology '{}'", context.getTopology().getName());
+                killTopologyIfRunning(context, layout);
                 context.setState(TOPOLOGY_STATE_DEPLOYMENT_FAILED);
                 context.setCurrentAction("Topology submission failed due to: " + ex);
                 throw ex;
+            }
+        }
+
+        private void killTopologyIfRunning(TopologyContext context, TopologyLayout layout) {
+            try {
+                TopologyActions.Status engineStatus = context.getTopologyActions().status(layout, context.getAsUser());
+                if (!engineStatus.getStatus().equals(TopologyActions.Status.STATUS_UNKNOWN)) {
+                    invokeKill(context);
+                }
+            } catch (Exception e) {
+                LOG.debug("Not able to get running status of topology '{}'", context.getTopology().getName());
             }
         }
     };
@@ -188,9 +202,7 @@ public final class TopologyStates {
     private static void doKill(TopologyContext context) throws Exception {
         try {
             context.setCurrentAction("Killing topology");
-            Topology topology = context.getTopology();
-            TopologyActions topologyActions = context.getTopologyActions();
-            topologyActions.kill(CatalogToLayoutConverter.getTopologyLayout(topology), context.getAsUser());
+            invokeKill(context);
             context.setState(TOPOLOGY_STATE_INITIAL);
             context.setCurrentAction("Topology killed");
         } catch (TopologyNotAliveException ex) {
@@ -205,4 +217,10 @@ public final class TopologyStates {
         }
     }
 
+    private static void invokeKill(TopologyContext context) throws Exception {
+        Topology topology = context.getTopology();
+        TopologyActions topologyActions = context.getTopologyActions();
+        topologyActions.kill(CatalogToLayoutConverter.getTopologyLayout(topology), context.getAsUser());
+        LOG.debug("Killed topology '{}'", topology.getName());
+    }
 }
