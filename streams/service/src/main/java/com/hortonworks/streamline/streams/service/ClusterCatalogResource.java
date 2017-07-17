@@ -75,6 +75,7 @@ import static com.hortonworks.streamline.streams.security.Permission.EXECUTE;
 import static com.hortonworks.streamline.streams.security.Permission.READ;
 import static com.hortonworks.streamline.streams.security.Permission.WRITE;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.OK;
 
 @Path("/v1/catalog")
@@ -206,7 +207,10 @@ public class ClusterCatalogResource {
             discoverer.init(null);
             discoverer.validateApiUrl();
             response = Collections.singletonMap(VERIFIED, true);
+
+            return WSUtils.respondEntity(response, OK);
         } catch (WrappedWebApplicationException e) {
+            Response resp = e.getResponse();
             Throwable cause = e.getCause();
             if (cause == null || !(cause instanceof WebApplicationException)) {
                 response = Collections.singletonMap(RESPONSE_MESSAGE, e.getMessage());
@@ -214,12 +218,14 @@ public class ClusterCatalogResource {
                 String message = getMessageFromAmbariAPIResponse(cause);
                 response = Collections.singletonMap(RESPONSE_MESSAGE, message);
             }
+
+            return WSUtils.respondEntity(response, Response.Status.fromStatusCode(resp.getStatus()));
         } catch (Throwable e) {
             // other exceptions
             response = Collections.singletonMap(RESPONSE_MESSAGE, e.getMessage());
-        }
 
-        return WSUtils.respondEntity(response, OK);
+            return WSUtils.respondEntity(response, INTERNAL_SERVER_ERROR);
+        }
     }
 
     @POST
