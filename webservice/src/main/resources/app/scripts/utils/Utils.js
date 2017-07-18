@@ -659,8 +659,8 @@ const matchStringInArr = function(stringArr,str){
 const populateSchemaVersionOptions = function(resultArr,tempConfig){
   const versionOptions = _.map(resultArr.entities, (result) => {
     return {
-      fieldName : +result,
-      uiName : +result
+      fieldName : result,
+      uiName : result
     };
   });
   _.map(tempConfig, (config) => {
