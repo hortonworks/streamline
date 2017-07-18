@@ -23,5 +23,11 @@ package com.hortonworks.streamline.streams.rule;
  * @param <I> type of the input argument
  */
 public interface UDF<O, I> {
-    O evaluate(I i);
+    /**
+     * Evaluate the input and return an output
+     *
+     * @param input the input
+     * @return the output
+     */
+    O evaluate(I input);
 }
