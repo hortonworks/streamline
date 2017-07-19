@@ -1,4 +1,5 @@
 ## 0.4
+ * ISSUE-829     : Fix for CONCAT function 
  * ISSUE-824     : Forward Ambari response http status code when request to Ambari fails
  * ISSUE-826     : Sanitize mysql create_tables scripts
  * ISSUE-774     : Make reader and writer schema version config properties mandatory for Kafka source and sink respectively 
