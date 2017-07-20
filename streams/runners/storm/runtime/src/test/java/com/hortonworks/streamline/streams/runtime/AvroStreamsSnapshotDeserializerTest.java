@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.registries.schemaregistry.SchemaIdVersion;
 import com.hortonworks.registries.schemaregistry.SchemaMetadata;
 import com.hortonworks.registries.schemaregistry.SchemaMetadataInfo;
+import com.hortonworks.registries.schemaregistry.SchemaVersionInfo;
 import com.hortonworks.registries.schemaregistry.SchemaVersionKey;
 import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
 import com.hortonworks.registries.schemaregistry.serdes.avro.AvroSnapshotSerializer;
@@ -44,7 +45,7 @@ import java.util.Map;
  */
 public class AvroStreamsSnapshotDeserializerTest {
     private static final Logger LOG = LoggerFactory.getLogger(AvroStreamsSnapshotDeserializerTest.class);
-
+    private static final SchemaIdVersion SCHEMA_ID_VERSION = new SchemaIdVersion(1L, 1);
 
     @Mocked
     SchemaRegistryClient mockSchemaRegistryClient;
@@ -57,6 +58,7 @@ public class AvroStreamsSnapshotDeserializerTest {
         try (InputStream schemaStream = AvroStreamsSnapshotDeserializerTest.class.getResourceAsStream("/avro/complex.avsc")) {
 
             CustomAvroSerializer customAvroSerializer = new CustomAvroSerializer();
+            customAvroSerializer.init(Collections.singletonMap("serdes.protocol.version", (byte) 1));
             final Schema schema = new Schema.Parser().parse(schemaStream);
             GenericRecord inputRecord = generateGenericRecord(schema);
             LOG.info("Generated record [{}]", inputRecord);
@@ -66,7 +68,10 @@ public class AvroStreamsSnapshotDeserializerTest {
 
             new Expectations() {
                 {
-                    mockSchemaRegistryClient.getSchemaMetadataInfo(anyLong);
+                    mockSchemaRegistryClient.getSchemaVersionInfo(withEqual(SCHEMA_ID_VERSION));
+                    //only versions of schema matters for this mock, as getVersion is only used during de-serialization
+                    result = new SchemaVersionInfo(1l, schemaMetadata.getName(), SCHEMA_ID_VERSION.getVersion(), "doesNotMatter",1l, "doesNotMatter");
+                    mockSchemaRegistryClient.getSchemaMetadataInfo(withEqual(schemaMetadata.getName()));
                     result = new SchemaMetadataInfo(schemaMetadata);
                 }
             };
@@ -117,7 +122,7 @@ public class AvroStreamsSnapshotDeserializerTest {
 
     private static class CustomAvroSerializer extends AvroSnapshotSerializer {
         public byte[] customSerialize(GenericRecord input) {
-            return doSerialize(input, new SchemaIdVersion(1L, 1));
+            return doSerialize(input, SCHEMA_ID_VERSION);
         }
     }
 }
