@@ -72,6 +72,23 @@ public class WindowRulesBoltTest {
     }
 
     @Test
+    public void testAggFunctions() throws Exception {
+        Assert.assertTrue(doTest(readFile("/streamline-udaf.json"), 1));
+        new Verifications() {
+            {
+                String streamId;
+                Collection<Tuple> anchors;
+                List<List<Object>> tuples = new ArrayList<>();
+                mockCollector.emit(streamId = withCapture(), anchors = withCapture(), withCapture(tuples));
+                Assert.assertEquals("outputstream", streamId);
+                Map<String, Object> fieldsAndValues1 = ((StreamlineEvent) tuples.get(0).get(0));
+                Assert.assertEquals("STDDEV 59.16079783099616 STDDEVP 57.66281297335398 VARIANCE 3500.0 VARIANCEP 3325.0 " +
+                        "MEAN 105.0 NUMBERSUM 2100 LONGCOUNT 20 MIN 10 MAX 200", fieldsAndValues1.get("body"));
+            }
+        };
+    }
+
+    @Test
     public void testCountBasedWindow() throws Exception {
         Assert.assertTrue(doTest(readFile("/window-rule-count.json"), 2));
         new Verifications() {
