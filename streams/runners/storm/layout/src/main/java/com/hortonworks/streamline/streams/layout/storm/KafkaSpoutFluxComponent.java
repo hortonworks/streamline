@@ -91,11 +91,11 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         List<Object> configMethods = new ArrayList<>();
         String[] configMethodNames = {
                 "setPollTimeoutMs", "setOffsetCommitPeriodMs", "setMaxUncommittedOffsets",
-                "setFirstPollOffsetStrategy", "setPartitionRefreshPeriodMs", "setEmitNullTuples", "setConsumerStartDelayMs"
+                "setFirstPollOffsetStrategy", "setPartitionRefreshPeriodMs", "setEmitNullTuples"
         };
         String[] configKeys = {
                 "pollTimeoutMs", "offsetCommitPeriodMs", "maximumUncommittedOffsets",
-                "firstPollOffsetStrategy", "partitionRefreshPeriodMs", "emitNullTuples", "consumerStartupDelayMs"
+                "firstPollOffsetStrategy", "partitionRefreshPeriodMs", "emitNullTuples"
         };
         configMethods.addAll(getConfigMethodsYaml(configMethodNames, configKeys));
         String[] moreConfigMethodNames = {
