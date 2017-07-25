@@ -760,9 +760,22 @@ export default class TopologyGraphComponent extends Component {
 
   showEventLogTooltip = (d,data,node) => {
     let thisGraph = this;
-    const list = _.map(_.keys(data.streamlineEvent), (key) => {
-      return `<li> ${data.streamlineEvent[key]} <span class='output-type'> ${key}</span> </li>`;
-    });
+    let list = [];
+    const nestedFields =  function(fieldObj,level){
+      _.map(_.keys(fieldObj), (key, i) => {
+        if(fieldObj[key].toString() === "[object Object]"){
+          const levelTemp = level > 0 ? level+1 : 1;
+          nestedFields(fieldObj[key], levelTemp);
+        } else {
+          list.push(`<li style='padding-left : ${level > 0 ? (10*level) : level}px' class=${level > 0 ? 'demo': ''}> ${fieldObj[key]} <span class='output-type'> ${key}</span> </li>`);
+        }
+      });
+    };
+    nestedFields(data.streamlineEvent,0);
+
+    // const list = _.map(_.keys(data.streamlineEvent), (key) => {
+    //   return `<li> ${data.streamlineEvent[key]} <span class='output-type'> ${key}</span> </li>`;
+    // });
     thisGraph.toolTip.attr('class', "d3-tip "+ data.componentName).attr('id','d3-tip').offset([0, 10]).direction('s' ).html(function(d) {
       return (
         "<div class='schema-tooltip clearfix'>"+

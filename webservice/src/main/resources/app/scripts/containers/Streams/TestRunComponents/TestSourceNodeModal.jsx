@@ -370,7 +370,7 @@ class TestSourceNodeModal extends Component{
     const tempSourceArr= sourceNodeArr[sourceIndex] ? sourceNodeArr : [{streamObj : {fields:[]},records:''}];
     const sourceNode = _.filter(nodeListArr, (node) =>  { return node.parentType.toLowerCase() === "source";});
     const tempNodeId = sourceNode[sourceIndex].nodeId;
-    const outputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={tempSourceArr[sourceIndex].streamObj} streamType="output"/>;
+    const outputSidebar = <StreamsSidebar ref="StreamSidebar" streamKind="Output" streamObj={tempSourceArr[sourceIndex].streamObj} streamType="output"/>;
     const sourceSideBar = (
       <div className="modal-sidebar-left sidebar-overflow">
         <h4>Sources</h4>
