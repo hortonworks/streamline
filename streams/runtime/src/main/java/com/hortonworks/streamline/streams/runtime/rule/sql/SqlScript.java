@@ -53,6 +53,9 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
     private final List<Schema.Field> stormSqlFields;
     private final List<String> projectedFields;
     private final List<String> outputFields;
+    private static final Schema.Field DUMMY_FIELD = Schema.Field.of("dummy", Schema.Type.INTEGER);
+    private static final Integer DUMMY_FIELD_VALUE = 0;
+
     public SqlScript(ExpressionRuntime expressionRuntime, ScriptEngine<SqlEngine> scriptEngine) {
         this(expressionRuntime, scriptEngine, null);
     }
@@ -61,6 +64,10 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
         super(expressionRuntime.asString(), scriptEngine);
         this.valuesConverter = valuesConverter;
         stormSqlFields = ((StormSqlExpression) expressionRuntime).getStormSqlFields();
+        if (stormSqlFields.isEmpty()) {
+            ((StormSqlExpression) expressionRuntime).addStormSqlField(DUMMY_FIELD);
+            stormSqlFields.add(DUMMY_FIELD);
+        }
         if (!stormSqlFields.isEmpty()) {
             SqlEngine sqlEngine = (SqlEngine) scriptEngine;
             sqlEngine.compileQuery(createQuery((StormSqlExpression) expressionRuntime));
@@ -110,9 +117,14 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
     private Values createValues(StreamlineEvent event) {
         Values values = new Values();
         for (Schema.Field field : stormSqlFields) {
-            Object value = event.get(field.getName());
-            if (value == null) {
-                throw new ConditionEvaluationException("Missing property " + field.getName());
+            Object value;
+            if (field == DUMMY_FIELD) {
+                value = DUMMY_FIELD_VALUE;
+            } else {
+                value = event.get(field.getName());
+                if (value == null) {
+                    throw new ConditionEvaluationException("Missing property " + field.getName());
+                }
             }
             values.add(value);
         }
