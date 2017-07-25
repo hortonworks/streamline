@@ -112,12 +112,20 @@ public class UDF extends AbstractStorable {
         this.type = type;
     }
 
+    /**
+     * Canonical class name - see {@link #setClassName}
+     * @return className set when UDF was created
+     */
     public String getClassName() {
         return className;
     }
 
+    /**
+     * Set inner-class names to canonical form if given fqdn form (with '$')
+     * @param className
+     */
     public void setClassName(String className) {
-        this.className = className;
+        this.className = className.replace('$', '.');
     }
 
     @JsonIgnore

@@ -42,21 +42,9 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.Consumes;
+import javax.ws.rs.*;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.StreamingOutput;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -64,22 +52,9 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
-import static com.hortonworks.streamline.streams.security.Permission.DELETE;
-import static com.hortonworks.streamline.streams.security.Permission.EXECUTE;
-import static com.hortonworks.streamline.streams.security.Permission.READ;
-import static com.hortonworks.streamline.streams.security.Permission.WRITE;
+import static com.hortonworks.streamline.streams.security.Permission.*;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -318,7 +293,8 @@ public class UDFCatalogResource {
         throw EntityNotFoundException.byId(udfId.toString());
     }
 
-    private void processUdf(InputStream inputStream,
+    /* package-private (for unit-test) */
+    void processUdf(InputStream inputStream,
                             UDF udf,
                             boolean checkDuplicate,
                             boolean builtin) throws Exception {
@@ -332,7 +308,7 @@ public class UDFCatalogResource {
             try (DigestInputStream dis = new DigestInputStream(inputStream, md)) {
                 tmpFile = FileUtil.writeInputStreamToTempFile(dis, ".jar");
             }
-            Map<String, Class<?>> udfs = catalogService.loadUdfsFromJar(tmpFile);
+            Map<String, Class<?>> udfs = StreamCatalogService.loadUdfsFromJar(tmpFile);
             validateUDF(new HashSet<>(ProxyUtil.canonicalNames(udfs.values())), udf, checkDuplicate);
             updateTypeInfo(udf, udfs.get(udf.getClassName()));
             String digest = Hex.encodeHexString(md.digest());
@@ -425,7 +401,7 @@ public class UDFCatalogResource {
         if (!udfs.contains(udf.getClassName())) {
             throw new RuntimeException("Cannot load class from uploaded Jar: " + udf.getClassName());
         }
-        LOG.debug("Validating UDF, Class {} is in the available classes {}", udf.getClassName(), udfs);
+        LOG.debug("Validating UDF, Class {} is in the uploaded Jar", udf.getClassName());
         if (checkDuplicate) {
             checkDuplicate(udf);
         }

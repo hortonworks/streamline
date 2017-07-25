@@ -65,10 +65,18 @@
         <dependency>
             <groupId>org.jmockit</groupId>
             <artifactId>jmockit</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hortonworks.streamline.test</groupId>
+            <artifactId>custom-udf-microtest</artifactId>
+            <version>0.1.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -93,6 +101,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>%regex[.*/hdf/sam/custom/test/udf/.*]</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

@@ -19,6 +19,11 @@
         <!--examples-->
         <module>examples/processors</module>
         <module>docker</module>
+        <!-- test jar builders -->
+        <module>streams/service/src/test/resources/custom-udf-microtest</module>
+        <!-- Note: if you get mvn error that custom-udf-microtest is declared twice,
+             check if your IDE has automatically (and incorrectly) added custom-udf-microtest
+             as a child or sub-module of streamline-service (streams/service/pom.xml) -->
     </modules>
 
     <properties>
