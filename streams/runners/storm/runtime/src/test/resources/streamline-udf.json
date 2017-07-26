@@ -1,0 +1,195 @@
+{
+  "outputStreams": [
+    {
+      "id": "outputstream",
+      "schema": {
+        "fields": [
+          {
+            "name": "intfield",
+            "type": "INTEGER",
+            "optional": true
+          },
+          {
+            "name": "stringfield1",
+            "type": "STRING",
+            "optional": false
+          },
+          {
+            "name": "stringfield2",
+            "type": "STRING",
+            "optional": false
+          }
+        ]
+      }
+    }
+  ],
+  "rules": [
+    {
+      "id": 1,
+      "name": "test",
+      "description": "test",
+      "ruleProcessorName": "test",
+      "streams": [
+        "inputstream"
+      ],
+      "projection": {
+        "expressions": [
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {
+                "name": "CONCAT",
+                "className": "com.hortonworks.streamline.streams.udf.Concat",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "stringfield1",
+                    "type": "STRING",
+                    "optional": false
+                  }
+                },
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "stringfield2",
+                    "type": "STRING",
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            "alias": "CONCAT"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {
+                "name": "IDENTITY_FN",
+                "className": "com.hortonworks.streamline.streams.udf.Identity",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "stringfield1",
+                    "type": "STRING",
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            "alias": "IDENTITY"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {
+                "name": "UPPER",
+                "className": "builtin",
+                "udf": false
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "stringfield1",
+                    "type": "STRING",
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            "alias": "UPPER"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {
+                "name": "LOWER",
+                "className": "builtin",
+                "udf": false
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "stringfield1",
+                    "type": "STRING",
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            "alias": "LOWER"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {
+                "name": "INITCAP",
+                "className": "builtin",
+                "udf": false
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "stringfield1",
+                    "type": "STRING",
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            "alias": "INITCAP"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {
+                "name": "CHAR_LENGTH",
+                "className": "builtin",
+                "udf": false
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "stringfield1",
+                    "type": "STRING",
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            "alias": "CHAR_LENGTH"
+          }
+        ]
+      },
+      "groupBy": null,
+      "having": null,
+      "window": null,
+      "actions": [
+        {
+          "name": "notificationsink",
+          "outputFieldsAndDefaults": {
+            "body": "CONCAT ${CONCAT} IDENTITY ${IDENTITY} UPPER ${UPPER} LOWER ${LOWER} INITCAP ${INITCAP} CHAR_LENGTH ${CHAR_LENGTH}"
+          },
+          "outputStreams": ["outputstream"],
+          "notifierName": "email_notifier",
+          "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction"
+        }
+      ]
+    }
+  ]
+}
