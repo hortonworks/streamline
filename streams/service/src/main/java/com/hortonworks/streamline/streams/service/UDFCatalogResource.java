@@ -432,10 +432,11 @@ public class UDFCatalogResource {
     }
 
     private void checkDuplicate(UDF udf) {
-        Collection<UDF> existing = catalogService.listUDFs(
-                Collections.singletonList(new QueryParam(UDF.NAME, udf.getName())));
+        List<QueryParam> qps = QueryParam.params(UDF.NAME, udf.getName(), UDF.CLASSNAME, udf.getClassName(),
+                UDF.TYPE, udf.getType().toString());
+        Collection<UDF> existing = catalogService.listUDFs(qps);
         if (!existing.isEmpty()) {
-            LOG.warn("UDF with name {} already exists", udf.getName());
+            LOG.warn("UDF with same (name, classname, type) already exists, udf: {}", udf);
             throw EntityAlreadyExistsException.byName(udf.getName());
         }
     }

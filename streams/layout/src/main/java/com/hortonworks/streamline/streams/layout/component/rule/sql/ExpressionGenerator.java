@@ -59,7 +59,7 @@ import static com.hortonworks.streamline.streams.layout.component.rule.expressio
 public class ExpressionGenerator extends SqlBasicVisitor<Expression> {
     private final Map<String, Schema> streamIdToSchema = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     private final Map<String, Udf> catalogUdfs;
-    private final Set<String> referredUdfs = new HashSet<>();
+    private final Set<Udf> referredUdfs = new HashSet<>();
     public ExpressionGenerator(List<Stream> streams, Map<String, Udf> catalogUdfs) {
         if (streams.isEmpty()) {
             throw new IllegalArgumentException("Empty stream");
@@ -115,9 +115,9 @@ public class ExpressionGenerator extends SqlBasicVisitor<Expression> {
                     Udf udfInfo = catalogUdfs.get(udfName);
                     String className = udfInfo.getClassName();
                     if (udfInfo.isAggregate()) {
-                        return visitUserDefinedAggregateFunction(udfName, className, call.getOperandList());
+                        return visitUserDefinedAggregateFunction(udfInfo, call.getOperandList());
                     } else {
-                        return visitUserDefinedFunction(udfName, className, call.getOperandList());
+                        return visitUserDefinedFunction(udfInfo, call.getOperandList());
                     }
                 } else {
                     throw new UnsupportedOperationException("Unknown built-in or User defined function '" + udfName + "'");
@@ -130,7 +130,7 @@ public class ExpressionGenerator extends SqlBasicVisitor<Expression> {
         }
     }
 
-    public Set<String> getReferredUdfs() {
+    public Set<Udf> getReferredUdfs() {
         return referredUdfs;
     }
 
@@ -138,18 +138,18 @@ public class ExpressionGenerator extends SqlBasicVisitor<Expression> {
         return new FunctionExpression(functionName, getOperandExprs(operands));
     }
 
-    private Expression visitUserDefinedFunction(String functionName, String className, List<SqlNode> operands) {
-        referredUdfs.add(functionName);
-        return new FunctionExpression(functionName, className, getOperandExprs(operands));
+    private Expression visitUserDefinedFunction(Udf udf, List<SqlNode> operands) {
+        referredUdfs.add(udf);
+        return new FunctionExpression(udf.getName(), udf.getClassName(), getOperandExprs(operands));
     }
 
     private Expression visitAggregateFunction(String functionName, List<SqlNode> operands) {
         return new AggregateFunctionExpression(functionName, getOperandExprs(operands));
     }
 
-    private Expression visitUserDefinedAggregateFunction(String functionName, String className, List<SqlNode> operands) {
-        referredUdfs.add(functionName);
-        return new AggregateFunctionExpression(functionName, className, getOperandExprs(operands));
+    private Expression visitUserDefinedAggregateFunction(Udf udf, List<SqlNode> operands) {
+        referredUdfs.add(udf);
+        return new AggregateFunctionExpression(udf.getName(), udf.getClassName(), getOperandExprs(operands));
     }
 
     private List<Expression> getOperandExprs(List<SqlNode> operands) {

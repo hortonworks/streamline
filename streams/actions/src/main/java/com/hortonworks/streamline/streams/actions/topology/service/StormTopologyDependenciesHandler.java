@@ -31,6 +31,7 @@ import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
 import com.hortonworks.streamline.streams.layout.component.TopologyDagVisitor;
 import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.rule.Rule;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Udf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,10 +64,12 @@ public class StormTopologyDependenciesHandler extends TopologyDagVisitor {
     public void visit(RulesProcessor rulesProcessor) {
         Set<UDF> udfsToShip = new HashSet<>();
         for (Rule rule : rulesProcessor.getRules()) {
-            for (String udf : rule.getReferredUdfs()) {
-                Collection<UDF> udfs = catalogService.listUDFs(Collections.singletonList(new QueryParam(UDF.NAME, udf)));
+            for (Udf udf : rule.getReferredUdfs()) {
+                List<QueryParam> qps = QueryParam.params(UDF.NAME, udf.getName(), UDF.CLASSNAME, udf.getClassName(),
+                        UDF.TYPE, udf.getType().toString());
+                Collection<UDF> udfs = catalogService.listUDFs(qps);
                 if (udfs.size() > 1) {
-                    throw new IllegalStateException("Multiple UDF definitions with name:" + udf);
+                    throw new IllegalStateException("Multiple UDF definitions for :" + udf);
                 } else if (udfs.size() == 1) {
                     udfsToShip.add(udfs.iterator().next());
                 } else {
