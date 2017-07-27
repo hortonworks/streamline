@@ -17,7 +17,6 @@ package com.hortonworks.streamline.storage.filestorage;
 
 import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.storage.exception.ConcurrentUpdateException;
-import com.hortonworks.streamline.storage.exception.StorageException;
 import com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager;
 import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.streamline.storage.impl.jdbc.config.HikariBasicConfig;
@@ -64,8 +63,8 @@ public class DbFileStorageTest {
     @Test
     public void testUploadDownload() throws Exception {
         String input = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(FILE_NAME), "UTF-8");
-        dbFileStorage.uploadFile(IOUtils.toInputStream(input, "UTF-8"), FILE_NAME);
-        InputStream is = dbFileStorage.downloadFile(FILE_NAME);
+        dbFileStorage.upload(IOUtils.toInputStream(input, "UTF-8"), FILE_NAME);
+        InputStream is = dbFileStorage.download(FILE_NAME);
         String output = IOUtils.toString(is, "UTF-8");
         Assert.assertEquals(input, output);
     }
@@ -73,10 +72,10 @@ public class DbFileStorageTest {
     @Test
     public void testUpdate() throws Exception {
         String input = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(FILE_NAME), "UTF-8");
-        dbFileStorage.uploadFile(IOUtils.toInputStream(input, "UTF-8"), FILE_NAME);
+        dbFileStorage.upload(IOUtils.toInputStream(input, "UTF-8"), FILE_NAME);
         String update = input + " new text";
-        dbFileStorage.uploadFile(IOUtils.toInputStream(update, "UTF-8"), FILE_NAME);
-        InputStream is = dbFileStorage.downloadFile(FILE_NAME);
+        dbFileStorage.upload(IOUtils.toInputStream(update, "UTF-8"), FILE_NAME);
+        InputStream is = dbFileStorage.download(FILE_NAME);
         String output = IOUtils.toString(is, "UTF-8");
         Assert.assertEquals(update, output);
     }
@@ -84,13 +83,13 @@ public class DbFileStorageTest {
     @Test
     public void testDelete() throws Exception {
         String input = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(FILE_NAME), "UTF-8");
-        dbFileStorage.uploadFile(IOUtils.toInputStream(input, "UTF-8"), FILE_NAME);
+        dbFileStorage.upload(IOUtils.toInputStream(input, "UTF-8"), FILE_NAME);
         Assert.assertTrue(dbFileStorage.exists(FILE_NAME));
-        dbFileStorage.deleteFile(FILE_NAME);
+        dbFileStorage.delete(FILE_NAME);
         Assert.assertFalse(dbFileStorage.exists(FILE_NAME));
         try {
-            dbFileStorage.downloadFile(FILE_NAME);
-            Assert.fail("Expected IOException in downloadFile after deleteFile");
+            dbFileStorage.download(FILE_NAME);
+            Assert.fail("Expected IOException in download after delete");
         } catch (IOException ex) {
         }
     }
@@ -99,7 +98,7 @@ public class DbFileStorageTest {
     public void testConcurrentUpload() throws Throwable {
         String input = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(FILE_NAME), "UTF-8");
         String updated = input + " new text";
-        dbFileStorage.uploadFile(IOUtils.toInputStream(input, "UTF-8"), FILE_NAME);
+        dbFileStorage.upload(IOUtils.toInputStream(input, "UTF-8"), FILE_NAME);
         InputStream slowStream = new InputStream() {
             byte[] bytes = updated.getBytes("UTF-8");
             int i = 0;
@@ -112,8 +111,8 @@ public class DbFileStorageTest {
                 return (i < bytes.length) ? (bytes[i++] & 0xff) : -1;
             }
         };
-        FutureTask<String> ft1 = new FutureTask<>(() -> dbFileStorage.uploadFile(slowStream, FILE_NAME));
-        FutureTask<String> ft2 = new FutureTask<>(() -> dbFileStorage.uploadFile(IOUtils.toInputStream(updated, "UTF-8"), FILE_NAME));
+        FutureTask<String> ft1 = new FutureTask<>(() -> dbFileStorage.upload(slowStream, FILE_NAME));
+        FutureTask<String> ft2 = new FutureTask<>(() -> dbFileStorage.upload(IOUtils.toInputStream(updated, "UTF-8"), FILE_NAME));
         Thread t1 = new Thread(ft1);
         Thread t2 = new Thread(ft2);
         t1.start();

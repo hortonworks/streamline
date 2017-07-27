@@ -130,7 +130,7 @@ public class NotifierInfoCatalogResourceTest {
                 result = APPLICATION_JSON_TYPE;
                 mockFormDataBodyPart.getValueAs(Notifier.class);
                 result = notifier;
-                mockFileStorage.uploadFile(mockInputStream, anyString);
+                mockFileStorage.upload(mockInputStream, anyString);
                 result = "uploadedPath";
 
             }

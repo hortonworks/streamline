@@ -39,7 +39,7 @@ public class DbFileStorage implements FileStorage, StorageManagerAware {
     }
 
     @Override
-    public String uploadFile(InputStream inputStream, String name) throws IOException {
+    public String upload(InputStream inputStream, String name) throws IOException {
         LOG.debug("Uploading '{}'", name);
         long start = System.nanoTime();
         Optional<FileBlob> existing = get(name);
@@ -64,7 +64,7 @@ public class DbFileStorage implements FileStorage, StorageManagerAware {
     }
 
     @Override
-    public InputStream downloadFile(String name) throws IOException {
+    public InputStream download(String name) throws IOException {
         LOG.debug("Downloading file '{}'", name);
         FileBlob res = get(name)
                 .orElseThrow(() -> new IOException("Not able to get file blob with name : " + name));
@@ -72,7 +72,7 @@ public class DbFileStorage implements FileStorage, StorageManagerAware {
     }
 
     @Override
-    public boolean deleteFile(String name) throws IOException {
+    public boolean delete(String name) throws IOException {
         LOG.debug("Deleting file '{}'", name);
         return dao.remove(FileBlob.getStorableKey(name)) != null;
     }

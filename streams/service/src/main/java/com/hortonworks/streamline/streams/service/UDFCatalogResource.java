@@ -412,7 +412,7 @@ public class UDFCatalogResource {
         String jarFileName;
         try (InputStream is = new FileInputStream(inputFile)) {
             jarFileName = String.format("streamline-functions-%s.jar", UUID.randomUUID().toString());
-            String uploadedPath = this.fileStorage.uploadFile(is, jarFileName);
+            String uploadedPath = this.fileStorage.upload(is, jarFileName);
             LOG.debug("Jar uploaded to {}", uploadedPath);
         } catch (IOException ex) {
             LOG.error("Got exception when uploading jar", ex);
