@@ -70,11 +70,29 @@ public class FunctionsTest {
                 String streamId;
                 Tuple anchor;
                 List<List<Object>> tuples = new ArrayList<>();
+                double delta = .0001;
                 mockCollector.emit(streamId = withCapture(), anchor = withCapture(), withCapture(tuples));
                 Assert.assertEquals(1, tuples.size());
-                Assert.assertEquals("POWER 1024.0 ABS 1.0 MOD 0 SQRT 1.4142135623730951 LN 0.6931471805599453" +
-                                " LOG10 0.3010299956639812 EXP 7.38905609893065 CEIL 2.0 FLOOR 1.0",
-                        ((StreamlineEvent)(tuples.get(0).get(0))).get("body"));
+                String res[] = (((StreamlineEvent)(tuples.get(0).get(0))).get("body")).toString().split(" ");
+                Assert.assertEquals("POWER", res[0]);
+                Assert.assertEquals(1024.0, Double.valueOf(res[1]), delta);
+                Assert.assertEquals("ABS", res[2]);
+                Assert.assertEquals(1.0, Double.valueOf(res[3]), delta);
+                Assert.assertEquals("MOD", res[4]);
+                Assert.assertEquals(0, Double.valueOf(res[5]), delta);
+                Assert.assertEquals("SQRT", res[6]);
+                Assert.assertEquals(1.4142135623730951, Double.valueOf(res[7]), delta);
+                Assert.assertEquals("LN", res[8]);
+                Assert.assertEquals(0.6931471805599453, Double.valueOf(res[9]), delta);
+                Assert.assertEquals("LOG10", res[10]);
+                Assert.assertEquals(0.3010299956639812, Double.valueOf(res[11]), delta);
+                Assert.assertEquals("EXP", res[12]);
+                Assert.assertEquals(7.38905609893065, Double.valueOf(res[13]), delta);
+                Assert.assertEquals("CEIL", res[14]);
+                Assert.assertEquals(2.0, Double.valueOf(res[15]), delta);
+                Assert.assertEquals("FLOOR", res[16]);
+                Assert.assertEquals(1.0, Double.valueOf(res[17]), delta);
+
             }
         };
     }
