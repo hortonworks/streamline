@@ -23,7 +23,10 @@ import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import com.hortonworks.streamline.streams.security.impl.NoopAuthorizer;
 import mockit.Injectable;
 import org.apache.commons.io.FileUtils;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,22 +108,27 @@ public class UDFCatalogResourceTest {
   @Test
   public void testProcessUdfWithInnerClassCanonicalName() throws Exception{
     String fnName = "FooAdder";
-    String className = getFullClassName("FooInnerclassTestUDFs.FooAdder");
+    String fqdnName = "FooInnerclassTestUDFs$FooAdder";
+    String canonicalName = "FooInnerclassTestUDFs.FooAdder";
+    String className = getFullClassName(canonicalName);
     UDF udf = newTestUDF(fnName, className);
     InputStream inputStream = new FileInputStream(udf.getJarStoragePath());
 
     catalogResource.processUdf(inputStream, udf, true, false);
+    Assert.assertEquals(getFullClassName(fqdnName), udf.getClassName());
   }
 
   @Test
   public void testProcessUdfWithInnerClassFqdnName() throws Exception{
     String fnName = "FooPredicateGTZ";
-    String className = getFullClassName("FooInnerclassTestUDFs$FooPredicateGTZ");
+    String fqdnName = "FooInnerclassTestUDFs$FooPredicateGTZ";
+    String canonicalName = "FooInnerclassTestUDFs.FooPredicateGTZ.FooAdder";
+    String className = getFullClassName(fqdnName);
     UDF udf = newTestUDF(fnName, className);
     InputStream inputStream = new FileInputStream(udf.getJarStoragePath());
 
     catalogResource.processUdf(inputStream, udf, true, false);
-    Assert.assertEquals(udf.getClassName().replace('$', '.'), udf.getClassName());
+    Assert.assertEquals(getFullClassName(fqdnName), udf.getClassName());
   }
 
 

@@ -113,20 +113,15 @@ public class UDF extends AbstractStorable {
     }
 
     /**
-     * Canonical class name - see {@link #setClassName}
-     * @return className set when UDF was created
+     * Should be fqdn class name - If canonical form of an inner-class name was provided at
+     * upload time, it will be converted to the fqdn name (with '$') during upload processing.
+     * @return class name
      */
     public String getClassName() {
         return className;
     }
 
-    /**
-     * Set inner-class names to canonical form if given fqdn form (with '$')
-     * @param className
-     */
-    public void setClassName(String className) {
-        this.className = className.replace('$', '.');
-    }
+    public void setClassName(String className) { this.className = className; }
 
     @JsonIgnore
     public String getJarStoragePath() {

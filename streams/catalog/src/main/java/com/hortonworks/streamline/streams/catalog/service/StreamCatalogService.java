@@ -22,7 +22,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.*;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.common.ComponentTypes;
@@ -37,7 +41,29 @@ import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.storage.exception.StorageException;
 import com.hortonworks.streamline.storage.util.StorageUtils;
 import com.hortonworks.streamline.streams.StreamlineEvent;
-import com.hortonworks.streamline.streams.catalog.*;
+import com.hortonworks.streamline.streams.catalog.File;
+import com.hortonworks.streamline.streams.catalog.Notifier;
+import com.hortonworks.streamline.streams.catalog.Projection;
+import com.hortonworks.streamline.streams.catalog.Topology;
+import com.hortonworks.streamline.streams.catalog.TopologyBranchRule;
+import com.hortonworks.streamline.streams.catalog.TopologyComponent;
+import com.hortonworks.streamline.streams.catalog.TopologyEdge;
+import com.hortonworks.streamline.streams.catalog.TopologyEditorMetadata;
+import com.hortonworks.streamline.streams.catalog.TopologyEditorToolbar;
+import com.hortonworks.streamline.streams.catalog.TopologyOutputComponent;
+import com.hortonworks.streamline.streams.catalog.TopologyProcessor;
+import com.hortonworks.streamline.streams.catalog.TopologyProcessorStreamMapping;
+import com.hortonworks.streamline.streams.catalog.TopologyRule;
+import com.hortonworks.streamline.streams.catalog.TopologySink;
+import com.hortonworks.streamline.streams.catalog.TopologySource;
+import com.hortonworks.streamline.streams.catalog.TopologySourceStreamMapping;
+import com.hortonworks.streamline.streams.catalog.TopologyStream;
+import com.hortonworks.streamline.streams.catalog.TopologyTestRunCase;
+import com.hortonworks.streamline.streams.catalog.TopologyTestRunCaseSink;
+import com.hortonworks.streamline.streams.catalog.TopologyTestRunCaseSource;
+import com.hortonworks.streamline.streams.catalog.TopologyTestRunHistory;
+import com.hortonworks.streamline.streams.catalog.TopologyVersion;
+import com.hortonworks.streamline.streams.catalog.TopologyWindow;
 import com.hortonworks.streamline.streams.catalog.UDF;
 import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
 import com.hortonworks.streamline.streams.catalog.rule.RuleParser;
@@ -54,7 +80,14 @@ import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.rule.Rule;
 import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
 import com.hortonworks.streamline.streams.layout.storm.FluxComponent;
-import com.hortonworks.streamline.streams.rule.*;
+import com.hortonworks.streamline.streams.rule.UDAF;
+import com.hortonworks.streamline.streams.rule.UDAF2;
+import com.hortonworks.streamline.streams.rule.UDF2;
+import com.hortonworks.streamline.streams.rule.UDF3;
+import com.hortonworks.streamline.streams.rule.UDF4;
+import com.hortonworks.streamline.streams.rule.UDF5;
+import com.hortonworks.streamline.streams.rule.UDF6;
+import com.hortonworks.streamline.streams.rule.UDF7;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,13 +97,27 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.hortonworks.streamline.common.ComponentTypes.NOTIFICATION;
-import static com.hortonworks.streamline.common.util.WSUtils.*;
+import static com.hortonworks.streamline.common.util.WSUtils.CURRENT_VERSION;
+import static com.hortonworks.streamline.common.util.WSUtils.buildEdgesFromQueryParam;
+import static com.hortonworks.streamline.common.util.WSUtils.buildEdgesToQueryParam;
+import static com.hortonworks.streamline.common.util.WSUtils.currentVersionQueryParam;
+import static com.hortonworks.streamline.common.util.WSUtils.versionIdQueryParam;
 import static com.hortonworks.streamline.streams.catalog.TopologyEdge.StreamGrouping;
 import static com.hortonworks.streamline.streams.catalog.TopologyEditorMetadata.TopologyUIData;
 
@@ -2366,7 +2413,7 @@ public class StreamCatalogService {
 
         for (Class<?> udfClass : UDF_CLASSES) {
             for (Class<?> clazz : ProxyUtil.loadAllClassesFromJar(jarFile, udfClass)) {
-                udafs.put(clazz.getCanonicalName(), clazz);
+                udafs.put(clazz.getName(), clazz);
             }
         }
 
