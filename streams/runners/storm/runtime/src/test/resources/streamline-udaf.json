@@ -1,0 +1,257 @@
+{
+  "outputStreams": [
+    {
+      "id": "outputstream",
+      "schema": {
+        "fields": [
+          {
+            "name": "deptid",
+            "type": "INTEGER",
+            "optional": false
+          },
+          {
+            "name": "salary_MAX",
+            "type": "DOUBLE",
+            "optional": false
+          }
+        ]
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "rule_1",
+      "id": 1,
+      "ruleProcessorName": "rule_processsor_1",
+      "streams": [
+        "inputstream"
+      ],
+      "actions": [
+        {
+          "name": "notificationsink",
+          "outputFieldsAndDefaults": {
+            "body": "STDDEV ${STDDEV} STDDEVP ${STDDEVP} VARIANCE ${VARIANCE} VARIANCEP ${VARIANCEP} MEAN ${MEAN} NUMBERSUM ${NUMBERSUM} LONGCOUNT ${LONGCOUNT} MIN ${MIN} MAX ${MAX}"
+          },
+          "outputStreams": ["outputstream"],
+          "notifierName": "email_notifier",
+          "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction"
+        }
+      ],
+      "description": "rule_1_desc",
+      "projection": {
+        "expressions": [
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
+              "function": {
+                "name": "STDDEV",
+                "className": "com.hortonworks.streamline.streams.udaf.Stddev",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "salary",
+                    "type": "INTEGER",
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            "alias": "STDDEV"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
+              "function": {
+                "name": "STDDEVP",
+                "className": "com.hortonworks.streamline.streams.udaf.Stddevp",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "salary",
+                    "type": "INTEGER",
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            "alias": "STDDEVP"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
+              "function": {
+                "name": "VARIANCE",
+                "className": "com.hortonworks.streamline.streams.udaf.Variance",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "salary",
+                    "type": "INTEGER",
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            "alias": "VARIANCE"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
+              "function": {
+                "name": "VARIANCEP",
+                "className": "com.hortonworks.streamline.streams.udaf.Variancep",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "salary",
+                    "type": "INTEGER",
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            "alias": "VARIANCEP"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
+              "function": {
+                "name": "MEAN",
+                "className": "com.hortonworks.streamline.streams.udaf.Mean",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "salary",
+                    "type": "INTEGER",
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            "alias": "MEAN"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
+              "function": {
+                "name": "NUMBERSUM",
+                "className": "com.hortonworks.streamline.streams.udaf.NumberSum",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "salary",
+                    "type": "INTEGER",
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            "alias": "NUMBERSUM"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
+              "function": {
+                "name": "LONGCOUNT",
+                "className": "com.hortonworks.streamline.streams.udaf.LongCount",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "salary",
+                    "type": "INTEGER",
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            "alias": "LONGCOUNT"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
+              "function": {
+                "name": "MIN",
+                "className": null,
+                "udf": false
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "salary",
+                    "type": "INTEGER",
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            "alias": "MIN"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
+              "function": {
+                "name": "MAX",
+                "className": null,
+                "udf": false
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "salary",
+                    "type": "INTEGER",
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            "alias": "MAX"
+          }
+        ]
+      },
+      "window": {
+        "windowLength": {
+          "class": ".Window$Count",
+          "count": 20
+        },
+        "slidingInterval": {
+          "class": ".Window$Count",
+          "count": 20
+        },
+        "tsField": null,
+        "lagMs": 0
+      }
+    }
+  ]
+}
