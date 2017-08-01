@@ -45,7 +45,8 @@ import static com.hortonworks.streamline.streams.layout.component.rule.expressio
  * This unit test is very incomplete, but it tests basic functionality of {@link UDFCatalogResource#processUdf},
  * which is the kernel functionality of Custom UDF uploading.
  *
- * The tests are tightly bound to a tiny test jar, generated in path {@link #CUSTOM_UDF_MICROTEST_PATH}.
+ * The tests are tightly bound to a tiny test jar, generated in module custom-udf-microtest and
+ * copied to path {@link #CUSTOM_UDF_MICROTEST_PATH} in test-compile phase of maven processing.
  *
  * In each test case we mock catalogService and use NoopAuthorizer, with fileStorage set to a private
  * directory with randomized name under system tmp dir.  We then invoke processUdf() in a way similar to
@@ -59,8 +60,8 @@ import static com.hortonworks.streamline.streams.layout.component.rule.expressio
  */
 public class UDFCatalogResourceTest {
 
-  public static final String CUSTOM_UDF_MICROTEST_PATH = "src/test/resources/custom-udf-microtest/target";
-  public static final String MICROTEST_JAR_NAME = "custom-udf-microtest-0.1.0-jar-with-dependencies.jar";
+  public static final String CUSTOM_UDF_MICROTEST_PATH = "target/generated-test-resources/customudfupload";
+  public static final String MICROTEST_JAR_NAME = "custom-udf-microtest-jar-with-dependencies.jar";
   public static final String MICROTEST_PACKAGE = "hortonworks.hdf.sam.custom.test.udf";
 
   private static final Logger LOG = LoggerFactory.getLogger(UDFCatalogResourceTest.class);

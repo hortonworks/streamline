@@ -73,9 +73,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.hortonworks.streamline.test</groupId>
+            <groupId>hortonworks.hdf.sam.custom.test.udf</groupId>
             <artifactId>custom-udf-microtest</artifactId>
-            <version>0.1.0</version>
+            <version>${project.parent.version}</version>
+            <type>jar</type>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -101,15 +102,37 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>%regex[.*/hdf/sam/custom/test/udf/.*]</exclude>
-                    </excludes>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>fetch-custom-udf-test-jar</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>hortonworks.hdf.sam.custom.test.udf</groupId>
+                                    <artifactId>custom-udf-microtest</artifactId>
+                                    <classifier>jar-with-dependencies</classifier>
+                                    <type>jar</type>
+                                    <outputDirectory>${project.build.directory}/generated-test-resources/customudfupload</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                            <stripVersion>true</stripVersion>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
