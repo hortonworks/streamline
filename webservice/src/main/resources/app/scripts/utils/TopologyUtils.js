@@ -31,7 +31,7 @@ import WindowingAggregateNodeForm from '../containers/Streams/TopologyEditor/Win
 import BranchNodeForm from '../containers/Streams/TopologyEditor/BranchNodeForm';
 import ModelNodeForm from '../containers/Streams/TopologyEditor/ModelNodeForm';
 import ProjectionProcessorContainer from '../containers/Streams/TopologyEditor/ProjectionProcessorContainer';
-// import RealTimeJoinNodeProcessor from '../containers/Streams/TopologyEditor/RealTimeJoinNodeProcessor';
+import RealTimeJoinNodeProcessor from '../containers/Streams/TopologyEditor/RealTimeJoinNodeProcessor';
 //Sinks
 import SinkNodeForm from '../containers/Streams/TopologyEditor/SinkNodeForm';
 import CommonNotification from './CommonNotification';
@@ -768,11 +768,11 @@ const getConfigContainer = function(node, configData, editMode, topologyId, vers
         return <ProjectionProcessorContainer  ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} testRunActivated={testRunActivated} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNode={sourceNodes[0]} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions} currentEdges={currentEdges}/>;
       };
       break;
-    // case 'RT-JOIN': //RT-JOIN
-    //   childElement = () => {
-    //     return <RealTimeJoinNodeProcessor  ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} testRunActivated={testRunActivated} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNode={sourceNodes[0]} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions} currentEdges={currentEdges}/>;
-    //   };
-    //   break;
+    case 'RT-JOIN': //RT-JOIN
+      childElement = () => {
+        return <RealTimeJoinNodeProcessor  ref="ProcessorChildElement" nodeData={node} configData={configData} editMode={editMode} testRunActivated={testRunActivated} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNode={sourceNodes[0]} targetNodes={targetNodes} linkShuffleOptions={linkShuffleOptions} currentEdges={currentEdges}/>;
+      };
+      break;
     }
     return () => {
       return <ProcessorNodeForm ref="ConfigModal" nodeData={node} editMode={editMode} testRunActivated={testRunActivated} nodeType={nodeType} topologyId={topologyId} versionId={versionId} sourceNodes={sourceNodes} getChildElement={childElement}/>;
