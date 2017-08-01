@@ -62,6 +62,62 @@ public class FunctionsTest {
         };
     }
 
+    @Test
+    public void testMathFunctions1() throws Exception {
+        doTest(readFile("/streamline-udf-math1.json"), getTuple());
+        new Verifications() {
+            {
+                String streamId;
+                Tuple anchor;
+                List<List<Object>> tuples = new ArrayList<>();
+                double delta = .0001;
+                mockCollector.emit(streamId = withCapture(), anchor = withCapture(), withCapture(tuples));
+                Assert.assertEquals(1, tuples.size());
+                String res[] = (((StreamlineEvent)(tuples.get(0).get(0))).get("body")).toString().split(" ");
+                Assert.assertEquals("POWER", res[0]);
+                Assert.assertEquals(1024.0, Double.valueOf(res[1]), delta);
+                Assert.assertEquals("ABS", res[2]);
+                Assert.assertEquals(1.0, Double.valueOf(res[3]), delta);
+                Assert.assertEquals("MOD", res[4]);
+                Assert.assertEquals(0, Double.valueOf(res[5]), delta);
+                Assert.assertEquals("SQRT", res[6]);
+                Assert.assertEquals(1.4142135623730951, Double.valueOf(res[7]), delta);
+                Assert.assertEquals("LN", res[8]);
+                Assert.assertEquals(0.6931471805599453, Double.valueOf(res[9]), delta);
+                Assert.assertEquals("LOG10", res[10]);
+                Assert.assertEquals(0.3010299956639812, Double.valueOf(res[11]), delta);
+                Assert.assertEquals("EXP", res[12]);
+                Assert.assertEquals(7.38905609893065, Double.valueOf(res[13]), delta);
+                Assert.assertEquals("CEIL", res[14]);
+                Assert.assertEquals(2.0, Double.valueOf(res[15]), delta);
+                Assert.assertEquals("FLOOR", res[16]);
+                Assert.assertEquals(1.0, Double.valueOf(res[17]), delta);
+
+            }
+        };
+    }
+
+    @Test
+    public void testMathFunctions2() throws Exception {
+        doTest(readFile("/streamline-udf-math2.json"), getTuple());
+        new Verifications() {
+            {
+                String streamId;
+                Tuple anchor;
+                List<List<Object>> tuples = new ArrayList<>();
+                mockCollector.emit(streamId = withCapture(), anchor = withCapture(), withCapture(tuples));
+                Assert.assertEquals(1, tuples.size());
+                String res[] = (((StreamlineEvent)(tuples.get(0).get(0))).get("body")).toString().split(" ");
+                Assert.assertEquals("RAND", res[0]);
+                Double rand = Double.valueOf(res[1]);
+                Assert.assertTrue(rand >= 0.0 && rand <= 1.0);
+                Assert.assertEquals("RAND_INTEGER", res[2]);
+                Integer rand_int = Integer.valueOf(res[3]);
+                Assert.assertTrue(rand_int >= 0 && rand_int <= 100);
+            }
+        };
+    }
+
     private void doTest(String rulesJson, Tuple tuple) throws Exception {
         RulesBolt rulesBolt = new RulesBolt(rulesJson, RuleProcessorRuntime.ScriptType.SQL) {
             @Override
@@ -78,7 +134,9 @@ public class FunctionsTest {
     }
 
     private Tuple getTuple() {
-        StreamlineEvent event = new StreamlineEventImpl(ImmutableMap.of("intfield", 100, "stringfield1", "hello", "stringfield2", "world"), "dsrcid");
+        StreamlineEvent event = new StreamlineEventImpl(ImmutableMap.of("intfield", 2, "stringfield1", "hello", "stringfield2", "world",
+                "negativefield", -1.0, "doublefield", 1.41), "dsrcid");
         return new TupleImpl(mockContext, new Values(event), 1, "inputstream");
     }
+
 }
