@@ -37,7 +37,7 @@ class  ZoomPanelComponent extends Component {
               color: '#545454'
             }}>{versionName}</span>
           </span>
-          {/*<span className="version">
+          <span className="version">
             Mode:&nbsp;
             <span className="SwitchWrapper">
               <span className={`Switch ${testRunActivated ? 'On' : 'Off'}`} onClick={confirmMode}>
@@ -56,7 +56,6 @@ class  ZoomPanelComponent extends Component {
               </span>
             </span>
           </span>
-          */}
           <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip"> Zoom In </Tooltip>}>
             <a href="javascript:void(0);" className="zoom-in" onClick={zoomInAction}>
               <i className="fa fa-search-plus"></i>

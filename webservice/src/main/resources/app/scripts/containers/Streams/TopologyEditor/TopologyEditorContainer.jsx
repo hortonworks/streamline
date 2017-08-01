@@ -1112,10 +1112,12 @@ class TopologyEditorContainer extends Component {
     if(this.refs.TestSourceNodeContentRef.validateData()){
       this.refs.TestSourceNodeModal.hide();
       this.refs.TestSourceNodeContentRef.handleSave().then((testResult) => {
+        let configSuccess = true;
         _.map(testResult, (result) => {
           if(result.responseMessage !== undefined){
             FSReactToastr.error(
               <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
+            configSuccess = false;
           } else {
             let tempSourceConfig = _.cloneDeep(this.state.testSourceConfigure);
             const poolIndex = _.findIndex(tempSourceConfig, {id : result.sourceId});
@@ -1123,12 +1125,13 @@ class TopologyEditorContainer extends Component {
               tempSourceConfig.push({id :  result.sourceId});
               this.setState({testSourceConfigure :tempSourceConfig});
             }
-            const  msg =  <strong>{`Test source ${poolIndex !== -1 ? "updated" : "configure"} successfully`}</strong>;
-            FSReactToastr.success(
-              msg
-            );
           }
         });
+        if(configSuccess) {
+          FSReactToastr.success(
+            <strong>Test source configured successfully</strong>
+          );
+        }
       });
     }
   }
@@ -1294,7 +1297,7 @@ class TopologyEditorContainer extends Component {
     confirmMode method show the modeChangeModal
   */
   confirmMode = () => {
-    // this.refs.modeChangeModal.show();
+    this.refs.modeChangeModal.show();
   }
 
   handleEventLogHide = (flag,panel) => {
