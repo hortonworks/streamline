@@ -1,24 +1,26 @@
 /**
-  * Copyright 2017 Hortonworks.
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-
-  *   http://www.apache.org/licenses/LICENSE-2.0
-
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
+ * Copyright 2017 Hortonworks.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  **/
 
-package com.hortonworks.streamline.webservice;
+package com.hortonworks.streamline.webservice.configurations;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.hortonworks.registries.common.ServletFilterConfiguration;
 
+import com.hortonworks.streamline.webservice.util.StreamlineConfigurationSerializer;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.List;
@@ -26,6 +28,8 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import io.dropwizard.Configuration;
+
+@JsonSerialize(using = StreamlineConfigurationSerializer.class)
 
 public class StreamlineConfiguration extends Configuration {
 
@@ -73,11 +77,11 @@ public class StreamlineConfiguration extends Configuration {
 
     private LoginConfiguration loginConfiguration;
 
-    public String getCatalogRootUrl () {
+    public String getCatalogRootUrl() {
         return catalogRootUrl;
     }
 
-    public void setCatalogRootUrl (String catalogRootUrl) {
+    public void setCatalogRootUrl(String catalogRootUrl) {
         this.catalogRootUrl = catalogRootUrl;
     }
 
@@ -129,9 +133,13 @@ public class StreamlineConfiguration extends Configuration {
         this.trustStorePassword = trustStorePassword;
     }
 
-    public DashboardConfiguration getDashboardConfiguration () { return dashboardConfiguration; }
+    public DashboardConfiguration getDashboardConfiguration() {
+        return dashboardConfiguration;
+    }
 
-    public void setDashboardConfiguration (DashboardConfiguration dashboardConfiguration) { this.dashboardConfiguration = dashboardConfiguration; }
+    public void setDashboardConfiguration(DashboardConfiguration dashboardConfiguration) {
+        this.dashboardConfiguration = dashboardConfiguration;
+    }
 
 
     public AuthorizerConfiguration getAuthorizerConfiguration() {
@@ -150,11 +158,11 @@ public class StreamlineConfiguration extends Configuration {
         this.servletFilters = servletFilters;
     }
 
-    public LoginConfiguration getLoginConfiguration () {
+    public LoginConfiguration getLoginConfiguration() {
         return loginConfiguration;
     }
 
-    public void setLoginConfiguration (LoginConfiguration loginConfiguration) {
+    public void setLoginConfiguration(LoginConfiguration loginConfiguration) {
         this.loginConfiguration = loginConfiguration;
     }
 

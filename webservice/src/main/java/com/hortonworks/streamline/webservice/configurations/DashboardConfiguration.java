@@ -14,7 +14,7 @@
  * limitations under the License.
  **/
 
-package com.hortonworks.streamline.webservice;
+package com.hortonworks.streamline.webservice.configurations;
 
 import javax.validation.constraints.NotNull;
 
