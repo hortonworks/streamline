@@ -34,7 +34,7 @@
 # The Storm SQL framework uses the Java library ServiceLoader to load and register the services it requires.
 # ServiceLoader looks for a file under META-INF/services, and the file name must be the fully qualified name
 # of the interface defining the service. Storm SQL defines the service through the interface
-# org.apache.storm.sql.runtime.DataSourcesProvider, hence that being the name of this file.
+# com.hortonworks.streamline.streams.sql.runtime.DataSourcesProvider, hence that being the name of this file.
 # The content of the file should be a single line with the fully qualified name of the class implementing the
 # service, which in this case is com.hortonworks.streamline.streams.runtime.rule.sql.RulesDataSourcesProvider
 
