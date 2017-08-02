@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
+
 package com.hortonworks.streamline.streams.runtime.storm.testing;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -77,9 +78,11 @@ public class TestRunSinkBolt extends BaseRichBolt {
     @Override
     public void execute(Tuple input) {
         Object value = input.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
+        String streamId = input.getSourceStreamId();
         StreamlineEvent event = (StreamlineEvent) value;
 
-        eventLogger.writeEvent(System.currentTimeMillis(), testRunSink.getName(), event);
+        eventLogger.writeEvent(System.currentTimeMillis(), TestRunEventLogger.EventType.INPUT, testRunSink.getName(),
+                streamId, event);
 
         String outputFilePath = testRunSink.getOutputFilePath();
         try (FileWriter fw = new FileWriter(outputFilePath, true)) {
