@@ -1,4 +1,5 @@
 ## 0.4
+ * ISSUE-820     : Abstract out object serialization logic from Resource file and keep them in their respective JsonSerializer
  * ISSUE-836     : Fix Identity function 
  * ISSUE-841     : Revert "ISSUE-694: Add consumer start up delay as optional parameter for kafka spout"
  * ISSUE-833     : Fix failing AvroStreamsSnapshotDeserializerTest due to changes in Schema Registry project

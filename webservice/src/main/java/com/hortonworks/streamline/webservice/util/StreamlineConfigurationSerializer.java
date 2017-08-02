@@ -1,57 +1,48 @@
 /**
-  * Copyright 2017 Hortonworks.
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
+ * Copyright 2017 Hortonworks.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
 
-  *   http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
 
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  **/
-package com.hortonworks.streamline.webservice;
 
-import com.codahale.metrics.annotation.Timed;
+package com.hortonworks.streamline.webservice.util;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+
+import com.hortonworks.streamline.webservice.configurations.ModuleConfiguration;
+import com.hortonworks.streamline.webservice.configurations.StreamlineConfiguration;
 import com.hortonworks.streamline.common.Constants;
-import com.hortonworks.streamline.common.util.WSUtils;
-import org.datanucleus.util.StringUtils;
+import com.hortonworks.streamline.webservice.resources.StreamlineConfigurationResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import static javax.ws.rs.core.Response.Status.OK;
+/**
+ * This JSON serializer serializes StreamlineConfiguration to a format as required by
+ * streamline api of StreamlineConfigurationResource
+ */
+public class StreamlineConfigurationSerializer extends JsonSerializer<StreamlineConfiguration> {
 
-
-
-@Path("/v1/config")
-@Produces(MediaType.APPLICATION_JSON)
-
-public class StreamlineConfigurationResource {
     private static final Logger LOG = LoggerFactory.getLogger(StreamlineConfigurationResource.class);
     public static final String DEFAULT_VERSION_FILE = "VERSION";
-    private Map<String, Object> conf;
-
     private final String CONFIG_REGISTRY = "registry";
     private final String CONFIG_REGISTRY_API_URL = "apiUrl";
     private final String CONFIG_HOST = "host";
@@ -61,26 +52,13 @@ public class StreamlineConfigurationResource {
     private final String CONFIG_VERSION = "version";
     private final String CONFIG_GIT = "git";
 
-
-
-
-    public StreamlineConfigurationResource(StreamlineConfiguration streamlineConfiguration) {
-        this.conf = new HashMap<>();
-        buildStreamlineConfig(streamlineConfiguration);
+    @Override
+    public void serialize(StreamlineConfiguration streamlineConfiguration, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+        jsonGenerator.writeObject(createConfigurationMap(streamlineConfiguration));
     }
 
-    /**
-     * List ALL streamline configuration.
-     */
-    @GET
-    @Path("/streamline")
-    @Timed
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getStreamlineConfiguraiton(@Context UriInfo uriInfo) {
-        return WSUtils.respondEntity(this.conf, OK);
-    }
-
-    private void buildStreamlineConfig(StreamlineConfiguration streamlineConfiguration) {
+    private Map<String, Object> createConfigurationMap(StreamlineConfiguration streamlineConfiguration) {
+        Map<String, Object> conf = new HashMap<>();
         // do not add any storage configuration as we don't want to return username and passwords through api
         conf.put(Constants.CONFIG_MODULES, streamlineConfiguration.getModules());
         conf.put(Constants.CONFIG_CATALOG_ROOT_URL, streamlineConfiguration.getCatalogRootUrl());
@@ -93,9 +71,9 @@ public class StreamlineConfigurationResource {
             conf.put(CONFIG_GIT, props.get(CONFIG_GIT));
         }
 
-        //adding schema regisry details to make it easier for UI to parser the host & port.
+        //adding schema registry details to make it easier for UI to parser the host & port.
         Map<String, String> registryConf = new HashMap<>();
-        for (ModuleConfiguration moduleConfiguration: streamlineConfiguration.getModules()) {
+        for (ModuleConfiguration moduleConfiguration : streamlineConfiguration.getModules()) {
             String moduleName = moduleConfiguration.getName();
             if (moduleName.equals(Constants.CONFIG_STREAMS_MODULE)) {
                 String schemaRegistryUrl = (String) moduleConfiguration.getConfig().get(Constants.CONFIG_SCHEMA_REGISTRY_URL);
@@ -112,6 +90,7 @@ public class StreamlineConfigurationResource {
         conf.put(CONFIG_REGISTRY, registryConf);
         conf.put(CONFIG_DASHBOARD, streamlineConfiguration.getDashboardConfiguration());
         conf.put(CONFIG_AUTHORIZER, streamlineConfiguration.getAuthorizerConfiguration());
+        return conf;
     }
 
     private Properties readStreamlineVersion() {
@@ -129,6 +108,4 @@ public class StreamlineConfigurationResource {
         }
         return props;
     }
-
-
 }

@@ -27,7 +27,7 @@ import com.hortonworks.streamline.streams.runtime.rule.condition.expression.Expr
 import com.hortonworks.streamline.streams.runtime.rule.condition.expression.StormSqlExpression;
 import com.hortonworks.streamline.streams.runtime.script.Script;
 import com.hortonworks.streamline.streams.runtime.script.engine.ScriptEngine;
-import org.apache.storm.tuple.Values;
+import com.hortonworks.streamline.streams.sql.runtime.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

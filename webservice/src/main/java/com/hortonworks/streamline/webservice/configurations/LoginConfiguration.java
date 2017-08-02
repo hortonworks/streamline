@@ -1,4 +1,4 @@
-package com.hortonworks.streamline.webservice;
+package com.hortonworks.streamline.webservice.configurations;
 
 import java.util.Map;
 

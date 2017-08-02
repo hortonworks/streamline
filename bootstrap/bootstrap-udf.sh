@@ -83,19 +83,19 @@ echo "  - trim"
 curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -s -X POST "${CATALOG_ROOT_URL}/streams/udfs" -F udfJarFile=@${jarFile} -F udfConfig='{"name":"TRIM_FN", "displayName": "TRIM", "description": "Returns a string with any leading and trailing whitespaces removed", "type":"FUNCTION", "className":"com.hortonworks.streamline.streams.udf.Trim", "builtin":true};type=application/json'
 
 echo "  - trim2"
-curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -s -X POST "${CATALOG_ROOT_URL}/streams/udfs" -F udfJarFile=@${jarFile} -F udfConfig='{"name":"TRIM2_FN", "displayName": "TRIM2", "description": "Returns a string with specified leading and trailing character removed", "type":"FUNCTION", "className":"com.hortonworks.streamline.streams.udf.Trim2", "builtin":true};type=application/json'
+curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -s -X POST "${CATALOG_ROOT_URL}/streams/udfs" -F udfJarFile=@${jarFile} -F udfConfig='{"name":"TRIM_FN", "displayName": "TRIM2", "description": "Returns a string with specified leading and trailing character removed", "type":"FUNCTION", "className":"com.hortonworks.streamline.streams.udf.Trim2", "builtin":true};type=application/json'
 
 echo "  - ltrim"
 curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -s -X POST "${CATALOG_ROOT_URL}/streams/udfs" -F udfJarFile=@${jarFile} -F udfConfig='{"name":"LTRIM_FN", "displayName": "LTRIM", "description": "Removes leading whitespaces from the input", "type":"FUNCTION", "className":"com.hortonworks.streamline.streams.udf.Ltrim", "builtin":true};type=application/json'
 
 echo "  - ltrim2"
-curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -s -X POST "${CATALOG_ROOT_URL}/streams/udfs" -F udfJarFile=@${jarFile} -F udfConfig='{"name":"LTRIM2_FN", "displayName": "LTRIM", "description": "Removes specified leading character from the input", "type":"FUNCTION", "className":"com.hortonworks.streamline.streams.udf.Ltrim2", "builtin":true};type=application/json'
+curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -s -X POST "${CATALOG_ROOT_URL}/streams/udfs" -F udfJarFile=@${jarFile} -F udfConfig='{"name":"LTRIM_FN", "displayName": "LTRIM", "description": "Removes specified leading character from the input", "type":"FUNCTION", "className":"com.hortonworks.streamline.streams.udf.Ltrim2", "builtin":true};type=application/json'
 
 echo "  - rtrim"
 curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -s -X POST "${CATALOG_ROOT_URL}/streams/udfs" -F udfJarFile=@${jarFile} -F udfConfig='{"name":"RTRIM_FN", "displayName": "RTRIM", "description": "Removes trailing whitespaces from the input", "type":"FUNCTION", "className":"com.hortonworks.streamline.streams.udf.Rtrim", "builtin":true};type=application/json'
 
 echo "  - rtrim2"
-curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -s -X POST "${CATALOG_ROOT_URL}/streams/udfs" -F udfJarFile=@${jarFile} -F udfConfig='{"name":"RTRIM2_FN", "displayName": "RTRIM", "description": "Removes specified trailing character from the input", "type":"FUNCTION", "className":"com.hortonworks.streamline.streams.udf.Rtrim2", "builtin":true};type=application/json'
+curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -s -X POST "${CATALOG_ROOT_URL}/streams/udfs" -F udfJarFile=@${jarFile} -F udfConfig='{"name":"RTRIM_FN", "displayName": "RTRIM", "description": "Removes specified trailing character from the input", "type":"FUNCTION", "className":"com.hortonworks.streamline.streams.udf.Rtrim2", "builtin":true};type=application/json'
 
 echo "  - overlay"
 curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -s -X POST "${CATALOG_ROOT_URL}/streams/udfs" -F udfJarFile=@${jarFile} -F udfConfig='{"name":"OVERLAY_FN", "displayName": "OVERLAY", "description": "Replaces a substring of a string with a replacement string", "type":"FUNCTION", "className":"com.hortonworks.streamline.streams.udf.Overlay", "builtin":true};type=application/json'
