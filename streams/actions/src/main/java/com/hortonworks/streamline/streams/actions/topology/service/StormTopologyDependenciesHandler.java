@@ -21,8 +21,8 @@ import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.streams.catalog.UDF;
 import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
-import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
 import com.hortonworks.streamline.streams.layout.component.Edge;
 import com.hortonworks.streamline.streams.layout.component.StreamlineComponent;
 import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
@@ -38,7 +38,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -65,8 +64,15 @@ public class StormTopologyDependenciesHandler extends TopologyDagVisitor {
         Set<UDF> udfsToShip = new HashSet<>();
         for (Rule rule : rulesProcessor.getRules()) {
             for (Udf udf : rule.getReferredUdfs()) {
-                List<QueryParam> qps = QueryParam.params(UDF.NAME, udf.getName(), UDF.CLASSNAME, udf.getClassName(),
-                        UDF.TYPE, udf.getType().toString());
+                List<QueryParam> qps = QueryParam.params(UDF.NAME, udf.getName());
+                // The null check for backward compatibility
+                if (udf.getClassName() != null) {
+                    qps.add(new QueryParam(UDF.CLASSNAME, udf.getClassName()));
+                }
+                // The null check for backward compatibility
+                if (udf.getType() != null) {
+                    qps.add(new QueryParam(UDF.TYPE, udf.getType().toString()));
+                }
                 Collection<UDF> udfs = catalogService.listUDFs(qps);
                 if (udfs.size() > 1) {
                     throw new IllegalStateException("Multiple UDF definitions for :" + udf);
