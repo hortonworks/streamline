@@ -63,7 +63,7 @@ public class LocalFileSystemStorage implements FileStorage {
     }
 
     @Override
-    public String uploadFile(InputStream inputStream, String name) throws IOException {
+    public String upload(InputStream inputStream, String name) throws IOException {
         ensureDirExists();
 
         Path path = FileSystems.getDefault().getPath(directory, name);
@@ -78,7 +78,7 @@ public class LocalFileSystemStorage implements FileStorage {
     }
 
     @Override
-    public InputStream downloadFile(String name) throws IOException {
+    public InputStream download(String name) throws IOException {
         ensureDirExists();
 
         Path path = FileSystems.getDefault().getPath(directory, name);
@@ -87,7 +87,7 @@ public class LocalFileSystemStorage implements FileStorage {
     }
 
     @Override
-    public boolean deleteFile(String name) throws IOException {
+    public boolean delete(String name) throws IOException {
         ensureDirExists();
 
         Path path = FileSystems.getDefault().getPath(directory, name);

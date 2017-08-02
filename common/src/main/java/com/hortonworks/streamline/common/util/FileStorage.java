@@ -38,40 +38,40 @@ public interface FileStorage {
 
     /**
      * Uploads the content from given {@code InputStream} to the configured storage with the given {@code name } as identifier which can
-     * be used later for {@link #downloadFile(String)} or {@link #deleteFile(String)}.
+     * be used later for {@link #download(String)} or {@link #delete(String)}.
      *
      * @param inputStream stream to read the file content from
      * @param name identifier of the file to be used later to retrieve
-     *             using {@link #downloadFile(String)}
+     *             using {@link #download(String)}
      * @throws java.io.IOException  if any IO error occurs
      */
-    String uploadFile(InputStream inputStream, String name) throws IOException;
+    String upload(InputStream inputStream, String name) throws IOException;
 
     /**
      * Returns {@link InputStream} of file for the given name.
      *
      * @param name identifier of the file to be downloaded that was first
-     *             passed during {@link #uploadFile(InputStream, String)}
+     *             passed during {@link #upload(InputStream, String)}
      * @return InputStream representing the file
      * @throws java.io.IOException if any IO error occurs
      */
-    InputStream downloadFile(String name) throws IOException;
+    InputStream download(String name) throws IOException;
 
     /**
      * Deletes the stored file for given {@code name}.
      *
      * @param name identifier of the file to be deleted that was
-     *             passed during {@link #uploadFile(InputStream, String)}
+     *             passed during {@link #upload(InputStream, String)}
      * @return {@code true} if the file is deleted, {@code false} if the file could not be deleted
      * @throws IOException if any IO error occurs
      */
-    boolean deleteFile(String name) throws IOException;
+    boolean delete(String name) throws IOException;
 
     /**
      * Returns if a file for the given name exists.
      *
      * @param name identifier of the file to be checked that was first
-     *             passed during {@link #uploadFile(InputStream, String)}
+     *             passed during {@link #upload(InputStream, String)}
      * @return true if the file exists
      */
     boolean exists(String name);

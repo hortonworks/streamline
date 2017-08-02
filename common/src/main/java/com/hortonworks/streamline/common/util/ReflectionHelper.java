@@ -47,7 +47,24 @@ public class ReflectionHelper {
 
     public static <T> T invokeSetter(String propertyName, Object object, Object valueToSet) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         String methodName = "set" + StringUtils.capitalize(propertyName);
-        Method method = object.getClass().getMethod(methodName, valueToSet.getClass());
+        Method method = null;
+        try {
+            method = object.getClass().getMethod(methodName, valueToSet.getClass());
+        } catch (NoSuchMethodException ex) {
+            // try setters that accept super types
+            Method[] methods = object.getClass().getMethods();
+            for (int i = 0; i < methods.length; i++) {
+                if (methods[i].getName().equals(methodName) && methods[i].getParameterCount() == 1) {
+                    if (methods[i].getParameters()[0].getType().isAssignableFrom(valueToSet.getClass())) {
+                        method = methods[i];
+                        break;
+                    }
+                }
+            }
+            if (method == null) {
+                throw ex;
+            }
+        }
         return (T) method.invoke(object, valueToSet);
     }
 

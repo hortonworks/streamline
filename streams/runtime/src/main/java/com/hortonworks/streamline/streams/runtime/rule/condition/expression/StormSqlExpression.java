@@ -250,6 +250,9 @@ public class StormSqlExpression extends ExpressionRuntime {
         return new ArrayList<>(stormSqlFields);
     }
 
+    public void addStormSqlField(Schema.Field field) {
+        stormSqlFields.add(field);
+    }
     public List<String> getProjectedFields() {
         return projectedFields;
     }

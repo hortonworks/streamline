@@ -27,12 +27,13 @@ public class PostgresqlInsertQuery extends AbstractStorableSqlQuery {
     }
 
     @Override
-    protected void setParameterizedSql() {
+    protected String createParameterizedSql() {
         Collection<String> columnNames = getColumnNames(columns, "\"%s\"");;
-        sql = "INSERT INTO \"" + tableName + "\" ("
+        String sql = "INSERT INTO \"" + tableName + "\" ("
                 + join(columnNames, ", ")
                 + ") VALUES( " + getBindVariables("?,", columnNames.size()) + ")";
         log.debug(sql);
+        return sql;
     }
 
     @Override

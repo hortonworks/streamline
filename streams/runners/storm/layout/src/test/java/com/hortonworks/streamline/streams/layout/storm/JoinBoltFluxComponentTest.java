@@ -52,7 +52,7 @@ public class JoinBoltFluxComponentTest {
     }
 
 
-    private static List<Map.Entry<String, Map<String, Object>>> getYamlComponents(FluxComponent fluxComponent) throws IOException {
+    public static List<Map.Entry<String, Map<String, Object>>> getYamlComponents(FluxComponent fluxComponent) throws IOException {
         String json = "{\n" +
                 "\"from\" : {\"stream\": \"stream1\", \"key\": \"k1\"},\n" +
                 "\"joins\" :\n" +

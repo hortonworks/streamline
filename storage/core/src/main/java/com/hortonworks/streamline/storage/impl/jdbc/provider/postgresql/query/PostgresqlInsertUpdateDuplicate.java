@@ -48,14 +48,15 @@ public class PostgresqlInsertUpdateDuplicate extends AbstractStorableSqlQuery {
 
     // "INSERT INTO DB.TABLE (name, age) VALUES("A", 19) ON DUPLICATE KEY UPDATE name="A", age=19";
     @Override
-    protected void setParameterizedSql() {
+    protected String createParameterizedSql() {
         Collection<String> columnNames = getColumnNames(columns, "\"%s\"");
-        sql = "INSERT INTO \"" + tableName + "\" ("
+        String sql = "INSERT INTO \"" + tableName + "\" ("
                 + join(columnNames, ", ")
                 + ") VALUES(" + getBindVariables("?,", columnNames.size()) + ")"
                 + " ON CONFLICT ON CONSTRAINT " + tableName + "_pkey"
                 + " DO UPDATE SET " + join(getColumnNames(columns, "\"%s\" = ?"), ", ");
         log.debug(sql);
+        return sql;
     }
 
     @Override

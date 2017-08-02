@@ -10,10 +10,11 @@ public class MysqlInsertQuery extends AbstractStorableSqlQuery {
     }
 
     @Override
-    protected void setParameterizedSql() {
-        sql = "INSERT INTO " + tableName + " ("
+    protected String createParameterizedSql() {
+        String sql = "INSERT INTO " + tableName + " ("
                 + join(getColumnNames(columns, "`%s`"), ", ")
                 + ") VALUES( " + getBindVariables("?,", columns.size()) + ")";
         log.debug(sql);
+        return sql;
     }
 }

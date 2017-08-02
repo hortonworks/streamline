@@ -1,0 +1,78 @@
+{
+  "outputStreams": [
+    {
+      "id": "outputstream",
+      "schema": {
+        "fields": [
+          {
+            "name": "intfield",
+            "type": "INTEGER",
+            "optional": true
+          },
+          {
+            "name": "stringfield1",
+            "type": "STRING",
+            "optional": false
+          },
+          {
+            "name": "stringfield2",
+            "type": "STRING",
+            "optional": false
+          }
+        ]
+      }
+    }
+  ],
+  "rules": [
+    {
+      "id": 1,
+      "name": "test",
+      "description": "test",
+      "ruleProcessorName": "test",
+      "streams": [
+        "inputstream"
+      ],
+      "projection": {
+        "expressions": [
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {"name": "RAND", "className": "builtin", "udf": false},
+              "operands": []
+            },
+            "alias": "RAND"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {"name": "RAND_INTEGER", "className": "builtin", "udf": false},
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.Literal",
+                  "value": "100"
+                }
+              ]
+            },
+            "alias": "RAND_INTEGER"
+          }
+        ]
+      },
+      "groupBy": null,
+      "having": null,
+      "window": null,
+      "actions": [
+        {
+          "name": "notificationsink",
+          "outputFieldsAndDefaults": {
+            "body": "RAND ${RAND} RAND_INTEGER ${RAND_INTEGER}"
+          },
+          "outputStreams": ["outputstream"],
+          "notifierName": "email_notifier",
+          "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction"
+        }
+      ]
+    }
+  ]
+}

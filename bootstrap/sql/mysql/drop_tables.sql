@@ -45,5 +45,6 @@ DROP TABLE IF EXISTS topology_test_run_case;
 DROP TABLE IF EXISTS topology_test_run_case_source;
 DROP TABLE IF EXISTS topology_test_run_case_sink;
 DROP TABLE IF EXISTS topology_test_run_histories;
+DROP TABLE IF EXISTS fileblob;
 
 SET FOREIGN_KEY_CHECKS=1;

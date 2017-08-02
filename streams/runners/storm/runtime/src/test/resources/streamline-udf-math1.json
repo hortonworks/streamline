@@ -1,0 +1,189 @@
+{
+  "outputStreams": [
+    {
+      "id": "outputstream",
+      "schema": {
+        "fields": [
+          {
+            "name": "intfield",
+            "type": "INTEGER",
+            "optional": true
+          },
+          {
+            "name": "stringfield1",
+            "type": "STRING",
+            "optional": false
+          },
+          {
+            "name": "stringfield2",
+            "type": "STRING",
+            "optional": false
+          }
+        ]
+      }
+    }
+  ],
+  "rules": [
+    {
+      "id": 1,
+      "name": "test",
+      "description": "test",
+      "ruleProcessorName": "test",
+      "streams": [
+        "inputstream"
+      ],
+      "projection": {
+        "expressions": [
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {"name": "POWER", "className": "builtin", "udf": false},
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {"name": "intfield", "type": "INTEGER", "optional": false}
+                },
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.Literal",
+                  "value": "10"
+                }
+              ]
+            },
+            "alias": "POWER"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {"name": "ABS", "className": "builtin", "udf": false},
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {"name": "negativefield", "type": "DOUBLE", "optional": false}
+                }
+              ]
+            },
+            "alias": "ABS"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {"name": "MOD", "className": "builtin", "udf": false},
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {"name": "intfield", "type": "INTEGER", "optional": false}
+                },
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.Literal",
+                  "value": "2"
+                }
+              ]
+            },
+            "alias": "MOD"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {"name": "SQRT", "className": "builtin", "udf": false},
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {"name": "intfield", "type": "INTEGER", "optional": false}
+                }
+              ]
+            },
+            "alias": "SQRT"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {"name": "LN", "className": "builtin", "udf": false},
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {"name": "intfield", "type": "INTEGER", "optional": false}
+                }
+              ]
+            },
+            "alias": "LN"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {"name": "LOG10", "className": "builtin", "udf": false},
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {"name": "intfield", "type": "INTEGER", "optional": false}
+                }
+              ]
+            },
+            "alias": "LOG10"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {"name": "EXP", "className": "builtin", "udf": false},
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {"name": "intfield", "type": "INTEGER", "optional": false}
+                }
+              ]
+            },
+            "alias": "EXP"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {"name": "CEIL", "className": "builtin", "udf": false},
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {"name": "doublefield", "type": "DOUBLE", "optional": false}
+                }
+              ]
+            },
+            "alias": "CEIL"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {"name": "FLOOR", "className": "builtin", "udf": false},
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {"name": "doublefield", "type": "DOUBLE", "optional": false}
+                }
+              ]
+            },
+            "alias": "FLOOR"
+          }
+        ]
+      },
+      "groupBy": null,
+      "having": null,
+      "window": null,
+      "actions": [
+        {
+          "name": "notificationsink",
+          "outputFieldsAndDefaults": {
+            "body": "POWER ${POWER} ABS ${ABS} MOD ${MOD} SQRT ${SQRT} LN ${LN} LOG10 ${LOG10} EXP ${EXP} CEIL ${CEIL} FLOOR ${FLOOR}"
+          },
+          "outputStreams": ["outputstream"],
+          "notifierName": "email_notifier",
+          "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction"
+        }
+      ]
+    }
+  ]
+}

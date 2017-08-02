@@ -41,55 +41,19 @@ public class StorageWriteBehind implements StorageWriter {
     }
 
     public void add(Storable storable) {
-        executorService.submit(new AddCallable(storable));
+        executorService.submit(() -> dao.add(storable));
     }
 
     public void addOrUpdate(Storable storable) {
-        executorService.submit(new AddOrUpdateCallable(storable));
+        executorService.submit(() -> dao.addOrUpdate(storable));
+    }
+
+    @Override
+    public void update(Storable storable) {
+        executorService.submit(() -> dao.update(storable));
     }
 
     public Object remove(StorableKey key) {
-        return executorService.submit(new DeleteCallable(key));
+        return executorService.submit(() -> dao.remove(key));
     }
-
-    // ======= Callables for async writing to the Storage Layer =============
-
-    private class AddCallable implements Callable<Storable> {
-        private final Storable storable;
-
-        AddCallable(Storable storable) {
-            this.storable = storable;
-        }
-
-        public Storable call() throws Exception {
-            dao.add(storable);
-            return null;    //TODO since not returning value, perhaps we can use runnable
-        }
-    }
-
-    private class AddOrUpdateCallable implements Callable<Storable> {
-        private final Storable storable;
-
-        AddOrUpdateCallable(Storable storable) {
-            this.storable = storable;
-        }
-
-        public Storable call() throws Exception {
-            dao.addOrUpdate(storable);
-            return null;    //TODO since not returning value, perhaps we can use runnable
-        }
-    }
-
-    private class DeleteCallable implements Callable<Storable> {
-        private final StorableKey key;
-
-        DeleteCallable(StorableKey key) {
-            this.key = key;
-        }
-
-        public Storable call() throws Exception {
-            return dao.remove(key);
-        }
-    }
-
 }

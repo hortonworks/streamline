@@ -207,7 +207,7 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
         for (String jar: jarsToDownload) {
             if (!copiedJars.contains(jar)) {
                 File destPath = Paths.get(destinationPath.toString(), Paths.get(jar).getFileName().toString()).toFile();
-                try (InputStream src = fileStorage.downloadFile(jar);
+                try (InputStream src = fileStorage.download(jar);
                      FileOutputStream dest = new FileOutputStream(destPath)
                 ) {
                     IOUtils.copy(src, dest);

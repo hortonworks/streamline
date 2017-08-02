@@ -24,6 +24,7 @@ import com.hortonworks.streamline.streams.layout.component.rule.expression.Condi
 import com.hortonworks.streamline.streams.layout.component.rule.expression.GroupBy;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.Having;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.Projection;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Udf;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.Window;
 
 import java.io.Serializable;
@@ -50,7 +51,7 @@ public class Rule implements Serializable {
     private Window window;
     private List<Action> actions;
     // quick access to user defined functions used in this rule
-    private Set<String> referredUdfs = Collections.emptySet();
+    private Set<Udf> referredUdfs = Collections.emptySet();
 
     public Rule() {     //TODO Check
         // For JSON serializer
@@ -154,11 +155,11 @@ public class Rule implements Serializable {
         this.groupBy = groupBy;
     }
 
-    public void setReferredUdfs(Set<String> referredUdfs) {
+    public void setReferredUdfs(Set<Udf> referredUdfs) {
         this.referredUdfs = new HashSet<>(referredUdfs);
     }
 
-    public Set<String> getReferredUdfs() {
+    public Set<Udf> getReferredUdfs() {
         return referredUdfs;
     }
 

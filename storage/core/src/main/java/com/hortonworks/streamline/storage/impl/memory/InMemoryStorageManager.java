@@ -83,6 +83,16 @@ public class InMemoryStorageManager implements StorageManager {
     }
 
     @Override
+    public void update(Storable storable) {
+        String namespace = storable.getNameSpace();
+        PrimaryKey pk = storable.getPrimaryKey();
+        if (!storageMap.containsKey(namespace)) {
+            throw new StorageException("Row could not be updated");
+        }
+        storageMap.get(namespace).put(pk, storable);
+    }
+
+    @Override
     public <T extends Storable> T get(StorableKey key) throws StorageException {
         return storageMap.containsKey(key.getNameSpace())
                 ? (T) storageMap.get(key.getNameSpace()).get(key.getPrimaryKey())

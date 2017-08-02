@@ -37,6 +37,11 @@ public class StorageWriteThrough implements StorageWriter {
         dao.addOrUpdate(storable);
     }
 
+    @Override
+    public void update(Storable storable) {
+        dao.update(storable);
+    }
+
     public Object remove(StorableKey key) {
         return dao.remove(key);
     }

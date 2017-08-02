@@ -29,12 +29,13 @@ public class SqlSelectQuery extends AbstractStorableKeyQuery {
 
     // "SELECT * FROM DB.TABLE [WHERE C1 = ?, C2 = ?]"
     @Override
-    protected void setParameterizedSql() {
-        sql = "SELECT * FROM " + tableName;
+    protected String createParameterizedSql() {
+        String sql = "SELECT * FROM " + tableName;
         //where clause is defined by columns specified in the PrimaryKey
         if (columns != null) {
             sql += " WHERE " + join(getColumnNames(columns, "%s = ?"), " AND ");
         }
         log.debug(sql);
+        return sql;
     }
 }

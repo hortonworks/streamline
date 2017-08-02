@@ -68,7 +68,7 @@ public class HdfsFileStorage implements FileStorage {
     }
 
     @Override
-    public String uploadFile(InputStream inputStream, String name) throws IOException {
+    public String upload(InputStream inputStream, String name) throws IOException {
         Path jarPath = new Path(directory, name);
 
         try(FSDataOutputStream outputStream = hdfsFileSystem.create(jarPath, false)) {
@@ -79,13 +79,13 @@ public class HdfsFileStorage implements FileStorage {
     }
 
     @Override
-    public InputStream downloadFile(String name) throws IOException {
+    public InputStream download(String name) throws IOException {
         Path filePath = new Path(directory, name);
         return hdfsFileSystem.open(filePath);
     }
 
     @Override
-    public boolean deleteFile(String name) throws IOException {
+    public boolean delete(String name) throws IOException {
         return hdfsFileSystem.delete(new Path(directory, name), true);
     }
 

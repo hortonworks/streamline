@@ -36,8 +36,6 @@ import com.hortonworks.streamline.common.util.ProxyUtil;
 import com.hortonworks.streamline.common.util.Utils;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
-import com.hortonworks.streamline.storage.PrimaryKey;
-import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.storage.exception.StorageException;
@@ -78,7 +76,6 @@ import com.hortonworks.streamline.streams.catalog.topology.state.TopologyState;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.streamline.streams.layout.component.Stream;
 import com.hortonworks.streamline.streams.layout.component.TopologyDag;
-import com.hortonworks.streamline.streams.layout.component.impl.NotificationSink;
 import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.rule.Rule;
 import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
@@ -972,7 +969,7 @@ public class StreamCatalogService {
     }
 
     public InputStream getFileFromJarStorage(String fileName) throws IOException {
-        return this.fileStorage.downloadFile(fileName);
+        return this.fileStorage.download(fileName);
     }
 
     public Collection<CustomProcessorInfo> listCustomProcessorsFromBundleWithFilter(List<QueryParam> params) throws IOException {
@@ -1054,15 +1051,15 @@ public class StreamCatalogService {
     }
 
     public String uploadFileToStorage(InputStream inputStream, String jarFileName) throws IOException {
-        return fileStorage.uploadFile(inputStream, jarFileName);
+        return fileStorage.upload(inputStream, jarFileName);
     }
 
     public InputStream downloadFileFromStorage(String jarName) throws IOException {
-        return fileStorage.downloadFile(jarName);
+        return fileStorage.download(jarName);
     }
 
     public boolean deleteFileFromStorage(String jarName) throws IOException {
-        return fileStorage.deleteFile(jarName);
+        return fileStorage.delete(jarName);
     }
 
     public CustomProcessorInfo removeCustomProcessorInfoAsBundle(String name) throws IOException {

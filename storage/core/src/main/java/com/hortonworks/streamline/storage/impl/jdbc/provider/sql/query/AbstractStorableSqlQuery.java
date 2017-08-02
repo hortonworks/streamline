@@ -28,7 +28,6 @@ public abstract class AbstractStorableSqlQuery extends AbstractSqlQuery {
         tableName = storableKey.getNameSpace();
         primaryKey = storableKey.getPrimaryKey();
         columns = storable.getSchema().getFields();
-        setParameterizedSql();
     }
 
     public Storable getStorable() {

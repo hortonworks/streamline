@@ -9,13 +9,14 @@ import com.hortonworks.streamline.storage.impl.jdbc.connection.ConnectionBuilder
 import com.hortonworks.streamline.storage.impl.jdbc.connection.HikariCPConnectionBuilder;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.query.PostgresqlDeleteQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.query.PostgresqlInsertQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.query.PostgresqlInsertUpdateDuplicate;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.query.PostgresqlSelectQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.query.PostgresqlUpdateQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory.AbstractQueryExecutor;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
 import com.hortonworks.streamline.storage.impl.jdbc.util.Util;
 import com.zaxxer.hikari.HikariConfig;
-import com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.query.PostgresqlInsertUpdateDuplicate;
 
 import java.sql.ResultSet;
 import java.util.Collection;
@@ -61,6 +62,11 @@ public class PostgresqlExecutor extends AbstractQueryExecutor {
     @Override
     public void insertOrUpdate(final Storable storable) {
         insertOrUpdateWithUniqueId(storable, new PostgresqlInsertUpdateDuplicate(storable));
+    }
+
+    @Override
+    public int update(Storable storable) {
+        return executeUpdate(new PostgresqlUpdateQuery(storable));
     }
 
     @Override

@@ -64,7 +64,7 @@ public class RuleParser {
     private Having having;
     private final Map<String, Udf> catalogUdfs = new HashMap<>();
     // the udfs used in the rule
-    private final Set<String> referredUdfs = new HashSet<>();
+    private final Set<Udf> referredUdfs = new HashSet<>();
     private final String sql;
     private final long topologyId;
     private final long versionId;
@@ -208,7 +208,7 @@ public class RuleParser {
                 .build());
     }
 
-    public Set<String> getReferredUdfs() {
+    public Set<Udf> getReferredUdfs() {
         return referredUdfs;
     }
 

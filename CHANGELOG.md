@@ -4,6 +4,7 @@
  * ISSUE-833     : Fix failing AvroStreamsSnapshotDeserializerTest due to changes in Schema Registry project
  * ISSUE-829     : Fix for CONCAT function 
  * ISSUE-824     : Forward Ambari response http status code when request to Ambari fails
+ * ISSUE-826     : Sanitize mysql create_tables scripts
  * ISSUE-774     : Make reader and writer schema version config properties mandatory for Kafka source and sink respectively 
  * ISSUE-742     : Make ssl trust store password config field mandatory for kafka source and sink when kafka SSL listener is selected 
  * ISSUE-745     : Add logout link to invalidate the kerberos authorization cookie

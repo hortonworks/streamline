@@ -26,12 +26,12 @@ import com.hortonworks.streamline.storage.exception.StorageException;
 import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlDeleteQuery;
-import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlInsertQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlSelectQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
 import com.hortonworks.streamline.storage.impl.jdbc.util.Util;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -75,10 +75,6 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
         this.queryTimeoutSecs = config.getQueryTimeoutSecs();
         activeConnections = Collections.synchronizedList(new ArrayList<Connection>());
     }
-
-    public abstract void insert(Storable storable);
-
-    public abstract void insertOrUpdate(Storable storable);
 
     @Override
     public void delete(StorableKey storableKey) {
@@ -176,8 +172,14 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
 
     // =============== Private helper Methods ===============
 
-    protected void executeUpdate(SqlQuery sqlBuilder) {
-        getQueryExecution(sqlBuilder).executeUpdate();
+    /**
+     * Executes an update query and returns the number of rows updated.
+     *
+     * @param sqlQuery the sql query
+     * @return the number of rows updated
+     */
+    protected int executeUpdate(SqlQuery sqlQuery) {
+        return getQueryExecution(sqlQuery).executeUpdate();
     }
 
     protected Long executeUpdateWithReturningGeneratedKey(SqlQuery sqlBuilder) {
@@ -216,9 +218,9 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
             return result;
         }
 
-        void executeUpdate() {
+        int executeUpdate() {
             try {
-                getPreparedStatement().executeUpdate();
+                return getPreparedStatement().executeUpdate();
             } catch (SQLException | ExecutionException e) {
                 throw new StorageException(e);
             } finally {
@@ -384,6 +386,8 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
                     map.put(columnLabel, resultSet.getTime(columnLabel));
                 } else if (columnJavaType.equals(Timestamp.class)) {
                     map.put(columnLabel, resultSet.getTimestamp(columnLabel));
+                } else if (columnJavaType.equals(InputStream.class)) {
+                    map.put(columnLabel, resultSet.getBlob(columnLabel).getBinaryStream());
                 } else {
                     throw new StorageException("type =  [" + columnType + "] for column [" + columnLabel + "] not supported.");
                 }

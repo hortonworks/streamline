@@ -17,6 +17,7 @@
 
 package com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory;
 
+import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableFactory;
 import com.hortonworks.streamline.storage.StorableKey;
@@ -43,6 +44,13 @@ public interface QueryExecutor {
      * Inserts or updates the specified {@link Storable} in storage
      */
     void insertOrUpdate(Storable storable);
+
+    /**
+     * Updates the specified storable in the storage
+     *
+     * @return the number of rows updated
+     */
+    int update(Storable storable);
 
     /**
      * Deletes the specified {@link StorableKey} from storage

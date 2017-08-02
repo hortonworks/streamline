@@ -15,13 +15,21 @@
  **/
 package com.hortonworks.streamline.streams.layout.component.rule.expression;
 
-public class Udf {
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.io.Serializable;
+
+public class Udf implements Serializable {
     public enum Type {
         FUNCTION, AGGREGATE
     }
-    private final String name;
-    private final Type type;
-    private final String className;
+    private String name;
+    private Type type;
+    private String className;
+
+    // for jackson
+    private Udf() {
+    }
 
     public Udf(String name, String className, Type type) {
         this.name = name;
@@ -41,6 +49,19 @@ public class Udf {
         return className;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
+    @JsonIgnore
     public boolean isAggregate() {
         return type == Type.AGGREGATE;
     }

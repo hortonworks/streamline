@@ -486,7 +486,7 @@ export default class SinkNodeForm extends Component {
           </Form>
         </Scrollbars>
       </div>;
-    const inputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={streamObj} inputStreamOptions={streamObjArr} streamType="input"/>;
+    const inputSidebar = <StreamsSidebar ref="StreamSidebar" streamObj={streamObj} inputStreamOptions={streamObjArr} streamKind="input"/>;
     return (
       <Tabs id="SinkForm" activeKey={this.state.activeTabKey} className="modal-tabs" onSelect={this.onSelectTab}>
         <Tab eventKey={1} title="REQUIRED">

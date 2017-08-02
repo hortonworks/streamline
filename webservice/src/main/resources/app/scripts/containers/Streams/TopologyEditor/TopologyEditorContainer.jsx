@@ -485,7 +485,7 @@ class TopologyEditorContainer extends Component {
     if (name.trim === '') {
       this.refs.topologyNameEditable.setState({errorMsg: "Topology name cannot be blank"});
       return false;
-    } else if (/[^A-Za-z0-9_-\s]/g.test(name)) { //matches any character that is not a alphanumeric, underscore or hyphen
+    } else if (/[^A-Za-z0-9_\-\s]/g.test(name)) { //matches any character that is not a alphanumeric, underscore or hyphen
       this.refs.topologyNameEditable.setState({errorMsg: "Topology name contains invalid characters"});
       return false;
     } else if (!/[A-Za-z0-9]/g.test(name)) { //to check if name contains only special characters
@@ -759,7 +759,7 @@ class TopologyEditorContainer extends Component {
               : this.refs.NodeModal.show()
         : (this.node.currentType.toLowerCase() === 'rt-join' && currentEdges.length !== 2)
           ? FSReactToastr.info(
-            <CommonNotification flag="error" content={`Please connected atleast two streams for configuring ${this.node.uiname} processor`}/>, '', toastOpt)
+            <CommonNotification flag="error" content={`Two incoming streams are required for configuring ${this.node.uiname} processor`}/>, '', toastOpt)
           :  this.refs.NodeModal.show();
         this.updateGraphMethod = updateGraphMethod;
       });
@@ -1112,10 +1112,12 @@ class TopologyEditorContainer extends Component {
     if(this.refs.TestSourceNodeContentRef.validateData()){
       this.refs.TestSourceNodeModal.hide();
       this.refs.TestSourceNodeContentRef.handleSave().then((testResult) => {
+        let configSuccess = true;
         _.map(testResult, (result) => {
           if(result.responseMessage !== undefined){
             FSReactToastr.error(
               <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
+            configSuccess = false;
           } else {
             let tempSourceConfig = _.cloneDeep(this.state.testSourceConfigure);
             const poolIndex = _.findIndex(tempSourceConfig, {id : result.sourceId});
@@ -1123,12 +1125,13 @@ class TopologyEditorContainer extends Component {
               tempSourceConfig.push({id :  result.sourceId});
               this.setState({testSourceConfigure :tempSourceConfig});
             }
-            const  msg =  <strong>{`Test source ${poolIndex !== -1 ? "updated" : "configure"} successfully`}</strong>;
-            FSReactToastr.success(
-              msg
-            );
           }
         });
+        if(configSuccess) {
+          FSReactToastr.success(
+            <strong>Test source configured successfully</strong>
+          );
+        }
       });
     }
   }
@@ -1294,7 +1297,7 @@ class TopologyEditorContainer extends Component {
     confirmMode method show the modeChangeModal
   */
   confirmMode = () => {
-    // this.refs.modeChangeModal.show();
+    this.refs.modeChangeModal.show();
   }
 
   handleEventLogHide = (flag,panel) => {

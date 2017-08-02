@@ -271,6 +271,12 @@
           <artifactId>hbase-client</artifactId>
           <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.hortonworks.streamline</groupId>
+            <artifactId>streamline-functions</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
