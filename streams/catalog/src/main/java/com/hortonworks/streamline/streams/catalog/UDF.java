@@ -121,7 +121,9 @@ public class UDF extends AbstractStorable {
         return className;
     }
 
-    public void setClassName(String className) { this.className = className; }
+    public void setClassName(String className) {
+        this.className = className;
+    }
 
     @JsonIgnore
     public String getJarStoragePath() {
