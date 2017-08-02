@@ -1,3 +1,19 @@
+/**
+ * Copyright 2017 Hortonworks.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+
+ *   http://www.apache.org/licenses/LICENSE-2.0
+
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ **/
+
 package com.hortonworks.streamline.streams.runtime.storm.testing;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,11 +58,12 @@ public class TestRunEventLogger {
 
     // Writing event to file should be mutually exclusive.
     // We don't need to worry about performance since it's just for testing topology locally.
-    public synchronized void writeEvent(long timestamp, String componentName, StreamlineEvent event) {
+    public synchronized void writeEvent(long timestamp, EventType eventType, String componentName,
+                                        String streamId, StreamlineEvent event) {
         try (FileWriter fw = new FileWriter(eventLogFilePath, true)) {
             LOG.debug("writing event to file " + eventLogFilePath);
 
-            EventInformation eventInfo = new EventInformation(timestamp, componentName, event);
+            EventInformation eventInfo = new EventInformation(timestamp, eventType, componentName, streamId, event);
             fw.write(objectMapper.writeValueAsString(eventInfo) + "\n");
             fw.flush();
         } catch (FileNotFoundException e) {
@@ -58,14 +75,22 @@ public class TestRunEventLogger {
         }
     }
 
+    public static enum EventType {
+        INPUT, OUTPUT
+    }
+
     public static class EventInformation {
         private long timestamp;
+        private EventType eventType;
         private String componentName;
+        private String streamId;
         private StreamlineEvent streamlineEvent;
 
-        public EventInformation(long timestamp, String componentName, StreamlineEvent streamlineEvent) {
+        public EventInformation(long timestamp, EventType eventType, String componentName, String streamId, StreamlineEvent streamlineEvent) {
             this.timestamp = timestamp;
+            this.eventType = eventType;
             this.componentName = componentName;
+            this.streamId = streamId;
             this.streamlineEvent = streamlineEvent;
         }
 
@@ -73,8 +98,16 @@ public class TestRunEventLogger {
             return timestamp;
         }
 
+        public EventType getEventType() {
+            return eventType;
+        }
+
         public String getComponentName() {
             return componentName;
+        }
+
+        public String getStreamId() {
+            return streamId;
         }
 
         public StreamlineEvent getStreamlineEvent() {
