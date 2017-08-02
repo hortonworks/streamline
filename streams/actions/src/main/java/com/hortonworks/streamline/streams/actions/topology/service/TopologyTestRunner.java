@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ForkJoinPool;
 
@@ -85,6 +86,12 @@ public class TopologyTestRunner {
         }
 
         Long testCaseId = Long.valueOf(testRunInputMap.get("testCaseId").toString());
+        Optional<Long> durationSecs = Optional.empty();
+
+        if (testRunInputMap.containsKey("durationSecs")) {
+            durationSecs = Optional.of(Long.valueOf(testRunInputMap.get("durationSecs").toString()));
+        }
+
         TopologyTestRunCase testCase = loadTestRunCase(topology.getId(), testCaseId);
 
         if (testCase == null) {
@@ -167,8 +174,10 @@ public class TopologyTestRunner {
                 expectedOutputRecordsMap, eventLogFilePath);
         catalogService.addTopologyTestRunHistory(history);
 
+        Optional<Long> finalDurationSecs = durationSecs;
         ParallelStreamUtil.runAsync(() -> runTestInBackground(topologyActions, topology, history,
-                testRunSourceMap, testRunProcessorMap, testRunSinkMap, expectedOutputRecordsMap), forkJoinPool);
+                testRunSourceMap, testRunProcessorMap, testRunSinkMap, expectedOutputRecordsMap,
+                finalDurationSecs), forkJoinPool);
 
         return history;
     }
@@ -178,13 +187,15 @@ public class TopologyTestRunner {
                                      Map<String, TestRunSource> testRunSourceMap,
                                      Map<String, TestRunProcessor> testRunProcessorMap,
                                      Map<String, TestRunSink> testRunSinkMap,
-                                     Map<String, List<Map<String, Object>>> expectedOutputRecordsMap) throws IOException {
+                                     Map<String, List<Map<String, Object>>> expectedOutputRecordsMap,
+                                     Optional<Long> durationSecs) throws IOException {
         TopologyLayout topologyLayout = CatalogToLayoutConverter.getTopologyLayout(topology, topology.getTopologyDag());
         try {
             topologyActionsService.setUpClusterArtifacts(topology, topologyActions);
             String mavenArtifacts = topologyActionsService.setUpExtraJars(topology, topologyActions);
 
-            topologyActions.testRun(topologyLayout, mavenArtifacts, testRunSourceMap, testRunProcessorMap, testRunSinkMap);
+            topologyActions.testRun(topologyLayout, mavenArtifacts, testRunSourceMap, testRunProcessorMap,
+                    testRunSinkMap, durationSecs);
 
             history.finishSuccessfully();
 
