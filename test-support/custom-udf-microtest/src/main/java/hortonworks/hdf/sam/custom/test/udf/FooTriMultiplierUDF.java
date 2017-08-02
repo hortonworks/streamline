@@ -22,7 +22,7 @@ import com.hortonworks.streamline.streams.rule.UDF3;
 /**
  *
  */
-public class FooSimpleMultiplierUDF implements UDF3<Integer, Integer, Integer, Integer> {
+public class FooTriMultiplierUDF implements UDF3<Integer, Integer, Integer, Integer> {
   @Override
   public Integer evaluate(Integer a, Integer b, Integer c) {
     return a * b * c;

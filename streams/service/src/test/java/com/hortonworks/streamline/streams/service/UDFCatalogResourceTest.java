@@ -98,7 +98,7 @@ public class UDFCatalogResourceTest {
 
   @Test
   public void testProcessUdfWithSimpleClass() throws Exception{
-    String fnName = "FooSimpleMultiplierUDF";
+    String fnName = "FooTriMultiplierUDF";
     String className = getFullClassName(fnName);
     UDF udf = newTestUDF(fnName, className);
     InputStream inputStream = new FileInputStream(udf.getJarStoragePath());
