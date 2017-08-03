@@ -268,6 +268,16 @@
         "defaultValue": "100" 
       },
       {
+        "uiName": "Serialization Protocol Version",
+        "fieldName": "serProtocolVersion",
+        "isOptional": true,
+        "tooltip": "Protocol version to be used for serialization",
+        "type": "number",
+        "defaultValue": 1,
+        "min": 0,
+        "max": 3
+      },
+      {
         "uiName": "SSL keystore location",
         "fieldName": "sslKeystoreLocation",
         "isOptional": true,
