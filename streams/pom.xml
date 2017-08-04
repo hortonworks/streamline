@@ -27,9 +27,9 @@
         <module>multilang</module>
         <module>actions</module>
         <module>authorizer</module>
+        <module>sql</module>
         <!-- test jar builders -->
         <module>test-support</module>
     </modules>
-
 
 </project>

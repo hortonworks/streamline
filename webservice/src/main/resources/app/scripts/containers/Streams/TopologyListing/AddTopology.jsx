@@ -80,7 +80,7 @@ class AddTopology extends Component {
     if (topologyName.trim().length < 1) {
       validDataFlag = false;
       this.setState({validInput: false});
-    } else if (/[^A-Za-z0-9_-\s]/g.test(topologyName)) {
+    } else if (/[^A-Za-z0-9_\-\s]/g.test(topologyName)) {
       validDataFlag = false;
       this.setState({validInput: false});
     } else if (!/[A-Za-z0-9]/g.test(topologyName)) {

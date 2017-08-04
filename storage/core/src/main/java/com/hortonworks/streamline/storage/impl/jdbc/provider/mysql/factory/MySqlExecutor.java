@@ -27,6 +27,7 @@ import com.hortonworks.streamline.storage.impl.jdbc.connection.HikariCPConnectio
 import com.hortonworks.streamline.storage.impl.jdbc.provider.mysql.query.MySqlInsertUpdateDuplicate;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.mysql.query.MysqlInsertQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.mysql.query.MysqlSelectQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.mysql.query.MysqlUpdateQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory.AbstractQueryExecutor;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlInsertQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
@@ -77,6 +78,11 @@ public class MySqlExecutor extends AbstractQueryExecutor {
     @Override
     public void insertOrUpdate(final Storable storable) {
         insertOrUpdateWithUniqueId(storable, new MySqlInsertUpdateDuplicate(storable));
+    }
+
+    @Override
+    public int update(Storable storable) {
+        return executeUpdate(new MysqlUpdateQuery(storable));
     }
 
     @Override

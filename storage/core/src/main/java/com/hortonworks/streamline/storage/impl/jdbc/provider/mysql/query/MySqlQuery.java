@@ -20,13 +20,15 @@ package com.hortonworks.streamline.storage.impl.jdbc.provider.mysql.query;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.AbstractSqlQuery;
 
 public class MySqlQuery extends AbstractSqlQuery {
+    private final String sql;
 
     public MySqlQuery(String sql) {
         this.sql = sql;
     }
 
     @Override
-    protected void setParameterizedSql() {
+    protected String createParameterizedSql() {
         log.debug(sql);
+        return sql;
     }
 }

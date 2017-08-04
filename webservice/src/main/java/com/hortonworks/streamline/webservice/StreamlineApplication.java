@@ -18,7 +18,6 @@
 package com.hortonworks.streamline.webservice;
 
 import com.google.common.cache.CacheBuilder;
-
 import com.hortonworks.registries.auth.Login;
 import com.hortonworks.registries.common.ServletFilterConfiguration;
 import com.hortonworks.streamline.cache.Cache;
@@ -34,33 +33,19 @@ import com.hortonworks.streamline.storage.StorageManagerAware;
 import com.hortonworks.streamline.storage.cache.impl.GuavaCache;
 import com.hortonworks.streamline.storage.cache.writer.StorageWriteThrough;
 import com.hortonworks.streamline.storage.cache.writer.StorageWriter;
+import com.hortonworks.streamline.storage.filestorage.DbFileStorage;
 import com.hortonworks.streamline.streams.exception.ConfigException;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import com.hortonworks.streamline.streams.security.authentication.StreamlineKerberosRequestFilter;
 import com.hortonworks.streamline.streams.security.impl.DefaultStreamlineAuthorizer;
 import com.hortonworks.streamline.streams.security.service.SecurityCatalogService;
 import com.hortonworks.streamline.streams.service.GenericExceptionMapper;
-
-import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jetty.servlets.CrossOriginFilter;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.security.auth.Subject;
-import javax.security.auth.login.LoginException;
-import javax.servlet.DispatcherType;
-import javax.servlet.Filter;
-import javax.servlet.FilterRegistration;
-import javax.ws.rs.container.ContainerRequestFilter;
-
+import com.hortonworks.streamline.webservice.configurations.AuthorizerConfiguration;
+import com.hortonworks.streamline.webservice.configurations.LoginConfiguration;
+import com.hortonworks.streamline.webservice.configurations.StorageProviderConfiguration;
+import com.hortonworks.streamline.webservice.configurations.StreamlineConfiguration;
+import com.hortonworks.streamline.webservice.configurations.ModuleConfiguration;
+import com.hortonworks.streamline.webservice.resources.StreamlineConfigurationResource;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.jetty.HttpConnectorFactory;
@@ -68,6 +53,24 @@ import io.dropwizard.server.AbstractServerFactory;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jetty.servlets.CrossOriginFilter;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.security.auth.Subject;
+import javax.security.auth.login.LoginException;
+import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
+import javax.servlet.FilterRegistration;
+import javax.ws.rs.container.ContainerRequestFilter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.hortonworks.streamline.storage.util.StorageUtils.getStreamlineEntities;
 
@@ -217,11 +220,14 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
         return CacheBuilder.newBuilder().maximumSize(maxSize);
     }
 
-    private FileStorage getJarStorage (StreamlineConfiguration configuration) {
+    private FileStorage getJarStorage (StreamlineConfiguration configuration, StorageManager storageManager) {
         FileStorage fileStorage = null;
         try {
             fileStorage = ReflectionHelper.newInstance(configuration.getFileStorageConfiguration().getClassName());
             fileStorage.init(configuration.getFileStorageConfiguration().getProperties());
+            if (fileStorage instanceof StorageManagerAware) {
+                ((StorageManagerAware) fileStorage).setStorageManager(storageManager);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -234,7 +240,7 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
         Collection<Class<? extends Storable>> streamlineEntities = getStreamlineEntities();
         storageManager.registerStorables(streamlineEntities);
         LOG.info("Registered streamline entities {}", streamlineEntities);
-        FileStorage fileStorage = this.getJarStorage(configuration);
+        FileStorage fileStorage = this.getJarStorage(configuration, storageManager);
         int appPort = ((HttpConnectorFactory) ((DefaultServerFactory) configuration.getServerFactory()).getApplicationConnectors().get(0)).getPort();
         String catalogRootUrl = configuration.getCatalogRootUrl().replaceFirst("8080", appPort +"");
         List<ModuleConfiguration> modules = configuration.getModules();

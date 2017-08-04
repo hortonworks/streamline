@@ -15,9 +15,9 @@
  **/
 package com.hortonworks.streamline.streams.runtime.rule.sql;
 
-import org.apache.storm.sql.runtime.ChannelContext;
-import org.apache.storm.sql.runtime.ChannelHandler;
-import org.apache.storm.tuple.Values;
+import com.hortonworks.streamline.streams.sql.runtime.ChannelContext;
+import com.hortonworks.streamline.streams.sql.runtime.ChannelHandler;
+import com.hortonworks.streamline.streams.sql.runtime.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

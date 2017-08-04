@@ -18,14 +18,16 @@ package com.hortonworks.streamline.storage.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.exception.DuplicateEntityException;
 import com.hortonworks.streamline.common.util.ReflectionHelper;
+import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.annotation.SearchableField;
 import com.hortonworks.streamline.storage.annotation.StorableEntity;
-import com.hortonworks.streamline.common.exception.DuplicateEntityException;
-import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.annotation.VersionField;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -81,11 +83,30 @@ public final class StorageUtils {
     public static List<Pair<Field, String>> getSearchableFieldValues(Storable storable)
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         List<Pair<Field, String>> res = new ArrayList<>();
+        getAnnotatedFieldValues(storable, SearchableField.class).forEach(kv -> {
+            res.add(Pair.of(kv.getKey(), kv.getValue() instanceof String ? (String) kv.getValue() : kv.getValue().toString()));
+        });
+        return res;
+    }
+
+    public static Optional<Pair<Field, Long>> getVersionFieldValue(Storable storable)
+            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        for (Pair<Field, Object> kv : getAnnotatedFieldValues(storable, VersionField.class)) {
+            if (kv.getValue() instanceof Long) {
+                return Optional.of(Pair.of(kv.getKey(), (Long) kv.getValue()));
+            }
+        }
+        return Optional.empty();
+    }
+
+    public static List<Pair<Field, Object>> getAnnotatedFieldValues(Storable storable, Class<? extends Annotation> clazz)
+            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        List<Pair<Field, Object>> res = new ArrayList<>();
         for (Field field : storable.getClass().getDeclaredFields()) {
-            if (field.getAnnotation(SearchableField.class) != null) {
+            if (field.getAnnotation(clazz) != null) {
                 Object val = ReflectionHelper.invokeGetter(field.getName(), storable);
                 if (val != null) {
-                    res.add(Pair.of(field, val instanceof String ? (String) val : val.toString()));
+                    res.add(Pair.of(field, val));
                 }
             }
         }

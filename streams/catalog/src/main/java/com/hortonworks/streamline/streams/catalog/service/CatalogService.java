@@ -54,15 +54,15 @@ public class CatalogService {
     }
 
     public String uploadFileToStorage(InputStream inputStream, String jarFileName) throws IOException {
-        return fileStorage.uploadFile(inputStream, jarFileName);
+        return fileStorage.upload(inputStream, jarFileName);
     }
 
     public InputStream downloadFileFromStorage(String jarName) throws IOException {
-        return fileStorage.downloadFile(jarName);
+        return fileStorage.download(jarName);
     }
 
     public boolean deleteFileFromStorage(String jarName) throws IOException {
-        return fileStorage.deleteFile(jarName);
+        return fileStorage.delete(jarName);
     }
 
     public Collection<File> listFiles() {

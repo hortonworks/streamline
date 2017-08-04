@@ -27,18 +27,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.storm</groupId>
-            <artifactId>storm-core</artifactId>
-            <version>${storm.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.storm</groupId>
-            <artifactId>storm-sql-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.storm</groupId>
-            <artifactId>storm-sql-runtime</artifactId>
+            <groupId>com.hortonworks.streamline</groupId>
+            <artifactId>streamline-sql</artifactId>
         </dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>

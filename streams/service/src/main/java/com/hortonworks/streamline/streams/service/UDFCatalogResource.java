@@ -413,7 +413,7 @@ public class UDFCatalogResource {
         String jarFileName;
         try (InputStream is = new FileInputStream(inputFile)) {
             jarFileName = String.format("streamline-functions-%s.jar", UUID.randomUUID().toString());
-            String uploadedPath = this.fileStorage.uploadFile(is, jarFileName);
+            String uploadedPath = this.fileStorage.upload(is, jarFileName);
             LOG.debug("Jar uploaded to {}", uploadedPath);
         } catch (IOException ex) {
             LOG.error("Got exception when uploading jar", ex);
@@ -442,10 +442,11 @@ public class UDFCatalogResource {
     }
 
     private void checkDuplicate(UDF udf) {
-        Collection<UDF> existing = catalogService.listUDFs(
-                Collections.singletonList(new QueryParam(UDF.NAME, udf.getName())));
+        List<QueryParam> qps = QueryParam.params(UDF.NAME, udf.getName(), UDF.CLASSNAME, udf.getClassName(),
+                UDF.TYPE, udf.getType().toString());
+        Collection<UDF> existing = catalogService.listUDFs(qps);
         if (!existing.isEmpty()) {
-            LOG.warn("UDF with name {} already exists", udf.getName());
+            LOG.warn("UDF with same (name, classname, type) already exists, udf: {}", udf);
             throw EntityAlreadyExistsException.byName(udf.getName());
         }
     }

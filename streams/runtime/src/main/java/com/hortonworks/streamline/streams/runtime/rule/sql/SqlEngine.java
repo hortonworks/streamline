@@ -19,11 +19,9 @@ package com.hortonworks.streamline.streams.runtime.rule.sql;
 
 
 import com.hortonworks.streamline.streams.runtime.script.engine.ScriptEngine;
-import org.apache.storm.sql.StormSql;
-import org.apache.storm.sql.runtime.ChannelContext;
-import org.apache.storm.task.OutputCollector;
-import org.apache.storm.tuple.Tuple;
-import org.apache.storm.tuple.Values;
+import com.hortonworks.streamline.streams.sql.StreamlineSql;
+import com.hortonworks.streamline.streams.sql.runtime.ChannelContext;
+import com.hortonworks.streamline.streams.sql.runtime.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,8 +48,8 @@ public class SqlEngine implements ScriptEngine<SqlEngine> {
     public void compileQuery(List<String> statements) {
         try {
             LOG.info("Compiling query statements {}", statements);
-            StormSql stormSql = StormSql.construct();
-            stormSql.execute(statements, channelHandler);
+            StreamlineSql streamlineSql = StreamlineSql.construct();
+            streamlineSql.execute(statements, channelHandler);
             channelContext = RulesDataSourcesProvider.getDataSource().getChannelContext();
             LOG.info("Query statements successfully compiled, channelContext set to {}", channelContext);
         } catch (Exception e) {
@@ -75,15 +73,6 @@ public class SqlEngine implements ScriptEngine<SqlEngine> {
         channelHandler.clearResult();
         return res;
     }
-
-    public void execute(Tuple tuple, OutputCollector outputCollector) {
-        outputCollector.emit(tuple, createValues(tuple));
-    }
-
-    private Values createValues(Tuple input) {
-        return (Values) input.getValues();
-    }
-
 
     @Override
     public String toString() {

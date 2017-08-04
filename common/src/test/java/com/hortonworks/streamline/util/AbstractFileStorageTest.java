@@ -46,10 +46,10 @@ public abstract class AbstractFileStorageTest {
         String name = "file.name";
 
         // delete the file if it already exists
-        fileStorage.deleteFile(name);
+        fileStorage.delete(name);
 
-        fileStorage.uploadFile(new FileInputStream(file), name);
-        InputStream inputStream = fileStorage.downloadFile(name);
+        fileStorage.upload(new FileInputStream(file), name);
+        InputStream inputStream = fileStorage.download(name);
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         String nextLine;

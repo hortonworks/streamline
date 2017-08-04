@@ -57,6 +57,14 @@ CREATE TABLE IF NOT EXISTS file (
     UNIQUE ("name", "version")
 );
 
+
+CREATE TABLE IF NOT EXISTS fileblob (
+  "name" VARCHAR(255) PRIMARY KEY,
+  "version" BIGINT NOT NULL,
+  "data" BYTEA NOT NULL,
+  "timestamp" BIGINT
+);
+
 CREATE TABLE IF NOT EXISTS namespace (
      "id" SERIAL PRIMARY KEY ,
      "name" VARCHAR(255) NOT NULL,

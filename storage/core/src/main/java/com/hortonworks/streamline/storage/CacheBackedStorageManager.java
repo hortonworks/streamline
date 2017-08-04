@@ -20,6 +20,8 @@ import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.storage.cache.impl.GuavaCache;
 import com.hortonworks.streamline.storage.cache.writer.StorageWriter;
 import com.hortonworks.streamline.storage.exception.StorageException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.List;
@@ -30,6 +32,8 @@ import java.util.Map;
  */
 
 public class CacheBackedStorageManager implements StorageManager {
+    private static final Logger LOG = LoggerFactory.getLogger(CacheBackedStorageManager.class);
+
     private final StorageWriter writer;
     private final Cache<StorableKey, Storable> cache;
     private final StorageManager dao;
@@ -52,32 +56,56 @@ public class CacheBackedStorageManager implements StorageManager {
     @Override
     public void add(Storable storable) throws StorageException {
         writer.add(storable);
-        cache.put(storable.getStorableKey(), storable);
+        if (storable.isCacheable()) {
+            cache.put(storable.getStorableKey(), storable);
+        }
     }
 
     @Override
     public <T extends Storable> T remove(StorableKey key) throws StorageException {
-        writer.remove(key);
-        final T oldVal = (T) cache.get(key);
-        cache.remove(key);
-        return oldVal;
+        Storable storable = (Storable) writer.remove(key);
+        if (storable != null && storable.isCacheable()) {
+            Storable cachedStorable = cache.get(key);
+            if (!storable.equals(cachedStorable)) {
+                LOG.warn("Possible cache inconsistency. Storable from DB '{}', Storable from cache '{}'",
+                        storable, cachedStorable);
+                storable = cachedStorable;
+            }
+            cache.remove(key);
+        }
+        return (T) storable;
     }
 
     @Override
     public void addOrUpdate(Storable storable) throws StorageException {
         writer.addOrUpdate(storable);
-        cache.put(storable.getStorableKey(), storable);
+        if (storable.isCacheable()) {
+            cache.put(storable.getStorableKey(), storable);
+        }
+    }
+
+    @Override
+    public void update(Storable storable) {
+        writer.update(storable);
+        if (storable.isCacheable()) {
+            cache.put(storable.getStorableKey(), storable);
+        }
     }
 
     @Override
     public <T extends Storable> T get(StorableKey key) throws StorageException {
-        return (T) cache.get(key);
+        Storable storable = cache.get(key);
+        // we could load the entries via a LoadingCache so need to explicitly remove it
+        if (storable != null && !storable.isCacheable()) {
+            cache.remove(key);
+        }
+        return (T) storable;
     }
 
-    @Override   //TODO:
+    @Override
     public <T extends Storable> Collection<T> find(String namespace, List<QueryParam> queryParams) throws StorageException {
         //Adding workaround methods that calls dao until we figure out what needs to be in caching so the topologies can work.
-        return ((GuavaCache)cache).getDao().find(namespace, queryParams);
+        return dao.find(namespace, queryParams);
 
     }
 

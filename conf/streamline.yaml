@@ -26,38 +26,6 @@ modules:
 
 catalogRootUrl: "http://localhost:8080/api/v1/catalog"
 
-# Filesystem based jar storage
-# Make sure you configure this directory other than /tmp
-
-fileStorageConfiguration:
- className: "com.hortonworks.streamline.common.util.LocalFileSystemStorage"
- properties:
-   directory: "/tmp"
-
-dashboardConfiguration:
- url: ""
-
-# MySQL based jdbc provider configuration is:
-# to add user and password please follow below convention
-
-storageProviderConfiguration:
- providerClass: "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager"
- properties:
-  db.type: "mysql"
-  queryTimeoutInSecs: 30
-  db.properties:
-    dataSourceClassName: "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
-    dataSource.url: "jdbc:mysql://localhost/streamline_db"
-    dataSource.user: "streamline_user"
-    dataSource.password: "streamline_password"
-
-# Truststore information which is needed for importing certificated Ambari cluster.
-# which default truststore doesn't cover the CA or self-certified.
-# When the options are not provided, JDK default truststore will be used.
-# It only supports single truststores, so admin needs to maintain single truststore and import certificates to that.
-#trustStorePath: ""
-#trustStorePassword: ""
-
 enableCors: true
 corsUrlPatterns:
   - "/api/v1/dashboards/*"
@@ -71,6 +39,83 @@ server:
     - type: http
       port: 8081
 
+# ------------------------------------------------
+# File storage configuration
+# ------------------------------------------------
+# Note: In HA mode HDFS or DB based file storage should be used
+# --
+
+# --
+# Filesystem based file storage - uses local file system to store the uploaded files
+# Note: Make sure you configure this directory other than /tmp
+# --
+fileStorageConfiguration:
+ className: "com.hortonworks.streamline.common.util.LocalFileSystemStorage"
+ properties:
+   directory: "/tmp"
+
+# --
+# HDFS file storage - uses HDFS to store the uploaded files
+# --
+#fileStorageConfiguration:
+#  className: com.hortonworks.streamline.common.util.HdfsFileStorage
+#  properties:
+#    directory: /hdf/streamline/jars
+#    fsUrl: hdfs://localhost:9090
+
+# --
+# DB based file storage - stores the uploaded files as blob in Db
+# --
+#fileStorageConfiguration:
+# className: "com.hortonworks.streamline.storage.filestorage.DbFileStorage"
+
+# ------------------------------------------------
+# Storage provider configuration
+# ------------------------------------------------
+
+# --
+# MySQL based storage provider configuration:
+# --
+storageProviderConfiguration:
+ providerClass: "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager"
+ properties:
+  db.type: "mysql"
+  queryTimeoutInSecs: 30
+  db.properties:
+    dataSourceClassName: "com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
+    dataSource.url: "jdbc:mysql://localhost/streamline_db"
+    dataSource.user: "streamline_user"
+    dataSource.password: "streamline_password"
+
+# --
+# PostgreSQL based storage provider configuration
+# --
+#storageProviderConfiguration:
+# providerClass: "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager"
+# properties:
+#   db.type: "postgresql"
+#   queryTimeoutInSecs: 30
+#   db.properties:
+#     dataSourceClassName: "org.postgresql.ds.PGSimpleDataSource"
+#     dataSource.url: "jdbc:postgresql://localhost/streamline_db"
+#     dataSource.user: "streamline_user"
+#     dataSource.password: "streamline_password"
+
+# --
+# In-memory storage provider configuration:
+# --
+#storageProviderConfiguration:
+#  providerClass: "com.hortonworks.streamline.storage.impl.memory.InMemoryStorageManager"
+
+# ------------------------------------------------
+# Dashboard configuration
+# ------------------------------------------------
+dashboardConfiguration:
+ url: ""
+
+# ------------------------------------------------
+# Logging configuration
+# ------------------------------------------------
 # Logging settings.
 logging:
   # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
@@ -88,6 +133,30 @@ logging:
       archivedFileCount: 7
       timeZone: UTC
       maxFileSize: 50MB
+
+# ------------------------------------------------
+# Authorizer configuration
+# ------------------------------------------------
+#authorizerConfiguration:
+# className: "com.hortonworks.streamline.streams.security.impl.DefaultStreamlineAuthorizer"
+# adminPrincipals:
+#   - "root"
+
+# ------------------------------------------------
+# Truststore configuration
+# ------------------------------------------------
+# Truststore information which is needed for importing certificated Ambari cluster.
+# which default truststore doesn't cover the CA or self-certified.
+# When the options are not provided, JDK default truststore will be used.
+# It only supports single truststores, so admin needs to maintain single truststore and import certificates to that.
+# --
+
+#trustStorePath: ""
+#trustStorePassword: ""
+
+# ------------------------------------------------
+# Authentication configuration
+# ------------------------------------------------
 
 #loginConfiguration:
 #  className: "com.hortonworks.registries.auth.KerberosLogin"

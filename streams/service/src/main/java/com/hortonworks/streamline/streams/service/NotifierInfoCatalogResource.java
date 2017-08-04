@@ -248,7 +248,7 @@ public class NotifierInfoCatalogResource {
         String jarFileName;
         if (is != null) {
             jarFileName = String.format("notifiers-%s.jar", UUID.randomUUID().toString());
-            String uploadedPath = this.fileStorage.uploadFile(is, jarFileName);
+            String uploadedPath = this.fileStorage.upload(is, jarFileName);
             LOG.debug("Jar uploaded to {}", uploadedPath);
         } else {
             String message = String.format("Notifier %s jar content is missing.", notifierName);

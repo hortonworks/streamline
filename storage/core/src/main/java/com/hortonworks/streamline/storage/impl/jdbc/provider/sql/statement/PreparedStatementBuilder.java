@@ -22,10 +22,13 @@ import com.hortonworks.streamline.storage.exception.MalformedQueryException;
 import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.AbstractStorableKeyQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.AbstractStorableSqlQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.AbstractStorableUpdateQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSetMetaData;
@@ -137,7 +140,9 @@ public class PreparedStatementBuilder {
         final List<Schema.Field> columns = sqlBuilder.getColumns();
         boolean isMultiple;
 
-        if (columns == null || columns.size() == 0) {
+        if (sqlBuilder instanceof AbstractStorableUpdateQuery) {
+            isMultiple = (groupCount % ((AbstractStorableUpdateQuery) sqlBuilder).getBindings().size()) == 0;
+        } else if (columns == null || columns.size() == 0) {
             isMultiple = groupCount == 0;
         } else {
             isMultiple = ((groupCount % sqlBuilder.getColumns().size()) == 0);
@@ -157,7 +162,9 @@ public class PreparedStatementBuilder {
      * */
     public PreparedStatement getPreparedStatement(SqlQuery sqlBuilder) throws SQLException {
         // If more types become available consider subclassing instead of going with this approach, which was chosen here for simplicity
-        if (sqlBuilder instanceof AbstractStorableKeyQuery) {
+        if (sqlBuilder instanceof AbstractStorableUpdateQuery) {
+            setStorableUpdatePreparedStatement((AbstractStorableUpdateQuery)sqlBuilder);
+        } else if (sqlBuilder instanceof AbstractStorableKeyQuery) {
             setStorableKeyPreparedStatement(sqlBuilder);
         } else if (sqlBuilder instanceof AbstractStorableSqlQuery) {
             setStorablePreparedStatement(sqlBuilder);
@@ -178,6 +185,15 @@ public class PreparedStatementBuilder {
                 Schema.Type javaType = column.getType();
                 setPreparedStatementParams(preparedStatement, javaType, j + 1, columnsToValues.get(column));
             }
+        }
+    }
+
+    private void setStorableUpdatePreparedStatement(AbstractStorableUpdateQuery updateQuery) throws SQLException {
+        List<Pair<Schema.Field, Object>> bindings = updateQuery.getBindings();
+        for (int i = 0; i < bindings.size(); i++) {
+            Pair<Schema.Field, Object> binding = bindings.get(i);
+            Schema.Type javaType = binding.getKey().getType();
+            setPreparedStatementParams(preparedStatement, javaType, i + 1, binding.getValue());
         }
     }
 
@@ -251,6 +267,9 @@ public class PreparedStatementBuilder {
             case BINARY:
                 preparedStatement.setBytes(index, (byte[]) val);
                 break;
+            case BLOB:
+                preparedStatement.setBinaryStream(index, (InputStream) val);
+                break;
             case NESTED:
             case ARRAY:
                 preparedStatement.setObject(index, val);    //TODO check this
@@ -280,6 +299,8 @@ public class PreparedStatementBuilder {
             case BINARY:
                 // it might be a VARBINARY or LONGVARBINARY
                 return Types.VARBINARY;
+            case BLOB:
+                return Types.BLOB;
             case NESTED:
             case ARRAY:
                 return Types.JAVA_OBJECT;

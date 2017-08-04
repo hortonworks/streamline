@@ -23,13 +23,11 @@ import java.util.LinkedList;
 public abstract class AbstractStorableKeyQuery extends AbstractSqlQuery {
     public AbstractStorableKeyQuery(String nameSpace) {
         tableName = nameSpace;
-        setParameterizedSql();
     }
 
     public AbstractStorableKeyQuery(StorableKey storableKey) {
         tableName = storableKey.getNameSpace();
         primaryKey = storableKey.getPrimaryKey();
         columns = new LinkedList<>(storableKey.getPrimaryKey().getFieldsToVal().keySet());
-        setParameterizedSql();
     }
 }

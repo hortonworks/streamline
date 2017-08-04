@@ -969,7 +969,7 @@ public class StreamCatalogService {
     }
 
     public InputStream getFileFromJarStorage(String fileName) throws IOException {
-        return this.fileStorage.downloadFile(fileName);
+        return this.fileStorage.download(fileName);
     }
 
     public Collection<CustomProcessorInfo> listCustomProcessorsFromBundleWithFilter(List<QueryParam> params) throws IOException {
@@ -1051,15 +1051,15 @@ public class StreamCatalogService {
     }
 
     public String uploadFileToStorage(InputStream inputStream, String jarFileName) throws IOException {
-        return fileStorage.uploadFile(inputStream, jarFileName);
+        return fileStorage.upload(inputStream, jarFileName);
     }
 
     public InputStream downloadFileFromStorage(String jarName) throws IOException {
-        return fileStorage.downloadFile(jarName);
+        return fileStorage.download(jarName);
     }
 
     public boolean deleteFileFromStorage(String jarName) throws IOException {
-        return fileStorage.deleteFile(jarName);
+        return fileStorage.delete(jarName);
     }
 
     public CustomProcessorInfo removeCustomProcessorInfoAsBundle(String name) throws IOException {

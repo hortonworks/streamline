@@ -28,11 +28,12 @@ public class MySqlInsertUpdateDuplicate extends AbstractStorableSqlQuery {
     // the factor of 2 comes from the fact that each column is referred twice in the MySql query as follows
     // "INSERT INTO DB.TABLE (id, name, age) VALUES(1, "A", 19) ON DUPLICATE KEY UPDATE id=1, name="A", age=19";
     @Override
-    protected void setParameterizedSql() {
-        sql = "INSERT INTO " + tableName + " ("
+    protected String createParameterizedSql() {
+        String sql = "INSERT INTO " + tableName + " ("
                 + join(getColumnNames(columns, "`%s`"), ", ")
                 + ") VALUES(" + getBindVariables("?,", columns.size()) + ")"
                 + " ON DUPLICATE KEY UPDATE " + join(getColumnNames(columns, "`%s` = ?"), ", ");
         log.debug(sql);
+        return sql;
     }
 }

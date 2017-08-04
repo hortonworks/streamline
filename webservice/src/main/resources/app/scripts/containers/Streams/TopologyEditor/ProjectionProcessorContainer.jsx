@@ -648,7 +648,7 @@ export default class ProjectionProcessorContainer extends Component {
                   return (
                     <div key={i} className="row form-group">
                       <div className="col-sm-3">
-                        <Select className={functionClass.join(' ')} value={obj.functionName} options={functionListArr} onChange={this.handleFieldChange.bind(this, i)} required={true} disabled={disabledFields} valueKey="name" labelKey="name"/>
+                        <Select className={functionClass.join(' ')} value={obj.functionName} options={functionListArr} onChange={this.handleFieldChange.bind(this, i)} required={true} disabled={disabledFields} valueKey="name" labelKey="displayName"/>
                       </div>
                       <div className="col-sm-4">
                         <Select className={argumentsClass.join(' ')} value={obj.args} options={fieldList} onChange={this.handleFieldsKeyChange.bind(this, i)} clearable={false} multi={true} required={true} disabled={disabledFields} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>

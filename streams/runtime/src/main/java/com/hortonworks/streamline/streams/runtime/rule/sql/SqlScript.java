@@ -19,7 +19,6 @@ package com.hortonworks.streamline.streams.runtime.rule.sql;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableMap;
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
@@ -28,7 +27,7 @@ import com.hortonworks.streamline.streams.runtime.rule.condition.expression.Expr
 import com.hortonworks.streamline.streams.runtime.rule.condition.expression.StormSqlExpression;
 import com.hortonworks.streamline.streams.runtime.script.Script;
 import com.hortonworks.streamline.streams.runtime.script.engine.ScriptEngine;
-import org.apache.storm.tuple.Values;
+import com.hortonworks.streamline.streams.sql.runtime.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,9 +35,7 @@ import javax.script.ScriptException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static com.hortonworks.streamline.streams.common.StreamlineEventImpl.GROUP_BY_TRIGGER_EVENT;
 import static com.hortonworks.streamline.streams.runtime.rule.condition.expression.StormSqlExpression.RULE_SCHEMA;
@@ -53,6 +50,15 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
     private final List<Schema.Field> stormSqlFields;
     private final List<String> projectedFields;
     private final List<String> outputFields;
+    /*
+     * when there are no references to input fields, we add a dummy field so that the
+     * rule table is created with the dummy field and the values can be processed by storm-sql.
+     * e.g. SELECT RAND() from inputStream results in
+     *      CREATE EXTERNAL TABLE RULETABLE (dummy INTEGER)
+     */
+    private static final Schema.Field DUMMY_FIELD = Schema.Field.of("dummy", Schema.Type.INTEGER);
+    private static final Integer DUMMY_FIELD_VALUE = 0;
+
     public SqlScript(ExpressionRuntime expressionRuntime, ScriptEngine<SqlEngine> scriptEngine) {
         this(expressionRuntime, scriptEngine, null);
     }
@@ -61,10 +67,12 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
         super(expressionRuntime.asString(), scriptEngine);
         this.valuesConverter = valuesConverter;
         stormSqlFields = ((StormSqlExpression) expressionRuntime).getStormSqlFields();
-        if (!stormSqlFields.isEmpty()) {
-            SqlEngine sqlEngine = (SqlEngine) scriptEngine;
-            sqlEngine.compileQuery(createQuery((StormSqlExpression) expressionRuntime));
+        if (stormSqlFields.isEmpty()) {
+            ((StormSqlExpression) expressionRuntime).addStormSqlField(DUMMY_FIELD);
+            stormSqlFields.add(DUMMY_FIELD);
         }
+        SqlEngine sqlEngine = (SqlEngine) scriptEngine;
+        sqlEngine.compileQuery(createQuery((StormSqlExpression) expressionRuntime));
         projectedFields = ((StormSqlExpression) expressionRuntime).getProjectedFields();
         outputFields = ((StormSqlExpression) expressionRuntime).getOutputFields();
     }
@@ -110,9 +118,14 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
     private Values createValues(StreamlineEvent event) {
         Values values = new Values();
         for (Schema.Field field : stormSqlFields) {
-            Object value = event.get(field.getName());
-            if (value == null) {
-                throw new ConditionEvaluationException("Missing property " + field.getName());
+            Object value;
+            if (field == DUMMY_FIELD) {
+                value = DUMMY_FIELD_VALUE;
+            } else {
+                value = event.get(field.getName());
+                if (value == null) {
+                    throw new ConditionEvaluationException("Missing property " + field.getName());
+                }
             }
             values.add(value);
         }

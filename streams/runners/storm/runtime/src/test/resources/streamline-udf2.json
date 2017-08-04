@@ -1,0 +1,297 @@
+{
+  "outputStreams": [
+    {
+      "id": "outputstream",
+      "schema": {
+        "fields": [
+          {
+            "name": "intfield",
+            "type": "INTEGER",
+            "optional": true
+          },
+          {
+            "name": "stringfield1",
+            "type": "STRING",
+            "optional": false
+          },
+          {
+            "name": "stringfield2",
+            "type": "STRING",
+            "optional": false
+          }
+        ]
+      }
+    }
+  ],
+  "rules": [
+    {
+      "id": 1,
+      "name": "test",
+      "description": "test",
+      "ruleProcessorName": "test",
+      "streams": [
+        "inputstream"
+      ],
+      "projection": {
+        "expressions": [
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {
+                "name": "SUBSTRING_FN",
+                "className": "com.hortonworks.streamline.streams.udf.Substring",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "stringfield1",
+                    "type": "STRING",
+                    "optional": false
+                  }
+                },
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.Literal",
+                  "value": "2"
+                }
+              ]
+            },
+            "alias": "SUBSTRING"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {
+                "name": "SUBSTRING_FN",
+                "className": "com.hortonworks.streamline.streams.udf.Substring2",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "stringfield1",
+                    "type": "STRING",
+                    "optional": false
+                  }
+                },
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.Literal",
+                  "value": "1"
+                },
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.Literal",
+                  "value": "4"
+                }
+              ]
+            },
+            "alias": "SUBSTRING2"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {
+                "name": "POSITION_FN",
+                "className": "com.hortonworks.streamline.streams.udf.Position",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "stringfield1",
+                    "type": "STRING",
+                    "optional": false
+                  }
+                },
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.Literal",
+                  "value": "'lo'"
+                }
+              ]
+            },
+            "alias": "POSITION"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {
+                "name": "POSITION_FN",
+                "className": "com.hortonworks.streamline.streams.udf.Position2",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "stringfield1",
+                    "type": "STRING",
+                    "optional": false
+                  }
+                },
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.Literal",
+                  "value": "'lo'"
+                },
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.Literal",
+                  "value": 4
+                }
+              ]
+            },
+            "alias": "POSITION2"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {
+                "name": "TRIM_FN",
+                "className": "com.hortonworks.streamline.streams.udf.Trim",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "stringfield3",
+                    "type": "STRING",
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            "alias": "TRIM"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {
+                "name": "LTRIM_FN",
+                "className": "com.hortonworks.streamline.streams.udf.Ltrim",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "stringfield3",
+                    "type": "STRING",
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            "alias": "LTRIM"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {
+                "name": "RTRIM_FN",
+                "className": "com.hortonworks.streamline.streams.udf.Rtrim",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "stringfield3",
+                    "type": "STRING",
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            "alias": "RTRIM"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {
+                "name": "OVERLAY_FN",
+                "className": "com.hortonworks.streamline.streams.udf.Overlay",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "stringfield4",
+                    "type": "STRING",
+                    "optional": false
+                  }
+                },
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.Literal",
+                  "value": "'bb'"
+                },
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.Literal",
+                  "value": 2
+                }
+              ]
+            },
+            "alias": "OVERLAY"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {
+                "name": "OVERLAY_FN",
+                "className": "com.hortonworks.streamline.streams.udf.Overlay2",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "stringfield4",
+                    "type": "STRING",
+                    "optional": false
+                  }
+                },
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.Literal",
+                  "value": "'bb'"
+                },
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.Literal",
+                  "value": 2
+                },
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.Literal",
+                  "value": 1
+                }
+              ]
+            },
+            "alias": "OVERLAY2"
+          }
+        ]
+      },
+      "groupBy": null,
+      "having": null,
+      "window": null,
+      "actions": [
+        {
+          "name": "notificationsink",
+          "outputFieldsAndDefaults": {
+            "body": "SUBSTRING ${SUBSTRING} SUBSTRING2 ${SUBSTRING2} POSITION ${POSITION} POSITION2 ${POSITION2} TRIM ${TRIM} LTRIM ${LTRIM} RTRIM ${RTRIM} OVERLAY ${OVERLAY} OVERLAY2 ${OVERLAY2}"
+          },
+          "outputStreams": ["outputstream"],
+          "notifierName": "email_notifier",
+          "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction"
+        }
+      ]
+    }
+  ]
+}
