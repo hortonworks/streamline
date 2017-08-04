@@ -140,6 +140,6 @@ public class TopologyEditorMetadataResource {
         SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
                 Topology.NAMESPACE, topologyId, WRITE);
         TopologyEditorMetadata newTopologyEditorMetadata = catalogService.addOrUpdateTopologyEditorMetadata(topologyId, topologyEditorMetadata);
-        return WSUtils.respondEntity(topologyEditorMetadata, OK);
+        return WSUtils.respondEntity(newTopologyEditorMetadata, OK);
     }
 }

@@ -129,11 +129,11 @@ public class TransformActionRuntime extends AbstractActionRuntime {
     }
 
 
-    public static class Factory implements RuntimeService.Factory<ActionRuntime, Action> {
+    public static class Factory implements RuntimeService.Factory<ActionRuntime, TransformAction> {
 
         @Override
-        public ActionRuntime create(Action action) {
-            return new TransformActionRuntime((TransformAction)action);
+        public ActionRuntime create(TransformAction action) {
+            return new TransformActionRuntime(action);
         }
     }
 }

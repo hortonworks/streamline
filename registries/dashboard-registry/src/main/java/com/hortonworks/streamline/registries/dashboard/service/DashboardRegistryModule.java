@@ -25,13 +25,11 @@ import java.util.List;
 import java.util.Map;
 
 public class DashboardRegistryModule implements ModuleRegistration, StorageManagerAware {
-    private Map<String, Object> config;
     private FileStorage fileStorage;
     private StorageManager storageManager;
 
     @Override
     public void init(Map<String, Object> config, FileStorage fileStorage) {
-        this.config = config;
         this.fileStorage = fileStorage;
     }
 

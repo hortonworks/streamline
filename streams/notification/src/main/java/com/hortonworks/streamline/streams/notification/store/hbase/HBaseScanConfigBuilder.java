@@ -43,7 +43,7 @@ public class HBaseScanConfigBuilder {
 
     private static final Logger LOG = LoggerFactory.getLogger(HBaseScanConfigBuilder.class);
 
-    public static final List<String> DEFAULT_INDEX_FIELD_NAMES = Arrays.asList("ts");
+    private static final List<String> DEFAULT_INDEX_FIELD_NAMES = Arrays.asList("ts");
 
     /**
      * A mapping of the entity class to a map of indexed field name and corresponding mapper.

@@ -138,7 +138,7 @@ public class JsonMultilangSerializer implements ISerializer  {
         return line.toString();
     }
 
-    private class ConnectMsg {
+    private static class ConnectMsg {
         String pidDir;
         Map<String, Object> conf;
         ShellContext context;

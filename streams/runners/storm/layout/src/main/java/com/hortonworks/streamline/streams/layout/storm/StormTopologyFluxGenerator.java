@@ -23,12 +23,12 @@ import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.layout.component.Component;
 import com.hortonworks.streamline.streams.layout.component.Edge;
 import com.hortonworks.streamline.streams.layout.component.InputComponent;
+import com.hortonworks.streamline.streams.layout.component.OutputComponent;
 import com.hortonworks.streamline.streams.layout.component.Stream;
+import com.hortonworks.streamline.streams.layout.component.StreamGrouping;
 import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
 import com.hortonworks.streamline.streams.layout.component.StreamlineSink;
 import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
-import com.hortonworks.streamline.streams.layout.component.OutputComponent;
-import com.hortonworks.streamline.streams.layout.component.StreamGrouping;
 import com.hortonworks.streamline.streams.layout.component.TopologyDag;
 import com.hortonworks.streamline.streams.layout.component.TopologyDagVisitor;
 import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
@@ -148,15 +148,17 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
     private void mayBeUpdateTopologyConfig(Window window) {
         int messageTimeoutSecs = DELTA;
         int maxPending = DELTA;
-        if (window.getWindowLength() instanceof Window.Duration) {
-            messageTimeoutSecs += ((Window.Duration) window.getWindowLength()).getDurationMs()/1000;
-        } else if (window.getWindowLength() instanceof Window.Count) {
-            maxPending += ((Window.Count) window.getWindowLength()).getCount();
+        Window.WindowParam windowLength = window.getWindowLength();
+        Window.WindowParam slidingInterval = window.getSlidingInterval();
+        if (windowLength instanceof Window.Duration) {
+            messageTimeoutSecs += ((Window.Duration) windowLength).getDurationMs()/1000;
+        } else if (windowLength instanceof Window.Count) {
+            maxPending += ((Window.Count) windowLength).getCount();
         }
-        if (window.getSlidingInterval() instanceof Window.Duration) {
-            messageTimeoutSecs += ((Window.Duration) window.getSlidingInterval()).getDurationMs()/1000;
-        } else if (window.getSlidingInterval() instanceof Window.Count) {
-            maxPending += ((Window.Count) window.getSlidingInterval()).getCount();
+        if (slidingInterval instanceof Window.Duration) {
+            messageTimeoutSecs += ((Window.Duration) slidingInterval).getDurationMs()/1000;
+        } else if (slidingInterval instanceof Window.Count) {
+            maxPending += ((Window.Count) slidingInterval).getCount();
         }
         setIfGreater(StormTopologyLayoutConstants.TOPOLOGY_MESSAGE_TIMEOUT_SECS, messageTimeoutSecs);
         setIfGreater(StormTopologyLayoutConstants.TOPOLOGY_MAX_SPOUT_PENDING, maxPending);

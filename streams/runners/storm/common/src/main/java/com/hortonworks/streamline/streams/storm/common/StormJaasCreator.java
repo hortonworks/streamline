@@ -1,19 +1,16 @@
 package com.hortonworks.streamline.streams.storm.common;
 
 import com.hortonworks.streamline.common.Constants;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.Configuration;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +50,7 @@ public class StormJaasCreator {
 
         jaasConfig = jaasConfig.replace("{{principal}}", streamlinePrincipal);
 
-        try (FileWriter fw = new FileWriter(desiredFilePath)) {
+        try (OutputStreamWriter fw = new OutputStreamWriter(new FileOutputStream(desiredFilePath), "UTF-8")) {
             fw.write(jaasConfig);
         }
 

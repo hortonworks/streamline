@@ -65,9 +65,8 @@ public class CustomProcessorBoltFluxComponent extends AbstractFluxComponent {
         String fieldToValidate = TopologyLayoutConstants.JSON_KEY_INPUT_SCHEMA;
         try {
             Map inputSchema = (Map) conf.get(fieldToValidate);
-            Schema input = Utils.getSchemaFromConfig(inputSchema);
+            Utils.getSchemaFromConfig(inputSchema);
             fieldToValidate = TopologyLayoutConstants.JSON_KEY_INPUT_SCHEMA_MAP;
-            Map<String, Map<String, String>> inputSchemaMap = (Map) conf.get(fieldToValidate);
             fieldToValidate = TopologyLayoutConstants.JSON_KEY_OUTPUT_STREAMS_SCHEMA;
             Map<String, Map> outputSchema = (Map) conf.get(fieldToValidate);
             if (outputSchema == null || outputSchema.keySet().isEmpty()) {

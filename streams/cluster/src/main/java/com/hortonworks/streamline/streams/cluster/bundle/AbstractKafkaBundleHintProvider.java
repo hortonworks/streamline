@@ -3,6 +3,7 @@ package com.hortonworks.streamline.streams.cluster.bundle;
 import com.google.common.base.Joiner;
 
 import com.hortonworks.streamline.streams.catalog.Cluster;
+import com.hortonworks.streamline.streams.catalog.exception.ServiceComponentNotFoundException;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
 import com.hortonworks.streamline.streams.cluster.Constants;
@@ -87,7 +88,7 @@ public abstract class AbstractKafkaBundleHintProvider extends AbstractSecureBund
             if (zookeeperServers != null && !zookeeperServers.isEmpty()) {
                 List<String> hosts = zookeeperServers.stream().map(HostPort::getHost).collect(toList());
             }
-        } catch (Exception e) {
+        } catch (ServiceComponentNotFoundException | ServiceNotFoundException e) {
             // not that important so just give up providing information
         }
     }

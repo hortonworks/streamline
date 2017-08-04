@@ -190,7 +190,7 @@ public class ServiceConfigurationCatalogResource {
 
     private Long getClusterId(Long serviceId) {
         Service service = environmentService.getService(serviceId);
-        return (service == null) ? -1L : service.getClusterId();
+        return (service == null) ? Long.valueOf(-1L) : service.getClusterId();
     }
 
 }

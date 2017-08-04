@@ -21,11 +21,12 @@ import com.hortonworks.streamline.common.util.FileUtil;
 import com.hortonworks.streamline.common.util.ProxyUtil;
 import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
-import com.hortonworks.streamline.streams.runtime.CustomProcessorRuntime;
 import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
+import com.hortonworks.streamline.streams.runtime.CustomProcessorRuntime;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,7 +88,7 @@ public class CustomProcessorUploadHandler implements FileEventHandler {
                 }
                 File tempJarFile = FileUtil.writeInputStreamToTempFile(jarFile, ".jar");
                 ProxyUtil<CustomProcessorRuntime> customProcessorProxyUtil = new ProxyUtil<>(CustomProcessorRuntime.class);
-                CustomProcessorRuntime customProcessorRuntime = customProcessorProxyUtil.loadClassFromJar(tempJarFile.getAbsolutePath(), customProcessorInfo.getCustomProcessorImpl());
+                customProcessorProxyUtil.loadClassFromJar(tempJarFile.getAbsolutePath(), customProcessorInfo.getCustomProcessorImpl());
                 jarFile.reset();
                 this.catalogService.addCustomProcessorInfoAsBundle(customProcessorInfo, jarFile);
                 succeeded = true;
@@ -153,36 +154,20 @@ public class CustomProcessorUploadHandler implements FileEventHandler {
     }
 
     private byte[] getFileAsByteArray (File tarFile, String fileName) {
-        BufferedInputStream bis = null;
-        TarArchiveInputStream tarArchiveInputStream = null;
         byte[] data = null;
-        try {
-            LOG.info("Getting file " + fileName + " from " + tarFile);
-            bis = new BufferedInputStream(new FileInputStream(tarFile));
-            tarArchiveInputStream = new TarArchiveInputStream(bis);
+        LOG.info("Getting file {} from {}", fileName, tarFile);
+        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(tarFile));
+             TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(bis)) {
             TarArchiveEntry tarArchiveEntry = tarArchiveInputStream.getNextTarEntry();
             while (tarArchiveEntry != null) {
                 if (tarArchiveEntry.getName().equals(fileName)) {
-                    long size = tarArchiveEntry.getSize();
-                    data = new byte[(int) size];
-                    tarArchiveInputStream.read(data, 0, data.length);
+                    data = IOUtils.toByteArray(tarArchiveInputStream);
                     break;
                 }
                 tarArchiveEntry = tarArchiveInputStream.getNextTarEntry();
             }
         } catch (IOException e) {
             LOG.warn("Exception occured while getting file: " + fileName + " from " + tarFile, e);
-        } finally {
-            try {
-                if (bis != null) {
-                    bis.close();
-                }
-                if (tarArchiveInputStream != null) {
-                    tarArchiveInputStream.close();
-                }
-            } catch (IOException e) {
-                LOG.warn("Error closing input stream for the tar file: " + tarFile, e);
-            }
         }
         return data;
     }

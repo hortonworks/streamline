@@ -16,10 +16,9 @@
 
 package com.hortonworks.streamline.streams.runtime.rule.action;
 
-import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.Result;
+import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.layout.Transform;
-import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
 import com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction;
 import com.hortonworks.streamline.streams.layout.component.rule.action.TransformAction;
 import com.hortonworks.streamline.streams.layout.component.rule.action.transform.AddHeaderTransform;
@@ -92,10 +91,10 @@ public class NotifierActionRuntime extends AbstractActionRuntime {
         return transforms;
     }
 
-    public static class Factory implements RuntimeService.Factory<ActionRuntime, Action> {
+    public static class Factory implements RuntimeService.Factory<ActionRuntime, NotifierAction> {
         @Override
-        public ActionRuntime create(Action action) {
-            return new NotifierActionRuntime((NotifierAction) action);
+        public ActionRuntime create(NotifierAction action) {
+            return new NotifierActionRuntime(action);
         }
     }
 

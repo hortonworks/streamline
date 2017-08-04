@@ -68,10 +68,10 @@ public class StageActionRuntime extends AbstractSplitJoinActionRuntime {
         return transformActionRuntime.getOutputStreams();
     }
 
-    public static class Factory implements RuntimeService.Factory<ActionRuntime, Action> {
+    public static class Factory implements RuntimeService.Factory<ActionRuntime, StageAction> {
         @Override
-        public ActionRuntime create(Action action) {
-            return new StageActionRuntime((StageAction) action);
+        public ActionRuntime create(StageAction action) {
+            return new StageActionRuntime(action);
         }
     }
 }

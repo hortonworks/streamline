@@ -124,10 +124,10 @@ public class JoinActionRuntime extends AbstractSplitJoinActionRuntime {
         return joinAction.getOutputStreams();
     }
 
-    public static class Factory implements RuntimeService.Factory<ActionRuntime, Action> {
+    public static class Factory implements RuntimeService.Factory<ActionRuntime, JoinAction> {
         @Override
-        public ActionRuntime create(Action action) {
-            return new JoinActionRuntime((JoinAction) action);
+        public ActionRuntime create(JoinAction action) {
+            return new JoinActionRuntime(action);
         }
     }
 }

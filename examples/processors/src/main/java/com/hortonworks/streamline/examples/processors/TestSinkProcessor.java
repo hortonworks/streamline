@@ -19,7 +19,6 @@ package com.hortonworks.streamline.examples.processors;
 
 
 import com.hortonworks.streamline.streams.StreamlineEvent;
-import com.hortonworks.streamline.streams.Result;
 import com.hortonworks.streamline.streams.exception.ConfigException;
 import com.hortonworks.streamline.streams.exception.ProcessingException;
 import com.hortonworks.streamline.streams.runtime.CustomProcessorRuntime;
@@ -27,10 +26,10 @@ import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
@@ -38,13 +37,13 @@ public class TestSinkProcessor implements CustomProcessorRuntime {
     protected static final Logger LOG = LoggerFactory.getLogger(TestSinkProcessor.class);
     public static final String FILE_FIELD_NAME = "file";
     Map<String, Object> config;
-    FileWriter file;
+    OutputStreamWriter writer;
 
     public void initialize(Map<String, Object> config) {
         try {
             this.config = config;
             LOG.info("Initializing with config field " + FILE_FIELD_NAME + " = " + this.config.get(FILE_FIELD_NAME).toString());
-            this.file = new FileWriter(this.config.get(FILE_FIELD_NAME).toString() + UUID.randomUUID());
+            this.writer = new OutputStreamWriter(new FileOutputStream(this.config.get(FILE_FIELD_NAME).toString() + UUID.randomUUID()), "UTF-8");
         } catch(IOException e) {
             LOG.error("Failed to create file ", e);
         }
@@ -63,8 +62,8 @@ public class TestSinkProcessor implements CustomProcessorRuntime {
             LOG.debug("Processing {}", streamlineEvent);
             JSONObject json = new JSONObject();
             json.putAll(streamlineEvent);
-            file.write(json.toJSONString());
-            file.flush();
+            writer.write(json.toJSONString());
+            writer.flush();
         } catch(Exception e) {
             LOG.error("Failed to process event", e);
             throw new ProcessingException(e);
@@ -75,8 +74,8 @@ public class TestSinkProcessor implements CustomProcessorRuntime {
     public void cleanup() {
         LOG.debug("Cleaning up");
         try {
-            file.flush();
-            file.close();
+            writer.flush();
+            writer.close();
         } catch(Exception e) {
             LOG.error("failed to close", e);
         }

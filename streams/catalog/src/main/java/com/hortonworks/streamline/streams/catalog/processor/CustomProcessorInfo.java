@@ -228,10 +228,12 @@ public class CustomProcessorInfo {
 
     private List<TopologyComponentUISpecification.UIField> getCustomProcessorUIFieldsWithPrefix () {
         List<TopologyComponentUISpecification.UIField> result = new ArrayList<>();
-        for (TopologyComponentUISpecification.UIField uiField: this.topologyComponentUISpecification.getFields()) {
-            TopologyComponentUISpecification.UIField newUIField = new TopologyComponentUISpecification.UIField(uiField);
-            newUIField.setFieldName(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_PREFIX + uiField.getFieldName());
-            result.add(newUIField);
+        if (topologyComponentUISpecification != null) {
+            for (TopologyComponentUISpecification.UIField uiField : this.topologyComponentUISpecification.getFields()) {
+                TopologyComponentUISpecification.UIField newUIField = new TopologyComponentUISpecification.UIField(uiField);
+                newUIField.setFieldName(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_PREFIX + uiField.getFieldName());
+                result.add(newUIField);
+            }
         }
         return result;
     }

@@ -324,9 +324,8 @@ public class TopologyCatalogResource {
         if (StringUtils.isEmpty(topology.getConfig())) {
             throw BadRequestException.missingParameter(Topology.CONFIG);
         }
-        Topology result = catalogService.addOrUpdateTopology
-                (topologyId, topology);
-        return WSUtils.respondEntity(topology, OK);
+        Topology result = catalogService.addOrUpdateTopology(topologyId, topology);
+        return WSUtils.respondEntity(result, OK);
     }
 
     /**

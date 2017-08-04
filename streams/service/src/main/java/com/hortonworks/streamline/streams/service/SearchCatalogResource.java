@@ -25,6 +25,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.Function;
@@ -166,7 +167,7 @@ public class SearchCatalogResource {
                 res = field1.compareTo(field2);
             }
             return (desc != null && desc) ? -res : res;
-        } catch (Exception ex) {
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
             LOG.error("Got exception trying to get value for " + fieldName, ex);
             throw new RuntimeException(ex);
         }

@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TransformRuntimeService extends RuntimeService<TransformRuntime, Transform> {
     private static final Logger log = LoggerFactory.getLogger(TransformRuntimeService.class);
 
-    private static final Map<Class<? extends Transform>, RuntimeService.Factory<TransformRuntime, Transform>> transformFactories = new ConcurrentHashMap<>();
+    private static final Map<Class<? extends Transform>, RuntimeService.Factory<TransformRuntime, ?>> transformFactories = new ConcurrentHashMap<>();
 
     static {
         // register factories

@@ -62,20 +62,20 @@ public class EmailNotifier implements Notifier, TransportListener {
         final String defaultVal;
     }
 
-    private static Field Field(String key, String defaultVal) {
+    private static Field field(String key, String defaultVal) {
         return new Field(key, defaultVal);
     }
 
     // configuration properties
-    private static final Field PROP_USERNAME = Field("username", "");
-    private static final Field PROP_PASSWORD = Field("password", "");
-    private static final Field PROP_HOST = Field("host", "localhost");
-    private static final Field PROP_PORT = Field("port", "25");
-    private static final Field PROP_SSL = Field("ssl", "false");
-    private static final Field PROP_STARTTLS = Field("starttls", "false");
-    private static final Field PROP_DEBUG = Field("debug", "false");
-    private static final Field PROP_PROTOCOL = Field("protocol", "smtp");
-    private static final Field PROP_AUTH = Field("auth", "true");
+    private static final Field PROP_USERNAME = field("username", "");
+    private static final Field PROP_PASSWORD = field("password", "");
+    private static final Field PROP_HOST = field("host", "localhost");
+    private static final Field PROP_PORT = field("port", "25");
+    private static final Field PROP_SSL = field("ssl", "false");
+    private static final Field PROP_STARTTLS = field("starttls", "false");
+    private static final Field PROP_DEBUG = field("debug", "false");
+    private static final Field PROP_PROTOCOL = field("protocol", "smtp");
+    private static final Field PROP_AUTH = field("auth", "true");
 
     // SMTP keys
     private static final String SMTP_HOST = "mail.smtp.host";
@@ -87,11 +87,11 @@ public class EmailNotifier implements Notifier, TransportListener {
 
 
     // Message fields
-    private static final Field FIELD_FROM = Field("from", "admin@localhost");
-    private static final Field FIELD_TO = Field("to", "");
-    private static final Field FIELD_SUBJECT = Field("subject", "Alert");
-    private static final Field FIELD_CONTENT_TYPE = Field("contentType", "text/plain");
-    private static final Field FIELD_BODY = Field("body", "Got an alert");
+    private static final Field FIELD_FROM = field("from", "admin@localhost");
+    private static final Field FIELD_TO = field("to", "");
+    private static final Field FIELD_SUBJECT = field("subject", "Alert");
+    private static final Field FIELD_CONTENT_TYPE = field("contentType", "text/plain");
+    private static final Field FIELD_BODY = field("body", "Got an alert");
     private static final Field[] MSG_FIELDS = {FIELD_FROM, FIELD_TO, FIELD_SUBJECT, FIELD_CONTENT_TYPE, FIELD_BODY};
 
     private NotificationContext ctx;

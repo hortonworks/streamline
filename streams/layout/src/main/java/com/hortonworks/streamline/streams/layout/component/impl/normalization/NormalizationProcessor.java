@@ -19,7 +19,6 @@ package com.hortonworks.streamline.streams.layout.component.impl.normalization;
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
 import com.hortonworks.streamline.streams.layout.component.Stream;
-import com.hortonworks.streamline.streams.layout.component.TopologyDagVisitor;
 
 import java.util.HashMap;
 import java.util.Map;

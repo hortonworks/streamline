@@ -89,7 +89,7 @@ public class SchemaResource {
             LOG.error(errMsg, e);
             throw BadRequestException.message(errMsg, e);
         } catch (SchemaNotFoundException e) {
-            String errMsg = String.format("Schema not found for topic: [{}]", schemaName, e);
+            String errMsg = String.format("Schema not found for topic: [%s]", schemaName);
             LOG.error(errMsg, e);
             throw EntityNotFoundException.byId(schemaName);
         } catch (IncompatibleSchemaException e) {

@@ -352,26 +352,27 @@ public class ClusterCatalogResource {
     }
 
     private String getMessageFromAmbariAPIResponse(Throwable cause) {
-        WebApplicationException reason = (WebApplicationException) cause;
-
         String message = cause.getMessage();
-        try {
-            String responseBody = reason.getResponse().readEntity(String.class);
+        if (cause instanceof WebApplicationException) {
+            WebApplicationException reason = (WebApplicationException) cause;
+            try {
+                String responseBody = reason.getResponse().readEntity(String.class);
 
-            if (StringUtils.isNotEmpty(responseBody)) {
-                ObjectMapper objectMapper = new ObjectMapper();
-                try {
-                    Map jsonDict = objectMapper.readValue(responseBody, Map.class);
-                    String ambariMessage = jsonDict.get("message").toString();
-                    if (StringUtils.isNotEmpty(ambariMessage)) {
-                        message = ambariMessage;
+                if (StringUtils.isNotEmpty(responseBody)) {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    try {
+                        Map jsonDict = objectMapper.readValue(responseBody, Map.class);
+                        String ambariMessage = jsonDict.get("message").toString();
+                        if (StringUtils.isNotEmpty(ambariMessage)) {
+                            message = ambariMessage;
+                        }
+                    } catch (IOException e1) {
+                        // we're setting default
                     }
-                } catch (IOException e1) {
-                    // we're setting default
                 }
+            } catch (Throwable e) {
+                // we're setting default
             }
-        } catch (Throwable e) {
-            // we're setting default
         }
 
         return message;

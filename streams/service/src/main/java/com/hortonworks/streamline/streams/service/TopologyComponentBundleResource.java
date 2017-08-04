@@ -213,7 +213,7 @@ public class TopologyComponentBundleResource {
             topologyComponentBundle.setType(componentType);
             TopologyComponentBundle createdBundle = catalogService.addTopologyComponentBundle(topologyComponentBundle, bundleJar);
             return WSUtils.respondEntity(createdBundle, CREATED);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             LOG.debug("Error occured while adding topology component bundle", e);
             throw e;
         } finally {
@@ -259,7 +259,7 @@ public class TopologyComponentBundleResource {
             topologyComponentBundle.setType(componentType);
             TopologyComponentBundle updatedBundle = catalogService.addOrUpdateTopologyComponentBundle(id, topologyComponentBundle, bundleJar);
             return WSUtils.respondEntity(updatedBundle, OK);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             LOG.debug("Error occured while updating topology component bundle", e);
             throw e;
         } finally {
@@ -320,7 +320,7 @@ public class TopologyComponentBundleResource {
                 LOG.debug(message);
                 throw BadRequestException.message(message);
             }
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             LOG.debug("Error occured while updating topology component bundle", e);
             throw e;
         } finally {
@@ -432,12 +432,14 @@ public class TopologyComponentBundleResource {
             }
             CustomProcessorInfo createdCustomProcessor = catalogService.addCustomProcessorInfoAsBundle(customProcessorInfo, new ByteArrayInputStream(jarBytes));
             return WSUtils.respondEntity(createdCustomProcessor, CREATED);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             LOG.debug("Exception thrown while trying to add a custom processor", e);
             throw e;
         } finally {
             try {
-                jarFile.close();
+                if (jarFile != null) {
+                    jarFile.close();
+                }
             } catch (IOException e) {
                 LOG.debug("Error while closing jar file stream", e);
             }
@@ -477,12 +479,14 @@ public class TopologyComponentBundleResource {
             }
             CustomProcessorInfo updatedCustomProcessor = catalogService.updateCustomProcessorInfoAsBundle(customProcessorInfo, new ByteArrayInputStream(jarBytes));
             return WSUtils.respondEntity(updatedCustomProcessor, OK);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             LOG.debug("Exception thrown while trying to add/update a custom processor", e);
             throw e;
         } finally {
             try {
-                jarFile.close();
+                if (jarFile != null) {
+                    jarFile.close();
+                }
             } catch (IOException e) {
                 LOG.debug("Error while closing jar file stream", e);
             }

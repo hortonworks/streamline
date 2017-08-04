@@ -232,7 +232,7 @@ public class HBaseMetadataService implements AutoCloseable {
     public static Map<String, Function<String, String>> getMaxHBaseClientRetries() {
         return new HashMap<String, Function<String, String>>(){{
             put(HConstants.HBASE_CLIENT_RETRIES_NUMBER, (propVal) ->
-                String.valueOf(Math.min(SAM_MAX_HBASE_CLIENT_RETRIES_NUMBER, Integer.valueOf(propVal))));
+                String.valueOf(Math.min(SAM_MAX_HBASE_CLIENT_RETRIES_NUMBER, Integer.parseInt(propVal))));
         }};
     }
 

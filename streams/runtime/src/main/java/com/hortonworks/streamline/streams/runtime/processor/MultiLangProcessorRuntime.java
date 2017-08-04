@@ -30,7 +30,9 @@ import com.hortonworks.streamline.streams.runtime.ProcessorRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,7 +47,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class MultiLangProcessorRuntime implements Serializable, ProcessorRuntime {
 
     public static final Logger LOG = LoggerFactory.getLogger(MultiLangProcessorRuntime.class);
-
     public static final String COMMAND = "command";
     public static final String PROCESS_TIMEOUT_MILLS = "processTimeoutMills";
     public static final String PROCESS_CONFIG = "config";
@@ -60,7 +61,7 @@ public class MultiLangProcessorRuntime implements Serializable, ProcessorRuntime
     private volatile Throwable exception;
 
     private int processTimeoutMills;
-    private ScheduledExecutorService heartBeatExecutorService;
+    private transient ScheduledExecutorService heartBeatExecutorService;
     private AtomicLong lastHeartbeatTimestamp = new AtomicLong();
     private AtomicBoolean waitingOnSubprocess = new AtomicBoolean(false);
 
@@ -173,7 +174,7 @@ public class MultiLangProcessorRuntime implements Serializable, ProcessorRuntime
             }
 
 
-        } catch (Exception e) {
+        } catch (IOException | ProcessingException e) {
             String processInfo = shellProcess.getProcessInfoString() + shellProcess.getProcessTerminationInfoString();
             throw new RuntimeException(processInfo, e);
         } finally {
@@ -211,7 +212,7 @@ public class MultiLangProcessorRuntime implements Serializable, ProcessorRuntime
         String processInfo = shellProcess.getProcessInfoString() + shellProcess.getProcessTerminationInfoString();
         this.exception = new RuntimeException(processInfo, exception);
         String message = String.format("Halting process: Processor died. Command: %s, ProcessInfo %s",
-                command,
+                Arrays.toString(command),
                 processInfo);
         LOG.error(message, exception);
         if (running || (exception instanceof Error)) { //don't exit if not running, unless it is an Error

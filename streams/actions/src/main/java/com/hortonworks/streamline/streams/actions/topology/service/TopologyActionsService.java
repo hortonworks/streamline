@@ -17,9 +17,6 @@ package com.hortonworks.streamline.streams.actions.topology.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.streamline.streams.catalog.TopologyTestRunHistory;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
 import com.hortonworks.streamline.streams.actions.TopologyActions;
@@ -34,18 +31,20 @@ import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.catalog.Topology;
+import com.hortonworks.streamline.streams.catalog.TopologyTestRunHistory;
 import com.hortonworks.streamline.streams.catalog.configuration.ConfigFileType;
 import com.hortonworks.streamline.streams.catalog.configuration.ConfigFileWriter;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
 import com.hortonworks.streamline.streams.catalog.topology.component.TopologyDagBuilder;
+import com.hortonworks.streamline.streams.cluster.container.ContainingNamespaceAwareContainer;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.layout.component.OutputComponent;
 import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
 import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
 import com.hortonworks.streamline.streams.layout.component.TopologyDag;
-import com.hortonworks.streamline.streams.cluster.container.ContainingNamespaceAwareContainer;
-import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
-
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -206,7 +205,15 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
         Set<String> copiedJars = new HashSet<>();
         for (String jar: jarsToDownload) {
             if (!copiedJars.contains(jar)) {
-                File destPath = Paths.get(destinationPath.toString(), Paths.get(jar).getFileName().toString()).toFile();
+                Path jarPath = Paths.get(jar);
+                if (destinationPath == null || jarPath == null) {
+                    throw new IllegalArgumentException("null destinationPath or jarPath");
+                }
+                Path jarFileName = jarPath.getFileName();
+                if (jarFileName == null) {
+                    throw new IllegalArgumentException("null farFileName");
+                }
+                File destPath = Paths.get(destinationPath.toString(), jarFileName.toString()).toFile();
                 try (InputStream src = fileStorage.download(jar);
                      FileOutputStream dest = new FileOutputStream(destPath)
                 ) {

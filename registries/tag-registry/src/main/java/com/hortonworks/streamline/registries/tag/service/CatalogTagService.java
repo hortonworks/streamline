@@ -89,10 +89,6 @@ public class CatalogTagService implements TagService {
         return new TaggedEntity(tag.getNameSpace(), tag.getId());
     }
 
-    private List<Tag> flatten(Tag tag) {
-        return flatten(Collections.singletonList(tag));
-    }
-
     private List<Tag> flatten(List<Tag> tags) {
         List<Tag> res = new ArrayList<>();
         for (Tag tag: tags) {

@@ -32,20 +32,19 @@ import com.hortonworks.streamline.streams.layout.component.StreamlineSink;
 import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
 import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
-import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.JoinProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
-import com.hortonworks.streamline.streams.layout.component.rule.Rule;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -303,7 +302,7 @@ public class TopologyTestRunner {
                 .collect(toMap(s -> s.getKey(), s -> {
                     String filePath = s.getValue().getOutputFilePath();
 
-                    try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+                    try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), "UTF-8"))) {
                         return br.lines().map(line -> {
                             try {
                                 return (Map<String, Object>) objectMapper.readValue(line,

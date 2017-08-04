@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.util.Map;
 import java.util.UUID;
 
@@ -113,7 +114,7 @@ public abstract class AbstractSplitJoinActionRuntime extends AbstractActionRunti
                     // FQCN is given but no jarId then that class is assumed to be accessible from current class loader.
                     instance = (T) Class.forName(fqcn, true, Thread.currentThread().getContextClassLoader()).newInstance();
                 }
-            } catch (Exception e) {
+            } catch (IOException | ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
         }

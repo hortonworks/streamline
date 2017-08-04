@@ -89,13 +89,14 @@ public class StormRestAPIClient {
                 }
             });
         } catch (RuntimeException ex) {
+            Throwable cause = ex.getCause();
             // JsonClientUtil wraps exception, so need to compare
-            if (ex.getCause() instanceof javax.ws.rs.ProcessingException) {
+            if (cause instanceof javax.ws.rs.ProcessingException) {
                 if (ex.getCause().getCause() instanceof IOException) {
                     throw new StormNotReachableException("Exception while requesting " + requestUrl, ex);
                 }
-            } else if (ex.getCause() instanceof WebApplicationException) {
-                throw WrappedWebApplicationException.of((WebApplicationException) ex.getCause());
+            } else if (cause instanceof WebApplicationException) {
+                throw WrappedWebApplicationException.of((WebApplicationException)cause);
             }
 
             throw ex;

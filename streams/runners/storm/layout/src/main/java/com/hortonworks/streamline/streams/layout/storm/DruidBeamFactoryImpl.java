@@ -58,15 +58,15 @@ import java.util.Map;
  */
 public class DruidBeamFactoryImpl implements DruidBeamFactory<Map<String, Object>> {
 
-    public static String PROCESSING_TIME = "processingTime";
+    public static final String PROCESSING_TIME = "processingTime";
     private String indexService = "druid/overlord"; // Your overlord's druid.service;
     private String discoveryPath = "/druid/discovery"; // Your overlord's druid.discovery.curator.path;
     private String dataSource = "test";
     private String tranquilityZKconnect = "";
     private List<String> dimensions = new LinkedList<>();
-    private String timestampField  = "timestamp";
+    private String timestampField = "timestamp";
     private int clusterPartitions = 1;
-    private int clusterReplication = 1 ;
+    private int clusterReplication = 1;
     private String windowPeriod = "PT10M";
     private String indexRetryPeriod = "PT10M";
     private String segmentGranularity = "HOUR";
@@ -83,17 +83,7 @@ public class DruidBeamFactoryImpl implements DruidBeamFactory<Map<String, Object
         List<AggregatorFactory> aggregator = getAggregatorList();
 
         // Tranquility needs to be able to extract timestamps from your object type (in this case, Map<String, Object>).
-        final Timestamper<Map<String, Object>> timestamper = new Timestamper<Map<String, Object>>()
-        {
-            @Override
-            public DateTime timestamp(Map<String, Object> theMap)
-            {
-                if(PROCESSING_TIME.equalsIgnoreCase(timestampField))
-                    return new DateTime(System.currentTimeMillis());
-
-                return new DateTime(theMap.get(timestampField));
-            }
-        };
+        final Timestamper<Map<String, Object>> timestamper = new StreamlineTimestamper(timestampField);
 
         // Tranquility uses ZooKeeper (through Curator) for coordination.
         final CuratorFramework curator = CuratorFrameworkFactory
@@ -240,28 +230,22 @@ public class DruidBeamFactoryImpl implements DruidBeamFactory<Map<String, Object
             if (aggregator.containsKey("count")) {
                 Map<String, String> map = aggregator.get("count");
                 aggregatorList.add(getCountAggregator(map));
-            }
-            else if (aggregator.containsKey("doublesum")) {
+            } else if (aggregator.containsKey("doublesum")) {
                 Map<String, String> map = aggregator.get("doublesum");
                 aggregatorList.add(getDoubleSumAggregator(map));
-            }
-            else if (aggregator.containsKey("doublemax")) {
+            } else if (aggregator.containsKey("doublemax")) {
                 Map<String, String> map = aggregator.get("doublemax");
                 aggregatorList.add(getDoubleMaxAggregator(map));
-            }
-            else if (aggregator.containsKey("doublemin")) {
+            } else if (aggregator.containsKey("doublemin")) {
                 Map<String, String> map = aggregator.get("doublemin");
                 aggregatorList.add(getDoubleMinAggregator(map));
-            }
-            else if (aggregator.containsKey("longsum")) {
+            } else if (aggregator.containsKey("longsum")) {
                 Map<String, String> map = aggregator.get("longsum");
                 aggregatorList.add(getLongSumAggregator(map));
-            }
-            else if (aggregator.containsKey("longmax")) {
+            } else if (aggregator.containsKey("longmax")) {
                 Map<String, String> map = aggregator.get("longmax");
                 aggregatorList.add(getLongMaxAggregator(map));
-            }
-            else if (aggregator.containsKey("longmin")) {
+            } else if (aggregator.containsKey("longmin")) {
                 Map<String, String> map = aggregator.get("longmin");
                 aggregatorList.add(getLongMinAggregator(map));
             }
@@ -298,7 +282,7 @@ public class DruidBeamFactoryImpl implements DruidBeamFactory<Map<String, Object
         return new CountAggregatorFactory(map.get("name"));
     }
 
-    private  List<Map<String, Map<String, String>>> parseJsonString(String aggregatorJson) {
+    private List<Map<String, Map<String, String>>> parseJsonString(String aggregatorJson) {
         ObjectMapper mapper = new ObjectMapper();
         try {
             return mapper.readValue(aggregatorJson, List.class);
@@ -357,5 +341,21 @@ public class DruidBeamFactoryImpl implements DruidBeamFactory<Map<String, Object
                 break;
         }
         return granularity;
+    }
+
+    private static class StreamlineTimestamper implements Timestamper<Map<String, Object>> {
+        private final String timestampField;
+
+        public StreamlineTimestamper(String timestampField) {
+            this.timestampField = timestampField;
+        }
+
+        @Override
+        public DateTime timestamp(Map<String, Object> theMap) {
+            if (PROCESSING_TIME.equalsIgnoreCase(timestampField))
+                return new DateTime(System.currentTimeMillis());
+
+            return new DateTime(theMap.get(timestampField));
+        }
     }
 }

@@ -126,7 +126,7 @@ public class KafkaMetadataService implements AutoCloseable {
             brokerInfo = new ArrayList<>();
             for (String bkId : brokerIds) {
                 final byte[] bytes = zkCli.getData(brokerIdsZkPath + "/" + bkId);
-                brokerInfo.add(new String(bytes));
+                brokerInfo.add(new String(bytes, "UTF-8"));
             }
         }
         return KafkaBrokersInfo.fromZk(brokerInfo, getSecurity(), getKafkaBrokerListeners());

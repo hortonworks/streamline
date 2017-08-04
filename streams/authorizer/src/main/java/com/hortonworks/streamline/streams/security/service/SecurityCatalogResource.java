@@ -124,7 +124,7 @@ public class SecurityCatalogResource {
     @Timed
     public Response getRoleUsers(@PathParam("roleNameOrId") String roleNameOrId, @Context SecurityContext securityContext) {
         SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
-        Long roleId = StringUtils.isNumeric(roleNameOrId) ? Long.parseLong(roleNameOrId) : getIdFromRoleName(roleNameOrId);
+        Long roleId = StringUtils.isNumeric(roleNameOrId) ? Long.valueOf(roleNameOrId) : getIdFromRoleName(roleNameOrId);
         return getRoleUsers(roleId);
     }
 
@@ -146,7 +146,7 @@ public class SecurityCatalogResource {
     public Response addRoleUsers(@PathParam("roleNameOrId") String roleNameOrId, Set<String> userNamesOrIds,
                                  @Context SecurityContext securityContext) {
         SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
-        Long roleId = StringUtils.isNumeric(roleNameOrId) ? Long.parseLong(roleNameOrId) : getIdFromRoleName(roleNameOrId);
+        Long roleId = StringUtils.isNumeric(roleNameOrId) ? Long.valueOf(roleNameOrId) : getIdFromRoleName(roleNameOrId);
         Set<Long> userIds = new HashSet<>();
         for (String userNameOrId: userNamesOrIds) {
             if (StringUtils.isNumeric(userNameOrId)) {
@@ -173,7 +173,7 @@ public class SecurityCatalogResource {
     public Response addOrUpdateRoleUsers(@PathParam("roleNameOrId") String roleNameOrId, Set<String> userNamesOrIds,
                                  @Context SecurityContext securityContext) {
         SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
-        Long roleId = StringUtils.isNumeric(roleNameOrId) ? Long.parseLong(roleNameOrId) : getIdFromRoleName(roleNameOrId);
+        Long roleId = StringUtils.isNumeric(roleNameOrId) ? Long.valueOf(roleNameOrId) : getIdFromRoleName(roleNameOrId);
         Set<Long> userIds = new HashSet<>();
         for (String userNameOrId: userNamesOrIds) {
             if (StringUtils.isNumeric(userNameOrId)) {
@@ -238,7 +238,7 @@ public class SecurityCatalogResource {
     @Timed
     public Response listChildRoles(@PathParam("roleIdOrName") String roleIdOrName, @Context SecurityContext securityContext) throws Exception {
         SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
-        Long roleId = StringUtils.isNumeric(roleIdOrName) ? Long.parseLong(roleIdOrName) : getIdFromRoleName(roleIdOrName);
+        Long roleId = StringUtils.isNumeric(roleIdOrName) ? Long.valueOf(roleIdOrName) : getIdFromRoleName(roleIdOrName);
         return listChildRoles(roleId, securityContext);
     }
 
@@ -271,9 +271,7 @@ public class SecurityCatalogResource {
         Role childRole = catalogService.getRole(childId);
         if (childRole != null) {
             RoleHierarchy roleHierarchy = catalogService.addChildRole(parentId, childId);
-            if (roleHierarchy != null) {
-                return WSUtils.respondEntity(roleHierarchy, OK);
-            }
+            return WSUtils.respondEntity(roleHierarchy, OK);
         }
         throw EntityNotFoundException.byId(childId.toString());
     }

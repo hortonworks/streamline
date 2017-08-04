@@ -31,6 +31,7 @@ import com.google.common.collect.Multiset;
 import com.hortonworks.streamline.common.exception.ParserException;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -92,7 +93,7 @@ public class Schema implements Serializable {
                         type = types[i];
                         break;
                     }
-                } catch (Exception e) {
+                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                     /* Exception is thrown if type does not match. Ignore to search next type */
                 }
             }

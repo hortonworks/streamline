@@ -40,6 +40,7 @@ import javax.xml.bind.JAXBException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -127,9 +128,9 @@ public final class MLModelRegistryService {
         return doGetOutputFieldsForPMMLStream(modelInfo.getPmml());
     }
 
-    private List<MLModelField> doGetOutputFieldsForPMMLStream(String pmmlContents) throws SAXException, JAXBException {
+    private List<MLModelField> doGetOutputFieldsForPMMLStream(String pmmlContents) throws SAXException, JAXBException, UnsupportedEncodingException {
         List<MLModelField> fieldNames = new ArrayList<>();
-        PMMLManager pmmlManager = new PMMLManager(IOUtil.unmarshal(new ByteArrayInputStream(pmmlContents.getBytes())));
+        PMMLManager pmmlManager = new PMMLManager(IOUtil.unmarshal(new ByteArrayInputStream(pmmlContents.getBytes("UTF-8"))));
         Evaluator modelEvaluator = (ModelEvaluator<?>) pmmlManager.getModelManager(null, ModelEvaluatorFactory.getInstance());
         modelEvaluator.getPredictedFields().forEach((f) -> fieldNames.add(getModelField(modelEvaluator.getDataField(f))));
 
@@ -149,9 +150,9 @@ public final class MLModelRegistryService {
         return doGetInputFieldsFromPMMLStream(modelInfo.getPmml());
     }
 
-    private List<MLModelField> doGetInputFieldsFromPMMLStream(String pmmlContents) throws SAXException, JAXBException {
+    private List<MLModelField> doGetInputFieldsFromPMMLStream(String pmmlContents) throws SAXException, JAXBException, UnsupportedEncodingException {
         final List<MLModelField> fieldNames = new ArrayList<>();
-        PMMLManager pmmlManager = new PMMLManager(IOUtil.unmarshal(new ByteArrayInputStream(pmmlContents.getBytes())));
+        PMMLManager pmmlManager = new PMMLManager(IOUtil.unmarshal(new ByteArrayInputStream(pmmlContents.getBytes("UTF-8"))));
         Evaluator modelEvaluator = (ModelEvaluator<?>) pmmlManager.getModelManager(null, ModelEvaluatorFactory.getInstance());
         for (FieldName predictedField: modelEvaluator.getActiveFields()) {
             fieldNames.add(getModelField(modelEvaluator.getDataField(predictedField)));
@@ -163,7 +164,7 @@ public final class MLModelRegistryService {
         return new MLModelField(dataField.getName().getValue(), dataField.getDataType().toString());
     }
 
-    private void validateModelInfo(MLModel modelInfo) throws SAXException, JAXBException {
+    private void validateModelInfo(MLModel modelInfo) throws SAXException, JAXBException, UnsupportedEncodingException {
         List<MLModelField> outputFields = doGetOutputFieldsForPMMLStream(modelInfo.getPmml());
         if (outputFields.isEmpty()) {
             throw new RuntimeException(
