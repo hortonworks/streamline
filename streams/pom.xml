@@ -27,6 +27,8 @@
         <module>multilang</module>
         <module>actions</module>
         <module>authorizer</module>
+        <!-- test jar builders -->
+        <module>test-support</module>
     </modules>
 
 

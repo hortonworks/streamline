@@ -19,8 +19,6 @@
         <!--examples-->
         <module>examples/processors</module>
         <module>docker</module>
-        <!-- test jar builders -->
-        <module>test-support</module>
     </modules>
 
     <properties>
