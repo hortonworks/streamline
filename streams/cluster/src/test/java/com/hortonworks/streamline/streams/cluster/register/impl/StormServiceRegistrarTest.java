@@ -15,7 +15,6 @@
  **/
 package com.hortonworks.streamline.streams.cluster.register.impl;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Cluster;
@@ -79,7 +78,7 @@ public class StormServiceRegistrarTest extends AbstractServiceRegistrarTest<Stor
         Component nimbus = environmentService.getComponentByName(stormService.getId(), ComponentPropertyPattern.NIMBUS.name());
         assertNotNull(nimbus);
 
-        Collection<ComponentProcess> nimbusProcesses = environmentService.listComponentProcessesInComponent(nimbus.getId());
+        Collection<ComponentProcess> nimbusProcesses = environmentService.listComponentProcesses(nimbus.getId());
         List<String> hosts = nimbusProcesses.stream().map(ComponentProcess::getHost).collect(Collectors.toList());
         assertEquals(Sets.newHashSet("storm-1", "storm-2"), new HashSet<>(hosts));
         List<Integer> ports = nimbusProcesses.stream().map(ComponentProcess::getPort).collect(Collectors.toList());
@@ -88,7 +87,7 @@ public class StormServiceRegistrarTest extends AbstractServiceRegistrarTest<Stor
         Component ui = environmentService.getComponentByName(stormService.getId(), ComponentPropertyPattern.STORM_UI_SERVER.name());
         assertNotNull(ui);
 
-        Collection<ComponentProcess> uiProcesses = environmentService.listComponentProcessesInComponent(ui.getId());
+        Collection<ComponentProcess> uiProcesses = environmentService.listComponentProcesses(ui.getId());
         assertEquals(Sets.newHashSet("storm-1"), uiProcesses.stream().map(ComponentProcess::getHost).collect(Collectors.toSet()));
         assertEquals(Sets.newHashSet(8080), uiProcesses.stream().map(ComponentProcess::getPort).collect(Collectors.toSet()));
 

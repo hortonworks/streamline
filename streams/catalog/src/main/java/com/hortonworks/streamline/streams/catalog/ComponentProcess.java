@@ -33,12 +33,12 @@ public class ComponentProcess extends AbstractStorable {
 
     private Long id;
     private Long componentId;
-
     private String host;
-
-    // The protocol for communicating with this port.
-    // Its representation is up to component.
-    // For example. protocols for KAFKA are PLAINTEXT, SSL, etc.
+    /**
+     The protocol communicating in this port.
+     Its representation is up to component.
+     For example. protocols for KAFKA are PLAINTEXT, SSL, etc.
+     */
     private String protocol;
     private Integer port;
     private Long timestamp;

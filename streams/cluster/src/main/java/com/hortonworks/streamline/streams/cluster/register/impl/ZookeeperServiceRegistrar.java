@@ -26,7 +26,6 @@ import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentProp
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import org.apache.commons.math3.util.Pair;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -61,8 +60,7 @@ public class ZookeeperServiceRegistrar extends AbstractServiceRegistrar {
 
     @Override
     protected List<ServiceConfiguration> createServiceConfigurations(Config config) {
-        ServiceConfiguration zooCfg = buildZooCfgServiceConfiguration(config);
-        return Collections.singletonList(zooCfg);
+        return Collections.singletonList(buildZooCfgServiceConfiguration(config));
     }
 
     @Override
@@ -74,7 +72,7 @@ public class ZookeeperServiceRegistrar extends AbstractServiceRegistrar {
             List<ComponentProcess> componentProcesses = componentEntry.getValue();
 
             if (component.getName().equals(ZOOKEEPER_SERVER.name())) {
-                return validateComponentProcesses(componentProcesses);
+                return isComponentProcessesValid(componentProcesses);
             }
             return false;
         });

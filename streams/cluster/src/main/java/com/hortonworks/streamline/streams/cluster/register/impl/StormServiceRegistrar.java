@@ -25,7 +25,6 @@ import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.util.Pair;
 
 import java.util.Arrays;
@@ -91,10 +90,8 @@ public class StormServiceRegistrar extends AbstractServiceRegistrar {
             Component component = componentEntry.getKey();
             List<ComponentProcess> componentProcesses = componentEntry.getValue();
 
-            if (component.getName().equals(COMPONENT_STORM_UI_SERVER)) {
-                return validateComponentProcesses(componentProcesses);
-            } else if (component.getName().equals(COMPONENT_NIMBUS)) {
-                return validateComponentProcesses(componentProcesses);
+            if (component.getName().equals(COMPONENT_STORM_UI_SERVER) || component.getName().equals(COMPONENT_NIMBUS)) {
+                return isComponentProcessesValid(componentProcesses);
             } else {
                 return false;
             }
@@ -127,13 +124,11 @@ public class StormServiceRegistrar extends AbstractServiceRegistrar {
         }
 
         if (config.contains(PARAM_THRIFT_TRANSPORT)) {
-            String thriftTransport = config.getString(PARAM_THRIFT_TRANSPORT);
-            confMap.put(PARAM_THRIFT_TRANSPORT, thriftTransport);
+            confMap.put(PARAM_THRIFT_TRANSPORT, config.getString(PARAM_THRIFT_TRANSPORT));
         }
 
         if (config.contains(PARAM_PRINCIPAL_TO_LOCAL)) {
-            String principalToLocal = config.getString(PARAM_PRINCIPAL_TO_LOCAL);
-            confMap.put(PARAM_PRINCIPAL_TO_LOCAL, principalToLocal);
+            confMap.put(PARAM_PRINCIPAL_TO_LOCAL, config.getString(PARAM_PRINCIPAL_TO_LOCAL));
         }
 
         try {
@@ -153,8 +148,7 @@ public class StormServiceRegistrar extends AbstractServiceRegistrar {
         confMap = new HashMap<>();
 
         if (config.contains(PARAM_NIMBUS_PRINCIPAL_NAME)) {
-            String principal = config.get(PARAM_NIMBUS_PRINCIPAL_NAME);
-            confMap.put(PARAM_NIMBUS_PRINCIPAL_NAME, principal);
+            confMap.put(PARAM_NIMBUS_PRINCIPAL_NAME, config.get(PARAM_NIMBUS_PRINCIPAL_NAME));
         }
 
         try {
@@ -226,13 +220,11 @@ public class StormServiceRegistrar extends AbstractServiceRegistrar {
     }
 
     private Number readNumberFromConfig(Config config, String parameterName) {
-        Number paramValue;
         try {
-            paramValue = config.getAny(parameterName);
+            return config.getAny(parameterName);
         } catch (ClassCastException e) {
             throw new IllegalArgumentException("Required parameter " + parameterName + " should be a number.");
         }
-        return paramValue;
     }
 
 }

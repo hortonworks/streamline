@@ -148,8 +148,7 @@ public class KafkaMetadataServiceTest {
 
     @Test
     public void test_getBrokerInfoFromZk() throws Exception {
-        List<ComponentProcess> brokerProcesses = getBrokerComponentProcesses();
-        Deencapsulation.setField(kafkaMetadataService, "kafkaBrokerProcesses", brokerProcesses);
+        Deencapsulation.setField(kafkaMetadataService, "kafkaBrokerProcesses", getBrokerComponentProcesses());
 
         final ArrayList<String> brokerIdZkLeaves = Lists.newArrayList("1001", "1002");
         final ArrayList<String> brokerZkData = Lists.newArrayList(

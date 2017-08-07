@@ -31,8 +31,6 @@ import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -92,11 +90,8 @@ public class StormMetadataServiceTest {
             securityContext.getAuthenticationScheme(); result = AUTHENTICATION_SCHEME_NOT_KERBEROS;
         }};
 
-        List<ComponentProcess> nimbusProcesses = buildNimbusComponentProcesses();
-        List<ComponentProcess> uiProcesses = buildUiComponentProcesses();
-
-        Deencapsulation.setField(stormService, "nimbusProcesses", nimbusProcesses);
-        Deencapsulation.setField(stormService, "stormUiProcesses", uiProcesses);
+        Deencapsulation.setField(stormService, "nimbusProcesses", buildNimbusComponentProcesses());
+        Deencapsulation.setField(stormService, "stormUiProcesses", buildUiComponentProcesses());
 
         final List<String> actualTopologies = stormService.getTopologies().list();
         Collections.sort(actualTopologies);
@@ -119,7 +114,7 @@ public class StormMetadataServiceTest {
         new Expectations() {{
             securityContext.getAuthenticationScheme(); result = AUTHENTICATION_SCHEME_NOT_KERBEROS;
             stormUi.getId(); result = 2L;
-            environmentService.listComponentProcessesInComponent(2L); result = uiProcesses;
+            environmentService.listComponentProcesses(2L); result = uiProcesses;
         }};
 
         final StormMetadataService stormMetadataService = new StormMetadataService
@@ -158,7 +153,7 @@ public class StormMetadataServiceTest {
         new Expectations() {{
             securityContext.getAuthenticationScheme(); result = StreamlineSecurityContext.KERBEROS_AUTH;
             securityContext.getUserPrincipal().getName(); result = principalUser;
-            environmentService.listComponentProcessesInComponent(stormUi.getId()); result = componentProcesses;
+            environmentService.listComponentProcesses(stormUi.getId()); result = componentProcesses;
         }};
 
         final StormMetadataService stormMetadataService = new StormMetadataService

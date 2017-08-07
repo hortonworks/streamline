@@ -7,8 +7,6 @@ import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundExcep
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Static class with a couple convenience methods to simplify the client code
@@ -32,8 +30,7 @@ public class EnvironmentServiceUtil {
             throw new ServiceComponentNotFoundException(clusterId, serviceName, componentName);
         }
 
-        final Collection<ComponentProcess> componentProcesses = es.listComponentProcessesInComponent(component.getId());
-        return componentProcesses;
+        return es.listComponentProcesses(component.getId());
     }
 
     public static Long getServiceIdByName(EnvironmentService es, Long clusterId, String serviceName)

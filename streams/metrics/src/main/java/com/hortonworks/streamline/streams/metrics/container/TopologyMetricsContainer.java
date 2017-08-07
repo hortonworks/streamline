@@ -32,7 +32,6 @@ import com.hortonworks.streamline.streams.metrics.topology.TopologyMetrics;
 import javax.security.auth.Subject;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class TopologyMetricsContainer extends NamespaceAwareContainer<TopologyMetrics> {
@@ -122,7 +121,7 @@ public class TopologyMetricsContainer extends NamespaceAwareContainer<TopologyMe
         Component uiServer = getComponent(streamingEngineService, COMPONENT_NAME_STORM_UI_SERVER)
                 .orElseThrow(() -> new RuntimeException(streamingEngine + " doesn't have " + COMPONENT_NAME_STORM_UI_SERVER + " as component"));
 
-        Collection<ComponentProcess> uiServerProcesses = environmentService.listComponentProcessesInComponent(uiServer.getId());
+        Collection<ComponentProcess> uiServerProcesses = environmentService.listComponentProcesses(uiServer.getId());
         if (uiServerProcesses.isEmpty()) {
             throw new RuntimeException(streamingEngine + " doesn't have any process for " + COMPONENT_NAME_STORM_UI_SERVER + " as component");
         }
@@ -150,7 +149,7 @@ public class TopologyMetricsContainer extends NamespaceAwareContainer<TopologyMe
         Component metricsCollector = getComponent(timeSeriesDBService, COMPONENT_NAME_METRICS_COLLECTOR)
                 .orElseThrow(() -> new RuntimeException(timeSeriesDB + " doesn't have " + COMPONENT_NAME_METRICS_COLLECTOR + " as component"));
 
-        Collection<ComponentProcess> metricsCollectorProcesses = environmentService.listComponentProcessesInComponent(metricsCollector.getId());
+        Collection<ComponentProcess> metricsCollectorProcesses = environmentService.listComponentProcesses(metricsCollector.getId());
         if (metricsCollectorProcesses.isEmpty()) {
             throw new RuntimeException(timeSeriesDB + " doesn't have any process for " + COMPONENT_NAME_METRICS_COLLECTOR + " as component");
         }

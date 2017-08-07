@@ -97,7 +97,7 @@ public class EnvironmentService {
         return newCluster;
     }
 
-    public Service initializeService(Cluster cluster, String serviceName) {
+    public Service createService(Cluster cluster, String serviceName) {
         Service service = new Service();
         service.setId(this.dao.nextId(SERVICE_NAMESPACE));
         service.setName(serviceName);
@@ -106,7 +106,7 @@ public class EnvironmentService {
         return service;
     }
 
-    public Component initializeComponent(Service service, String componentName) {
+    public Component createComponent(Service service, String componentName) {
         Component component = new Component();
         component.setId(this.dao.nextId(COMPONENT_NAMESPACE));
         component.setName(componentName);
@@ -115,7 +115,7 @@ public class EnvironmentService {
         return component;
     }
 
-    public ComponentProcess initializeComponentProcess(Component component, String host) {
+    public ComponentProcess createComponentProcess(Component component, String host) {
         ComponentProcess componentProcess = new ComponentProcess();
         componentProcess.setId(this.dao.nextId(NAMESPACE_COMPONENT_PROCESS));
         componentProcess.setComponentId(component.getId());
@@ -124,8 +124,8 @@ public class EnvironmentService {
         return componentProcess;
     }
 
-    public ServiceConfiguration initializeServiceConfiguration(Long serviceId, String confType, String actualFileName,
-                                                               Map<String, String> configuration) throws JsonProcessingException {
+    public ServiceConfiguration createServiceConfiguration(Long serviceId, String confType, String actualFileName,
+                                                           Map<String, String> configuration) throws JsonProcessingException {
         ServiceConfiguration conf = new ServiceConfiguration();
         conf.setId(this.dao.nextId(SERVICE_CONFIGURATION_NAMESPACE));
         conf.setName(confType);
@@ -320,7 +320,7 @@ public class EnvironmentService {
         return component;
     }
 
-    public Collection<ComponentProcess> listComponentProcessesInComponent(Long componentId) {
+    public Collection<ComponentProcess> listComponentProcesses(Long componentId) {
         List<QueryParam> queryParams = Lists.newArrayList(new QueryParam("componentId", String.valueOf(componentId)));
         return listComponentProcesses(queryParams);
     }
@@ -347,7 +347,7 @@ public class EnvironmentService {
     }
 
     public void removeAllComponentProcessesInComponent(Long componentId) {
-        Collection<ComponentProcess> componentProcesses = listComponentProcessesInComponent(componentId);
+        Collection<ComponentProcess> componentProcesses = listComponentProcesses(componentId);
         componentProcesses.forEach(componentProcess -> removeComponentProcess(componentProcess.getId()));
     }
 

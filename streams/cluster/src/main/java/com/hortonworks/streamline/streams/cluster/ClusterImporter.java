@@ -30,13 +30,11 @@ import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaBro
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -117,7 +115,7 @@ public class ClusterImporter {
     }
 
     private void addComponent(Map<String, String> flatConfigurations, Service service, String componentName, List<String> hosts) {
-        Component component = environmentService.initializeComponent(service, componentName);
+        Component component = environmentService.createComponent(service, componentName);
 
         List<ComponentProcess> componentProcesses = hosts.stream().map(host -> {
             ComponentProcess cp = new ComponentProcess();
@@ -129,17 +127,7 @@ public class ClusterImporter {
 
         // workaround for Kafka protocol
         if (componentName.equals(ServiceConfigurations.KAFKA.name())) {
-            final String brokerSecurityProtocol = flatConfigurations.get(KafkaServiceRegistrar.PARAM_SECURITY_INTER_BROKER_PROTOCOL);
-
-            // This workaround is from ListenersPropParsed.
-            // Handle Ambari bug that in the scenario handled bellow sets listeners=PLAINTEXT
-            // when it set it to listeners=PLAINTEXTSASL
-            for (ComponentProcess componentProcess : componentProcesses) {
-                KafkaBrokerListeners.Protocol protocol = KafkaBrokerListeners.Protocol.SASL_PLAINTEXT.hasAlias(brokerSecurityProtocol)
-                        ? KafkaBrokerListeners.Protocol.SASL_PLAINTEXT
-                        : KafkaBrokerListeners.Protocol.find(componentProcess.getProtocol());
-                componentProcess.setProtocol(protocol.name());
-            }
+            setKafkaProtocol(flatConfigurations, componentProcesses);
         }
 
         final Component storedComponent = environmentService.addComponent(component);
@@ -149,15 +137,29 @@ public class ClusterImporter {
         });
     }
 
+    private void setKafkaProtocol(Map<String, String> flatConfigurations, List<ComponentProcess> componentProcesses) {
+        final String brokerSecurityProtocol = flatConfigurations.get(KafkaServiceRegistrar.PARAM_SECURITY_INTER_BROKER_PROTOCOL);
+
+        // This workaround is from ListenersPropParsed.
+        // Handle Ambari bug that in the scenario handled bellow sets listeners=PLAINTEXT
+        // when it set it to listeners=PLAINTEXTSASL
+        for (ComponentProcess componentProcess : componentProcesses) {
+            KafkaBrokerListeners.Protocol protocol = KafkaBrokerListeners.Protocol.SASL_PLAINTEXT.hasAlias(brokerSecurityProtocol)
+                    ? KafkaBrokerListeners.Protocol.SASL_PLAINTEXT
+                    : KafkaBrokerListeners.Protocol.find(componentProcess.getProtocol());
+            componentProcess.setProtocol(protocol.name());
+        }
+    }
+
     private void addServiceConfiguration(Service service, String confType, Map<String, String> configuration, String actualFileName) throws JsonProcessingException {
-        ServiceConfiguration serviceConfiguration = environmentService.initializeServiceConfiguration(service.getId(),
+        ServiceConfiguration serviceConfiguration = environmentService.createServiceConfiguration(service.getId(),
                 confType, actualFileName, configuration);
 
         environmentService.addServiceConfiguration(serviceConfiguration);
     }
 
     private Service addService(Cluster cluster, String serviceName) {
-        Service service = environmentService.initializeService(cluster, serviceName);
+        Service service = environmentService.createService(cluster, serviceName);
         environmentService.addService(service);
         LOG.debug("service added {}", serviceName);
         return service;

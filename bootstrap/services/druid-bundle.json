@@ -7,11 +7,11 @@
         "uiName": "Zookeeper connection string",
         "fieldName": "druid.zk.service.host",
         "isOptional": false,
-        "tooltip": "A comma separated string of host:port of Zookeeper",
+        "tooltip": "A comma separated string of host:port pairs defining the Zookeeper cluster",
         "type": "string"
       },
       {
-        "uiName": "Indexing Service name",
+        "uiName": "Indexing service name",
         "fieldName": "druid.selectors.indexing.serviceName",
         "isOptional": true,
         "tooltip": "The druid.service name of the indexing service Overlord node",

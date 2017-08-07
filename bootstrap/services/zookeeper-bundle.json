@@ -7,7 +7,7 @@
         "uiName": "Zookeeper servers hostnames",
         "fieldName": "zkServersHostnames",
         "isOptional": false,
-        "tooltip": "The hostnames of Zookeeper servers",
+        "tooltip": "The hostnames defining the Zookeeper cluster",
         "type": "array.string"
       },
       {

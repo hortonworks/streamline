@@ -7,14 +7,14 @@
         "uiName": "Nimbuses hostnames",
         "fieldName": "nimbus.seeds",
         "isOptional": false,
-        "tooltip": "A comma separated string of hostname of Nimbuses",
+        "tooltip": "A comma separated string of Nimbuses hostnames used for leader nimbus discovery.",
         "type": "string"
       },
       {
         "uiName": "Nimbus port",
         "fieldName": "nimbus.thrift.port",
         "isOptional": false,
-        "tooltip": "The port of Nimbus",
+        "tooltip": "The Nimbus Thrift port",
         "type": "number",
         "defaultValue": 6627
       },
@@ -55,7 +55,7 @@
         "type": "string"
       },
       {
-        "uiName": "Nimbus Principal",
+        "uiName": "Nimbus Kerberos Principal",
         "fieldName": "nimbus_principal_name",
         "isOptional": true,
         "tooltip": "The principal of Nimbus (only for secured cluster)",

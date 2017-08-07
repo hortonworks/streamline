@@ -25,7 +25,6 @@ import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentProp
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,7 +53,7 @@ public class ZookeeperMetadataService {
                     ComponentPropertyPattern.ZOOKEEPER_SERVER.name());
         }
 
-        final Collection<ComponentProcess> zookeeperServers = environmentService.listComponentProcessesInComponent(zookeeperServer.getId());
+        final Collection<ComponentProcess> zookeeperServers = environmentService.listComponentProcesses(zookeeperServer.getId());
         return zookeeperServers.stream()
                 .map(cp -> new HostPort(cp.getHost(), cp.getPort()))
                 .collect(Collectors.toList());

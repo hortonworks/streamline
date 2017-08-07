@@ -120,7 +120,7 @@ public class HiveMetadataService implements AutoCloseable {
      */
     public static HiveMetadataService newInstance(HiveConf hiveConf, SecurityContext securityContext,
                                                   Subject subject, Component hiveMetastore,
-                                                  Collection<ComponentProcess> hiveMetastores)
+                                                  Collection<ComponentProcess> hiveMetastoreProcesses)
                 throws MetaException, IOException, EntityNotFoundException, PrivilegedActionException {
 
         if (SecurityUtil.isKerberosAuthenticated(securityContext)) {
@@ -129,10 +129,10 @@ public class HiveMetadataService implements AutoCloseable {
 
             return new HiveMetadataService(
                     SecurityUtil.execute(() -> new HiveMetaStoreClient(hiveConf), securityContext, subject),
-                        hiveConf, securityContext, subject, hiveMetastore, hiveMetastores);
+                        hiveConf, securityContext, subject, hiveMetastore, hiveMetastoreProcesses);
         } else {
             return new HiveMetadataService(new HiveMetaStoreClient(hiveConf), hiveConf, securityContext, subject,
-                    hiveMetastore, hiveMetastores);
+                    hiveMetastore, hiveMetastoreProcesses);
         }
     }
 

@@ -7,7 +7,7 @@
         "uiName": "Zookeeper connection string",
         "fieldName": "zookeeper.connect",
         "isOptional": false,
-        "tooltip": "A comma-separated string of zookeepers",
+        "tooltip": "A comma separated string of host:port pairs defining the Zookeeper cluster",
         "type": "string"
       },
       {
@@ -21,7 +21,7 @@
         "uiName": "Security Inter-broker protocol",
         "fieldName": "security.inter.broker.protocol",
         "isOptional": true,
-        "tooltip": "A protocol for inter-broker in secured environment",
+        "tooltip": "Protocol used for inter-broker communication in secure environment",
         "type": "string"
       }
     ]

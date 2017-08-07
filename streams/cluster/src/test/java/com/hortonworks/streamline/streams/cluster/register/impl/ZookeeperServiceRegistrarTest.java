@@ -25,14 +25,11 @@ import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
-import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -66,7 +63,7 @@ public class ZookeeperServiceRegistrarTest extends AbstractServiceRegistrarTest<
         Component zkServer = environmentService.getComponentByName(zkService.getId(), ComponentPropertyPattern.ZOOKEEPER_SERVER.name());
         assertNotNull(zkServer);
 
-        Collection<ComponentProcess> zkServerProcesses = environmentService.listComponentProcessesInComponent(zkServer.getId());
+        Collection<ComponentProcess> zkServerProcesses = environmentService.listComponentProcesses(zkServer.getId());
         assertEquals(Sets.newHashSet("zookeeper-1", "zookeeper-2"),
                 zkServerProcesses.stream().map(ComponentProcess::getHost).collect(Collectors.toSet()));
         assertEquals(Sets.newHashSet(2181, 2181),

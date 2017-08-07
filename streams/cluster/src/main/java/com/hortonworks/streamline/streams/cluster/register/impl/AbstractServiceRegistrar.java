@@ -57,7 +57,7 @@ public abstract class AbstractServiceRegistrar implements ManualServiceRegistrar
 
     @Override
     public Service register(Cluster cluster, Config config, List<ConfigFileInfo> configFileInfos) throws IOException {
-        Service service = environmentService.initializeService(cluster, getServiceName());
+        Service service = environmentService.createService(cluster, getServiceName());
 
         List<ServiceConfiguration> configurations = new ArrayList<>();
         Map<String, String> flattenConfigMap = new HashMap<>();
@@ -81,7 +81,7 @@ public abstract class AbstractServiceRegistrar implements ManualServiceRegistrar
             String confType = getConfType(fileName);
             String actualFileName = ConfigFilePattern.getOriginFileName(confType);
 
-            ServiceConfiguration configuration = environmentService.initializeServiceConfiguration(
+            ServiceConfiguration configuration = environmentService.createServiceConfiguration(
                     service.getId(), confType, actualFileName, new HashMap<>(configMap));
             configurations.add(configuration);
             flattenConfigMap.putAll(configMap);
@@ -126,22 +126,14 @@ public abstract class AbstractServiceRegistrar implements ManualServiceRegistrar
         return service;
     }
 
-    protected boolean validateComponentProcesses(List<ComponentProcess> componentProcesses) {
-        if (componentProcesses.size() <= 0) {
-            return false;
-        }
-
-        return componentProcesses.stream().allMatch(componentProcess ->
+    protected boolean isComponentProcessesValid(List<ComponentProcess> componentProcesses) {
+        return (componentProcesses.size() > 0) && componentProcesses.stream().allMatch(componentProcess ->
                 StringUtils.isNotEmpty(componentProcess.getHost()) &&
                         componentProcess.getPort() != null);
     }
 
-    protected boolean validateComponentProcessesWithProtocolRequired(List<ComponentProcess> componentProcesses) {
-        if (componentProcesses.size() <= 0) {
-            return false;
-        }
-
-        return componentProcesses.stream().allMatch(componentProcess ->
+    protected boolean isComponentProcessesWithProtocolRequiredValid(List<ComponentProcess> componentProcesses) {
+        return (componentProcesses.size() > 0) && componentProcesses.stream().allMatch(componentProcess ->
                 StringUtils.isNotEmpty(componentProcess.getHost()) &&
                         componentProcess.getPort() != null &&
                         StringUtils.isNotEmpty(componentProcess.getProtocol()));

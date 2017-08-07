@@ -26,7 +26,6 @@ import com.hortonworks.streamline.common.exception.service.exception.request.Ent
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Component;
-import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
 import com.hortonworks.streamline.streams.catalog.Service;
@@ -183,7 +182,7 @@ public class ClusterCatalogResource {
 
             Collection<Component> components = environmentService.listComponents(svc.getId());
             components.forEach(component -> {
-                environmentService.listComponentProcessesInComponent(component.getId())
+                environmentService.listComponentProcesses(component.getId())
                         .forEach(componentProcess -> environmentService.removeComponentProcess(componentProcess.getId()));
 
                 environmentService.removeComponent(component.getId());

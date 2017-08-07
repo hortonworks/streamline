@@ -21,26 +21,17 @@ import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.ComponentProcess;
-import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaBrokerListeners;
-import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.util.Pair;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.hortonworks.streamline.streams.cluster.discovery.ambari.ConfigFilePattern.CORE_SITE;
-import static com.hortonworks.streamline.streams.cluster.discovery.ambari.ConfigFilePattern.HDFS_SITE;
 import static java.util.stream.Collectors.toList;
 
 public class KafkaServiceRegistrar extends AbstractServiceRegistrar {
@@ -87,7 +78,7 @@ public class KafkaServiceRegistrar extends AbstractServiceRegistrar {
             List<ComponentProcess> componentProcesses = componentEntry.getValue();
 
             if (component.getName().equals(COMPONENT_KAFKA_BROKER)) {
-                return validateComponentProcessesWithProtocolRequired(componentProcesses);
+                return isComponentProcessesWithProtocolRequiredValid(componentProcesses);
             }
 
             return false;
@@ -122,13 +113,11 @@ public class KafkaServiceRegistrar extends AbstractServiceRegistrar {
         Map<String, String> confMap = new HashMap<>();
 
         if (config.contains(PARAM_ZOOKEEPER_CONNECT)) {
-            String zookeeperConnect = config.getString(PARAM_ZOOKEEPER_CONNECT);
-            confMap.put(PARAM_ZOOKEEPER_CONNECT, zookeeperConnect);
+            confMap.put(PARAM_ZOOKEEPER_CONNECT, config.getString(PARAM_ZOOKEEPER_CONNECT));
         }
 
         if (config.contains(PARAM_SECURITY_INTER_BROKER_PROTOCOL)) {
-            String securityInterBrokerProtocol = config.getString(PARAM_SECURITY_INTER_BROKER_PROTOCOL);
-            confMap.put(PARAM_SECURITY_INTER_BROKER_PROTOCOL, securityInterBrokerProtocol);
+            confMap.put(PARAM_SECURITY_INTER_BROKER_PROTOCOL, config.getString(PARAM_SECURITY_INTER_BROKER_PROTOCOL));
         }
 
         try {
@@ -166,8 +155,8 @@ public class KafkaServiceRegistrar extends AbstractServiceRegistrar {
         Component kafkaBroker = new Component();
         kafkaBroker.setName(COMPONENT_KAFKA_BROKER);
 
-        KafkaBrokerListeners.ListenersPropParsed propParsed = new KafkaBrokerListeners.ListenersPropParsed(confMap);
-        List<KafkaBrokerListeners.ListenersPropEntry> parsedProps = propParsed.getParsedProps();
+        List<KafkaBrokerListeners.ListenersPropEntry> parsedProps = new KafkaBrokerListeners
+                .ListenersPropParsed(confMap).getParsedProps();
 
         List<ComponentProcess> componentProcesses = parsedProps.stream().map(propEntry -> {
             ComponentProcess cp = new ComponentProcess();

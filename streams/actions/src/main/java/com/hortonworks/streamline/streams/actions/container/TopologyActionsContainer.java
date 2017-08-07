@@ -105,13 +105,13 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
         Component uiServer = getComponent(streamingEngineService, COMPONENT_NAME_STORM_UI_SERVER)
                 .orElseThrow(() -> new RuntimeException(streamingEngine + " doesn't have " + COMPONENT_NAME_STORM_UI_SERVER + " as component"));
 
-        Collection<ComponentProcess> uiServerProcesses = environmentService.listComponentProcessesInComponent(uiServer.getId());
+        Collection<ComponentProcess> uiServerProcesses = environmentService.listComponentProcesses(uiServer.getId());
         if (uiServerProcesses.isEmpty()) {
-            throw new RuntimeException(streamingEngine + " doesn't have any process for " + COMPONENT_NAME_STORM_UI_SERVER + " as component");
+            throw new RuntimeException(streamingEngine + " doesn't have component process " + COMPONENT_NAME_STORM_UI_SERVER);
         }
 
         ComponentProcess uiServerProcess = uiServerProcesses.iterator().next();
-        String uiHost = uiServerProcess.getHost();
+        final String uiHost = uiServerProcess.getHost();
         Integer uiPort = uiServerProcess.getPort();
 
         assertHostAndPort(uiServer.getName(), uiHost, uiPort);
@@ -119,9 +119,9 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
         Component nimbus = getComponent(streamingEngineService, COMPONENT_NAME_NIMBUS)
                 .orElseThrow(() -> new RuntimeException(streamingEngine + " doesn't have " + COMPONENT_NAME_NIMBUS + " as component"));
 
-        Collection<ComponentProcess> nimbusProcesses = environmentService.listComponentProcessesInComponent(nimbus.getId());
+        Collection<ComponentProcess> nimbusProcesses = environmentService.listComponentProcesses(nimbus.getId());
         if (nimbusProcesses.isEmpty()) {
-            throw new RuntimeException(streamingEngine + " doesn't have any process for " + COMPONENT_NAME_NIMBUS + " as component");
+            throw new RuntimeException(streamingEngine + " doesn't have component process " + COMPONENT_NAME_NIMBUS);
         }
 
         List<String> nimbusHosts = nimbusProcesses.stream().map(ComponentProcess::getHost)

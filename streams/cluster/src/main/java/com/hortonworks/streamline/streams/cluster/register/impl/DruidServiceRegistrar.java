@@ -50,8 +50,7 @@ public class DruidServiceRegistrar extends AbstractServiceRegistrar {
 
     @Override
     protected List<ServiceConfiguration> createServiceConfigurations(Config config) {
-        ServiceConfiguration commonRuntime = buildCommonRuntimeServiceConfiguration(config);
-        return Collections.singletonList(commonRuntime);
+        return Collections.singletonList(buildCommonRuntimeServiceConfiguration(config));
     }
 
     @Override
@@ -82,18 +81,15 @@ public class DruidServiceRegistrar extends AbstractServiceRegistrar {
         Map<String, String> confMap = new HashMap<>();
 
         if (config.contains(PARAM_ZOOKEEPER_CONNECTION_STRING)) {
-            String zookeeperConnect = config.getString(PARAM_ZOOKEEPER_CONNECTION_STRING);
-            confMap.put(PARAM_ZOOKEEPER_CONNECTION_STRING, zookeeperConnect);
+            confMap.put(PARAM_ZOOKEEPER_CONNECTION_STRING, config.getString(PARAM_ZOOKEEPER_CONNECTION_STRING));
         }
 
         if (config.contains(PARAM_INDEXING_SERVICE_NAME)) {
-            String indexingServiceName = config.getString(PARAM_INDEXING_SERVICE_NAME);
-            confMap.put(PARAM_INDEXING_SERVICE_NAME, indexingServiceName);
+            confMap.put(PARAM_INDEXING_SERVICE_NAME, config.getString(PARAM_INDEXING_SERVICE_NAME));
         }
 
         if (config.contains(PARAM_DISCOVERY_CURATOR_PATH)) {
-            String discoveryCuratorPath = config.getString(PARAM_DISCOVERY_CURATOR_PATH);
-            confMap.put(PARAM_DISCOVERY_CURATOR_PATH, discoveryCuratorPath);
+            confMap.put(PARAM_DISCOVERY_CURATOR_PATH, config.getString(PARAM_DISCOVERY_CURATOR_PATH));
         }
 
         try {

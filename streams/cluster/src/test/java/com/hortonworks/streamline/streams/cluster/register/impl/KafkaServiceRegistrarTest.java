@@ -15,7 +15,6 @@
  **/
 package com.hortonworks.streamline.streams.cluster.register.impl;
 
-import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Component;
@@ -24,15 +23,12 @@ import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
-import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -66,7 +62,8 @@ public class KafkaServiceRegistrarTest extends AbstractServiceRegistrarTest<Kafk
         Component broker = environmentService.getComponentByName(kafkaService.getId(), ComponentPropertyPattern.KAFKA_BROKER.name());
         assertNotNull(broker);
 
-        Collection<ComponentProcess> brokerProcesses = environmentService.listComponentProcessesInComponent(broker.getId());
+        Collection<ComponentProcess> brokerProcesses = environmentService.listComponentProcesses(broker.getId());
+        // we have 4 component processes according to listener
         assertEquals(4, brokerProcesses.size());
         assertTrue(brokerProcesses.stream().anyMatch(p -> p.getHost().equals("kafka-1") && p.getPort().equals(6668) && p.getProtocol().equals("SASL_PLAINTEXT")));
         assertTrue(brokerProcesses.stream().anyMatch(p -> p.getHost().equals("kafka-2") && p.getPort().equals(6669) && p.getProtocol().equals("PLAINTEXT")));
@@ -97,7 +94,7 @@ public class KafkaServiceRegistrarTest extends AbstractServiceRegistrarTest<Kafk
         Component broker = environmentService.getComponentByName(kafkaService.getId(), ComponentPropertyPattern.KAFKA_BROKER.name());
         assertNotNull(broker);
 
-        Collection<ComponentProcess> brokerProcesses = environmentService.listComponentProcessesInComponent(broker.getId());
+        Collection<ComponentProcess> brokerProcesses = environmentService.listComponentProcesses(broker.getId());
         assertEquals(1, brokerProcesses.size());
         assertTrue(brokerProcesses.stream().anyMatch(p -> p.getHost().equals("kafka-1") && p.getPort().equals(9092) && p.getProtocol().equals("PLAINTEXT")));
 

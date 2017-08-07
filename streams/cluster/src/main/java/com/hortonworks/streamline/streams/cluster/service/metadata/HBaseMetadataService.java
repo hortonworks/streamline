@@ -138,7 +138,8 @@ public class HBaseMetadataService implements AutoCloseable {
      * instantiated with with the {@link Configuration} provided using the first parameter
      */
     public static HBaseMetadataService newInstance(Configuration hbaseConfig,
-            SecurityContext securityContext, Subject subject, Component hbaseMaster, Collection<ComponentProcess> hbaseMasters)
+            SecurityContext securityContext, Subject subject, Component hbaseMaster,
+                                                   Collection<ComponentProcess> hbaseMasterProcesses)
                 throws IOException, EntityNotFoundException {
 
         if (SecurityUtil.isKerberosAuthenticated(securityContext)) {
@@ -149,7 +150,7 @@ public class HBaseMetadataService implements AutoCloseable {
             final User user = User.create(proxyUserForImpersonation);
 
             return new HBaseMetadataService(ConnectionFactory.createConnection(hbaseConfig, user)
-                    .getAdmin(), securityContext, subject, user, hbaseMaster, hbaseMasters);
+                    .getAdmin(), securityContext, subject, user, hbaseMaster, hbaseMasterProcesses);
         } else {
             return newInstance(hbaseConfig);
         }
