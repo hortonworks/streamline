@@ -1,9 +1,12 @@
 ## 0.4
+ * ISSUE-863     : Expose serdes.protocol.version property to user in kafka sink
+ * ISSUE-820     : Abstract out object serialization logic from Resource file and keep them in their respective JsonSerializer
  * ISSUE-836     : Fix Identity function 
  * ISSUE-841     : Revert "ISSUE-694: Add consumer start up delay as optional parameter for kafka spout"
  * ISSUE-833     : Fix failing AvroStreamsSnapshotDeserializerTest due to changes in Schema Registry project
  * ISSUE-829     : Fix for CONCAT function 
  * ISSUE-824     : Forward Ambari response http status code when request to Ambari fails
+ * ISSUE-826     : Sanitize mysql create_tables scripts
  * ISSUE-774     : Make reader and writer schema version config properties mandatory for Kafka source and sink respectively 
  * ISSUE-742     : Make ssl trust store password config field mandatory for kafka source and sink when kafka SSL listener is selected 
  * ISSUE-745     : Add logout link to invalidate the kerberos authorization cookie
