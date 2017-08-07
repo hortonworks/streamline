@@ -1,4 +1,5 @@
 ## 0.4
+ * ISSUE-863     : Expose serdes.protocol.version property to user in kafka sink
  * ISSUE-820     : Abstract out object serialization logic from Resource file and keep them in their respective JsonSerializer
  * ISSUE-836     : Fix Identity function 
  * ISSUE-841     : Revert "ISSUE-694: Add consumer start up delay as optional parameter for kafka spout"
