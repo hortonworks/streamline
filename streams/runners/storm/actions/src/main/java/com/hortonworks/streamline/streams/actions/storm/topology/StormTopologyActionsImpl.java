@@ -65,7 +65,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -85,7 +84,7 @@ import static java.util.stream.Collectors.toList;
 public class StormTopologyActionsImpl implements TopologyActions {
     private static final Logger LOG = LoggerFactory.getLogger(StormTopologyActionsImpl.class);
     public static final int DEFAULT_WAIT_TIME_SEC = 30;
-    public static final int TEST_RUN_TOPOLOGY_WAIT_MILLIS_FOR_SHUTDOWN = 30_000;
+    public static final int TEST_RUN_TOPOLOGY_DEFAULT_WAIT_MILLIS_FOR_SHUTDOWN = 30_000;
 
     private static final String DEFAULT_THRIFT_TRANSPORT_PLUGIN = "org.apache.storm.security.auth.SimpleTransportPlugin";
     private static final String DEFAULT_PRINCIPAL_TO_LOCAL = "org.apache.storm.security.auth.DefaultPrincipalToLocal";
@@ -260,7 +259,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     public void testRun(TopologyLayout topology, String mavenArtifacts,
                         Map<String, TestRunSource> testRunSourcesForEachSource,
                         Map<String, TestRunProcessor> testRunProcessorsForEachProcessor,
-                        Map<String, TestRunSink> testRunSinksForEachSink) throws Exception {
+                        Map<String, TestRunSink> testRunSinksForEachSink, Optional<Long> durationSecs) throws Exception {
         TopologyDag originalTopologyDag = topology.getTopologyDag();
 
         TestTopologyDagCreatingVisitor visitor = new TestTopologyDagCreatingVisitor(originalTopologyDag,
@@ -282,8 +281,14 @@ public class StormTopologyActionsImpl implements TopologyActions {
         commands.addAll(getTempWorkerArtifactArgs());
         commands.add("org.apache.storm.flux.Flux");
         commands.add("--local");
+
         commands.add("-s");
-        commands.add(String.valueOf(TEST_RUN_TOPOLOGY_WAIT_MILLIS_FOR_SHUTDOWN));
+        if (durationSecs.isPresent()) {
+            commands.add(String.valueOf(durationSecs.get() * 1000));
+        } else {
+            commands.add(String.valueOf(TEST_RUN_TOPOLOGY_DEFAULT_WAIT_MILLIS_FOR_SHUTDOWN));
+        }
+
         commands.add(fileName);
 
         ShellProcessResult shellProcessResult = executeShellProcess(commands);

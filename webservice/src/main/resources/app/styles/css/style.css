@@ -411,7 +411,7 @@ label {
   padding-top: 5px !important;
 }
 
-.cp-modal-form, .edge-modal-form, .rule-modal-form, .config-modal-form, .note-modal-form, .udf-modal-form, .notifier-modal-form, .user-modal-form {
+.cp-modal-form, .edge-modal-form, .rule-modal-form, .config-modal-form, .note-modal-form, .udf-modal-form, .notifier-modal-form, .user-modal-form, .test-run-modal-form {
   margin: 0px 10px;
 }
 

@@ -22,6 +22,7 @@ import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunS
 
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Interface representing options that need to be supported on a topology
@@ -41,7 +42,7 @@ public interface TopologyActions {
     void testRun(TopologyLayout topology, String mavenArtifacts,
                  Map<String, TestRunSource> testRunSourcesForEachSource,
                  Map<String, TestRunProcessor> testRunProcessorsForEachProcessor,
-                 Map<String, TestRunSink> testRunSinksForEachSink) throws Exception;
+                 Map<String, TestRunSink> testRunSinksForEachSink, Optional<Long> durationSecs) throws Exception;
 
     //Kill the artifact that was deployed using deploy
     void kill (TopologyLayout topology, String asUser) throws Exception;
