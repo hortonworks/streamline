@@ -130,7 +130,8 @@ class TopologyEditorContainer extends Component {
     activeLogRowArr : [],
     testHistory : {},
     testCompleted : false,
-    deployFlag : false
+    deployFlag : false,
+    testRunDuration: 30
   };
 
   fetchData(versionId) {
@@ -1218,7 +1219,11 @@ class TopologyEditorContainer extends Component {
     if(confirm){
       const {selectedTestObj} = this.state;
       this.setState({eventLogData :[] ,hideEventLog :true, testHistory : {},testCompleted : false});
-      TestRunREST.runTestCase(this.topologyId,{body : JSON.stringify({topologyId : this.topologyId , testCaseId : selectedTestObj.id })}).then((testResult) => {
+      let testCaseData = { topologyId : this.topologyId , testCaseId : selectedTestObj.id };
+      if(this.state.testRunDuration !== '') {
+        testCaseData.durationSecs = parseInt(this.state.testRunDuration, 10);
+      }
+      TestRunREST.runTestCase(this.topologyId,{body : JSON.stringify(testCaseData)}).then((testResult) => {
         if(testResult.responseMessage !== undefined){
           const msg = testResult.responseMessage.indexOf('Not every source register') !== -1 ? "please configure all test source" : testResult.responseMessage;
           FSReactToastr.info(
@@ -1261,6 +1266,8 @@ class TopologyEditorContainer extends Component {
           },3000);
         }
       });
+    } else {
+      this.setState({testRunDuration: 30});
     }
   }
 
@@ -1365,6 +1372,14 @@ class TopologyEditorContainer extends Component {
     this.setState({deployFlag : false}, () => {
       this.refs.TopologyConfigModal.hide();
     });
+  }
+
+  handleTestCaseDurationChange = (e) => {
+    if(e.target.value) {
+      this.setState({testRunDuration: e.target.value});
+    } else {
+      this.setState({testRunDuration: ''});
+    }
   }
 
   render() {
@@ -1480,8 +1495,15 @@ class TopologyEditorContainer extends Component {
         </Modal>
 
         {/*ConfirmBox to Run TestCase*/}
-        <Modal ref="confirmRunTestModal" data-title="Confirm Box" dialogClassName="confirm-box" data-resolve={this.confirmRunTest.bind(this, true)} data-reject={this.confirmRunTest.bind(this, false)}>
-          {<p> Are you sure you want to run the test case?</p>}
+        <Modal ref="confirmRunTestModal" data-title="Are you sure you want to run the test case with the following configuration ?" data-resolve={this.confirmRunTest.bind(this, true)} data-reject={this.confirmRunTest.bind(this, false)}>
+          {
+          <div className="test-run-modal-form">
+            <div className="form-group">
+              <label>Timeout Duration in Seconds</label>
+              <input name="durationSecs" placeholder="Duration in seconds" onChange={this.handleTestCaseDurationChange} type="number" className="form-control" value={this.state.testRunDuration} min="0" inputMode="numeric"/>
+            </div>
+          </div>
+          }
         </Modal>
 
         <Modal ref="leaveEditable" onKeyPress={this.handleKeyPress.bind(this)} data-title="Confirm Box" dialogClassName="confirm-box" data-resolve={this.confirmLeave.bind(this, true)} data-reject={this.confirmLeave.bind(this, false)}>
