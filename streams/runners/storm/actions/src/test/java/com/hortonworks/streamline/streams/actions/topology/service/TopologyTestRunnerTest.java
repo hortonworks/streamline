@@ -53,6 +53,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toMap;
 import static org.junit.Assert.assertEquals;
@@ -373,12 +374,13 @@ public class TopologyTestRunnerTest {
     private void setSucceedTopologyActionsExpectations() throws Exception {
         new Expectations() {{
             topologyActions.testRun(withInstanceOf(TopologyLayout.class), anyString, withInstanceOf(Map.class),
-                    withInstanceOf(Map.class), withInstanceOf(Map.class));
+                    withInstanceOf(Map.class), withInstanceOf(Map.class), withInstanceOf(Optional.class));
             result = new Delegate<Object>() {
                 Object delegate(TopologyLayout topology, String mavenArtifacts,
                                 Map<String, TestRunSource> testRunSourcesForEachSource,
                                 Map<String, TestRunProcessor> testRunProcessorsForEachProcessor,
-                                Map<String, TestRunSink> testRunSinksForEachSink) throws Exception {
+                                Map<String, TestRunSink> testRunSinksForEachSink,
+                                Optional<Long> durationSecs) throws Exception {
                     Map<String, List<Map<String, Object>>> testOutputRecords =
                             TopologyTestHelper.createTestOutputRecords(testRunSinksForEachSink.keySet());
 
@@ -405,7 +407,7 @@ public class TopologyTestRunnerTest {
     private void setTopologyActionsThrowingExceptionExpectations() throws Exception {
         new Expectations() {{
             topologyActions.testRun(withInstanceOf(TopologyLayout.class), anyString, withInstanceOf(Map.class),
-                    withInstanceOf(Map.class), withInstanceOf(Map.class));
+                    withInstanceOf(Map.class), withInstanceOf(Map.class), withInstanceOf(Optional.class));
             result = new RuntimeException("Topology test run failed!");
         }};
     }
