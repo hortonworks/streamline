@@ -1,4 +1,5 @@
 ## 0.4
+ * ISSUE-785     : Revisit manual service registerer
  * ISSUE-860     : Add timeout option to topology test run
  * ISSUE-863     : Expose serdes.protocol.version property to user in kafka sink
  * ISSUE-820     : Abstract out object serialization logic from Resource file and keep them in their respective JsonSerializer
