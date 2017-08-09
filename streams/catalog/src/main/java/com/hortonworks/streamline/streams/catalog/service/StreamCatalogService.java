@@ -412,6 +412,10 @@ public class StreamCatalogService {
         List<QueryParam> topologyIdVersionIdQueryParams = WSUtils.buildTopologyIdAndVersionIdAwareQueryParams(
                 topologyId, versionId, null);
 
+        // remove topology test histories
+        Collection<TopologyTestRunHistory> runHistories = listTopologyTestRunHistory(topologyId, versionId);
+        runHistories.forEach(history -> removeTopologyTestRunHistory(history.getId()));
+
         // remove topology test run case
         Collection<TopologyTestRunCase> runCases = listTopologyTestRunCase(topologyIdVersionIdQueryParams);
         for (TopologyTestRunCase runCase : runCases) {
@@ -2515,6 +2519,15 @@ public class StreamCatalogService {
         history.setId(id);
         history.setTimestamp(System.currentTimeMillis());
         dao.addOrUpdate(history);
+        return history;
+    }
+
+    public TopologyTestRunHistory removeTopologyTestRunHistory(Long id) {
+        TopologyTestRunHistory history = getTopologyTestRunHistory(id);
+        if (history != null) {
+            history = dao.remove(history.getStorableKey());
+        }
+
         return history;
     }
 
