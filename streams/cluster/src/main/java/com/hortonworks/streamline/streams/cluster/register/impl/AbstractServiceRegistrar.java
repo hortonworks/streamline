@@ -15,10 +15,10 @@
  **/
 package com.hortonworks.streamline.streams.cluster.register.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.catalog.configuration.ConfigFileReader;
@@ -27,6 +27,7 @@ import com.hortonworks.streamline.streams.cluster.discovery.ambari.ConfigFilePat
 import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,11 +40,11 @@ public abstract class AbstractServiceRegistrar implements ManualServiceRegistrar
 
     protected abstract String getServiceName();
 
-    protected abstract List<Component> createComponents(Config config, Map<String, String> flattenConfigMap);
+    protected abstract Map<Component, List<ComponentProcess>> createComponents(Config config, Map<String, String> flattenConfigMap);
 
     protected abstract List<ServiceConfiguration> createServiceConfigurations(Config config);
 
-    protected abstract boolean validateComponents(List<Component> components);
+    protected abstract boolean validateComponents(Map<Component, List<ComponentProcess>> components);
 
     protected abstract boolean validateServiceConfigurations(List<ServiceConfiguration> serviceConfigurations);
 
@@ -56,7 +57,7 @@ public abstract class AbstractServiceRegistrar implements ManualServiceRegistrar
 
     @Override
     public Service register(Cluster cluster, Config config, List<ConfigFileInfo> configFileInfos) throws IOException {
-        Service service = environmentService.initializeService(cluster, getServiceName());
+        Service service = environmentService.createService(cluster, getServiceName());
 
         List<ServiceConfiguration> configurations = new ArrayList<>();
         Map<String, String> flattenConfigMap = new HashMap<>();
@@ -80,13 +81,13 @@ public abstract class AbstractServiceRegistrar implements ManualServiceRegistrar
             String confType = getConfType(fileName);
             String actualFileName = ConfigFilePattern.getOriginFileName(confType);
 
-            ServiceConfiguration configuration = environmentService.initializeServiceConfiguration(
+            ServiceConfiguration configuration = environmentService.createServiceConfiguration(
                     service.getId(), confType, actualFileName, new HashMap<>(configMap));
             configurations.add(configuration);
             flattenConfigMap.putAll(configMap);
         }
 
-        List<Component> components = createComponents(config, flattenConfigMap);
+        Map<Component, List<ComponentProcess>> components = createComponents(config, flattenConfigMap);
 
         if (!validateComponents(components)) {
             throw new IllegalArgumentException("Validation failed for components.");
@@ -104,9 +105,17 @@ public abstract class AbstractServiceRegistrar implements ManualServiceRegistrar
         // before that we need to replace dummy service id to the actual one
         service = environmentService.addService(service);
 
-        for (Component component : components) {
+        for (Map.Entry<Component, List<ComponentProcess>> entry : components.entrySet()) {
+            Component component = entry.getKey();
+            List<ComponentProcess> componentProcesses = entry.getValue();
+
             component.setServiceId(service.getId());
-            environmentService.addComponent(component);
+            component = environmentService.addComponent(component);
+
+            for (ComponentProcess componentProcess : componentProcesses) {
+                componentProcess.setComponentId(component.getId());
+                environmentService.addComponentProcess(componentProcess);
+            }
         }
 
         for (ServiceConfiguration configuration : configurations) {
@@ -117,8 +126,18 @@ public abstract class AbstractServiceRegistrar implements ManualServiceRegistrar
         return service;
     }
 
+    protected boolean isComponentProcessesValid(List<ComponentProcess> componentProcesses) {
+        return (componentProcesses.size() > 0) && componentProcesses.stream().allMatch(componentProcess ->
+                StringUtils.isNotEmpty(componentProcess.getHost()) &&
+                        componentProcess.getPort() != null);
+    }
 
-
+    protected boolean isComponentProcessesWithProtocolRequiredValid(List<ComponentProcess> componentProcesses) {
+        return (componentProcesses.size() > 0) && componentProcesses.stream().allMatch(componentProcess ->
+                StringUtils.isNotEmpty(componentProcess.getHost()) &&
+                        componentProcess.getPort() != null &&
+                        StringUtils.isNotEmpty(componentProcess.getProtocol()));
+    }
 
     private String getConfType(String fileName) {
         // treat confType as the file name without extension

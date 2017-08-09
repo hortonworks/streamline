@@ -18,10 +18,12 @@ package com.hortonworks.streamline.streams.cluster.service.metadata;
 import com.google.common.collect.Lists;
 
 import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.security.authentication.StreamlineSecurityContext;
 
+import mockit.Deencapsulation;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,7 +31,7 @@ import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -66,10 +68,13 @@ public class StormMetadataServiceTest {
     @Injectable
     Subject subject;
     @Injectable
-    Component nimubs;
+    Component nimbus;
+    @Injectable
+    Collection<ComponentProcess> nimbusProcesses;
     @Injectable
     Component stormUi;
-
+    @Injectable
+    Collection<ComponentProcess> stormUiProcesses;
 
     @Injectable
     Invocation.Builder builder;
@@ -84,6 +89,9 @@ public class StormMetadataServiceTest {
             // Means test run in insecure mode as they did before adding security
             securityContext.getAuthenticationScheme(); result = AUTHENTICATION_SCHEME_NOT_KERBEROS;
         }};
+
+        Deencapsulation.setField(stormService, "nimbusProcesses", buildNimbusComponentProcesses());
+        Deencapsulation.setField(stormService, "stormUiProcesses", buildUiComponentProcesses());
 
         final List<String> actualTopologies = stormService.getTopologies().list();
         Collections.sort(actualTopologies);
@@ -101,10 +109,12 @@ public class StormMetadataServiceTest {
 
     @Test
     public void buildUrl_insecureMode_noQueryParam() throws Exception {
+        List<ComponentProcess> uiProcesses = buildUiComponentProcesses();
+
         new Expectations() {{
             securityContext.getAuthenticationScheme(); result = AUTHENTICATION_SCHEME_NOT_KERBEROS;
-            stormUi.getHosts(); result = Arrays.asList("localhost");
-            stormUi.getPort(); result = 8080;
+            stormUi.getId(); result = 2L;
+            environmentService.listComponentProcesses(2L); result = uiProcesses;
         }};
 
         final StormMetadataService stormMetadataService = new StormMetadataService
@@ -114,14 +124,36 @@ public class StormMetadataServiceTest {
         Assert.assertTrue(tpSumUrl.equals(STORM_UI_URL_EXPECTED));
     }
 
+    private List<ComponentProcess> buildNimbusComponentProcesses() {
+        ComponentProcess nimbus1 = new ComponentProcess();
+        nimbus1.setHost("localhost");
+        nimbus1.setPort(8080);
+
+        ComponentProcess nimbus2 = new ComponentProcess();
+        nimbus2.setHost("localhost");
+        nimbus2.setPort(8080);
+
+        return Lists.newArrayList(nimbus1, nimbus2);
+    }
+
+    private List<ComponentProcess> buildUiComponentProcesses() {
+        ComponentProcess ui = new ComponentProcess();
+        ui.setHost("localhost");
+        ui.setPort(8080);
+
+        return Collections.singletonList(ui);
+    }
+
     @Test
     public void buildUrl_insecureMode_doAsUserQueryParam() throws Exception {
         final String principalUser = "user";
+
+        List<ComponentProcess> componentProcesses = buildUiComponentProcesses();
+
         new Expectations() {{
             securityContext.getAuthenticationScheme(); result = StreamlineSecurityContext.KERBEROS_AUTH;
             securityContext.getUserPrincipal().getName(); result = principalUser;
-            stormUi.getHosts(); result = Arrays.asList("localhost");
-            stormUi.getPort(); result = 8080;
+            environmentService.listComponentProcesses(stormUi.getId()); result = componentProcesses;
         }};
 
         final StormMetadataService stormMetadataService = new StormMetadataService

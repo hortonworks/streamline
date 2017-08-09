@@ -15,16 +15,20 @@
  **/
 package com.hortonworks.streamline.streams.cluster.register.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
-import org.apache.commons.lang3.StringUtils;
+import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaBrokerListeners;
+import org.apache.commons.math3.util.Pair;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,9 +37,14 @@ import static java.util.stream.Collectors.toList;
 public class KafkaServiceRegistrar extends AbstractServiceRegistrar {
     public static final String COMPONENT_KAFKA_BROKER = ComponentPropertyPattern.KAFKA_BROKER.name();
     public static final String CONFIG_SERVER_PROPERTIES = ServiceConfigurations.KAFKA.getConfNames()[0];
-    public static final String SERVICE_NAME_KAFKA = "KAFKA";
-    public static final String KAFKA_PROPERTY_ZOOKEEPER_CONNECT = "zookeeper.connect";
-    public static final String PARAM_KAFKA_BROKER_HOSTNAMES = "brokersHostnames";
+    public static final String CONFIG_KAFKA_ENV = ServiceConfigurations.KAFKA.getConfNames()[1];
+
+    public static final String PARAM_ZOOKEEPER_CONNECT = "zookeeper.connect";
+    // Manual Kafka registrar determines brokers via parsing listeners
+    public static final String PARAM_LISTENERS = "listeners";
+    public static final String PARAM_SECURITY_INTER_BROKER_PROTOCOL = "security.inter.broker.protocol";
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     protected String getServiceName() {
@@ -43,28 +52,35 @@ public class KafkaServiceRegistrar extends AbstractServiceRegistrar {
     }
 
     @Override
-    protected List<Component> createComponents(Config config, Map<String, String> flattenConfigMap) {
-        Component kafkaBroker = createKafkaBrokerComponent(config, flattenConfigMap);
-        return Collections.singletonList(kafkaBroker);
+    protected Map<Component, List<ComponentProcess>> createComponents(Config config, Map<String, String> flattenConfigMap) {
+        Map<Component, List<ComponentProcess>> components = new HashMap<>();
+
+        Pair<Component, List<ComponentProcess>> kafkaBroker = createKafkaBrokerComponent(config, flattenConfigMap);
+        components.put(kafkaBroker.getFirst(), kafkaBroker.getSecond());
+
+        return components;
     }
 
     @Override
     protected List<ServiceConfiguration> createServiceConfigurations(Config config) {
-        return Collections.emptyList();
+        ServiceConfiguration serverProperties = buildServerPropertiesServiceConfiguration(config);
+        ServiceConfiguration kafkaEnvProperties = buildKafkaEnvServiceConfiguration(config);
+        return Lists.newArrayList(serverProperties, kafkaEnvProperties);
     }
 
     @Override
-    protected boolean validateComponents(List<Component> components) {
+    protected boolean validateComponents(Map<Component, List<ComponentProcess>> components) {
         // requirements
-        // 1. KAFKA_BROKER should be available, and it should have one or more hosts and one port, and protocol
+        // 1. KAFKA_BROKER should be available, and all broker process should have host and port, and protocol
 
-        return components.stream().anyMatch(component -> {
+        return components.entrySet().stream().anyMatch(componentEntry -> {
+            Component component = componentEntry.getKey();
+            List<ComponentProcess> componentProcesses = componentEntry.getValue();
+
             if (component.getName().equals(COMPONENT_KAFKA_BROKER)) {
-                if (component.getHosts().size() > 0 && component.getPort() != null &&
-                        !StringUtils.isEmpty(component.getProtocol())) {
-                    return true;
-                }
+                return isComponentProcessesWithProtocolRequiredValid(componentProcesses);
             }
+
             return false;
         });
     }
@@ -72,10 +88,14 @@ public class KafkaServiceRegistrar extends AbstractServiceRegistrar {
     @Override
     protected boolean validateServiceConfigurations(List<ServiceConfiguration> serviceConfigurations) {
         // requirements: it should be only one: 'service'
-        if (serviceConfigurations.size() != 1) {
+        long validConfigFileCount = serviceConfigurations.stream().filter(configuration -> {
+            if (configuration.getName().equals(CONFIG_SERVER_PROPERTIES) || configuration.getName().equals(CONFIG_KAFKA_ENV)) {
+                return true;
+            }
             return false;
-        }
-        return serviceConfigurations.get(0).getName().equals(CONFIG_SERVER_PROPERTIES);
+        }).count();
+
+        return validConfigFileCount == 2;
     }
 
     @Override
@@ -86,23 +106,66 @@ public class KafkaServiceRegistrar extends AbstractServiceRegistrar {
         return configMap.containsKey(Constants.Kafka.PROPERTY_KEY_ZOOKEEPER_CONNECT);
     }
 
-    private Component createKafkaBrokerComponent(Config config, Map<String, String> flattenConfigMap) {
-        if (!config.contains(PARAM_KAFKA_BROKER_HOSTNAMES)) {
-            throw new IllegalArgumentException("Required parameter " + PARAM_KAFKA_BROKER_HOSTNAMES + " not present.");
+    private ServiceConfiguration buildServerPropertiesServiceConfiguration(Config config) {
+        ServiceConfiguration serverProperties = new ServiceConfiguration();
+        serverProperties.setName(CONFIG_SERVER_PROPERTIES);
+
+        Map<String, String> confMap = new HashMap<>();
+
+        if (config.contains(PARAM_ZOOKEEPER_CONNECT)) {
+            confMap.put(PARAM_ZOOKEEPER_CONNECT, config.getString(PARAM_ZOOKEEPER_CONNECT));
         }
 
-        List<String> kafkaBrokerHosts;
-        try {
-            kafkaBrokerHosts = config.getAny(PARAM_KAFKA_BROKER_HOSTNAMES);
-        } catch (ClassCastException e) {
-            throw new IllegalArgumentException("Required parameter " + PARAM_KAFKA_BROKER_HOSTNAMES + " should be list of string.");
+        if (config.contains(PARAM_SECURITY_INTER_BROKER_PROTOCOL)) {
+            confMap.put(PARAM_SECURITY_INTER_BROKER_PROTOCOL, config.getString(PARAM_SECURITY_INTER_BROKER_PROTOCOL));
         }
+
+        try {
+            String json = objectMapper.writeValueAsString(confMap);
+            serverProperties.setConfiguration(json);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return serverProperties;
+    }
+
+    private ServiceConfiguration buildKafkaEnvServiceConfiguration(Config config) {
+        ServiceConfiguration serverProperties = new ServiceConfiguration();
+        serverProperties.setName(CONFIG_KAFKA_ENV);
+
+        Map<String, String> confMap = new HashMap<>();
+
+        try {
+            String json = objectMapper.writeValueAsString(confMap);
+            serverProperties.setConfiguration(json);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return serverProperties;
+    }
+
+    private Pair<Component, List<ComponentProcess>> createKafkaBrokerComponent(Config config, Map<String, String> flattenConfigMap) {
+        if (!config.contains(PARAM_LISTENERS)) {
+            throw new IllegalArgumentException("Required parameter " + PARAM_LISTENERS + " not present.");
+        }
+
+        Map<String, String> confMap = new HashMap<>();
+        confMap.put(PARAM_LISTENERS, config.getString(PARAM_LISTENERS));
 
         Component kafkaBroker = new Component();
         kafkaBroker.setName(COMPONENT_KAFKA_BROKER);
-        kafkaBroker.setHosts(kafkaBrokerHosts);
 
-        environmentService.injectProtocolAndPortToComponent(flattenConfigMap, kafkaBroker);
-        return kafkaBroker;
+        List<KafkaBrokerListeners.ListenersPropEntry> parsedProps = new KafkaBrokerListeners
+                .ListenersPropParsed(confMap).getParsedProps();
+
+        List<ComponentProcess> componentProcesses = parsedProps.stream().map(propEntry -> {
+            ComponentProcess cp = new ComponentProcess();
+            cp.setHost(propEntry.getHost());
+            cp.setPort(propEntry.getPort());
+            cp.setProtocol(propEntry.getProtocol().name());
+            return cp;
+        }).collect(toList());
+
+        return new Pair<>(kafkaBroker, componentProcesses);
     }
 }

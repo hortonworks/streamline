@@ -17,6 +17,7 @@ package com.hortonworks.streamline.streams.cluster.register.impl;
 
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.Constants;
 import org.apache.commons.lang3.StringUtils;
@@ -35,9 +36,9 @@ public class HBaseServiceRegistrar extends AbstractServiceRegistrar {
     }
 
     @Override
-    protected List<Component> createComponents(Config config, Map<String, String> flattenConfigMap) {
+    protected Map<Component, List<ComponentProcess>> createComponents(Config config, Map<String, String> flattenConfigMap) {
         // no component to register
-        return Collections.emptyList();
+        return Collections.emptyMap();
     }
 
     @Override
@@ -46,7 +47,7 @@ public class HBaseServiceRegistrar extends AbstractServiceRegistrar {
     }
 
     @Override
-    protected boolean validateComponents(List<Component> components) {
+    protected boolean validateComponents(Map<Component, List<ComponentProcess>> components) {
         // no need to check components
         return true;
     }
