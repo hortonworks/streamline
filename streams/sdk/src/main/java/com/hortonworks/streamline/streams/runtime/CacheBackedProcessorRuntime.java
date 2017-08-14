@@ -16,10 +16,7 @@
 package com.hortonworks.streamline.streams.runtime;
 
 import com.hortonworks.streamline.cache.Cache;
-import com.hortonworks.streamline.cache.view.config.CacheConfig;
-import com.hortonworks.streamline.streams.Result;
 import com.hortonworks.streamline.streams.StreamlineEvent;
-import com.hortonworks.streamline.streams.exception.ConfigException;
 import com.hortonworks.streamline.streams.exception.ProcessingException;
 
 import java.util.List;

@@ -15,9 +15,9 @@
  **/
 package com.hortonworks.streamline.streams.cluster.model;
 
-import com.hortonworks.streamline.streams.catalog.Component;
-import com.hortonworks.streamline.streams.catalog.Service;
-import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.catalog.Component;
+import com.hortonworks.streamline.streams.cluster.catalog.Service;
+import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
 
 import java.util.Collection;
 

@@ -15,7 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.layout.storm;
 
-import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
+import com.hortonworks.streamline.common.exception.ComponentConfigException;
 
 import java.util.List;
 import java.util.Map;

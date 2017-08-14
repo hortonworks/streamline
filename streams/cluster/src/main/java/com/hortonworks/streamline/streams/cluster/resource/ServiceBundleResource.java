@@ -14,17 +14,17 @@
   * limitations under the License.
  **/
 
-package com.hortonworks.streamline.streams.service;
+package com.hortonworks.streamline.streams.cluster.resource;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.exception.ComponentConfigException;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.storage.exception.AlreadyExistsException;
-import com.hortonworks.streamline.streams.catalog.cluster.ServiceBundle;
+import com.hortonworks.streamline.streams.cluster.catalog.ServiceBundle;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
-import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;

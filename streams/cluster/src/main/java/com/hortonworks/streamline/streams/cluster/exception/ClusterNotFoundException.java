@@ -13,22 +13,23 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
  **/
-package com.hortonworks.streamline.streams.catalog.exception;
+package com.hortonworks.streamline.streams.cluster.exception;
 
-public class ServiceConfigurationNotFoundException extends EntityNotFoundException {
-    public ServiceConfigurationNotFoundException(String message) {
+
+public class ClusterNotFoundException extends EntityNotFoundException {
+    public ClusterNotFoundException(String message) {
         super(message);
     }
 
-    public ServiceConfigurationNotFoundException(String message, Throwable cause) {
+    public ClusterNotFoundException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public ServiceConfigurationNotFoundException(Throwable cause) {
+    public ClusterNotFoundException(Throwable cause) {
         super(cause);
     }
 
-    public ServiceConfigurationNotFoundException(Long clusterId, String serviceName, String configurationName) {
-        this(String.format("Configuration [%s] not found for service [%s] in cluster with id [%d]", configurationName, serviceName, clusterId));
+    public ClusterNotFoundException(Long clusterId) {
+        this("Cluster [" + clusterId + "] not found");
     }
 }

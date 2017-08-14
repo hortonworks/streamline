@@ -13,22 +13,22 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
  **/
-package com.hortonworks.streamline.streams.service;
+package com.hortonworks.streamline.streams.cluster.resource;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.streamline.common.ComponentUISpecification;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityAlreadyExistsException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
-import com.hortonworks.streamline.streams.catalog.Cluster;
-import com.hortonworks.streamline.streams.catalog.Component;
-import com.hortonworks.streamline.streams.catalog.Service;
-import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
-import com.hortonworks.streamline.streams.catalog.cluster.ServiceBundle;
-import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentUISpecification;
+import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
+import com.hortonworks.streamline.streams.cluster.catalog.Component;
+import com.hortonworks.streamline.streams.cluster.catalog.Service;
+import com.hortonworks.streamline.streams.cluster.catalog.ServiceBundle;
+import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.model.ServiceWithComponents;
 import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
@@ -230,10 +230,10 @@ public class ServiceCatalogResource {
 
         registrar.init(environmentService);
 
-        TopologyComponentUISpecification specification = serviceBundle.getServiceUISpecification();
+        ComponentUISpecification specification = serviceBundle.getServiceUISpecification();
 
         List<String> fileFieldNames = specification.getFields().stream()
-                .filter(uiField -> uiField.getType().equals(TopologyComponentUISpecification.UIFieldType.FILE))
+                .filter(uiField -> uiField.getType().equals(ComponentUISpecification.UIFieldType.FILE))
                 .map(uiField -> uiField.getFieldName())
                 .collect(toList());
 

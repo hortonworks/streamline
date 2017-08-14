@@ -2,10 +2,10 @@ package com.hortonworks.streamline.streams.cluster.bundle;
 
 import com.google.common.base.Joiner;
 
-import com.hortonworks.streamline.streams.catalog.Cluster;
-import com.hortonworks.streamline.streams.catalog.exception.ServiceComponentNotFoundException;
-import com.hortonworks.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
-import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
+import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
+import com.hortonworks.streamline.streams.cluster.exception.ServiceComponentNotFoundException;
+import com.hortonworks.streamline.streams.cluster.exception.ServiceConfigurationNotFoundException;
+import com.hortonworks.streamline.streams.cluster.exception.ServiceNotFoundException;
 import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.service.metadata.KafkaMetadataService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.ZookeeperMetadataService;

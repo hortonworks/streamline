@@ -2,9 +2,8 @@ package com.hortonworks.streamline.streams.cluster.bundle.impl;
 
 import com.google.common.collect.Lists;
 
-import com.hortonworks.streamline.streams.catalog.Cluster;
-import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
-import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
+import com.hortonworks.streamline.streams.cluster.exception.ServiceNotFoundException;
 import com.hortonworks.streamline.streams.cluster.bundle.AbstractKafkaBundleHintProvider;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.metadata.KafkaMetadataService;
@@ -28,9 +27,6 @@ import mockit.Verifications;
 
 public class AbstractKafkaBundleHintProviderTest {
     protected AbstractKafkaBundleHintProvider provider;     // set in @Before setup method of subclass
-
-    @Mocked
-    protected StreamCatalogService catalogService;      //TODO
 
     @Mocked
     protected KafkaMetadataService kafkaMetadataService;

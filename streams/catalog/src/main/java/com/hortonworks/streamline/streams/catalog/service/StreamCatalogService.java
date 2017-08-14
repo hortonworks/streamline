@@ -68,7 +68,7 @@ import com.hortonworks.streamline.streams.catalog.UDF;
 import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
 import com.hortonworks.streamline.streams.catalog.rule.RuleParser;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
-import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentUISpecification;
+import com.hortonworks.streamline.common.ComponentUISpecification;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyData;
 import com.hortonworks.streamline.streams.catalog.topology.component.TopologyDagBuilder;
 import com.hortonworks.streamline.streams.catalog.topology.component.TopologyExportVisitor;
@@ -78,7 +78,7 @@ import com.hortonworks.streamline.streams.layout.component.Stream;
 import com.hortonworks.streamline.streams.layout.component.TopologyDag;
 import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.rule.Rule;
-import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
+import com.hortonworks.streamline.common.exception.ComponentConfigException;
 import com.hortonworks.streamline.streams.layout.storm.FluxComponent;
 import com.hortonworks.streamline.streams.rule.UDAF;
 import com.hortonworks.streamline.streams.rule.UDAF2;
@@ -993,7 +993,7 @@ public class StreamCatalogService {
         Collection<TopologyComponentBundle> result = new ArrayList<>();
         for (TopologyComponentBundle cp : customProcessors) {
             Map<String, Object> config = new HashMap<>();
-            for (TopologyComponentUISpecification.UIField uiField: cp.getTopologyComponentUISpecification().getFields()) {
+            for (ComponentUISpecification.UIField uiField: cp.getTopologyComponentUISpecification().getFields()) {
                 config.put(uiField.getFieldName(), uiField.getDefaultValue());
             }
             boolean matches = true;

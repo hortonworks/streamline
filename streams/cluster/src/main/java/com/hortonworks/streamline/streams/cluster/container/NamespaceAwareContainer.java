@@ -15,13 +15,12 @@
  **/
 package com.hortonworks.streamline.streams.cluster.container;
 
-import com.hortonworks.streamline.streams.catalog.Cluster;
-import com.hortonworks.streamline.streams.catalog.Component;
-import com.hortonworks.streamline.streams.catalog.ComponentProcess;
-import com.hortonworks.streamline.streams.catalog.Namespace;
-import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
-import com.hortonworks.streamline.streams.catalog.Service;
-import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.catalog.Component;
+import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
+import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMapping;
+import com.hortonworks.streamline.streams.cluster.catalog.Service;
+import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 
 import java.util.ArrayList;

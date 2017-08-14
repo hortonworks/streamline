@@ -13,7 +13,7 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
  **/
-package com.hortonworks.streamline.streams.catalog;
+package com.hortonworks.streamline.streams.cluster.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.registries.common.Schema;

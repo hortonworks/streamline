@@ -16,8 +16,8 @@
 package com.hortonworks.streamline.streams.cluster.register;
 
 import com.hortonworks.streamline.common.Config;
-import com.hortonworks.streamline.streams.catalog.Cluster;
-import com.hortonworks.streamline.streams.catalog.Service;
+import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
+import com.hortonworks.streamline.streams.cluster.catalog.Service;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 
 import java.io.IOException;
@@ -34,16 +34,16 @@ public interface ManualServiceRegistrar {
     Service register(Cluster cluster, Config config, List<ConfigFileInfo> configFileInfos) throws IOException;
 
     class ConfigFileInfo {
-        private final String fileName;
+        private final String name;
         private final InputStream fileInputStream;
 
         public ConfigFileInfo(String fileName, InputStream fileInputStream) {
-            this.fileName = fileName;
+            this.name = fileName;
             this.fileInputStream = fileInputStream;
         }
 
-        public String getFileName() {
-            return fileName;
+        public String getName() {
+            return name;
         }
 
         public InputStream getFileInputStream() {

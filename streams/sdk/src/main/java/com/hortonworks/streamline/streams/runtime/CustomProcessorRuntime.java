@@ -16,7 +16,7 @@
 package com.hortonworks.streamline.streams.runtime;
 
 import com.hortonworks.streamline.streams.StreamlineEvent;
-import com.hortonworks.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.common.exception.ConfigException;
 import com.hortonworks.streamline.streams.exception.ProcessingException;
 
 import java.util.List;

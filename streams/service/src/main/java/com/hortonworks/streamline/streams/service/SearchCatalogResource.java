@@ -6,10 +6,11 @@ import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.util.StorageUtils;
 import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
-import com.hortonworks.streamline.streams.catalog.Cluster;
-import com.hortonworks.streamline.streams.catalog.Namespace;
+import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
+import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.cluster.resource.ClusterResourceUtil;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.metrics.topology.service.TopologyMetricsService;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
@@ -104,7 +105,7 @@ public class SearchCatalogResource {
             case Cluster.NAMESPACE:
                 return (Collection<Storable> storables) -> storables
                         .parallelStream()
-                        .map(s -> CatalogResourceUtil.enrichCluster((Cluster) s, environmentService))
+                        .map(s -> ClusterResourceUtil.enrichCluster((Cluster) s, environmentService))
                         .collect(Collectors.toList());
             default:
                 throw new UnsupportedOperationException("Not implemented for " + namespace);

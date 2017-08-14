@@ -15,9 +15,9 @@
  **/
 package com.hortonworks.streamline.streams.cluster.bundle.impl;
 
-import com.hortonworks.streamline.streams.catalog.Cluster;
-import com.hortonworks.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
-import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
+import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
+import com.hortonworks.streamline.streams.cluster.exception.ServiceConfigurationNotFoundException;
+import com.hortonworks.streamline.streams.cluster.exception.ServiceNotFoundException;
 import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.service.metadata.HDFSMetadataService;
 import com.hortonworks.streamline.streams.cluster.bundle.AbstractBundleHintProvider;

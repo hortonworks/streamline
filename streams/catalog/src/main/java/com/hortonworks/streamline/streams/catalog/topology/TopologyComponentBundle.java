@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.registries.common.Schema;
+import com.hortonworks.streamline.common.ComponentUISpecification;
 import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.Storable;
@@ -100,7 +101,7 @@ public class TopologyComponentBundle implements Storable {
      * Object that will be used by ui to elicit values from user for this component
      * when dropped on to streams builder
      */
-    private TopologyComponentUISpecification topologyComponentUISpecification;
+    private ComponentUISpecification topologyComponentUISpecification;
 
     /**
      * A fully qualified class name that can provide hint of fields.
@@ -201,7 +202,7 @@ public class TopologyComponentBundle implements Storable {
         bundleJar = (String) map.get(BUNDLE_JAR);
         ObjectMapper mapper = new ObjectMapper();
         try {
-            topologyComponentUISpecification = mapper.readValue((String) map.get(UI_SPECIFICATION), TopologyComponentUISpecification.class);
+            topologyComponentUISpecification = mapper.readValue((String) map.get(UI_SPECIFICATION), ComponentUISpecification.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -270,12 +271,12 @@ public class TopologyComponentBundle implements Storable {
         this.bundleJar = bundleJar;
     }
 
-    public TopologyComponentUISpecification getTopologyComponentUISpecification () {
+    public ComponentUISpecification getTopologyComponentUISpecification () {
         return topologyComponentUISpecification;
     }
 
-    public void setTopologyComponentUISpecification (TopologyComponentUISpecification topologyComponentUISpecification) {
-        this.topologyComponentUISpecification = topologyComponentUISpecification;
+    public void setTopologyComponentUISpecification (ComponentUISpecification componentUISpecification) {
+        this.topologyComponentUISpecification = componentUISpecification;
     }
 
     public String getFieldHintProviderClass() {

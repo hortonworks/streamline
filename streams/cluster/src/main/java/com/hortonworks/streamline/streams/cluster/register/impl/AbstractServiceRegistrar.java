@@ -16,13 +16,13 @@
 package com.hortonworks.streamline.streams.cluster.register.impl;
 
 import com.hortonworks.streamline.common.Config;
-import com.hortonworks.streamline.streams.catalog.Cluster;
-import com.hortonworks.streamline.streams.catalog.Component;
-import com.hortonworks.streamline.streams.catalog.ComponentProcess;
-import com.hortonworks.streamline.streams.catalog.Service;
-import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
-import com.hortonworks.streamline.streams.catalog.configuration.ConfigFileReader;
-import com.hortonworks.streamline.streams.catalog.configuration.ConfigFileType;
+import com.hortonworks.streamline.common.configuration.ConfigFileReader;
+import com.hortonworks.streamline.common.configuration.ConfigFileType;
+import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
+import com.hortonworks.streamline.streams.cluster.catalog.Component;
+import com.hortonworks.streamline.streams.cluster.catalog.ComponentProcess;
+import com.hortonworks.streamline.streams.cluster.catalog.Service;
+import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ConfigFilePattern;
 import com.hortonworks.streamline.streams.cluster.register.ManualServiceRegistrar;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
@@ -77,7 +77,7 @@ public abstract class AbstractServiceRegistrar implements ManualServiceRegistrar
         for (ConfigFileInfo configFileInfo : configFileInfos) {
             Map<String, String> configMap = readConfigFile(configFileInfo);
 
-            String fileName = FilenameUtils.getName(configFileInfo.getFileName());
+            String fileName = FilenameUtils.getName(configFileInfo.getName());
             String confType = getConfType(fileName);
             String actualFileName = ConfigFilePattern.getOriginFileName(confType);
 
@@ -145,7 +145,7 @@ public abstract class AbstractServiceRegistrar implements ManualServiceRegistrar
     }
 
     private Map<String, String> readConfigFile(ConfigFileInfo configFileInfo) throws IOException {
-        String fileName = configFileInfo.getFileName();
+        String fileName = configFileInfo.getName();
         ConfigFileType fileType = ConfigFileType.getFileTypeFromFileName(fileName);
 
         if (fileType == null) {

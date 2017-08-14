@@ -18,7 +18,7 @@ package com.hortonworks.streamline.streams.metrics.topology.service;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import com.hortonworks.streamline.streams.catalog.CatalogToLayoutConverter;
-import com.hortonworks.streamline.streams.catalog.Namespace;
+import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyComponent;
 import com.hortonworks.streamline.streams.cluster.container.ContainingNamespaceAwareContainer;

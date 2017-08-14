@@ -24,7 +24,7 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import com.hortonworks.streamline.common.util.ParallelStreamUtil;
-import com.hortonworks.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.common.exception.ConfigException;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.streamline.streams.layout.component.Component;
 import com.hortonworks.streamline.streams.layout.component.TopologyLayout;

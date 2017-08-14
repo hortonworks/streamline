@@ -17,6 +17,8 @@ package com.hortonworks.streamline.streams.catalog.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import com.hortonworks.streamline.common.configuration.ConfigFileType;
+import com.hortonworks.streamline.common.configuration.ConfigFileWriter;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 

@@ -30,9 +30,6 @@
         <Bug pattern="UPM_UNCALLED_PRIVATE_METHOD"/>
     </Match>
     <Match>
-        <Class name="~com\.hortonworks\.streamline\.streams\.catalog\.topology\.TopologyComponentUISpecification.*"/>
-    </Match>
-    <Match>
         <Class name="com.hortonworks.streamline.common.util.JarReader"/>
         <Bug pattern="DP_CREATE_CLASSLOADER_INSIDE_DO_PRIVILEGED"/>
     </Match>

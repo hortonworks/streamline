@@ -16,10 +16,10 @@
 package com.hortonworks.streamline.streams.cluster.register.impl;
 
 import com.hortonworks.streamline.common.Config;
-import com.hortonworks.streamline.streams.catalog.Component;
-import com.hortonworks.streamline.streams.catalog.ComponentProcess;
-import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.Constants;
+import com.hortonworks.streamline.streams.cluster.catalog.Component;
+import com.hortonworks.streamline.streams.cluster.catalog.ComponentProcess;
+import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;

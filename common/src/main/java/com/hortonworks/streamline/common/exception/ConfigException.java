@@ -13,22 +13,16 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
  **/
-package com.hortonworks.streamline.streams.layout.exception;
+package com.hortonworks.streamline.common.exception;
 
 /**
- * Indicates an issue while trying to validate a json for a topology layout.
+ * Exception class representing a malformed configuration.
  */
-public class ComponentConfigException extends Exception {
+public class ConfigException extends Exception {
 
-    public ComponentConfigException(String message) {
-        super(message);
-    }
+    public ConfigException (String message) { super(message); }
 
-    public ComponentConfigException(String message, Throwable cause) {
-        super(message, cause);
-    }
+    public ConfigException (Throwable cause) { super(cause); }
 
-    public ComponentConfigException(Throwable cause) {
-        super(cause);
-    }
+    public ConfigException (String message, Throwable cause) { super(message, cause); }
 }

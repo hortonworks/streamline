@@ -1,6 +1,6 @@
 package com.hortonworks.streamline.streams.cluster.service.metadata.json;
 
-import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
 
 import java.io.IOException;
 import java.util.Map;

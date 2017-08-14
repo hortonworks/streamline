@@ -26,13 +26,13 @@ import com.hortonworks.streamline.common.exception.service.exception.request.Ent
 import com.hortonworks.streamline.common.util.FileUtil;
 import com.hortonworks.streamline.common.util.ProxyUtil;
 import com.hortonworks.streamline.common.util.WSUtils;
-import com.hortonworks.streamline.streams.catalog.Namespace;
+import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
 import com.hortonworks.streamline.streams.cluster.bundle.ComponentBundleHintProvider;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
-import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
+import com.hortonworks.streamline.common.exception.ComponentConfigException;
 import com.hortonworks.streamline.streams.runtime.CustomProcessorRuntime;
 import com.hortonworks.streamline.streams.security.Roles;
 import com.hortonworks.streamline.streams.security.SecurityUtil;

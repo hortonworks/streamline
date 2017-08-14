@@ -17,12 +17,12 @@ package com.hortonworks.streamline.streams.cluster.service.metadata;
 
 import com.hortonworks.streamline.common.JsonClientUtil;
 import com.hortonworks.streamline.common.function.SupplierException;
-import com.hortonworks.streamline.streams.catalog.Component;
-import com.hortonworks.streamline.streams.catalog.ComponentProcess;
-import com.hortonworks.streamline.streams.catalog.Service;
-import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
-import com.hortonworks.streamline.streams.catalog.exception.ServiceComponentNotFoundException;
-import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
+import com.hortonworks.streamline.streams.cluster.catalog.Component;
+import com.hortonworks.streamline.streams.cluster.catalog.ComponentProcess;
+import com.hortonworks.streamline.streams.cluster.catalog.Service;
+import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.exception.ServiceComponentNotFoundException;
+import com.hortonworks.streamline.streams.cluster.exception.ServiceNotFoundException;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
