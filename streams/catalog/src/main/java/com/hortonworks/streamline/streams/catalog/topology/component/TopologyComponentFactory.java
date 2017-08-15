@@ -17,36 +17,35 @@ package com.hortonworks.streamline.streams.catalog.topology.component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.google.common.collect.ImmutableMap;
-import com.hortonworks.streamline.streams.layout.component.impl.HBaseSink;
-import com.hortonworks.streamline.streams.layout.component.impl.HdfsSink;
-import com.hortonworks.streamline.streams.layout.component.impl.HiveSink;
-import com.hortonworks.streamline.streams.layout.component.impl.KafkaSink;
-import org.apache.commons.lang.StringUtils;
 import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
-import com.hortonworks.streamline.streams.catalog.TopologyRule;
 import com.hortonworks.streamline.streams.catalog.TopologyBranchRule;
-import com.hortonworks.streamline.streams.catalog.TopologyStream;
 import com.hortonworks.streamline.streams.catalog.TopologyComponent;
 import com.hortonworks.streamline.streams.catalog.TopologyEdge;
 import com.hortonworks.streamline.streams.catalog.TopologyOutputComponent;
 import com.hortonworks.streamline.streams.catalog.TopologyProcessor;
+import com.hortonworks.streamline.streams.catalog.TopologyRule;
 import com.hortonworks.streamline.streams.catalog.TopologySink;
 import com.hortonworks.streamline.streams.catalog.TopologySource;
+import com.hortonworks.streamline.streams.catalog.TopologyStream;
 import com.hortonworks.streamline.streams.catalog.TopologyWindow;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
 import com.hortonworks.streamline.streams.layout.component.Edge;
 import com.hortonworks.streamline.streams.layout.component.InputComponent;
+import com.hortonworks.streamline.streams.layout.component.OutputComponent;
+import com.hortonworks.streamline.streams.layout.component.Stream;
+import com.hortonworks.streamline.streams.layout.component.StreamGrouping;
 import com.hortonworks.streamline.streams.layout.component.StreamlineComponent;
 import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
 import com.hortonworks.streamline.streams.layout.component.StreamlineSink;
 import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
-import com.hortonworks.streamline.streams.layout.component.OutputComponent;
-import com.hortonworks.streamline.streams.layout.component.Stream;
-import com.hortonworks.streamline.streams.layout.component.StreamGrouping;
+import com.hortonworks.streamline.streams.layout.component.impl.HBaseSink;
+import com.hortonworks.streamline.streams.layout.component.impl.HdfsSink;
 import com.hortonworks.streamline.streams.layout.component.impl.HdfsSource;
+import com.hortonworks.streamline.streams.layout.component.impl.HiveSink;
+import com.hortonworks.streamline.streams.layout.component.impl.KafkaSink;
 import com.hortonworks.streamline.streams.layout.component.impl.KafkaSource;
 import com.hortonworks.streamline.streams.layout.component.impl.MultiLangProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.NotificationSink;
@@ -61,8 +60,7 @@ import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.SplitP
 import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.StageAction;
 import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.StageProcessor;
 import com.hortonworks.streamline.streams.layout.component.rule.Rule;
-import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
-
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,19 +70,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.hortonworks.streamline.common.ComponentTypes.BRANCH;
+import static com.hortonworks.streamline.common.ComponentTypes.HBASE;
+import static com.hortonworks.streamline.common.ComponentTypes.HDFS;
+import static com.hortonworks.streamline.common.ComponentTypes.HIVE;
 import static com.hortonworks.streamline.common.ComponentTypes.JOIN;
 import static com.hortonworks.streamline.common.ComponentTypes.KAFKA;
+import static com.hortonworks.streamline.common.ComponentTypes.MULTILANG;
 import static com.hortonworks.streamline.common.ComponentTypes.NORMALIZATION;
 import static com.hortonworks.streamline.common.ComponentTypes.NOTIFICATION;
+import static com.hortonworks.streamline.common.ComponentTypes.PMML;
 import static com.hortonworks.streamline.common.ComponentTypes.PROJECTION;
 import static com.hortonworks.streamline.common.ComponentTypes.RULE;
-import static com.hortonworks.streamline.common.ComponentTypes.BRANCH;
 import static com.hortonworks.streamline.common.ComponentTypes.SPLIT;
 import static com.hortonworks.streamline.common.ComponentTypes.STAGE;
 import static com.hortonworks.streamline.common.ComponentTypes.WINDOW;
-import static com.hortonworks.streamline.common.ComponentTypes.MULTILANG;
-
-import static com.hortonworks.streamline.common.ComponentTypes.*;
 import static java.util.AbstractMap.SimpleImmutableEntry;
 
 /**
@@ -308,7 +308,12 @@ public class TopologyComponentFactory {
                 });
                 updateWithSchemas(component.getTopologyId(), component.getVersionId(), normConfig);
 
-                Set<Stream> outputStreams = createOutputStreams((TopologyOutputComponent) component);
+                Set<Stream> outputStreams;
+                if (component instanceof TopologyOutputComponent) {
+                    outputStreams = createOutputStreams((TopologyOutputComponent) component);
+                } else {
+                    throw new IllegalArgumentException("Component " + component + " must be an instance of TopologyOutputComponent");
+                }
                 if (outputStreams.size() != 1) {
                     throw new IllegalArgumentException("Normalization component [" + component + "] must have only one output stream");
                 }
@@ -337,7 +342,11 @@ public class TopologyComponentFactory {
                 ObjectMapper objectMapper = new ObjectMapper();
                 SplitAction splitAction = objectMapper.convertValue(splitConfig, SplitAction.class);
                 SplitProcessor splitProcessor = new SplitProcessor();
-                splitProcessor.addOutputStreams(createOutputStreams((TopologyOutputComponent) component));
+                if (component instanceof TopologyOutputComponent) {
+                    splitProcessor.addOutputStreams(createOutputStreams((TopologyOutputComponent) component));
+                } else {
+                    throw new IllegalArgumentException("Component " + component + " must be an instance of TopologyOutputComponent");
+                }
                 splitProcessor.setSplitAction(splitAction);
                 return splitProcessor;
             }
@@ -353,7 +362,11 @@ public class TopologyComponentFactory {
                 ObjectMapper objectMapper = new ObjectMapper();
                 JoinAction joinAction = objectMapper.convertValue(joinConfig, JoinAction.class);
                 JoinProcessor joinProcessor = new JoinProcessor();
-                joinProcessor.addOutputStreams(createOutputStreams((TopologyOutputComponent) component));
+                if (component instanceof TopologyOutputComponent) {
+                    joinProcessor.addOutputStreams(createOutputStreams((TopologyOutputComponent) component));
+                } else {
+                    throw new IllegalArgumentException("Component " + component + " must be an instance of TopologyOutputComponent");
+                }
                 joinProcessor.setJoinAction(joinAction);
                 return joinProcessor;
             }
@@ -450,8 +463,12 @@ public class TopologyComponentFactory {
                 RulesProcessor processor = new RulesProcessor();
                 ObjectMapper objectMapper = new ObjectMapper();
 
-                Set<Stream> outputStreams = createOutputStreams((TopologyOutputComponent) component);
-                processor.addOutputStreams(outputStreams);
+                if (component instanceof TopologyOutputComponent) {
+                    Set<Stream> outputStreams = createOutputStreams((TopologyOutputComponent) component);
+                    processor.addOutputStreams(outputStreams);
+                } else {
+                    throw new IllegalArgumentException("Component " + component + " must be an instance of TopologyOutputComponent");
+                }
 
                 boolean processAll = component.getConfig().getBoolean(RulesProcessor.CONFIG_PROCESS_ALL, true);
                 processor.setProcessAll(processAll);

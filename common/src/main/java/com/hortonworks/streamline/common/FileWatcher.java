@@ -79,7 +79,7 @@ public class FileWatcher {
             WatchEvent<Path> ev = (WatchEvent<Path>) event;
             Path name = ev.context();
             Path child = dir.resolve(name);
-            LOG.info(String.format("%s: %s\n", event.kind().name(), child));
+            LOG.info("{}: {}", event.kind().name(), child);
             try {
                 if (kind == StandardWatchEventKinds.ENTRY_CREATE) {
                     watchKeyFileEventHandlerMap.get(key).created(child);
@@ -88,8 +88,8 @@ public class FileWatcher {
                 } else if (kind == StandardWatchEventKinds.ENTRY_DELETE) {
                     watchKeyFileEventHandlerMap.get(key).deleted(child);
                 }
-            } catch (Exception ex) {
-                LOG.warn(String.format("Exception thrown by handler %s while processing event %s", watchKeyFileEventHandlerMap.get(key), event.kind().name()));
+            } catch (RuntimeException ex) {
+                LOG.warn("Exception thrown by handler {} while processing event {}", watchKeyFileEventHandlerMap.get(key), event.kind().name(), ex);
             }
         }
         // reset key and remove from set if directory no longer accessible

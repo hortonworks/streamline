@@ -17,6 +17,7 @@ package com.hortonworks.streamline.streams.cluster.service.metadata;
 
 
 import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceComponentNotFoundException;
 import com.hortonworks.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
@@ -37,11 +38,13 @@ import com.hortonworks.streamline.streams.cluster.service.metadata.json.Security
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.ServicePrincipal;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.math3.util.Pair;
 
 import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -71,18 +74,19 @@ public class KafkaMetadataService implements AutoCloseable {
     private final KafkaZkConnection kafkaZkConnection;
     private final SecurityContext securityContext;
     private final Component kafkaBroker;
+    private final Collection<ComponentProcess> kafkaBrokerProcesses;
     private final ServiceConfiguration brokerConfig;
     private final ServiceConfiguration kafkaEnvConfig;
 
     // package protected useful for unit tests
     KafkaMetadataService(ZookeeperClient zkCli, KafkaZkConnection kafkaZkConnection,
-             SecurityContext securityContext, Component kafkaBroker,
-                ServiceConfiguration brokerConfig, ServiceConfiguration kafkaEnvConfig) {
-
+                         SecurityContext securityContext, Component kafkaBroker, Collection<ComponentProcess> kafkaBrokerProcesses,
+                         ServiceConfiguration brokerConfig, ServiceConfiguration kafkaEnvConfig) {
         this.zkCli = zkCli;
         this.kafkaZkConnection = kafkaZkConnection;
         this.securityContext = securityContext;
         this.kafkaBroker = kafkaBroker;
+        this.kafkaBrokerProcesses = kafkaBrokerProcesses;
         this.brokerConfig = brokerConfig;
         this.kafkaEnvConfig = kafkaEnvConfig;
     }
@@ -102,6 +106,7 @@ public class KafkaMetadataService implements AutoCloseable {
 
         return new KafkaMetadataService(zkCli, kafkaZkConnection, securityContext,
                 getKafkaBrokerComponent(environmentService, clusterId),
+                getKafkaBrokers(environmentService, clusterId),
                 getServiceConfig(environmentService, clusterId, AMBARI_JSON_CONFIG_KAFKA_BROKER),
                 getServiceConfig(environmentService, clusterId, AMBARI_JSON_CONFIG_KAFKA_ENV));
     }
@@ -109,12 +114,7 @@ public class KafkaMetadataService implements AutoCloseable {
     public KafkaBrokersInfo<HostPort> getBrokerHostPortFromStreamsJson()
             throws ServiceNotFoundException, ServiceComponentNotFoundException, IOException {
 
-        return KafkaBrokersInfo.hostPort(kafkaBroker.getHosts(), kafkaBroker.getPort(),
-                getSecurity(), getKafkaBrokerListeners());
-    }
-
-    public String getProtocolFromStreamsJson() throws ServiceNotFoundException, ServiceComponentNotFoundException {
-        return kafkaBroker.getProtocol();
+        return KafkaBrokersInfo.hostPort(kafkaBrokerProcesses, getSecurity(), getKafkaBrokerListeners());
     }
 
     public KafkaBrokersInfo<String> getBrokerInfoFromZk() throws ZookeeperClientException, IOException {
@@ -126,7 +126,7 @@ public class KafkaMetadataService implements AutoCloseable {
             brokerInfo = new ArrayList<>();
             for (String bkId : brokerIds) {
                 final byte[] bytes = zkCli.getData(brokerIdsZkPath + "/" + bkId);
-                brokerInfo.add(new String(bytes));
+                brokerInfo.add(new String(bytes, "UTF-8"));
             }
         }
         return KafkaBrokersInfo.fromZk(brokerInfo, getSecurity(), getKafkaBrokerListeners());
@@ -144,7 +144,7 @@ public class KafkaMetadataService implements AutoCloseable {
     }
 
     public KafkaBrokerListeners getKafkaBrokerListeners() {
-        return KafkaBrokerListeners.newInstance(brokerConfig, kafkaBroker);
+        return KafkaBrokerListeners.newInstance(brokerConfig, kafkaBroker, kafkaBrokerProcesses);
     }
 
     @Override
@@ -164,9 +164,9 @@ public class KafkaMetadataService implements AutoCloseable {
         return Principals.fromAmbariConfig(kafkaEnvConfig, getServiceToComponent());
     }
 
-    private Map<String, Component> getServiceToComponent() {
-        return new HashMap<String, Component>(){{
-            put("kafka", kafkaBroker);
+    private Map<String, Pair<Component, Collection<ComponentProcess>>> getServiceToComponent() {
+        return new HashMap<String, Pair<Component, Collection<ComponentProcess>>>(){{
+            put("kafka", new Pair<>(kafkaBroker, kafkaBrokerProcesses));
         }};
     }
 
@@ -209,6 +209,13 @@ public class KafkaMetadataService implements AutoCloseable {
             throws ServiceNotFoundException, ServiceComponentNotFoundException {
 
         return EnvironmentServiceUtil.getComponent(
+                environmentService, clusterId, AMBARI_JSON_SERVICE_KAFKA, AMBARI_JSON_COMPONENT_KAFKA_BROKER);
+    }
+
+    private static Collection<ComponentProcess> getKafkaBrokers(EnvironmentService environmentService, Long clusterId)
+            throws ServiceNotFoundException, ServiceComponentNotFoundException {
+
+        return EnvironmentServiceUtil.getComponentProcesses(
                 environmentService, clusterId, AMBARI_JSON_SERVICE_KAFKA, AMBARI_JSON_COMPONENT_KAFKA_BROKER);
     }
 

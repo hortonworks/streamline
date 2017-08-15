@@ -47,7 +47,6 @@ import org.apache.calcite.sql.SqlUnresolvedFunction;
 import org.apache.calcite.sql.util.SqlBasicVisitor;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -113,7 +112,6 @@ public class ExpressionGenerator extends SqlBasicVisitor<Expression> {
                 String udfName = sqlFunction.getName().toUpperCase();
                 if (catalogUdfs.containsKey(udfName)) {
                     Udf udfInfo = catalogUdfs.get(udfName);
-                    String className = udfInfo.getClassName();
                     if (udfInfo.isAggregate()) {
                         return visitUserDefinedAggregateFunction(udfInfo, call.getOperandList());
                     } else {

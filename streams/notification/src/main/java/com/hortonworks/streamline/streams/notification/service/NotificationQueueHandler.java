@@ -19,12 +19,14 @@ package com.hortonworks.streamline.streams.notification.service;
 
 import com.hortonworks.streamline.streams.notification.Notification;
 import com.hortonworks.streamline.streams.notification.Notifier;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -36,7 +38,7 @@ public class NotificationQueueHandler {
     /**
      * Track the tasks so that it can be re-submitted in case of retry.
      */
-    private final ConcurrentHashMap<String, NotificationQueueTask> taskMap;
+    private final ConcurrentHashMap<String, Pair<NotificationQueueTask, Future<?>>> taskMap;
 
     private static class NotificationQueueTask implements Runnable {
         final Notifier notifier;
@@ -75,8 +77,8 @@ public class NotificationQueueHandler {
 
     public void enqueue(Notifier notifier, Notification notification) {
         NotificationQueueTask task = new NotificationQueueTask(notifier, notification);
-        taskMap.put(notification.getId(), task);
-        executorService.submit(task);
+        Future<?> future = executorService.submit(task);
+        taskMap.put(notification.getId(), Pair.of(task, future));
     }
 
     /**
@@ -85,12 +87,17 @@ public class NotificationQueueHandler {
      * @param notificationId id of a previously submitted notification.
      */
     public void resubmit(String notificationId) {
-        NotificationQueueTask task = taskMap.get(notificationId);
-        if (task == null) {
+        Pair<NotificationQueueTask, Future<?>> taskStatus = taskMap.get(notificationId);
+        if (taskStatus == null) {
             throw new NotificationServiceException("Could not find a previously enqueued task" +
                                                            " for notification id " + notificationId);
+        } else if (!taskStatus.getValue().isDone()) {
+            throw new NotificationServiceException("Previously enqueued task" +
+                    " for notification id " + notificationId + " is not done");
+
         }
-        executorService.submit(task);
+        Future<?> future = executorService.submit(taskStatus.getKey());
+        taskMap.put(notificationId, Pair.of(taskStatus.getKey(), future));
     }
 
     public void remove(String notificationId) {

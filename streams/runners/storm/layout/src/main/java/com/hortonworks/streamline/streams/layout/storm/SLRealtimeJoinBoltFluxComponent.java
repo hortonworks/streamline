@@ -161,7 +161,7 @@ public class SLRealtimeJoinBoltFluxComponent extends AbstractFluxComponent {
 
 
         String className = null;
-        String methodName = condition.get(0).toString();
+        String methodName = condition.get(0);
         if (methodName.equalsIgnoreCase("equal"))
              className = "com.hortonworks.streamline.streams.runtime.storm.bolt.query.SLCmp.Equal";
         else if (methodName.equalsIgnoreCase("ignoreCase"))

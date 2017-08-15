@@ -72,11 +72,11 @@ public class EnrichmentTransformRuntime implements TransformRuntime {
         return Collections.singletonList(event);
     }
 
-    public static class Factory implements RuntimeService.Factory<TransformRuntime, Transform> {
+    public static class Factory implements RuntimeService.Factory<TransformRuntime, EnrichmentTransform> {
 
         @Override
-        public TransformRuntime create(Transform transform) {
-            return new EnrichmentTransformRuntime((EnrichmentTransform) transform);
+        public TransformRuntime create(EnrichmentTransform transform) {
+                return new EnrichmentTransformRuntime(transform);
         }
     }
 

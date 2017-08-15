@@ -10,10 +10,6 @@ public class TestRunProcessor extends StreamlineProcessor {
     private final boolean windowed;
     private final String eventLogFilePath;
 
-    public TestRunProcessor() {
-        this(null, false, "");
-    }
-
     public TestRunProcessor(StreamlineProcessor underlyingProcessor, boolean windowed,
                             String eventLogFilePath) {
         super(underlyingProcessor.getOutputStreams());

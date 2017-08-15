@@ -102,7 +102,7 @@ public class AvroStreamlineSchemaConverter {
     private static org.apache.avro.Schema generateAvroSchema(Schema.Field field) {
         Preconditions.checkNotNull(field, "Given field can not be null");
 
-        org.apache.avro.Schema avroSchema = null;
+        org.apache.avro.Schema avroSchema;
         switch (field.getType()) {
             case BOOLEAN:
                 avroSchema = org.apache.avro.Schema.create(org.apache.avro.Schema.Type.BOOLEAN);
@@ -133,8 +133,12 @@ public class AvroStreamlineSchemaConverter {
                 break;
             case NESTED:
                 List<org.apache.avro.Schema.Field> avroFields = new ArrayList<>();
-                for (Schema.Field innerField : ((Schema.NestedField) field).getFields()) {
-                    avroFields.add(new org.apache.avro.Schema.Field(innerField.getName(), generateAvroSchema(innerField), null, null));
+                if (field instanceof Schema.NestedField) {
+                    for (Schema.Field innerField : ((Schema.NestedField) field).getFields()) {
+                        avroFields.add(new org.apache.avro.Schema.Field(innerField.getName(), generateAvroSchema(innerField), null, null));
+                    }
+                } else {
+                    throw new IllegalArgumentException("field " + field + " of type " + field.getType() + " not instance of NestedField");
                 }
                 avroSchema = org.apache.avro.Schema.createRecord(field.getName(), null, null, false);
                 avroSchema.setFields(avroFields);
@@ -144,7 +148,11 @@ public class AvroStreamlineSchemaConverter {
                 // schema to have elements of same type. Hence, for now we will restrict array to have elements of same type. Other option is convert
                 // a  streamline Schema Array field to Record in avro. However, with that the issue is that avro Field constructor does not allow a
                 // null name. We could potentiall hack it by plugging in a dummy name like arrayfield, but seems hacky so not taking that path
-                avroSchema = org.apache.avro.Schema.createArray(generateAvroSchema(((Schema.ArrayField) field).getMembers().get(0)));
+                if (field instanceof Schema.ArrayField) {
+                    avroSchema = org.apache.avro.Schema.createArray(generateAvroSchema(((Schema.ArrayField) field).getMembers().get(0)));
+                } else {
+                    throw new IllegalArgumentException("field " + field + " of type " + field.getType() + " not instance of ArrayField");
+                }
                 break;
             default:
                 throw new IllegalArgumentException("Given schema type is not supported: " + field.getType());

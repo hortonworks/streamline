@@ -276,7 +276,7 @@ public class TagClient {
             while (it.hasNext()) {
                 entities.add(mapper.treeToValue(it.next(), clazz));
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
         return entities;

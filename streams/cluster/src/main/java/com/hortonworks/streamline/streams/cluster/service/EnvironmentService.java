@@ -23,6 +23,7 @@ import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Component;
+import com.hortonworks.streamline.streams.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.catalog.Namespace;
 import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
 import com.hortonworks.streamline.streams.catalog.Service;
@@ -59,6 +60,7 @@ public class EnvironmentService {
     private static final String NAMESPACE_NAMESPACE = new Namespace().getNameSpace();
     private static final String NAMESPACE_SERVICE_CLUSTER_MAPPING_NAMESPACE = new NamespaceServiceClusterMapping().getNameSpace();
     private static final String SERVICE_BUNDLE_NAMESPACE = new ServiceBundle().getNameSpace();
+    private static final String NAMESPACE_COMPONENT_PROCESS = new ComponentProcess().getNameSpace();
 
     private final StorageManager dao;
     private final ClusterImporter clusterImporter;
@@ -95,7 +97,7 @@ public class EnvironmentService {
         return newCluster;
     }
 
-    public Service initializeService(Cluster cluster, String serviceName) {
+    public Service createService(Cluster cluster, String serviceName) {
         Service service = new Service();
         service.setId(this.dao.nextId(SERVICE_NAMESPACE));
         service.setName(serviceName);
@@ -104,18 +106,26 @@ public class EnvironmentService {
         return service;
     }
 
-    public Component initializeComponent(Service service, String componentName, List<String> hosts) {
+    public Component createComponent(Service service, String componentName) {
         Component component = new Component();
         component.setId(this.dao.nextId(COMPONENT_NAMESPACE));
         component.setName(componentName);
         component.setServiceId(service.getId());
         component.setTimestamp(System.currentTimeMillis());
-        component.setHosts(hosts);
         return component;
     }
 
-    public ServiceConfiguration initializeServiceConfiguration(Long serviceId, String confType, String actualFileName,
-                                                               Map<String, String> configuration) throws JsonProcessingException {
+    public ComponentProcess createComponentProcess(Component component, String host) {
+        ComponentProcess componentProcess = new ComponentProcess();
+        componentProcess.setId(this.dao.nextId(NAMESPACE_COMPONENT_PROCESS));
+        componentProcess.setComponentId(component.getId());
+        componentProcess.setHost(host);
+        componentProcess.setTimestamp(System.currentTimeMillis());
+        return componentProcess;
+    }
+
+    public ServiceConfiguration createServiceConfiguration(Long serviceId, String confType, String actualFileName,
+                                                           Map<String, String> configuration) throws JsonProcessingException {
         ServiceConfiguration conf = new ServiceConfiguration();
         conf.setId(this.dao.nextId(SERVICE_CONFIGURATION_NAMESPACE));
         conf.setName(confType);
@@ -310,6 +320,37 @@ public class EnvironmentService {
         return component;
     }
 
+    public Collection<ComponentProcess> listComponentProcesses(Long componentId) {
+        List<QueryParam> queryParams = Lists.newArrayList(new QueryParam("componentId", String.valueOf(componentId)));
+        return listComponentProcesses(queryParams);
+    }
+
+    public Collection<ComponentProcess> listComponentProcesses(List<QueryParam> queryParams) {
+        return this.dao.find(NAMESPACE_COMPONENT_PROCESS, queryParams);
+    }
+
+    public ComponentProcess addComponentProcess(ComponentProcess componentProcess) {
+        if (componentProcess.getId() == null) {
+            componentProcess.setId(this.dao.nextId(NAMESPACE_COMPONENT_PROCESS));
+        }
+        if (componentProcess.getTimestamp() == null) {
+            componentProcess.setTimestamp(System.currentTimeMillis());
+        }
+        this.dao.add(componentProcess);
+        return componentProcess;
+    }
+
+    public void removeComponentProcess(Long componentProcessId) {
+        ComponentProcess componentProcess = new ComponentProcess();
+        componentProcess.setId(componentProcessId);
+        this.dao.remove(new StorableKey(NAMESPACE_COMPONENT_PROCESS, componentProcess.getPrimaryKey()));
+    }
+
+    public void removeAllComponentProcessesInComponent(Long componentId) {
+        Collection<ComponentProcess> componentProcesses = listComponentProcesses(componentId);
+        componentProcesses.forEach(componentProcess -> removeComponentProcess(componentProcess.getId()));
+    }
+
     public Collection<ServiceConfiguration> listServiceConfigurations() {
         return this.dao.list(SERVICE_CONFIGURATION_NAMESPACE);
     }
@@ -465,7 +506,8 @@ public class EnvironmentService {
         return newMapping;
     }
 
-    public void injectProtocolAndPortToComponent(Map<String, String> configurations, Component component) {
+    public void injectProtocolAndPortToComponent(Map<String, String> configurations, Component component,
+                                                 List<ComponentProcess> componentProcesses) {
         try {
             ComponentPropertyPattern confMap = ComponentPropertyPattern
                     .valueOf(component.getName());
@@ -478,18 +520,25 @@ public class EnvironmentService {
                     String portStr = matcher.group(2);
 
                     if (!protocol.isEmpty()) {
-                        component.setProtocol(protocol);
+                        for (ComponentProcess componentProcess : componentProcesses) {
+                            componentProcess.setProtocol(protocol);
+                        }
                     }
                     if (!portStr.isEmpty()) {
                         try {
-                            component.setPort(Integer.parseInt(portStr));
+                            int port = Integer.parseInt(portStr);
+                            for (ComponentProcess componentProcess : componentProcesses) {
+                                componentProcess.setPort(port);
+                            }
                         } catch (NumberFormatException e) {
                             LOG.warn(
                                     "Protocol/Port information [{}] for component {} has illegal format [{}]."
                                             + "skip assigning...", value, component.getName(), confMap.getParsePattern());
 
                             // reset protocol information
-                            component.setProtocol(null);
+                            for (ComponentProcess componentProcess : componentProcesses) {
+                                componentProcess.setPort(null);
+                            }
                         }
                     }
                 } else {

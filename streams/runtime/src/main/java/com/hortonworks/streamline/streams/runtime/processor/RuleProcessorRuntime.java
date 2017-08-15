@@ -219,7 +219,7 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
         return new GroovyScript<Boolean>(groovyExpression.asString(), groovyScriptEngine) {
             @Override
             public Boolean evaluate(StreamlineEvent event) throws ScriptException {
-                Boolean evaluates = false;
+                Boolean evaluates;
                 try {
                     evaluates =  super.evaluate(event);
                 } catch (ScriptException e) {

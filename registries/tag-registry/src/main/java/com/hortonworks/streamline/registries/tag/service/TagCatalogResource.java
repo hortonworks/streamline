@@ -261,7 +261,7 @@ public class TagCatalogResource {
             return WSUtils.respondEntity(makeTagDto(removedTag), OK);
         }
 
-        throw EntityNotFoundException.byId(removedTag.toString());
+        throw EntityNotFoundException.byId(tagId.toString());
     }
 
     /**

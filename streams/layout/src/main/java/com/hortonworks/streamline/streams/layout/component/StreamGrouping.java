@@ -16,9 +16,10 @@
 
 package com.hortonworks.streamline.streams.layout.component;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class StreamGrouping {
+public class StreamGrouping implements Serializable {
     private final Stream stream;
     private final Stream.Grouping grouping;
     private final List<String> fields;

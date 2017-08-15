@@ -19,10 +19,9 @@ package com.hortonworks.streamline.webservice.util;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-
+import com.hortonworks.streamline.common.Constants;
 import com.hortonworks.streamline.webservice.configurations.ModuleConfiguration;
 import com.hortonworks.streamline.webservice.configurations.StreamlineConfiguration;
-import com.hortonworks.streamline.common.Constants;
 import com.hortonworks.streamline.webservice.resources.StreamlineConfigurationResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,14 +42,14 @@ public class StreamlineConfigurationSerializer extends JsonSerializer<Streamline
 
     private static final Logger LOG = LoggerFactory.getLogger(StreamlineConfigurationResource.class);
     public static final String DEFAULT_VERSION_FILE = "VERSION";
-    private final String CONFIG_REGISTRY = "registry";
-    private final String CONFIG_REGISTRY_API_URL = "apiUrl";
-    private final String CONFIG_HOST = "host";
-    private final String CONFIG_PORT = "port";
-    private final String CONFIG_DASHBOARD = "dashboard";
-    private final String CONFIG_AUTHORIZER = "authorizer";
-    private final String CONFIG_VERSION = "version";
-    private final String CONFIG_GIT = "git";
+    private static final String CONFIG_REGISTRY = "registry";
+    private static final String CONFIG_REGISTRY_API_URL = "apiUrl";
+    private static final String CONFIG_HOST = "host";
+    private static final String CONFIG_PORT = "port";
+    private static final String CONFIG_DASHBOARD = "dashboard";
+    private static final String CONFIG_AUTHORIZER = "authorizer";
+    private static final String CONFIG_VERSION = "version";
+    private static final String CONFIG_GIT = "git";
 
     @Override
     public void serialize(StreamlineConfiguration streamlineConfiguration, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
@@ -98,10 +97,8 @@ public class StreamlineConfigurationSerializer extends JsonSerializer<Streamline
         File versionFile = new File(versionFilePath);
         Properties props = new Properties();
         if (versionFile.exists()) {
-            try {
-                FileInputStream fileInput = new FileInputStream(versionFile);
+            try (FileInputStream fileInput = new FileInputStream(versionFile)) {
                 props.load(fileInput);
-                fileInput.close();
             } catch (IOException ie) {
                 LOG.info("Failed to read VERSION file");
             }

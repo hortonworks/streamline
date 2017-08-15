@@ -5,7 +5,7 @@ Develop and deploy Streaming Analytics applications visually with bindings for s
 
 ## Getting Help
 
-SAM users or devs should send a message to [Registry Google Group] (https://groups.google.com/forum/#!forum/streamline-users)
+SAM users or devs should send a message to [SAM Google Group](https://groups.google.com/forum/#!forum/streamline-users)
 
 ## License
 

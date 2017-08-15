@@ -23,15 +23,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ShellProcess implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(ShellProcess.class);
-    private static Logger ShellLogger;
-    private Process subprocess;
-    private InputStream  processErrorStream;
+    private transient Logger shellLogger;
+    private transient Process subprocess;
+    private transient InputStream  processErrorStream;
     private String[]  command;
     private Map<String, String> env = new HashMap<>();
     private ISerializer serializer;
@@ -40,7 +41,7 @@ public class ShellProcess implements Serializable {
     private String serializerClassName = "com.hortonworks.streamline.streams.common.utils.JsonMultilangSerializer";
 
     public ShellProcess(String[] command) {
-        this.command = command;
+        this.command = Arrays.copyOf(command, command.length);
     }
 
     public void setEnv(Map<String, String> env) {
@@ -65,7 +66,7 @@ public class ShellProcess implements Serializable {
         }
 
         builder.directory(new File(context.getCodeDir()));
-        ShellLogger = LoggerFactory.getLogger(context.getComponentId());
+        shellLogger = LoggerFactory.getLogger(context.getComponentId());
         this.componentName = context.getComponentId();
         serializer = getSerializer();
 
@@ -127,7 +128,7 @@ public class ShellProcess implements Serializable {
     public void logErrorStream() {
         String error = getErrorsString();
         if (!error.isEmpty())
-            ShellLogger.info(error);
+            shellLogger.info(error);
     }
 
     public String getErrorsString() {
@@ -137,8 +138,10 @@ public class ShellProcess implements Serializable {
                 while (processErrorStream.available() > 0) {
                     int bufferSize = processErrorStream.available();
                     byte[] errorReadingBuffer = new byte[bufferSize];
-                    processErrorStream.read(errorReadingBuffer, 0, bufferSize);
-                    sb.append(new String(errorReadingBuffer));
+                    int len = processErrorStream.read(errorReadingBuffer, 0, bufferSize);
+                    if (len > 0) {
+                        sb.append(new String(errorReadingBuffer, 0, len, "UTF-8"));
+                    }
                 }
                 return sb.toString();
             } catch (IOException e) {

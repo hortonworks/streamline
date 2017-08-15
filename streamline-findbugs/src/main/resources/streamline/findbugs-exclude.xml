@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <Match>
+        <Package name="~com\.hortonworks\.streamline\.cache.*"/>
+    </Match>
+    <Match>
+        <Package name="~com\.hortonworks\.streamline\.storage.*"/>
+    </Match>
+    <Match>
+        <Package name="~com\.hortonworks\.streamline\.streams.sql.*"/>
+    </Match>
+    <Match>
+        <Package name="~com\.hortonworks\.streamline\.streams.runtime.normalization.*"/>
+    </Match>
+    <Match>
+        <Package name="~com\.hortonworks\.streamline\.streams\.runtime\.splitjoin.*"/>
+    </Match>
+    <Match>
+        <Package name="~com\.hortonworks\.streamline\.streams\.runtime\.storm.*"/>
+    </Match>
+    <Match>
+        <Package name="~com\.hortonworks\.streamline\.streams\.catalog.*"/>
+        <Bug pattern="UPM_UNCALLED_PRIVATE_METHOD"/>
+    </Match>
+    <Match>
+        <Class name="~com\.hortonworks\.streamline\.streams\.catalog\.topology\.TopologyComponentUISpecification.*"/>
+    </Match>
+    <Match>
+        <Class name="com.hortonworks.streamline.common.util.JarReader"/>
+        <Bug pattern="DP_CREATE_CLASSLOADER_INSIDE_DO_PRIVILEGED"/>
+    </Match>
+    <Match>
+        <Or>
+            <Class name="com.hortonworks.streamline.streams.layout.component.impl.normalization.NormalizationProcessor"/>
+            <Class name="com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor"/>
+            <Class name="com.hortonworks.streamline.streams.layout.component.impl.model.ModelProcessor"/>
+            <Class name="com.hortonworks.streamline.streams.layout.component.rule.action.transform.InmemoryTransformDataProvider"/>
+        </Or>
+        <Bug pattern="EQ_DOESNT_OVERRIDE_EQUALS"/>
+    </Match>
+    <Match>
+        <Class name="com.hortonworks.streamline.registries.tag.Tag"/>
+        <Method name="getNameSpace"/>
+        <Bug pattern="NM_CONFUSING"/>
+    </Match>
+    <Match>
+        <Class name="com.hortonworks.streamline.registries.model.service.MLModelRegistryService"/>
+        <Or>
+            <Method name="doGetInputFieldsFromPMMLStream"/>
+            <Method name="doGetOutputFieldsForPMMLStream"/>
+        </Or>
+        <Bug pattern="BC_UNCONFIRMED_CAST_OF_RETURN_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.hortonworks.streamline.registries.tag.Tag"/>
+        <Method name="getNameSpace"/>
+        <Bug pattern="NM_CONFUSING"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.calcite.interpreter.StreamlineContext"/>
+        <Bug pattern="SE_NO_SUITABLE_CONSTRUCTOR"/>
+    </Match>
+    <Match>
+        <Class name="com.hortonworks.streamline.streams.service.AvroStreamlineSchemaConverter"/>
+        <Bug pattern="DB_DUPLICATE_SWITCH_CLAUSES"/>
+    </Match>
+    <Match>
+        <Or>
+            <Bug pattern="SE_NO_SERIALVERSIONID"/>
+            <Bug pattern="SIC_INNER_SHOULD_BE_STATIC_ANON"/>
+            <Bug pattern="NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE"/>
+            <Bug pattern="DM_CONVERT_CASE"/>
+            <Bug pattern="SE_INNER_CLASS"/>
+        </Or>
+    </Match>
+</FindBugsFilter>

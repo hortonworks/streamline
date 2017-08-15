@@ -35,22 +35,12 @@ public class FileUtil {
      */
     public static File writeInputStreamToTempFile(InputStream inputStream, String fileNameSuffix)
             throws IOException {
-        OutputStream outputStream = null;
-        try {
-            File tmpFile = File.createTempFile(UUID.randomUUID().toString(), fileNameSuffix);
-            tmpFile.deleteOnExit();
-            outputStream = new FileOutputStream(tmpFile);
+        File tmpFile = File.createTempFile(UUID.randomUUID().toString(), fileNameSuffix);
+        tmpFile.deleteOnExit();
+        try (OutputStream outputStream = new FileOutputStream(tmpFile)) {
             ByteStreams.copy(inputStream, outputStream);
-            return tmpFile;
-        } finally {
-            try {
-                if (outputStream != null) {
-                    outputStream.close();
-                }
-            } catch (IOException ex) {
-                // swallow
-            }
         }
+        return tmpFile;
     }
 
 }

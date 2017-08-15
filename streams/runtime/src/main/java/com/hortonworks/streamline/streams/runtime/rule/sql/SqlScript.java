@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -66,15 +67,26 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
                      ValuesConverter<StreamlineEvent> valuesConverter) {
         super(expressionRuntime.asString(), scriptEngine);
         this.valuesConverter = valuesConverter;
-        stormSqlFields = ((StormSqlExpression) expressionRuntime).getStormSqlFields();
+        StormSqlExpression stormSqlExpression;
+        if (expressionRuntime instanceof  StormSqlExpression) {
+            stormSqlExpression = (StormSqlExpression) expressionRuntime;
+            stormSqlFields = stormSqlExpression.getStormSqlFields();
+        } else {
+            throw new IllegalArgumentException("ExpressionRuntime " + expressionRuntime + " not an instance of StormSqlExpression");
+        }
+        SqlEngine sqlEngine;
+        if (scriptEngine instanceof SqlEngine) {
+            sqlEngine = (SqlEngine) scriptEngine;
+        } else {
+            throw new IllegalArgumentException("ScriptEngine " + scriptEngine + " not an instance of SqlEngine");
+        }
         if (stormSqlFields.isEmpty()) {
-            ((StormSqlExpression) expressionRuntime).addStormSqlField(DUMMY_FIELD);
+            stormSqlExpression.addStormSqlField(DUMMY_FIELD);
             stormSqlFields.add(DUMMY_FIELD);
         }
-        SqlEngine sqlEngine = (SqlEngine) scriptEngine;
-        sqlEngine.compileQuery(createQuery((StormSqlExpression) expressionRuntime));
-        projectedFields = ((StormSqlExpression) expressionRuntime).getProjectedFields();
-        outputFields = ((StormSqlExpression) expressionRuntime).getOutputFields();
+        sqlEngine.compileQuery(createQuery(stormSqlExpression));
+        projectedFields = stormSqlExpression.getProjectedFields();
+        outputFields = stormSqlExpression.getOutputFields();
     }
 
     private List<String> createQuery(StormSqlExpression expression) {
@@ -142,8 +154,10 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
                         return valuesConverter.convert(values, inputEvent);
                     }
                 });
-            } else {
+            } else if (result instanceof StreamlineEvent) {
                 output = Collections.singletonList((StreamlineEvent) result);
+            } else {
+                throw new IllegalArgumentException("valueConverter is null and result is not an instance of StreamlineEvent");
             }
         }
         LOG.debug("Expression evaluation result [{}] converted to [{}]", result, output);
@@ -154,7 +168,7 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
         return outputFields;
     }
 
-    public interface ValuesConverter<O> {
+    public interface ValuesConverter<O> extends Serializable {
         /**
          * Converts the input Values to the specified output object
          */

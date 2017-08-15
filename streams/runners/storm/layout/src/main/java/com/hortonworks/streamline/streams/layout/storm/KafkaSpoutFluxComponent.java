@@ -115,14 +115,14 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
         String className = "org.apache.storm.kafka.spout.KafkaSpoutRetryExponentialBackoff";
         List<Object> constructorArgs = new ArrayList<>();
         String retryInitialDelayMsId = "retryInitialDelayMs" + UUID_FOR_COMPONENTS;
-        addTimeInterval(retryInitialDelayMsId, conf.get("retryInitialDelayMs") != null ? conf.get("retryInitialDelayMs") : new Long(0));
+        addTimeInterval(retryInitialDelayMsId, conf.get("retryInitialDelayMs") != null ? conf.get("retryInitialDelayMs") : Long.valueOf(0));
         constructorArgs.add(getRefYaml(retryInitialDelayMsId));
         String retryDelayPeriodMsId = "retryDelayPeriodMs" + UUID_FOR_COMPONENTS;
-        addTimeInterval(retryDelayPeriodMsId, conf.get("retryDelayPeriodMs") != null ? conf.get("retryDelayPeriodMs") : new Long(2));
+        addTimeInterval(retryDelayPeriodMsId, conf.get("retryDelayPeriodMs") != null ? conf.get("retryDelayPeriodMs") : Long.valueOf(2));
         constructorArgs.add(getRefYaml(retryDelayPeriodMsId));
         constructorArgs.add(conf.get("maximumRetries") != null ? conf.get("maximumRetries") : Integer.MAX_VALUE);
         String retryDelayMaximumMs = "retryDelayMaximumMs" + UUID_FOR_COMPONENTS;
-        addTimeInterval(retryDelayMaximumMs, conf.get("retryDelayMaximumMs") != null ? conf.get("retryDelayMaximumMs") : new Long(10000));
+        addTimeInterval(retryDelayMaximumMs, conf.get("retryDelayMaximumMs") != null ? conf.get("retryDelayMaximumMs") : Long.valueOf(10000));
         constructorArgs.add(getRefYaml(retryDelayMaximumMs));
         addToComponents(createComponent(componentId, className, null, constructorArgs, null));
         return componentId;

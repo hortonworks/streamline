@@ -15,6 +15,8 @@
  **/
 package com.hortonworks.streamline.streams.cluster.discovery.ambari;
 
+import java.util.Arrays;
+
 /**
  * Defines mapping between Service and its configuration types. DO NOT Change the order of
  * these configuration mappings. If you need to add a new mapping, add it to the end.
@@ -41,7 +43,7 @@ public enum ServiceConfigurations {
   }
 
   public String[] getConfNames() {
-    return confNames;
+    return Arrays.copyOf(confNames, confNames.length);
   }
 
   public static boolean contains(String serviceName) {

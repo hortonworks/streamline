@@ -22,6 +22,7 @@ import com.google.common.collect.ForwardingMap;
 import com.google.common.collect.ImmutableMap;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -294,7 +295,11 @@ public final class StreamlineEventImpl extends ForwardingMap<String, Object> imp
 
     @Override
     public byte[] getBytes() {
-        return this.toString().getBytes();
+        try {
+            return this.toString().getBytes("UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     @Override

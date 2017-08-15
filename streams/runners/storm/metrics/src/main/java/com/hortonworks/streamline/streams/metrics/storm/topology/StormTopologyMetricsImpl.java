@@ -377,8 +377,9 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
                 }
 
             } catch (UncheckedExecutionException e) {
-                if (e.getCause() != null) {
-                    throw (RuntimeException) e.getCause();
+                Throwable cause = e.getCause();
+                if (cause instanceof RuntimeException) {
+                    throw (RuntimeException) cause;
                 } else {
                     throw new RuntimeException(e);
                 }
@@ -409,8 +410,9 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
                 }
 
             } catch (UncheckedExecutionException e) {
-                if (e.getCause() != null) {
-                    throw (RuntimeException) e.getCause();
+                Throwable cause = e.getCause();
+                if (cause instanceof RuntimeException) {
+                    throw (RuntimeException) cause;
                 } else {
                     throw new RuntimeException(e);
                 }

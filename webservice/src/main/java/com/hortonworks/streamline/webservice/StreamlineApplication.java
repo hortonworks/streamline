@@ -228,7 +228,7 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
             if (fileStorage instanceof StorageManagerAware) {
                 ((StorageManagerAware) fileStorage).setStorageManager(storageManager);
             }
-        } catch (Exception e) {
+        } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
             throw new RuntimeException(e);
         }
         return fileStorage;

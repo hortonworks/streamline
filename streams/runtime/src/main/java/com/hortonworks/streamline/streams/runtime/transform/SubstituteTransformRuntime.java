@@ -16,10 +16,8 @@
 
 package com.hortonworks.streamline.streams.runtime.transform;
 
-import com.google.common.collect.ImmutableMap;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
-import com.hortonworks.streamline.streams.layout.Transform;
 import com.hortonworks.streamline.streams.layout.component.rule.action.transform.SubstituteTransform;
 import com.hortonworks.streamline.streams.runtime.RuntimeService;
 import com.hortonworks.streamline.streams.runtime.TransformRuntime;
@@ -28,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -93,11 +90,11 @@ public class SubstituteTransformRuntime implements TransformRuntime {
     }
 
 
-    public static class Factory implements RuntimeService.Factory<TransformRuntime, Transform> {
+    public static class Factory implements RuntimeService.Factory<TransformRuntime, SubstituteTransform> {
 
         @Override
-        public TransformRuntime create(Transform transform) {
-            return new SubstituteTransformRuntime((SubstituteTransform) transform);
+        public TransformRuntime create(SubstituteTransform transform) {
+            return new SubstituteTransformRuntime(transform);
         }
     }
 }

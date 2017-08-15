@@ -434,10 +434,6 @@ public class NamespaceCatalogResource {
   }
 
 
-  private String buildMessageForCompositeId(Long namespaceId, String serviceName) {
-    return "Namespace: " + namespaceId.toString() + " / serviceName: " + serviceName;
-  }
-
   private String buildMessageForCompositeId(Long namespaceId, String serviceName, Long clusterId) {
     return "Namespace: " + namespaceId.toString() + " / serviceName: " + serviceName + " / clusterId: " + clusterId;
   }

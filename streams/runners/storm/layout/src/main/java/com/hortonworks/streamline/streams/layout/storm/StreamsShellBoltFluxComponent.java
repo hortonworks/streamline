@@ -25,6 +25,7 @@ import com.hortonworks.streamline.streams.layout.component.impl.MultiLangProcess
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -57,12 +58,15 @@ public class StreamsShellBoltFluxComponent extends  AbstractFluxComponent {
     }
 
     private List<String> getStreams() {
-        Collection<String> streams = Collections2.transform(multiLangProcessor.getOutputStreams(), new Function<Stream, String>(){
-            @Override
-            public String apply(Stream input) {
-                return input.getId();
-            }
-        });
+        Collection<String> streams = Collections.emptyList();
+        if (multiLangProcessor != null) {
+            streams = Collections2.transform(multiLangProcessor.getOutputStreams(), new Function<Stream, String>() {
+                @Override
+                public String apply(Stream input) {
+                    return input.getId();
+                }
+            });
+        }
         return ImmutableList.copyOf(streams);
     }
 }

@@ -119,56 +119,6 @@ public class StormTopologyValidator {
         }
     }
 
-    private void validateRuleProcessorLinks () throws ComponentConfigException {
-        List<Map> dataSources = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_DATA_SOURCES);
-        Set<String> dataSourceNames = new HashSet<>();
-        for (Map dataSource: dataSources) {
-            dataSourceNames.add((String) dataSource.get(TopologyLayoutConstants.JSON_KEY_UINAME));
-        }
-        List<Map> processors = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_PROCESSORS);
-        Map<String, Map<String, Set<String>>> ruleProcessors = new LinkedHashMap<>();
-        for (Map processor: processors) {
-            String type = (String) processor.get(TopologyLayoutConstants.JSON_KEY_TYPE);
-            if ("RULE".equals(type)) {
-                Map config = (Map) processor.get(TopologyLayoutConstants.JSON_KEY_CONFIG);
-                Map ruleProcessorConfig = (Map) config.get(TopologyLayoutConstants.JSON_KEY_RULES_PROCESSOR_CONFIG);
-                Map<String, Set<String>> ruleInfo = this.getRuleProcessorStreamIdsToOutputFields(ruleProcessorConfig);
-                ruleProcessors.put((String) processor.get(TopologyLayoutConstants.JSON_KEY_UINAME), ruleInfo);
-            }
-        }
-        Set<String> ruleProcessorKeys = ruleProcessors.keySet();
-        List<Map> links = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_LINKS);
-        for (Map link: links) {
-            Map linkConfig = (Map) link.get(TopologyLayoutConstants.JSON_KEY_CONFIG);
-            String from = (String) linkConfig.get(TopologyLayoutConstants.JSON_KEY_FROM);
-            String to = (String) linkConfig.get(TopologyLayoutConstants.JSON_KEY_TO);
-            if (ruleProcessorKeys.contains(from)) {
-                String streamId = (String) linkConfig.get(TopologyLayoutConstants.JSON_KEY_STREAM_ID);
-                if (StringUtils.isEmpty(streamId)) {
-                    throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
-                }
-                Map<String, Set<String>> streamIdToOutput = ruleProcessors.get(from);
-                Set<String> ruleStreams = streamIdToOutput.keySet();
-                if (!ruleStreams.contains(streamId)) {
-                    throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_INVALID_STREAM_ID, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
-                }
-                if ("FIELDS".equals(link.get(TopologyLayoutConstants.JSON_KEY_TYPE))) {
-                    Set<String> outputFields = streamIdToOutput.get(streamId);
-                    List<String> groupingFields = (List) linkConfig.get(TopologyLayoutConstants.JSON_KEY_GROUPING_FIELDS);
-                    if (!outputFields.containsAll(groupingFields)) {
-                        throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_INVALID_GROUPING_FIELDS, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
-                    }
-                }
-            }
-            if (ruleProcessorKeys.contains(to)) {
-                // link to a rule processor can not go from a data source
-                if (dataSourceNames.contains(from)) {
-                    throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_INVALID_LINK_TO_PROCESSOR, link.get(TopologyLayoutConstants.JSON_KEY_UINAME)));
-                }
-            }
-        }
-    }
-
     private void validateCustomProcessorLinks () throws ComponentConfigException {
         List<Map> dataSources = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_DATA_SOURCES);
         Set<String> dataSourceNames = new HashSet<>();
@@ -176,14 +126,13 @@ public class StormTopologyValidator {
             dataSourceNames.add((String) dataSource.get(TopologyLayoutConstants.JSON_KEY_UINAME));
         }
         List<Map> processors = (List) this.topologyConfig.get(TopologyLayoutConstants.JSON_KEY_PROCESSORS);
-        Map<String, Schema> inputSchemas = new LinkedHashMap<>();
         Map<String, Map<String, Schema>> outputSchemas = new LinkedHashMap<>();
         for (Map processor: processors) {
             String type = (String) processor.get(TopologyLayoutConstants.JSON_KEY_TYPE);
             if ("CUSTOM".equals(type)) {
                 Map config = (Map) processor.get(TopologyLayoutConstants.JSON_KEY_CONFIG);
                 try {
-                    inputSchemas.put((String) processor.get(TopologyLayoutConstants.JSON_KEY_UINAME), getCustomProcessorInputSchema(config));
+                    getCustomProcessorInputSchema(config);
                     outputSchemas.put((String) processor.get(TopologyLayoutConstants.JSON_KEY_UINAME), getCustomProcessorOutputSchema(config));
                 } catch (IOException e) {
                     String message = "Invalid custom processor input or output schema config.";
@@ -223,36 +172,6 @@ public class StormTopologyValidator {
                 }
             }
         }
-    }
-
-    // For a rule processor config object containing rules, this objects
-    // returns a map of streamids(one per rule) and output fields for each
-    // such stream. This is used in validation in validateRuleProcessorLinks
-    // method above
-    private Map<String, Set<String>> getRuleProcessorStreamIdsToOutputFields
-            (Map ruleProcessorConfig) {
-        Map<String, Set<String>> result = new LinkedHashMap<>();
-        String processorName = (String) ruleProcessorConfig.get(TopologyLayoutConstants.JSON_KEY_NAME);
-        List<Map> rules = (List) ruleProcessorConfig.get(TopologyLayoutConstants.JSON_KEY_RULES);
-        for (Map rule: rules) {
-            long ruleId = 0L;
-            Object ruleIdO = rule.get(TopologyLayoutConstants.JSON_KEY_ID);
-            if (ConfigFieldValidation.isInteger(ruleIdO)) {
-                ruleId = (Integer) ruleIdO;
-            } else if (ConfigFieldValidation.isLong(ruleIdO)) {
-                ruleId = (Long) ruleIdO;
-            }
-            String ruleName = (String) rule.get(TopologyLayoutConstants.JSON_KEY_NAME);
-            Set<String> outputFields = new HashSet<>();
-            Map action = (Map) rule.get(TopologyLayoutConstants.JSON_KEY_RULE_ACTIONS);
-            List<Map> declaredOutputs = (List<Map>) action.get(TopologyLayoutConstants.JSON_KEY_RULE_DECLARED_OUTPUT);
-            for (Map declaredOutput: declaredOutputs) {
-                outputFields.add((String) declaredOutput.get(TopologyLayoutConstants.JSON_KEY_NAME));
-            }
-            String streamId = processorName + "." + ruleName + "." + ruleId;
-            result.put(streamId, outputFields);
-        }
-        return result;
     }
 
     // For a custom processor config object, this method returns a map of output streamids and schema for each

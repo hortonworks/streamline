@@ -20,6 +20,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -71,7 +72,10 @@ public class CachedTransformDataProviderRuntime implements TransformDataProvider
     @Override
     public Object get(Object key) {
         try {
-            return loadingCache.get(key);
+            if (loadingCache != null) {
+                return loadingCache.get(key);
+            }
+            throw new NullPointerException("loadingCache is null");
         } catch (ExecutionException e) {
             throw new RuntimeException(e);
         }
@@ -79,7 +83,9 @@ public class CachedTransformDataProviderRuntime implements TransformDataProvider
 
     @Override
     public void cleanup() {
-        loadingCache.cleanUp();
+        if (loadingCache != null) {
+            loadingCache.cleanUp();
+        }
         backedTransformDataProviderRuntime.cleanup();
     }
 

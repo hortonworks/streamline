@@ -168,7 +168,7 @@ public class DashboardCatalogResource {
             Sets.SetView<Long> mappingsToRemove = Sets.difference(ImmutableSet.copyOf(existing), ImmutableSet.copyOf(newSet));
             Sets.SetView<Long> mappingsToAdd = Sets.difference(ImmutableSet.copyOf(newSet), ImmutableSet.copyOf(existing));
             dashboardCatalogService.removeWidgetDatasourceMapping(widget, mappingsToRemove);
-            dashboardCatalogService.addWidgetDatasourceMapping(widget, mappingsToRemove);
+            dashboardCatalogService.addWidgetDatasourceMapping(widget, mappingsToAdd);
             resultDto.setDatasourceIds(dto.getDatasourceIds());
         }
         return WSUtils.respondEntity(resultDto, CREATED);

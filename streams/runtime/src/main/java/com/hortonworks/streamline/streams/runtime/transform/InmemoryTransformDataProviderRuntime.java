@@ -17,7 +17,6 @@
 package com.hortonworks.streamline.streams.runtime.transform;
 
 import com.hortonworks.streamline.streams.layout.component.rule.action.transform.InmemoryTransformDataProvider;
-import com.hortonworks.streamline.streams.layout.component.rule.action.transform.TransformDataProvider;
 import com.hortonworks.streamline.streams.runtime.RuntimeService;
 
 /**
@@ -43,11 +42,11 @@ public class InmemoryTransformDataProviderRuntime implements TransformDataProvid
     public void cleanup() {
     }
 
-    public static class Factory implements RuntimeService.Factory<TransformDataProviderRuntime, TransformDataProvider> {
+    public static class Factory implements RuntimeService.Factory<TransformDataProviderRuntime, InmemoryTransformDataProvider> {
 
         @Override
-        public TransformDataProviderRuntime create(TransformDataProvider transformDataProvider) {
-            return new InmemoryTransformDataProviderRuntime((InmemoryTransformDataProvider) transformDataProvider);
+        public TransformDataProviderRuntime create(InmemoryTransformDataProvider transformDataProvider) {
+            return new InmemoryTransformDataProviderRuntime(transformDataProvider);
         }
     }
 }

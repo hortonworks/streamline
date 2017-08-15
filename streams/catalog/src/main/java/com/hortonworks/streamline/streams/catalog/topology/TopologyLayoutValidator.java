@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +58,7 @@ public class TopologyLayoutValidator {
             checkDisconnectedDataSources();
             checkDisconnectedDataSinks();
             checkDisconnectedProcessors();
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             throw new ComponentConfigException(ex);
         }
     }

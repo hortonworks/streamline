@@ -53,7 +53,7 @@ public abstract class AbstractNotificationMapper implements Mapper<Notification>
 
     private static final byte[] CQ_STATUS = "qs".getBytes(CHARSET);
 
-    protected static final byte[] CV_DEFAULT = "1".getBytes(CHARSET);
+    static final byte[] CV_DEFAULT = "1".getBytes(CHARSET);
 
     // a map of Notification member name to hbase cf:cq
     private static final Map<String, List<byte[]>> memberMap = new HashMap<>();

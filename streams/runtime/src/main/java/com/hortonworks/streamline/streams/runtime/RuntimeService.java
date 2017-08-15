@@ -27,13 +27,13 @@ import java.util.Map;
 public class RuntimeService<R, D> {
     private static final Logger log = LoggerFactory.getLogger(RuntimeService.class);
 
-    protected final Map<Class<? extends D>, Factory<R, D>> factories;
+    protected final Map<Class<? extends D>, Factory<R, ?>> factories;
 
     /**
      *
      * @param factories factories to be registered
      */
-    protected RuntimeService(Map<Class<? extends D>, Factory<R, D>> factories) {
+    protected RuntimeService(Map<Class<? extends D>, Factory<R, ?>> factories) {
         this.factories = factories;
     }
 
@@ -43,12 +43,13 @@ public class RuntimeService<R, D> {
      * @param d
      */
     public R get(D d) {
-        final Factory<R, D> transformFactory = factories.get(d.getClass());
+        Class<?> clazz = d.getClass();
+        @SuppressWarnings("unchecked")
+        final Factory<R, D> transformFactory = (Factory<R, D>) factories.get(clazz);
         if (transformFactory == null) {
             log.error("No factory is registered for [{}]", d.getClass());
             throw new IllegalArgumentException("No runtime factory is registered for "+d.getClass());
         }
-
         return transformFactory.create(d);
     }
 

@@ -16,6 +16,7 @@
 
 package com.hortonworks.streamline.streams.layout.component;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,7 +28,7 @@ import java.util.Set;
  * {@link Processor} is both an {@code InputComponent} and {@code OutputComponent} so could be
  * at the start or the end of the edge.
  */
-public class Edge implements TopologyDagComponent {
+public class Edge implements TopologyDagComponent, Serializable {
     private String id;
     private OutputComponent from;
     private InputComponent to;

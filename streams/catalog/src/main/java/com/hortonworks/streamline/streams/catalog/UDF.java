@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -251,7 +252,7 @@ public class UDF extends AbstractStorable {
             if (!StringUtils.isEmpty(returnTypeStr)) {
                 setReturnType(Enum.valueOf(Schema.Type.class, returnTypeStr));
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
         return this;

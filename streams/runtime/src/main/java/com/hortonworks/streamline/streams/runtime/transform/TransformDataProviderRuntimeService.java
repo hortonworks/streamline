@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TransformDataProviderRuntimeService extends RuntimeService<TransformDataProviderRuntime, TransformDataProvider> {
     private static final Logger log = LoggerFactory.getLogger(TransformDataProviderRuntimeService.class);
 
-    private static final Map<Class<? extends TransformDataProvider>, RuntimeService.Factory<TransformDataProviderRuntime, TransformDataProvider>> transformFactories = new ConcurrentHashMap<>();
+    private static final Map<Class<? extends TransformDataProvider>, RuntimeService.Factory<TransformDataProviderRuntime, ?>> transformFactories = new ConcurrentHashMap<>();
 
     static {
         // register factories

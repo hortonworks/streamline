@@ -18,7 +18,6 @@ package com.hortonworks.streamline.streams.runtime.transform;
 
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
-import com.hortonworks.streamline.streams.layout.Transform;
 import com.hortonworks.streamline.streams.layout.component.rule.action.transform.AddHeaderTransform;
 import com.hortonworks.streamline.streams.runtime.RuntimeService;
 import com.hortonworks.streamline.streams.runtime.TransformRuntime;
@@ -65,11 +64,11 @@ public class AddHeaderTransformRuntime implements TransformRuntime {
                 '}';
     }
 
-    public static class Factory implements RuntimeService.Factory<TransformRuntime, Transform> {
+    public static class Factory implements RuntimeService.Factory<TransformRuntime, AddHeaderTransform> {
 
         @Override
-        public TransformRuntime create(Transform transform) {
-            return new AddHeaderTransformRuntime((AddHeaderTransform) transform);
+        public TransformRuntime create(AddHeaderTransform transform) {
+            return new AddHeaderTransformRuntime(transform);
         }
     }
 }

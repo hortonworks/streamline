@@ -180,7 +180,7 @@ public class AclEntry extends AbstractStorable {
     public Map<String, Object> toMap() {
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> map = super.toMap();
-        map.put(SID_TYPE, sidType.toString());
+        map.put(SID_TYPE, sidType != null ? sidType.toString() : "");
         try {
             map.put(PERMISSIONS, permissions != null ? mapper.writerFor(new TypeReference<EnumSet<Permission>>() {
             }).writeValueAsString(permissions) : "");

@@ -17,12 +17,19 @@ package com.hortonworks.streamline.streams.actions.storm.topology;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.common.exception.service.exception.request.TopologyAlreadyExistsOnCluster;
+import com.hortonworks.streamline.streams.actions.StatusImpl;
 import com.hortonworks.streamline.streams.actions.TopologyActionContext;
+import com.hortonworks.streamline.streams.actions.TopologyActions;
 import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+import com.hortonworks.streamline.streams.exception.TopologyNotAliveException;
+import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.streamline.streams.layout.component.InputComponent;
 import com.hortonworks.streamline.streams.layout.component.OutputComponent;
+import com.hortonworks.streamline.streams.layout.component.TopologyDag;
+import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 import com.hortonworks.streamline.streams.layout.component.impl.HBaseSink;
 import com.hortonworks.streamline.streams.layout.component.impl.HdfsSink;
 import com.hortonworks.streamline.streams.layout.component.impl.HdfsSource;
@@ -30,22 +37,15 @@ import com.hortonworks.streamline.streams.layout.component.impl.HiveSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
-import com.hortonworks.streamline.streams.storm.common.StormJaasCreator;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import com.hortonworks.streamline.common.Config;
-import com.hortonworks.streamline.streams.actions.StatusImpl;
-import com.hortonworks.streamline.streams.actions.TopologyActions;
-import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
-import com.hortonworks.streamline.streams.layout.component.TopologyDag;
-import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 import com.hortonworks.streamline.streams.layout.storm.StormTopologyFluxGenerator;
 import com.hortonworks.streamline.streams.layout.storm.StormTopologyLayoutConstants;
 import com.hortonworks.streamline.streams.layout.storm.StormTopologyValidator;
+import com.hortonworks.streamline.streams.storm.common.StormJaasCreator;
 import com.hortonworks.streamline.streams.storm.common.StormRestAPIClient;
 import com.hortonworks.streamline.streams.storm.common.StormTopologyUtil;
-import com.hortonworks.streamline.streams.exception.TopologyNotAliveException;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.client.ClientConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,8 +56,9 @@ import javax.security.auth.Subject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -187,7 +188,9 @@ public class StormTopologyActionsImpl implements TopologyActions {
                     namespaceId.longValue());
         }
         File f = new File (stormArtifactsLocation);
-        f.mkdirs();
+        if (!f.exists() && !f.mkdirs()) {
+            throw new RuntimeException("Could not create directory " + f.getAbsolutePath());
+        }
     }
 
     private void setupSecuredStormCluster(Map<String, Object> conf) {
@@ -538,7 +541,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     private String createYamlFile (TopologyLayout topology) throws Exception {
         Map<String, Object> yamlMap;
         File f;
-        FileWriter fileWriter = null;
+        OutputStreamWriter fileWriter = null;
         try {
             f = new File(this.getFilePath(topology));
             if (f.exists()) {
@@ -567,7 +570,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
             options.setSplitLines(false);
             //options.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN);
             Yaml yaml = new Yaml (options);
-            fileWriter = new FileWriter(f);
+            fileWriter = new OutputStreamWriter(new FileOutputStream(f), "UTF-8");
             yaml.dump(yamlMap, fileWriter);
             return f.getAbsolutePath();
         } finally {

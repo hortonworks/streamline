@@ -15,7 +15,6 @@
  **/
 package com.hortonworks.streamline.streams.metrics.storm.topology;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.common.util.ParallelStreamUtil;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.streamline.streams.layout.component.Component;
@@ -25,13 +24,12 @@ import com.hortonworks.streamline.streams.metrics.topology.TopologyTimeSeriesMet
 import com.hortonworks.streamline.streams.storm.common.StormRestAPIClient;
 import com.hortonworks.streamline.streams.storm.common.StormTopologyUtil;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 
 import static java.util.stream.Collectors.toMap;
@@ -47,8 +45,7 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
 
     private final StormRestAPIClient client;
     private TimeSeriesQuerier timeSeriesQuerier;
-    private final ObjectMapper mapper = new ObjectMapper();
-    public static final StormMappedMetric[] STATS_METRICS = new StormMappedMetric[]{
+    private static final StormMappedMetric[] STATS_METRICS = new StormMappedMetric[]{
             StormMappedMetric.inputRecords, StormMappedMetric.outputRecords, StormMappedMetric.ackedRecords,
             StormMappedMetric.failedRecords, StormMappedMetric.processedTime, StormMappedMetric.recordsInWaitQueue
     };
@@ -180,29 +177,38 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
                 Map<String, Object> dataSourceConfig = (Map<String, Object>) dataSource.get(TopologyLayoutConstants.JSON_KEY_CONFIG);
                 kafkaTopicName = (String) dataSourceConfig.get(TopologyLayoutConstants.JSON_KEY_TOPIC);
             }
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to parse topology configuration.");
+        } catch (RuntimeException e) {
+            throw new IllegalStateException("Failed to parse topology configuration.", e);
         }
 
         return kafkaTopicName;
     }
 
     private Map<Long, Double> queryTopologyMetrics(String stormTopologyName, StormMappedMetric mappedMetric, long from, long to) {
-        Map<Long, Double> metrics = timeSeriesQuerier.getTopologyLevelMetrics(stormTopologyName,
-                mappedMetric.getStormMetricName(), mappedMetric.getAggregateFunction(), from, to);
+        Map<Long, Double> metrics = Collections.emptyMap();
+        if (timeSeriesQuerier != null) {
+            metrics = timeSeriesQuerier.getTopologyLevelMetrics(stormTopologyName,
+                    mappedMetric.getStormMetricName(), mappedMetric.getAggregateFunction(), from, to);
+        }
         return new TreeMap<>(metrics);
     }
 
     private Map<Long, Double> queryComponentMetrics(String stormTopologyName, String sourceId, StormMappedMetric mappedMetric, long from, long to) {
-        Map<Long, Double> metrics = timeSeriesQuerier.getMetrics(stormTopologyName, sourceId, mappedMetric.getStormMetricName(),
-                mappedMetric.getAggregateFunction(), from, to);
+        Map<Long, Double> metrics = Collections.emptyMap();
+        if (timeSeriesQuerier != null) {
+            metrics = timeSeriesQuerier.getMetrics(stormTopologyName, sourceId, mappedMetric.getStormMetricName(),
+                    mappedMetric.getAggregateFunction(), from, to);
+        }
         return new TreeMap<>(metrics);
     }
 
     private Map<Long, Double> queryKafkaMetrics(String stormTopologyName, String sourceId, StormMappedMetric mappedMetric,
                                                   String kafkaTopic, long from, long to) {
-        Map<Long, Double> metrics = timeSeriesQuerier.getMetrics(stormTopologyName, sourceId, String.format(mappedMetric.getStormMetricName(), kafkaTopic),
-                mappedMetric.getAggregateFunction(), from, to);
+        Map<Long, Double> metrics = Collections.emptyMap();
+        if (timeSeriesQuerier != null) {
+            metrics = timeSeriesQuerier.getMetrics(stormTopologyName, sourceId, String.format(mappedMetric.getStormMetricName(), kafkaTopic),
+                    mappedMetric.getAggregateFunction(), from, to);
+        }
         return new TreeMap<>(metrics);
     }
 

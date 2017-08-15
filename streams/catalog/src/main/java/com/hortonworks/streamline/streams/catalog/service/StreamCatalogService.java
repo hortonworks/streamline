@@ -495,9 +495,7 @@ public class StreamCatalogService {
                 copyTopologyDependencies(topologyId, versionId, topology.getVersionId());
             } catch (Exception ex) {
                 LOG.error("Got exception while copying topology dependencies", ex);
-                if (topology != null) {
-                    removeTopology(topology.getId(), topology.getVersionId(), true);
-                }
+                removeTopology(topology.getId(), topology.getVersionId(), true);
                 throw new RuntimeException(ex);
             }
         }
@@ -720,7 +718,7 @@ public class StreamCatalogService {
             if (TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_SUB_TYPE.equals(subType)) {
                 QueryParam queryParam = new QueryParam(CustomProcessorInfo.NAME, topologyProcessor.getConfig().get(CustomProcessorInfo.NAME));
                 Collection<TopologyComponentBundle> result = listCustomProcessorBundlesWithFilter(Collections.singletonList(queryParam));
-                if (result == null || result.size() != 1) {
+                if (result.size() != 1) {
                     throw new IllegalStateException("Not able to find topology component bundle for custom processor :" + topologyProcessor.getConfig().get
                             (CustomProcessorInfo.NAME));
                 }
@@ -2458,7 +2456,7 @@ public class StreamCatalogService {
                     ByteStreams.copy(bundleJar, os);
                     FluxComponent fluxComponent = fluxComponentProxyUtil.loadClassFromJar(tmpFile.getAbsolutePath(), topologyComponentBundle
                             .getTransformationClass());
-                } catch (Exception ex) {
+                } catch (IOException | ClassNotFoundException | IllegalAccessException | InstantiationException ex) {
                     LOG.debug("Got exception", ex);
                     throw new RuntimeException("Cannot load transformation class " + topologyComponentBundle.getTransformationClass() + " from bundle Jar: ");
                 } finally {

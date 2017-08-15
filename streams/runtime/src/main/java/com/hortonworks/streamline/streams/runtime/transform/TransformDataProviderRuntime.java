@@ -18,10 +18,12 @@ package com.hortonworks.streamline.streams.runtime.transform;
 
 import com.hortonworks.streamline.streams.layout.Transform;
 
+import java.io.Serializable;
+
 /**
  * Data provider for {@link Transform} which can be used for lookups.
  */
-public interface TransformDataProviderRuntime {
+public interface TransformDataProviderRuntime extends Serializable {
 
     /**
      * Prepare resources which can be used in retrieving values from data store.

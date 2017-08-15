@@ -286,7 +286,7 @@ public class TopologyComponentUISpecification {
         }
 
         private void validateCommon () throws ComponentConfigException {
-            String formatString = "{} for field {} cannot be null or empty.";
+            String formatString = "%s for field %s cannot be null or empty.";
             String message;
             if (fieldName == null || fieldName.isEmpty()) {
                 message = String.format(formatString, fieldName, this);
