@@ -72,6 +72,9 @@
         <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
         <maven-shade-plugin.version>2.4.1</maven-shade-plugin.version>
         <maven-surefire.version>2.18.1</maven-surefire.version>
+
+        <!-- This should match the version in streamline-findbugs module -->
+        <streamline-findbugs.version>0.1</streamline-findbugs.version>
     </properties>
 
     <distributionManagement>
@@ -911,7 +914,7 @@
                         <dependency>
                             <groupId>com.hortonworks.streamline</groupId>
                             <artifactId>streamline-findbugs</artifactId>
-                            <version>${project.version}</version>
+                            <version>${streamline-findbugs.version}</version>
                         </dependency>
                     </dependencies>
                     <configuration>
@@ -931,7 +934,7 @@
                     <dependency>
                         <groupId>com.hortonworks.streamline</groupId>
                         <artifactId>streamline-findbugs</artifactId>
-                        <version>${project.version}</version>
+                        <version>${streamline-findbugs.version}</version>
                     </dependency>
                 </dependencies>
                 <configuration>

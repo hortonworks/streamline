@@ -6,14 +6,7 @@
 
     <artifactId>streamline-findbugs</artifactId>
     <groupId>com.hortonworks.streamline</groupId>
-    <version>0.1.0-SNAPSHOT</version>
-
-    <parent>
-        <artifactId>streamline</artifactId>
-        <groupId>com.hortonworks.streamline</groupId>
-        <version>0.1.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
+    <version>0.1</version>
 
     <build>
         <plugins>
