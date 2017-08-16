@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ************
+ NOTE
+ ************
+ If you make any changes to this file make sure to increment the version
+ of streamline-findbugs module and also set the same value for streamline-findbugs.version in root pom.xml
+-->
 <FindBugsFilter>
     <Match>
         <Package name="~com\.hortonworks\.streamline\.cache.*"/>
