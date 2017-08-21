@@ -22,22 +22,31 @@ import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Verifications;
 import org.apache.storm.spout.SpoutOutputCollector;
+import org.apache.storm.task.TopologyContext;
 import org.apache.storm.tuple.Values;
 import org.apache.storm.utils.Utils;
-import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.*;
 
 public class EventLoggingSpoutOutputCollectorTest {
+    private static final String TEST_COMPONENT_NAME_FOR_STORM = "1-testComponent";
     private static final String TEST_COMPONENT_NAME = "testComponent";
+    private static final String TEST_TARGET_COMPONENT_FOR_TASK_1_FOR_STORM = "2-testTargetComponent1";
+    private static final String TEST_TARGET_COMPONENT_FOR_TASK_1 = "testTargetComponent1";
+    private static final String TEST_TARGET_COMPONENT_FOR_TASK_2_FOR_STORM = "3-testTargetComponent2";
+    private static final String TEST_TARGET_COMPONENT_FOR_TASK_2 = "testTargetComponent2";
+    private static final int TASK_1 = 1;
+    private static final int TASK_2 = 2;
 
     @Injectable
     private TestRunEventLogger mockedEventLogger;
+
+    @Injectable
+    private TopologyContext mockedTopologyContext;
 
     @Injectable
     private SpoutOutputCollector mockedOutputCollector;
@@ -51,22 +60,20 @@ public class EventLoggingSpoutOutputCollectorTest {
         put("humidity", "40h");
     }}, "ds-" + System.currentTimeMillis(), "id-" + System.currentTimeMillis());
 
-    @Before
-    public void setUp() {
-        sut = new EventLoggingSpoutOutputCollector(mockedOutputCollector, TEST_COMPONENT_NAME, mockedEventLogger);
-    }
-
     @Test
     public void emit() throws Exception {
         String testStreamId = "testStreamId";
-        ArrayList<Integer> expectedTasks = Lists.newArrayList(1, 2);
         final Values tuple = new Values(INPUT_STREAMLINE_EVENT);
         String messageId = "testMessageId";
+        List<Integer> expectedTasks = Lists.newArrayList(TASK_1, TASK_2);
+
+        setupExpectationsForTopologyContextEmit();
+        sut = new EventLoggingSpoutOutputCollector(mockedTopologyContext, mockedOutputCollector, mockedEventLogger);
 
         // String streamId, List<Object> tuple
         new Expectations() {{
             mockedOutputCollector.emit(testStreamId, tuple);
-            result = expectedTasks;
+            this.result = expectedTasks;
         }};
 
         List<Integer> tasks = sut.emit(testStreamId, tuple);
@@ -75,7 +82,11 @@ public class EventLoggingSpoutOutputCollectorTest {
         new Verifications() {{
             mockedOutputCollector.emit(testStreamId, tuple);
             mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    testStreamId, INPUT_STREAMLINE_EVENT); times = 1;
+                    testStreamId, TEST_TARGET_COMPONENT_FOR_TASK_1, INPUT_STREAMLINE_EVENT);
+            times = 1;
+            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
+                    testStreamId, TEST_TARGET_COMPONENT_FOR_TASK_2, INPUT_STREAMLINE_EVENT);
+            times = 1;
         }};
 
         // List<Object> tuple
@@ -90,7 +101,11 @@ public class EventLoggingSpoutOutputCollectorTest {
         new Verifications() {{
             mockedOutputCollector.emit(tuple);
             mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    Utils.DEFAULT_STREAM_ID, INPUT_STREAMLINE_EVENT); times = 1;
+                    Utils.DEFAULT_STREAM_ID, TEST_TARGET_COMPONENT_FOR_TASK_1, INPUT_STREAMLINE_EVENT);
+            times = 1;
+            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
+                    Utils.DEFAULT_STREAM_ID, TEST_TARGET_COMPONENT_FOR_TASK_2, INPUT_STREAMLINE_EVENT);
+            times = 1;
         }};
 
         // String streamId, List<Object> tuple, Object messageId
@@ -105,7 +120,11 @@ public class EventLoggingSpoutOutputCollectorTest {
         new Verifications() {{
             mockedOutputCollector.emit(testStreamId, tuple, messageId);
             mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    testStreamId, INPUT_STREAMLINE_EVENT); times = 1;
+                    testStreamId, TEST_TARGET_COMPONENT_FOR_TASK_1, INPUT_STREAMLINE_EVENT);
+            times = 1;
+            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
+                    testStreamId, TEST_TARGET_COMPONENT_FOR_TASK_2, INPUT_STREAMLINE_EVENT);
+            times = 1;
         }};
 
         // List<Object> tuple, Object messageId
@@ -120,77 +139,81 @@ public class EventLoggingSpoutOutputCollectorTest {
         new Verifications() {{
             mockedOutputCollector.emit(tuple, messageId);
             mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    Utils.DEFAULT_STREAM_ID, INPUT_STREAMLINE_EVENT); times = 1;
+                    Utils.DEFAULT_STREAM_ID, TEST_TARGET_COMPONENT_FOR_TASK_1, INPUT_STREAMLINE_EVENT);
+            times = 1;
+            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
+                    Utils.DEFAULT_STREAM_ID, TEST_TARGET_COMPONENT_FOR_TASK_2, INPUT_STREAMLINE_EVENT);
+            times = 1;
         }};
     }
 
     @Test
     public void emitDirect() throws Exception {
-        int testTaskId = 1;
+        setupExpectationsForTopologyContextEmitDirect();
+        sut = new EventLoggingSpoutOutputCollector(mockedTopologyContext, mockedOutputCollector, mockedEventLogger);
+
         String testStreamId = "testStreamId";
-        ArrayList<Integer> expectedTasks = Lists.newArrayList(1, 2);
         final Values tuple = new Values(INPUT_STREAMLINE_EVENT);
         String messageId = "testMessageId";
 
         // int taskId, String streamId, List<Object> tuple
         new Expectations() {{
-            mockedOutputCollector.emitDirect(testTaskId, testStreamId, tuple);
-            result = expectedTasks;
+            mockedOutputCollector.emitDirect(TASK_1, testStreamId, tuple);
         }};
 
-        sut.emitDirect(testTaskId, testStreamId, tuple);
+        sut.emitDirect(TASK_1, testStreamId, tuple);
 
         new Verifications() {{
-            mockedOutputCollector.emitDirect(testTaskId, testStreamId, tuple);
+            mockedOutputCollector.emitDirect(TASK_1, testStreamId, tuple);
             mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    testStreamId, INPUT_STREAMLINE_EVENT); times = 1;
+                    testStreamId, TEST_TARGET_COMPONENT_FOR_TASK_1, INPUT_STREAMLINE_EVENT); times = 1;
         }};
 
         // int taskId, List<Object> tuple
         new Expectations() {{
-            mockedOutputCollector.emitDirect(testTaskId, tuple);
-            result = expectedTasks;
+            mockedOutputCollector.emitDirect(TASK_1, tuple);
         }};
 
-        sut.emitDirect(testTaskId, tuple);
+        sut.emitDirect(TASK_1, tuple);
 
         new Verifications() {{
-            mockedOutputCollector.emitDirect(testTaskId, tuple);
+            mockedOutputCollector.emitDirect(TASK_1, tuple);
             mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    Utils.DEFAULT_STREAM_ID, INPUT_STREAMLINE_EVENT); times = 1;
+                    Utils.DEFAULT_STREAM_ID, TEST_TARGET_COMPONENT_FOR_TASK_1, INPUT_STREAMLINE_EVENT); times = 1;
         }};
 
         // int taskId, String streamId, List<Object> tuple, Object messageId
         new Expectations() {{
-            mockedOutputCollector.emitDirect(testTaskId, testStreamId, tuple, messageId);
-            result = expectedTasks;
+            mockedOutputCollector.emitDirect(TASK_1, testStreamId, tuple, messageId);
         }};
 
-        sut.emitDirect(testTaskId, testStreamId, tuple, messageId);
+        sut.emitDirect(TASK_1, testStreamId, tuple, messageId);
 
         new Verifications() {{
-            mockedOutputCollector.emitDirect(testTaskId, testStreamId, tuple, messageId);
+            mockedOutputCollector.emitDirect(TASK_1, testStreamId, tuple, messageId);
             mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    testStreamId, INPUT_STREAMLINE_EVENT); times = 1;
+                    testStreamId, TEST_TARGET_COMPONENT_FOR_TASK_1, INPUT_STREAMLINE_EVENT); times = 1;
         }};
 
         // int taskId, List<Object> tuple, Object messageId
         new Expectations() {{
-            mockedOutputCollector.emitDirect(testTaskId, tuple, messageId);
-            result = expectedTasks;
+            mockedOutputCollector.emitDirect(TASK_1, tuple, messageId);
         }};
 
-        sut.emitDirect(testTaskId, tuple, messageId);
+        sut.emitDirect(TASK_1, tuple, messageId);
 
         new Verifications() {{
-            mockedOutputCollector.emitDirect(testTaskId, tuple, messageId);
+            mockedOutputCollector.emitDirect(TASK_1, tuple, messageId);
             mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    Utils.DEFAULT_STREAM_ID, INPUT_STREAMLINE_EVENT); times = 1;
+                    Utils.DEFAULT_STREAM_ID, TEST_TARGET_COMPONENT_FOR_TASK_1, INPUT_STREAMLINE_EVENT); times = 1;
         }};
     }
 
     @Test
     public void reportError() throws Exception {
+        setupExpectationsForTopologyContextNoEmit();
+        sut = new EventLoggingSpoutOutputCollector(mockedTopologyContext, mockedOutputCollector, mockedEventLogger);
+
         Throwable throwable = new RuntimeException("error");
         sut.reportError(throwable);
 
@@ -201,6 +224,9 @@ public class EventLoggingSpoutOutputCollectorTest {
 
     @Test
     public void getPendingCount() throws Exception {
+        setupExpectationsForTopologyContextNoEmit();
+        sut = new EventLoggingSpoutOutputCollector(mockedTopologyContext, mockedOutputCollector, mockedEventLogger);
+
         sut.getPendingCount();
 
         new Verifications() {{
@@ -208,4 +234,32 @@ public class EventLoggingSpoutOutputCollectorTest {
         }};
     }
 
+    private void setupExpectationsForTopologyContextEmit() {
+        new Expectations() {{
+            mockedTopologyContext.getComponentId(TASK_1);
+            result = TEST_TARGET_COMPONENT_FOR_TASK_1_FOR_STORM;
+            mockedTopologyContext.getComponentId(TASK_2);
+            result = TEST_TARGET_COMPONENT_FOR_TASK_2_FOR_STORM;
+
+            mockedTopologyContext.getThisComponentId();
+            result = TEST_COMPONENT_NAME_FOR_STORM;
+        }};
+    }
+
+    private void setupExpectationsForTopologyContextEmitDirect() {
+        new Expectations() {{
+            mockedTopologyContext.getComponentId(TASK_1);
+            result = TEST_TARGET_COMPONENT_FOR_TASK_1_FOR_STORM;
+
+            mockedTopologyContext.getThisComponentId();
+            result = TEST_COMPONENT_NAME_FOR_STORM;
+        }};
+    }
+
+    private void setupExpectationsForTopologyContextNoEmit() {
+        new Expectations() {{
+            mockedTopologyContext.getThisComponentId();
+            result = TEST_COMPONENT_NAME_FOR_STORM;
+        }};
+    }
 }
