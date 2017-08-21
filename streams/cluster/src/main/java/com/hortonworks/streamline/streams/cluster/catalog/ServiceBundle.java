@@ -13,17 +13,17 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
  **/
-package com.hortonworks.streamline.streams.catalog.cluster;
+package com.hortonworks.streamline.streams.cluster.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.registries.common.Schema;
+import com.hortonworks.streamline.common.ComponentUISpecification;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.storage.annotation.StorableEntity;
-import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentUISpecification;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -59,7 +59,7 @@ public class ServiceBundle implements Storable {
     /**
      * Object that will be used by ui to elicit values from user for registering this service
      */
-    private TopologyComponentUISpecification serviceUISpecification;
+    private ComponentUISpecification serviceUISpecification;
 
     /**
      * A fully qualified class name that can help registering the service.
@@ -122,7 +122,7 @@ public class ServiceBundle implements Storable {
         name = (String)  map.get(NAME);
         timestamp = (Long) map.get(TIMESTAMP);
         try {
-            serviceUISpecification = mapper.readValue((String) map.get(UI_SPECIFICATION), TopologyComponentUISpecification.class);
+            serviceUISpecification = mapper.readValue((String) map.get(UI_SPECIFICATION), ComponentUISpecification.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -154,11 +154,11 @@ public class ServiceBundle implements Storable {
         this.timestamp = timestamp;
     }
 
-    public TopologyComponentUISpecification getServiceUISpecification() {
+    public ComponentUISpecification getServiceUISpecification() {
         return serviceUISpecification;
     }
 
-    public void setServiceUISpecification(TopologyComponentUISpecification serviceUISpecification) {
+    public void setServiceUISpecification(ComponentUISpecification serviceUISpecification) {
         this.serviceUISpecification = serviceUISpecification;
     }
 

@@ -13,22 +13,23 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
  **/
-package com.hortonworks.streamline.streams.catalog.exception;
+package com.hortonworks.streamline.streams.cluster.exception;
 
-public class ServiceNotFoundException extends EntityNotFoundException {
-    public ServiceNotFoundException(String message) {
+
+/**
+ * Wraps Curator Framework exceptions. It is useful to do this because several Curator Framework methods throw the generic
+ * {@link Exception}, which makes it impossible to handle more specific exceptions in code that calls these methods.
+ */
+public class ZookeeperClientException extends Exception {
+    public ZookeeperClientException(String message) {
         super(message);
     }
 
-    public ServiceNotFoundException(String message, Throwable cause) {
+    public ZookeeperClientException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public ServiceNotFoundException(Throwable cause) {
+    public ZookeeperClientException(Throwable cause) {
         super(cause);
-    }
-
-    public ServiceNotFoundException(Long clusterId, String serviceName) {
-        this("Service [" + serviceName + "] not found in cluster with id [" + clusterId + "]");
     }
 }

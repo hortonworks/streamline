@@ -17,7 +17,7 @@ package com.hortonworks.streamline.streams.metrics.storm.graphite;
 
 import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.JsonClientUtil;
-import com.hortonworks.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.common.exception.ConfigException;
 import com.hortonworks.streamline.streams.metrics.AbstractTimeSeriesQuerier;
 import org.apache.commons.lang.BooleanUtils;
 import org.glassfish.jersey.client.ClientConfig;
@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.MediaType;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;

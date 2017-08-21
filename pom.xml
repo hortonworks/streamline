@@ -74,7 +74,7 @@
         <maven-surefire.version>2.18.1</maven-surefire.version>
 
         <!-- This should match the version in streamline-findbugs module -->
-        <streamline-findbugs.version>0.1</streamline-findbugs.version>
+        <streamline-findbugs.version>0.2</streamline-findbugs.version>
     </properties>
 
     <distributionManagement>

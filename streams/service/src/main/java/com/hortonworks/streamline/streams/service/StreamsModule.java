@@ -29,6 +29,11 @@ import com.hortonworks.streamline.streams.actions.topology.service.TopologyActio
 import com.hortonworks.streamline.streams.catalog.TopologyVersion;
 import com.hortonworks.streamline.streams.catalog.service.CatalogService;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.cluster.resource.ClusterCatalogResource;
+import com.hortonworks.streamline.streams.cluster.resource.ComponentCatalogResource;
+import com.hortonworks.streamline.streams.cluster.resource.ServiceBundleResource;
+import com.hortonworks.streamline.streams.cluster.resource.ServiceCatalogResource;
+import com.hortonworks.streamline.streams.cluster.resource.ServiceConfigurationCatalogResource;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.metrics.topology.service.TopologyMetricsService;
 import com.hortonworks.streamline.streams.notification.service.NotificationServiceImpl;

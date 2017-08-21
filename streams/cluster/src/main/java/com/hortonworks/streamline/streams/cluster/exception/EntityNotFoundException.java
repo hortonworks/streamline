@@ -13,16 +13,18 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
  **/
-package com.hortonworks.streamline.streams.exception;
+package com.hortonworks.streamline.streams.cluster.exception;
 
-/**
- * Exception class representing a malformed configuration.
- */
-public class ConfigException extends Exception {
+public class EntityNotFoundException extends Exception {
+    public EntityNotFoundException(String message) {
+        super(message);
+    }
 
-    public ConfigException (String message) { super(message); }
+    public EntityNotFoundException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-    public ConfigException (Throwable cause) { super(cause); }
-
-    public ConfigException (String message, Throwable cause) { super(message, cause); }
+    public EntityNotFoundException(Throwable cause) {
+        super(cause);
+    }
 }

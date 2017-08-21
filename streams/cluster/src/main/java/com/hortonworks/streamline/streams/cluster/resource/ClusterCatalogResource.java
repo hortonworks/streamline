@@ -13,7 +13,7 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
  **/
-package com.hortonworks.streamline.streams.service;
+package com.hortonworks.streamline.streams.cluster.resource;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,12 +24,12 @@ import com.hortonworks.streamline.common.exception.service.exception.request.Clu
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityAlreadyExistsException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
-import com.hortonworks.streamline.streams.catalog.Cluster;
-import com.hortonworks.streamline.streams.catalog.Component;
-import com.hortonworks.streamline.streams.catalog.Namespace;
-import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
-import com.hortonworks.streamline.streams.catalog.Service;
-import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
+import com.hortonworks.streamline.streams.cluster.catalog.Component;
+import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
+import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMapping;
+import com.hortonworks.streamline.streams.cluster.catalog.Service;
+import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.AmbariServiceNodeDiscoverer;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
@@ -70,7 +70,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.hortonworks.streamline.streams.catalog.Cluster.NAMESPACE;
+import static com.hortonworks.streamline.streams.cluster.catalog.Cluster.NAMESPACE;
 import static com.hortonworks.streamline.streams.security.Permission.DELETE;
 import static com.hortonworks.streamline.streams.security.Permission.EXECUTE;
 import static com.hortonworks.streamline.streams.security.Permission.READ;
@@ -283,8 +283,8 @@ public class ClusterCatalogResource {
 
             injectStormViewAsStormConfiguration(clusterId, discoverer);
 
-            CatalogResourceUtil.ClusterServicesImportResult result =
-                    CatalogResourceUtil.enrichCluster(retrievedCluster, environmentService);
+            ClusterResourceUtil.ClusterServicesImportResult result =
+                    ClusterResourceUtil.enrichCluster(retrievedCluster, environmentService);
             return WSUtils.respondEntity(result, OK);
         } finally {
             if (acquired) {
@@ -297,8 +297,8 @@ public class ClusterCatalogResource {
 
     private Response buildClustersGetResponse(Collection<Cluster> clusters, Boolean detail) {
         if (BooleanUtils.isTrue(detail)) {
-            List<CatalogResourceUtil.ClusterServicesImportResult> clustersWithServices = clusters.stream()
-                    .map(c -> CatalogResourceUtil.enrichCluster(c, environmentService))
+            List<ClusterResourceUtil.ClusterServicesImportResult> clustersWithServices = clusters.stream()
+                    .map(c -> ClusterResourceUtil.enrichCluster(c, environmentService))
                     .collect(Collectors.toList());
             return WSUtils.respondEntities(clustersWithServices, OK);
         } else {
@@ -308,8 +308,8 @@ public class ClusterCatalogResource {
 
     private Response buildClusterGetResponse(Cluster cluster, Boolean detail) {
         if (BooleanUtils.isTrue(detail)) {
-            CatalogResourceUtil.ClusterServicesImportResult clusterWithServices =
-                    CatalogResourceUtil.enrichCluster(cluster, environmentService);
+            ClusterResourceUtil.ClusterServicesImportResult clusterWithServices =
+                    ClusterResourceUtil.enrichCluster(cluster, environmentService);
             return WSUtils.respondEntity(clusterWithServices, OK);
         } else {
             return WSUtils.respondEntity(cluster, OK);

@@ -19,7 +19,7 @@ import com.google.common.collect.ImmutableList;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.HBaseNamespaces;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.Tables;

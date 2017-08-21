@@ -2,7 +2,7 @@ package com.hortonworks.streamline.streams.cluster.service.metadata.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.hortonworks.streamline.streams.catalog.ComponentProcess;
+import com.hortonworks.streamline.streams.cluster.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.HostPort;
 
 import java.io.IOException;
@@ -11,7 +11,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 

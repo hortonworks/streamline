@@ -13,12 +13,12 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
  **/
-package com.hortonworks.streamline.streams.catalog.topology;
+package com.hortonworks.streamline.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.streamline.streams.layout.exception.ComponentConfigException;
+import com.hortonworks.streamline.common.exception.ComponentConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +35,7 @@ import java.util.Set;
  * also supports use cases where simple key value fields for a component did not suffice. For example, if a user wants to be able to pick one of the two
  * implementations for an interface like RotationPolicy for Hdfs sink, then they will be able to do so. An example json for this spec is at
  * http://www.jsoneditoronline.org/?id=801391b34161aef0cde43860504712a5  It supports basic types in json like boolean, number, string. It also supports json
- * that UI will use to recurse. At top level the spec is just a list of {@link TopologyComponentUISpecification.UIField}
+ * that UI will use to recurse. At top level the spec is just a list of {@link ComponentUISpecification.UIField}
  * For all the basic types (string, boolean and number), the fields property is null. For object type, fields is mandatory to specify the fields in the object
  * in a recursive way. The options property is mandatory for all types that are enum. The default value applies to all basic types and enum types.
  * Below are the different types and their explanations
@@ -56,8 +56,8 @@ import java.util.Set;
  * array.enumobject | array of objects where each element in array is one of the options provided for this type
  * file             | if the component wants file upload.
  */
-public class TopologyComponentUISpecification {
-    private static final Logger LOG = LoggerFactory.getLogger(TopologyComponentUISpecification.class);
+public class ComponentUISpecification {
+    private static final Logger LOG = LoggerFactory.getLogger(ComponentUISpecification.class);
     private static final String NOT_APPLICABLE_PROPERTY = "%s property for %s of type %s is not applicable";
     private static final String DEFAULT_VALUE_TYPE = "expected type for defaultValue for field %s of type %s is %s actual type %s";
     private static final String PROPERTY_REQUIRED = "property %s required for field %s of type %s";
@@ -334,14 +334,15 @@ public class TopologyComponentUISpecification {
             }
             if (type.equals(UIFieldType.ENUMSTRING) || type.equals(UIFieldType.ARRAYENUMSTRING)) {
                 // options are mandatory for enum types
-                if (options == null) {
-                    logAndThrowException(String.format(PROPERTY_REQUIRED, OPTIONS, fieldName, type));
-                }
-                for (Object option: options) {
-                    if (!(option instanceof String)) {
-                        logAndThrowException(String.format("option value for field %s should be a String. Actual received: %s", fieldName, option.getClass()
-                                .getCanonicalName()));
+                if (options != null) {
+                    for (Object option : options) {
+                        if (!(option instanceof String)) {
+                            logAndThrowException(String.format("option value for field %s should be a String. Actual received: %s", fieldName, option.getClass()
+                                    .getCanonicalName()));
+                        }
                     }
+                } else {
+                    logAndThrowException(String.format(PROPERTY_REQUIRED, OPTIONS, fieldName, type));
                 }
             } else if (options != null) {
                 logAndThrowException(String.format(NOT_APPLICABLE_PROPERTY, OPTIONS, fieldName, type));
@@ -411,18 +412,19 @@ public class TopologyComponentUISpecification {
                     logAndThrowException(String.format(NOT_APPLICABLE_PROPERTY, OPTIONS, fieldName, type));
                 }
                 //fields are mandatory for object type to recurse
-                if (fields == null || fields.isEmpty()) {
-                    logAndThrowException(String.format(PROPERTY_REQUIRED, FIELDS, fieldName, type));
-                }
-                Set<String> fieldNames = new HashSet<>();
-                for (UIField uiField: fields) {
-                    //fieldNames at a level need to be unique
-                    if (fieldNames.contains(uiField.fieldName)) {
-                        logAndThrowException("fieldName " + uiField.fieldName + " is repeated. Expected to be unique.");
+                if (fields != null && !fields.isEmpty()) {
+                    Set<String> fieldNames = new HashSet<>();
+                    for (UIField uiField : fields) {
+                        //fieldNames at a level need to be unique
+                        if (fieldNames.contains(uiField.fieldName)) {
+                            logAndThrowException("fieldName " + uiField.fieldName + " is repeated. Expected to be unique.");
+                        }
+                        fieldNames.add(uiField.fieldName);
+                        // recursively validate a field of an object. Could be a basic type like string, number, boolean or an object again
+                        uiField.validate();
                     }
-                    fieldNames.add(uiField.fieldName);
-                    // recursively validate a field of an object. Could be a basic type like string, number, boolean or an object again
-                    uiField.validate();
+                } else {
+                    logAndThrowException(String.format(PROPERTY_REQUIRED, FIELDS, fieldName, type));
                 }
             } else {
                 //for enum objects, fields are not applicable
@@ -430,25 +432,26 @@ public class TopologyComponentUISpecification {
                     logAndThrowException(String.format(NOT_APPLICABLE_PROPERTY, FIELDS, fieldName, type));
                 }
                 //options are mandatory for enum objects to tell UI how to display fields for a particular option. Each option has to be an object field here
-                if (options == null || options.isEmpty()) {
-                    logAndThrowException(String.format(PROPERTY_REQUIRED, OPTIONS, fieldName, type));
-                }
                 Set<String> optionKeys = new HashSet<>();
-                ObjectMapper objectMapper = new ObjectMapper();
-                for (Object option: options) {
-                    try {
-                        //deserialize each option in to a UIField and make sure it is of type object
-                        UIField optionObject = objectMapper.readValue(objectMapper.writeValueAsString(option), UIField.class);
-                        optionKeys.add(optionObject.fieldName);
-                        if (!UIFieldType.OBJECT.equals(optionObject.type)) {
-                            logAndThrowException(String.format("option %s for field %s of type %s is expected to be of type %s Actual: %s", optionObject,
-                                    fieldName, type, UIFieldType.OBJECT, optionObject.type));
+                if (options != null && !options.isEmpty()) {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    for (Object option: options) {
+                        try {
+                            //deserialize each option in to a UIField and make sure it is of type object
+                            UIField optionObject = objectMapper.readValue(objectMapper.writeValueAsString(option), UIField.class);
+                            optionKeys.add(optionObject.fieldName);
+                            if (!UIFieldType.OBJECT.equals(optionObject.type)) {
+                                logAndThrowException(String.format("option %s for field %s of type %s is expected to be of type %s Actual: %s", optionObject,
+                                        fieldName, type, UIFieldType.OBJECT, optionObject.type));
+                            }
+                            //recursively validate each option which is again a UIField of type object
+                            optionObject.validate();
+                        } catch (IOException e) {
+                            logAndThrowException(String.format("Error while parsing option object %s for field %s of type %s ", option, fieldName, type));
                         }
-                        //recursively validate each option which is again a UIField of type object
-                        optionObject.validate();
-                    } catch (IOException e) {
-                        logAndThrowException(String.format("Error while parsing option object %s for field %s of type %s ", option, fieldName, type));
                     }
+                } else {
+                    logAndThrowException(String.format(PROPERTY_REQUIRED, OPTIONS, fieldName, type));
                 }
                 if (defaultValue != null) {
                     //defaultValue not supported for array types and has to be one of the options for enum
@@ -486,7 +489,7 @@ public class TopologyComponentUISpecification {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        TopologyComponentUISpecification that = (TopologyComponentUISpecification) o;
+        ComponentUISpecification that = (ComponentUISpecification) o;
 
         return !(fields != null ? !fields.equals(that.fields) : that.fields != null);
 

@@ -16,13 +16,13 @@
 package com.hortonworks.streamline.streams.cluster.service.metadata;
 
 
-import com.hortonworks.streamline.streams.catalog.Component;
-import com.hortonworks.streamline.streams.catalog.ComponentProcess;
-import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
-import com.hortonworks.streamline.streams.catalog.exception.ServiceComponentNotFoundException;
-import com.hortonworks.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
-import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
-import com.hortonworks.streamline.streams.catalog.exception.ZookeeperClientException;
+import com.hortonworks.streamline.streams.cluster.catalog.Component;
+import com.hortonworks.streamline.streams.cluster.catalog.ComponentProcess;
+import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.exception.ServiceComponentNotFoundException;
+import com.hortonworks.streamline.streams.cluster.exception.ServiceConfigurationNotFoundException;
+import com.hortonworks.streamline.streams.cluster.exception.ServiceNotFoundException;
+import com.hortonworks.streamline.streams.cluster.exception.ZookeeperClientException;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;

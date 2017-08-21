@@ -13,23 +13,22 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
  **/
-package com.hortonworks.streamline.streams.catalog.exception;
-
+package com.hortonworks.streamline.common.exception;
 
 /**
- * Wraps Curator Framework exceptions. It is useful to do this because several Curator Framework methods throw the generic
- * {@link Exception}, which makes it impossible to handle more specific exceptions in code that calls these methods.
+ * Indicates an issue while trying to validate a json for a topology layout.
  */
-public class ZookeeperClientException extends Exception {
-    public ZookeeperClientException(String message) {
+public class ComponentConfigException extends Exception {
+
+    public ComponentConfigException(String message) {
         super(message);
     }
 
-    public ZookeeperClientException(String message, Throwable cause) {
+    public ComponentConfigException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public ZookeeperClientException(Throwable cause) {
+    public ComponentConfigException(Throwable cause) {
         super(cause);
     }
 }

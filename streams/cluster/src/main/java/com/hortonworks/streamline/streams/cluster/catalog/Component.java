@@ -13,21 +13,15 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
  **/
-package com.hortonworks.streamline.streams.catalog;
+package com.hortonworks.streamline.streams.cluster.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.storage.annotation.StorableEntity;
-import org.apache.commons.lang3.StringUtils;
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.storage.PrimaryKey;
-import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
 
-import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**

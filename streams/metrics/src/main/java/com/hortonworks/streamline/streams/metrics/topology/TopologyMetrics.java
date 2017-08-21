@@ -15,7 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.metrics.topology;
 
-import com.hortonworks.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.common.exception.ConfigException;
 import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 
 import java.util.Map;

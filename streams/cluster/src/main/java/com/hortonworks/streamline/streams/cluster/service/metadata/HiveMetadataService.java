@@ -18,11 +18,11 @@ package com.hortonworks.streamline.streams.cluster.service.metadata;
 import com.google.common.collect.Lists;
 
 import com.hortonworks.streamline.common.function.SupplierException;
-import com.hortonworks.streamline.streams.catalog.Component;
-import com.hortonworks.streamline.streams.catalog.ComponentProcess;
-import com.hortonworks.streamline.streams.catalog.exception.EntityNotFoundException;
-import com.hortonworks.streamline.streams.catalog.exception.ServiceComponentNotFoundException;
-import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
+import com.hortonworks.streamline.streams.cluster.catalog.Component;
+import com.hortonworks.streamline.streams.cluster.catalog.ComponentProcess;
+import com.hortonworks.streamline.streams.cluster.exception.EntityNotFoundException;
+import com.hortonworks.streamline.streams.cluster.exception.ServiceComponentNotFoundException;
+import com.hortonworks.streamline.streams.cluster.exception.ServiceNotFoundException;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
