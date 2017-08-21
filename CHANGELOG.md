@@ -1,4 +1,5 @@
 ## 0.4
+ * ISSUE-872     : Fix bugs on feature to 'Test topology run' for integration test
  * ISSUE-785     : Revisit manual service registerer
  * ISSUE-860     : Add timeout option to topology test run
  * ISSUE-863     : Expose serdes.protocol.version property to user in kafka sink
