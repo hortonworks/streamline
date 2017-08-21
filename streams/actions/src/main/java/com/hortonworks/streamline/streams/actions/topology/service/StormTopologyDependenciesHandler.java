@@ -65,8 +65,15 @@ public class StormTopologyDependenciesHandler extends TopologyDagVisitor {
         Set<UDF> udfsToShip = new HashSet<>();
         for (Rule rule : rulesProcessor.getRules()) {
             for (Udf udf : rule.getReferredUdfs()) {
-                List<QueryParam> qps = QueryParam.params(UDF.NAME, udf.getName(), UDF.CLASSNAME, udf.getClassName(),
-                        UDF.TYPE, udf.getType().toString());
+                List<QueryParam> qps = QueryParam.params(UDF.NAME, udf.getName());
+                // The null check for backward compatibility
+                if (udf.getClassName() != null) {
+                    qps.add(new QueryParam(UDF.CLASSNAME, udf.getClassName()));
+                }
+                // The null check for backward compatibility
+                if (udf.getType() != null) {
+                    qps.add(new QueryParam(UDF.TYPE, udf.getType().toString()));
+                }
                 Collection<UDF> udfs = catalogService.listUDFs(qps);
                 if (udfs.size() > 1) {
                     throw new IllegalStateException("Multiple UDF definitions for :" + udf);

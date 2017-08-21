@@ -47,51 +47,41 @@ do
     CLASSPATH="$CLASSPATH":"$file"
 done
 
-echo "Using Configuration file: ${CONFIG_FILE_PATH}"
-
-function dropTables {
-    ${JAVA} -Dbootstrap.dir=$BOOTSTRAP_DIR  -cp ${CLASSPATH} ${TABLE_INITIALIZER_MAIN_CLASS} -m ${MYSQL_JAR_URL_PATH} -c ${CONFIG_FILE_PATH} -s ${SCRIPT_ROOT_DIR} --drop
-}
-
-function createTables {
-    ${JAVA} -Dbootstrap.dir=$BOOTSTRAP_DIR  -cp ${CLASSPATH} ${TABLE_INITIALIZER_MAIN_CLASS} -m ${MYSQL_JAR_URL_PATH} -c ${CONFIG_FILE_PATH} -s ${SCRIPT_ROOT_DIR} --create
-}
-
-function checkStorageConnection {
-    ${JAVA} -Dbootstrap.dir=$BOOTSTRAP_DIR  -cp ${CLASSPATH} ${TABLE_INITIALIZER_MAIN_CLASS} -m ${MYSQL_JAR_URL_PATH} -c ${CONFIG_FILE_PATH} -s ${SCRIPT_ROOT_DIR} --check-connection
+function execute {
+    echo "Using Configuration file: ${CONFIG_FILE_PATH}"
+    ${JAVA} -Dbootstrap.dir=$BOOTSTRAP_DIR  -cp ${CLASSPATH} ${TABLE_INITIALIZER_MAIN_CLASS} -m ${MYSQL_JAR_URL_PATH} -c ${CONFIG_FILE_PATH} -s ${SCRIPT_ROOT_DIR} --${1}
 }
 
 function printUsage {
-    echo "USAGE: $0 [create|drop|check-connection|drop-create]"
+    cat <<-EOF
+USAGE: $0 [create|migrate|info|validate|drop|drop-create|repair|check-connection]
+   create           : Creates the tables. The target database should be empty
+   migrate          : Migrates the database to the latest version. The target database should not be empty. Use "info" to see the current version and the pending migrations
+   info             : Shows the list of migrations applied and the pending migration waiting to be applied on the target database
+   validate         : Checks if the all the migrations haven been applied on the target database
+   drop             : Drops all the tables in the target database
+   drop-create      : Drops and recreates all the tables in the target database.
+   repair           : Repairs the DATABASE_CHANGE_LOG table which is used to track all the migrations on the target database.
+                      This involves removing entries for the failed migrations and update the checksum of migrations already applied on the target databsase.
+   check-connection : Checks if a connection can be sucessfully obtained for the target database
+EOF
 }
 
-opt="create"
-
-if [ $# -gt 0 ]
+if [ $# -gt 1 ]
 then
-    opt="$1"
+    echo "More than one argument specified, please use only one of the below options"
+    printUsage
+    exit 1
 fi
 
+opt="$1"
+
 case "${opt}" in
-create)
-    createTables
+create | drop | migrate | info | validate | repair | check-connection )
+    execute "${opt}"
     ;;
-drop)
-    dropTables
-    ;;
-drop-create)
-    dropTables && createTables
-    ;;
-check-connection)
-    checkStorageConnection
-    if [ $? == 0 ]
-    then
-        echo "Connection check succeed."
-        exit 0
-    else
-        echo "Connection check failed."
-        exit 2
-    fi
+drop-create )
+    execute "drop" && execute "create"
     ;;
 *)
     printUsage
