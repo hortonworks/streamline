@@ -25,12 +25,10 @@ import org.apache.storm.windowing.TupleWindow;
 import java.util.Map;
 
 public class TestRunWindowProcessorBolt extends BaseWindowedBolt {
-    private final String componentName;
     private final BaseWindowedBolt processorBolt;
     private final String eventLogFilePath;
 
-    public TestRunWindowProcessorBolt(String componentName, BaseWindowedBolt processorBolt, String eventLogFilePath) {
-        this.componentName = componentName;
+    public TestRunWindowProcessorBolt(BaseWindowedBolt processorBolt, String eventLogFilePath) {
         this.processorBolt = processorBolt;
         this.eventLogFilePath = eventLogFilePath;
     }
@@ -42,7 +40,7 @@ public class TestRunWindowProcessorBolt extends BaseWindowedBolt {
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
-        EventLoggingOutputCollector outputCollector = new EventLoggingOutputCollector(collector, componentName,
+        EventLoggingOutputCollector outputCollector = new EventLoggingOutputCollector(context, collector,
                 TestRunEventLogger.getEventLogger(eventLogFilePath));
         processorBolt.prepare(stormConf, context, outputCollector);
     }

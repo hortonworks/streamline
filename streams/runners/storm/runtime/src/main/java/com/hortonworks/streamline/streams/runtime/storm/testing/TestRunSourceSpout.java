@@ -71,7 +71,7 @@ public class TestRunSourceSpout extends BaseRichSpout {
             throw new RuntimeException("testRunSource cannot be null");
         }
 
-        this.collector = new EventLoggingSpoutOutputCollector(collector, testRunSource.getName(),
+        this.collector = new EventLoggingSpoutOutputCollector(context, collector,
                 TestRunEventLogger.getEventLogger(testRunSource.getEventLogFilePath()));
     }
 

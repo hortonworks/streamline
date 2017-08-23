@@ -25,20 +25,18 @@ import org.apache.storm.tuple.Tuple;
 import java.util.Map;
 
 public class TestRunProcessorBolt extends BaseRichBolt {
-    private final String componentName;
     private final BaseRichBolt processorBolt;
     private final String eventLogFilePath;
 
-    public TestRunProcessorBolt(String componentName, BaseRichBolt processorBolt, String eventLogFilePath) {
-        this.componentName = componentName;
+    public TestRunProcessorBolt(BaseRichBolt processorBolt, String eventLogFilePath) {
         this.processorBolt = processorBolt;
         this.eventLogFilePath = eventLogFilePath;
     }
 
     @Override
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
-        EventLoggingOutputCollector collector = new EventLoggingOutputCollector(outputCollector, componentName,
-                TestRunEventLogger.getEventLogger(eventLogFilePath));
+        EventLoggingOutputCollector collector = new EventLoggingOutputCollector(topologyContext,
+                outputCollector, TestRunEventLogger.getEventLogger(eventLogFilePath));
         processorBolt.prepare(map, topologyContext, collector);
     }
 

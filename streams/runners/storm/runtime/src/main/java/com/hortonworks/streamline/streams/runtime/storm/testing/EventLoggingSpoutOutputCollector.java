@@ -17,6 +17,7 @@
 package com.hortonworks.streamline.streams.runtime.storm.testing;
 
 import org.apache.storm.spout.SpoutOutputCollector;
+import org.apache.storm.task.TopologyContext;
 import org.apache.storm.utils.Utils;
 
 import java.util.List;
@@ -25,12 +26,13 @@ public class EventLoggingSpoutOutputCollector extends SpoutOutputCollector {
     private final SpoutOutputCollector delegate;
     private final OutputCollectorStreamlineEventLogger outputCollectorEventLogger;
 
-    public EventLoggingSpoutOutputCollector(SpoutOutputCollector delegate, String componentName, TestRunEventLogger eventLogger) {
+    public EventLoggingSpoutOutputCollector(TopologyContext topologyContext, SpoutOutputCollector delegate,
+                                            TestRunEventLogger eventLogger) {
         // we simply ignore the _delegate in SpoutOutputCollector and override all of the methods
         // this will work with subclass of SpoutOutputCollector since we only expose methods what we know about
         super(null);
         this.delegate = delegate;
-        this.outputCollectorEventLogger = new OutputCollectorStreamlineEventLogger(eventLogger, componentName);
+        this.outputCollectorEventLogger = new OutputCollectorStreamlineEventLogger(topologyContext, eventLogger);
     }
 
     @Override
@@ -55,22 +57,22 @@ public class EventLoggingSpoutOutputCollector extends SpoutOutputCollector {
 
     @Override
     public void emitDirect(int taskId, String streamId, List<Object> tuple) {
-        outputCollectorEventLogger.emitDirectWithLoggingEvent(streamId, tuple, t -> delegate.emitDirect(taskId, streamId, t));
+        outputCollectorEventLogger.emitDirectWithLoggingEvent(taskId, streamId, tuple, t -> delegate.emitDirect(taskId, streamId, t));
     }
 
     @Override
     public void emitDirect(int taskId, List<Object> tuple) {
-        outputCollectorEventLogger.emitDirectWithLoggingEvent(Utils.DEFAULT_STREAM_ID, tuple, t -> delegate.emitDirect(taskId, t));
+        outputCollectorEventLogger.emitDirectWithLoggingEvent(taskId, Utils.DEFAULT_STREAM_ID, tuple, t -> delegate.emitDirect(taskId, t));
     }
 
     @Override
     public void emitDirect(int taskId, String streamId, List<Object> tuple, Object messageId) {
-        outputCollectorEventLogger.emitDirectWithLoggingEvent(streamId, tuple, t -> delegate.emitDirect(taskId, streamId, t, messageId));
+        outputCollectorEventLogger.emitDirectWithLoggingEvent(taskId, streamId, tuple, t -> delegate.emitDirect(taskId, streamId, t, messageId));
     }
 
     @Override
     public void emitDirect(int taskId, List<Object> tuple, Object messageId) {
-        outputCollectorEventLogger.emitDirectWithLoggingEvent(Utils.DEFAULT_STREAM_ID, tuple, t -> delegate.emitDirect(taskId, t, messageId));
+        outputCollectorEventLogger.emitDirectWithLoggingEvent(taskId, Utils.DEFAULT_STREAM_ID, tuple, t -> delegate.emitDirect(taskId, t, messageId));
     }
 
     @Override

@@ -47,7 +47,6 @@ public class TestRunProcessorBoltFluxComponent extends AbstractFluxComponent {
         String underlyingBoltComponentId = addUnderlyingBoltComponent();
 
         List<Object> constructorArgs = new ArrayList<>();
-        constructorArgs.add(testRunProcessor.getName());
         constructorArgs.add(getRefYaml(underlyingBoltComponentId));
         constructorArgs.add(testRunProcessor.getEventLogFilePath());
         component = createComponent(boltId, boltClassName, null, constructorArgs, null);

@@ -59,11 +59,12 @@ public class TestRunEventLogger {
     // Writing event to file should be mutually exclusive.
     // We don't need to worry about performance since it's just for testing topology locally.
     public synchronized void writeEvent(long timestamp, EventType eventType, String componentName,
-                                        String streamId, StreamlineEvent event) {
+                                        String streamId, String targetComponentName, StreamlineEvent event) {
         try (FileWriter fw = new FileWriter(eventLogFilePath, true)) {
             LOG.debug("writing event to file " + eventLogFilePath);
 
-            EventInformation eventInfo = new EventInformation(timestamp, eventType, componentName, streamId, event);
+            EventInformation eventInfo = new EventInformation(timestamp, eventType, componentName, streamId,
+                    targetComponentName, event);
             fw.write(objectMapper.writeValueAsString(eventInfo) + "\n");
             fw.flush();
         } catch (FileNotFoundException e) {
@@ -84,13 +85,16 @@ public class TestRunEventLogger {
         private EventType eventType;
         private String componentName;
         private String streamId;
+        private String targetComponentName;
         private StreamlineEvent streamlineEvent;
 
-        public EventInformation(long timestamp, EventType eventType, String componentName, String streamId, StreamlineEvent streamlineEvent) {
+        public EventInformation(long timestamp, EventType eventType, String componentName, String streamId,
+                                String targetComponentName, StreamlineEvent streamlineEvent) {
             this.timestamp = timestamp;
             this.eventType = eventType;
             this.componentName = componentName;
             this.streamId = streamId;
+            this.targetComponentName = targetComponentName;
             this.streamlineEvent = streamlineEvent;
         }
 
@@ -108,6 +112,10 @@ public class TestRunEventLogger {
 
         public String getStreamId() {
             return streamId;
+        }
+
+        public String getTargetComponentName() {
+            return targetComponentName;
         }
 
         public StreamlineEvent getStreamlineEvent() {
