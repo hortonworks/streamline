@@ -40,6 +40,7 @@ limitations under the License.
 * Hugo da Cruz Louro ([@hlouro](https://twitter.com/hlouro))
 * Joylyn Rapose ([@joylyn](https://github.com/joylyn))
 * Sameer Shaikh ([@sameer79](https://github.com/sameer79))
+* Satish Waghela ([@satishwaghela](https://github.com/satishwaghela))
 * Mani Kumar reddy ([@omkreddy](https://twitter.com/omkreddy))
 * Sriharsha Chintalapani ([@d3fmacro](https://twitter.com/d3fmacro))
 

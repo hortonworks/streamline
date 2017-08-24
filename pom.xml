@@ -8,6 +8,121 @@
     <artifactId>streamline</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
+    <name>Streaming Analyitcs Manager</name>
+    <description>
+      Develop and deploy Streaming Analytics applications visually with bindings for streaming engine and multiple source/sinks, rich set of streaming operators and operational lifecycle management. Streaming Analytics Manager makes it easy to develop, monitor streaming applications and also provides analytics of data thats being processed by streaming application.
+    </description>
+    <url>http://github.com/hortonworks/registry</url>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+      <developer>
+            <id>arunmahadevan</id>
+            <name>Arun Iyer</name>
+            <email>aiyer@hortonworks.com</email>
+            <roles>
+                <role>Committer</role>
+            </roles>
+            <timezone>+5.5</timezone>
+      </developer>
+      <developer>
+            <id>HeartSaVioR</id>
+            <name>Jungtaek Lim</name>
+            <email>jlim@hortonworks.com</email>
+            <roles>
+                <role>Committer</role>
+            </roles>
+            <timezone>+9</timezone>
+        </developer>
+        <developer>
+            <id>priyank5485</id>
+            <name>Priyank Shah</name>
+            <email>pshah@hortonworks.com</email>
+            <roles>
+                <role>Committer</role>
+            </roles>
+            <timezone>-8</timezone>
+        </developer>
+        <developer>
+            <id>satishd</id>
+            <name>Satish Duggana</name>
+            <email>satishd@apache.org</email>
+            <roles>
+                <role>Committer</role>
+            </roles>
+            <timezone>+5.5</timezone>
+        </developer>
+        <developer>
+            <id>shahsank3t</id>
+            <name>Sanket Shah</name>
+            <email>sanket.shah@freestoneinfotech.com</email>
+            <roles>
+                <role>Committer</role>
+            </roles>
+            <timezone>+5.5</timezone>
+        </developer>
+        <developer>
+            <id>hmcl</id>
+            <name>Hugo da Cruz Louro</name>
+            <email>hmcl@hortonworks.com</email>
+            <roles>
+                <role>Committer</role>
+            </roles>
+            <timezone>-8</timezone>
+        </developer>
+        <developer>
+            <id>omkreddy</id>
+            <name>Mani Kumar Reddy</name>
+            <email>omkreddy@hortonworks.com</email>
+            <roles>
+                <role>Committer</role>
+            </roles>
+            <timezone>+5.5</timezone>
+        </developer>
+        <developer>
+            <id>joylyn</id>
+            <name>Joylyn Rapos</name>
+            <email>joylyn.rapose@freestoneinfotech.com</email>
+            <roles>
+                <role>Committer</role>
+            </roles>
+            <timezone>+5.5</timezone>
+        </developer>
+        <developer>
+            <id>sameer79</id>
+            <name>Sameer Shaikh</name>
+            <email>sameer.shaikh@freestoneinfotech.com</email>
+            <roles>
+                <role>Committer</role>
+            </roles>
+            <timezone>+5.5</timezone>
+        </developer>
+        <developer>
+            <id>satishwaghela</id>
+            <name>Satish Waghela</name>
+            <email>satish.waghela@freestoneinfotech.com</email>
+            <roles>
+                <role>Committer</role>
+            </roles>
+            <timezone>+5.5</timezone>
+        </developer>
+        <developer>
+            <id>harshach</id>
+            <name>Sriharsha Chintalapani</name>
+            <email>sriharsha@apache.org</email>
+            <roles>
+                <role>Committer</role>
+            </roles>
+            <timezone>-8</timezone>
+        </developer>
+    </developers>
+
 
     <modules>
         <module>streamline-findbugs</module>
