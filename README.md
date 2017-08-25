@@ -35,7 +35,7 @@ limitations under the License.
 * Priyank Shah ([@priyank5485](https://twitter.com/priyank5485))
 * Jungtaek Lim ([@heartsavior](https://twitter.com/heartsavior))
 * Sanket Shah ([@ShahSank3t](https://twitter.com/ShahSank3t))
-* Satish Duggana ([@0xfeed](https://twitter.com/0xeed))
+* Satish Duggana ([@0xeed](https://twitter.com/0xeed))
 * Roshan Naik ([@naikrosh](https://twitter.com/naikrosh))
 * Hugo da Cruz Louro ([@hlouro](https://twitter.com/hlouro))
 * Joylyn Rapose ([@joylyn](https://github.com/joylyn))
