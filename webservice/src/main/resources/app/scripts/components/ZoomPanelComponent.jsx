@@ -56,24 +56,24 @@ class  ZoomPanelComponent extends Component {
               </span>
             </span>
           </span>
-          <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip"> Zoom In </Tooltip>}>
+          <OverlayTrigger placement="top" overlay={<Tooltip id ="tooltip"> Zoom In </Tooltip>}>
             <a href="javascript:void(0);" className="zoom-in" onClick={zoomInAction}>
               <i className="fa fa-search-plus"></i>
             </a>
           </OverlayTrigger>
-          <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip"> Zoom Out </Tooltip>}>
+          <OverlayTrigger placement="top" overlay={<Tooltip id ="tooltip"> Zoom Out </Tooltip>}>
             <a href="javascript:void(0);" className="zoom-out" onClick={zoomOutAction}>
               <i className="fa fa-search-minus"></i>
             </a>
           </OverlayTrigger>
-          <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip"> Configure </Tooltip>}>
+          <OverlayTrigger placement="top" overlay={<Tooltip id ="tooltip"> Configure </Tooltip>}>
             <a href="javascript:void(0);" className="config" onClick={showConfig}>
               <i className="fa fa-gear"></i>
             </a>
           </OverlayTrigger>
           {
             testCompleted && testRunActivated
-            ? <OverlayTrigger placement="top" overlay={<Tooltip id = "tooltip"> Event Log </Tooltip>}>
+            ? <OverlayTrigger placement="top" overlay={<Tooltip id ="tooltip"> Event Log </Tooltip>}>
                 <a href="javascript:void(0);" className="config" onClick={handleEventLogHide.bind(this,true,'panel')}>
                   <i className="fa fa-flask"></i>
                 </a>

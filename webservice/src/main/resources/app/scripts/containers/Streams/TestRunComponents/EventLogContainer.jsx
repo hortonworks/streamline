@@ -64,6 +64,7 @@ class EventLogContainer extends Component{
   }
 
   hideEventLog = () => {
+    event.stopPropagation();
     this.props.handleEventLogHide(true);
   }
 

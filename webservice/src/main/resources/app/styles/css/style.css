@@ -3005,6 +3005,7 @@ ul.sourceList li > img {
 }
 ul.sourceList li > div {
   display: inline-block;
+  width: 80%;
 }
 ul.sourceList li > div h3{
   font-size: 15px;
@@ -3477,4 +3478,13 @@ a.crossIcon{
 }
 .list > h4{
   margin-bottom: 1px;
+}
+.eventLogTooltip:after{
+  display: none;
+}
+.sourceTestCap{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
 }

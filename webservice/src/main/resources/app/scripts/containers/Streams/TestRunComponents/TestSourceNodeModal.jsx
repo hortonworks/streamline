@@ -63,7 +63,7 @@ class TestSourceNodeModal extends Component{
       streamObj :{},
       activeTabKey:1,
       entity : {},
-      repeatTime : 0,
+      repeatTime : 1,
       showInputError : false,
       sourceNodeArr : [],
       sourceIndex : 0
@@ -120,6 +120,7 @@ class TestSourceNodeModal extends Component{
         });
         stateObj.sourceNodeArr[i].nodeId = result.id;
         stateObj.sourceNodeArr[i].streamObj = result.outputStreams[0];
+        stateObj.sourceNodeArr[i].repeatTime = this.state.repeatTime;
       });
 
       if(testPromiseArr.length){
@@ -179,7 +180,7 @@ class TestSourceNodeModal extends Component{
     const {showInputError,sourceNodeArr, testName} = this.state;
     let validate = false,validationArr = [];
     _.map(sourceNodeArr, (source,i) => {
-      if(source.records === '' || source.repeatTime === '' || source.repeatTime === undefined || source.records === undefined || testName === ''){
+      if(source.records === '' || !!source.repeatTime || source.records === undefined || testName === ''){
         validationArr.push(false);
       }
     });
@@ -380,7 +381,7 @@ class TestSourceNodeModal extends Component{
               return <li key={source.nodeId} className={tempNodeId === source.nodeId ? "active" : ''} onClick={this.sourceNodeClick.bind(this,source,i)}>
                 <img src={source.imageURL} alt={source.nodeLabel} />
                 <div>
-                  <h3>Test-{source.uiname}</h3>
+                  <h3 title={`Test-${source.uiname}`} className="sourceTestCap">Test-{source.uiname}</h3>
                   <h5>{source.currentType}</h5>
                 </div>
               </li>;
@@ -459,10 +460,11 @@ class TestSourceNodeModal extends Component{
                           <div className="form-group">
                             <div className="col-md-12 row" >
                               <label>Repeat
+                                <span className="text-danger">*</span>
                               </label>
                             </div>
                             <div className="col-md-8 row">
-                                <input type="number" value={tempSourceArr[sourceIndex].repeatTime || ''} className="form-control" min={0} max={Number.MAX_SAFE_INTEGER} onChange={this.handleRepeatTime.bind(this)}/>
+                                <input type="number" value={tempSourceArr[sourceIndex].repeatTime} className={`form-control ${tempSourceArr[sourceIndex].repeatTime < 1 ? 'invalidInput' : ''}`} min={1} max={Number.MAX_SAFE_INTEGER} onChange={this.handleRepeatTime.bind(this)}/>
                             </div>
                             <div className="col-md-4 row" style={{lineHeight : "30px"}}>
                               <span>&nbsp;times</span>
