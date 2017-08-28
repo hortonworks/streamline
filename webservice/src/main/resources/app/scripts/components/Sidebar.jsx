@@ -92,7 +92,7 @@ export default class Sidebar extends Component {
   }
   render() {
     let config = app_state.streamline_config;
-    let registryURL = window.location.protocol + "//" + config.registry.host + ":" + config.registry.port + '/#/schema-registry';
+    let registryURL = window.location.protocol + "//" + config.registry.host + ":" + config.registry.port + '/ui/';
     return (
       <aside className="main-sidebar">
         <section className="sidebar">
