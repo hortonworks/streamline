@@ -16,11 +16,14 @@
 package com.hortonworks.streamline.common.util;
 
 import com.google.common.collect.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -29,9 +32,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class JarReader {
+    private static final Logger LOG = LoggerFactory.getLogger(JarReader.class);
 
     /**
-     * Extract all class names from Jar input stream
+     * Extract all class names from Jar input stream directory contents.
+     * These are fqdnNames, not canonicalNames, inner class names will still
+     * have '$' characters in them.
      *
      * @param inputStream input stream which contains Jar
      * @return list of class name
@@ -51,14 +57,15 @@ public class JarReader {
     }
 
     /**
-     * Find subtype of classes from file , and return their names
+     * Find concrete (instantiable) subtypes of a given superType from file,
+     * and return their reference Class objects.
      *
      * @param jarFile File object which points Jar file
-     * @param superTypeClass type of class which is
+     * @param superTypeClass type of class desired
      * @return list of classes
      * @throws IOException
      */
-    public static List<Class<?>> findSubtypeOfClasses(File jarFile, Class superTypeClass) throws IOException {
+    public static List<Class<?>> findConcreteSubtypesOfClass(File jarFile, Class superTypeClass) throws IOException {
         try (InputStream tmpFileInputStream = new FileInputStream(jarFile)) {
             List<String> classNames = JarReader.extractClassNames(tmpFileInputStream);
 
@@ -70,7 +77,8 @@ public class JarReader {
             for (String className : classNames) {
                 try {
                     Class<?> candidate = Class.forName(className, false, urlClassLoader);
-                    if (superTypeClass.isAssignableFrom(candidate)) {
+                    if (superTypeClass.isAssignableFrom(candidate)
+                            && isConcrete(candidate)) {
                         subTypeClasses.add(candidate);
                     }
                 } catch (Throwable ex) {
@@ -79,6 +87,10 @@ public class JarReader {
             }
             return subTypeClasses;
         }
+    }
+
+    public static boolean isConcrete(Class clazz) {
+        return 0 == (clazz.getModifiers() & (Modifier.INTERFACE | Modifier.ABSTRACT));
     }
 
 }

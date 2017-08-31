@@ -113,6 +113,11 @@ public class UDF extends AbstractStorable {
         this.type = type;
     }
 
+    /**
+     * Should be fqdn class name - If canonical form of an inner-class name was provided at
+     * upload time, it will be converted to the fqdn name (with '$') during upload processing.
+     * @return class name
+     */
     public String getClassName() {
         return className;
     }

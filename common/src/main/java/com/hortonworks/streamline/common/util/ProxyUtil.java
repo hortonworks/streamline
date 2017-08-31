@@ -66,16 +66,16 @@ public class ProxyUtil<O> {
     }
 
     public static Collection<Class<?>> loadAllClassesFromJar(final File jarFile, final Class<?> superTypeClass) throws IOException {
-        List<Class<?>> classes = JarReader.findSubtypeOfClasses(jarFile, superTypeClass);
+        List<Class<?>> classes = JarReader.findConcreteSubtypesOfClass(jarFile, superTypeClass);
         final ProxyUtil<?> proxyUtil = new ProxyUtil<>(superTypeClass);
         return Collections2.filter(classes, new Predicate<Class<?>>() {
             @Override
             public boolean apply(@Nullable Class<?> s) {
                 try {
-                    proxyUtil.loadClassFromJar(jarFile.getAbsolutePath(), s.getCanonicalName());
+                    proxyUtil.loadClassFromJar(jarFile.getAbsolutePath(), s.getName());
                     return true;
                 } catch (Throwable ex) {
-                    LOG.warn("class {} is subtype of {}, but it can't be initialized.", s, superTypeClass);
+                    LOG.warn("class {} is concrete subtype of {}, but can't be initialized due to exception:", s, superTypeClass, ex);
                     return false;
                 }
             }
