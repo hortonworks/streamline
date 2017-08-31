@@ -15,16 +15,16 @@
  **/
 package com.hortonworks.streamline.streams.metrics.container;
 
-import com.hortonworks.streamline.streams.catalog.Component;
-import com.hortonworks.streamline.streams.catalog.ComponentProcess;
-import com.hortonworks.streamline.streams.catalog.Namespace;
-import com.hortonworks.streamline.streams.catalog.Service;
+import com.hortonworks.streamline.streams.cluster.catalog.Component;
+import com.hortonworks.streamline.streams.cluster.catalog.ComponentProcess;
+import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
+import com.hortonworks.streamline.streams.cluster.catalog.Service;
 import com.hortonworks.streamline.streams.metrics.container.mapping.MappedTimeSeriesQuerierImpl;
 import com.hortonworks.streamline.streams.metrics.container.mapping.MappedTopologyMetricsImpl;
 import com.hortonworks.streamline.streams.cluster.container.NamespaceAwareContainer;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
-import com.hortonworks.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.common.exception.ConfigException;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.streamline.streams.metrics.TimeSeriesQuerier;
 import com.hortonworks.streamline.streams.metrics.topology.TopologyMetrics;

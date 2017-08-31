@@ -18,8 +18,8 @@ package com.hortonworks.streamline.streams.cluster.service.metadata;
 import com.google.common.collect.ImmutableList;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import org.apache.hadoop.conf.Configuration;
-import com.hortonworks.streamline.streams.catalog.exception.ServiceConfigurationNotFoundException;
-import com.hortonworks.streamline.streams.catalog.exception.ServiceNotFoundException;
+import com.hortonworks.streamline.streams.cluster.exception.ServiceConfigurationNotFoundException;
+import com.hortonworks.streamline.streams.cluster.exception.ServiceNotFoundException;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.OverrideHadoopConfiguration;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 

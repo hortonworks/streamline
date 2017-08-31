@@ -1,9 +1,9 @@
 package com.hortonworks.streamline.streams.cluster.register.impl;
 
 import com.hortonworks.streamline.common.Config;
-import com.hortonworks.streamline.streams.catalog.Cluster;
-import com.hortonworks.streamline.streams.catalog.Service;
-import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
+import com.hortonworks.streamline.streams.cluster.catalog.Service;
+import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.Constants;
 import org.junit.Before;
 import org.junit.Test;

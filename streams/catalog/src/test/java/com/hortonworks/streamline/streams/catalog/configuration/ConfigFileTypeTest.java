@@ -13,6 +13,7 @@
  **/
 package com.hortonworks.streamline.streams.catalog.configuration;
 
+import com.hortonworks.streamline.common.configuration.ConfigFileType;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

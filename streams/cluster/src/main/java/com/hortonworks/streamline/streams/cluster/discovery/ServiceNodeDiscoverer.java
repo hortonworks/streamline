@@ -15,7 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.cluster.discovery;
 
-import com.hortonworks.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.common.exception.ConfigException;
 
 import java.util.List;
 import java.util.Map;

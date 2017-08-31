@@ -17,9 +17,8 @@ package com.hortonworks.streamline.streams.metrics.storm.opentsdb;
 
 import com.google.common.base.Joiner;
 import com.hortonworks.streamline.common.JsonClientUtil;
-import com.hortonworks.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.common.exception.ConfigException;
 import com.hortonworks.streamline.streams.metrics.AbstractTimeSeriesQuerier;
-import com.hortonworks.streamline.streams.metrics.TimeSeriesQuerier;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.uri.internal.JerseyUriBuilder;
 import org.slf4j.Logger;
@@ -27,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.MediaType;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;

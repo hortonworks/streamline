@@ -15,7 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.cluster.service.metadata;
 
-import com.hortonworks.streamline.streams.catalog.exception.ZookeeperClientException;
+import com.hortonworks.streamline.streams.cluster.exception.ZookeeperClientException;
 
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;

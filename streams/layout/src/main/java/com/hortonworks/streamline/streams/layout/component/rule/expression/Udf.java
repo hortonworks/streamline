@@ -31,6 +31,11 @@ public class Udf implements Serializable {
     private Udf() {
     }
 
+    // for backward-compatibility
+    public Udf(String name) {
+        this.name = name;
+    }
+
     public Udf(String name, String className, Type type) {
         this.name = name;
         this.className = className;

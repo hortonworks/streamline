@@ -17,8 +17,8 @@ package com.hortonworks.streamline.streams.service.metadata;
 
 import com.codahale.metrics.annotation.Timed;
 import com.hortonworks.streamline.common.util.WSUtils;
-import com.hortonworks.streamline.streams.catalog.Cluster;
-import com.hortonworks.streamline.streams.catalog.exception.EntityNotFoundException;
+import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
+import com.hortonworks.streamline.streams.cluster.exception.EntityNotFoundException;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.HiveMetadataService;
 import com.hortonworks.streamline.streams.security.SecurityUtil;

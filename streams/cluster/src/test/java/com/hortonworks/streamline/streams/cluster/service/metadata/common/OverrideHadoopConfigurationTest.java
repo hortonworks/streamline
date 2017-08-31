@@ -16,7 +16,7 @@
 package com.hortonworks.streamline.streams.cluster.service.metadata.common;
 
 import com.google.common.collect.Lists;
-import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.HBaseMetadataService;

@@ -18,15 +18,11 @@
         </dependency>
         <dependency>
             <groupId>com.hortonworks.streamline</groupId>
-            <artifactId>streamline-sdk</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.hortonworks.streamline</groupId>
             <artifactId>storage-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.hortonworks.streamline</groupId>
-            <artifactId>streamline-catalog</artifactId>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jmockit</groupId>

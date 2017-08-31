@@ -15,7 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.metrics;
 
-import com.hortonworks.streamline.streams.exception.ConfigException;
+import com.hortonworks.streamline.common.exception.ConfigException;
 
 import java.util.Map;
 

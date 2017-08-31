@@ -15,12 +15,11 @@
  **/
 package com.hortonworks.streamline.streams.catalog.processor;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.common.util.Utils;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
-import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentUISpecification;
+import com.hortonworks.streamline.common.ComponentUISpecification;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 
 import java.io.IOException;
@@ -46,7 +45,7 @@ public class CustomProcessorInfo {
     private String name;
     private String description;
     private String jarFileName;
-    private TopologyComponentUISpecification topologyComponentUISpecification;
+    private ComponentUISpecification topologyComponentUISpecification;
     private Schema inputSchema;
     private Schema outputSchema;
     private String customProcessorImpl;
@@ -154,19 +153,19 @@ public class CustomProcessorInfo {
         this.customProcessorImpl = customProcessorImpl;
     }
 
-    public TopologyComponentUISpecification getTopologyComponentUISpecification() {
+    public ComponentUISpecification getTopologyComponentUISpecification() {
         return topologyComponentUISpecification;
     }
 
-    public void setTopologyComponentUISpecification(TopologyComponentUISpecification topologyComponentUISpecification) {
-        this.topologyComponentUISpecification = topologyComponentUISpecification;
+    public void setTopologyComponentUISpecification(ComponentUISpecification componentUISpecification) {
+        this.topologyComponentUISpecification = componentUISpecification;
     }
 
     public CustomProcessorInfo fromTopologyComponentBundle (TopologyComponentBundle topologyComponentBundle) throws IOException {
         if (topologyComponentBundle != null) {
             this.setStreamingEngine(topologyComponentBundle.getStreamingEngine());
-            TopologyComponentUISpecification topologyComponentUISpecification = topologyComponentBundle.getTopologyComponentUISpecification();
-            List<TopologyComponentUISpecification.UIField> uiFields = topologyComponentUISpecification.getFields();
+            ComponentUISpecification componentUISpecification = topologyComponentBundle.getTopologyComponentUISpecification();
+            List<ComponentUISpecification.UIField> uiFields = componentUISpecification.getFields();
             Map<String, String> config = this.getPropertiesFromUIFields(uiFields);
             this.setName(config.get(NAME));
             this.setDescription(config.get(DESCRIPTION));
@@ -174,7 +173,7 @@ public class CustomProcessorInfo {
             this.setCustomProcessorImpl(config.get(CUSTOM_PROCESSOR_IMPL));
             this.setInputSchema(Utils.getSchemaFromConfig(config.get(INPUT_SCHEMA)));
             this.setOutputSchema(Utils.getSchemaFromConfig(config.get(OUTPUT_SCHEMA)));
-            this.setTopologyComponentUISpecification(getCustomProcessorUISpecification(topologyComponentUISpecification));
+            this.setTopologyComponentUISpecification(getCustomProcessorUISpecification(componentUISpecification));
         }
         return this;
     }
@@ -190,34 +189,34 @@ public class CustomProcessorInfo {
         }
         result.setBuiltin(true);
         result.setTransformationClass("com.hortonworks.streamline.streams.layout.storm.CustomProcessorBoltFluxComponent");
-        List<TopologyComponentUISpecification.UIField> uiFields = new ArrayList<>();
+        List<ComponentUISpecification.UIField> uiFields = new ArrayList<>();
         uiFields.addAll(getCustomProcessorUIFieldsWithPrefix());
         uiFields.add(this.createUIField(TopologyLayoutConstants.JSON_KEY_PARALLELISM, TopologyLayoutConstants.JSON_KEY_PARALLELISM, true, true,
-                TopologyLayoutConstants.JSON_KEY_PARALLELISM_TOOLTIP, TopologyComponentUISpecification.UIFieldType.NUMBER.NUMBER, 1));
-        uiFields.add(this.createUIField(NAME, NAME, false, false, "Custom processor name", TopologyComponentUISpecification.UIFieldType.STRING, this.name));
-        uiFields.add(this.createUIField(DESCRIPTION, DESCRIPTION, false, false, "Custom processor description", TopologyComponentUISpecification.UIFieldType
+                TopologyLayoutConstants.JSON_KEY_PARALLELISM_TOOLTIP, ComponentUISpecification.UIFieldType.NUMBER.NUMBER, 1));
+        uiFields.add(this.createUIField(NAME, NAME, false, false, "Custom processor name", ComponentUISpecification.UIFieldType.STRING, this.name));
+        uiFields.add(this.createUIField(DESCRIPTION, DESCRIPTION, false, false, "Custom processor description", ComponentUISpecification.UIFieldType
                 .STRING, this.description));
-        uiFields.add(this.createUIField(JAR_FILE_NAME, JAR_FILE_NAME, false, false, "Custom processor jar file", TopologyComponentUISpecification.UIFieldType
+        uiFields.add(this.createUIField(JAR_FILE_NAME, JAR_FILE_NAME, false, false, "Custom processor jar file", ComponentUISpecification.UIFieldType
                 .STRING, this.jarFileName));
         uiFields.add(this.createUIField(CUSTOM_PROCESSOR_IMPL, CUSTOM_PROCESSOR_IMPL, false, false, "Custom processor interface implementation class",
-                TopologyComponentUISpecification.UIFieldType.STRING, this.customProcessorImpl));
+                ComponentUISpecification.UIFieldType.STRING, this.customProcessorImpl));
         ObjectMapper objectMapper = new ObjectMapper();
-        uiFields.add(this.createUIField(INPUT_SCHEMA, INPUT_SCHEMA, false, false, "Custom processor input schema", TopologyComponentUISpecification
+        uiFields.add(this.createUIField(INPUT_SCHEMA, INPUT_SCHEMA, false, false, "Custom processor input schema", ComponentUISpecification
                 .UIFieldType.STRING, objectMapper.writeValueAsString(this.inputSchema)));
         uiFields.add(this.createUIField(OUTPUT_SCHEMA, OUTPUT_SCHEMA, false, false, "Custom processor output schema",
-                TopologyComponentUISpecification.UIFieldType.STRING, objectMapper.writeValueAsString(this.outputSchema)));
-        TopologyComponentUISpecification topologyComponentUISpecification = new TopologyComponentUISpecification();
-        topologyComponentUISpecification.setFields(uiFields);
-        result.setTopologyComponentUISpecification(topologyComponentUISpecification);
+                ComponentUISpecification.UIFieldType.STRING, objectMapper.writeValueAsString(this.outputSchema)));
+        ComponentUISpecification componentUISpecification = new ComponentUISpecification();
+        componentUISpecification.setFields(uiFields);
+        result.setTopologyComponentUISpecification(componentUISpecification);
         return result;
     }
 
-    private TopologyComponentUISpecification getCustomProcessorUISpecification (TopologyComponentUISpecification topologyComponentUISpecification) {
-        TopologyComponentUISpecification result = new TopologyComponentUISpecification();
-        List<TopologyComponentUISpecification.UIField> fields = new ArrayList<>();
-        for (TopologyComponentUISpecification.UIField uiField: topologyComponentUISpecification.getFields()) {
+    private ComponentUISpecification getCustomProcessorUISpecification (ComponentUISpecification componentUISpecification) {
+        ComponentUISpecification result = new ComponentUISpecification();
+        List<ComponentUISpecification.UIField> fields = new ArrayList<>();
+        for (ComponentUISpecification.UIField uiField: componentUISpecification.getFields()) {
             if (uiField.getFieldName().startsWith(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_PREFIX)) {
-                TopologyComponentUISpecification.UIField newUIField = new TopologyComponentUISpecification.UIField(uiField);
+                ComponentUISpecification.UIField newUIField = new ComponentUISpecification.UIField(uiField);
                 newUIField.setFieldName(uiField.getFieldName().replaceFirst(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_PREFIX_REGEX, ""));
                 fields.add(newUIField);
             }
@@ -226,11 +225,11 @@ public class CustomProcessorInfo {
         return result;
     }
 
-    private List<TopologyComponentUISpecification.UIField> getCustomProcessorUIFieldsWithPrefix () {
-        List<TopologyComponentUISpecification.UIField> result = new ArrayList<>();
+    private List<ComponentUISpecification.UIField> getCustomProcessorUIFieldsWithPrefix () {
+        List<ComponentUISpecification.UIField> result = new ArrayList<>();
         if (topologyComponentUISpecification != null) {
-            for (TopologyComponentUISpecification.UIField uiField : this.topologyComponentUISpecification.getFields()) {
-                TopologyComponentUISpecification.UIField newUIField = new TopologyComponentUISpecification.UIField(uiField);
+            for (ComponentUISpecification.UIField uiField : this.topologyComponentUISpecification.getFields()) {
+                ComponentUISpecification.UIField newUIField = new ComponentUISpecification.UIField(uiField);
                 newUIField.setFieldName(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_PREFIX + uiField.getFieldName());
                 result.add(newUIField);
             }
@@ -239,10 +238,10 @@ public class CustomProcessorInfo {
     }
 
 
-    private Map<String, String> getPropertiesFromUIFields (List<TopologyComponentUISpecification.UIField> uiFields) {
+    private Map<String, String> getPropertiesFromUIFields (List<ComponentUISpecification.UIField> uiFields) {
         Map<String, String> result = new HashMap<>();
         Set<String> propertyKeys = this.getPropertyKeys();
-        for (TopologyComponentUISpecification.UIField uiField: uiFields) {
+        for (ComponentUISpecification.UIField uiField: uiFields) {
             if (propertyKeys.contains(uiField.getFieldName())) {
                 result.put(uiField.getFieldName(), (String) uiField.getDefaultValue());
             }
@@ -261,9 +260,9 @@ public class CustomProcessorInfo {
         return result;
     }
 
-    private TopologyComponentUISpecification.UIField createUIField (String fieldName, String uiName, boolean isOptional, boolean isUserInput, String tooltip,
-                                                                    TopologyComponentUISpecification.UIFieldType type, Object defaultValue) {
-        TopologyComponentUISpecification.UIField uiField = new TopologyComponentUISpecification.UIField();
+    private ComponentUISpecification.UIField createUIField (String fieldName, String uiName, boolean isOptional, boolean isUserInput, String tooltip,
+                                                            ComponentUISpecification.UIFieldType type, Object defaultValue) {
+        ComponentUISpecification.UIField uiField = new ComponentUISpecification.UIField();
         uiField.setFieldName(fieldName);
         uiField.setUiName(uiName);
         uiField.setIsOptional(isOptional);

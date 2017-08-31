@@ -266,6 +266,7 @@ export default class TopologyGraphComponent extends Component {
     this.renderFlag = true;
     this.evt = document.createEvent("Events");
     this.evt.initEvent("click", true, true);
+    this.eventTable = false;
   }
 
   zoomAction(zoomType) {
@@ -758,7 +759,7 @@ export default class TopologyGraphComponent extends Component {
       : false;
   }
 
-  showEventLogTooltip = (d,data,node) => {
+  showEventLogTooltip = (data,type,node) => {
     let thisGraph = this;
     let list = [];
     const nestedFields =  function(fieldObj,level){
@@ -773,21 +774,26 @@ export default class TopologyGraphComponent extends Component {
     };
     nestedFields(data.streamlineEvent,0);
 
-    // const list = _.map(_.keys(data.streamlineEvent), (key) => {
-    //   return `<li> ${data.streamlineEvent[key]} <span class='output-type'> ${key}</span> </li>`;
-    // });
-    thisGraph.toolTip.attr('class', "d3-tip "+ data.componentName).attr('id','d3-tip').offset([0, 10]).direction('s' ).html(function(d) {
-      return (
-        "<div class='schema-tooltip clearfix'>"+
-          "<a href='javascript:void(0)'><i id='close-btn-"+data.componentName+"' data-name='"+data.componentName+"' class='fa fa-times pull-right'></i></a>"+
-          "<h3>Output</h3>"+
-          "<div class='input-schema'>"+
-            "<ul class='schema-list'>"
-              +list.join('')+
-            "</ul>"+
-          "</div>"+
-        "</div>"
-      );
+    let cName =  !_.isEmpty(data) ? !!type ? data.componentName : data.componentName+'-'+data.targetComponentName : 'button-close';
+
+    thisGraph.toolTip.attr('class', "eventLogTooltip d3-tip "+ cName).attr('id','d3-tip').offset([0, 10]).direction('s' ).html(function(d) {
+      let content = "<div class='schema-tooltip clearfix'>"+
+                      "<a href='javascript:void(0)'><i id='close-btn-"+cName+"' data-name='"+cName+"' class='fa fa-times pull-right'></i></a>"+
+                      "<h3>"+data.eventType+"</h3>"+
+                      "<div class='input-schema'>"+
+                        "<ul class='schema-list'>"
+                          +list.join('')+
+                        "</ul>"+
+                      "</div>"+
+                    "</div>";
+      if(_.isEmpty(data)){
+        content = "<div class='schema-tooltip clearfix'>"+
+                      "<a href='javascript:void(0)'><i id='close-btn-"+cName+"' data-name='"+cName+"' class='fa fa-times pull-right'></i></a>"+
+                      "<h5>No Record</h5>"+
+                    "</div>";
+      }
+
+      return content;
     });
     thisGraph.toolTip.show(data ,node);
   }
@@ -805,6 +811,58 @@ export default class TopologyGraphComponent extends Component {
     let timeOut = setTimeout(function(){
       thisGraph.toolTip.show(d ,node);
     },700);
+  }
+
+  getEventLogToolTipData(d,type){
+    const thisGraph = this;
+    const circleName = !!type  ? d.uiname : d.source.uiname+'-'+d.target.uiname;
+    const eventData = _.filter(thisGraph.props.eventLogData, (log) => {
+      return !!type ? circleName === log.componentName : (log.componentName+'-'+log.targetComponentName) === circleName;
+    });
+    let data = [];
+    if(thisGraph.activeLogRowArr.length === 0 && !thisGraph.eventTable){
+      data.push(eventData[eventData.length - 1]);
+    } else {
+      if(thisGraph.eventTable){
+        data = _.filter(eventData, (tData) => {return tData.id === thisGraph.activeLogRowArr[0].id;});
+        thisGraph.eventTable = false;
+      } else {
+        data.push(eventData[eventData.length - 1]);
+      }
+    }
+    return data;
+  }
+
+  closeEventLogToolTip(btnName, d,type){
+    const thisGraph = this;
+    d3.select('#close-btn-'+btnName)
+      .on('click',function(){
+        event.preventDefault();
+        event.stopPropagation();
+        const name = event.target.dataset.name;
+        if(name !== 'button-close'){
+          const circleNode = d3.selectAll('circle.test-circle');
+          circleNode[0].forEach(function(c){
+            const nodaName = c.dataset.sourceTarget;
+            let c_Node = d3.select(c);
+            const data = c_Node.data();
+            if(name === nodaName){
+              let tempActiveRow = _.cloneDeep(thisGraph.activeLogRowArr);
+              const index = _.findIndex(tempActiveRow, (row) => {
+                return (row.componentName+'-'+row.targetComponentName) === nodaName;
+              });
+              const cNode = d3.select('circle.test-circle.active');
+              if(index !== -1 && cNode.classed('active')){
+                cNode.attr({'class':'test-circle'});
+                thisGraph.props.removeActiveLogToolTip(tempActiveRow[index]);
+              }
+              thisGraph.toolTip.hide(d);
+            }
+          });
+        } else {
+          thisGraph.toolTip.hide(d);
+        }
+      });
   }
 
   updateGraph() {
@@ -848,6 +906,8 @@ export default class TopologyGraphComponent extends Component {
       return TopologyUtils.createLineOnUI(d, constants);
     }).attr("stroke-opacity", "0.0001").attr("stroke-width", "10").attr("data-name", function(d) {
       return d.source.nodeId + '-' + d.target.nodeId;
+    }).attr('data-source-target',function(d){
+      return d.source.uiname+'-'+d.target.uiname;
     }).on("mouseover", function(d) {
       if (!thisGraph.editMode) {
         let elem = document.querySelectorAll('.visible-link[d="' + this.getAttribute('d') + '"]')[0];
@@ -872,11 +932,15 @@ export default class TopologyGraphComponent extends Component {
       }
     });
 
+
+
     // remove old links
     paths.exit().remove();
 
     //clone the paths or links to make hover on them with some hidden margin
     thisGraph.clonePaths();
+
+
 
     // update existing nodes
     thisGraph.rectangles = thisGraph.rectangles.data(thisGraph.nodes, function(d) {
@@ -944,7 +1008,8 @@ export default class TopologyGraphComponent extends Component {
     });
 
     if(!thisGraph.testRunActivated || (thisGraph.testRunActivated && thisGraph.props.eventLogData.length === 0)){
-      thisGraph.rectangles.selectAll('circle.test-circle').remove();
+      d3.select('g.link-group').selectAll('circle.test-circle').remove();
+      d3.selectAll('g.conceptG').selectAll('circle.test-circle').remove();
     }
 
     //add new nodes
@@ -1124,19 +1189,76 @@ export default class TopologyGraphComponent extends Component {
       }
     });
 
+    // For Test Mode Events Circle append on edges
     if(thisGraph.testRunActivated){
-      if(thisGraph.props.eventLogData.length && thisGraph.activeLogRowArr.length){
-        const circleNode = thisGraph.rectangles.select('circle.test-circle');
+      if(thisGraph.props.eventLogData.length){
+        const p = d3.selectAll('path.visible-link')
+          .data(thisGraph.edges);
+
+        p[0].forEach(function(c){
+          const cName = c.dataset.sourceTarget;
+          const parentNode = d3.select(c.parentNode);
+          const len = c.getTotalLength() / 2;
+          const lenXY = c.getPointAtLength(len);
+          const cNode = d3.select(c);
+          const data = cNode.data();
+          const testCircle = parentNode.selectAll('circle.'+cName)
+            .data(data);
+
+          testCircle.exit().remove();
+          testCircle.enter().append("circle");
+          testCircle.attr("cx", lenXY.x)
+          .attr("cy", lenXY.y)
+          .attr("r", function(d) {
+            return '5';
+          }).attr('data-source-target', cName)
+          .attr("class", function(d) {
+            return 'test-circle '+cName;
+          }).attr("fill", "#1892c1")
+          .attr("filter", function(d){
+            return '';
+          }).on('click',function(d){
+            const data = thisGraph.getEventLogToolTipData(d);
+            thisGraph.showEventLogTooltip.call(thisGraph,data[0] || {},null,this);
+            const that = thisGraph;
+            const btnName = data[0] !== undefined ? data[0].componentName+'-'+data[0].targetComponentName : 'button-close';
+            thisGraph.closeEventLogToolTip(btnName,d);
+          });
+        });
+      }
+    }
+
+    // EventLog table row clicked event handle here
+    if(thisGraph.props.eventLogData.length && thisGraph.activeLogRowArr.length && !thisGraph.hideEventLog){
+      if(event.target.nodeName === "TD"){
+        let cName = thisGraph.activeLogRowArr[0].componentName+'-'+thisGraph.activeLogRowArr[0].targetComponentName;
+        if(thisGraph.activeLogRowArr[0].eventType === 'INPUT'){
+          cName = thisGraph.activeLogRowArr[0].componentName;
+        }
+        const circleNode = d3.selectAll('circle.'+cName);
         circleNode[0].forEach(function(c){
           let c_Node = d3.select(c);
           const data = c_Node.data();
           if(data[0] !== undefined){
-            const index = _.findIndex(thisGraph.activeLogRowArr, (row) => {return row.componentName === data[0].uiname;});
+            const index = _.findIndex(thisGraph.activeLogRowArr, (row) => {
+              let d = '' ;
+              if(row.eventType === 'INPUT'){
+                const sinkArr = _.filter(thisGraph.edges,function(e){return e.target.uiname === data[0].uiname;});
+                const edgeData = _.find(sinkArr,function(s){
+                  return row.componentName === s.target.uiname && row.targetComponentName === s.source.uiname;
+                });
+                d = edgeData.target.uiname+'-'+edgeData.source.uiname;
+              } else {
+                d = (data[0].source.uiname+'-'+data[0].target.uiname);
+              }
+              return (row.componentName+'-'+row.targetComponentName) === d;
+            });
             if(index !== -1 && c_Node.classed('active')){
               thisGraph.toolTip.hide();
               c_Node.attr("class",'test-circle');
             }
             if(index !== -1 &&  !c_Node.classed('active')){
+              thisGraph.eventTable = true;
               c_Node.attr("class",'test-circle active');
               c.dispatchEvent(thisGraph.evt);
             }
@@ -1146,54 +1268,38 @@ export default class TopologyGraphComponent extends Component {
     }
 
 
-    // For Test Mode Events Circle append
+    // For Test Mode Events Circle append on rectangles node
     if(thisGraph.testRunActivated){
       if(thisGraph.props.eventLogData.length){
-        let testCircle = thisGraph.rectangles.selectAll('circle.test-circle')
-          .data(function(d){
-            return [d];
-          });
-        testCircle.exit().remove();
-        testCircle.enter().append("circle").attr("cx", function(d) {
-          return (constants.rectangleWidth / 1.5);
-        }).attr("cy", function(d) {
-          return constants.rectangleHeight + 3.5;
-        }).attr("r", function(d) {
-          return '5';
-        }).attr("class", function(d) {
-          return 'test-circle';
-        }).attr("fill", "#1892c1")
-        .attr("filter", function(d){
-          return '';
-        }).on("click",function(d){
-          const eventData = _.filter(thisGraph.props.eventLogData, (log) => {return log.componentName === d.uiname;});
-          let data = [];
-          if(thisGraph.activeLogRowArr.length === 0){
-            data.push(eventData[eventData.length - 1]);
-          } else {
-            data = _.filter(eventData, (event) => {return event.id === thisGraph.activeLogRowArr[0].id;});
-          }
-          thisGraph.showEventLogTooltip.call(thisGraph, d,data[0] || {},this);
-          const that = thisGraph;
-          d3.select('#close-btn-'+data[0].componentName).on('click', function(){
-            event.preventDefault();
-            event.stopPropagation();
-            const name = event.target.dataset.name;
-            const circleNode = thisGraph.rectangles.select('circle.test-circle');
-            circleNode[0].forEach(function(c){
-              let c_Node = d3.select(c);
-              const data = c_Node.data();
-              if(name === d.uiname){
-                let tempActiveRow = _.cloneDeep(that.activeLogRowArr);
-                const index = _.findIndex(tempActiveRow, (row) => {return row.componentName === d.uiname;});
-                const cNode = d3.select('circle.test-circle.active');
-                if(index !== -1 && cNode.classed('active')){
-                  cNode.attr({'class':'test-circle'});
-                  that.props.removeActiveLogToolTip(tempActiveRow[index]);
-                }
-                that.toolTip.hide(d);
-              }
-            });
+        let rectSink = d3.selectAll('rect.testSinkBg');
+        rectSink[0].forEach(function(r){
+          const rNode = d3.select(r) ;
+          const parentNode = d3.select(r.parentNode);
+          const data = rNode.data();
+          const cName = data[0].uiname;
+          const rectCircle = parentNode.selectAll('circle.'+cName)
+            .data(data);
+          rectCircle.exit().remove();
+          rectCircle.enter().append("circle")
+          .attr("cx", function(d) {
+            return (constants.rectangleWidth / 1.5);
+          }).attr("cy", function(d) {
+            return constants.rectangleHeight + 3.5;
+          }).attr("r", function(d) {
+            return '5';
+          }).attr('data-source-target', function(d){
+            return d.uiname;
+          }).attr("class", function(d) {
+            return 'test-circle '+cName;
+          }).attr("fill", "#1892c1")
+          .attr("filter", function(d){
+            return '';
+          }).on('click',function(d){
+            const data = thisGraph.getEventLogToolTipData(d,'sink');
+            thisGraph.showEventLogTooltip.call(thisGraph,data[0] || {},'sink',this);
+            const that = thisGraph;
+            const btnName = data[0] !== undefined ? data[0].componentName: 'button-close';
+            thisGraph.closeEventLogToolTip(btnName,d,'sink');
           });
         });
       }

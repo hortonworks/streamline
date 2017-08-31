@@ -15,6 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.storm.common;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -68,5 +69,15 @@ public class StormTopologyUtil {
             actualTopologyName = generateStormTopologyName(topologyId, topologyName);
         }
         return actualTopologyName;
+    }
+
+    public static String extractStreamlineComponentName(String stormComponentId) {
+        String[] splitted = stormComponentId.split("-");
+        if (splitted.length <= 1) {
+            throw new IllegalArgumentException("Invalid Storm component ID for Streamline: " + stormComponentId);
+        }
+
+        List<String> splittedList = Arrays.asList(splitted);
+        return String.join("-", splittedList.subList(1, splittedList.size()));
     }
 }

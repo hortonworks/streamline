@@ -1113,7 +1113,7 @@ class TopologyEditorContainer extends Component {
     if(this.refs.TestSourceNodeContentRef.validateData()){
       this.refs.TestSourceNodeModal.hide();
       this.refs.TestSourceNodeContentRef.handleSave().then((testResult) => {
-        let configSuccess = true;
+        let configSuccess = true,poolIndex = -1;
         _.map(testResult, (result) => {
           if(result.responseMessage !== undefined){
             FSReactToastr.error(
@@ -1121,7 +1121,7 @@ class TopologyEditorContainer extends Component {
             configSuccess = false;
           } else {
             let tempSourceConfig = _.cloneDeep(this.state.testSourceConfigure);
-            const poolIndex = _.findIndex(tempSourceConfig, {id : result.sourceId});
+            poolIndex = _.findIndex(tempSourceConfig, {id : result.sourceId});
             if(poolIndex === -1){
               tempSourceConfig.push({id :  result.sourceId});
               this.setState({testSourceConfigure :tempSourceConfig});
@@ -1129,8 +1129,9 @@ class TopologyEditorContainer extends Component {
           }
         });
         if(configSuccess) {
+          const  msg =  <strong>{`Test source ${poolIndex !== -1 ? "config update" : "configure"} successfully`}</strong>;
           FSReactToastr.success(
-            <strong>Test source configured successfully</strong>
+            msg
           );
         }
       });
@@ -1157,7 +1158,7 @@ class TopologyEditorContainer extends Component {
             tempSinkConfig.push({id : testRun.sinkId});
             this.setState({testSinkConfigure : tempSinkConfig});
           }
-          const  msg =  <strong>{`Test sink ${poolIndex !== -1 ? "update" : "configure"} successfully`}</strong>;
+          const  msg =  <strong>{`Test sink ${poolIndex !== -1 ? "updated" : "configure"} successfully`}</strong>;
           FSReactToastr.success(
             msg
           );
@@ -1257,6 +1258,8 @@ class TopologyEditorContainer extends Component {
                       });
                       this.setState({eventLogData : events.entities ,hideEventLog :false, testHistory : testHistory,testCompleted : true}, () => {
                         clearInterval(this.interval);
+                        const msg =  this.state.eventLogData.length ?  "TestRun completed successfully" : "TestRun has No Record" ;
+                        FSReactToastr.success(<strong>{msg}</strong>);
                       });
                     }
                   });

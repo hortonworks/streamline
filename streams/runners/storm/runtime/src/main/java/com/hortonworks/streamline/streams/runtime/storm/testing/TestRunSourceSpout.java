@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
+
 package com.hortonworks.streamline.streams.runtime.storm.testing;
 
 import com.hortonworks.streamline.common.util.Utils;
@@ -36,11 +37,10 @@ import java.util.Queue;
 
 public class TestRunSourceSpout extends BaseRichSpout {
     private static final Logger LOG = LoggerFactory.getLogger(TestRunSourceSpout.class);
-    private SpoutOutputCollector _collector;
+    private EventLoggingSpoutOutputCollector collector;
 
     private final TestRunSource testRunSource;
     private final Map<String, Queue<Map<String, Object>>> testRecordsQueueMap;
-    private transient TestRunEventLogger eventLogger;
 
     public TestRunSourceSpout(String testRunSourceJson) {
         this(Utils.createObjectFromJson(testRunSourceJson, TestRunSource.class));
@@ -70,9 +70,9 @@ public class TestRunSourceSpout extends BaseRichSpout {
         if (this.testRunSource == null) {
             throw new RuntimeException("testRunSource cannot be null");
         }
-        _collector = collector;
 
-        eventLogger = TestRunEventLogger.getEventLogger(testRunSource.getEventLogFilePath());
+        this.collector = new EventLoggingSpoutOutputCollector(context, collector,
+                TestRunEventLogger.getEventLogger(testRunSource.getEventLogFilePath()));
     }
 
     @Override
@@ -88,10 +88,7 @@ public class TestRunSourceSpout extends BaseRichSpout {
             if (record != null) {
                 StreamlineEventImpl streamlineEvent = new StreamlineEventImpl(record, testRunSource.getId());
                 LOG.debug("Emitting event {} to stream {}", streamlineEvent, outputStream);
-                _collector.emit(outputStream, new Values(streamlineEvent), streamlineEvent.getId());
-
-                eventLogger.writeEvent(System.currentTimeMillis(), testRunSource.getName(), streamlineEvent);
-
+                collector.emit(outputStream, new Values(streamlineEvent), streamlineEvent.getId());
                 emitCount++;
             }
         }

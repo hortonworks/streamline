@@ -1,8 +1,8 @@
 package com.hortonworks.streamline.streams.cluster.service.metadata.json;
 
-import com.hortonworks.streamline.streams.catalog.Component;
-import com.hortonworks.streamline.streams.catalog.ComponentProcess;
-import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
+import com.hortonworks.streamline.streams.cluster.catalog.Component;
+import com.hortonworks.streamline.streams.cluster.catalog.ComponentProcess;
+import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
 
 import org.apache.commons.math3.util.Pair;
 import org.slf4j.Logger;

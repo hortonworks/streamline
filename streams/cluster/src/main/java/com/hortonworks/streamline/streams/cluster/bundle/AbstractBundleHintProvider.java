@@ -15,10 +15,10 @@
  **/
 package com.hortonworks.streamline.streams.cluster.bundle;
 
-import com.hortonworks.streamline.streams.catalog.Cluster;
-import com.hortonworks.streamline.streams.catalog.Namespace;
-import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
-import com.hortonworks.streamline.streams.catalog.exception.ClusterNotFoundException;
+import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
+import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
+import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMapping;
+import com.hortonworks.streamline.streams.cluster.exception.ClusterNotFoundException;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 
 import java.util.Collection;

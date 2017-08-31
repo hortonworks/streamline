@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
+
 package com.hortonworks.streamline.streams.runtime.storm.testing;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.common.util.Utils;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
+import com.hortonworks.streamline.streams.storm.common.StormTopologyUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -77,9 +79,12 @@ public class TestRunSinkBolt extends BaseRichBolt {
     @Override
     public void execute(Tuple input) {
         Object value = input.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
+        String sourceComponentId = input.getSourceComponent();
+        String streamId = input.getSourceStreamId();
         StreamlineEvent event = (StreamlineEvent) value;
 
-        eventLogger.writeEvent(System.currentTimeMillis(), testRunSink.getName(), event);
+        eventLogger.writeEvent(System.currentTimeMillis(), TestRunEventLogger.EventType.INPUT, testRunSink.getName(),
+                streamId, StormTopologyUtil.extractStreamlineComponentName(sourceComponentId), event);
 
         String outputFilePath = testRunSink.getOutputFilePath();
         try (FileWriter fw = new FileWriter(outputFilePath, true)) {

@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +47,6 @@ public class TestRunProcessorBoltFluxComponent extends AbstractFluxComponent {
         String underlyingBoltComponentId = addUnderlyingBoltComponent();
 
         List<Object> constructorArgs = new ArrayList<>();
-        constructorArgs.add(testRunProcessor.getName());
         constructorArgs.add(getRefYaml(underlyingBoltComponentId));
         constructorArgs.add(testRunProcessor.getEventLogFilePath());
         component = createComponent(boltId, boltClassName, null, constructorArgs, null);
@@ -59,8 +59,13 @@ public class TestRunProcessorBoltFluxComponent extends AbstractFluxComponent {
         Map<String, Object> underlyingComponent;
         try {
             AbstractFluxComponent transformation = ReflectionHelper.newInstance(transformationClass);
-            Map<String, Object> underlyingConf = Collections.singletonMap(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY, testRunProcessor.getUnderlyingProcessor());
-            transformation.withConfig(underlyingConf);
+
+            Map<String, Object> props = new LinkedHashMap<>();
+            props.putAll(underlyingProcessor.getConfig().getProperties());
+            props.put(StormTopologyLayoutConstants.STREAMLINE_COMPONENT_CONF_KEY, testRunProcessor.getUnderlyingProcessor());
+            // should get rid of below things which is only supported to spout and bolt in flux
+            props.remove("parallelism");
+            transformation.withConfig(props);
             underlyingComponent = transformation.getComponent();
 
             for (Map<String, Object> dependentComponents : transformation.getReferencedComponents()) {
