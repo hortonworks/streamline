@@ -751,9 +751,9 @@ class TopologyEditorContainer extends Component {
         */
         this.state.testRunActivated
         ? nodeText === "source" && this.state.testCaseList.length
-          ? this.refs.TestSourceNodeModal.show()
+          ? this.refs.NodeModal.show()
           : nodeText === "sink" && this.state.testCaseList.length
-            ? ''//this.refs.TestSinkNodeModal.show()
+            ? this.refs.NodeModal.show()
             : nodeText === "source" || nodeText === "sink"
               ? FSReactToastr.info(
                 <CommonNotification flag="error" content={`Please create atleast one Test Case to configure ${nodeText}`}/>, '', toastOpt)
@@ -1173,7 +1173,9 @@ class TopologyEditorContainer extends Component {
   */
   testCaseListChange = (obj) => {
     if(obj){
-      this.setState({selectedTestObj : _.isPlainObject(obj) ? obj: {}});
+      this.setState({selectedTestObj : _.isPlainObject(obj) ? obj: {}}, () => {
+        this.refs.TestSourceNodeModal.show();
+      });
     }
   }
 
@@ -1415,7 +1417,7 @@ class TopologyEditorContainer extends Component {
                       </OverlayTrigger>
                     : (this.state.unknown !== "UNKNOWN")
                       ? <OverlayTrigger key={3} placement="top" overlay={<Tooltip id = "tooltip" > Run </Tooltip>}>
-                          <button className="hb xl success pull-right" onClick={ testRunActivated ? this.runTestCase : this.handleDeployTopology.bind(this)}>
+                          <button className="hb xl success pull-right" onClick={ testRunActivated ? this.runTestCase.bind(this) : this.handleDeployTopology.bind(this)}>
                             <i className="fa fa-paper-plane"></i>
                           </button>
                         </OverlayTrigger>

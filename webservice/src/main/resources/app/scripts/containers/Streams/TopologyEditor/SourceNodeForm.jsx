@@ -327,6 +327,7 @@ export default class SourceNodeForm extends Component {
     let formData = this.state.formData;
 
     let fields = Utils.genFields(configJSON, [], formData,[], securityType, hasSecurity);
+    const disabledFields = this.props.testRunActivated ? true : !this.props.editMode;
     const form = fetchLoader
       ? <div className="col-sm-12">
           <div className="loading-img text-center" style={{
@@ -339,7 +340,7 @@ export default class SourceNodeForm extends Component {
         <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
           display: "none"
         }}/>}>
-          <Form ref="Form" readOnly={!this.props.editMode} showRequired={this.state.showRequired} showSecurity={this.state.showSecurity} className="customFormClass" FormData={formData} Errors={formErrors} populateClusterFields={this.populateClusterFields.bind(this)} callback={this.showOutputStream.bind(this)} handleSecurityProtocol={this.handleSecurityProtocol.bind(this)}>
+          <Form ref="Form" readOnly={disabledFields} showRequired={this.state.showRequired} showSecurity={this.state.showSecurity} className="customFormClass" FormData={formData} Errors={formErrors} populateClusterFields={this.populateClusterFields.bind(this)} callback={this.showOutputStream.bind(this)} handleSecurityProtocol={this.handleSecurityProtocol.bind(this)}>
             {fields}
           </Form>
         </Scrollbars>
@@ -364,7 +365,7 @@ export default class SourceNodeForm extends Component {
           {activeTabKey == 2 ? form : null}
         </Tab>
         <Tab eventKey={3} title="NOTES">
-          <NotesForm ref="NotesForm" description={this.state.description} onChangeDescription={this.handleNotesChange.bind(this)}/>
+          <NotesForm ref="NotesForm" description={this.state.description} editable={disabledFields} onChangeDescription={this.handleNotesChange.bind(this)}/>
         </Tab>
       </Tabs>
     );
