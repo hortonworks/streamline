@@ -42,7 +42,6 @@ public class TestRunSinkBolt extends BaseRichBolt {
     private transient ObjectMapper objectMapper;
 
     private final TestRunSink testRunSink;
-    private transient TestRunEventLogger eventLogger;
 
     public TestRunSinkBolt(String testRunSinkJson) {
         this(Utils.createObjectFromJson(testRunSinkJson, TestRunSink.class));
@@ -72,19 +71,12 @@ public class TestRunSinkBolt extends BaseRichBolt {
             LOG.error("Can't open file for preparing to write: " + outputFilePath);
             throw new RuntimeException(e);
         }
-
-        eventLogger = TestRunEventLogger.getEventLogger(testRunSink.getEventLogFilePath());
     }
 
     @Override
     public void execute(Tuple input) {
         Object value = input.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
-        String sourceComponentId = input.getSourceComponent();
-        String streamId = input.getSourceStreamId();
         StreamlineEvent event = (StreamlineEvent) value;
-
-        eventLogger.writeEvent(System.currentTimeMillis(), TestRunEventLogger.EventType.INPUT, testRunSink.getName(),
-                streamId, StormTopologyUtil.extractStreamlineComponentName(sourceComponentId), event);
 
         String outputFilePath = testRunSink.getOutputFilePath();
         try (FileWriter fw = new FileWriter(outputFilePath, true)) {
