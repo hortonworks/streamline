@@ -1229,7 +1229,7 @@ export default class TopologyGraphComponent extends Component {
     }
 
     // EventLog table row clicked event handle here
-    if(thisGraph.props.eventLogData.length && thisGraph.activeLogRowArr.length && !thisGraph.hideEventLog){
+    if(!thisGraph.hideEventLog && thisGraph.props.eventLogData && thisGraph.props.eventLogData.length && thisGraph.activeLogRowArr.length){
       if(event.target.nodeName === "TD"){
         let cName = thisGraph.activeLogRowArr[0].componentName+'-'+thisGraph.activeLogRowArr[0].targetComponentName;
         if(thisGraph.activeLogRowArr[0].eventType === 'INPUT'){
