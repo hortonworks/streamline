@@ -16,6 +16,7 @@
 package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -27,7 +28,6 @@ import com.hortonworks.streamline.common.exception.service.exception.request.Ent
 import com.hortonworks.streamline.common.exception.service.exception.request.UnsupportedMediaTypeException;
 import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.common.util.FileUtil;
-import com.hortonworks.streamline.common.util.ProxyUtil;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.UDF;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
@@ -69,12 +69,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import static com.hortonworks.streamline.streams.security.Permission.DELETE;
 import static com.hortonworks.streamline.streams.security.Permission.EXECUTE;
@@ -318,7 +318,8 @@ public class UDFCatalogResource {
         throw EntityNotFoundException.byId(udfId.toString());
     }
 
-    private void processUdf(InputStream inputStream,
+    @VisibleForTesting
+    void processUdf(InputStream inputStream,
                             UDF udf,
                             boolean checkDuplicate,
                             boolean builtin) throws Exception {
@@ -332,8 +333,8 @@ public class UDFCatalogResource {
             try (DigestInputStream dis = new DigestInputStream(inputStream, md)) {
                 tmpFile = FileUtil.writeInputStreamToTempFile(dis, ".jar");
             }
-            Map<String, Class<?>> udfs = catalogService.loadUdfsFromJar(tmpFile);
-            validateUDF(new HashSet<>(ProxyUtil.canonicalNames(udfs.values())), udf, checkDuplicate);
+            Map<String, Class<?>> udfs = StreamCatalogService.loadUdfsFromJar(tmpFile);
+            validateUDF(udfs.keySet(), udf, checkDuplicate);
             updateTypeInfo(udf, udfs.get(udf.getClassName()));
             String digest = Hex.encodeHexString(md.digest());
             LOG.debug("Digest: {}", digest);
@@ -422,10 +423,19 @@ public class UDFCatalogResource {
     }
 
     private void validateUDF(Set<String> udfs, UDF udf, boolean checkDuplicate) {
+        // If the user gave us CanonicalName or other incorrect but recognizable form
+        // of the FqdnName, correct it in the udf.
         if (!udfs.contains(udf.getClassName())) {
-            throw new RuntimeException("Cannot load class from uploaded Jar: " + udf.getClassName());
+            Pattern recognizableNamePattern = Pattern.compile(
+                    "^" + udf.getClassName().replaceAll("[\\.\\$]", "[\\.\\$]") + "$");
+            Optional<String> matchingName = udfs.stream().filter(recognizableNamePattern.asPredicate()).findFirst();
+            if (!matchingName.isPresent()) {
+                throw new RuntimeException("Cannot load class from uploaded Jar: " + udf.getClassName());
+            }
+            LOG.info("Replacing UDF ClassName {} with FqdnName {}", udf.getClassName(), matchingName.get());
+            udf.setClassName(matchingName.get());
         }
-        LOG.debug("Validating UDF, Class {} is in the available classes {}", udf.getClassName(), udfs);
+        LOG.debug("Validating UDF, Class {} is in the uploaded Jar", udf.getClassName());
         if (checkDuplicate) {
             checkDuplicate(udf);
         }

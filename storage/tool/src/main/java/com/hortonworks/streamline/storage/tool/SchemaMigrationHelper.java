@@ -27,10 +27,6 @@ public class SchemaMigrationHelper {
     }
 
     private void migrate() throws SQLException {
-        try (Connection connection = flyway.getDataSource().getConnection()) {
-            if (isDatabaseEmpty(connection))
-                throw new SchemaMigrationException("Target database is empty and no previous versions found, use the \"create\" option.");
-        }
         flyway.migrate();
     }
 

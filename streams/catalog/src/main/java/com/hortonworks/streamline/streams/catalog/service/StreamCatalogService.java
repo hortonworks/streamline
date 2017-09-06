@@ -2410,12 +2410,12 @@ public class StreamCatalogService {
         return udf;
     }
 
-    public Map<String, Class<?>> loadUdfsFromJar(java.io.File jarFile) throws IOException {
+    public static Map<String, Class<?>> loadUdfsFromJar(java.io.File jarFile) throws IOException {
         Map<String, Class<?>> udafs = new HashMap<>();
 
         for (Class<?> udfClass : UDF_CLASSES) {
             for (Class<?> clazz : ProxyUtil.loadAllClassesFromJar(jarFile, udfClass)) {
-                udafs.put(clazz.getCanonicalName(), clazz);
+                udafs.put(clazz.getName(), clazz);
             }
         }
 

@@ -56,7 +56,7 @@ function printUsage {
     cat <<-EOF
 USAGE: $0 [create|migrate|info|validate|drop|drop-create|repair|check-connection]
    create           : Creates the tables. The target database should be empty
-   migrate          : Migrates the database to the latest version. The target database should not be empty. Use "info" to see the current version and the pending migrations
+   migrate          : Migrates the database to the latest version or creates the tables if the database is empty. Use "info" to see the current version and the pending migrations
    info             : Shows the list of migrations applied and the pending migration waiting to be applied on the target database
    validate         : Checks if the all the migrations haven been applied on the target database
    drop             : Drops all the tables in the target database

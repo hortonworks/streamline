@@ -114,6 +114,7 @@ class TestSourceNodeModal extends Component{
       stateObj.sourceNodeArr = [];
       _.map(results, (result, i) => {
         let streamIdListArr=[];
+        stateObj.sourceNodeArr[i] = {};
         _.map(result.outputStreams, (stream) => {
           streamIdListArr.push(stream.streamId);
           stateObj.sourceNodeArr[i] = {streamIdList : streamIdListArr};
@@ -180,7 +181,7 @@ class TestSourceNodeModal extends Component{
     const {showInputError,sourceNodeArr, testName} = this.state;
     let validate = false,validationArr = [];
     _.map(sourceNodeArr, (source,i) => {
-      if(source.records === '' || !!source.repeatTime || source.records === undefined || testName === ''){
+      if(source.records === '' || !parseInt(source.repeatTime,10) || source.records === undefined || testName === ''){
         validationArr.push(false);
       }
     });
