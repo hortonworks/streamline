@@ -1,4 +1,5 @@
 ## 0.4
+ * ISSUE-893     : Test mode: After deploying an app, going back and editing the test case throws exception
  * ISSUE-889     : Retain Window configuration when running test topology with WindowedRule
  * ISSUE-887     : Recording events from sink leads the result confused
  * ISSUE-856     : Event logging for test runner should log output events for processor
