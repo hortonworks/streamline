@@ -57,6 +57,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -96,6 +97,25 @@ public class TopologyTestRunResource {
         }
 
         throw EntityNotFoundException.byId(topologyId.toString());
+    }
+
+    @POST
+    @Path("/topologies/{topologyId}/actions/killtest/{historyId}")
+    @Timed
+    public Response killTestRunTopology(@Context UriInfo urlInfo,
+                                        @PathParam("topologyId") Long topologyId,
+                                        @PathParam("historyId") Long historyId) throws Exception {
+        Topology topology = catalogService.getTopology(topologyId);
+        TopologyTestRunHistory history = catalogService.getTopologyTestRunHistory(historyId);
+
+        if (topology == null) {
+            throw EntityNotFoundException.byName("Topology with ID " + topologyId.toString());
+        } else if (history == null) {
+            throw EntityNotFoundException.byName("TopologyTestRunHistory with ID " + historyId.toString());
+        }
+
+        boolean flagged = actionsService.killTestRunTopology(topology, history);
+        return WSUtils.respondEntity(Collections.singletonMap("flagged", flagged), OK);
     }
 
     @GET

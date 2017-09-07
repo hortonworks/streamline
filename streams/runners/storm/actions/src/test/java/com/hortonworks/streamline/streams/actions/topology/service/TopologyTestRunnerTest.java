@@ -373,10 +373,11 @@ public class TopologyTestRunnerTest {
 
     private void setSucceedTopologyActionsExpectations() throws Exception {
         new Expectations() {{
-            topologyActions.testRun(withInstanceOf(TopologyLayout.class), anyString, withInstanceOf(Map.class),
+            topologyActions.runTest(withInstanceOf(TopologyLayout.class), withInstanceOf(TopologyTestRunHistory.class),
+                    anyString, withInstanceOf(Map.class),
                     withInstanceOf(Map.class), withInstanceOf(Map.class), withInstanceOf(Optional.class));
             result = new Delegate<Object>() {
-                Object delegate(TopologyLayout topology, String mavenArtifacts,
+                Object delegate(TopologyLayout topology, TopologyTestRunHistory testRunHistory, String mavenArtifacts,
                                 Map<String, TestRunSource> testRunSourcesForEachSource,
                                 Map<String, TestRunProcessor> testRunProcessorsForEachProcessor,
                                 Map<String, TestRunSink> testRunSinksForEachSink,
@@ -406,7 +407,8 @@ public class TopologyTestRunnerTest {
 
     private void setTopologyActionsThrowingExceptionExpectations() throws Exception {
         new Expectations() {{
-            topologyActions.testRun(withInstanceOf(TopologyLayout.class), anyString, withInstanceOf(Map.class),
+            topologyActions.runTest(withInstanceOf(TopologyLayout.class), withInstanceOf(TopologyTestRunHistory.class),
+                    anyString, withInstanceOf(Map.class),
                     withInstanceOf(Map.class), withInstanceOf(Map.class), withInstanceOf(Optional.class));
             result = new RuntimeException("Topology test run failed!");
         }};
