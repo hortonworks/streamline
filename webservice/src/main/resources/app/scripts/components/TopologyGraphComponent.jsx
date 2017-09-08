@@ -1009,7 +1009,7 @@ export default class TopologyGraphComponent extends Component {
 
     if(!thisGraph.testRunActivated || (thisGraph.testRunActivated && thisGraph.props.eventLogData.length === 0)){
       d3.select('g.link-group').selectAll('circle.test-circle').remove();
-      d3.selectAll('g.conceptG').selectAll('circle.test-circle').remove();
+      // d3.selectAll('g.conceptG').selectAll('circle.test-circle').remove();
     }
 
     //add new nodes
@@ -1269,41 +1269,41 @@ export default class TopologyGraphComponent extends Component {
 
 
     // For Test Mode Events Circle append on rectangles node
-    if(thisGraph.testRunActivated){
-      if(thisGraph.props.eventLogData.length){
-        let rectSink = d3.selectAll('rect.testSinkBg');
-        rectSink[0].forEach(function(r){
-          const rNode = d3.select(r) ;
-          const parentNode = d3.select(r.parentNode);
-          const data = rNode.data();
-          const cName = data[0].uiname;
-          const rectCircle = parentNode.selectAll('circle.'+cName)
-            .data(data);
-          rectCircle.exit().remove();
-          rectCircle.enter().append("circle")
-          .attr("cx", function(d) {
-            return (constants.rectangleWidth / 1.5);
-          }).attr("cy", function(d) {
-            return constants.rectangleHeight + 3.5;
-          }).attr("r", function(d) {
-            return '5';
-          }).attr('data-source-target', function(d){
-            return d.uiname;
-          }).attr("class", function(d) {
-            return 'test-circle '+cName;
-          }).attr("fill", "#1892c1")
-          .attr("filter", function(d){
-            return '';
-          }).on('click',function(d){
-            const data = thisGraph.getEventLogToolTipData(d,'sink');
-            thisGraph.showEventLogTooltip.call(thisGraph,data[0] || {},'sink',this);
-            const that = thisGraph;
-            const btnName = data[0] !== undefined ? data[0].componentName: 'button-close';
-            thisGraph.closeEventLogToolTip(btnName,d,'sink');
-          });
-        });
-      }
-    }
+    // if(thisGraph.testRunActivated){
+    //   if(thisGraph.props.eventLogData.length){
+    //     let rectSink = d3.selectAll('rect.testSinkBg');
+    //     rectSink[0].forEach(function(r){
+    //       const rNode = d3.select(r) ;
+    //       const parentNode = d3.select(r.parentNode);
+    //       const data = rNode.data();
+    //       const cName = data[0].uiname;
+    //       const rectCircle = parentNode.selectAll('circle.'+cName)
+    //         .data(data);
+    //       rectCircle.exit().remove();
+    //       rectCircle.enter().append("circle")
+    //       .attr("cx", function(d) {
+    //         return (constants.rectangleWidth / 1.5);
+    //       }).attr("cy", function(d) {
+    //         return constants.rectangleHeight + 3.5;
+    //       }).attr("r", function(d) {
+    //         return '5';
+    //       }).attr('data-source-target', function(d){
+    //         return d.uiname;
+    //       }).attr("class", function(d) {
+    //         return 'test-circle '+cName;
+    //       }).attr("fill", "#1892c1")
+    //       .attr("filter", function(d){
+    //         return '';
+    //       }).on('click',function(d){
+    //         const data = thisGraph.getEventLogToolTipData(d,'sink');
+    //         thisGraph.showEventLogTooltip.call(thisGraph,data[0] || {},'sink',this);
+    //         const that = thisGraph;
+    //         const btnName = data[0] !== undefined ? data[0].componentName: 'button-close';
+    //         thisGraph.closeEventLogToolTip(btnName,d,'sink');
+    //       });
+    //     });
+    //   }
+    // }
 
     //Label Text
     newGs.each(function(d) {

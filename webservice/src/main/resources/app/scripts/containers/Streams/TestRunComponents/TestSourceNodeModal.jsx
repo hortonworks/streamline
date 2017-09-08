@@ -71,6 +71,7 @@ class TestSourceNodeModal extends Component{
     this.state = obj;
     this.fetchData();
     this.testArr = [];
+    this.newSourceArr=[];
   }
 
   /*
@@ -88,15 +89,15 @@ class TestSourceNodeModal extends Component{
   fetchData = (index) => {
     const {topologyId, nodeListArr,testCaseObj,versionId,checkConfigureTestCase} = this.props;
     let sourcePromiseArr = [],swapEntity = {},testPromiseArr = [];
-    const sourceArr = _.filter(nodeListArr,(node) => {return node.parentType.toLowerCase() === "source";});
+    this.sourceArr = _.filter(nodeListArr,(node) => {return node.parentType.toLowerCase() === "source";});
     // fetch the source details for streams
-    _.map(sourceArr, (source) => {
+    _.map(this.sourceArr, (source) => {
       sourcePromiseArr.push(TopologyREST.getNode(topologyId, versionId, 'sources', source.nodeId));
     });
 
     // fetch testcase
     if(!_.isEmpty(testCaseObj)){
-      _.map(sourceArr, (source) => {
+      _.map(this.sourceArr, (source) => {
         testPromiseArr.push(TestRunREST.getSourceTestCase(topologyId,testCaseObj.id,'sources',source.nodeId));
       });
     }
@@ -129,8 +130,9 @@ class TestSourceNodeModal extends Component{
           _.map(testResult, (result ,i) => {
             if(result.responseMessage !== undefined){
               result.records = '';
-              result.occurrence = '';
+              result.occurrence = this.state.repeatTime;
               result.testCaseId = testResult[0].testCaseId;
+              this.newSourceArr.push(this.sourceArr[i]);
               this.setState({showLoading : false});
             }
           });
@@ -242,7 +244,14 @@ class TestSourceNodeModal extends Component{
 
     _.map(sourceNodeArr, (source, i) => {
       if(source.records && this.testArr.length){
-        savePromiseArr.push(TestRunREST.putTestRunNode(topologyId,obj[i].testCaseId,'sources',obj[i].sourceId,{body : JSON.stringify(obj[i])}));
+        if(this.newSourceArr.length){
+          const sourceIndex = _.findIndex(this.newSourceArr, (n) => { return n.nodeId === source.nodeId;});
+          sourceIndex !== -1
+          ? savePromiseArr.push(TestRunREST.postTestRunNode(topologyId,obj[i].testCaseId,'sources',{body : JSON.stringify(obj[i])}))
+          : savePromiseArr.push(TestRunREST.putTestRunNode(topologyId,obj[i].testCaseId,'sources',this.testArr[i].id,{body : JSON.stringify(obj[i])}));
+        } else {
+          savePromiseArr.push(TestRunREST.putTestRunNode(topologyId,obj[i].testCaseId,'sources',this.testArr[i].id,{body : JSON.stringify(obj[i])}));
+        }
       }
     });
 
@@ -253,27 +262,14 @@ class TestSourceNodeModal extends Component{
     }
   }
 
-  handleNewTestCase = (obj,result) => {
+  handleNewTestCase = (objArr,result) => {
     const {topologyId} = this.props;
     const {sourceNodeArr} = this.state;
-    return TestRunREST.postTestRunNode(topologyId, result.id,'sources',{body : JSON.stringify(obj[0])}).then((result) => {
-      if(result.responseMessage !== undefined){
-        FSReactToastr.error(
-          <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
-      } else {
-        if(obj.length > 1){
-          let putPromiseArr = [];
-          _.map(sourceNodeArr, (source, i) => {
-            if(i > 0){
-              putPromiseArr.push(TestRunREST.putTestRunNode(topologyId,obj[i].testCaseId,'sources',obj[i].sourceId,{body : JSON.stringify(obj[i])}));
-            }
-          });
-          return Promise.all(putPromiseArr);
-        } else {
-          return [result];
-        }
-      }
+    let postArr = [];
+    _.map(objArr, (obj) => {
+      postArr.push(TestRunREST.postTestRunNode(topologyId, result.id,'sources',{body : JSON.stringify(obj)}));
     });
+    return Promise.all(postArr);
   }
 
   handleFileChange = (file) => {

@@ -43,12 +43,16 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.storm.druid.bolt.DruidBeamFactory;
 import org.apache.storm.task.IMetricsContext;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Druid bolt must be supplied with a BeamFactory. You can implement one of these using the
@@ -58,6 +62,7 @@ import java.util.Map;
  */
 public class DruidBeamFactoryImpl implements DruidBeamFactory<Map<String, Object>> {
 
+    private static final Logger LOG = LoggerFactory.getLogger(DruidBeamFactoryImpl.class);
     public static final String PROCESSING_TIME = "processingTime";
     private String indexService = "druid/overlord"; // Your overlord's druid.service;
     private String discoveryPath = "/druid/discovery"; // Your overlord's druid.discovery.curator.path;
@@ -352,10 +357,11 @@ public class DruidBeamFactoryImpl implements DruidBeamFactory<Map<String, Object
 
         @Override
         public DateTime timestamp(Map<String, Object> theMap) {
-            if (PROCESSING_TIME.equalsIgnoreCase(timestampField))
-                return new DateTime(System.currentTimeMillis());
+            Object timeStamp = theMap.get(timestampField);
+            if (Objects.isNull(timeStamp))
+                LOG.error("Data tuple doesn't contain timestamp field : {}, so using current time as timestamp", timestampField);
 
-            return new DateTime(theMap.get(timestampField));
+            return new DateTime(timeStamp, DateTimeZone.UTC);
         }
     }
 }

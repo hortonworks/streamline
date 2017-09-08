@@ -19,23 +19,17 @@ import com.hortonworks.streamline.streams.layout.component.StreamlineSink;
 
 public class TestRunSink extends StreamlineSink {
     private String outputFilePath;
-    private String eventLogFilePath;
 
     public TestRunSink() {
-        this("", "");
+        this("");
     }
 
-    public TestRunSink(String outputFilePath, String eventLogFilePath) {
+    public TestRunSink(String outputFilePath) {
         this.outputFilePath = outputFilePath;
-        this.eventLogFilePath = eventLogFilePath;
     }
 
     public String getOutputFilePath() {
         return outputFilePath;
-    }
-
-    public String getEventLogFilePath() {
-        return eventLogFilePath;
     }
 
     @Override
@@ -46,16 +40,13 @@ public class TestRunSink extends StreamlineSink {
 
         TestRunSink that = (TestRunSink) o;
 
-        if (getOutputFilePath() != null ? !getOutputFilePath().equals(that.getOutputFilePath()) : that.getOutputFilePath() != null)
-            return false;
-        return getEventLogFilePath() != null ? getEventLogFilePath().equals(that.getEventLogFilePath()) : that.getEventLogFilePath() == null;
+        return getOutputFilePath() != null ? getOutputFilePath().equals(that.getOutputFilePath()) : that.getOutputFilePath() == null;
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + (getOutputFilePath() != null ? getOutputFilePath().hashCode() : 0);
-        result = 31 * result + (getEventLogFilePath() != null ? getEventLogFilePath().hashCode() : 0);
         return result;
     }
 
@@ -63,7 +54,6 @@ public class TestRunSink extends StreamlineSink {
     public String toString() {
         return "TestRunSink{" +
                 "outputFilePath='" + outputFilePath + '\'' +
-                ", eventLogFilePath='" + eventLogFilePath + '\'' +
                 '}';
     }
 

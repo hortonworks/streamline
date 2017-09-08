@@ -16,9 +16,12 @@
 
 package com.hortonworks.streamline.streams.runtime.storm.testing;
 
+import com.hortonworks.registries.common.Schema;
+import com.hortonworks.streamline.common.SchemaValueConverter;
 import com.hortonworks.streamline.common.util.Utils;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.layout.component.Stream;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
 import org.apache.storm.spout.SpoutOutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -34,6 +37,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 public class TestRunSourceSpout extends BaseRichSpout {
     private static final Logger LOG = LoggerFactory.getLogger(TestRunSourceSpout.class);
@@ -57,7 +63,11 @@ public class TestRunSourceSpout extends BaseRichSpout {
                 int occurrence = testRunSource.getOccurrence();
                 LOG.info("Occurrence: " + occurrence);
                 for (int i = 0 ; i < occurrence ; i++) {
-                    queue.addAll(entry.getValue());
+                    List<Map<String, Object>> values = entry.getValue();
+                    List<Map<String, Object>> schemaConformedValues = values.stream()
+                            .map(v -> convertValueToConformStream(entry.getKey(), v))
+                            .collect(toList());
+                    queue.addAll(schemaConformedValues);
                 }
 
                 testRecordsQueueMap.put(entry.getKey(), queue);
@@ -126,4 +136,14 @@ public class TestRunSourceSpout extends BaseRichSpout {
     public Fields getOutputFields() {
         return new Fields(StreamlineEvent.STREAMLINE_EVENT);
     }
+
+    private Map<String, Object> convertValueToConformStream(String streamId, Map<String, Object> value) {
+        Stream stream = testRunSource.getOutputStream(streamId);
+        if (stream == null) {
+            throw new IllegalArgumentException("Stream " + streamId + " doesn't exist.");
+        }
+
+        return SchemaValueConverter.convertMap(stream.getSchema(), value);
+    }
+
 }

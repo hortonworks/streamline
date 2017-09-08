@@ -407,7 +407,7 @@ public class TestTopologyDagCreatingVisitorTest {
     }
 
     private TestRunSink createTestRunSink(StreamlineSink originSink) {
-        TestRunSink testRunSink = new TestRunSink("dummyFilePath", "");
+        TestRunSink testRunSink = new TestRunSink("dummyFilePath");
         testRunSink.setName(originSink.getName());
         return testRunSink;
     }

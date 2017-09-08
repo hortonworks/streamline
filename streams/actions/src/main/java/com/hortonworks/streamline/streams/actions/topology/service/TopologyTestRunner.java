@@ -147,7 +147,7 @@ public class TopologyTestRunner {
         Map<String, TestRunSink> testRunSinkMap = sinks.stream()
                 .collect(toMap(s -> s.getName(), s -> {
                     String uuid = UUID.randomUUID().toString();
-                    TestRunSink testRunSink = new TestRunSink(getTopologyTestRunResult(uuid), eventLogFilePath);
+                    TestRunSink testRunSink = new TestRunSink(getTopologyTestRunResult(uuid));
                     testRunSink.setName(s.getName());
                     return testRunSink;
                 }));
