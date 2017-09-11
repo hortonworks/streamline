@@ -16,7 +16,7 @@
 
 package com.hortonworks.streamline.streams.runtime.storm.testing;
 
-import com.hortonworks.registries.common.Schema;
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.hortonworks.streamline.common.SchemaValueConverter;
 import com.hortonworks.streamline.common.util.Utils;
 import com.hortonworks.streamline.streams.StreamlineEvent;
@@ -33,20 +33,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 public class TestRunSourceSpout extends BaseRichSpout {
     private static final Logger LOG = LoggerFactory.getLogger(TestRunSourceSpout.class);
     private EventLoggingSpoutOutputCollector collector;
 
     private final TestRunSource testRunSource;
-    private final Map<String, Queue<Map<String, Object>>> testRecordsQueueMap;
+    private final Map<String, TestRecordsInformation> testRecordsInformationPerOutputStream;
 
     public TestRunSourceSpout(String testRunSourceJson) {
         this(Utils.createObjectFromJson(testRunSourceJson, TestRunSource.class));
@@ -54,23 +53,21 @@ public class TestRunSourceSpout extends BaseRichSpout {
 
     public TestRunSourceSpout(TestRunSource testRunSource) {
         this.testRunSource = testRunSource;
-        testRecordsQueueMap = new HashMap<>();
+
+        testRecordsInformationPerOutputStream = new HashMap<>();
+
         if (testRunSource != null) {
             Map<String, List<Map<String, Object>>> testRecords = testRunSource.getTestRecordsForEachStream();
             for (Map.Entry<String, List<Map<String, Object>>> entry : testRecords.entrySet()) {
-                Queue<Map<String, Object>> queue = new LinkedList<>();
+                List<Map<String, Object>> values = entry.getValue();
+                List<Map<String, Object>> schemaConformedValues = values.stream()
+                        .map(v -> convertValueToConformStream(entry.getKey(), v))
+                        .collect(toList());
 
-                int occurrence = testRunSource.getOccurrence();
-                LOG.info("Occurrence: " + occurrence);
-                for (int i = 0 ; i < occurrence ; i++) {
-                    List<Map<String, Object>> values = entry.getValue();
-                    List<Map<String, Object>> schemaConformedValues = values.stream()
-                            .map(v -> convertValueToConformStream(entry.getKey(), v))
-                            .collect(toList());
-                    queue.addAll(schemaConformedValues);
-                }
+                TestRecordsInformation testRecordsInformation = new TestRecordsInformation(
+                        testRunSource.getOccurrence(), testRunSource.getSleepMsPerIteration(), schemaConformedValues);
 
-                testRecordsQueueMap.put(entry.getKey(), queue);
+                testRecordsInformationPerOutputStream.put(entry.getKey(), testRecordsInformation);
             }
         }
     }
@@ -88,14 +85,22 @@ public class TestRunSourceSpout extends BaseRichSpout {
     @Override
     public void nextTuple() {
         int emitCount = 0;
+        boolean allOutputStreamsCompleted = true;
 
         // loop output stream and emit at most one record per output stream
-        for (Map.Entry<String, Queue<Map<String, Object>>> entry : testRecordsQueueMap.entrySet()) {
+        for (Map.Entry<String, TestRecordsInformation> entry : testRecordsInformationPerOutputStream.entrySet()) {
             String outputStream = entry.getKey();
-            Queue<Map<String, Object>> queue = entry.getValue();
+            TestRecordsInformation info = entry.getValue();
 
-            Map<String, Object> record = queue.poll();
-            if (record != null) {
+            if (info.isCompleted()) {
+                continue;
+            }
+
+            allOutputStreamsCompleted = false;
+
+            Optional<Map<String, Object>> recordOptional = info.nextRecord();
+            if (recordOptional.isPresent()) {
+                Map<String, Object> record = recordOptional.get();
                 StreamlineEventImpl streamlineEvent = new StreamlineEventImpl(record, testRunSource.getId());
                 LOG.debug("Emitting event {} to stream {}", streamlineEvent, outputStream);
                 collector.emit(outputStream, new Values(streamlineEvent), streamlineEvent.getId());
@@ -103,14 +108,12 @@ public class TestRunSourceSpout extends BaseRichSpout {
             }
         }
 
-        if (emitCount == 0) {
-            LOG.info("No more records, sleeping...");
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                // no-op
-            }
-            return;
+        if (allOutputStreamsCompleted) {
+            LOG.info("All iterations are completed, sleeping...");
+            Uninterruptibles.sleepUninterruptibly(5, TimeUnit.SECONDS);
+        } else if (emitCount == 0) {
+            LOG.info("All output streams are finished last iteration and now in sleep phase, sleeping...");
+            Uninterruptibles.sleepUninterruptibly(testRunSource.getSleepMsPerIteration(), TimeUnit.MILLISECONDS);
         }
     }
 

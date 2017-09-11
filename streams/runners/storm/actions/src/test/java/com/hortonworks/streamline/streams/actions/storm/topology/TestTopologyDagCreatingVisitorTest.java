@@ -386,7 +386,7 @@ public class TestTopologyDagCreatingVisitorTest {
         for (Stream stream : originSource.getOutputStreams()) {
             testRecordsMap.put(stream.getId(), TopologyTestHelper.createTestRecords());
         }
-        TestRunSource testRunSource = new TestRunSource(originSource.getOutputStreams(), testRecordsMap, 1, "");
+        TestRunSource testRunSource = new TestRunSource(originSource.getOutputStreams(), testRecordsMap, 1, 0L, "");
         testRunSource.setName(originSource.getName());
         return testRunSource;
     }

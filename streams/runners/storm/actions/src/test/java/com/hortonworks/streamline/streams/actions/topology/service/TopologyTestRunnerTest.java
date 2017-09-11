@@ -485,6 +485,7 @@ public class TopologyTestRunnerTest {
             throw new RuntimeException("Can't serialize test records map into JSON");
         }
         testRunSource.setOccurrence(1);
+        testRunSource.setSleepMsPerIteration(0L);
 
         testRunSource.setTimestamp(System.currentTimeMillis());
 

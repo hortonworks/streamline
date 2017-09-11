@@ -128,6 +128,7 @@ public class TopologyTestRunner {
 
         Map<Long, Map<String, List<Map<String, Object>>>> testRecordsForEachSources = readTestRecordsFromTestCaseSources(testRunCaseSources);
         Map<Long, Integer> occurrenceForEachSources = readOccurrenceFromTestCaseSources(testRunCaseSources);
+        Map<Long, Long> sleepMsPerRecordsForEachSources = readSleepMsPerIterationFromTestCaseSources(testRunCaseSources);
         Map<String, List<Map<String, Object>>> expectedOutputRecordsMap = readExpectedRecordsFromTestCaseSinks(sinks, testRunCaseSinks);
 
         String eventLogFilePath = getTopologyTestRunEventLog(topology);
@@ -138,6 +139,7 @@ public class TopologyTestRunner {
                             TestRunSource testRunSource = new TestRunSource(s.getOutputStreams(),
                                     testRecordsForEachSources.get(Long.valueOf(s.getId())),
                                     occurrenceForEachSources.get(Long.valueOf(s.getId())),
+                                    sleepMsPerRecordsForEachSources.get(Long.valueOf(s.getId())),
                                     eventLogFilePath);
                             testRunSource.setName(s.getName());
                             return testRunSource;
@@ -232,6 +234,11 @@ public class TopologyTestRunner {
     private Map<Long, Integer> readOccurrenceFromTestCaseSources(List<TopologyTestRunCaseSource> testRunCaseSources) {
         return testRunCaseSources.stream()
                 .collect(toMap(s -> s.getSourceId(), s -> s.getOccurrence()));
+    }
+
+    private Map<Long, Long> readSleepMsPerIterationFromTestCaseSources(List<TopologyTestRunCaseSource> testRunCaseSources) {
+        return testRunCaseSources.stream()
+                .collect(toMap(s -> s.getSourceId(), s -> s.getSleepMsPerIteration()));
     }
 
     private Map<String, List<Map<String, Object>>> readExpectedRecordsFromTestCaseSinks(List<StreamlineSink> sinks,
