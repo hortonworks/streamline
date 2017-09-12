@@ -33,21 +33,6 @@ class EventLogContainer extends Component{
     this.completed = props.testCompleted;
   }
 
-  componentDidMount(){
-    if(!this.completed){
-      const elem = document.getElementById('eventDiv');
-      if(elem !== null){
-        elem.parentNode.removeChild(elem);
-      } else {
-        let eventOverlay = document.createElement('div');
-        eventOverlay.setAttribute('id','eventDiv');
-        eventOverlay.setAttribute('class','eventOverlay');
-        let body = document.getElementsByTagName('body').item(0);
-        body.appendChild(eventOverlay);
-      }
-    }
-  }
-
   componentWillReceiveProps(nextProps,previousProps){
     if(previousProps.activeLogRowArr !== nextProps.activeLogRowArr){
       if(nextProps.activeLogRowArr.length === 0){
@@ -55,10 +40,6 @@ class EventLogContainer extends Component{
       }
     }
     if(nextProps.testCompleted){
-      const elem = document.getElementById('eventDiv');
-      if(elem !== null){
-        elem.parentNode.removeChild(elem);
-      }
       this.completed = nextProps.testCompleted;
     }
   }
@@ -75,45 +56,72 @@ class EventLogContainer extends Component{
   }
   render(){
     const {activeRow,rowIndex} = this.state;
-    const {eventLogData,activeLogRowArr} = this.props;
+    const {eventLogData,activeLogRowArr,testRunningMode,abortTestCase,notifyCheck} = this.props;
+    const tableHtml =  <Table
+                          className="table table-hover table-condensed event-table"
+                          noDataText= "No records found."
+                          currentPage={0}>
+                            <Thead>
+                              <Th column="No">No</Th>
+                              <Th column="Id">Id</Th>
+                              <Th column="Time">Time</Th>
+                              <Th column="Desc">Desc</Th>
+                            </Thead>
+                            {
+                              _.map(eventLogData, (log, i) => {
+                                return <Tr key={i} className={`${rowIndex === log.id ? 'activeRow' : ''}`} onClick={this.handleLogClicked.bind(this,log,log.id)}>
+                                        <Td column="No">{i+1}</Td>
+                                        <Td column="Id">{Utils.eventLogNumberId(i+1)}</Td>
+                                        <Td column="Time">{moment(log.timestamp).format('YYYY-MM-DD HH:mm:ss')}</Td>
+                                        <Td column="Desc">{log.componentName}</Td>
+                                      </Tr>;
+                              })
+                            }
+                          </Table>;
+    const notifyDiv = <center><div className={`status-ribbon ${testRunningMode ? 'primary' : abortTestCase ? 'warning' : 'success' }`}>
+                        {
+                          testRunningMode
+                          ? 'Running test case..'
+                          : abortTestCase
+                            ? 'Test Run has aborted'
+                            : 'Test Run completed'
+                        }
+                      </div></center>;
+
+    const loaderHtml = <div className="loading-img text-center">
+                          <img src="styles/img/gears-anim.gif" alt="loading" style={{
+                            marginTop: "100px", width : "100px"
+                          }}/>
+                          <p style={{marginTop : "10px"}}>Running test case..</p>
+                        </div>;
+
     return(
       <div>
         <h4>Event Log
         {
-          this.completed
+          !testRunningMode
           ? <a href="javascript:void(0)" onClick={this.hideEventLog}><i className="fa fa-times pull-right"></i></a>
           : ''
         }
         </h4>
         {
           !this.completed
-          ? <div className="loading-img text-center">
-              <img src="styles/img/gears-anim.gif" alt="loading" style={{
-                marginTop: "100px", width : "100px"
-              }}/>
-            <p style={{marginTop : "10px"}}>Running test case..</p>
-            </div>
-          : <Table
-              className="table table-hover table-condensed event-table"
-              noDataText="No records found."
-              currentPage={0}>
-                <Thead>
-                  <Th column="No">No</Th>
-                  <Th column="Id">Id</Th>
-                  <Th column="Time">Time</Th>
-                  <Th column="Desc">Desc</Th>
-                </Thead>
-                {
-                  _.map(eventLogData, (log, i) => {
-                    return <Tr key={i} className={`${rowIndex === log.id ? 'activeRow' : ''}`} onClick={this.handleLogClicked.bind(this,log,log.id)}>
-                            <Td column="No">{i+1}</Td>
-                            <Td column="Id">{Utils.eventLogNumberId(i+1)}</Td>
-                            <Td column="Time">{moment(log.timestamp).format('YYYY-MM-DD HH:mm:ss')}</Td>
-                            <Td column="Desc">{log.componentName}</Td>
-                          </Tr>;
-                  })
-                }
-              </Table>
+          ? loaderHtml
+          : <div>
+              {
+                !notifyCheck
+                ? notifyDiv
+                : null
+              }
+              {
+                testRunningMode && eventLogData.length
+                ?  tableHtml
+                : !testRunningMode && (eventLogData.length === 0 || eventLogData.length)
+                  ? tableHtml
+                  : null
+              }
+
+              </div>
         }
       </div>
     );

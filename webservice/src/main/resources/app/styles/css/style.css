@@ -2834,6 +2834,9 @@ input[type="checkbox"]:focus {
   background-color: #1892c1;
   color: #fff;
 }
+.testComponent-list > li:hover a.closeIcon{
+  display: block;
+}
 /*------------------------------------------------*/
 /* Switch SECTION START*/
 /*------------------------------------------------*/
@@ -3487,4 +3490,120 @@ a.crossIcon{
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100%;
+}
+@media (min-height: 640px) {
+  .event-logs {
+    height: 400px;
+    margin-top: -200px;
+  }
+}
+.status-ribbon {
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+  font-weight: 500;
+  padding: 6px 10px;
+  background-color: #aaa;
+  color: #fff;
+  margin-bottom: 10px;
+}
+.status-ribbon:before {
+   display: inline-block;
+   content: "";
+   position: absolute;
+   top: 0;
+   left: -16px;
+   z-index: -1;
+   border: 1px solid transparent;
+   border-width: 16px 8px;
+   border-color: #AAA #AAA #AAA transparent;
+}
+.status-ribbon:after{
+    display: inline-block;
+    content: "";
+    position: absolute;
+    top: 0;
+    right: -16px;
+    z-index: -1;
+    border: 1px solid transparent;
+    border-width: 16px 8px;
+    border-color: #AAA transparent #AAA #AAA;
+}
+.status-ribbon.success {
+  background-color: #3eae49;
+  -moz-animation: hideMe 0s ease-in 5s forwards;
+  /* Firefox */
+  -webkit-animation: hideMe 0s ease-in 5s forwards;
+  /* Safari and Chrome */
+  -o-animation: hideMe 0s ease-in 5s forwards;
+  /* Opera */
+  animation: hideMe 0s ease-in 5s forwards;
+  -webkit-animation-fill-mode: forwards;
+  animation-fill-mode: forwards;
+}
+.status-ribbon.success:before {
+  border-color: #3eae49 #3eae49 #3eae49 transparent;
+}
+.status-ribbon.success:after {
+  border-color: #3eae49 transparent #3eae49 #3eae49;
+}
+.status-ribbon.warning {
+  background-color: red;
+  -moz-animation: hideMe 0s ease-in 5s forwards;
+  /* Firefox */
+  -webkit-animation: hideMe 0s ease-in 5s forwards;
+  /* Safari and Chrome */
+  -o-animation: hideMe 0s ease-in 5s forwards;
+  /* Opera */
+  animation: hideMe 0s ease-in 5s forwards;
+  -webkit-animation-fill-mode: forwards;
+  animation-fill-mode: forwards;
+}
+.status-ribbon.warning:before {
+  border-color: red red red transparent;
+}
+.status-ribbon.warning:after {
+  border-color: red transparent red red;
+}
+.status-ribbon.primary {
+  background-color: #AAA;
+}
+.status-ribbon.primary:before {
+  border-color: #AAA #AAA #AAA transparent;
+}
+.status-ribbon.primary:after {
+  border-color: #AAA transparent #AAA #AAA;
+}
+@keyframes hideMe {
+    to {
+        width:0;
+        height:0;
+        padding: 0;
+        overflow:hidden;
+    }
+}
+@-webkit-keyframes hideMe {
+    to {
+        width:0;
+        height:0;
+        padding: 0;
+        visibility:hidden;
+    }
+}
+a.closeIcon{
+  position: absolute;
+  right: 0;
+  color: red;
+  font-size: 14px;
+  top: -2px;
+  padding: 0px;
+  width: 10px;
+  height: 15px;
+  cursor: pointer;
+  line-height: 10px;
+  z-index: 999;
+  display: none;
+}
+a.closeIcon i{
+  padding: 0;
 }

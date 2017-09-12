@@ -768,7 +768,7 @@ export default class TopologyGraphComponent extends Component {
           const levelTemp = level > 0 ? level+1 : 1;
           nestedFields(fieldObj[key], levelTemp);
         } else {
-          list.push(`<li style='padding-left : ${level > 0 ? (10*level) : level}px' class=${level > 0 ? 'demo': ''}> ${fieldObj[key]} <span class='output-type'> ${key}</span> </li>`);
+          list.push(`<li style='padding-left : ${level > 0 ? (10*level) : level}px' class=${level > 0 ? 'demo': ''}><span class='output-type'> ${key}</span> ${fieldObj[key]} </li>`);
         }
       });
     };
@@ -1230,7 +1230,7 @@ export default class TopologyGraphComponent extends Component {
 
     // EventLog table row clicked event handle here
     if(!thisGraph.hideEventLog && thisGraph.props.eventLogData && thisGraph.props.eventLogData.length && thisGraph.activeLogRowArr.length){
-      if(event.target.nodeName === "TD"){
+      if(event !== undefined && event.target.nodeName === "TD"){
         let cName = thisGraph.activeLogRowArr[0].componentName+'-'+thisGraph.activeLogRowArr[0].targetComponentName;
         if(thisGraph.activeLogRowArr[0].eventType === 'INPUT'){
           cName = thisGraph.activeLogRowArr[0].componentName;

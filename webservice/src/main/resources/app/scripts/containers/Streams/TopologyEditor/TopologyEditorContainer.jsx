@@ -131,7 +131,9 @@ class TopologyEditorContainer extends Component {
     testHistory : {},
     testCompleted : false,
     deployFlag : false,
-    testRunDuration: 30
+    testRunDuration: 30,
+    testRunningMode :false,
+    abortTestCase : false
   };
 
   fetchData(versionId) {
@@ -1058,42 +1060,13 @@ class TopologyEditorContainer extends Component {
   }
 
   /*
-    runTestClicked fetch all the testCaseList from the server
-    And if the result is not empty then entities[0] is make selectedTestObj by default
+    runTestClicked invoke getAllTestCase methods 
+    And if the testRunActivated is true set all the test case variable to empty
   */
   runTestClicked(){
     if(!this.state.testRunActivated){
       if(this.graphData.nodes.length){
-        TestRunREST.getAllTestRun(this.topologyId).then((testList) => {
-          if(testList.responseMessage !== undefined){
-            FSReactToastr.error(
-              <CommonNotification flag="error" content={testList.responseMessage}/>, '', toastOpt);
-          } else {
-            const entities = testList.entities;
-            let stateObj = {
-              testCaseList : entities,
-              testCaseLoader : false,
-              testRunActivated : true,
-              selectedTestObj : entities.length > 0 ? entities[0] : '',
-              nodeListArr : this.graphData.nodes
-            };
-            if(stateObj.testCaseList.length === 0){
-              stateObj.nodeData = this.graphData.nodes[0].parentType.toLowerCase() === 'source' ? this.graphData.nodes[0] : '';
-              if(_.isEmpty(stateObj.nodeData)){
-                const sourceNode = _.filter(this.graphData.nodes, (node) => {
-                  return node.parentType.toLowerCase() === 'source';
-                });
-                stateObj.nodeData = sourceNode[0];
-              }
-              this.modalTitle = 'TEST-'+stateObj.nodeData.parentType;
-            }
-            this.setState(stateObj, () => {
-              if(this.state.testCaseList.length === 0){
-                this.refs.TestSourceNodeModal.show();
-              }
-            });
-          }
-        });
+        this.getAllTestCase();
       } else {
         FSReactToastr.info(
           <CommonNotification flag="error" content={"please configure some nodes before switching to test mode"}/>, '', toastOpt);
@@ -1101,6 +1074,43 @@ class TopologyEditorContainer extends Component {
     } else {
       this.setState({testRunActivated : false ,activeLogRowArr : [],testHistory : [] ,selectedTestObj : {}, eventLogData : [] , hideEventLog : true , testCompleted : false});
     }
+  }
+
+  /*
+    runTestClicked fetch all the testCaseList from the server
+    And if the result is not empty then entities[0] is make selectedTestObj by default
+  */
+  getAllTestCase(invoker){
+    TestRunREST.getAllTestRun(this.topologyId).then((testList) => {
+      if(testList.responseMessage !== undefined){
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={testList.responseMessage}/>, '', toastOpt);
+      } else {
+        const entities = testList.entities;
+        let stateObj = {
+          testCaseList : entities,
+          testCaseLoader : false,
+          testRunActivated : true,
+          selectedTestObj : entities.length > 0 ? entities[0] : '',
+          nodeListArr : this.graphData.nodes
+        };
+        if(stateObj.testCaseList.length === 0){
+          stateObj.nodeData = this.graphData.nodes[0].parentType.toLowerCase() === 'source' ? this.graphData.nodes[0] : '';
+          if(_.isEmpty(stateObj.nodeData)){
+            const sourceNode = _.filter(this.graphData.nodes, (node) => {
+              return node.parentType.toLowerCase() === 'source';
+            });
+            stateObj.nodeData = sourceNode[0];
+          }
+          this.modalTitle = 'TEST-'+stateObj.nodeData.parentType;
+        }
+        this.setState(stateObj, () => {
+          if(this.state.testCaseList.length === 0 && invoker === undefined){
+            this.refs.TestSourceNodeModal.show();
+          }
+        });
+      }
+    });
   }
 
   /*
@@ -1171,11 +1181,26 @@ class TopologyEditorContainer extends Component {
     testCaseListChange accept the obj select from UI
     and SET the selectedTestObj
   */
-  testCaseListChange = (obj) => {
+  testCaseListChange = (obj,type) => {
     if(obj){
-      this.setState({selectedTestObj : _.isPlainObject(obj) ? obj: {}}, () => {
-        this.refs.TestSourceNodeModal.show();
-      });
+      if(!!type){
+        this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete the Test Case?'}).then((confirmBox) => {
+          TestRunREST.deleteTestCase(this.topologyId, obj.id).then((result) => {
+            if(result.responseMessage !== undefined){
+              FSReactToastr.info(
+                <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
+            } else {
+              FSReactToastr.success(<strong>Test Case deleted successfully</strong>);
+              this.getAllTestCase('delete');
+            }
+          });
+          confirmBox.cancel();
+        }, () => {});
+      } else {
+        this.setState({selectedTestObj : _.isPlainObject(obj) ? obj: {}}, () => {
+          this.refs.TestSourceNodeModal.show();
+        });
+      }
     }
   }
 
@@ -1221,7 +1246,7 @@ class TopologyEditorContainer extends Component {
     this.refs.confirmRunTestModal.hide();
     if(confirm){
       const {selectedTestObj} = this.state;
-      this.setState({eventLogData :[] ,hideEventLog :true, testHistory : {},testCompleted : false});
+      this.setState({eventLogData :[] ,hideEventLog :true, testHistory : {},testCompleted : false, testRunningMode : true,abortTestCase : false});
       let testCaseData = { topologyId : this.topologyId , testCaseId : selectedTestObj.id };
       if(this.state.testRunDuration !== '') {
         testCaseData.durationSecs = parseInt(this.state.testRunDuration, 10);
@@ -1231,41 +1256,51 @@ class TopologyEditorContainer extends Component {
           const msg = testResult.responseMessage.indexOf('Not every source register') !== -1 ? "please configure all test source" : testResult.responseMessage;
           FSReactToastr.info(
             <CommonNotification flag="error" content={msg}/>, '', toastOpt);
+          this.setState({testRunningMode : false});
         } else {
           this.setState({hideEventLog : false});
           this.interval = setInterval(() => {
             TestRunREST.runTestCaseHistory(this.topologyId,testResult.id).then((testHistory) => {
               if(testHistory.responseMessage !== undefined){
                 clearInterval(this.interval);
-                this.setState({hideEventLog : true});
+                this.setState({hideEventLog : true,testRunningMode : false});
                 FSReactToastr.info(
                   <CommonNotification flag="error" content={testHistory.responseMessage}/>, '', toastOpt);
                 this.setState({hideEventLog :true,testHistory : {},testCompleted : true}, () => {
                   this.removeEventLogOverlayDiv();
                 });
               } else {
-                if(testHistory.finished){
-                  testHistory.eventLogFilePath = "/tmp/topology-test-run-event-topology-4-3b074dc7-0d29-4560-bc55-a97b4a0985ee.log";
+                this.setState({testHistory : testHistory}, () => {
                   TestRunREST.getTestCaseEventLog(this.topologyId,testHistory.id).then((events) => {
                     if(events.responseMessage !== undefined){
                       clearInterval(this.interval);
                       FSReactToastr.info(
                         <CommonNotification flag="error" content={events.responseMessage}/>, '', toastOpt);
-                      this.setState({eventLogData : [] ,hideEventLog :true,testCompleted : true}, () => {
+                      this.setState({eventLogData : [] ,hideEventLog :true,testCompleted : true,testRunningMode : false}, () => {
                         this.removeEventLogOverlayDiv();
                       });
                     } else {
                       _.map(events.entities,(entity , i) => {
                         entity.id = Utils.eventLogNumberId(i+1);
                       });
-                      this.setState({eventLogData : events.entities ,hideEventLog :false, testHistory : testHistory,testCompleted : true}, () => {
-                        clearInterval(this.interval);
-                        const msg =  this.state.eventLogData.length ?  "TestRun completed successfully" : "TestRun has No Record" ;
-                        FSReactToastr.success(<strong>{msg}</strong>);
+                      this.setState({eventLogData : events.entities ,hideEventLog :false, testHistory : testHistory,testCompleted : true,notifyCheck:false}, () => {
+                        if(testHistory.finished){
+                          this.setState({testRunningMode : false}, () => {
+                            clearInterval(this.interval);
+                            const msg =  this.state.abortTestCase
+                                          ? "Test Run aborted successfully"
+                                          : testHistory.success
+                                            ? this.state.eventLogData.length
+                                              ? "Test Run completed successfully"
+                                              : "Test Run has No Record"
+                                            : 'Test Run has No Record';
+                            FSReactToastr.success(<strong>{msg}</strong>);
+                          });
+                        }
                       });
                     }
                   });
-                }
+                });
               }
             });
           },3000);
@@ -1314,10 +1349,11 @@ class TopologyEditorContainer extends Component {
 
   handleEventLogHide = (flag,panel) => {
     const {hideEventLog} = this.state;
+    let notifyCheck = flag;
     if(panel !== undefined){
       flag = !hideEventLog;
     }
-    this.setState({hideEventLog :flag});
+    this.setState({hideEventLog :flag,abortTestCase:false,notifyCheck});
   }
 
   updateTestCaseList = (obj) => {
@@ -1387,8 +1423,24 @@ class TopologyEditorContainer extends Component {
     }
   }
 
+  handleKillTestRun = () => {
+    this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to Kill this Test Run?'}).then((confirmBox) => {
+      const {testHistory} = this.state;
+      TestRunREST.killTestCase(this.topologyId, testHistory.id).then((killStatus) => {
+        if(killStatus.responseMessage !== undefined){
+          this.setState({abortTestCase : killStatus.flagged});
+          FSReactToastr.info(
+            <CommonNotification flag="error" content={killStatus.responseMessage}/>, '', toastOpt);
+        } else {
+          this.setState({abortTestCase : killStatus.flagged});
+        }
+      });
+      confirmBox.cancel();
+    }, () => {});
+  }
+
   render() {
-    const {progressCount, progressBarColor, fetchLoader, mapTopologyConfig,deployStatus,testRunActivated,testCaseList,selectedTestObj,testCaseLoader,testRunCurrentEdges,testResult,nodeData,testName,showError,testSinkConfigure,nodeListArr,hideEventLog,eventLogData,activeLogRowArr,testHistory,testCompleted,deployFlag} = this.state;
+    const {progressCount, progressBarColor, fetchLoader, mapTopologyConfig,deployStatus,testRunActivated,testCaseList,selectedTestObj,testCaseLoader,testRunCurrentEdges,testResult,nodeData,testName,showError,testSinkConfigure,nodeListArr,hideEventLog,eventLogData,activeLogRowArr,testHistory,testCompleted,deployFlag,testRunningMode,abortTestCase,notifyCheck} = this.state;
     let nodeType = this.node
       ? this.node.currentType
       : '';
@@ -1401,12 +1453,12 @@ class TopologyEditorContainer extends Component {
               ? [<div key={"1"} className="loader-overlay"></div>,<CommonLoaderSign key={"2"} imgName={"viewMode"}/>]
               : <div className="graph-region">
                 <ZoomPanelComponent testCompleted={testCompleted} handleEventLogHide={this.handleEventLogHide} lastUpdatedTime={this.lastUpdatedTime} versionName={this.versionName} zoomInAction={this.graphZoomAction.bind(this, 'zoom_in')} zoomOutAction={this.graphZoomAction.bind(this, 'zoom_out')} showConfig={this.showConfig.bind(this)} confirmMode={this.confirmMode.bind(this)} testRunActivated={testRunActivated}/>
-                <EditorGraph hideEventLog={hideEventLog} ref="EditorGraph" removeActiveLogToolTip={this.removeActiveLogToolTip} activeLogRowArr={activeLogRowArr} eventLogData={eventLogData || []} addTestCase={this.addTestCaseHandler} selectedTestObj={selectedTestObj || {}} testItemSelected={this.testCaseListChange} testCaseList={testCaseList} graphData={this.graphData} viewMode={this.viewMode} topologyId={this.topologyId} versionId={this.versionId} versionsArr={this.state.versionsArr} getModalScope={this.getModalScope.bind(this)} setModalContent={this.setModalContent.bind(this)} customProcessors={this.customProcessors} bundleArr={this.state.bundleArr} getEdgeConfigModal={this.showEdgeConfigModal.bind(this)} setLastChange={this.setLastChange.bind(this)} topologyConfigMessageCB={this.topologyConfigMessageCB.bind(this)} showComponentNodeContainer={state.showComponentNodeContainer} testRunActivated={this.state.testRunActivated}/>
+                <EditorGraph testRunningMode={testRunningMode} hideEventLog={hideEventLog} ref="EditorGraph" removeActiveLogToolTip={this.removeActiveLogToolTip} activeLogRowArr={activeLogRowArr} eventLogData={eventLogData || []} addTestCase={this.addTestCaseHandler} selectedTestObj={selectedTestObj || {}} testItemSelected={this.testCaseListChange} testCaseList={testCaseList} graphData={this.graphData} viewMode={this.viewMode} topologyId={this.topologyId} versionId={this.versionId} versionsArr={this.state.versionsArr} getModalScope={this.getModalScope.bind(this)} setModalContent={this.setModalContent.bind(this)} customProcessors={this.customProcessors} bundleArr={this.state.bundleArr} getEdgeConfigModal={this.showEdgeConfigModal.bind(this)} setLastChange={this.setLastChange.bind(this)} topologyConfigMessageCB={this.topologyConfigMessageCB.bind(this)} showComponentNodeContainer={state.showComponentNodeContainer} testRunActivated={this.state.testRunActivated}/>
                 <div className="topology-footer">
                   {testRunActivated
-                  ? <OverlayTrigger key={4} placement="top" overlay={<Tooltip id = "tooltip"> Run Test </Tooltip>}>
-                      <button className="hb xl default pull-right" onClick={this.runTestCase.bind(this)}>
-                        <i className="fa fa-flask"></i>
+                  ? <OverlayTrigger key={4} placement="top" overlay={<Tooltip id = "tooltip"> {testRunningMode ?  'Kill Test' : 'Run Test'}  </Tooltip>}>
+                      <button className={`hb xl ${testRunningMode ?  'danger' : 'default'} pull-right`} disabled={testRunningMode ? _.isEmpty(testHistory) ? true : false : false} onClick={ testRunningMode ? this.handleKillTestRun.bind(this) : this.runTestCase.bind(this)}>
+                        <i className={`fa ${testRunningMode ?'fa-times' : 'fa-flask'}`}></i>
                       </button>
                     </OverlayTrigger>
                   : this.state.isAppRunning
@@ -1424,7 +1476,7 @@ class TopologyEditorContainer extends Component {
                       : ''
                   }
                   {
-                    testRunActivated &&  (!_.isEmpty(testHistory) && testHistory.eventLogFilePath) && eventLogData.length
+                    testRunActivated &&  !_.isEmpty(testHistory)  && eventLogData.length && !testRunningMode
                     ? <OverlayTrigger  placement="top" overlay={<Tooltip id = "tooltip"> Download File </Tooltip>}>
                         <button className="hb lg primary pull-right" onClick={this.handleDownloadTestFile.bind(this)}  style={{marginRight : "10px", marginTop : "4px"}}>
                           <i className="fa fa-download"></i>
@@ -1436,9 +1488,11 @@ class TopologyEditorContainer extends Component {
                    ?  <div className="topology-status text-right">
                         <p className="text-muted">Status:</p>
                         <p>{
-                            eventLogData.length > 0
+                            eventLogData.length > 0 && !testRunningMode
                             ? 'Results'
-                            : 'Not Tested'
+                            : testRunningMode
+                              ? 'Test RUNNING'
+                              : 'Not Tested'
                           }</p>
                       </div>
                     : <div className="topology-status text-right">
@@ -1527,7 +1581,7 @@ class TopologyEditorContainer extends Component {
           testRunActivated
           ? !hideEventLog
             ? <div className={`event-logs ${hideEventLog ? '' : 'active'}`}>
-                <EventLogContainer eventLogData={eventLogData || []} testCompleted={testCompleted}  handleEventLogHide={this.handleEventLogHide} activeRowClicked={this.handleActiveEventRow} activeLogRowArr={activeLogRowArr}/>
+                <EventLogContainer notifyCheck={notifyCheck} abortTestCase={abortTestCase} testRunningMode={testRunningMode} eventLogData={eventLogData || []} testCompleted={testCompleted}  handleEventLogHide={this.handleEventLogHide} activeRowClicked={this.handleActiveEventRow} activeLogRowArr={activeLogRowArr}/>
               </div>
             : ''
           : ''

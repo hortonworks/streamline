@@ -314,13 +314,27 @@ export default class ComponentNodeContainer extends Component {
     this.setState({editToolbar: true});
   }
   testListItemClicked = (obj) => {
-    this.props.testItemSelected(obj);
+    if(!this.props.testRunningMode){
+      this.props.testItemSelected(obj);
+    }
   }
   handleButtonClicked = (flag) => {
-    this.props.addTestCase(flag);
+    if(!this.props.testRunningMode){
+      this.props.addTestCase(flag);
+    }
+  }
+  deleteItem = (obj,event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if(!this.props.testRunningMode){
+      event.target.nodeName === "I"
+        ? this.props.testItemSelected(obj,'delete')
+        : '';
+      ;
+    }
   }
   render() {
-    const {hideSourceOnDrag, left, top, isDragging,testRunActivated,testCaseList,selectedTestObj} = this.props;
+    const {hideSourceOnDrag, left, top, isDragging,testRunActivated,testCaseList,selectedTestObj,testRunningMode} = this.props;
     if (isDragging && hideSourceOnDrag) {
       return null;
     }
@@ -380,7 +394,7 @@ export default class ComponentNodeContainer extends Component {
               <ul className="testComponent-list">
                 {
                   _.map(testCaseList , (list) => {
-                    return <li key={list.id} className={selectedTestObj.id === list.id ? 'active' : ''} onClick={this.testListItemClicked.bind(this,list)}><i className="fa fa-flask flaskFontSize"></i><br/>{list.name}</li>;
+                    return <li key={list.id} className={selectedTestObj.id === list.id ? 'active' : ''} onClick={this.testListItemClicked.bind(this,list)}><a href="javascript:void(0);" className="closeIcon"><i className="fa fa-times" onClick={this.deleteItem.bind(this, list)}></i></a> <i className="fa fa-flask flaskFontSize"></i><br/>{list.name}</li>;
                   })
                 }
               </ul>

@@ -66,7 +66,8 @@ class TestSourceNodeModal extends Component{
       repeatTime : 1,
       showInputError : false,
       sourceNodeArr : [],
-      sourceIndex : 0
+      sourceIndex : 0,
+      sleepMsPerIteration : 0
     };
     this.state = obj;
     this.fetchData();
@@ -123,6 +124,7 @@ class TestSourceNodeModal extends Component{
         stateObj.sourceNodeArr[i].nodeId = result.id;
         stateObj.sourceNodeArr[i].streamObj = result.outputStreams[0];
         stateObj.sourceNodeArr[i].repeatTime = this.state.repeatTime;
+        stateObj.sourceNodeArr[i].sleepMsPerIteration = this.state.sleepMsPerIteration;
       });
 
       if(testPromiseArr.length){
@@ -130,6 +132,7 @@ class TestSourceNodeModal extends Component{
           _.map(testResult, (result ,i) => {
             if(result.responseMessage !== undefined){
               result.records = '';
+              result.sleepMsPerIteration = this.state.sleepMsPerIteration;
               result.occurrence = this.state.repeatTime;
               result.testCaseId = testResult[0].testCaseId;
               this.newSourceArr.push(this.sourceArr[i]);
@@ -152,6 +155,7 @@ class TestSourceNodeModal extends Component{
               stateObj[i].showCodeMirror = false;
               stateObj[i].records = '';
             }
+            stateObj[i].sleepMsPerIteration = tResult.sleepMsPerIteration;
             stateObj[i].expandCodemirror = false;
             stateObj[i].repeatTime = tResult.occurrence;
             stateObj[i].testCaseId = tResult.testCaseId;
@@ -183,7 +187,7 @@ class TestSourceNodeModal extends Component{
     const {showInputError,sourceNodeArr, testName} = this.state;
     let validate = false,validationArr = [];
     _.map(sourceNodeArr, (source,i) => {
-      if(source.records === '' || !parseInt(source.repeatTime,10) || source.records === undefined || testName === ''){
+      if(source.records === '' || !parseInt(source.repeatTime,10) || parseInt(source.sleepMsPerIteration,10) < 0 || source.records === undefined || testName === ''){
         validationArr.push(false);
       }
     });
@@ -209,7 +213,8 @@ class TestSourceNodeModal extends Component{
       obj.push({
         sourceId : this.nodeArr[i].id,
         testCaseId : source.testCaseId || '',
-        occurrence : source.repeatTime
+        occurrence : source.repeatTime,
+        sleepMsPerIteration : source.sleepMsPerIteration || this.state.sleepMsPerIteration
       });
       tempInputdata[source.streamIdList[0]] = JSON.parse(source.records);
       obj[i].records = JSON.stringify(tempInputdata);
@@ -300,10 +305,10 @@ class TestSourceNodeModal extends Component{
     }
   }
 
-  handleRepeatTime = (e ,index) => {
+  handleInputChange = (type ,index,e) => {
     const {sourceIndex} = this.state;
     let tempSourceArr = _.cloneDeep(this.state.sourceNodeArr);
-    tempSourceArr[sourceIndex].repeatTime = e.target.value;
+    tempSourceArr[sourceIndex][type] = e.target.value;
     this.setState({sourceNodeArr : tempSourceArr});
   }
 
@@ -461,10 +466,23 @@ class TestSourceNodeModal extends Component{
                               </label>
                             </div>
                             <div className="col-md-8 row">
-                                <input type="number" value={tempSourceArr[sourceIndex].repeatTime} className={`form-control ${tempSourceArr[sourceIndex].repeatTime < 1 ? 'invalidInput' : ''}`} min={1} max={Number.MAX_SAFE_INTEGER} onChange={this.handleRepeatTime.bind(this)}/>
+                                <input type="number" value={tempSourceArr[sourceIndex].repeatTime} className={`form-control ${tempSourceArr[sourceIndex].repeatTime < 1 ? 'invalidInput' : ''}`} min={1} max={Number.MAX_SAFE_INTEGER} onChange={this.handleInputChange.bind(this,'repeatTime',sourceIndex)}/>
                             </div>
                             <div className="col-md-4 row" style={{lineHeight : "30px"}}>
                               <span>&nbsp;times</span>
+                            </div>
+                          </div>
+                          <div className="form-group">
+                            <div className="col-md-12 row" >
+                              <label>Sleep Time
+                                <span className="text-danger">*</span>
+                              </label>
+                            </div>
+                            <div className="col-md-8 row">
+                              <input type="number" value={tempSourceArr[sourceIndex].sleepMsPerIteration} className={`form-control ${tempSourceArr[sourceIndex].sleepMsPerIteration < 0 ? 'invalidInput' : ''}`} min={0} max={Number.MAX_SAFE_INTEGER} onChange={this.handleInputChange.bind(this,'sleepMsPerIteration',sourceIndex)}/>
+                            </div>
+                            <div className="col-md-4 row" style={{lineHeight : "30px"}}>
+                              <span>&nbsp;millseconds</span>
                             </div>
                           </div>
                         </form>
