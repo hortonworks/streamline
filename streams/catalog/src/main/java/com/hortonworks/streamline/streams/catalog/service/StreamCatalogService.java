@@ -419,8 +419,8 @@ public class StreamCatalogService {
         // remove topology test run case
         Collection<TopologyTestRunCase> runCases = listTopologyTestRunCase(topologyIdVersionIdQueryParams);
         for (TopologyTestRunCase runCase : runCases) {
-            Collection<TopologyTestRunCaseSource> runCaseSources = listTopologyTestRunCaseSource(topologyId, runCase.getId());
-            Collection<TopologyTestRunCaseSink> runCaseSinks = listTopologyTestRunCaseSink(topologyId, runCase.getId());
+            Collection<TopologyTestRunCaseSource> runCaseSources = listTopologyTestRunCaseSource(runCase.getId());
+            Collection<TopologyTestRunCaseSink> runCaseSinks = listTopologyTestRunCaseSink(runCase.getId());
 
             // remove topology test run case source
             for (TopologyTestRunCaseSource runCaseSource : runCaseSources) {
@@ -561,8 +561,8 @@ public class StreamCatalogService {
         // add topology test run case
         Collection<TopologyTestRunCase> runCases = listTopologyTestRunCase(topologyIdVersionIdQueryParams);
         for (TopologyTestRunCase runCase : runCases) {
-            Collection<TopologyTestRunCaseSource> runCaseSources = listTopologyTestRunCaseSource(topologyId, runCase.getId());
-            Collection<TopologyTestRunCaseSink> runCaseSinks = listTopologyTestRunCaseSink(topologyId, runCase.getId());
+            Collection<TopologyTestRunCaseSource> runCaseSources = listTopologyTestRunCaseSource(runCase.getId());
+            Collection<TopologyTestRunCaseSink> runCaseSinks = listTopologyTestRunCaseSink(runCase.getId());
 
             TopologyTestRunCase newCase = addTopologyTestRunCase(topologyId, newVersionId, new TopologyTestRunCase(runCase));
 
@@ -2663,9 +2663,8 @@ public class StreamCatalogService {
         return dao.remove(testcaseSource.getStorableKey());
     }
 
-    public Collection<TopologyTestRunCaseSource> listTopologyTestRunCaseSource(Long topologyId, Long testCaseId) {
+    public Collection<TopologyTestRunCaseSource> listTopologyTestRunCaseSource(Long testCaseId) {
         List<QueryParam> queryParams = new ArrayList<>();
-        queryParams.add(new QueryParam("topologyId", String.valueOf(topologyId)));
         queryParams.add(new QueryParam("testCaseId", String.valueOf(testCaseId)));
         return dao.find(TopologyTestRunCaseSource.NAMESPACE, queryParams);
     }
@@ -2748,9 +2747,8 @@ public class StreamCatalogService {
         return dao.remove(testcaseSink.getStorableKey());
     }
 
-    public Collection<TopologyTestRunCaseSink> listTopologyTestRunCaseSink(Long topologyId, Long testCaseId) {
+    public Collection<TopologyTestRunCaseSink> listTopologyTestRunCaseSink(Long testCaseId) {
         List<QueryParam> queryParams = new ArrayList<>();
-        queryParams.add(new QueryParam("topologyId", String.valueOf(topologyId)));
         queryParams.add(new QueryParam("testCaseId", String.valueOf(testCaseId)));
         return dao.find(TopologyTestRunCaseSink.NAMESPACE, queryParams);
     }
