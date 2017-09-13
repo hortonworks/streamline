@@ -171,6 +171,9 @@ public class TopologyTestRunner {
                     }
                 }));
 
+        // just create event file before running actual test run process
+        createEventLogFile(eventLogFilePath);
+
         TopologyTestRunHistory history = initializeTopologyTestRunHistory(topology, testCase,
                 expectedOutputRecordsMap, eventLogFilePath);
         catalogService.addTopologyTestRunHistory(history);
@@ -185,6 +188,21 @@ public class TopologyTestRunner {
 
     public boolean killTest(TopologyActions topologyActions, TopologyTestRunHistory history) {
         return topologyActions.killTest(history);
+    }
+
+    private void createEventLogFile(String eventLogFilePath) throws IOException {
+        File eventLogFile = new File(eventLogFilePath);
+        File parent = eventLogFile.getParentFile();
+
+        if (!parent.exists() && !parent.mkdirs()) {
+            throw new IllegalStateException("Cannot create directory for storing test run event. Path: " +
+                    parent.getCanonicalPath());
+        }
+
+        if (!eventLogFile.exists() && !eventLogFile.createNewFile()) {
+            throw new IllegalStateException("Cannot create event log file for storing test run event. Path: " +
+                    eventLogFile.getCanonicalPath());
+        }
     }
 
     private Void runTestInBackground(TopologyActions topologyActions, Topology topology,
