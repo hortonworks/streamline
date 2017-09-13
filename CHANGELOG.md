@@ -1,4 +1,5 @@
 ## 0.4
+ * ISSUE-894:    : Test Mode: Show output events as it becomes available & ui integration for other test mode enhancements
  * ISSUE-905:    : Test Mode: Need API modifications to delete all test source/sink when test case is deleted
  * ISSUE-901:    : Test mode: Create event file prior to launch actual test process
  * ISSUE-902:    : Add a sleep option along with repeat count
