@@ -343,6 +343,17 @@ public class TopologyTestRunResource {
     @Path("/topologies/{topologyId}/testcases/{testCaseId}")
     public Response removeTestRunCase(@PathParam("topologyId") Long topologyId,
                                       @PathParam("testCaseId") Long testCaseId) {
+
+        Collection<TopologyTestRunCaseSource> sources = catalogService.listTopologyTestRunCaseSource(testCaseId);
+        if (sources != null) {
+            sources.forEach(s -> catalogService.removeTestRunCaseSource(s.getId()));
+        }
+
+        Collection<TopologyTestRunCaseSink> sinks = catalogService.listTopologyTestRunCaseSink(testCaseId);
+        if (sinks != null) {
+            sinks.forEach(s -> catalogService.removeTestRunCaseSink(s.getId()));
+        }
+
         TopologyTestRunCase testRunCase = catalogService.removeTestRunCase(topologyId, testCaseId);
         if (testRunCase != null) {
             return WSUtils.respondEntity(testRunCase, OK);
@@ -442,7 +453,7 @@ public class TopologyTestRunResource {
     @Path("/topologies/{topologyId}/testcases/{testCaseId}/sources")
     public Response listTestRunCaseSource(@PathParam("topologyId") Long topologyId,
                                           @PathParam("testCaseId") Long testCaseId) {
-        Collection<TopologyTestRunCaseSource> sources = catalogService.listTopologyTestRunCaseSource(topologyId, testCaseId);
+        Collection<TopologyTestRunCaseSource> sources = catalogService.listTopologyTestRunCaseSource(testCaseId);
         if (sources == null) {
             throw EntityNotFoundException.byFilter("topologyId: " + topologyId + " / testCaseId: " + testCaseId);
         }
@@ -529,12 +540,12 @@ public class TopologyTestRunResource {
     @Path("/topologies/{topologyId}/testcases/{testCaseId}/sinks")
     public Response listTestRunCaseSink(@PathParam("topologyId") Long topologyId,
                                           @PathParam("testCaseId") Long testCaseId) {
-        Collection<TopologyTestRunCaseSink> sources = catalogService.listTopologyTestRunCaseSink(topologyId, testCaseId);
-        if (sources == null) {
+        Collection<TopologyTestRunCaseSink> sinks = catalogService.listTopologyTestRunCaseSink(testCaseId);
+        if (sinks == null) {
             throw EntityNotFoundException.byFilter("topologyId: " + topologyId + " / testCaseId: " + testCaseId);
         }
 
-        return WSUtils.respondEntities(sources, OK);
+        return WSUtils.respondEntities(sinks, OK);
     }
 
 
