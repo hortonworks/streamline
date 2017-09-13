@@ -21,6 +21,6 @@ import javax.ws.rs.core.Response;
 
 public class WebserviceAuthorizationException extends WebServiceException {
     public WebserviceAuthorizationException(String msg) {
-        super(Response.Status.UNAUTHORIZED, msg);
+        super(Response.Status.FORBIDDEN, msg);
     }
 }
