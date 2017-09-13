@@ -22,6 +22,7 @@ import com.hortonworks.streamline.common.exception.service.exception.request.Top
 import com.hortonworks.streamline.streams.actions.StatusImpl;
 import com.hortonworks.streamline.streams.actions.TopologyActionContext;
 import com.hortonworks.streamline.streams.actions.TopologyActions;
+import com.hortonworks.streamline.streams.catalog.TopologyTestRunHistory;
 import com.hortonworks.streamline.streams.cluster.Constants;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.exception.TopologyNotAliveException;
@@ -58,6 +59,7 @@ import javax.ws.rs.client.ClientBuilder;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
@@ -73,6 +75,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -133,6 +137,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     private long nimbusThriftMaxBufferSize;
 
     private AutoCredsServiceConfigurationReader serviceConfigurationReader;
+    private final ConcurrentHashMap<Long, Boolean> forceKillRequests = new ConcurrentHashMap<>();
 
     public StormTopologyActionsImpl() {
     }
@@ -240,7 +245,9 @@ public class StormTopologyActionsImpl implements TopologyActions {
         commands.add(fileName);
         LOG.info("Deploying Application {}", topology.getName());
         LOG.info(String.join(" ", commands));
-        ShellProcessResult shellProcessResult = executeShellProcess(commands);
+
+        Process process = executeShellProcess(commands);
+        ShellProcessResult shellProcessResult = waitProcessFor(process);
         int exitValue = shellProcessResult.exitValue;
         if (exitValue != 0) {
             LOG.error("Topology deploy command failed - exit code: {} / output: {}", exitValue, shellProcessResult.stdout);
@@ -259,7 +266,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     }
 
     @Override
-    public void testRun(TopologyLayout topology, String mavenArtifacts,
+    public void runTest(TopologyLayout topology, TopologyTestRunHistory testRunHistory, String mavenArtifacts,
                         Map<String, TestRunSource> testRunSourcesForEachSource,
                         Map<String, TestRunProcessor> testRunProcessorsForEachProcessor,
                         Map<String, TestRunSink> testRunSinksForEachSink, Optional<Long> durationSecs) throws Exception {
@@ -294,13 +301,22 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
         commands.add(fileName);
 
-        ShellProcessResult shellProcessResult = executeShellProcess(commands);
+        Process process = executeShellProcess(commands);
+        ShellProcessResult shellProcessResult = waitTestRunProcess(process, testRunHistory.getId());
         int exitValue = shellProcessResult.exitValue;
         if (exitValue != 0) {
             LOG.error("Topology deploy command as test mode failed - exit code: {} / output: {}", exitValue, shellProcessResult.stdout);
             throw new Exception("Topology could not be run " +
                     "successfully as test mode: storm deploy command failed");
         }
+    }
+
+    @Override
+    public boolean killTest(TopologyTestRunHistory testRunHistory) {
+        // just turn on the flag only if it exists
+        LOG.info("Turning on force kill flag on test run history {}", testRunHistory.getId());
+        Boolean newValue = forceKillRequests.computeIfPresent(testRunHistory.getId(), (id, flag) -> true);
+        return newValue != null;
     }
 
     @Override
@@ -522,7 +538,8 @@ public class StormTopologyActionsImpl implements TopologyActions {
                     commands.add(name);
                 });
 
-                ShellProcessResult shellProcessResult = executeShellProcess(commands);
+                Process process = executeShellProcess(commands);
+                ShellProcessResult shellProcessResult = waitProcessFor(process);
                 if (shellProcessResult.exitValue != 0) {
                     LOG.error("Adding artifacts to jar command failed - exit code: {} / output: {}",
                             shellProcessResult.exitValue, shellProcessResult.stdout);
@@ -750,11 +767,14 @@ public class StormTopologyActionsImpl implements TopologyActions {
         components.add(yamlComponent);
     }
 
-    private ShellProcessResult executeShellProcess (List<String> commands) throws  Exception {
+    private Process executeShellProcess (List<String> commands) throws Exception {
         LOG.debug("Executing command: {}", Joiner.on(" ").join(commands));
         ProcessBuilder processBuilder = new ProcessBuilder(commands);
         processBuilder.redirectErrorStream(true);
-        Process process = processBuilder.start();
+        return processBuilder.start();
+    }
+
+    private ShellProcessResult waitProcessFor(Process process) throws IOException, InterruptedException {
         StringWriter sw = new StringWriter();
         IOUtils.copy(process.getInputStream(), sw, Charset.defaultCharset());
         String stdout = sw.toString();
@@ -763,6 +783,65 @@ public class StormTopologyActionsImpl implements TopologyActions {
         LOG.debug("Command output: {}", stdout);
         LOG.debug("Command exit status: {}", exitValue);
         return new ShellProcessResult(exitValue, stdout);
+    }
+
+    private ShellProcessResult waitTestRunProcess(Process process, long topologyRunHistoryId) throws IOException {
+        forceKillRequests.put(topologyRunHistoryId, false);
+
+        LOG.info("Waiting for test run for history {} to be finished...", topologyRunHistoryId);
+
+        StringBuilder sb = new StringBuilder();
+        for (int idx = 0 ; ; idx++) {
+            if (!process.isAlive()) {
+                break;
+            }
+
+            // read stdout if available
+            sb.append(readProcessStream(process.getInputStream()));
+
+            if (forceKillRequests.getOrDefault(topologyRunHistoryId, false)) {
+                LOG.info("Received force kill for test run {} - destroying process...", topologyRunHistoryId);
+                process.destroyForcibly();
+            }
+
+            // leave a log for each 10 secs...
+            if ((idx + 1) % 100 == 0) {
+                LOG.info("Still waiting for test run for history {} to be finished...", topologyRunHistoryId);
+            }
+
+            try {
+                process.waitFor(100, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                // ignored
+            }
+        }
+
+        LOG.info("Test run for history {} is finished", topologyRunHistoryId);
+
+        String stdout = sb.toString();
+
+        forceKillRequests.remove(topologyRunHistoryId);
+
+        int exitValue = process.exitValue();
+        LOG.debug("Command output: {}", stdout);
+        LOG.debug("Command exit status: {}", exitValue);
+        return new ShellProcessResult(exitValue, stdout);
+    }
+
+    private String readProcessStream(InputStream processInputStream) {
+        try {
+            StringBuilder sb = new StringBuilder();
+            while (processInputStream.available() > 0) {
+                int bufferSize = processInputStream.available();
+                byte[] errorReadingBuffer = new byte[bufferSize];
+                int readSize = processInputStream.read(errorReadingBuffer, 0, bufferSize);
+                errorReadingBuffer = Arrays.copyOfRange(errorReadingBuffer, 0, readSize);
+                sb.append(new String(errorReadingBuffer, Charset.forName("UTF-8")));
+            }
+            return sb.toString();
+        } catch (IOException e) {
+            return "(cannot capture process stream)";
+        }
     }
 
     private static class ShellProcessResult {

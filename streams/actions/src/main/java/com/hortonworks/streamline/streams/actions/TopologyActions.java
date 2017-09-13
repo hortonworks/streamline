@@ -15,6 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.actions;
 
+import com.hortonworks.streamline.streams.catalog.TopologyTestRunHistory;
 import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
@@ -39,10 +40,19 @@ public interface TopologyActions {
     // Compose and run parameter topology as test mode using the underlying streaming engine.
     // The parameter 'topology' should contain its own topology DAG.
     // Please refer the javadoc of TestRunSource and also TestRunSink to see which information this method requires.
-    void testRun(TopologyLayout topology, String mavenArtifacts,
+    void runTest(TopologyLayout topology, TopologyTestRunHistory testRunHistory, String mavenArtifacts,
                  Map<String, TestRunSource> testRunSourcesForEachSource,
                  Map<String, TestRunProcessor> testRunProcessorsForEachProcessor,
                  Map<String, TestRunSink> testRunSinksForEachSink, Optional<Long> durationSecs) throws Exception;
+
+    // Kill topology running as test mode if exists.
+    // Minimum requirement of this interface method is ensuring current running topology to be killed eventually.
+    // (Whether kill topology immediately or not is up to the implementation detail.)
+    // Querying TopologyTestRunHistory would still give the status of test run, including it is killed or not.
+    // The return value denotes whether killing topology is at least be triggered or not:
+    // it returns true if it succeeds to trigger, false otherwise.
+    // (topology is still not launched, process for topology test completed, etc.)
+    boolean killTest(TopologyTestRunHistory testRunHistory);
 
     //Kill the artifact that was deployed using deploy
     void kill (TopologyLayout topology, String asUser) throws Exception;

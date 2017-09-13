@@ -181,6 +181,10 @@ public class TopologyTestRunner {
         return history;
     }
 
+    public boolean killTest(TopologyActions topologyActions, TopologyTestRunHistory history) {
+        return topologyActions.killTest(history);
+    }
+
     private Void runTestInBackground(TopologyActions topologyActions, Topology topology,
                                      TopologyTestRunHistory history,
                                      Map<String, TestRunSource> testRunSourceMap,
@@ -193,7 +197,7 @@ public class TopologyTestRunner {
             topologyActionsService.setUpClusterArtifacts(topology, topologyActions);
             String mavenArtifacts = topologyActionsService.setUpExtraJars(topology, topologyActions);
 
-            topologyActions.testRun(topologyLayout, mavenArtifacts, testRunSourceMap, testRunProcessorMap,
+            topologyActions.runTest(topologyLayout, history, mavenArtifacts, testRunSourceMap, testRunProcessorMap,
                     testRunSinkMap, durationSecs);
 
             history.finishSuccessfully();
