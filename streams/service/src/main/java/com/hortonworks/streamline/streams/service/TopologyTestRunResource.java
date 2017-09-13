@@ -346,12 +346,12 @@ public class TopologyTestRunResource {
 
         Collection<TopologyTestRunCaseSource> sources = catalogService.listTopologyTestRunCaseSource(testCaseId);
         if (sources != null) {
-            sources.forEach(s -> catalogService.removeTestRunCaseSource(s.getId()));
+            sources.forEach(s -> catalogService.removeTopologyTestRunCaseSource(s.getId()));
         }
 
         Collection<TopologyTestRunCaseSink> sinks = catalogService.listTopologyTestRunCaseSink(testCaseId);
         if (sinks != null) {
-            sinks.forEach(s -> catalogService.removeTestRunCaseSink(s.getId()));
+            sinks.forEach(s -> catalogService.removeTopologyTestRunCaseSink(s.getId()));
         }
 
         TopologyTestRunCase testRunCase = catalogService.removeTestRunCase(topologyId, testCaseId);
