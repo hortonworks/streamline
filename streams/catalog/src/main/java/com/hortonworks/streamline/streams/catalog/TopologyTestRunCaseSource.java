@@ -37,6 +37,7 @@ public class TopologyTestRunCaseSource extends AbstractStorable {
     private Long versionId;
     private String records;
     private Integer occurrence;
+    private Long sleepMsPerIteration;
     private Long timestamp;
 
     public TopologyTestRunCaseSource() {
@@ -50,6 +51,7 @@ public class TopologyTestRunCaseSource extends AbstractStorable {
             setVersionId(other.getVersionId());
             setRecords(other.getRecords());
             setOccurrence(other.getOccurrence());
+            setSleepMsPerIteration(other.getSleepMsPerIteration());
             setTimestamp(other.getTimestamp());
         }
     }
@@ -137,6 +139,17 @@ public class TopologyTestRunCaseSource extends AbstractStorable {
         this.occurrence = occurrence;
     }
 
+    /**
+     * Sleep duration (milliseconds) per every iteration of records.
+     */
+    public Long getSleepMsPerIteration() {
+        return sleepMsPerIteration;
+    }
+
+    public void setSleepMsPerIteration(Long sleepMsPerIteration) {
+        this.sleepMsPerIteration = sleepMsPerIteration;
+    }
+
     public Long getTimestamp() {
         return timestamp;
     }
@@ -162,6 +175,8 @@ public class TopologyTestRunCaseSource extends AbstractStorable {
         if (getRecords() != null ? !getRecords().equals(that.getRecords()) : that.getRecords() != null) return false;
         if (getOccurrence() != null ? !getOccurrence().equals(that.getOccurrence()) : that.getOccurrence() != null)
             return false;
+        if (getSleepMsPerIteration() != null ? !getSleepMsPerIteration().equals(that.getSleepMsPerIteration()) : that.getSleepMsPerIteration() != null)
+            return false;
         return getTimestamp() != null ? getTimestamp().equals(that.getTimestamp()) : that.getTimestamp() == null;
     }
 
@@ -173,6 +188,7 @@ public class TopologyTestRunCaseSource extends AbstractStorable {
         result = 31 * result + (getVersionId() != null ? getVersionId().hashCode() : 0);
         result = 31 * result + (getRecords() != null ? getRecords().hashCode() : 0);
         result = 31 * result + (getOccurrence() != null ? getOccurrence().hashCode() : 0);
+        result = 31 * result + (getSleepMsPerIteration() != null ? getSleepMsPerIteration().hashCode() : 0);
         result = 31 * result + (getTimestamp() != null ? getTimestamp().hashCode() : 0);
         return result;
     }
@@ -186,6 +202,7 @@ public class TopologyTestRunCaseSource extends AbstractStorable {
                 ", versionId=" + versionId +
                 ", records='" + records + '\'' +
                 ", occurrence=" + occurrence +
+                ", sleepMsPerIteration=" + sleepMsPerIteration +
                 ", timestamp=" + timestamp +
                 '}';
     }

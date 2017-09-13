@@ -29,26 +29,29 @@ import java.util.Set;
 public class TestRunSource extends StreamlineSource {
     private final Map<String, List<Map<String, Object>>> testRecordsForEachStream;
     private final int occurrence;
+    private final long sleepMsPerIteration;
     private final String eventLogFilePath;
 
     public TestRunSource() {
-        this(Collections.emptySet(), Collections.emptyMap(), 0, "");
+        this(Collections.emptySet(), Collections.emptyMap(), 0, 0L, "");
     }
 
     /**
      * Constructor.
      *
      * @param outputStreams output streams.
+     * @param sleepMsPerIteration sleep duration per records set. Spout will sleep given time per each iteration.
      * @param testRecordsForEachStream (output stream name) -> list of test record (each map represents a record)
      * @param occurrence
      * @param eventLogFilePath
      */
     public TestRunSource(Set<Stream> outputStreams,
                          Map<String, List<Map<String, Object>>> testRecordsForEachStream,
-                         Integer occurrence, String eventLogFilePath) {
+                         Integer occurrence, Long sleepMsPerIteration, String eventLogFilePath) {
         super(outputStreams);
         this.testRecordsForEachStream = testRecordsForEachStream;
         this.occurrence =  (occurrence != null) ? occurrence : 1;
+        this.sleepMsPerIteration =  (sleepMsPerIteration != null) ? sleepMsPerIteration : 0L;
         this.eventLogFilePath = eventLogFilePath;
     }
 
@@ -58,6 +61,10 @@ public class TestRunSource extends StreamlineSource {
 
     public int getOccurrence() {
         return occurrence;
+    }
+
+    public long getSleepMsPerIteration() {
+        return sleepMsPerIteration;
     }
 
     public String getEventLogFilePath() {
@@ -73,6 +80,7 @@ public class TestRunSource extends StreamlineSource {
         TestRunSource that = (TestRunSource) o;
 
         if (getOccurrence() != that.getOccurrence()) return false;
+        if (getSleepMsPerIteration() != that.getSleepMsPerIteration()) return false;
         if (getTestRecordsForEachStream() != null ? !getTestRecordsForEachStream().equals(that.getTestRecordsForEachStream()) : that.getTestRecordsForEachStream() != null)
             return false;
         return getEventLogFilePath() != null ? getEventLogFilePath().equals(that.getEventLogFilePath()) : that.getEventLogFilePath() == null;
@@ -83,6 +91,7 @@ public class TestRunSource extends StreamlineSource {
         int result = super.hashCode();
         result = 31 * result + (getTestRecordsForEachStream() != null ? getTestRecordsForEachStream().hashCode() : 0);
         result = 31 * result + getOccurrence();
+        result = 31 * result + (int) (getSleepMsPerIteration() ^ (getSleepMsPerIteration() >>> 32));
         result = 31 * result + (getEventLogFilePath() != null ? getEventLogFilePath().hashCode() : 0);
         return result;
     }
@@ -92,6 +101,7 @@ public class TestRunSource extends StreamlineSource {
         return "TestRunSource{" +
                 "testRecordsForEachStream=" + testRecordsForEachStream +
                 ", occurrence=" + occurrence +
+                ", sleepMsPerIteration=" + sleepMsPerIteration +
                 ", eventLogFilePath='" + eventLogFilePath + '\'' +
                 '}';
     }
