@@ -1,4 +1,8 @@
 ## 0.4
+ * ISSUE-905:    : Test Mode: Need API modifications to delete all test source/sink when test case is deleted
+ * ISSUE-901:    : Test mode: Create event file prior to launch actual test process
+ * ISSUE-902:    : Add a sleep option along with repeat count
+ * ISSUE-899:    : Test mode: Provide an option to force stop a test run
  * ISSUE-893     : Test mode: After deploying an app, going back and editing the test case throws exception
  * ISSUE-889     : Retain Window configuration when running test topology with WindowedRule
  * ISSUE-887     : Recording events from sink leads the result confused
