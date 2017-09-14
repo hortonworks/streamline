@@ -121,7 +121,8 @@ class EditorGraph extends Component {
       eventLogData,
       activeLogRowArr,
       removeActiveLogToolTip,
-      hideEventLog
+      hideEventLog,
+      testRunningMode
     } = this.props;
     const {boxes, bundleArr} = this.state;
     const componentsBundle = [...bundleArr.sourceBundle, ...bundleArr.processorsBundle, ...bundleArr.sinksBundle];
@@ -132,7 +133,7 @@ class EditorGraph extends Component {
         }}>
           <TopologyGraphComponent ref="TopologyGraph" height={parseInt(actualHeight, 10)} data={graphData} topologyId={topologyId} versionId={versionId} versionsArr={versionsArr} viewMode={viewMode} getModalScope={getModalScope} setModalContent={setModalContent} getEdgeConfigModal={getEdgeConfigModal} setLastChange={setLastChange} topologyConfigMessageCB={topologyConfigMessageCB} testRunActivated={testRunActivated} eventLogData={eventLogData} activeLogRowArr={activeLogRowArr} removeActiveLogToolTip={removeActiveLogToolTip} hideEventLog={hideEventLog}/>
           {state.showComponentNodeContainer
-            ? <ComponentNodeContainer left={boxes.left} top={boxes.top} hideSourceOnDrag={true} viewMode={viewMode} customProcessors={this.props.customProcessors} bundleArr={bundleArr} testRunActivated={testRunActivated} testItemSelected={testItemSelected} testCaseList={testCaseList} selectedTestObj={selectedTestObj} addTestCase={addTestCase} eventLogData={eventLogData} />
+            ? <ComponentNodeContainer testRunningMode={testRunningMode} left={boxes.left} top={boxes.top} hideSourceOnDrag={true} viewMode={viewMode} customProcessors={this.props.customProcessors} bundleArr={bundleArr} testRunActivated={testRunActivated} testItemSelected={testItemSelected} testCaseList={testCaseList} selectedTestObj={selectedTestObj} addTestCase={addTestCase} eventLogData={eventLogData} />
             : null
           }
           {state.showSpotlightSearch ? <SpotlightSearch viewMode={viewMode} componentsList={Utils.sortArray(componentsBundle, 'name', true)} addComponentCallback={this.addComponent.bind(this)}/> : ''}

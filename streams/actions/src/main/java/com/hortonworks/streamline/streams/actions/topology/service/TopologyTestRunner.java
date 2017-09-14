@@ -128,6 +128,7 @@ public class TopologyTestRunner {
 
         Map<Long, Map<String, List<Map<String, Object>>>> testRecordsForEachSources = readTestRecordsFromTestCaseSources(testRunCaseSources);
         Map<Long, Integer> occurrenceForEachSources = readOccurrenceFromTestCaseSources(testRunCaseSources);
+        Map<Long, Long> sleepMsPerRecordsForEachSources = readSleepMsPerIterationFromTestCaseSources(testRunCaseSources);
         Map<String, List<Map<String, Object>>> expectedOutputRecordsMap = readExpectedRecordsFromTestCaseSinks(sinks, testRunCaseSinks);
 
         String eventLogFilePath = getTopologyTestRunEventLog(topology);
@@ -138,6 +139,7 @@ public class TopologyTestRunner {
                             TestRunSource testRunSource = new TestRunSource(s.getOutputStreams(),
                                     testRecordsForEachSources.get(Long.valueOf(s.getId())),
                                     occurrenceForEachSources.get(Long.valueOf(s.getId())),
+                                    sleepMsPerRecordsForEachSources.get(Long.valueOf(s.getId())),
                                     eventLogFilePath);
                             testRunSource.setName(s.getName());
                             return testRunSource;
@@ -169,6 +171,9 @@ public class TopologyTestRunner {
                     }
                 }));
 
+        // just create event file before running actual test run process
+        createEventLogFile(eventLogFilePath);
+
         TopologyTestRunHistory history = initializeTopologyTestRunHistory(topology, testCase,
                 expectedOutputRecordsMap, eventLogFilePath);
         catalogService.addTopologyTestRunHistory(history);
@@ -179,6 +184,25 @@ public class TopologyTestRunner {
                 finalDurationSecs), forkJoinPool);
 
         return history;
+    }
+
+    public boolean killTest(TopologyActions topologyActions, TopologyTestRunHistory history) {
+        return topologyActions.killTest(history);
+    }
+
+    private void createEventLogFile(String eventLogFilePath) throws IOException {
+        File eventLogFile = new File(eventLogFilePath);
+        File parent = eventLogFile.getParentFile();
+
+        if (!parent.exists() && !parent.mkdirs()) {
+            throw new IllegalStateException("Cannot create directory for storing test run event. Path: " +
+                    parent.getCanonicalPath());
+        }
+
+        if (!eventLogFile.exists() && !eventLogFile.createNewFile()) {
+            throw new IllegalStateException("Cannot create event log file for storing test run event. Path: " +
+                    eventLogFile.getCanonicalPath());
+        }
     }
 
     private Void runTestInBackground(TopologyActions topologyActions, Topology topology,
@@ -193,7 +217,7 @@ public class TopologyTestRunner {
             topologyActionsService.setUpClusterArtifacts(topology, topologyActions);
             String mavenArtifacts = topologyActionsService.setUpExtraJars(topology, topologyActions);
 
-            topologyActions.testRun(topologyLayout, mavenArtifacts, testRunSourceMap, testRunProcessorMap,
+            topologyActions.runTest(topologyLayout, history, mavenArtifacts, testRunSourceMap, testRunProcessorMap,
                     testRunSinkMap, durationSecs);
 
             history.finishSuccessfully();
@@ -232,6 +256,11 @@ public class TopologyTestRunner {
     private Map<Long, Integer> readOccurrenceFromTestCaseSources(List<TopologyTestRunCaseSource> testRunCaseSources) {
         return testRunCaseSources.stream()
                 .collect(toMap(s -> s.getSourceId(), s -> s.getOccurrence()));
+    }
+
+    private Map<Long, Long> readSleepMsPerIterationFromTestCaseSources(List<TopologyTestRunCaseSource> testRunCaseSources) {
+        return testRunCaseSources.stream()
+                .collect(toMap(s -> s.getSourceId(), s -> s.getSleepMsPerIteration()));
     }
 
     private Map<String, List<Map<String, Object>>> readExpectedRecordsFromTestCaseSinks(List<StreamlineSink> sinks,

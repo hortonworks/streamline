@@ -126,6 +126,11 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
         return topologyTestRunner.runTest(topologyActions, topology, testRunInputJson);
     }
 
+    public boolean killTestRunTopology(Topology topology, TopologyTestRunHistory history) {
+        TopologyActions topologyActions = getTopologyActionsInstance(topology);
+        return topologyTestRunner.killTest(topologyActions, history);
+    }
+
     public void killTopology(Topology topology, String asUser) throws Exception {
         getTopologyContext(topology, asUser).kill();
     }

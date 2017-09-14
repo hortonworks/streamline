@@ -147,6 +147,29 @@ const TestRunREST = {
   },
   getDownloadTestCaseUrl(id,historyId){
     return baseUrl + 'topologies/' + id + "/testhistories/"+historyId+"/events/download";
+  },
+  killTestCase(id,historyId,options){
+    options = options || {};
+    options.method = options.method || 'POST';
+    options.credentials = 'same-origin';
+    options.headers = options.headers || {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    let url = baseUrl + 'topologies/' + id+ "/actions/killtest/"+historyId;
+    return fetch(url, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  deleteTestCase(id,testCaseId,options){
+    options = options || {};
+    options.method = options.method || 'DELETE';
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'topologies/' + id +'/testcases/'+testCaseId, options)
+      .then((response) => {
+        return response.json();
+      });
   }
 };
 

@@ -57,6 +57,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -96,6 +97,25 @@ public class TopologyTestRunResource {
         }
 
         throw EntityNotFoundException.byId(topologyId.toString());
+    }
+
+    @POST
+    @Path("/topologies/{topologyId}/actions/killtest/{historyId}")
+    @Timed
+    public Response killTestRunTopology(@Context UriInfo urlInfo,
+                                        @PathParam("topologyId") Long topologyId,
+                                        @PathParam("historyId") Long historyId) throws Exception {
+        Topology topology = catalogService.getTopology(topologyId);
+        TopologyTestRunHistory history = catalogService.getTopologyTestRunHistory(historyId);
+
+        if (topology == null) {
+            throw EntityNotFoundException.byName("Topology with ID " + topologyId.toString());
+        } else if (history == null) {
+            throw EntityNotFoundException.byName("TopologyTestRunHistory with ID " + historyId.toString());
+        }
+
+        boolean flagged = actionsService.killTestRunTopology(topology, history);
+        return WSUtils.respondEntity(Collections.singletonMap("flagged", flagged), OK);
     }
 
     @GET
@@ -323,6 +343,17 @@ public class TopologyTestRunResource {
     @Path("/topologies/{topologyId}/testcases/{testCaseId}")
     public Response removeTestRunCase(@PathParam("topologyId") Long topologyId,
                                       @PathParam("testCaseId") Long testCaseId) {
+
+        Collection<TopologyTestRunCaseSource> sources = catalogService.listTopologyTestRunCaseSource(testCaseId);
+        if (sources != null) {
+            sources.forEach(s -> catalogService.removeTopologyTestRunCaseSource(s.getId()));
+        }
+
+        Collection<TopologyTestRunCaseSink> sinks = catalogService.listTopologyTestRunCaseSink(testCaseId);
+        if (sinks != null) {
+            sinks.forEach(s -> catalogService.removeTopologyTestRunCaseSink(s.getId()));
+        }
+
         TopologyTestRunCase testRunCase = catalogService.removeTestRunCase(topologyId, testCaseId);
         if (testRunCase != null) {
             return WSUtils.respondEntity(testRunCase, OK);
@@ -422,7 +453,7 @@ public class TopologyTestRunResource {
     @Path("/topologies/{topologyId}/testcases/{testCaseId}/sources")
     public Response listTestRunCaseSource(@PathParam("topologyId") Long topologyId,
                                           @PathParam("testCaseId") Long testCaseId) {
-        Collection<TopologyTestRunCaseSource> sources = catalogService.listTopologyTestRunCaseSource(topologyId, testCaseId);
+        Collection<TopologyTestRunCaseSource> sources = catalogService.listTopologyTestRunCaseSource(testCaseId);
         if (sources == null) {
             throw EntityNotFoundException.byFilter("topologyId: " + topologyId + " / testCaseId: " + testCaseId);
         }
@@ -509,12 +540,12 @@ public class TopologyTestRunResource {
     @Path("/topologies/{topologyId}/testcases/{testCaseId}/sinks")
     public Response listTestRunCaseSink(@PathParam("topologyId") Long topologyId,
                                           @PathParam("testCaseId") Long testCaseId) {
-        Collection<TopologyTestRunCaseSink> sources = catalogService.listTopologyTestRunCaseSink(topologyId, testCaseId);
-        if (sources == null) {
+        Collection<TopologyTestRunCaseSink> sinks = catalogService.listTopologyTestRunCaseSink(testCaseId);
+        if (sinks == null) {
             throw EntityNotFoundException.byFilter("topologyId: " + topologyId + " / testCaseId: " + testCaseId);
         }
 
-        return WSUtils.respondEntities(sources, OK);
+        return WSUtils.respondEntities(sinks, OK);
     }
 
 
