@@ -358,7 +358,7 @@ export default class UserForm extends Component {
           <Form ref="UserForm" FormData={editData} showRequired={null} >
             <Fields.string value="name" label="Name" valuePath="name" fieldJson={{isOptional:false, tooltip: 'User Name',isUserInput : editData && editData.name ? false : true}} validation={["required"]} />
             <Fields.string value="email" label="Email" valuePath="email" fieldJson={{isOptional:false, tooltip: 'Email ID', hint: 'email'}} validation={["required","email"]}/>
-            <Fields.arrayenumstringSelectAll value="roles" label="Roles" fieldJson={{isOptional:false, tooltip: 'Roles'}} fieldAttr={{options: roleOptions, valueKey : 'name',labelKey : "displayName"}}/>
+            <Fields.arrayenumstring value="roles" label="Roles" fieldJson={{isOptional:false, tooltip: 'Roles'}} fieldAttr={{options: roleOptions, valueKey : 'name',labelKey : "displayName"}}/>
           </Form>
           {this.renderPermission('Applications', applicationsACL, applicationOptions, appOptionsArr, 'topology')}
           <br/>

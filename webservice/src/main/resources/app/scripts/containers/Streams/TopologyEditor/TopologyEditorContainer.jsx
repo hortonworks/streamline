@@ -1060,7 +1060,7 @@ class TopologyEditorContainer extends Component {
   }
 
   /*
-    runTestClicked invoke getAllTestCase methods 
+    runTestClicked invoke getAllTestCase methods
     And if the testRunActivated is true set all the test case variable to empty
   */
   runTestClicked(){

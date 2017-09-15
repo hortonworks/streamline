@@ -158,7 +158,7 @@ export default class AppRoleForm extends Component {
             <Fields.string value="name" label="Role Name" valuePath="name" fieldJson={{isOptional:false, tooltip: 'Role Name', isUserInput: this.props.editData ? false : true}} validation={["required"]}/>
             <Fields.string value="displayName" label="Display Name" valuePath="displayName" fieldJson={{isOptional:false, tooltip: 'Display Name', isUserInput: this.props.editData ? false : true}} validation={["required"]}/>
             <Fields.string value="description" label="Description" valuePath="description" fieldJson={{isOptional:false, tooltip: 'Description', isUserInput: this.props.editData.system ? false : true}} validation={["required"]}/>
-            <Fields.arrayenumstringSelectAll value="users" label="Users" fieldJson={{isOptional:false, tooltip: 'Users'}} fieldAttr={{options: userOptions}}/>
+            <Fields.arrayenumstring value="users" label="Users" fieldJson={{isOptional:false, tooltip: 'Users'}} fieldAttr={{options: userOptions}}/>
           </Form>
           <div className="form-group no-margin">
             <div className="row">

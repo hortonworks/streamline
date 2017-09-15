@@ -36,7 +36,7 @@
         "isOptional": false,
         "type": "array.enumstring",
         "options": [],
-        "hint": "inputFields"
+        "hint": "inputFields,noNestedFields"
       },
       {
         "uiName": "Partition Fields",
@@ -45,7 +45,7 @@
         "tooltip": "The event fields on which to partition the data",
         "type": "array.enumstring",
         "options": [],
-        "hint": "inputFields"
+        "hint": "inputFields,noNestedFields"
       },
       {
         "uiName": "Flush Interval",
