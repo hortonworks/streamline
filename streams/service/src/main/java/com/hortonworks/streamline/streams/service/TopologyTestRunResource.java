@@ -19,6 +19,9 @@ package com.hortonworks.streamline.streams.service;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.registries.common.Schema;
+import com.hortonworks.streamline.common.SchemaValueConverter;
+import com.hortonworks.streamline.common.exception.SchemaValidationFailedException;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.exception.service.exception.server.UnhandledServerException;
@@ -27,6 +30,7 @@ import com.hortonworks.streamline.streams.actions.topology.service.TopologyActio
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologySink;
 import com.hortonworks.streamline.streams.catalog.TopologySource;
+import com.hortonworks.streamline.streams.catalog.TopologyStream;
 import com.hortonworks.streamline.streams.catalog.TopologyTestRunCase;
 import com.hortonworks.streamline.streams.catalog.TopologyTestRunCaseSink;
 import com.hortonworks.streamline.streams.catalog.TopologyTestRunCaseSource;
@@ -60,9 +64,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -372,6 +379,63 @@ public class TopologyTestRunResource {
                 .sorted((h1, h2) -> (int) (h2.getId() - h1.getId()))
                 .limit(limit)
                 .collect(toList());
+    }
+
+    @POST
+    @Path("/topologies/{topologyId}/testcases/{testCaseId}/sources/validate")
+    @Timed
+    public Response validateTestRunCaseSource(@PathParam("topologyId") Long topologyId,
+                                              @PathParam("testCaseId") Long testCaseId,
+                                              TopologyTestRunCaseSource testRunCaseSource) throws IOException {
+        try {
+            doValidationForTestRunCaseSource(topologyId, testCaseId, testRunCaseSource);
+            return WSUtils.respondEntity(Collections.singletonMap("status", "valid"), OK);
+        } catch (SchemaValidationFailedException e) {
+            throw BadRequestException.message(e.getMessage());
+        }
+    }
+
+    @POST
+    @Path("/topologies/{topologyId}/testcases/{testCaseId}/sources/{id}/validate")
+    @Timed
+    public Response validateTestRunCaseSource(@PathParam("topologyId") Long topologyId,
+                                              @PathParam("testCaseId") Long testCaseId,
+                                              @PathParam("id") Long id) throws IOException {
+        TopologyTestRunCaseSource testCaseSource = catalogService.getTopologyTestRunCaseSource(testCaseId, id);
+        if (testCaseSource == null) {
+            throw EntityNotFoundException.byId(Long.toString(id));
+        }
+
+        try {
+            doValidationForTestRunCaseSource(topologyId, testCaseId, testCaseSource);
+            return WSUtils.respondEntity(Collections.singletonMap("status", "valid"), OK);
+        } catch (SchemaValidationFailedException e) {
+            throw BadRequestException.message(e.getMessage());
+        }
+    }
+
+    // this will throw exception if schema validation fails on any records
+    private void doValidationForTestRunCaseSource(Long topologyId, Long testCaseId, TopologyTestRunCaseSource testRunCaseSource)
+            throws IOException {
+        TopologySource topologySource = getAssociatedTopologySource(topologyId, testCaseId, testRunCaseSource.getSourceId());
+
+        Map<String, List<Map<String, Object>>> testRecords = objectMapper.readValue(testRunCaseSource.getRecords(),
+                new TypeReference<Map<String, List<Map<String, Object>>>>() {});
+
+        for (Map.Entry<String, List<Map<String, Object>>> entry : testRecords.entrySet()) {
+            List<Map<String, Object>> values = entry.getValue();
+            values.forEach(v -> convertValueToConformStream(topologySource.getOutputStreams(), entry.getKey(), v));
+        }
+    }
+
+    private Map<String, Object> convertValueToConformStream(List<TopologyStream> outputStreams, String streamId, Map<String, Object> value) {
+        Optional<TopologyStream> outputStream = outputStreams.stream().filter(o -> o.getStreamId().equals(streamId)).findFirst();
+
+        if (!outputStream.isPresent()) {
+            throw new IllegalArgumentException("Stream " + streamId + " doesn't exist.");
+        }
+
+        return SchemaValueConverter.convertMap(Schema.of(outputStream.get().getFields()), value);
     }
 
     @POST
