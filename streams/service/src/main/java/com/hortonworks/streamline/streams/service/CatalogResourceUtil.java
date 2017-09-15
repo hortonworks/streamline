@@ -21,7 +21,7 @@ import com.hortonworks.streamline.streams.actions.topology.service.TopologyActio
 import com.hortonworks.streamline.streams.actions.topology.state.TopologyStateFactory;
 import com.hortonworks.streamline.streams.actions.topology.state.TopologyStates;
 import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
-import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMapping;
+import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMap;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
@@ -173,7 +173,7 @@ public final class CatalogResourceUtil {
 
     static class NamespaceWithMapping {
         private Namespace namespace;
-        private Collection<NamespaceServiceClusterMapping> mappings = new ArrayList<>();
+        private Collection<NamespaceServiceClusterMap> mappings = new ArrayList<>();
 
         public NamespaceWithMapping(Namespace namespace) {
             this.namespace = namespace;
@@ -183,15 +183,15 @@ public final class CatalogResourceUtil {
             return namespace;
         }
 
-        public Collection<NamespaceServiceClusterMapping> getMappings() {
+        public Collection<NamespaceServiceClusterMap> getMappings() {
             return mappings;
         }
 
-        public void setServiceClusterMappings(Collection<NamespaceServiceClusterMapping> mappings) {
+        public void setServiceClusterMappings(Collection<NamespaceServiceClusterMap> mappings) {
             this.mappings = mappings;
         }
 
-        public void addServiceClusterMapping(NamespaceServiceClusterMapping mapping) {
+        public void addServiceClusterMapping(NamespaceServiceClusterMap mapping) {
             mappings.add(mapping);
         }
     }

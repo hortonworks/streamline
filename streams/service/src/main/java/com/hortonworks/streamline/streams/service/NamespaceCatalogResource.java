@@ -16,6 +16,7 @@
 package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
+import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMap;
 import com.hortonworks.streamline.streams.security.Permission;
 import com.hortonworks.streamline.streams.security.Roles;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
@@ -27,7 +28,6 @@ import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.storage.exception.AlreadyExistsException;
 import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
 import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
-import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMapping;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
@@ -214,7 +214,7 @@ public class NamespaceCatalogResource {
       throw EntityNotFoundException.byId(namespaceId.toString());
     }
 
-    Collection<NamespaceServiceClusterMapping> existingMappings = environmentService.listServiceClusterMapping(namespaceId);
+    Collection<NamespaceServiceClusterMap> existingMappings = environmentService.listServiceClusterMapping(namespaceId);
     if (existingMappings != null) {
       return WSUtils.respondEntities(existingMappings, OK);
     }
@@ -235,7 +235,7 @@ public class NamespaceCatalogResource {
       throw EntityNotFoundException.byId("Namespace: " + namespaceId.toString());
     }
 
-    Collection<NamespaceServiceClusterMapping> mappings = environmentService.listServiceClusterMapping(namespaceId, serviceName);
+    Collection<NamespaceServiceClusterMap> mappings = environmentService.listServiceClusterMapping(namespaceId, serviceName);
     if (mappings != null) {
       return WSUtils.respondEntities(mappings, OK);
     } else {
@@ -247,7 +247,7 @@ public class NamespaceCatalogResource {
   @Path("/namespaces/{id}/mapping/bulk")
   @Timed
   public Response setServicesToClusterInNamespace(@PathParam("id") Long namespaceId,
-                                                  List<NamespaceServiceClusterMapping> mappings,
+                                                  List<NamespaceServiceClusterMap> mappings,
                                                   @Context SecurityContext securityContext) {
     SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_ENVIRONMENT_SUPER_ADMIN,
             Namespace.NAMESPACE, namespaceId, WRITE);
@@ -259,8 +259,8 @@ public class NamespaceCatalogResource {
     String streamingEngine = namespace.getStreamingEngine();
     String timeSeriesDB = namespace.getTimeSeriesDB();
 
-    Collection<NamespaceServiceClusterMapping> existing = environmentService.listServiceClusterMapping(namespaceId);
-    Optional<NamespaceServiceClusterMapping> existingStreamingEngine = existing.stream()
+    Collection<NamespaceServiceClusterMap> existing = environmentService.listServiceClusterMapping(namespaceId);
+    Optional<NamespaceServiceClusterMap> existingStreamingEngine = existing.stream()
             .filter(m -> m.getServiceName().equals(streamingEngine))
             // this should be only one
             .findFirst();
@@ -275,13 +275,13 @@ public class NamespaceCatalogResource {
     assertServiceIsUnique(mappings, timeSeriesDB);
 
     // remove any existing mapping for (namespace, service name) pairs
-    Collection<NamespaceServiceClusterMapping> existingMappings = environmentService.listServiceClusterMapping(namespaceId);
+    Collection<NamespaceServiceClusterMap> existingMappings = environmentService.listServiceClusterMapping(namespaceId);
     if (existingMappings != null) {
       existingMappings.forEach(m -> environmentService.removeServiceClusterMapping(m.getNamespaceId(), m.getServiceName(),
               m.getClusterId()));
     }
 
-    List<NamespaceServiceClusterMapping> newMappings = mappings.stream()
+    List<NamespaceServiceClusterMap> newMappings = mappings.stream()
             .map(environmentService::addOrUpdateServiceClusterMapping).collect(toList());
 
     return WSUtils.respondEntities(newMappings, CREATED);
@@ -291,7 +291,7 @@ public class NamespaceCatalogResource {
   @Path("/namespaces/{id}/mapping")
   @Timed
   public Response mapServiceToClusterInNamespace(@PathParam("id") Long namespaceId,
-            NamespaceServiceClusterMapping mapping, @Context SecurityContext securityContext) {
+                                                 NamespaceServiceClusterMap mapping, @Context SecurityContext securityContext) {
     SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_ENVIRONMENT_SUPER_ADMIN,
             Namespace.NAMESPACE, namespaceId, WRITE);
     Namespace namespace = environmentService.getNamespace(namespaceId);
@@ -299,7 +299,7 @@ public class NamespaceCatalogResource {
       throw EntityNotFoundException.byId(namespaceId.toString());
     }
 
-    Collection<NamespaceServiceClusterMapping> existingMappings = environmentService.listServiceClusterMapping(namespaceId);
+    Collection<NamespaceServiceClusterMap> existingMappings = environmentService.listServiceClusterMapping(namespaceId);
     if (!existingMappings.contains(mapping)) {
       existingMappings.add(mapping);
     }
@@ -310,7 +310,7 @@ public class NamespaceCatalogResource {
     assertServiceIsUnique(existingMappings, streamingEngine);
     assertServiceIsUnique(existingMappings, timeSeriesDB);
 
-    NamespaceServiceClusterMapping newMapping = environmentService.addOrUpdateServiceClusterMapping(mapping);
+    NamespaceServiceClusterMap newMapping = environmentService.addOrUpdateServiceClusterMapping(mapping);
     return WSUtils.respondEntity(newMapping, CREATED);
   }
 
@@ -329,7 +329,7 @@ public class NamespaceCatalogResource {
     }
 
     String streamingEngine = namespace.getStreamingEngine();
-    Collection<NamespaceServiceClusterMapping> mappings = environmentService.listServiceClusterMapping(namespaceId);
+    Collection<NamespaceServiceClusterMap> mappings = environmentService.listServiceClusterMapping(namespaceId);
     boolean containsStreamingEngine = mappings.stream()
             .anyMatch(m -> m.getServiceName().equals(streamingEngine));
     // check topology running only streaming engine exists
@@ -337,7 +337,7 @@ public class NamespaceCatalogResource {
       assertNoTopologyReferringNamespaceIsRunning(namespaceId, WSUtils.getUserFromSecurityContext(securityContext));
     }
 
-    NamespaceServiceClusterMapping mapping = environmentService.removeServiceClusterMapping(namespaceId, serviceName, clusterId);
+    NamespaceServiceClusterMap mapping = environmentService.removeServiceClusterMapping(namespaceId, serviceName, clusterId);
     if (mapping != null) {
       return WSUtils.respondEntity(mapping, OK);
     }
@@ -358,14 +358,14 @@ public class NamespaceCatalogResource {
     }
 
     String streamingEngine = namespace.getStreamingEngine();
-    Collection<NamespaceServiceClusterMapping> mappings = environmentService.listServiceClusterMapping(namespaceId);
+    Collection<NamespaceServiceClusterMap> mappings = environmentService.listServiceClusterMapping(namespaceId);
     boolean containsStreamingEngine = mappings.stream()
             .anyMatch(m -> m.getServiceName().equals(streamingEngine));
     if (containsStreamingEngine) {
       assertNoTopologyReferringNamespaceIsRunning(namespaceId, WSUtils.getUserFromSecurityContext(securityContext));
     }
 
-    List<NamespaceServiceClusterMapping> removed = mappings.stream()
+    List<NamespaceServiceClusterMap> removed = mappings.stream()
             .map((x) -> environmentService.removeServiceClusterMapping(x.getNamespaceId(), x.getServiceName(),
                     x.getClusterId()))
             .collect(toList());
@@ -402,7 +402,7 @@ public class NamespaceCatalogResource {
     }
   }
 
-  private void assertServiceIsUnique(Collection<NamespaceServiceClusterMapping> mappings, String service) {
+  private void assertServiceIsUnique(Collection<NamespaceServiceClusterMap> mappings, String service) {
     if (StringUtils.isNotEmpty(service)) {
       long streamingEngineMappingCount = mappings.stream().filter(m -> m.getServiceName().equals(service)).count();
       if (streamingEngineMappingCount > 1) {

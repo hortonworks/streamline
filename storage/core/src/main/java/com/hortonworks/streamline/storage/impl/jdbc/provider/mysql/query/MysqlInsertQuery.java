@@ -14,7 +14,7 @@ public class MysqlInsertQuery extends AbstractStorableSqlQuery {
         String sql = "INSERT INTO " + tableName + " ("
                 + join(getColumnNames(columns, "`%s`"), ", ")
                 + ") VALUES( " + getBindVariables("?,", columns.size()) + ")";
-        log.debug(sql);
+        LOG.debug(sql);
         return sql;
     }
 }

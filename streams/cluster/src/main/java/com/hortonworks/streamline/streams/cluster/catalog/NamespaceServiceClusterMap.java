@@ -28,8 +28,8 @@ import java.util.Map;
  * The association between service in namespace and cluster.
  */
 @StorableEntity
-public class NamespaceServiceClusterMapping extends AbstractStorable {
-  private static final String NAMESPACE = "namespace_service_cluster_mapping";
+public class NamespaceServiceClusterMap extends AbstractStorable {
+  private static final String NAMESPACE = "namespace_service_cluster_map";
   private static final String FIELD_NAMESPACE_ID = "namespaceId";
   private static final String FIELD_SERVICE_NAME = "serviceName";
   private static final String FIELD_CLUSTER_ID = "clusterId";
@@ -38,10 +38,10 @@ public class NamespaceServiceClusterMapping extends AbstractStorable {
   private String serviceName;
   private Long clusterId;
 
-  public NamespaceServiceClusterMapping() {
+  public NamespaceServiceClusterMap() {
   }
 
-  public NamespaceServiceClusterMapping(Long namespaceId, String serviceName, Long clusterId) {
+  public NamespaceServiceClusterMap(Long namespaceId, String serviceName, Long clusterId) {
     this.namespaceId = namespaceId;
     this.serviceName = serviceName;
     this.clusterId = clusterId;
@@ -90,9 +90,9 @@ public class NamespaceServiceClusterMapping extends AbstractStorable {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof NamespaceServiceClusterMapping)) return false;
+    if (!(o instanceof NamespaceServiceClusterMap)) return false;
 
-    NamespaceServiceClusterMapping that = (NamespaceServiceClusterMapping) o;
+    NamespaceServiceClusterMap that = (NamespaceServiceClusterMap) o;
 
     if (getNamespaceId() != null ?
         !getNamespaceId().equals(that.getNamespaceId()) :
@@ -116,7 +116,7 @@ public class NamespaceServiceClusterMapping extends AbstractStorable {
 
   @Override
   public String toString() {
-    return "NamespaceServiceClusterMapping{" +
+    return "NamespaceServiceClusterMap{" +
         "namespaceId=" + namespaceId +
         ", serviceName='" + serviceName + '\'' +
         ", clusterId=" + clusterId +

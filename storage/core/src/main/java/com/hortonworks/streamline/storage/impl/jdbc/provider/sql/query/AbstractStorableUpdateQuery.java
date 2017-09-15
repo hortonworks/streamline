@@ -49,7 +49,7 @@ public abstract class AbstractStorableUpdateQuery extends AbstractStorableSqlQue
                 bindings.add(Pair.of(versionField, fv.getValue() - 1));
             }
         } catch (Exception ex) {
-            log.error("Got exception", ex);
+            LOG.error("Got exception", ex);
         }
     }
 

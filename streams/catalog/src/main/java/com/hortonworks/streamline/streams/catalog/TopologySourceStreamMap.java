@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @StorableEntity
-public class TopologySourceStreamMapping extends AbstractStorable {
-    public static final String NAMESPACE = "topology_source_stream_mapping";
+public class TopologySourceStreamMap extends AbstractStorable {
+    public static final String NAMESPACE = "topology_source_stream_map";
     public static final String FIELD_SOURCE_ID = "sourceId";
     public static final String FIELD_VERSION_ID = "versionId";
     public static final String FIELD_STREAM_ID = "streamId";
@@ -37,11 +37,11 @@ public class TopologySourceStreamMapping extends AbstractStorable {
 
 
     // for jackson
-    public TopologySourceStreamMapping() {
+    public TopologySourceStreamMap() {
 
     }
 
-    public TopologySourceStreamMapping(Long sourceId, Long versionId, Long streamId) {
+    public TopologySourceStreamMap(Long sourceId, Long versionId, Long streamId) {
         this.sourceId = sourceId;
         this.versionId = versionId;
         this.streamId = streamId;
@@ -91,7 +91,7 @@ public class TopologySourceStreamMapping extends AbstractStorable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        TopologySourceStreamMapping that = (TopologySourceStreamMapping) o;
+        TopologySourceStreamMap that = (TopologySourceStreamMap) o;
 
         if (sourceId != null ? !sourceId.equals(that.sourceId) : that.sourceId != null) return false;
         if (versionId != null ? !versionId.equals(that.versionId) : that.versionId != null) return false;
@@ -109,7 +109,7 @@ public class TopologySourceStreamMapping extends AbstractStorable {
 
     @Override
     public String toString() {
-        return "TopologySourceStreamMapping{" +
+        return "TopologySourceStreamMap{" +
                 "sourceId=" + sourceId +
                 ", versionId=" + versionId +
                 ", streamId=" + streamId +
