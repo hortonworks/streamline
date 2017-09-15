@@ -77,26 +77,7 @@ public class TopologyTestRunner {
     }
 
     public TopologyTestRunHistory runTest(TopologyActions topologyActions, Topology topology,
-                                          String testRunInputJson) throws IOException {
-        Map<String, Object> testRunInputMap = objectMapper.readValue(testRunInputJson, Map.class);
-
-        if (!testRunInputMap.containsKey("testCaseId")) {
-            throw new IllegalArgumentException("'testCaseId' needs to be presented.");
-        }
-
-        Long testCaseId = Long.valueOf(testRunInputMap.get("testCaseId").toString());
-        Optional<Long> durationSecs = Optional.empty();
-
-        if (testRunInputMap.containsKey("durationSecs")) {
-            durationSecs = Optional.of(Long.valueOf(testRunInputMap.get("durationSecs").toString()));
-        }
-
-        TopologyTestRunCase testCase = loadTestRunCase(topology.getId(), testCaseId);
-
-        if (testCase == null) {
-            throw new IllegalArgumentException("test case doesn't exist");
-        }
-
+                                          TopologyTestRunCase testCase, Long durationSecs) throws IOException {
         List<StreamlineSource> sources = topology.getTopologyDag().getOutputComponents().stream()
                 .filter(c -> c instanceof StreamlineSource)
                 .map(c -> (StreamlineSource) c)
@@ -114,7 +95,7 @@ public class TopologyTestRunner {
 
         // load test case sources for all sources
         List<TopologyTestRunCaseSource> testRunCaseSources = sources.stream()
-                .map(s -> catalogService.getTopologyTestRunCaseSourceBySourceId(testCaseId, Long.valueOf(s.getId())))
+                .map(s -> catalogService.getTopologyTestRunCaseSourceBySourceId(testCase.getId(), Long.valueOf(s.getId())))
                 .collect(toList());
 
         if (testRunCaseSources.stream().anyMatch(Objects::isNull)) {
@@ -123,7 +104,7 @@ public class TopologyTestRunner {
 
         // load test case sources for all sinks
         List<TopologyTestRunCaseSink> testRunCaseSinks = sinks.stream()
-                .map(s -> catalogService.getTopologyTestRunCaseSinkBySinkId(testCaseId, Long.valueOf(s.getId())))
+                .map(s -> catalogService.getTopologyTestRunCaseSinkBySinkId(testCase.getId(), Long.valueOf(s.getId())))
                 .collect(toList());
 
         Map<Long, Map<String, List<Map<String, Object>>>> testRecordsForEachSources = readTestRecordsFromTestCaseSources(testRunCaseSources);
@@ -178,7 +159,7 @@ public class TopologyTestRunner {
                 expectedOutputRecordsMap, eventLogFilePath);
         catalogService.addTopologyTestRunHistory(history);
 
-        Optional<Long> finalDurationSecs = durationSecs;
+        Optional<Long> finalDurationSecs = Optional.ofNullable(durationSecs);
         ParallelStreamUtil.runAsync(() -> runTestInBackground(topologyActions, topology, history,
                 testRunSourceMap, testRunProcessorMap, testRunSinkMap, expectedOutputRecordsMap,
                 finalDurationSecs), forkJoinPool);
@@ -283,15 +264,6 @@ public class TopologyTestRunner {
                         throw new RuntimeException(e);
                     }
                 }));
-    }
-
-    private TopologyTestRunCase loadTestRunCase(Long topologyId, Long testCaseId) {
-        TopologyTestRunCase testCase = catalogService.getTopologyTestRunCase(topologyId, testCaseId);
-        if (testCase == null) {
-            throw new IllegalArgumentException("Given topology test case doesn't exist - topology id: " +
-                    topologyId + " , id: " + testCaseId);
-        }
-        return testCase;
     }
 
     private TopologyTestRunHistory initializeTopologyTestRunHistory(Topology topology,

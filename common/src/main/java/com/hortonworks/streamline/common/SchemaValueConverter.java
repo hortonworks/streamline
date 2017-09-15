@@ -17,6 +17,7 @@
 package com.hortonworks.streamline.common;
 
 import com.hortonworks.registries.common.Schema;
+import com.hortonworks.streamline.common.exception.SchemaValidationFailedException;
 
 import java.util.List;
 import java.util.Map;
@@ -61,12 +62,12 @@ public final class SchemaValueConverter {
                 .filter(f -> !(value.containsKey(f.getName()))).collect(toList());
 
         if (!fieldsNotFoundInSchema.isEmpty()) {
-            throw new IllegalArgumentException("The value has fields which are not defined in schema: "
-                    + fieldsNotFoundInSchema);
+            throw SchemaValidationFailedException.fieldsNotFoundInSchema(fieldsNotFoundInSchema);
         }
 
         if (!requiredFieldsNotFoundInValue.isEmpty()) {
-            throw new IllegalArgumentException("The value doesn't have required fields: " + requiredFieldsNotFoundInValue);
+            throw SchemaValidationFailedException.requiredFieldsNotFoundInValue(
+                    requiredFieldsNotFoundInValue.stream().map(Schema.Field::getName).collect(toList()));
         }
 
         return value.entrySet().stream()
