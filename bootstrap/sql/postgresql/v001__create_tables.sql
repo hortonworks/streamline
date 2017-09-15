@@ -39,9 +39,8 @@ CREATE TABLE IF NOT EXISTS widget (
   "type" VARCHAR(255) NOT NULL,
   "data" TEXT NOT NULL,
   "timestamp"  BIGINT,
-  "dashboardId" BIGINT NOT NULL,
   CONSTRAINT widget_uk_name UNIQUE ("name"),
-  FOREIGN KEY ("dashboardId") REFERENCES dashboard("id")
+  "dashboardId"  INTEGER REFERENCES dashboard
 );
 
 CREATE TABLE IF NOT EXISTS datasource (
@@ -52,9 +51,8 @@ CREATE TABLE IF NOT EXISTS datasource (
   "url" VARCHAR(255) NOT NULL,
   "data" TEXT NOT NULL,
   "timestamp"  BIGINT,
-  "dashboardId" BIGINT NOT NULL,
-  CONSTRAINT datasource_uk_name UNIQUE ("name"),
-  FOREIGN KEY ("dashboardId") REFERENCES dashboard("id")
+  "dashboardId"  INTEGER REFERENCES  dashboard,
+  CONSTRAINT datasource_uk_name UNIQUE ("name")
 );
 
 CREATE TABLE IF NOT EXISTS widget_datasource_mapping (

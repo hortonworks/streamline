@@ -94,6 +94,7 @@ ALTER TABLE topology_source_stream_mapping ADD CONSTRAINT `fk_topology_source_st
 ALTER TABLE topology_sink ADD CONSTRAINT `fk_topology_sink_topology_version` FOREIGN KEY (versionId) REFERENCES topology_version(id);
 ALTER TABLE topology_processor ADD CONSTRAINT `fk_topology_processor_topology_version` FOREIGN KEY (versionId) REFERENCES topology_version(id);
 ALTER TABLE topology_processor_stream_mapping ADD CONSTRAINT `fk_topology_processor_stream_mapping_topology_processor` FOREIGN KEY (processorId, versionId) REFERENCES topology_processor(id, versionId);
+ALTER TABLE topology_processor_stream_mapping ADD CONSTRAINT `fk_topology_processor_stream_mapping_topology_stream` FOREIGN KEY (streamId, versionId) REFERENCES topology_stream(id, versionId);
 ALTER TABLE topology_edge ADD CONSTRAINT `fk_topology_edge_topology_version` FOREIGN KEY (versionId) REFERENCES topology_version(id);
 ALTER TABLE topology_rule ADD CONSTRAINT `fk_topology_rule_topology_version` FOREIGN KEY (versionId) REFERENCES topology_version(id);
 ALTER TABLE topology_branchrule ADD CONSTRAINT `fk_topology_branchrule_topology_version` FOREIGN KEY (versionId) REFERENCES topology_version(id);
@@ -113,4 +114,5 @@ ALTER TABLE topology_test_run_case_source ADD CONSTRAINT `fk_topology_test_run_c
 ALTER TABLE topology_test_run_case_sink ADD CONSTRAINT `fk_topology_test_run_case_sink_topology_test_run_case` FOREIGN KEY (testCaseId) REFERENCES topology_test_run_case(id);
 ALTER TABLE topology_test_run_case_sink ADD CONSTRAINT `fk_topology_test_run_case_sink_topology_sink` FOREIGN KEY (sinkId, versionId) REFERENCES topology_sink(id, versionId);
 ALTER TABLE topology_test_run_histories ADD CONSTRAINT `fk_topology_test_run_histories_topology` FOREIGN KEY (topologyId, versionId) REFERENCES topology(id, versionId);
-ALTER TABLE topology_test_run_histories ADD CONSTRAINT `fk_topology_test_run_histories_topology_test_run_case` FOREIGN KEY (testCaseId) REFERENCES topology_test_run_case(id);
+
+-- ISSUE-910 intentionally exclude adding FK for topology_test_run_case in topology_test_run_histories
