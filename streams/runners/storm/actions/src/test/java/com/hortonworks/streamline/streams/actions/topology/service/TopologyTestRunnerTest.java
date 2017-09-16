@@ -100,9 +100,6 @@ public class TopologyTestRunnerTest {
 
         Long topologyId = topology.getId();
         Long testCaseId = 1L;
-        Map<String, Object> testRunInputMap = new HashMap<>();
-        testRunInputMap.put("testCaseId", testCaseId);
-
         TopologyTestRunCase testCase = new TopologyTestRunCase();
         testCase.setId(testCaseId);
         testCase.setTopologyId(topology.getId());
@@ -124,7 +121,7 @@ public class TopologyTestRunnerTest {
                 .count();
 
         TopologyTestRunHistory resultHistory = topologyTestRunner.runTest(topologyActions, topology,
-                objectMapper.writeValueAsString(testRunInputMap));
+                testCase, null);
 
         waitForTopologyTestRunToFinish(resultHistory);
 
@@ -133,9 +130,6 @@ public class TopologyTestRunnerTest {
         assertTrue(resultHistory.getSuccess());
 
         new VerificationsInOrder() {{
-            catalogService.getTopologyTestRunCase(topologyId, testCaseId);
-            times = 1;
-
             catalogService.getTopologyTestRunCaseSourceBySourceId(testCaseId, anyLong);
             times = (int) sourceCount;
 
@@ -162,33 +156,12 @@ public class TopologyTestRunnerTest {
         }};
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void runTest_withNotExistingTestCaseId() throws Exception {
-        Topology topology = createSimpleDAGInjectedTestTopology();
-
-        Long topologyId = topology.getId();
-        Long testCaseId = 1L;
-        Map<String, Object> testRunInputMap = new HashMap<>();
-        testRunInputMap.put("testCaseId", testCaseId);
-
-        new Expectations() {{
-            catalogService.getTopologyTestRunCase(topologyId, testCaseId);
-            result = null;
-        }};
-
-        topologyTestRunner.runTest(topologyActions, topology,
-                objectMapper.writeValueAsString(testRunInputMap));
-    }
-
     @Test
     public void runTest_topologyActionsTestRunFails() throws Exception {
         Topology topology = createSimpleDAGInjectedTestTopology();
 
         Long topologyId = topology.getId();
         Long testCaseId = 1L;
-        Map<String, Object> testRunInputMap = new HashMap<>();
-        testRunInputMap.put("testCaseId", testCaseId);
-
         TopologyTestRunCase testCase = new TopologyTestRunCase();
         testCase.setId(testCaseId);
         testCase.setTopologyId(topology.getId());
@@ -210,16 +183,13 @@ public class TopologyTestRunnerTest {
                 .count();
 
         TopologyTestRunHistory resultHistory = topologyTestRunner.runTest(topologyActions, topology,
-                objectMapper.writeValueAsString(testRunInputMap));
+                testCase, null);
 
         assertNotNull(resultHistory);
 
         waitForTopologyTestRunToFinish(resultHistory);
 
         new VerificationsInOrder() {{
-            catalogService.getTopologyTestRunCase(topologyId, testCaseId);
-            times = 1;
-
             catalogService.getTopologyTestRunCaseSourceBySourceId(testCaseId, anyLong);
             times = (int) sourceCount;
 
@@ -251,9 +221,6 @@ public class TopologyTestRunnerTest {
         Topology topology = createSimpleDAGInjectedTestTopology();
 
         Long testCaseId = 1L;
-        Map<String, Object> testRunInputMap = new HashMap<>();
-        testRunInputMap.put("testCaseId", testCaseId);
-
         TopologyTestRunCase testCase = new TopologyTestRunCase();
         testCase.setId(testCaseId);
         testCase.setTopologyId(topology.getId());
@@ -266,8 +233,7 @@ public class TopologyTestRunnerTest {
         setTopologyTestRunHistoryExpectations();
         setSucceedTopologyActionsExpectations();
 
-        TopologyTestRunHistory resultHistory = topologyTestRunner.runTest(topologyActions, topology,
-                objectMapper.writeValueAsString(testRunInputMap));
+        TopologyTestRunHistory resultHistory = topologyTestRunner.runTest(topologyActions, topology, testCase, null);
 
         assertNotNull(resultHistory);
 
@@ -299,9 +265,6 @@ public class TopologyTestRunnerTest {
         Topology topology = createSimpleDAGInjectedTestTopology();
 
         Long testCaseId = 1L;
-        Map<String, Object> testRunInputMap = new HashMap<>();
-        testRunInputMap.put("testCaseId", testCaseId);
-
         TopologyTestRunCase testCase = new TopologyTestRunCase();
         testCase.setId(testCaseId);
         testCase.setTopologyId(topology.getId());
@@ -314,8 +277,7 @@ public class TopologyTestRunnerTest {
         setTopologyTestRunHistoryExpectations();
         setSucceedTopologyActionsExpectations();
 
-        TopologyTestRunHistory resultHistory = topologyTestRunner.runTest(topologyActions, topology,
-                objectMapper.writeValueAsString(testRunInputMap));
+        TopologyTestRunHistory resultHistory = topologyTestRunner.runTest(topologyActions, topology, testCase, null);
 
         assertNotNull(resultHistory);
 
@@ -426,9 +388,6 @@ public class TopologyTestRunnerTest {
 
     private void setTopologyTestRunCaseExpectations(Topology topology, TopologyTestRunCase testCase) {
         new Expectations() {{
-            catalogService.getTopologyTestRunCase(topology.getId(), testCase.getId());
-            result = testCase;
-
             topology.getTopologyDag().getOutputComponents().stream()
                     .filter(c -> c instanceof StreamlineSource)
                     .forEach(source -> {

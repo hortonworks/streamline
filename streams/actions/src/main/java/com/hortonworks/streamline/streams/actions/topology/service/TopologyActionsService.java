@@ -26,6 +26,7 @@ import com.hortonworks.streamline.streams.actions.topology.state.TopologyState;
 import com.hortonworks.streamline.streams.actions.topology.state.TopologyStateFactory;
 import com.hortonworks.streamline.streams.actions.topology.state.TopologyStates;
 import com.hortonworks.streamline.streams.catalog.CatalogToLayoutConverter;
+import com.hortonworks.streamline.streams.catalog.TopologyTestRunCase;
 import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
 import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMapping;
 import com.hortonworks.streamline.streams.cluster.catalog.Service;
@@ -117,13 +118,13 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
         return null;
     }
 
-    public TopologyTestRunHistory testRunTopology(Topology topology, String testRunInputJson) throws Exception {
+    public TopologyTestRunHistory testRunTopology(Topology topology, TopologyTestRunCase testCase, Long durationSecs) throws Exception {
         TopologyDag dag = topologyDagBuilder.getDag(topology);
         topology.setTopologyDag(dag);
         ensureValid(dag);
         TopologyActions topologyActions = getTopologyActionsInstance(topology);
         LOG.debug("Running topology {} in test mode", topology);
-        return topologyTestRunner.runTest(topologyActions, topology, testRunInputJson);
+        return topologyTestRunner.runTest(topologyActions, topology, testCase, durationSecs);
     }
 
     public boolean killTestRunTopology(Topology topology, TopologyTestRunHistory history) {

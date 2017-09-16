@@ -17,6 +17,7 @@
 package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.registries.common.Schema;
@@ -24,7 +25,6 @@ import com.hortonworks.streamline.common.SchemaValueConverter;
 import com.hortonworks.streamline.common.exception.SchemaValidationFailedException;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
-import com.hortonworks.streamline.common.exception.service.exception.server.UnhandledServerException;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
 import com.hortonworks.streamline.streams.catalog.Topology;
@@ -91,19 +91,64 @@ public class TopologyTestRunResource {
         this.objectMapper = new ObjectMapper();
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class TopologyTestRunParam {
+        private Long testCaseId;
+        private Long durationSecs;
+
+        public TopologyTestRunParam() {
+            // jackson
+        }
+
+        public TopologyTestRunParam(Long testCaseId, Long durationSecs) {
+            this.testCaseId = testCaseId;
+            this.durationSecs = durationSecs;
+        }
+
+        public Long getTestCaseId() {
+            return testCaseId;
+        }
+
+        public Long getDurationSecs() {
+            return durationSecs;
+        }
+    }
+
     @POST
     @Path("/topologies/{topologyId}/actions/testrun")
     @Timed
     public Response testRunTopology (@Context UriInfo urlInfo,
                                      @PathParam("topologyId") Long topologyId,
-                                     String testRunInputJson) throws Exception {
+                                     TopologyTestRunParam topologyTestRunParam) throws Exception {
         Topology result = catalogService.getTopology(topologyId);
         if (result != null) {
-            TopologyTestRunHistory history = actionsService.testRunTopology(result, testRunInputJson);
+            Long testCaseId = topologyTestRunParam.getTestCaseId();
+            Long durationSecs = topologyTestRunParam.getDurationSecs();
+            if (testCaseId == null) {
+                throw BadRequestException.missingParameter("testCaseId");
+            }
+
+            TopologyTestRunCase testCase = catalogService.getTopologyTestRunCase(topologyId, testCaseId);
+            if (testCase == null) {
+                throw EntityNotFoundException.byName("topology " + topologyId + " / topology test case " + testCaseId);
+            }
+
+            Collection<TopologyTestRunCaseSource> testCaseSources = catalogService.listTopologyTestRunCaseSource(testCaseId);
+            if (testCaseSources != null) {
+                for (TopologyTestRunCaseSource source : testCaseSources) {
+                    try {
+                        doValidationForTestRunCaseSource(topologyId, testCaseId, source);
+                    } catch (SchemaValidationFailedException e) {
+                        throw handleSchemaValidationFailedException(topologyId, source, e);
+                    }
+                }
+            }
+
+            TopologyTestRunHistory history = actionsService.testRunTopology(result, testCase, durationSecs);
             return WSUtils.respondEntity(history, OK);
         }
 
-        throw EntityNotFoundException.byId(topologyId.toString());
+        throw EntityNotFoundException.byName("topology " + topologyId.toString());
     }
 
     @POST
@@ -391,7 +436,7 @@ public class TopologyTestRunResource {
             doValidationForTestRunCaseSource(topologyId, testCaseId, testRunCaseSource);
             return WSUtils.respondEntity(Collections.singletonMap("status", "valid"), OK);
         } catch (SchemaValidationFailedException e) {
-            throw BadRequestException.message(e.getMessage());
+            throw handleSchemaValidationFailedException(topologyId, testRunCaseSource, e);
         }
     }
 
@@ -410,7 +455,7 @@ public class TopologyTestRunResource {
             doValidationForTestRunCaseSource(topologyId, testCaseId, testCaseSource);
             return WSUtils.respondEntity(Collections.singletonMap("status", "valid"), OK);
         } catch (SchemaValidationFailedException e) {
-            throw BadRequestException.message(e.getMessage());
+            throw handleSchemaValidationFailedException(topologyId, testCaseSource, e);
         }
     }
 
@@ -425,6 +470,24 @@ public class TopologyTestRunResource {
         for (Map.Entry<String, List<Map<String, Object>>> entry : testRecords.entrySet()) {
             List<Map<String, Object>> values = entry.getValue();
             values.forEach(v -> convertValueToConformStream(topologySource.getOutputStreams(), entry.getKey(), v));
+        }
+    }
+
+    private RuntimeException handleSchemaValidationFailedException(Long topologyId, TopologyTestRunCaseSource source, SchemaValidationFailedException e) {
+        TopologySource topologySource;
+        if (source.getVersionId() != null) {
+            topologySource = catalogService.getTopologySource(topologyId, source.getSourceId(),
+                    source.getVersionId());
+        } else {
+            topologySource = catalogService.getTopologySource(topologyId, source.getSourceId());
+        }
+
+        if (topologySource != null) {
+            throw BadRequestException.message("Schema validation failed in test case source name: " +
+                    topologySource.getName() + " - " + e.getMessage());
+        } else {
+            throw BadRequestException.message("Schema validation failed in test case source ID: " +
+                    source.getId() + " - " + e.getMessage());
         }
     }
 
