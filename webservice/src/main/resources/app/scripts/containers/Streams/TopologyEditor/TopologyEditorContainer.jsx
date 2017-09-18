@@ -1374,7 +1374,9 @@ class TopologyEditorContainer extends Component {
     } else {
       tempActiveLog[index] = rowObj;
     }
-    this.setState({activeLogRowArr:tempActiveLog});
+    this.setState({activeLogRowArr:tempActiveLog}, () => {
+      this.refs.EditorGraph.child.decoratedComponentInstance.refs.TopologyGraph.decoratedComponentInstance.handleEventTableRowClicked();
+    });
   }
 
   removeActiveLogToolTip = (obj ,_index) => {

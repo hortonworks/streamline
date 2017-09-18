@@ -45,7 +45,6 @@ class EventLogContainer extends Component{
   }
 
   hideEventLog = () => {
-    event.stopPropagation();
     this.props.handleEventLogHide(true);
   }
 
@@ -78,15 +77,17 @@ class EventLogContainer extends Component{
                               })
                             }
                           </Table>;
-    const notifyDiv = <center><div className={`status-ribbon ${testRunningMode ? 'primary' : abortTestCase ? 'warning' : 'success' }`}>
-                        {
-                          testRunningMode
-                          ? 'Running test case..'
-                          : abortTestCase
-                            ? 'Test Run has aborted'
-                            : 'Test Run completed'
-                        }
-                      </div></center>;
+    const notifyDiv = <center className={`testDiv ${testRunningMode ? '' : 'hideMe'}`}>
+                        <div className={`status-ribbon ${testRunningMode ? 'primary' : abortTestCase ? 'warning' : 'success' }`}>
+                          {
+                            testRunningMode
+                            ? 'Running test case..'
+                            : abortTestCase
+                              ? 'Test Run has aborted'
+                              : 'Test Run completed'
+                          }
+                        </div>
+                      </center>;
 
     const loaderHtml = <div className="loading-img text-center">
                           <img src="styles/img/gears-anim.gif" alt="loading" style={{
