@@ -2829,6 +2829,7 @@ input[type="checkbox"]:focus {
   font-size: 9px;
   padding: 5px;
   cursor: pointer;
+  z-index: 99;
 }
 .testComponent-list > li.active, .testComponent-list > li:hover{
   background-color: #1892c1;
@@ -3593,7 +3594,7 @@ a.crossIcon{
 a.closeIcon{
   position: absolute;
   right: 0;
-  color: red;
+  color: white;
   font-size: 14px;
   top: -2px;
   padding: 0px;
@@ -3606,4 +3607,7 @@ a.closeIcon{
 }
 a.closeIcon i{
   padding: 0;
+}
+a.formatterFont:hover{
+  transform: scale(1.2);
 }

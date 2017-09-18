@@ -149,7 +149,7 @@ class TestSourceNodeModal extends Component{
               _.map(stateObj[i].streamIdList, (key) => {
                 tempInput = recordData[key];
               });
-              stateObj[i].records = JSON.stringify(tempInput,null,"  ");
+              stateObj[i].records = tempInput;
               stateObj[i].showCodeMirror = true;
             } else {
               stateObj[i].showCodeMirror = false;
@@ -216,7 +216,7 @@ class TestSourceNodeModal extends Component{
         occurrence : source.repeatTime,
         sleepMsPerIteration : source.sleepMsPerIteration || this.state.sleepMsPerIteration
       });
-      tempInputdata[source.streamIdList[0]] = JSON.parse(source.records);
+      tempInputdata[source.streamIdList[0]] = source.records;
       obj[i].records = JSON.stringify(tempInputdata);
     });
 
@@ -286,7 +286,7 @@ class TestSourceNodeModal extends Component{
       reader.onload = function(e) {
         if(Utils.validateJSON(reader.result)) {
           tempSourceArr[sourceIndex].inputFile = file;
-          tempSourceArr[sourceIndex].records = JSON.stringify(JSON.parse(reader.result),null,"  ");
+          tempSourceArr[sourceIndex].records = JSON.stringify(JSON.parse(reader.result));
           tempSourceArr[sourceIndex].showCodeMirror = true;
           this.setState({showFileError: false,fileName,sourceNodeArr :tempSourceArr});
         }
@@ -358,6 +358,15 @@ class TestSourceNodeModal extends Component{
     let tempSourceArr = _.cloneDeep(this.state.sourceNodeArr);
     tempSourceArr[sourceIndex].expandCodemirror = !tempSourceArr[sourceIndex].expandCodemirror;
     this.setState({sourceNodeArr :tempSourceArr});
+  }
+
+  codeFormatter = (e) => {
+    e.preventDefault();
+    let tempSourceArr = _.cloneDeep(this.state.sourceNodeArr);
+    const {sourceIndex} = this.state;
+    const formatedData =  JSON.stringify(JSON.parse(tempSourceArr[sourceIndex].records),null,"  ") ;
+    tempSourceArr[sourceIndex].records = formatedData;
+    this.setState({sourceNodeArr : tempSourceArr});
   }
 
   render(){
@@ -433,6 +442,8 @@ class TestSourceNodeModal extends Component{
                                 <label>TEST DATA
                                   <span className="text-danger">*</span>
                                 </label>
+                                <a className="pull-right clear-link formatterFont"  href="javascript:void(0)"  onClick={this.codeFormatter.bind(this)}>&#123; &#125;</a>
+                                <span className="pull-right" style={{margin: '-1px 5px 0'}}>|</span>
                                 <a className="pull-right clear-link" href="javascript:void(0)" onClick={this.hideCodeMirror.bind(this)}> CLEAR </a>
                                 <span className="pull-right" style={{margin: '-1px 5px 0'}}>|</span>
                                   <a className="pull-right" href="javascript:void(0)" onClick={this.handleExpandClick.bind(this)}>
