@@ -346,11 +346,14 @@ const createOutputFieldsObjArr=  function(outputFieldsArr,outputFieldsList){
   selectAllOutputFields accept the array of outputFieldsList
   and return array of unique fields
 */
-const selectAllOutputFields = function(tempFields){
+const selectAllOutputFields = function(tempFields,sinkForm){
   let tempAllFields = [];
   _.map(tempFields, (field, i ) => {
     if(field.type !== 'NESTED'){
-      const data = _.findIndex(tempAllFields, (temp) => {return temp.name === field.name;});
+      let data = null;
+      !!sinkForm
+        ?  data = _.findIndex(tempAllFields, (temp) => {return temp.value === field.value;})
+        : data = _.findIndex(tempAllFields, (temp) => {return temp.name === field.name;});
       if(data === -1){
         tempAllFields = _.concat(tempAllFields ,field);
       }

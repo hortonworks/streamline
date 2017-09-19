@@ -459,6 +459,14 @@ export default class ProjectionProcessorContainer extends Component {
   }
 
   /*
+    handleSelectAllOutputFields method select all keys
+  */
+  handleSelectAllOutputFields = () => {
+    const arr = ProcessorUtils.selectAllOutputFields(this.state.fieldList);
+    this.handleProjectionKeysChange(arr);
+  }
+
+  /*
     handleFieldChange Method accept index, obj
     And SET functionName of outputFieldsArr
   */
@@ -598,6 +606,11 @@ export default class ProjectionProcessorContainer extends Component {
                   <span className="text-danger">*</span>
                 </label>
                 </OverlayTrigger>
+                <label className="pull-right">
+                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Select All Keys</Popover>}>
+                    <a href="javascript:void(0)" onClick={this.handleSelectAllOutputFields}>Select All</a>
+                  </OverlayTrigger>
+                </label>
                   <Select  value={projectionKeys} options={fieldList} onChange={this.handleProjectionKeysChange.bind(this)} clearable={false} multi={true} required={true} disabled={disabledFields} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
               </div>
               <div className="form-group">
