@@ -1,4 +1,5 @@
 ## 0.4
+ * ISSUE-924:    : Test mode running into issues in Firefox browser
  * ISSUE-921:    : Test Mode: Minor UI Improvements
  * ISSUE-915:    : Add Select All option to most of processor & sink where applicable
  * ISSUE-894:    : Test Mode: Show output events as it becomes available & ui integration for other test mode enhancements
