@@ -4,7 +4,7 @@ Develop and deploy Streaming Analytics applications visually with bindings for s
 
 ## Getting Help
 
-SAM users or devs should send a message to [SAM Google Group](https://groups.google.com/forum/#!forum/streamline-users)
+SAM users or devs should send a message to [SAM Google Group](https://groups.google.com/forum/#!forum/streamline-users).
 
 [![Join the chat at https://gitter.im/sam_dev/Lobby](https://badges.gitter.im/sam_dev/Lobby.svg)](https://gitter.im/sam_dev/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
