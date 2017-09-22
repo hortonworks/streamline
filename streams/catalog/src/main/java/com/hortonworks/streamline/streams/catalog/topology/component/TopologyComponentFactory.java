@@ -154,6 +154,9 @@ public class TopologyComponentFactory {
 
     private <T extends StreamlineComponent> T getStreamlineComponent(Class<T> clazz,
                                                                      TopologyComponent topologyComponent) {
+        if (topologyComponent.getReconfigure()) {
+            throw new IllegalStateException("Topology component " + topologyComponent + " must be reconfigured");
+        }
         TopologyComponentBundle topologyComponentBundle = getTopologyComponentBundle(topologyComponent);
         StreamlineComponent component = getProvider(clazz, topologyComponentBundle.getSubType())
                 .create(topologyComponent);
@@ -423,6 +426,8 @@ public class TopologyComponentFactory {
                 TopologyRule topologyRule = catalogService.getRule(topologyId, ruleId, versionId);
                 if (topologyRule == null) {
                     throw new IllegalArgumentException("Cannot find rule with id " + ruleId);
+                } else if (topologyRule.getReconfigure()) {
+                    throw new IllegalStateException("Rule " + topologyRule.getName() + " must be reconfigured");
                 }
                 return topologyRule.getRule();
             }
@@ -434,11 +439,13 @@ public class TopologyComponentFactory {
         return new SimpleImmutableEntry<>(BRANCH, createRulesProcessorProvider(new RuleExtractor() {
             @Override
             public Rule getRule(Long topologyId, Long ruleId, Long versionId) throws Exception {
-                TopologyBranchRule brRuleInfo = catalogService.getBranchRule(topologyId, ruleId, versionId);
-                if (brRuleInfo == null) {
+                TopologyBranchRule topologyBranchRule = catalogService.getBranchRule(topologyId, ruleId, versionId);
+                if (topologyBranchRule == null) {
                     throw new IllegalArgumentException("Cannot find branch rule with id " + ruleId);
+                } else if (topologyBranchRule.getReconfigure()) {
+                    throw new IllegalStateException("Rule " + topologyBranchRule.getName() + " must be reconfigured");
                 }
-                return brRuleInfo.getRule();
+                return topologyBranchRule.getRule();
             }
         }));
     }
@@ -450,6 +457,8 @@ public class TopologyComponentFactory {
                 TopologyWindow topologyWindow = catalogService.getWindow(topologyId, ruleId, versionId);
                 if (topologyWindow == null) {
                     throw new IllegalArgumentException("Cannot find window rule with id " + ruleId);
+                } else if (topologyWindow.getReconfigure()) {
+                    throw new IllegalStateException("Window " + topologyWindow.getName() + " must be reconfigured");
                 }
                 return topologyWindow.getRule();
             }

@@ -30,7 +30,9 @@ import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.common.ComponentTypes;
+import com.hortonworks.streamline.common.ComponentUISpecification;
 import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.exception.ComponentConfigException;
 import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.common.util.ProxyUtil;
 import com.hortonworks.streamline.common.util.Utils;
@@ -41,6 +43,7 @@ import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.storage.exception.StorageException;
 import com.hortonworks.streamline.storage.util.StorageUtils;
 import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.catalog.BaseTopologyRule;
 import com.hortonworks.streamline.streams.catalog.File;
 import com.hortonworks.streamline.streams.catalog.Notifier;
 import com.hortonworks.streamline.streams.catalog.Projection;
@@ -68,7 +71,6 @@ import com.hortonworks.streamline.streams.catalog.UDF;
 import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
 import com.hortonworks.streamline.streams.catalog.rule.RuleParser;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
-import com.hortonworks.streamline.common.ComponentUISpecification;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyData;
 import com.hortonworks.streamline.streams.catalog.topology.component.TopologyDagBuilder;
 import com.hortonworks.streamline.streams.catalog.topology.component.TopologyExportVisitor;
@@ -78,7 +80,6 @@ import com.hortonworks.streamline.streams.layout.component.Stream;
 import com.hortonworks.streamline.streams.layout.component.TopologyDag;
 import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.rule.Rule;
-import com.hortonworks.streamline.common.exception.ComponentConfigException;
 import com.hortonworks.streamline.streams.layout.storm.FluxComponent;
 import com.hortonworks.streamline.streams.rule.UDAF;
 import com.hortonworks.streamline.streams.rule.UDAF2;
@@ -108,6 +109,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -1314,6 +1316,7 @@ public class StreamCatalogService {
         topologySource.setVersionId(currentTopologyVersionId);
         topologySource.setTopologyId(topologyId);
         validateTopologySource(topologySource);
+        topologySource.setReconfigure(false);
         dao.addOrUpdate(topologySource);
         List<Long> newList = Collections.emptyList();
         if (topologySource.getOutputStreamIds() != null) {
@@ -1571,6 +1574,7 @@ public class StreamCatalogService {
         topologySink.setVersionId(currentTopologyVersionId);
         topologySink.setTopologyId(topologyId);
         validateTopologySink(topologySink);
+        topologySink.setReconfigure(false);
         dao.addOrUpdate(topologySink);
         topologySink.setVersionTimestamp(updateVersionTimestamp(currentTopologyVersionId).getTimestamp());
         return topologySink;
@@ -1652,6 +1656,7 @@ public class StreamCatalogService {
         topologyProcessor.setVersionId(currentTopologyVersionId);
         topologyProcessor.setTopologyId(topologyId);
         validateTopologyProcessor(topologyProcessor);
+        topologyProcessor.setReconfigure(false);
         dao.addOrUpdate(topologyProcessor);
         List<Long> newList = Collections.emptyList();
         if (topologyProcessor.getOutputStreamIds() != null) {
@@ -1766,6 +1771,14 @@ public class StreamCatalogService {
         return edge;
     }
 
+    public TopologyEdge addTopologyEdge(Long topologyId, TopologyEdge topologyEdge, boolean reconfigure) {
+        TopologyEdge edge = addTopologyEdge(topologyId, getCurrentVersionId(topologyId), topologyEdge);
+        if (reconfigure) {
+            setReconfigureTarget(edge);
+        }
+        return edge;
+    }
+
     public TopologyEdge addTopologyEdge(Long topologyId, TopologyEdge topologyEdge) {
         return addTopologyEdge(topologyId, getCurrentVersionId(topologyId), topologyEdge);
     }
@@ -1785,27 +1798,126 @@ public class StreamCatalogService {
         return topologyEdge;
     }
 
-    // validate from, to and stream ids of the edge
-    private void validateEdge(TopologyEdge edge) {
+    private TopologyOutputComponent getFrom(TopologyEdge edge) {
         TopologySource source = getTopologySource(edge.getTopologyId(), edge.getFromId(), edge.getVersionId());
         TopologyProcessor processor = getTopologyProcessor(edge.getTopologyId(), edge.getFromId(), edge.getVersionId());
-        if ((source == null || !source.getTopologyId().equals(edge.getTopologyId()))
-                && (processor == null || !processor.getTopologyId().equals(edge.getTopologyId()))) {
+        return processor != null ? processor : source;
+    }
+
+    private TopologyComponent getTo(TopologyEdge edge) {
+        TopologyProcessor processor = getTopologyProcessor(edge.getTopologyId(), edge.getToId(), edge.getVersionId());
+        TopologySink sink = getTopologySink(edge.getTopologyId(), edge.getToId(), edge.getVersionId());
+        return processor != null ? processor : sink;
+    }
+
+    private Set<TopologyEdge> getEdgesFrom(TopologyOutputComponent component) {
+        List<QueryParam> qp = buildEdgesFromQueryParam(component.getTopologyId(), component.getVersionId(), component.getId());
+        try {
+            return new HashSet<>(listTopologyEdges(qp));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // reconfigure all target components for this stream
+    private void setReconfigureTarget(TopologyStream stream) {
+        // reconfigure all targets of processors that use this output stream
+        List<QueryParam> params = QueryParam.params(
+                TopologyProcessorStreamMapping.FIELD_VERSION_ID, String.valueOf(stream.getVersionId()),
+                TopologyProcessorStreamMapping.FIELD_STREAM_ID, String.valueOf(stream.getId()));
+        listTopologyProcessorStreamMapping(params)
+                .stream()
+                .map(sm -> getTopologyProcessor(stream.getTopologyId(), sm.getProcessorId(), sm.getVersionId()))
+                .flatMap(p -> getEdgesFrom(p).stream())
+                .filter(e -> e.getStreamGroupings().stream().map(StreamGrouping::getStreamId).anyMatch(sgid -> sgid.equals(stream.getId())))
+                .forEach(e -> setReconfigureTarget(e, stream));
+
+        // reconfigure all targets of source that use this output stream
+        params = QueryParam.params(
+                TopologySourceStreamMapping.FIELD_VERSION_ID, String.valueOf(stream.getVersionId()),
+                TopologySourceStreamMapping.FIELD_STREAM_ID, String.valueOf(stream.getId()));
+        listTopologySourceStreamMapping(params)
+                .stream()
+                .map(sm -> getTopologySource(stream.getTopologyId(), sm.getSourceId(), sm.getVersionId()))
+                .flatMap(source -> getEdgesFrom(source).stream())
+                .filter(e -> e.getStreamGroupings().stream().map(StreamGrouping::getStreamId).anyMatch(sgid -> sgid.equals(stream.getId())))
+                .forEach(e -> setReconfigureTarget(e, stream));
+
+    }
+
+    private void setReconfigureRules(List<TopologyProcessor> processors, List<TopologyStream> affectedStreams) {
+        Map<Long, BiFunction<TopologyProcessor, Long, BaseTopologyRule>> bundles = new HashMap<>();
+        TopologyComponentBundle bundle = getCurrentTopologyComponentBundle(TopologyComponentBundle.TopologyComponentType.PROCESSOR, ComponentTypes.RULE);
+        bundles.put(bundle.getId(), (p, r) -> getRule(p.getTopologyId(), r, p.getVersionId()));
+        bundle = getCurrentTopologyComponentBundle(TopologyComponentBundle.TopologyComponentType.PROCESSOR, ComponentTypes.BRANCH);
+        bundles.put(bundle.getId(), (p, r) -> getBranchRule(p.getTopologyId(), r, p.getVersionId()));
+        bundle = getCurrentTopologyComponentBundle(TopologyComponentBundle.TopologyComponentType.PROCESSOR, ComponentTypes.PROJECTION);
+        bundles.put(bundle.getId(), (p, r) -> getRule(p.getTopologyId(), r, p.getVersionId()));
+        bundle = getCurrentTopologyComponentBundle(TopologyComponentBundle.TopologyComponentType.PROCESSOR, ComponentTypes.WINDOW);
+        bundles.put(bundle.getId(), (p, r) -> getWindow(p.getTopologyId(), r, p.getVersionId()));
+
+        Set<String> affectedStreamIds = affectedStreams.stream().map(TopologyStream::getStreamId).collect(Collectors.toSet());
+        for (TopologyProcessor processor : processors) {
+            BiFunction<TopologyProcessor, Long, BaseTopologyRule> function;
+            if ((function = bundles.get(processor.getTopologyComponentBundleId())) != null) {
+                Optional<Object> ruleList = processor.getConfig().getAnyOptional(RulesProcessor.CONFIG_KEY_RULES);
+                if (ruleList.isPresent()) {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    List<Long> ruleIds = objectMapper.convertValue(ruleList.get(), new TypeReference<List<Long>>() {
+                    });
+                    for (Long ruleId : ruleIds) {
+                        BaseTopologyRule rule = function.apply(processor, ruleId);
+                        if (rule != null) {
+                            for (String stream : rule.getInputStreams()) {
+                                if (affectedStreamIds.contains(stream)) {
+                                    rule.setReconfigure(true);
+                                    dao.addOrUpdate(rule);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void setReconfigureTarget(TopologyEdge edge) {
+        setReconfigureTarget(edge, null);
+    }
+
+    private void setReconfigureTarget(TopologyEdge edge, TopologyStream stream) {
+        TopologyComponent component = getTo(edge);
+        component.setReconfigure(true);
+        dao.addOrUpdate(component);
+
+        // if component is a processor, update any rules in that processor that uses any of the streams
+        if (component instanceof TopologyProcessor) {
+            setReconfigureRules(Collections.singletonList((TopologyProcessor) component),
+                    edge.getStreamGroupings()
+                            .stream()
+                            .map(StreamGrouping::getStreamId)
+                            .map(sid -> getStreamInfo(edge.getTopologyId(), sid, edge.getVersionId()))
+                            .filter(curStream -> stream == null || curStream.getId().equals(stream.getId()))
+                            .collect(Collectors.toList()));
+        }
+    }
+
+    // validate from, to and stream ids of the edge
+    private void validateEdge(TopologyEdge edge) {
+        TopologyOutputComponent from = getFrom(edge);
+        if ((from == null || !from.getTopologyId().equals(edge.getTopologyId()))) {
             throw new IllegalArgumentException("Invalid source for edge " + edge);
         }
-        TopologyOutputComponent outputComponent = source != null ? source : processor;
-        processor = getTopologyProcessor(edge.getTopologyId(), edge.getToId(), edge.getVersionId());
-        TopologySink sink = getTopologySink(edge.getTopologyId(), edge.getToId(), edge.getVersionId());
-        if ((processor == null || !processor.getTopologyId().equals(edge.getTopologyId()))
-                && (sink == null || !sink.getTopologyId().equals(edge.getTopologyId()))) {
+        TopologyComponent to = getTo(edge);
+        if ((to == null || !to.getTopologyId().equals(edge.getTopologyId()))) {
             throw new IllegalArgumentException("Invalid destination for edge " + edge);
         }
-
         Set<Long> outputStreamIds = new HashSet<>();
-        if (outputComponent.getOutputStreamIds() != null) {
-            outputStreamIds.addAll(outputComponent.getOutputStreamIds());
-        } else if (outputComponent.getOutputStreams() != null) {
-            outputStreamIds.addAll(Collections2.transform(outputComponent.getOutputStreams(), new Function<TopologyStream, Long>() {
+        if (from.getOutputStreamIds() != null) {
+            outputStreamIds.addAll(from.getOutputStreamIds());
+        } else if (from.getOutputStreams() != null) {
+            outputStreamIds.addAll(Collections2.transform(from.getOutputStreams(), new Function<TopologyStream, Long>() {
                 @Override
                 public Long apply(TopologyStream input) {
                     return input.getId();
@@ -1898,9 +2010,24 @@ public class StreamCatalogService {
         topologyEdge.setVersionId(currentTopologyVersionId);
         topologyEdge.setTopologyId(topologyId);
         validateEdge(topologyEdge);
+        // reconfigure target of current edge
+        TopologyEdge curEdge = getTopologyEdge(topologyId, id);
+        if (curEdge != null) {
+            if (!curEdge.getToId().equals(topologyEdge.getToId())
+                    || !getStreamIds(curEdge).equals(getStreamIds(topologyEdge))) {
+                setReconfigureTarget(curEdge);
+            }
+        }
         dao.addOrUpdate(topologyEdge);
         topologyEdge.setVersionTimestamp(updateVersionTimestamp(currentTopologyVersionId).getTimestamp());
         return topologyEdge;
+    }
+
+    private Set<Long> getStreamIds(TopologyEdge edge) {
+        return edge.getStreamGroupings()
+                .stream()
+                .map(StreamGrouping::getStreamId)
+                .collect(Collectors.toSet());
     }
 
     public TopologyEdge removeTopologyEdge(Long topologyId, Long edgeId) {
@@ -1910,6 +2037,7 @@ public class StreamCatalogService {
     public TopologyEdge removeTopologyEdge(Long topologyId, Long edgeId, Long versionId) {
         TopologyEdge topologyEdge = getTopologyEdge(topologyId, edgeId, versionId);
         if (topologyEdge != null) {
+            setReconfigureTarget(topologyEdge);
             topologyEdge = dao.remove(new StorableKey(TOPOLOGY_EDGE_NAMESPACE, topologyEdge.getPrimaryKey()));
             topologyEdge.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
         }
@@ -1998,6 +2126,10 @@ public class StreamCatalogService {
         long timestamp = System.currentTimeMillis();
         stream.setVersionTimestamp(timestamp);
         validateStreamInfo(stream);
+        TopologyStream curStream = getStreamInfo(topologyId, stream.getId());
+        if (!curStream.getFields().equals(stream.getFields())) {
+            setReconfigureTarget(stream);
+        }
         dao.addOrUpdate(stream);
         updateVersionTimestamp(currentVersionId, timestamp);
         return stream;
@@ -2010,6 +2142,7 @@ public class StreamCatalogService {
     public TopologyStream removeStreamInfo(Long topologyId, Long streamId, Long versionId) {
         TopologyStream topologyStream = getStreamInfo(topologyId, streamId, versionId);
         if (topologyStream != null) {
+            setReconfigureTarget(topologyStream);
             topologyStream = dao.remove(new StorableKey(STREAMINFO_NAMESPACE, topologyStream.getPrimaryKey()));
             topologyStream.setVersionTimestamp(updateVersionTimestamp(versionId).getTimestamp());
         }
@@ -2056,7 +2189,7 @@ public class StreamCatalogService {
         return getRule(topologyId, ruleId, getCurrentVersionId(topologyId));
     }
 
-    public TopologyRule getRule(Long topologyId, Long ruleId, Long versionId) throws Exception {
+    public TopologyRule getRule(Long topologyId, Long ruleId, Long versionId) {
         TopologyRule topologyTopologyRule = new TopologyRule();
         topologyTopologyRule.setId(ruleId);
         topologyTopologyRule.setVersionId(versionId);
@@ -2077,6 +2210,7 @@ public class StreamCatalogService {
         String parsedRuleStr = parseAndSerialize(topologyRule);
         LOG.debug("ParsedRuleStr {}", parsedRuleStr);
         topologyRule.setParsedRuleStr(parsedRuleStr);
+        topologyRule.setReconfigure(false);
         dao.addOrUpdate(topologyRule);
         topologyRule.setVersionTimestamp(updateVersionTimestamp(currentTopologyVersionId).getTimestamp());
         return topologyRule;
@@ -2134,7 +2268,7 @@ public class StreamCatalogService {
         return getBranchRule(topologyId, ruleId, getCurrentVersionId(topologyId));
     }
 
-    public TopologyBranchRule getBranchRule(Long topologyId, Long ruleId, Long versionId) throws Exception {
+    public TopologyBranchRule getBranchRule(Long topologyId, Long ruleId, Long versionId) {
         TopologyBranchRule topologyBranchRule = new TopologyBranchRule();
         topologyBranchRule.setId(ruleId);
         topologyBranchRule.setVersionId(versionId);
@@ -2154,6 +2288,7 @@ public class StreamCatalogService {
         String parsedRuleStr = parseAndSerialize(topologyBranchRule);
         LOG.debug("ParsedRuleStr {}", parsedRuleStr);
         topologyBranchRule.setParsedRuleStr(parsedRuleStr);
+        topologyBranchRule.setReconfigure(false);
         dao.addOrUpdate(topologyBranchRule);
         topologyBranchRule.setVersionTimestamp(updateVersionTimestamp(currentTopologyVersionId).getTimestamp());
         return topologyBranchRule;
@@ -2196,7 +2331,7 @@ public class StreamCatalogService {
         return getWindow(topologyId, windowId, getCurrentVersionId(topologyId));
     }
 
-    public TopologyWindow getWindow(Long topologyId, Long windowId, Long versionId) throws Exception {
+    public TopologyWindow getWindow(Long topologyId, Long windowId, Long versionId) {
         TopologyWindow topologyTopologyWindow = new TopologyWindow();
         topologyTopologyWindow.setId(windowId);
         topologyTopologyWindow.setVersionId(versionId);
@@ -2216,6 +2351,7 @@ public class StreamCatalogService {
         String parsedRuleStr = parseAndSerialize(topologyWindow);
         LOG.debug("ParsedRuleStr {}", parsedRuleStr);
         topologyWindow.setParsedRuleStr(parsedRuleStr);
+        topologyWindow.setReconfigure(false);
         dao.addOrUpdate(topologyWindow);
         topologyWindow.setVersionTimestamp(updateVersionTimestamp(currentTopologyVersionId).getTimestamp());
         return topologyWindow;
@@ -2385,19 +2521,23 @@ public class StreamCatalogService {
         ruleParser.parse();
 
         // update rule with parsed sql constructs
-        rule.setStreams(new HashSet<>(Collections2.transform(ruleParser.getStreams(), new Function<Stream, String>() {
-            @Override
-            public String apply(Stream input) {
-                return input.getId();
-            }
-        })));
+        Set<String> ruleInputStreams = ruleParser.getStreams().stream().map(Stream::getId).collect(Collectors.toSet());
+        ensureValidStreams(ruleInputStreams, topologyId, versionId);
         rule.setProjection(ruleParser.getProjection());
         rule.setCondition(ruleParser.getCondition());
         rule.setGroupBy(ruleParser.getGroupBy());
         rule.setHaving(ruleParser.getHaving());
         rule.setReferredUdfs(ruleParser.getReferredUdfs());
+        rule.setStreams(ruleInputStreams);
     }
 
+    private void ensureValidStreams(Set<String> streamIds, Long topologyId, Long versionId) {
+        for (String streamId : streamIds) {
+            if (getStreamInfoByName(topologyId, streamId, versionId) == null) {
+                throw new IllegalStateException("Stream " + streamId + " does not exist");
+            }
+        }
+    }
 
     public Collection<UDF> listUDFs() {
         return this.dao.list(UDF_NAMESPACE);

@@ -42,6 +42,7 @@ public class TopologyComponent extends AbstractStorable {
     public static final String DESCRIPTION = "description";
     public static final String CONFIG = "config";
     public static final String CONFIG_DATA = "configData";
+    public static final String RECONFIGURE = "reconfigure";
 
     private Long id;
     private Long topologyId = -1L;
@@ -52,6 +53,9 @@ public class TopologyComponent extends AbstractStorable {
     private Config config;
     // this is not saved in storage but REST apis includes version timestamp here
     private Long versionTimestamp;
+
+    // if the upstream changed the component may need reconfiguration
+    private Boolean reconfigure = false;
 
     public TopologyComponent() {
 
@@ -94,7 +98,9 @@ public class TopologyComponent extends AbstractStorable {
                 Schema.Field.of(TOPOLOGY_COMPONENT_BUNDLE_ID, Schema.Type.LONG),
                 Schema.Field.of(NAME, Schema.Type.STRING),
                 Schema.Field.of(DESCRIPTION, Schema.Type.STRING),
-                Schema.Field.of(CONFIG_DATA, Schema.Type.STRING));
+                Schema.Field.of(CONFIG_DATA, Schema.Type.STRING),
+                Schema.Field.of(RECONFIGURE, Schema.Type.BOOLEAN)
+        );
     }
 
     @Override
@@ -196,6 +202,14 @@ public class TopologyComponent extends AbstractStorable {
         this.versionTimestamp = timestamp;
     }
 
+    public Boolean getReconfigure() {
+        return reconfigure;
+    }
+
+    public void setReconfigure(Boolean reconfigure) {
+        this.reconfigure = reconfigure;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -213,5 +227,10 @@ public class TopologyComponent extends AbstractStorable {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (versionId != null ? versionId.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

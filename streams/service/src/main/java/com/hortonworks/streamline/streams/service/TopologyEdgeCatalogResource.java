@@ -221,7 +221,7 @@ public class TopologyEdgeCatalogResource {
                                     @Context SecurityContext securityContext) {
         SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
                 Topology.NAMESPACE, topologyId, WRITE);
-        TopologyEdge createdEdge = catalogService.addTopologyEdge(topologyId, edge);
+        TopologyEdge createdEdge = catalogService.addTopologyEdge(topologyId, edge, true);
         return WSUtils.respondEntity(createdEdge, CREATED);
     }
 
