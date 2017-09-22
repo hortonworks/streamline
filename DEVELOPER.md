@@ -138,6 +138,9 @@ A summary with the contents of the patch is optional but strongly encouraged if 
 
 You can utilize merge script to merge a pull request. There're some tasks prior to use the script. 
 
+#### CI Build
+Streamline is integrated with travis CI. The status of the build for the pending pull request will be reflected in the PR itself. You must see "The Travis CI build passed" in the pull request before merging it.
+
 #### Preparation
 
 1. Add Github mirror git repo to remote named `pull-repo`. You can set `PR_REMOTE_NAME` in system environment to use another name.
