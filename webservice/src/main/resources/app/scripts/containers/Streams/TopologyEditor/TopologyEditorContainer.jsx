@@ -1120,32 +1120,54 @@ class TopologyEditorContainer extends Component {
     update = PUT Api call
   */
   handleSaveTestSourceNodeModal(){
-    if(this.refs.TestSourceNodeContentRef.validateData()){
-      this.refs.TestSourceNodeModal.hide();
-      this.refs.TestSourceNodeContentRef.handleSave().then((testResult) => {
-        let configSuccess = true,poolIndex = -1;
-        _.map(testResult, (result) => {
-          if(result.responseMessage !== undefined){
-            FSReactToastr.error(
-              <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
-            configSuccess = false;
-          } else {
-            let tempSourceConfig = _.cloneDeep(this.state.testSourceConfigure);
-            poolIndex = _.findIndex(tempSourceConfig, {id : result.sourceId});
-            if(poolIndex === -1){
-              tempSourceConfig.push({id :  result.sourceId});
-              this.setState({testSourceConfigure :tempSourceConfig});
-            }
-          }
-        });
-        if(configSuccess) {
-          const  msg =  <strong>{`Test source ${poolIndex !== -1 ? "config update" : "configure"} successfully`}</strong>;
-          FSReactToastr.success(
-            msg
-          );
+    this.refs.TestSourceNodeContentRef.validateData().then((response) => {
+      let flag = [];
+      _.map(response,(res) => {
+        if(res.responseMessage !== undefined){
+          flag.push(res.responseMessage);
         }
       });
-    }
+      if(flag.length){
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={flag[0]}/>, '', toastOpt);
+      } else {
+        let responseValidator=[];
+        _.map(response, (r) => {
+          if(r.toString() === "Some mandatory fields are empty"){
+            responseValidator.push(false);
+          }
+        });
+        if(responseValidator.length){
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={response[0]}/>, '', toastOpt);
+        } else {
+          this.refs.TestSourceNodeModal.hide();
+          this.refs.TestSourceNodeContentRef.handleSave().then((testResult) => {
+            let configSuccess = true,poolIndex = -1;
+            _.map(testResult, (result) => {
+              if(result.responseMessage !== undefined){
+                FSReactToastr.error(
+                  <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
+                configSuccess = false;
+              } else {
+                let tempSourceConfig = _.cloneDeep(this.state.testSourceConfigure);
+                poolIndex = _.findIndex(tempSourceConfig, {id : result.sourceId});
+                if(poolIndex === -1){
+                  tempSourceConfig.push({id :  result.sourceId});
+                  this.setState({testSourceConfigure :tempSourceConfig});
+                }
+              }
+            });
+            if(configSuccess) {
+              const  msg =  <strong>{`Test source ${poolIndex !== -1 ? "config update" : "configure"} successfully`}</strong>;
+              FSReactToastr.success(
+                msg
+              );
+            }
+          });
+        }
+      }
+    });
   }
 
   /*
@@ -1254,7 +1276,7 @@ class TopologyEditorContainer extends Component {
       TestRunREST.runTestCase(this.topologyId,{body : JSON.stringify(testCaseData)}).then((testResult) => {
         if(testResult.responseMessage !== undefined){
           const msg = testResult.responseMessage.indexOf('Not every source register') !== -1 ? "please configure all test source" : testResult.responseMessage;
-          FSReactToastr.info(
+          FSReactToastr.error(
             <CommonNotification flag="error" content={msg}/>, '', toastOpt);
           this.setState({testRunningMode : false});
         } else {
