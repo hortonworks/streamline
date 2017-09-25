@@ -46,6 +46,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -225,9 +226,14 @@ public class TopologyTestRunner {
         return testRunCaseSources.stream()
                     .collect(toMap(s -> s.getSourceId(), s -> {
                         try {
-                            return objectMapper.readValue(s.getRecords(),
-                                    new TypeReference<Map<String, List<Map<String, Object>>>>() {
-                                    });
+                            Map<String, String> map = objectMapper.readValue(s.getRecords(),
+                                    new TypeReference<Map<String, String>>() {});
+                            Map<String, List<Map<String, Object>>> result = new HashMap<>();
+                            for (Map.Entry<String, String> entry: map.entrySet()) {
+                                result.put(entry.getKey(), objectMapper.readValue(entry.getValue(),
+                                        new TypeReference<List<Map<String, Object>>>(){}));
+                            }
+                            return result;
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }

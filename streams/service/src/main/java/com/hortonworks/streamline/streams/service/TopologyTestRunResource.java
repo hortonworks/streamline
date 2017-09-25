@@ -62,6 +62,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -463,12 +464,11 @@ public class TopologyTestRunResource {
     private void doValidationForTestRunCaseSource(Long topologyId, Long testCaseId, TopologyTestRunCaseSource testRunCaseSource)
             throws IOException {
         TopologySource topologySource = getAssociatedTopologySource(topologyId, testCaseId, testRunCaseSource.getSourceId());
-
-        Map<String, List<Map<String, Object>>> testRecords = objectMapper.readValue(testRunCaseSource.getRecords(),
-                new TypeReference<Map<String, List<Map<String, Object>>>>() {});
-
-        for (Map.Entry<String, List<Map<String, Object>>> entry : testRecords.entrySet()) {
-            List<Map<String, Object>> values = entry.getValue();
+        Map<String, String> map = objectMapper.readValue(testRunCaseSource.getRecords(),
+                new TypeReference<Map<String, String>>() {});
+        for (Map.Entry<String, String> entry: map.entrySet()) {
+            List<Map<String, Object>> values = objectMapper.readValue(entry.getValue(),
+                    new TypeReference<List<Map<String, Object>>>(){});
             values.forEach(v -> convertValueToConformStream(topologySource.getOutputStreams(), entry.getKey(), v));
         }
     }
