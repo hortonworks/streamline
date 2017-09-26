@@ -1310,6 +1310,26 @@ public class StreamCatalogService {
         return topologyStreams;
     }
 
+    /**
+     * Returns the list of components to be re-configured for a given topology.
+     *
+     * @param topology the topology
+     * @return the collection of components that have the reconfigure flag set or empty if no such component exists
+     */
+    public Map<String, Set<Long>> getComponentsToReconfigure(Topology topology) {
+        Map<String, Set<Long>> components = new HashMap<>();
+        List<QueryParam> qps = QueryParam.params(
+                TopologyComponent.TOPOLOGYID, String.valueOf(topology.getId()),
+                TopologyComponent.VERSIONID, String.valueOf(topology.getVersionId()),
+                TopologyComponent.RECONFIGURE, String.valueOf(true));
+        components.put(ComponentTypes.PROCESSOR, listTopologyProcessors(qps).stream().map(TopologyComponent::getId).collect(Collectors.toSet()));
+        components.put(ComponentTypes.SINK, listTopologySinks(qps).stream().map(TopologyComponent::getId).collect(Collectors.toSet()));
+        components.put(ComponentTypes.RULE, listRules(qps).stream().map(TopologyRule::getId).collect(Collectors.toSet()));
+        components.put(ComponentTypes.BRANCH, listBranchRules(qps).stream().map(TopologyBranchRule::getId).collect(Collectors.toSet()));
+        components.put(ComponentTypes.WINDOW, listWindows(qps).stream().map(TopologyWindow::getId).collect(Collectors.toSet()));
+        return components;
+    }
+
     public TopologySource addOrUpdateTopologySource(Long topologyId, Long sourceId, TopologySource topologySource) {
         Long currentTopologyVersionId = getCurrentVersionId(topologyId);
         topologySource.setId(sourceId);
@@ -2161,7 +2181,7 @@ public class StreamCatalogService {
         return dao.list(TOPOLOGY_RULEINFO_NAMESPACE);
     }
 
-    public Collection<TopologyRule> listRules(List<QueryParam> params) throws Exception {
+    public Collection<TopologyRule> listRules(List<QueryParam> params) {
         return dao.find(TOPOLOGY_RULEINFO_NAMESPACE, params);
     }
 
@@ -2233,7 +2253,7 @@ public class StreamCatalogService {
         return dao.list(TOPOLOGY_WINDOWINFO_NAMESPACE);
     }
 
-    public Collection<TopologyWindow> listWindows(List<QueryParam> params) throws Exception {
+    public Collection<TopologyWindow> listWindows(List<QueryParam> params) {
         return dao.find(TOPOLOGY_WINDOWINFO_NAMESPACE, params);
     }
 
@@ -2241,7 +2261,7 @@ public class StreamCatalogService {
         return dao.list(TOPOLOGY_BRANCHRULEINFO_NAMESPACE);
     }
 
-    public Collection<TopologyBranchRule> listBranchRules(List<QueryParam> params) throws Exception {
+    public Collection<TopologyBranchRule> listBranchRules(List<QueryParam> params) {
         return dao.find(TOPOLOGY_BRANCHRULEINFO_NAMESPACE, params);
     }
 
