@@ -433,14 +433,14 @@ public class TopologyTestRunnerTest {
     private TopologyTestRunCaseSource createTopologyTestRunCaseSource(TopologyTestRunCase testRunCase,
                                                                       StreamlineSource source) {
 
-        Map<String, List<Map<String, Object>>> testRecords =
-                Collections.singletonMap("default", TopologyTestHelper.createTestRecords());
-
         TopologyTestRunCaseSource testRunSource = new TopologyTestRunCaseSource();
         testRunSource.setId(Long.valueOf(source.getId()));
         testRunSource.setTestCaseId(testRunCase.getId());
         testRunSource.setSourceId(Long.valueOf(source.getId()));
         try {
+            Map<String, String> testRecords =
+                    Collections.singletonMap("default", objectMapper.writeValueAsString(
+                            TopologyTestHelper.createTestRecords()));
             testRunSource.setRecords(objectMapper.writeValueAsString(testRecords));
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Can't serialize test records map into JSON");
