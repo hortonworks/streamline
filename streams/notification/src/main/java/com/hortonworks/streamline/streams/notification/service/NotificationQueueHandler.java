@@ -75,10 +75,11 @@ public class NotificationQueueHandler {
     }
 
 
-    public void enqueue(Notifier notifier, Notification notification) {
+    public Future<?> enqueue(Notifier notifier, Notification notification) {
         NotificationQueueTask task = new NotificationQueueTask(notifier, notification);
         Future<?> future = executorService.submit(task);
         taskMap.put(notification.getId(), Pair.of(task, future));
+        return future;
     }
 
     /**
