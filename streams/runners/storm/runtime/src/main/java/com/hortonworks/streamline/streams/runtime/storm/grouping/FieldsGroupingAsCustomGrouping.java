@@ -53,7 +53,7 @@ public class FieldsGroupingAsCustomGrouping implements CustomStreamGrouping {
         for (String groupingField: groupingFields) {
             groupByObjects.add(StreamlineRuntimeUtil.getFieldValue(streamlineEvent, groupingField));
         }
-        int taskIndex = Arrays.deepHashCode(groupByObjects.toArray()) % targetTasks.size();
+        int taskIndex = (Arrays.deepHashCode(groupByObjects.toArray()) & 0x7FFFFFFF) % targetTasks.size();
         result.add(targetTasks.get(taskIndex));
         return result;
     }
