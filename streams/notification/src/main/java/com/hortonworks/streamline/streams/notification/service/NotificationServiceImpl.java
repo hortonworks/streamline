@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 
 /**
  * Notification service implementation.
@@ -113,14 +114,14 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void notify(String notifierName, Notification notification) {
+    public Future<?> notify(String notifierName, Notification notification) {
         LOG.debug("Notify notifierName {}, notification {}", notifierName, notification);
         notificationStore.ifPresent(s -> s.store(notification));
         Notifier notifier = notifiers.get(notifierName);
         if (notifier == null) {
             throw new NoSuchNotifierException("Notifier not found for id " + notification.getNotifierName());
         }
-        queueHandler.enqueue(notifier, notification);
+        return queueHandler.enqueue(notifier, notification);
     }
 
     @Override
