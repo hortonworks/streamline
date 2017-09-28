@@ -12,7 +12,8 @@
   * limitations under the License.
 **/
 
-import React,{Component,PropTypes} from 'react';
+import React,{Component} from 'react';
+import PropTypes from 'prop-types';
 import {Scrollbars} from 'react-custom-scrollbars';
 import Utils from '../../../utils/Utils';
 import {toastOpt} from '../../../utils/Constants';
@@ -261,5 +262,5 @@ class TestSinkNodeModal extends Component{
 export default TestSinkNodeModal;
 
 TestSinkNodeModal.childContextTypes = {
-  ParentForm: React.PropTypes.object
+  ParentForm: PropTypes.object
 };

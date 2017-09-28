@@ -13,12 +13,12 @@
 **/
 
 import React, {
-  Component,
-  PropTypes
+  Component
 } from 'react';
 import ReactDOM, {
   findDOMNode
 } from 'react-dom';
+import PropTypes from 'prop-types';
 import Select from 'react-select';
 import {OverlayTrigger, Popover} from 'react-bootstrap';
 import TopologyREST from '../../../rest/TopologyREST';
@@ -693,5 +693,5 @@ export default class ProjectionProcessorContainer extends Component {
 }
 
 ProjectionProcessorContainer.contextTypes = {
-  ParentForm: React.PropTypes.object
+  ParentForm: PropTypes.object
 };

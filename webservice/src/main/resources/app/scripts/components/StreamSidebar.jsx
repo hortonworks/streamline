@@ -12,7 +12,8 @@
   * limitations under the License.
 **/
 
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import Select from 'react-select';
 import {Scrollbars} from 'react-custom-scrollbars';
 import _ from 'lodash';

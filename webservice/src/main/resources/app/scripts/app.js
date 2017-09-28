@@ -11,7 +11,7 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
 **/
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import routes from './routers/routes';
 import { render } from 'react-dom';
 import { Router, browserHistory, hashHistory } from 'react-router';

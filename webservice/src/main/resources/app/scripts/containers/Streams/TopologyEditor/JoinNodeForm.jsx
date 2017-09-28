@@ -12,7 +12,8 @@
   * limitations under the License.
 **/
 
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import Select from 'react-select';
@@ -969,5 +970,5 @@ export default class JoinNodeForm extends Component {
 }
 
 JoinNodeForm.contextTypes = {
-  ParentForm: React.PropTypes.object
+  ParentForm: PropTypes.object
 };

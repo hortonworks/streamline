@@ -12,7 +12,8 @@
   * limitations under the License.
 **/
 
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import {Link} from 'react-router';
@@ -350,12 +351,12 @@ class TopologyItems extends Component {
 }
 
 TopologyItems.propTypes = {
-  topologyList: React.PropTypes.object.isRequired,
-  topologyAction: React.PropTypes.func.isRequired
+  topologyList: PropTypes.object.isRequired,
+  topologyAction: PropTypes.func.isRequired
 };
 
 TopologyItems.contextTypes = {
-  router: React.PropTypes.object.isRequired
+  router: PropTypes.object.isRequired
 };
 
 @observer
@@ -876,7 +877,7 @@ class TopologyListingContainer extends Component {
 }
 
 TopologyListingContainer.contextTypes = {
-  router: React.PropTypes.object.isRequired
+  router: PropTypes.object.isRequired
 };
 
 export default TopologyListingContainer;

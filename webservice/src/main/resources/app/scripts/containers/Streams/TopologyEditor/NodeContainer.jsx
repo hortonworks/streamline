@@ -12,7 +12,8 @@
   * limitations under the License.
 **/
 
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import ReactDOM, {findDOMNode} from 'react-dom';
 import {OverlayTrigger, Tooltip, Popover} from 'react-bootstrap';
 import {ItemTypes} from '../../../utils/Constants';
