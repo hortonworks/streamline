@@ -12,7 +12,8 @@
   * limitations under the License.
 **/
 
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import update from 'react/lib/update';
 import ReactDOM, {findDOMNode} from 'react-dom';
 import {OverlayTrigger, Popover, Tooltip, Accordion, Panel, PanelGroup,Button} from 'react-bootstrap';

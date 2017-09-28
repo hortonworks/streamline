@@ -12,7 +12,8 @@
   * limitations under the License.
 **/
 
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import {Link} from 'react-router';
@@ -242,7 +243,7 @@ class PoolItemsCard extends Component {
   }
 }
 PoolItemsCard.propTypes = {
-  poolActionClicked: React.PropTypes.func.isRequired
+  poolActionClicked: PropTypes.func.isRequired
 };
 
 @observer
@@ -675,7 +676,7 @@ class ServicePoolContainer extends Component {
           clearTimeout(clearTimer);
           const clearTimer = setTimeout(() => {
             FSReactToastr.error(
-              <CommonNotification flag="error" content={errorMsg}/>, '', toastOpt);
+              <CommonNotification flag="error" content={ambarClusters.responseMessage}/>, '', toastOpt);
           }, 500);
         });
       } else {

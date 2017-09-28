@@ -13,7 +13,8 @@
 **/
 'use strict';
 
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {findDOMNode} from 'react-dom';
 import shallowCompare from 'react-addons-shallow-compare';
 import compose from 'recompose/compose';

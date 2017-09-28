@@ -12,13 +12,11 @@
   * limitations under the License.
 **/
 
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
 import Utils from '../utils/Utils';
 import state from '../app_state';
 
 export default class SpotlightSearch extends Component {
-  static propTypes = {
-  };
 
   constructor(props) {
     super(props);

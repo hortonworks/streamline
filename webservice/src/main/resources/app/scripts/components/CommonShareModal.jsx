@@ -12,7 +12,7 @@
   * limitations under the License.
 **/
 
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import {OverlayTrigger, Popover,DropdownButton,MenuItem} from 'react-bootstrap';
