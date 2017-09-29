@@ -808,10 +808,10 @@ class TopologyEditorContainer extends Component {
         //Make the save request
         this.refs.ConfigModal.handleSave(this.modalTitle).then((savedNode) => {
           if (savedNode instanceof Array) {
-            if (this.node.currentType.toLowerCase() === 'window' || this.node.currentType.toLowerCase() === 'join' || this.node.currentType.toLowerCase() === 'projection') {
+            if (this.node.currentType.toLowerCase() === 'window' || this.node.currentType.toLowerCase() === 'join' || this.node.currentType.toLowerCase() === 'rt-join') {
               let updatedEdges = [];
               savedNode.map((n, i) => {
-                if (i > 0 && n.streamGrouping) {
+                if (i > 0 && n.streamGroupings) {
                   updatedEdges.push(n);
                 }
               });
