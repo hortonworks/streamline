@@ -12,7 +12,7 @@
   * limitations under the License.
 **/
 
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
 import ReactDOM, {findDOMNode} from 'react-dom';
 import update from 'react/lib/update';
 import {ItemTypes, Components, toastOpt} from '../../../utils/Constants';
@@ -1104,6 +1104,7 @@ class TopologyEditorContainer extends Component {
           }
           this.modalTitle = 'TEST-'+stateObj.nodeData.parentType;
         }
+        stateObj.eventLogData = entities.length ? this.state.eventLogData : [];
         this.setState(stateObj, () => {
           if(this.state.testCaseList.length === 0 && invoker === undefined){
             this.refs.TestSourceNodeModal.show();

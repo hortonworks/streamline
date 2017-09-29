@@ -13,6 +13,7 @@
 **/
 
 import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {Link} from 'react-router';
 import app_state from '../app_state';
 import {observer} from 'mobx-react';
@@ -112,5 +113,5 @@ export default class Header extends Component {
 }
 
 Header.contextTypes = {
-  router: React.PropTypes.object.isRequired
+  router: PropTypes.object.isRequired
 };

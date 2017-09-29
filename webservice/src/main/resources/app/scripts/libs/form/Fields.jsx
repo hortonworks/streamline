@@ -13,6 +13,7 @@
 **/
 
 import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {
   Button,
   Form,
@@ -84,7 +85,7 @@ export class BaseField extends Component {
 }
 
 BaseField.contextTypes = {
-  Form: React.PropTypes.object
+  Form: PropTypes.object
 };
 
 export class file extends BaseField {
