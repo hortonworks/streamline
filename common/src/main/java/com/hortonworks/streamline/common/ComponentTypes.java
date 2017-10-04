@@ -20,6 +20,11 @@ package com.hortonworks.streamline.common;
  */
 public class ComponentTypes {
 
+    // generic types SOURCE, PROCESSOR and SINK
+    public static final String SOURCE = "SOURCE";
+    public static final String PROCESSOR = "PROCESSOR";
+    public static final String SINK = "SINK";
+
     public static final String KAFKA = "KAFKA";
     public static final String KINESIS = "KINESIS";
     public static final String EVENTHUB = "EVENTHUB";

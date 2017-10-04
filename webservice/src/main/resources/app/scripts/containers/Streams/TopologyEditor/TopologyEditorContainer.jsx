@@ -12,7 +12,7 @@
   * limitations under the License.
 **/
 
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
 import ReactDOM, {findDOMNode} from 'react-dom';
 import update from 'react/lib/update';
 import {ItemTypes, Components, toastOpt} from '../../../utils/Constants';
@@ -733,9 +733,10 @@ class TopologyEditorContainer extends Component {
       confirmBox.cancel();
     }, () => {});
   }
-  setModalContent(node, updateGraphMethod, content,currentEdges) {
+  setModalContent(node, updateGraphMethod, content,currentEdges, allNodes) {
     if (typeof content === 'function') {
       this.modalContent = content;
+      this.tempGraphNode = allNodes;
       this.processorNode = node.parentType.toLowerCase() === 'processor'
         ? true
         : false;
@@ -808,10 +809,10 @@ class TopologyEditorContainer extends Component {
         //Make the save request
         this.refs.ConfigModal.handleSave(this.modalTitle).then((savedNode) => {
           if (savedNode instanceof Array) {
-            if (this.node.currentType.toLowerCase() === 'window' || this.node.currentType.toLowerCase() === 'join' || this.node.currentType.toLowerCase() === 'projection') {
+            if (this.node.currentType.toLowerCase() === 'window' || this.node.currentType.toLowerCase() === 'join' || this.node.currentType.toLowerCase() === 'rt-join') {
               let updatedEdges = [];
               savedNode.map((n, i) => {
-                if (i > 0 && n.streamGrouping) {
+                if (i > 0 && n.streamGroupings) {
                   updatedEdges.push(n);
                 }
               });
@@ -834,6 +835,10 @@ class TopologyEditorContainer extends Component {
             });
             if (_.keys(savedNode.config.properties).length > 0) {
               this.node.isConfigured = true;
+              const index = _.findIndex(this.tempGraphNode,(t) => { return t.nodeId === this.node.nodeId;});
+              if(index !== -1){
+                this.tempGraphNode[index].reconfigure = false;
+              }
             }
             let i = this.graphData.uinamesList.indexOf(this.node.uiname);
             if (this.node.currentType === 'Custom') {
@@ -853,8 +858,7 @@ class TopologyEditorContainer extends Component {
               <strong>{this.node.uiname} updated successfully.</strong>
             );
             //render graph again
-            this.updateGraphMethod();
-            this.refs.NodeModal.hide();
+            this.reconfigurationNode();
           }
         });
       }
@@ -862,6 +866,38 @@ class TopologyEditorContainer extends Component {
       this.refs.NodeModal.hide();
     }
   }
+
+  reconfigurationNode(){
+    TopologyREST.getReconfigurationNodes(this.topologyId).then((result) => {
+      if(result.responseMessage !== undefined){
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
+      } else {
+        this.setNodeConfigurationFlag(result);
+        this.refs.NodeModal.hide();
+      }
+    });
+  }
+
+  setNodeConfigurationFlag(obj){
+    let errorMsg =[];
+    _.map(this.tempGraphNode,(node) => {
+      const reconfigNode = _.pick(obj,node.parentType);
+      if(!_.isEmpty(reconfigNode)){
+        const index = _.findIndex(reconfigNode[node.parentType], (r) => {return r === node.nodeId;});
+        if(index !== -1){
+          errorMsg.push(node.node);
+          node.reconfigure = true;
+        }
+      }
+    });
+    this.updateGraphMethod();
+    if(errorMsg.length){
+      FSReactToastr.warning(
+        <CommonNotification flag="warning" content={"Re-evaluate the configuration for the nodes marked in \"Yellow\""}/>, '', toastOpt);
+    }
+  }
+
   showEdgeConfigModal(topologyId, versionId, newEdge, edges, callback, node, streamName, grouping, groupingFields) {
     this.edgeConfigData = {
       topologyId: topologyId,
@@ -1060,7 +1096,7 @@ class TopologyEditorContainer extends Component {
   }
 
   /*
-    runTestClicked invoke getAllTestCase methods 
+    runTestClicked invoke getAllTestCase methods
     And if the testRunActivated is true set all the test case variable to empty
   */
   runTestClicked(){
@@ -1104,6 +1140,7 @@ class TopologyEditorContainer extends Component {
           }
           this.modalTitle = 'TEST-'+stateObj.nodeData.parentType;
         }
+        stateObj.eventLogData = entities.length ? this.state.eventLogData : [];
         this.setState(stateObj, () => {
           if(this.state.testCaseList.length === 0 && invoker === undefined){
             this.refs.TestSourceNodeModal.show();
@@ -1120,32 +1157,54 @@ class TopologyEditorContainer extends Component {
     update = PUT Api call
   */
   handleSaveTestSourceNodeModal(){
-    if(this.refs.TestSourceNodeContentRef.validateData()){
-      this.refs.TestSourceNodeModal.hide();
-      this.refs.TestSourceNodeContentRef.handleSave().then((testResult) => {
-        let configSuccess = true,poolIndex = -1;
-        _.map(testResult, (result) => {
-          if(result.responseMessage !== undefined){
-            FSReactToastr.error(
-              <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
-            configSuccess = false;
-          } else {
-            let tempSourceConfig = _.cloneDeep(this.state.testSourceConfigure);
-            poolIndex = _.findIndex(tempSourceConfig, {id : result.sourceId});
-            if(poolIndex === -1){
-              tempSourceConfig.push({id :  result.sourceId});
-              this.setState({testSourceConfigure :tempSourceConfig});
-            }
-          }
-        });
-        if(configSuccess) {
-          const  msg =  <strong>{`Test source ${poolIndex !== -1 ? "config update" : "configure"} successfully`}</strong>;
-          FSReactToastr.success(
-            msg
-          );
+    this.refs.TestSourceNodeContentRef.validateData().then((response) => {
+      let flag = [];
+      _.map(response,(res) => {
+        if(res.responseMessage !== undefined){
+          flag.push(res.responseMessage);
         }
       });
-    }
+      if(flag.length){
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={flag[0]}/>, '', toastOpt);
+      } else {
+        let responseValidator=[];
+        _.map(response, (r) => {
+          if(r.toString() === "Some mandatory fields are empty"){
+            responseValidator.push(false);
+          }
+        });
+        if(responseValidator.length){
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={response[0]}/>, '', toastOpt);
+        } else {
+          this.refs.TestSourceNodeModal.hide();
+          this.refs.TestSourceNodeContentRef.handleSave().then((testResult) => {
+            let configSuccess = true,poolIndex = -1;
+            _.map(testResult, (result) => {
+              if(result.responseMessage !== undefined){
+                FSReactToastr.error(
+                  <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
+                configSuccess = false;
+              } else {
+                let tempSourceConfig = _.cloneDeep(this.state.testSourceConfigure);
+                poolIndex = _.findIndex(tempSourceConfig, {id : result.sourceId});
+                if(poolIndex === -1){
+                  tempSourceConfig.push({id :  result.sourceId});
+                  this.setState({testSourceConfigure :tempSourceConfig});
+                }
+              }
+            });
+            if(configSuccess) {
+              const  msg =  <strong>{`Test source ${poolIndex !== -1 ? "config update" : "configure"} successfully`}</strong>;
+              FSReactToastr.success(
+                msg
+              );
+            }
+          });
+        }
+      }
+    });
   }
 
   /*
@@ -1254,7 +1313,7 @@ class TopologyEditorContainer extends Component {
       TestRunREST.runTestCase(this.topologyId,{body : JSON.stringify(testCaseData)}).then((testResult) => {
         if(testResult.responseMessage !== undefined){
           const msg = testResult.responseMessage.indexOf('Not every source register') !== -1 ? "please configure all test source" : testResult.responseMessage;
-          FSReactToastr.info(
+          FSReactToastr.error(
             <CommonNotification flag="error" content={msg}/>, '', toastOpt);
           this.setState({testRunningMode : false});
         } else {
@@ -1374,7 +1433,9 @@ class TopologyEditorContainer extends Component {
     } else {
       tempActiveLog[index] = rowObj;
     }
-    this.setState({activeLogRowArr:tempActiveLog});
+    this.setState({activeLogRowArr:tempActiveLog}, () => {
+      this.refs.EditorGraph.child.decoratedComponentInstance.refs.TopologyGraph.decoratedComponentInstance.handleEventTableRowClicked();
+    });
   }
 
   removeActiveLogToolTip = (obj ,_index) => {

@@ -47,6 +47,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.hortonworks.streamline.streams.layout.storm.StormTopologyLayoutConstants.YAML_KEY_ID;
 import static com.hortonworks.streamline.streams.layout.storm.StormTopologyLayoutConstants.YAML_KEY_STREAMS;
@@ -95,13 +97,27 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
         rulesProcessor.getConfig().setAny("outputStreams", rulesProcessor.getOutputStreams());
         List<Rule> rulesWithWindow = new ArrayList<>();
         List<Rule> rulesWithoutWindow = new ArrayList<>();
+        Set<String> inStreams = topologyDag.getEdgesTo(rulesProcessor)
+                .stream()
+                .flatMap(e -> e.getStreamGroupings()
+                        .stream()
+                        .map(sg -> sg.getStream().getId()))
+                .collect(Collectors.toSet());
+
         for (Rule rule : rulesProcessor.getRules()) {
+            if (!inStreams.containsAll(rule.getStreams())) {
+                throw new IllegalStateException("Input streams of rules processor " + inStreams
+                        + " does not contain rule's input streams " + rule.getStreams()
+                        + ". Please delete and recreate the rule.");
+            }
             if (rule.getWindow() != null) {
                 rulesWithWindow.add(rule);
             } else {
                 rulesWithoutWindow.add(rule);
             }
         }
+
+
         // handle windowed rules with WindowRuleBoltFluxComponent
         if (!rulesWithWindow.isEmpty()) {
             Multimap<Window, Rule> windowedRules = ArrayListMultimap.create();

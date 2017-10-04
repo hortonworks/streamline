@@ -12,7 +12,8 @@
   * limitations under the License.
 **/
 
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import {Tabs, Tab} from 'react-bootstrap';
@@ -515,5 +516,5 @@ export default class SinkNodeForm extends Component {
 }
 
 SinkNodeForm.childContextTypes = {
-  ParentForm: React.PropTypes.object
+  ParentForm: PropTypes.object
 };

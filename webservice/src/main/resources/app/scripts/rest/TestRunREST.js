@@ -170,6 +170,20 @@ const TestRunREST = {
       .then((response) => {
         return response.json();
       });
+  },
+  validateTestCase(id, testCaseId,options) {
+    options = options || {};
+    options.method = options.method || 'POST';
+    options.credentials = 'same-origin';
+    options.headers = options.headers || {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    let url = baseUrl + 'topologies/' + id + '/testcases/'+testCaseId+'/sources/validate';
+    return fetch(url, options)
+      .then((response) => {
+        return response.json();
+      });
   }
 };
 

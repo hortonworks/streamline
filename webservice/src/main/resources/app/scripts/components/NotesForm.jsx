@@ -12,10 +12,9 @@
   * limitations under the License.
 **/
 
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
 
 export default class StreamSidebar extends Component {
-  static propTypes = {};
 
   constructor(props) {
     super(props);

@@ -12,7 +12,8 @@
   * limitations under the License.
 **/
 
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import {
@@ -32,6 +33,7 @@ import {pageSize} from '../../../utils/Constants';
 import {Scrollbars} from 'react-custom-scrollbars';
 import {toastOpt} from '../../../utils/Constants';
 import CommonNotification from '../../../utils/CommonNotification';
+import Utils from '../../../utils/Utils';
 
 export default class BranchNodeForm extends Component {
   static propTypes = {
@@ -61,6 +63,7 @@ export default class BranchNodeForm extends Component {
       modalTitle: ''
     };
     this.fetchData();
+    this.hideErrorMsg = true;
   }
 
   componentWillUpdate() {
@@ -114,10 +117,14 @@ export default class BranchNodeForm extends Component {
     });
 
     Promise.all(promise).then(results => {
-      let ruleArr = [];
+      let ruleArr = [],errorMsg =[];
       results.map(result => {
+        if(result.reconfigure){
+          errorMsg.push(false);
+        }
         ruleArr.push(result);
       });
+      this.hideErrorMsg = errorMsg.length ? false : true;
       this.setState({rules: ruleArr});
     });
 
@@ -141,7 +148,8 @@ export default class BranchNodeForm extends Component {
 
 
   validateData() {
-    return true;
+    this.hideErrorMsg = Utils.validateReconfigFlag(this.state.rules);
+    return this.hideErrorMsg;
   }
 
   handleSave(name, description) {
@@ -321,6 +329,13 @@ export default class BranchNodeForm extends Component {
             : null}
           <div className="row customFormClass">
             <div className="col-sm-12">
+              {
+                !this.hideErrorMsg
+                ? <div className="alert alert-warning">
+                    Re-evaluate the configuration for rules marked in "Red".
+                  </div>
+                : null
+              }
               <Table className="table table-hover table-bordered" noDataText="No records found." currentPage={0} itemsPerPage={rules.length > pageSize
                 ? pageSize
                 : 0} pageButtonLimit={5}>
@@ -333,7 +348,7 @@ export default class BranchNodeForm extends Component {
                 </Thead>
                 {rules.map((rule, i) => {
                   return (
-                    <Tr key={i}>
+                    <Tr key={i}  style={{'color' : rule.reconfigure ? '#c73f3f' : '#333'}}>
                       <Td column="name">{rule.name}</Td>
                       <Td column="condition">{rule.condition}</Td>
                       <Td column="action" className={disabledFields
@@ -361,5 +376,5 @@ export default class BranchNodeForm extends Component {
 }
 
 BranchNodeForm.contextTypes = {
-  ParentForm: React.PropTypes.object
+  ParentForm: PropTypes.object
 };

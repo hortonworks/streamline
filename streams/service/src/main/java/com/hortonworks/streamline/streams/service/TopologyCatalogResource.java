@@ -683,6 +683,20 @@ public class TopologyCatalogResource {
         return WSUtils.respondEntity(importedTopology, OK);
     }
 
+    @GET
+    @Path("/topologies/{topologyId}/reconfigure")
+    @Timed
+    public Response getComponentsToReconfigure(@PathParam("topologyId") Long topologyId,
+                                  @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                NAMESPACE, topologyId, READ);
+        Topology topology = catalogService.getTopology(topologyId);
+        if (topology != null) {
+            return WSUtils.respondEntity(catalogService.getComponentsToReconfigure(topology), OK);
+        }
+        throw EntityNotFoundException.byId(topologyId.toString());
+    }
+
     private List<CatalogResourceUtil.TopologyDetailedResponse> enrichTopologies(Collection<Topology> topologies, String asUser, String sortType, Boolean ascending, Integer latencyTopN) {
         LOG.debug("[START] enrichTopologies");
         Stopwatch stopwatch = Stopwatch.createStarted();

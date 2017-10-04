@@ -102,18 +102,26 @@ need to:
    account.  See [Fork a repo](https://help.github.com/articles/fork-a-repo) for detailed instructions.
 2. Commit any changes to your fork.
 3. Send a [pull request](https://help.github.com/articles/creating-a-pull-request) to the Streamline GitHub repository
-   that you forked in step 1.  If your pull request is related to an existing IoTaS JIRA ticket -- for instance, because
-   you reported a bug report via JIRA earlier -- then prefix the title of your pull request with the corresponding JIRA
-   ticket number (e.g. `IOT-123: ...`).
+   that you forked in step 1.  If your pull request is related to an existing Github issue  -- for instance, because
+   you reported a bug report via Github issue earlier -- then prefix the title of your pull request with the corresponding 
+   Github issue number (e.g. `ISSUE-123: ...`).
 
 You may want to read [Syncing a fork](https://help.github.com/articles/syncing-a-fork) for instructions on how to keep
-your fork up to date with the latest changes of the upstream  `Streams` repository.
+your fork up to date with the latest changes of the upstream  `Streamline` repository.
 
-### Git Commit Messages Format
+### The format of pull request
 
-The Git commit messages must be standardized as follows:
+The title of pull request must be standardized as follows:
 
-STREAMLINE-XXX: Title matching exactly the JIRA Summary (title)
+```
+ISSUE-XXX: Title matching exactly the title of Github issue
+```
+
+The text immediately following the Github issue number (ISSUE-XXX: ) must be an exact transcription of the title of Github issue, not the a summary of the contents of the patch.
+
+If the title of Github issue does not accurately describe what the patch is addressing, the title of Github issue must be modified, and then copied to the Git commit message.
+
+And the body of pull request is encouraged to be standardized as follows:
 
 ```
 - An optional, bulleted (+, -, ., *), summary of the contents of 
@@ -122,55 +130,41 @@ STREAMLINE-XXX: Title matching exactly the JIRA Summary (title)
 - addressed by the patch.
 ```
 
-The text immediately following the JIRA number (STREAMLINE-XXX: ) must be an exact transcription of the JIRA summary (title), not the a summary of the contents of the patch.
-
-If the JIRA summary does not accurately describe what the patch is addressing, the JIRA summary must be modified, and then copied to the Git commit message.
-
-A summary with the contents of the patch is optional but strongly encouraged if the patch is large and/or the JIRA title is not expressive enough to describe what the patch is doing. This text must be bulleted using one of the following bullet points (+, -, ., ). There must be at last a 1 space indent before the bullet char, and exactly one space between bullet char and the first letter of the text. Bullets are not optional, but *required**.
+A summary with the contents of the patch is optional but strongly encouraged if the patch is large and/or the Github title is not expressive enough to describe what the patch is doing. This text must be bulleted using one of the following bullet points (+, -, ., ). There must be at last a 1 space indent before the bullet char, and exactly one space between bullet char and the first letter of the text. Bullets are not optional, but **required**.
 
 <a name="merge-pull-request"></a>
 
-### Merge a pull request or patch
+### Merge a pull request
 
-To pull in a merge request you should generally follow the command line instructions sent out by GitHub.
+You can utilize merge script to merge a pull request. There're some tasks prior to use the script. 
 
-1. Go to your local copy of the [Apache git repo](https://github.com/hortonworks/streamline.git), switch
-   to the `master` branch, and make sure it is up to date.
+#### CI Build
+Streamline is integrated with travis CI. The status of the build for the pending pull request will be reflected in the PR itself. You must see "The Travis CI build passed" in the pull request before merging it.
 
-        $ git checkout master
-        $ git fetch origin
-        $ git merge origin/master
+#### Preparation
 
-2. Create a local branch for integrating and testing the pull request.  You may want to name the branch according to the
-   Streamline JIRA ticket associated with the pull request (example: `STREAMLINE-1234`).
+1. Add Github mirror git repo to remote named `pull-repo`. You can set `PR_REMOTE_NAME` in system environment to use another name.
 
-        $ git checkout -b <local_test_branch>  # e.g. git checkout -b STREAMLINE-1234
+```
+$ git remote add pull-repo https://github.com/hortonworks/streamline.git
+```
 
-3. Merge the pull request into your local test branch.
+2. Add git repo for push to remote named `push-repo`. You can set `PUSH_REMOTE_NAME` in system environment to use another name.
 
-        $ git pull <remote_repo_url> <remote_branch>
+```
+$ git remote add push-repo <push repository git url>
+```
 
-4.  Assuming that the pull request merges without any conflicts:
-    Update the top-level `CHANGELOG.md`, and add in the JIRA ticket number (example: `STREAMLINE-1234`) and ticket
-    description to the change log.  Make sure that you place the JIRA ticket number in the commit comments where
-    applicable.
+#### How to use merge script
 
-5. Run any sanity tests that you think are needed.
+All merges should be done using the dev/merge_streamline_pr.py script, which squashes the pull request’s changes into one commit. 
+The script is fairly self explanatory and walks you through steps and options interactively.
 
-6. Once you are confident that everything is ok, you can merge your local test branch into your local `master` branch,
-   and push the changes back to the hortonworks repo.
+Please note that the script prompts for merger after squashed commit is made. Merger can then run the build and do the manual test before pushing, 
+but in normal it is encouraged to see the CI build success on PR before merging the PR, so unless merger wants to do some manual tests, 
+it is fine to do the push immediately.
 
-        # Pull request looks ok, change log was updated, etc.  We are ready for pushing.
-        $ git checkout master
-        $ git merge <local_test_branch>  # e.g. git merge STREAMLINE-1234
-
-        # At this point our local master branch is ready, so now we will push the changes
-        # to the official repo.  
-        $ git push origin  HEAD:refs/heads/master 
-
-7. The last step is updating the corresponding JIRA ticket.  [Go to JIRA](https://hwxiot.atlassian.net)
-   and resolve the ticket.  
-
+After the PR is merged, in normal only the PR will be closed. You may need to handle associated issue manually. 
 
 <a name="building"></a>
 

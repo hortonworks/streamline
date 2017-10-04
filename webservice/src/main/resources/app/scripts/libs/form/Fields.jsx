@@ -13,6 +13,7 @@
 **/
 
 import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {
   Button,
   Form,
@@ -31,6 +32,7 @@ import validation from './ValidationRules';
 import _ from 'lodash';
 import Utils from '../../utils/Utils';
 import TopologyREST from '../../rest/TopologyREST';
+import ProcessorUtils from '../../utils/ProcessorUtils';
 
 export class BaseField extends Component {
   type = 'FormField';
@@ -83,7 +85,7 @@ export class BaseField extends Component {
 }
 
 BaseField.contextTypes = {
-  Form: React.PropTypes.object
+  Form: PropTypes.object
 };
 
 export class file extends BaseField {
@@ -565,6 +567,13 @@ export class arrayenumstring extends BaseField {
     Form.setState(Form.state);
     this.validate(val);
   }
+  handleSelectAll = () => {
+    const optVal = this.props.fieldAttr.options;
+    this.props.data[this.props.value] = ProcessorUtils.selectAllOutputFields(optVal,'sinkForm');
+    const {Form} = this.context;
+    Form.setState(Form.state);
+    this.validate(optVal);
+  }
   validate(val) {
     if(val && this.props.fieldJson.hint && this.props.fieldJson.hint.indexOf("noNestedFields") !== -1) {
       let nestedField = val.findIndex(v => {return v.type === 'NESTED';});
@@ -575,6 +584,22 @@ export class arrayenumstring extends BaseField {
       }
     }
     return super.validate(this.props.data[this.props.value]);
+  }
+  getLabel(){
+    const popoverContent = (
+      <Popover id="popover-trigger-hover-focus">
+        {this.props.fieldJson.tooltip}
+      </Popover>
+    );
+    return  <span>
+              <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
+                <label>{this.props.label} {this.props.validation && this.props.validation.indexOf('required') !== -1
+                  ? <span className="text-danger">*</span>
+                  : null}
+                </label>
+              </OverlayTrigger>
+              <a className="pull-right" href="javascript:void(0)" onClick={this.handleSelectAll}>Select All</a>
+            </span> ;
   }
   getField = () => {
     const arrayEnumHint = this.props.fieldJson.hint || null;
@@ -595,41 +620,6 @@ export class arrayenumstring extends BaseField {
           ? "invalidSelect"
           : ""}`}/>
         </div>);
-  }
-}
-
-export class arrayenumstringSelectAll extends arrayenumstring{
-  handleSelectAll = (e) => {
-    let selectField = this.props.data[this.props.value],tempAll=[];
-    const optVal = this.props.fieldAttr.options;
-    optVal.map(d => {
-      const index = _.findIndex(selectField,(s) => {return s === d.value;});
-      if(index === -1){
-        tempAll.push(d.value);
-      }
-    });
-    Array.prototype.push.apply(selectField,tempAll);
-    this.props.data[this.props.value] = selectField;
-    const {Form} = this.context;
-    Form.setState(Form.state);
-    this.validate(optVal);
-  }
-
-  getLabel(){
-    const popoverContent = (
-      <Popover id="popover-trigger-hover-focus">
-        {this.props.fieldJson.tooltip}
-      </Popover>
-    );
-    return  <span>
-              <OverlayTrigger trigger={['hover']} placement="right" overlay={popoverContent}>
-                <label>{this.props.label} {this.props.validation && this.props.validation.indexOf('required') !== -1
-                  ? <span className="text-danger">*</span>
-                  : null}
-                </label>
-              </OverlayTrigger>
-              <a className="pull-right" href="javascript:void(0)" onClick={this.handleSelectAll}>Select All</a>
-            </span> ;
   }
 }
 

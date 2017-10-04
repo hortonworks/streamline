@@ -13,4 +13,4 @@
 -- limitations under the License.
 
 -- ISSUE-902: Test mode: Add a sleep option along with repeat count
-ALTER TABLE `topology_test_run_case_source` ADD COLUMN sleepMsPerIteration BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE "topology_test_run_case_source" ADD COLUMN "sleepMsPerIteration" BIGINT NOT NULL DEFAULT 0;

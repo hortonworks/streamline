@@ -121,7 +121,7 @@
         "tooltip": "Specify the output fields, in the desired order",
         "type": "array.enumstring",
         "options": [],
-        "hint": "inputFields"
+        "hint": "inputFields,noNestedFields"
       },
       {
         "uiName": "Parallelism",

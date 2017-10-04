@@ -12,7 +12,8 @@
   * limitations under the License.
 **/
 
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import Select from 'react-select';
@@ -529,6 +530,14 @@ export default class WindowingAggregateNodeForm extends Component {
   }
 
   /*
+    handleSelectAllOutputFields method select all keys
+  */
+  handleSelectAllOutputFields = () => {
+    const arr = ProcessorUtils.selectAllOutputFields(this.state.keysList);
+    this.handleKeysChange(arr);
+  }
+
+  /*
     commonHandlerChange Method accept keyType, obj and it handles multiple event [durationType,slidingDurationType,intervalType]
     params@ keyType = string 'durationType'
     params@ obj = selected obj
@@ -760,6 +769,11 @@ export default class WindowingAggregateNodeForm extends Component {
                   <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Group by keys</Popover>}>
                     <label>Select Keys</label>
                   </OverlayTrigger>
+                  <label className="pull-right">
+                    <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Select All Keys</Popover>}>
+                      <a href="javascript:void(0)" onClick={this.handleSelectAllOutputFields}>Select All</a>
+                    </OverlayTrigger>
+                  </label>
                   <div>
                     <Select value={selectedKeys} options={keysList} onChange={this.handleKeysChange.bind(this)} multi={true} disabled={disabledFields} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption}/>
                   </div>
@@ -896,5 +910,5 @@ export default class WindowingAggregateNodeForm extends Component {
 }
 
 WindowingAggregateNodeForm.contextTypes = {
-  ParentForm: React.PropTypes.object
+  ParentForm: PropTypes.object
 };

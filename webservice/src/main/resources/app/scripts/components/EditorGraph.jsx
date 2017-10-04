@@ -12,7 +12,8 @@
   * limitations under the License.
 **/
 
-import React, { Component,PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {observer} from 'mobx-react';
 import {observable} from 'mobx';
 import {DragDropContext, DropTarget} from 'react-dnd';

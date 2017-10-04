@@ -34,6 +34,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
@@ -195,7 +197,9 @@ public class NotificationServiceImplTest {
 
         notificationService.register("test_notifier", mockCtx);
 
-        notificationService.notify("test_notifier", mockNotification);
+        Future<?> res = notificationService.notify("test_notifier", mockNotification);
+
+        res.get(5, TimeUnit.SECONDS);
 
         new Verifications() {
             {

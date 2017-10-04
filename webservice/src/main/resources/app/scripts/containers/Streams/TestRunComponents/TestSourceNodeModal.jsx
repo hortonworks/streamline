@@ -12,7 +12,8 @@
   * limitations under the License.
 **/
 
-import React,{Component,PropTypes} from 'react';
+import React,{Component} from 'react';
+import PropTypes from 'prop-types';
 import {Scrollbars} from 'react-custom-scrollbars';
 import Utils from '../../../utils/Utils';
 import {toastOpt} from '../../../utils/Constants';
@@ -149,7 +150,7 @@ class TestSourceNodeModal extends Component{
               _.map(stateObj[i].streamIdList, (key) => {
                 tempInput = recordData[key];
               });
-              stateObj[i].records = JSON.stringify(tempInput,null,"  ");
+              stateObj[i].records = tempInput;
               stateObj[i].showCodeMirror = true;
             } else {
               stateObj[i].showCodeMirror = false;
@@ -185,6 +186,7 @@ class TestSourceNodeModal extends Component{
   */
   validateData = () => {
     const {showInputError,sourceNodeArr, testName} = this.state;
+    const {testCaseObj} = this.props;
     let validate = false,validationArr = [];
     _.map(sourceNodeArr, (source,i) => {
       if(source.records === '' || !parseInt(source.repeatTime,10) || parseInt(source.sleepMsPerIteration,10) < 0 || source.records === undefined || testName === ''){
@@ -194,7 +196,64 @@ class TestSourceNodeModal extends Component{
     if(!showInputError){
       validate = true;
     }
-    return validate && validationArr.length === 0 ? true : false;
+    if(validate && validationArr.length === 0){
+      if(_.isEmpty(testCaseObj)){
+        return this.createTestCase();
+      } else {
+        return this.validateTestCaseSchema();
+      }
+    } else {
+      return  new Promise((resolve,reject) => {
+        return resolve(["Some mandatory fields are empty"]);
+      });
+    }
+  }
+
+  createTestCase = () => {
+    const {topologyId} = this.props;
+    const {testName} = this.state;
+    let testObj = {
+      name : testName,
+      topologyId : topologyId
+    };
+    return TestRunREST.postTestRun(topologyId,{body : JSON.stringify(testObj)}).then((result) => {
+      if(result.responseMessage !== undefined){
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
+      } else {
+        this.props.updateTestCaseList(result);
+        return this.validateTestCaseSchema();
+      }
+    });
+  }
+
+  validateTestCaseSchema = () => {
+    const {topologyId} = this.props;
+    const {sourceNodeArr} = this.state;
+    const obj = this.generateTestCasePayLoad();
+    let promiseArr=[];
+    _.map(sourceNodeArr, (source, i) => {
+      promiseArr.push(TestRunREST.validateTestCase(topologyId,obj[i].testCaseId,{body : JSON.stringify(obj[i])}));
+    });
+    return Promise.all(promiseArr);
+  }
+
+  generateTestCasePayLoad = () => {
+    const {sourceNodeArr,sleepMsPerIteration} = this.state;
+    const {testCaseObj} = this.props;
+    let tempObj=[];
+    _.map(sourceNodeArr, (source, i) => {
+      let tempInputdata={};
+      tempObj.push({
+        sourceId : this.nodeArr[i].id,
+        testCaseId : source.testCaseId || testCaseObj.id || '',
+        occurrence : source.repeatTime,
+        sleepMsPerIteration : source.sleepMsPerIteration || sleepMsPerIteration
+      });
+      tempInputdata[source.streamIdList[0]] = source.records;
+      tempObj[i].records = JSON.stringify(tempInputdata);
+    });
+    return tempObj;
   }
 
   /*
@@ -205,44 +264,11 @@ class TestSourceNodeModal extends Component{
     Call the GET OR PUT API
   */
   handleSave = () => {
-    const {topologyId ,testCaseObj} = this.props;
-    const {testName,sourceNodeArr} = this.state;
-    let promiseArr = [],obj = [];
-    _.map(sourceNodeArr, (source, i) => {
-      let tempInputdata={};
-      obj.push({
-        sourceId : this.nodeArr[i].id,
-        testCaseId : source.testCaseId || '',
-        occurrence : source.repeatTime,
-        sleepMsPerIteration : source.sleepMsPerIteration || this.state.sleepMsPerIteration
-      });
-      tempInputdata[source.streamIdList[0]] = JSON.parse(source.records);
-      obj[i].records = JSON.stringify(tempInputdata);
-    });
-
-    if(_.isEmpty(testCaseObj)){
-      let testObj = {
-        name : testName,
-        topologyId : topologyId
-      };
-      return  TestRunREST.postTestRun(topologyId,{body : JSON.stringify(testObj)}).then((result) => {
-        if(result.responseMessage !== undefined){
-          FSReactToastr.error(
-            <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
-        } else {
-          _.map(obj,(o) => {
-            o.testCaseId = result.id;
-          });
-          this.props.updateTestCaseList(result);
-          return this.handleSaveApiCallback(obj,result);
-        }
-      });
-    } else {
-      return this.handleSaveApiCallback(obj);
-    }
+    const obj = this.generateTestCasePayLoad();
+    return this.handleSaveApiCallback(obj);
   }
 
-  handleSaveApiCallback = (obj,result) => {
+  handleSaveApiCallback = (obj) => {
     const {topologyId} = this.props;
     const {sourceNodeArr} = this.state;
     let savePromiseArr=[];
@@ -261,18 +287,18 @@ class TestSourceNodeModal extends Component{
     });
 
     if(savePromiseArr.length === 0){
-      return this.handleNewTestCase(obj,result);
+      return this.handleNewTestCase(obj);
     } else {
       return Promise.all(savePromiseArr);
     }
   }
 
-  handleNewTestCase = (objArr,result) => {
-    const {topologyId} = this.props;
+  handleNewTestCase = (objArr) => {
+    const {topologyId,testCaseObj} = this.props;
     const {sourceNodeArr} = this.state;
     let postArr = [];
     _.map(objArr, (obj) => {
-      postArr.push(TestRunREST.postTestRunNode(topologyId, result.id,'sources',{body : JSON.stringify(obj)}));
+      postArr.push(TestRunREST.postTestRunNode(topologyId, testCaseObj.id,'sources',{body : JSON.stringify(obj)}));
     });
     return Promise.all(postArr);
   }
@@ -286,7 +312,7 @@ class TestSourceNodeModal extends Component{
       reader.onload = function(e) {
         if(Utils.validateJSON(reader.result)) {
           tempSourceArr[sourceIndex].inputFile = file;
-          tempSourceArr[sourceIndex].records = JSON.stringify(JSON.parse(reader.result),null,"  ");
+          tempSourceArr[sourceIndex].records = JSON.stringify(JSON.parse(reader.result));
           tempSourceArr[sourceIndex].showCodeMirror = true;
           this.setState({showFileError: false,fileName,sourceNodeArr :tempSourceArr});
         }
@@ -358,6 +384,15 @@ class TestSourceNodeModal extends Component{
     let tempSourceArr = _.cloneDeep(this.state.sourceNodeArr);
     tempSourceArr[sourceIndex].expandCodemirror = !tempSourceArr[sourceIndex].expandCodemirror;
     this.setState({sourceNodeArr :tempSourceArr});
+  }
+
+  codeFormatter = (e) => {
+    e.preventDefault();
+    let tempSourceArr = _.cloneDeep(this.state.sourceNodeArr);
+    const {sourceIndex} = this.state;
+    const formatedData =  JSON.stringify(JSON.parse(tempSourceArr[sourceIndex].records),null,"  ") ;
+    tempSourceArr[sourceIndex].records = formatedData;
+    this.setState({sourceNodeArr : tempSourceArr});
   }
 
   render(){
@@ -433,6 +468,8 @@ class TestSourceNodeModal extends Component{
                                 <label>TEST DATA
                                   <span className="text-danger">*</span>
                                 </label>
+                                <a className="pull-right clear-link formatterFont"  href="javascript:void(0)"  onClick={this.codeFormatter.bind(this)}>&#123; &#125;</a>
+                                <span className="pull-right" style={{margin: '-1px 5px 0'}}>|</span>
                                 <a className="pull-right clear-link" href="javascript:void(0)" onClick={this.hideCodeMirror.bind(this)}> CLEAR </a>
                                 <span className="pull-right" style={{margin: '-1px 5px 0'}}>|</span>
                                   <a className="pull-right" href="javascript:void(0)" onClick={this.handleExpandClick.bind(this)}>

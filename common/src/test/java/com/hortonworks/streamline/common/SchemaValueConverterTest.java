@@ -2,6 +2,7 @@ package com.hortonworks.streamline.common;
 
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.registries.common.exception.ParserException;
+import com.hortonworks.streamline.common.exception.SchemaValidationFailedException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -69,7 +70,7 @@ public class SchemaValueConverterTest {
 
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = SchemaValidationFailedException.class)
     public void convertMapValueDoesNotHaveRequiredField() {
         Schema schema = Schema.of(
                 Schema.Field.of("a", Schema.Type.BINARY),
@@ -83,7 +84,7 @@ public class SchemaValueConverterTest {
         SchemaValueConverter.convertMap(schema, value);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = SchemaValidationFailedException.class)
     public void convertMapValueHasUndefinedField() {
         Schema schema = Schema.of(
                 Schema.Field.of("a", Schema.Type.BINARY),

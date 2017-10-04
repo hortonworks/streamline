@@ -25,6 +25,7 @@ import com.hortonworks.streamline.streams.notification.Notifier;
 import com.hortonworks.streamline.streams.notification.NotifierConfig;
 
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * <p>
@@ -55,12 +56,13 @@ public interface NotificationService {
     Notifier remove(String notifierName);
 
     /**
-     * Sends notification to a notifier.
+     * Asynchronously sends a notification to a notifier.
      *
      * @param notifierName the notifier name
      * @param notification the notification object.
+     * @return a {@link Future} that can be used to check the result of the notify operation
      */
-    void notify(String notifierName, Notification notification);
+    Future<?> notify(String notifierName, Notification notification);
 
     /**
      * <p>
