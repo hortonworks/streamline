@@ -374,3 +374,8 @@ svg>foreignObject>p {
 .invalidInput {
   border-color: #d81010 !important;
 }
+
+.reconfig-node{
+  stroke : rgba(255,165,0,1);
+  stroke-width :2px;
+}

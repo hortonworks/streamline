@@ -251,7 +251,7 @@ class TestSourceNodeModal extends Component{
         sleepMsPerIteration : source.sleepMsPerIteration || sleepMsPerIteration
       });
       tempInputdata[source.streamIdList[0]] = source.records;
-      obj[i].records = JSON.stringify(tempInputdata);
+      tempObj[i].records = JSON.stringify(tempInputdata);
     });
     return tempObj;
   }

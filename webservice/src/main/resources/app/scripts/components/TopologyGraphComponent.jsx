@@ -990,7 +990,7 @@ export default class TopologyGraphComponent extends Component {
     });
 
     thisGraph.rectangles.selectAll('rect').attr('class', function(d){
-      let classStr = 'node-rectangle ' + TopologyUtils.getNodeRectClass(d);
+      let classStr = `node-rectangle ${TopologyUtils.getNodeRectClass(d)} ${d.reconfigure ? 'reconfig-node' : ''}`;
       if(thisGraph.testRunActivated){
         classStr +=  d.parentType.toLowerCase() === "source"
                     ?  ' testSourceBg'
@@ -1059,7 +1059,7 @@ export default class TopologyGraphComponent extends Component {
 
     //Outer Rectangle
     newGs.append("rect").attr("width", constants.rectangleWidth + constants.rectangleHeight).attr("height", constants.rectangleHeight - 1).attr("class", function(d) {
-      let classStr = 'node-rectangle ' + TopologyUtils.getNodeRectClass(d);
+      let classStr = `node-rectangle ${TopologyUtils.getNodeRectClass(d)} ${d.reconfigure ? 'reconfig-node' : ''}`;
       if(thisGraph.testRunActivated){
         classStr +=  d.parentType.toLowerCase() === "source"
                     ?  ' testSourceBg'
