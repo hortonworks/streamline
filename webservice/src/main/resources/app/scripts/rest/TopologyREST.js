@@ -488,6 +488,15 @@ const TopologyREST = {
       .then((response) => {
         return response.json();
       });
+  },
+  getReconfigurationNodes(id,options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + 'topologies/' + id + '/reconfigure', options)
+      .then((response) => {
+        return response.json();
+      });
   }
 };
 

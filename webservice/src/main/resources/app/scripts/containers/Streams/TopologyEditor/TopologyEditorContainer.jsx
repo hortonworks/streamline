@@ -733,9 +733,10 @@ class TopologyEditorContainer extends Component {
       confirmBox.cancel();
     }, () => {});
   }
-  setModalContent(node, updateGraphMethod, content,currentEdges) {
+  setModalContent(node, updateGraphMethod, content,currentEdges, allNodes) {
     if (typeof content === 'function') {
       this.modalContent = content;
+      this.tempGraphNode = allNodes;
       this.processorNode = node.parentType.toLowerCase() === 'processor'
         ? true
         : false;
@@ -834,6 +835,10 @@ class TopologyEditorContainer extends Component {
             });
             if (_.keys(savedNode.config.properties).length > 0) {
               this.node.isConfigured = true;
+              const index = _.findIndex(this.tempGraphNode,(t) => { return t.nodeId === this.node.nodeId;});
+              if(index !== -1){
+                this.tempGraphNode[index].reconfigure = false;
+              }
             }
             let i = this.graphData.uinamesList.indexOf(this.node.uiname);
             if (this.node.currentType === 'Custom') {
@@ -853,8 +858,7 @@ class TopologyEditorContainer extends Component {
               <strong>{this.node.uiname} updated successfully.</strong>
             );
             //render graph again
-            this.updateGraphMethod();
-            this.refs.NodeModal.hide();
+            this.reconfigurationNode();
           }
         });
       }
@@ -862,6 +866,38 @@ class TopologyEditorContainer extends Component {
       this.refs.NodeModal.hide();
     }
   }
+
+  reconfigurationNode(){
+    TopologyREST.getReconfigurationNodes(this.topologyId).then((result) => {
+      if(result.responseMessage !== undefined){
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
+      } else {
+        this.setNodeConfigurationFlag(result);
+        this.refs.NodeModal.hide();
+      }
+    });
+  }
+
+  setNodeConfigurationFlag(obj){
+    let errorMsg =[];
+    _.map(this.tempGraphNode,(node) => {
+      const reconfigNode = _.pick(obj,node.parentType);
+      if(!_.isEmpty(reconfigNode)){
+        const index = _.findIndex(reconfigNode[node.parentType], (r) => {return r === node.nodeId;});
+        if(index !== -1){
+          errorMsg.push(node.node);
+          node.reconfigure = true;
+        }
+      }
+    });
+    this.updateGraphMethod();
+    if(errorMsg.length){
+      FSReactToastr.warning(
+        <CommonNotification flag="warning" content={"Re-evaluate the configuration for the nodes marked in \"Yellow\""}/>, '', toastOpt);
+    }
+  }
+
   showEdgeConfigModal(topologyId, versionId, newEdge, edges, callback, node, streamName, grouping, groupingFields) {
     this.edgeConfigData = {
       topologyId: topologyId,

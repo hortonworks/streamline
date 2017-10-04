@@ -671,6 +671,16 @@ const populateSchemaVersionOptions = function(resultArr,tempConfig){
   return tempConfig;
 };
 
+const validateReconfigFlag = function(arr){
+  let errorArr=[];
+  _.map(arr,(r) => {
+    if(r.reconfigure){
+      errorArr.push(true);
+    }
+  });
+  return errorArr.length ? false : true;
+};
+
 export default {
   sortArray,
   numberToMilliseconds,
@@ -707,5 +717,6 @@ export default {
   getClusterKey,
   clusterField,
   matchStringInArr,
-  populateSchemaVersionOptions
+  populateSchemaVersionOptions,
+  validateReconfigFlag
 };

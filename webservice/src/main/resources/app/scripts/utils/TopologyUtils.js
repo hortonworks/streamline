@@ -691,7 +691,7 @@ const defineLinePath = function(p1, p2, flag) {
 const showNodeModal = function(ModalScope, setModalContent, node, updateGraphMethod, allNodes, edges, linkShuffleOptions) {
   let currentEdges = this.getEdges(edges, node);
   let scope = ModalScope(node);
-  setModalContent(node, updateGraphMethod, this.getConfigContainer(node, scope.configData, scope.editMode, scope.topologyId, scope.versionId, scope.namespaceId, currentEdges, allNodes, linkShuffleOptions, edges, updateGraphMethod,scope.testRunActivated),currentEdges);
+  setModalContent(node, updateGraphMethod, this.getConfigContainer(node, scope.configData, scope.editMode, scope.topologyId, scope.versionId, scope.namespaceId, currentEdges, allNodes, linkShuffleOptions, edges, updateGraphMethod,scope.testRunActivated),currentEdges, allNodes);
 };
 
 const getConfigContainer = function(node, configData, editMode, topologyId, versionId, namespaceId, currentEdges, allNodes, linkShuffleOptions, edges, updateGraphMethod,testRunActivated) {
@@ -944,7 +944,8 @@ const generateNodeData = function(nodes, componentBundle, metadata, resultArr) {
       isConfigured: configuredFlag,
       parallelismCount: nodes[i].config.properties.parallelism || 1,
       nodeLabel: nodeLabel,
-      topologyComponentBundleId: componentObj.id
+      topologyComponentBundleId: componentObj.id,
+      reconfigure : nodes[i].reconfigure
     };
     if (currentMetaObj.streamId) {
       obj.streamId = currentMetaObj.streamId;
