@@ -21,19 +21,22 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.streamline.storage.annotation.StorableEntity;
-import org.apache.commons.lang3.StringUtils;
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.Window;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -252,21 +255,24 @@ public class TopologyRule extends BaseTopologyRule {
     @JsonIgnore
     @Override
     public Schema getSchema() {
-        return Schema.of(
-                Schema.Field.of(ID, Schema.Type.LONG),
-                Schema.Field.of(VERSIONID, Schema.Type.LONG),
-                Schema.Field.of(TOPOLOGY_ID, Schema.Type.LONG),
-                Schema.Field.of(NAME, Schema.Type.STRING),
-                Schema.Field.of(DESCRIPTION, Schema.Type.STRING),
-                Schema.Field.of(STREAMS, Schema.Type.STRING),
-                Schema.Field.of(OUTPUT_STREAMS, Schema.Type.STRING),
-                Schema.Field.of(PROJECTIONS, Schema.Type.STRING),
-                Schema.Field.of(CONDITION, Schema.Type.STRING),
-                Schema.Field.of(SQL, Schema.Type.STRING),
-                Schema.Field.of(PARSED_RULE_STR, Schema.Type.STRING),
-                Schema.Field.of(WINDOW, Schema.Type.STRING),
-                Schema.Field.of(ACTIONS, Schema.Type.STRING)
-        );
+        return Schema.unionOf(
+                super.getSchema(),
+                Schema.of(
+                        Schema.Field.of(ID, Schema.Type.LONG),
+                        Schema.Field.of(VERSIONID, Schema.Type.LONG),
+                        Schema.Field.of(TOPOLOGY_ID, Schema.Type.LONG),
+                        Schema.Field.of(NAME, Schema.Type.STRING),
+                        Schema.Field.of(DESCRIPTION, Schema.Type.STRING),
+                        Schema.Field.of(STREAMS, Schema.Type.STRING),
+                        Schema.Field.of(OUTPUT_STREAMS, Schema.Type.STRING),
+                        Schema.Field.of(PROJECTIONS, Schema.Type.STRING),
+                        Schema.Field.of(CONDITION, Schema.Type.STRING),
+                        Schema.Field.of(SQL, Schema.Type.STRING),
+                        Schema.Field.of(PARSED_RULE_STR, Schema.Type.STRING),
+                        Schema.Field.of(WINDOW, Schema.Type.STRING),
+                        Schema.Field.of(ACTIONS, Schema.Type.STRING),
+                        Schema.Field.of(RECONFIGURE, Schema.Type.BOOLEAN)
+                ));
     }
 
     @Override
@@ -295,6 +301,7 @@ public class TopologyRule extends BaseTopologyRule {
 
     @Override
     public Storable fromMap(Map<String, Object> map) {
+        super.fromMap(map);
         setId((Long) map.get(ID));
         setVersionId((Long) map.get(VERSIONID));
         setTopologyId((Long) map.get(TOPOLOGY_ID));
@@ -336,6 +343,11 @@ public class TopologyRule extends BaseTopologyRule {
             throw new RuntimeException(e);
         }
         return this;
+    }
+
+    @Override
+    public Set<String> getInputStreams() {
+        return new HashSet<>(streams);
     }
 
     @Override

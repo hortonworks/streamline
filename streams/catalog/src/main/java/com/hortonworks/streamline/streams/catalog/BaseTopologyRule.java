@@ -17,12 +17,23 @@ package com.hortonworks.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.registries.common.Schema;
+import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.catalog.AbstractStorable;
 import com.hortonworks.streamline.streams.layout.component.rule.Rule;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public abstract class BaseTopologyRule extends AbstractStorable {
+    public static final String RECONFIGURE = "reconfigure";
+
+    // if the upstream changed, the component may need reconfiguration
+    private Boolean reconfigure = false;
+
+
     @JsonIgnore
     protected abstract String getParsedRuleStr();
 
@@ -35,4 +46,27 @@ public abstract class BaseTopologyRule extends AbstractStorable {
         }
         return rule;
     }
+
+    @Override
+    public Storable fromMap(Map<String, Object> map) {
+        setReconfigure((Boolean) map.get(RECONFIGURE));
+        return this;
+    }
+
+    @JsonIgnore
+    @Override
+    public Schema getSchema() {
+        return Schema.of(Schema.Field.of(RECONFIGURE, Schema.Type.BOOLEAN));
+    }
+
+    public Boolean getReconfigure() {
+        return reconfigure;
+    }
+
+    public void setReconfigure(Boolean reconfigure) {
+        this.reconfigure = reconfigure;
+    }
+
+    @JsonIgnore
+    public abstract Set<String> getInputStreams();
 }
