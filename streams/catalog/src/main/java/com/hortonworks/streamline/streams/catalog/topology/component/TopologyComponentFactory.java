@@ -53,8 +53,7 @@ import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.model.ModelProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.normalization.NormalizationConfig;
 import com.hortonworks.streamline.streams.layout.component.impl.normalization.NormalizationProcessor;
-import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.JoinAction;
-import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.JoinProcessor;
+import com.hortonworks.streamline.streams.layout.component.impl.JoinProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.SplitAction;
 import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.SplitProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.StageAction;
@@ -228,6 +227,7 @@ public class TopologyComponentFactory {
         builder.put(normalizationProcessorProvider());
         builder.put(multilangProcessorProvider());
         builder.put(modelProcessorProvider());
+        builder.put(joinProcessorProvider());
         return builder.build();
     }
 
@@ -361,17 +361,7 @@ public class TopologyComponentFactory {
         Provider<StreamlineProcessor> provider = new Provider<StreamlineProcessor>() {
             @Override
             public StreamlineProcessor create(TopologyComponent component) {
-                Object joinConfig = component.getConfig().getAny(JoinProcessor.CONFIG_KEY_JOIN);
-                ObjectMapper objectMapper = new ObjectMapper();
-                JoinAction joinAction = objectMapper.convertValue(joinConfig, JoinAction.class);
-                JoinProcessor joinProcessor = new JoinProcessor();
-                if (component instanceof TopologyOutputComponent) {
-                    joinProcessor.addOutputStreams(createOutputStreams((TopologyOutputComponent) component));
-                } else {
-                    throw new IllegalArgumentException("Component " + component + " must be an instance of TopologyOutputComponent");
-                }
-                joinProcessor.setJoinAction(joinAction);
-                return joinProcessor;
+                return new JoinProcessor();
             }
         };
         return new SimpleImmutableEntry<>(JOIN, provider);

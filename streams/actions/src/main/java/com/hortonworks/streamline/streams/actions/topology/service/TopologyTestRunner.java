@@ -32,6 +32,7 @@ import com.hortonworks.streamline.streams.layout.component.StreamlineSink;
 import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
 import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
+import com.hortonworks.streamline.streams.layout.component.impl.JoinProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
@@ -144,6 +145,10 @@ public class TopologyTestRunner {
 
                         boolean windowed = rulesProcessor.getRules().stream().anyMatch(r -> r.getWindow() != null);
                         TestRunProcessor testRunProcessor = new TestRunProcessor(s, windowed, eventLogFilePath);
+                        testRunProcessor.setName(s.getName());
+                        return testRunProcessor;
+                    } else if (s instanceof JoinProcessor) {
+                        TestRunProcessor testRunProcessor = new TestRunProcessor(s, true, eventLogFilePath);
                         testRunProcessor.setName(s.getName());
                         return testRunProcessor;
                     } else {
