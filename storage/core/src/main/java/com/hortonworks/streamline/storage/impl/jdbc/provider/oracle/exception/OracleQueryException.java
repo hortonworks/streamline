@@ -14,30 +14,19 @@
  * limitations under the License.
  **/
 
-package com.hortonworks.streamline.storage.tool;
+package com.hortonworks.streamline.storage.impl.jdbc.provider.oracle.exception;
 
-public enum DatabaseType {
+public class OracleQueryException extends RuntimeException {
 
-    MYSQL("mysql"),
-    POSTGRES("postgresql"),
-    ORACLE("oracle");
-
-    private final String value;
-
-    DatabaseType(String dbType) {
-        value = dbType;
+    public OracleQueryException(Throwable cause) {
+        super(cause);
     }
 
-    @Override
-    public String toString() {
-        return value;
+    public OracleQueryException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public static DatabaseType fromValue(String otherValue) {
-        for (DatabaseType databaseType : values()) {
-            if (databaseType.value.equals(otherValue))
-                return databaseType;
-        }
-        throw new IllegalArgumentException("Unknown Database Type : " + otherValue);
+    public OracleQueryException(String message) {
+        super(message);
     }
 }

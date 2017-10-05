@@ -26,7 +26,7 @@ import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
 import com.hortonworks.streamline.streams.cluster.catalog.Component;
 import com.hortonworks.streamline.streams.cluster.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
-import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMapping;
+import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMap;
 import com.hortonworks.streamline.streams.cluster.catalog.Service;
 import com.hortonworks.streamline.streams.cluster.catalog.ServiceBundle;
 import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
@@ -58,7 +58,7 @@ public class EnvironmentService {
     private static final String COMPONENT_NAMESPACE = new Component().getNameSpace();
     private static final String SERVICE_CONFIGURATION_NAMESPACE = new ServiceConfiguration().getNameSpace();
     private static final String NAMESPACE_NAMESPACE = new Namespace().getNameSpace();
-    private static final String NAMESPACE_SERVICE_CLUSTER_MAPPING_NAMESPACE = new NamespaceServiceClusterMapping().getNameSpace();
+    private static final String NAMESPACE_SERVICE_CLUSTER_MAPPING_NAMESPACE = new NamespaceServiceClusterMap().getNameSpace();
     private static final String SERVICE_BUNDLE_NAMESPACE = new ServiceBundle().getNameSpace();
     private static final String NAMESPACE_COMPONENT_PROCESS = new ComponentProcess().getNameSpace();
 
@@ -85,7 +85,7 @@ public class EnvironmentService {
         Long clusterId = newCluster.getId();
         List<QueryParam> queryParams = Collections.singletonList(new QueryParam("clusterId", String.valueOf(clusterId)));
         Set<Long> namespaceIdSet = new HashSet<>();
-        for (NamespaceServiceClusterMapping namespaceServiceClusterMapping : listServiceClusterMapping(queryParams)) {
+        for (NamespaceServiceClusterMap namespaceServiceClusterMapping : listServiceClusterMapping(queryParams)) {
             Long namespaceId = namespaceServiceClusterMapping.getNamespaceId();
             namespaceIdSet.add(namespaceId);
         }
@@ -471,36 +471,36 @@ public class EnvironmentService {
         return namespace;
     }
 
-    public Collection<NamespaceServiceClusterMapping> listServiceClusterMapping(List<QueryParam> queryParams) {
+    public Collection<NamespaceServiceClusterMap> listServiceClusterMapping(List<QueryParam> queryParams) {
         return this.dao.find(NAMESPACE_SERVICE_CLUSTER_MAPPING_NAMESPACE, queryParams);
     }
 
-    public Collection<NamespaceServiceClusterMapping> listServiceClusterMapping(Long namespaceId) {
+    public Collection<NamespaceServiceClusterMap> listServiceClusterMapping(Long namespaceId) {
         return this.dao.find(NAMESPACE_SERVICE_CLUSTER_MAPPING_NAMESPACE,
                 Lists.newArrayList(new QueryParam("namespaceId", namespaceId.toString())));
     }
 
-    public Collection<NamespaceServiceClusterMapping> listServiceClusterMapping(Long namespaceId, String serviceName) {
+    public Collection<NamespaceServiceClusterMap> listServiceClusterMapping(Long namespaceId, String serviceName) {
         return this.dao.find(NAMESPACE_SERVICE_CLUSTER_MAPPING_NAMESPACE,
                 Lists.newArrayList(new QueryParam("namespaceId", namespaceId.toString()),
                         new QueryParam("serviceName", serviceName)));
     }
 
-    public NamespaceServiceClusterMapping getServiceClusterMapping(Long namespaceId,
-                                                                   String serviceName, Long clusterId) {
+    public NamespaceServiceClusterMap getServiceClusterMapping(Long namespaceId,
+                                                               String serviceName, Long clusterId) {
         StorableKey key = getStorableKeyForNamespaceServiceClusterMapping(namespaceId, serviceName, clusterId);
         return this.dao.get(key);
     }
 
-    public NamespaceServiceClusterMapping removeServiceClusterMapping(Long namespaceId, String serviceName, Long clusterId) {
+    public NamespaceServiceClusterMap removeServiceClusterMapping(Long namespaceId, String serviceName, Long clusterId) {
         StorableKey key = getStorableKeyForNamespaceServiceClusterMapping(namespaceId, serviceName, clusterId);
-        NamespaceServiceClusterMapping ret = this.dao.remove(key);
+        NamespaceServiceClusterMap ret = this.dao.remove(key);
         invalidateTopologyActionsMetricsInstances(namespaceId);
         return ret;
     }
 
-    public NamespaceServiceClusterMapping addOrUpdateServiceClusterMapping(
-            NamespaceServiceClusterMapping newMapping) {
+    public NamespaceServiceClusterMap addOrUpdateServiceClusterMapping(
+            NamespaceServiceClusterMap newMapping) {
         this.dao.addOrUpdate(newMapping);
         invalidateTopologyActionsMetricsInstances(newMapping.getNamespaceId());
         return newMapping;
@@ -595,7 +595,7 @@ public class EnvironmentService {
 
     private StorableKey getStorableKeyForNamespaceServiceClusterMapping(Long namespaceId, String serviceName,
                                                                         Long clusterId) {
-        NamespaceServiceClusterMapping mapping = new NamespaceServiceClusterMapping();
+        NamespaceServiceClusterMap mapping = new NamespaceServiceClusterMap();
         mapping.setNamespaceId(namespaceId);
         mapping.setServiceName(serviceName);
         mapping.setClusterId(clusterId);

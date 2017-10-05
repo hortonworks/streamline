@@ -30,7 +30,7 @@ public class SqlInsertQuery extends AbstractStorableSqlQuery {
         String sql = "INSERT INTO " + tableName + " ("
                 + join(getColumnNames(columns, null), ", ")
                 + ") VALUES( " + getBindVariables("?,", columns.size()) + ")";
-        log.debug(sql);
+        LOG.debug(sql);
         return sql;
     }
 }

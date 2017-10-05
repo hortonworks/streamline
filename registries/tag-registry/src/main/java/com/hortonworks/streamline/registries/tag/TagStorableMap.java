@@ -30,8 +30,8 @@ import java.util.Map;
  * this has to be maintained manually.
  */
 @StorableEntity
-public class TagStorableMapping extends AbstractStorable {
-    public static final String NAMESPACE = "tag_storable_mapping";
+public class TagStorableMap extends AbstractStorable {
+    public static final String NAMESPACE = "tag_storable_map";
     public static final String FIELD_TAG_ID = "tagId";
     public static final String FIELD_STORABLE_NAMESPACE = "storableNamespace";
     public static final String FIELD_STORABLE_ID = "storableId";
@@ -83,7 +83,7 @@ public class TagStorableMapping extends AbstractStorable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        TagStorableMapping that = (TagStorableMapping) o;
+        TagStorableMap that = (TagStorableMap) o;
 
         if (tagId != null ? !tagId.equals(that.tagId) : that.tagId != null) return false;
         if (storableNamespace != null ? !storableNamespace.equals(that.storableNamespace) : that.storableNamespace != null)
@@ -102,7 +102,7 @@ public class TagStorableMapping extends AbstractStorable {
 
     @Override
     public String toString() {
-        return "TagStorableMapping{" +
+        return "TagStorableMap{" +
                 "tagId=" + tagId +
                 ", storableNamespace='" + storableNamespace + '\'' +
                 ", storableId=" + storableId +

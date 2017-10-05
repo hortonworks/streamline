@@ -25,7 +25,6 @@ import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.AbstractS
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class PostgresqlInsertUpdateDuplicate extends AbstractStorableSqlQuery {
@@ -55,7 +54,7 @@ public class PostgresqlInsertUpdateDuplicate extends AbstractStorableSqlQuery {
                 + ") VALUES(" + getBindVariables("?,", columnNames.size()) + ")"
                 + " ON CONFLICT ON CONSTRAINT " + tableName + "_pkey"
                 + " DO UPDATE SET " + join(getColumnNames(columns, "\"%s\" = ?"), ", ");
-        log.debug(sql);
+        LOG.debug(sql);
         return sql;
     }
 

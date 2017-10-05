@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @StorableEntity
-public class TopologyProcessorStreamMapping extends AbstractStorable {
-    public static final String NAMESPACE = "topology_processor_stream_mapping";
+public class TopologyProcessorStreamMap extends AbstractStorable {
+    public static final String NAMESPACE = "topology_processor_stream_map";
     public static final String FIELD_PROCESSOR_ID = "processorId";
     public static final String FIELD_VERSION_ID = "versionId";
     public static final String FIELD_STREAM_ID = "streamId";
@@ -36,11 +36,11 @@ public class TopologyProcessorStreamMapping extends AbstractStorable {
     private Long streamId;
 
     // for jackson
-    public TopologyProcessorStreamMapping() {
+    public TopologyProcessorStreamMap() {
 
     }
 
-    public TopologyProcessorStreamMapping(Long processorId, Long versionId, Long streamId) {
+    public TopologyProcessorStreamMap(Long processorId, Long versionId, Long streamId) {
         this.processorId = processorId;
         this.versionId = versionId;
         this.streamId = streamId;
@@ -91,7 +91,7 @@ public class TopologyProcessorStreamMapping extends AbstractStorable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        TopologyProcessorStreamMapping that = (TopologyProcessorStreamMapping) o;
+        TopologyProcessorStreamMap that = (TopologyProcessorStreamMap) o;
 
         if (processorId != null ? !processorId.equals(that.processorId) : that.processorId != null) return false;
         if (versionId != null ? !versionId.equals(that.versionId) : that.versionId != null) return false;
@@ -109,7 +109,7 @@ public class TopologyProcessorStreamMapping extends AbstractStorable {
 
     @Override
     public String toString() {
-        return "TopologyProcessorStreamMapping{" +
+        return "TopologyProcessorStreamMap{" +
                 "processorId=" + processorId +
                 ", versionId=" + versionId +
                 ", streamId=" + streamId +

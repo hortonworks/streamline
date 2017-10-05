@@ -90,32 +90,6 @@ public class PostgresqlExecutor extends AbstractQueryExecutor {
         return null;
     }
 
-    public static PostgresqlExecutor createExecutor(Map<String, Object> jdbcProps) {
-        Util.validateJDBCProperties(jdbcProps, Lists.newArrayList("dataSourceClassName", "dataSource.url"));
-
-        String dataSourceClassName = (String) jdbcProps.get("dataSourceClassName");
-        log.info("data source class: [{}]", dataSourceClassName);
-
-        String jdbcUrl = (String) jdbcProps.get("dataSource.url");
-        log.info("dataSource.url is: [{}] ", jdbcUrl);
-
-        int queryTimeOutInSecs = -1;
-        if(jdbcProps.containsKey("queryTimeoutInSecs")) {
-            queryTimeOutInSecs = (Integer) jdbcProps.get("queryTimeoutInSecs");
-            if(queryTimeOutInSecs < 0) {
-                throw new IllegalArgumentException("queryTimeoutInSecs property can not be negative");
-            }
-        }
-
-        Properties properties = new Properties();
-        properties.putAll(jdbcProps);
-        HikariConfig hikariConfig = new HikariConfig(properties);
-
-        HikariCPConnectionBuilder connectionBuilder = new HikariCPConnectionBuilder(hikariConfig);
-        ExecutionConfig executionConfig = new ExecutionConfig(queryTimeOutInSecs);
-        return new PostgresqlExecutor(executionConfig, connectionBuilder);
-    }
-
     // this is required since the Id type in Storable is long and Postgres supports Int type for SERIAL (auto increment) field
     @Override
     protected QueryExecution getQueryExecution(SqlQuery sqlQuery) {

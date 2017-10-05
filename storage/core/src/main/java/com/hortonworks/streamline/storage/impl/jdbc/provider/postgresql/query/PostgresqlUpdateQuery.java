@@ -30,7 +30,7 @@ public class PostgresqlUpdateQuery extends AbstractStorableUpdateQuery {
         String sql = "UPDATE " + tableName + " SET "
                 + join(getColumnNames(columns, "\"%s\" = ?"), ", ")
                 + " WHERE " + join(getColumnNames(whereFields, "\"%s\" = ?"), " AND ");
-        log.debug("Sql '{}'", sql);
+        LOG.debug("Sql '{}'", sql);
         return sql;
     }
 }
