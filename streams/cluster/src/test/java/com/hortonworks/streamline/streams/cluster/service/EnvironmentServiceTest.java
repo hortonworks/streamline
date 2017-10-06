@@ -19,7 +19,7 @@ import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
-import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMapping;
+import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMap;
 import com.hortonworks.streamline.streams.cluster.ClusterImporter;
 import com.hortonworks.streamline.streams.cluster.container.ContainingNamespaceAwareContainer;
 import com.hortonworks.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
@@ -29,7 +29,6 @@ import mockit.Injectable;
 import mockit.Mocked;
 import mockit.Tested;
 import mockit.integration.junit4.JMockit;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -46,7 +45,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(JMockit.class)
 public class EnvironmentServiceTest {
 
-    public static final String NAMESPACE_SERVICE_CLUSTER_MAPPING = "namespace_service_cluster_mapping";
+    public static final String NAMESPACE_SERVICE_CLUSTER_MAP = "namespace_service_cluster_map";
     @Tested
     private EnvironmentService environmentService;
 
@@ -84,10 +83,10 @@ public class EnvironmentServiceTest {
         testCluster.setId(clusterId);
 
         ArrayList<Long> namespaceIds = Lists.newArrayList(1L, 2L, 3L);
-        List<NamespaceServiceClusterMapping> mappings = new ArrayList<>();
-        mappings.add(new NamespaceServiceClusterMapping(1L, "STORM", clusterId));
-        mappings.add(new NamespaceServiceClusterMapping(2L, "KAFKA", clusterId));
-        mappings.add(new NamespaceServiceClusterMapping(3L, "HADOOP", clusterId));
+        List<NamespaceServiceClusterMap> mappings = new ArrayList<>();
+        mappings.add(new NamespaceServiceClusterMap(1L, "STORM", clusterId));
+        mappings.add(new NamespaceServiceClusterMap(2L, "KAFKA", clusterId));
+        mappings.add(new NamespaceServiceClusterMap(3L, "HADOOP", clusterId));
 
         MockedNamespaceAwareContainer container1 = new MockedNamespaceAwareContainer();
         MockedNamespaceAwareContainer container2 = new MockedNamespaceAwareContainer();
@@ -98,7 +97,7 @@ public class EnvironmentServiceTest {
            clusterImporter.importCluster(discoverer, testCluster);
            result = testCluster;
 
-           dao.find(NAMESPACE_SERVICE_CLUSTER_MAPPING,
+           dao.find(NAMESPACE_SERVICE_CLUSTER_MAP,
                    Collections.singletonList(new QueryParam("clusterId", String.valueOf(clusterId))));
            result = mappings;
         }};

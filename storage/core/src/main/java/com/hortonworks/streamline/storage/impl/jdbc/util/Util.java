@@ -40,7 +40,7 @@ public class Util {
         throw new RuntimeException("Unknown sqlType " + sqlType);
     }
 
-    public static Class getJavaType(int sqlType) {
+    public static Class getJavaType(int sqlType, int precision) {
         switch (sqlType) {
             case Types.CHAR:
             case Types.VARCHAR:
@@ -73,6 +73,17 @@ public class Util {
             case Types.BLOB:
             case Types.LONGVARBINARY:
                 return InputStream.class;
+            case Types.NUMERIC:
+                switch (precision) {
+                    case 1:
+                        return Boolean.class;
+                    case 3:
+                        return Byte.class;
+                    case 10:
+                        return Integer.class;
+                    default:
+                        return Long.class;
+                }
             default:
                 throw new RuntimeException("We do not support tables with SqlType: " + getSqlTypeName(sqlType));
         }

@@ -15,24 +15,19 @@
  **/
 package com.hortonworks.streamline.registries.dashboard.service;
 
-import org.apache.commons.io.IOUtils;
+import com.hortonworks.streamline.registries.dashboard.entites.WidgetDatasourceMap;
 import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.registries.dashboard.entites.Dashboard;
 import com.hortonworks.streamline.registries.dashboard.entites.Datasource;
 import com.hortonworks.streamline.registries.dashboard.entites.Widget;
-import com.hortonworks.streamline.registries.dashboard.entites.WidgetDatasourceMapping;
-import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.storage.StorageManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -42,7 +37,7 @@ public class DashboardCatalogService {
     private static final String DASHBOARD_NAMESPACE = new Dashboard().getNameSpace();
     private static final String DATASOURCE_NAMESPACE = new Datasource().getNameSpace();
     private static final String WIDGET_NAMESPACE = new Widget().getNameSpace();
-    private static final String WIDGET_DATASOURCE_MAPPING_NAMESPACE = new WidgetDatasourceMapping().getNameSpace();
+    private static final String WIDGET_DATASOURCE_MAPPING_NAMESPACE = new WidgetDatasourceMap().getNameSpace();
     private final StorageManager dao;
     private final FileStorage fileStorage;
 
@@ -124,23 +119,23 @@ public class DashboardCatalogService {
 
     public void removeWidgetDatasourceMapping(Widget widget, Set<Long> datasourceIds) {
         datasourceIds.forEach(datasourceId -> {
-            dao.<WidgetDatasourceMapping>remove(new WidgetDatasourceMapping(widget.getId(), datasourceId).getStorableKey());
+            dao.<WidgetDatasourceMap>remove(new WidgetDatasourceMap(widget.getId(), datasourceId).getStorableKey());
         });
     }
 
     public void addWidgetDatasourceMapping(Widget widget, Set<Long> datasourceIds) {
         datasourceIds.forEach(datasourceId -> {
             ensureDatasourceExists(widget.getDashboardId(), datasourceId);
-            dao.<WidgetDatasourceMapping>add(new WidgetDatasourceMapping(widget.getId(), datasourceId));
+            dao.<WidgetDatasourceMap>add(new WidgetDatasourceMap(widget.getId(), datasourceId));
         });
     }
 
     public Set<Long> getWidgetDatasourceMapping(Widget widget) {
         List<QueryParam> queryParams = Collections.singletonList(
-                new QueryParam(WidgetDatasourceMapping.WIDGET_ID, widget.getId().toString()));
-        Collection<WidgetDatasourceMapping> mappings = dao.find(WIDGET_DATASOURCE_MAPPING_NAMESPACE, queryParams);
+                new QueryParam(WidgetDatasourceMap.WIDGET_ID, widget.getId().toString()));
+        Collection<WidgetDatasourceMap> mappings = dao.find(WIDGET_DATASOURCE_MAPPING_NAMESPACE, queryParams);
         if (mappings != null) {
-            return mappings.stream().map(WidgetDatasourceMapping::getWidgetId).collect(Collectors.toSet());
+            return mappings.stream().map(WidgetDatasourceMap::getWidgetId).collect(Collectors.toSet());
         }
         return Collections.emptySet();
     }

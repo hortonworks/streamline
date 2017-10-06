@@ -20,22 +20,15 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.hortonworks.streamline.common.QueryParam;
-import com.hortonworks.streamline.common.exception.DuplicateEntityException;
-import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.registries.tag.Tag;
-import com.hortonworks.streamline.registries.tag.TagStorableMapping;
+import com.hortonworks.streamline.registries.tag.TagStorableMap;
 import com.hortonworks.streamline.registries.tag.TaggedEntity;
-import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.storage.StorageManager;
-import org.apache.commons.io.IOUtils;
 import com.hortonworks.streamline.storage.util.StorageUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -48,7 +41,7 @@ import java.util.Set;
  */
 public class CatalogTagService implements TagService {
     private static final String TAG_NAMESPACE = new Tag().getNameSpace();
-    private static final String TAG_STORABLE_MAPPING_NAMESPACE = new TagStorableMapping().getNameSpace();
+    private static final String TAG_STORABLE_MAPPING_NAMESPACE = new TagStorableMap().getNameSpace();
     private final StorageManager dao;
 
     public CatalogTagService(StorageManager dao) {
@@ -154,7 +147,7 @@ public class CatalogTagService implements TagService {
     public void addTagsForStorable(TaggedEntity taggedEntity, List<Tag> tags) {
         if (tags != null) {
             for (Tag tag : tags) {
-                TagStorableMapping tagStorable = new TagStorableMapping();
+                TagStorableMap tagStorable = new TagStorableMap();
                 tagStorable.setTagId(tag.getId());
                 tagStorable.setStorableNamespace(taggedEntity.getNamespace());
                 tagStorable.setStorableId(taggedEntity.getId());
@@ -188,7 +181,7 @@ public class CatalogTagService implements TagService {
     public void removeTagsFromStorable(TaggedEntity taggedEntity, List<Tag> tags) {
         if (tags != null) {
             for (Tag tag : tags) {
-                TagStorableMapping tagStorable = new TagStorableMapping();
+                TagStorableMap tagStorable = new TagStorableMap();
                 tagStorable.setTagId(tag.getId());
                 tagStorable.setStorableId(taggedEntity.getId());
                 tagStorable.setStorableNamespace(taggedEntity.getNamespace());
@@ -200,11 +193,11 @@ public class CatalogTagService implements TagService {
     @Override
     public List<Tag> getTags(TaggedEntity taggedEntity) {
         List<Tag> tags = new ArrayList<>();
-        QueryParam qp1 = new QueryParam(TagStorableMapping.FIELD_STORABLE_ID,
+        QueryParam qp1 = new QueryParam(TagStorableMap.FIELD_STORABLE_ID,
                                         String.valueOf(taggedEntity.getId()));
-        QueryParam qp2 = new QueryParam(TagStorableMapping.FIELD_STORABLE_NAMESPACE,
+        QueryParam qp2 = new QueryParam(TagStorableMap.FIELD_STORABLE_NAMESPACE,
                                         String.valueOf(taggedEntity.getNamespace()));
-        for (TagStorableMapping mapping : listTagStorableMapping(ImmutableList.of(qp1, qp2))) {
+        for (TagStorableMap mapping : listTagStorableMapping(ImmutableList.of(qp1, qp2))) {
             tags.add(getTag(mapping.getTagId()));
         }
         return tags;
@@ -240,14 +233,14 @@ public class CatalogTagService implements TagService {
 
     private List<TaggedEntity> getTaggedEntities(Long tagId) {
         List<TaggedEntity> taggedEntities = new ArrayList<>();
-        QueryParam qp1 = new QueryParam(TagStorableMapping.FIELD_TAG_ID, String.valueOf(tagId));
-        for (TagStorableMapping mapping : listTagStorableMapping(ImmutableList.of(qp1))) {
+        QueryParam qp1 = new QueryParam(TagStorableMap.FIELD_TAG_ID, String.valueOf(tagId));
+        for (TagStorableMap mapping : listTagStorableMapping(ImmutableList.of(qp1))) {
             taggedEntities.add(new TaggedEntity(mapping.getStorableNamespace(), mapping.getStorableId()));
         }
         return taggedEntities;
     }
 
-    private Collection<TagStorableMapping> listTagStorableMapping(List<QueryParam> params) {
+    private Collection<TagStorableMap> listTagStorableMapping(List<QueryParam> params) {
         return dao.find(TAG_STORABLE_MAPPING_NAMESPACE, params);
     }
 

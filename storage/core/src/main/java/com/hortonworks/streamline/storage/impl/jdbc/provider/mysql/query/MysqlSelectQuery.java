@@ -19,7 +19,7 @@ public class MysqlSelectQuery extends AbstractStorableKeyQuery {
         if (columns != null) {
             sql += " WHERE " + join(getColumnNames(columns, "`%s` = ?"), " AND ");
         }
-        log.debug(sql);
+        LOG.debug(sql);
         return sql;
     }
 }

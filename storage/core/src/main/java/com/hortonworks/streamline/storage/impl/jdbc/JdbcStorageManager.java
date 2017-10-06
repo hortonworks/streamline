@@ -28,18 +28,13 @@ import com.hortonworks.streamline.storage.exception.AlreadyExistsException;
 import com.hortonworks.streamline.storage.exception.ConcurrentUpdateException;
 import com.hortonworks.streamline.storage.exception.IllegalQueryParameterException;
 import com.hortonworks.streamline.storage.exception.StorageException;
-import com.hortonworks.streamline.storage.impl.jdbc.provider.mysql.factory.MySqlExecutor;
-import com.hortonworks.streamline.storage.impl.jdbc.provider.postgresql.factory.PostgresqlExecutor;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.QueryExecutorFactory;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory.QueryExecutor;
-import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.MetadataHelper;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlSelectQuery;
-import com.hortonworks.streamline.storage.util.StorageUtils;
-import org.apache.commons.lang3.tuple.Pair;
+import com.hortonworks.streamline.storage.impl.jdbc.util.CaseAgnosticStringSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
-import java.sql.Connection;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -167,13 +162,12 @@ public class JdbcStorageManager implements StorageManager {
      */
     private StorableKey buildStorableKey(String namespace, List<QueryParam> queryParams) throws Exception {
         final Map<Schema.Field, Object> fieldsToVal = new HashMap<>();
-        final Connection connection = queryExecutor.getConnection();
         StorableKey storableKey = null;
 
         try {
+            CaseAgnosticStringSet columnNames = queryExecutor.getColumnNames(namespace);
             for (QueryParam qp : queryParams) {
-                int queryTimeoutSecs = queryExecutor.getConfig().getQueryTimeoutSecs();
-                if (!MetadataHelper.isColumnInNamespace(connection, queryTimeoutSecs, namespace, qp.getName())) {
+                if (!columnNames.contains(qp.getName())) {
                     log.warn("Query parameter [{}] does not exist for namespace [{}]. Query parameter ignored.", qp.getName(), namespace);
                 } else {
                     final String val = qp.getValue();
@@ -194,8 +188,6 @@ public class JdbcStorageManager implements StorageManager {
         } catch (Exception e) {
             log.debug("Exception occurred when attempting to generate StorableKey from QueryParam", e);
             throw new IllegalQueryParameterException(e);
-        } finally {
-            queryExecutor.closeConnection(connection);
         }
 
         return storableKey;
@@ -218,23 +210,13 @@ public class JdbcStorageManager implements StorageManager {
 
         // When we have more providers we can add a layer to have a factory to create respective jdbc storage managers.
         // For now, keeping it simple as there are only 2.
-        if(!"mysql".equals(type) && !"postgresql".equals(type)) {
+        if(!"mysql".equals(type) && !"postgresql".equals(type) && !"oracle".equals(type)) {
             throw new IllegalArgumentException("Unknown jdbc storage provider type: "+type);
         }
         log.info("jdbc provider type: [{}]", type);
         Map<String, Object> dbProperties = (Map<String, Object>) properties.get("db.properties");
 
-        QueryExecutor queryExecutor;
-        switch (type) {
-            case "mysql":
-                queryExecutor = MySqlExecutor.createExecutor(dbProperties);
-                break;
-            case "postgresql":
-                queryExecutor = PostgresqlExecutor.createExecutor(dbProperties);
-                break;
-            default:
-                throw new IllegalArgumentException("Unsupported storage provider type: "+type);
-        }
+        QueryExecutor queryExecutor = QueryExecutorFactory.get(type, dbProperties);
 
         this.queryExecutor = queryExecutor;
         this.queryExecutor.setStorableFactory(storableFactory);

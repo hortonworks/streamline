@@ -55,11 +55,11 @@ import com.hortonworks.streamline.streams.catalog.TopologyEditorMetadata;
 import com.hortonworks.streamline.streams.catalog.TopologyEditorToolbar;
 import com.hortonworks.streamline.streams.catalog.TopologyOutputComponent;
 import com.hortonworks.streamline.streams.catalog.TopologyProcessor;
-import com.hortonworks.streamline.streams.catalog.TopologyProcessorStreamMapping;
+import com.hortonworks.streamline.streams.catalog.TopologyProcessorStreamMap;
 import com.hortonworks.streamline.streams.catalog.TopologyRule;
 import com.hortonworks.streamline.streams.catalog.TopologySink;
 import com.hortonworks.streamline.streams.catalog.TopologySource;
-import com.hortonworks.streamline.streams.catalog.TopologySourceStreamMapping;
+import com.hortonworks.streamline.streams.catalog.TopologySourceStreamMap;
 import com.hortonworks.streamline.streams.catalog.TopologyStream;
 import com.hortonworks.streamline.streams.catalog.TopologyTestRunCase;
 import com.hortonworks.streamline.streams.catalog.TopologyTestRunCaseSink;
@@ -137,10 +137,10 @@ public class StreamCatalogService {
     private static final String STREAMINFO_NAMESPACE = new TopologyStream().getNameSpace();
     private static final String TOPOLOGY_COMPONENT_NAMESPACE = new TopologyComponent().getNameSpace();
     private static final String TOPOLOGY_SOURCE_NAMESPACE = new TopologySource().getNameSpace();
-    private static final String TOPOLOGY_SOURCE_STREAM_MAPPING_NAMESPACE = new TopologySourceStreamMapping().getNameSpace();
+    private static final String TOPOLOGY_SOURCE_STREAM_MAPPING_NAMESPACE = new TopologySourceStreamMap().getNameSpace();
     private static final String TOPOLOGY_SINK_NAMESPACE = new TopologySink().getNameSpace();
     private static final String TOPOLOGY_PROCESSOR_NAMESPACE = new TopologyProcessor().getNameSpace();
-    private static final String TOPOLOGY_PROCESSOR_STREAM_MAPPING_NAMESPACE = new TopologyProcessorStreamMapping().getNameSpace();
+    private static final String TOPOLOGY_PROCESSOR_STREAM_MAPPING_NAMESPACE = new TopologyProcessorStreamMap().getNameSpace();
     private static final String TOPOLOGY_EDGE_NAMESPACE = new TopologyEdge().getNameSpace();
     private static final String TOPOLOGY_RULEINFO_NAMESPACE = new TopologyRule().getNameSpace();
     private static final String TOPOLOGY_BRANCHRULEINFO_NAMESPACE = new TopologyBranchRule().getNameSpace();
@@ -1429,7 +1429,7 @@ public class StreamCatalogService {
 
     private void addSourceStreamMapping(TopologySource topologySource, List<Long> streamIds) {
         for (Long outputStreamId : streamIds) {
-            dao.<TopologySourceStreamMapping>add(new TopologySourceStreamMapping(topologySource.getId(),
+            dao.<TopologySourceStreamMap>add(new TopologySourceStreamMap(topologySource.getId(),
                     topologySource.getVersionId(), outputStreamId));
         }
     }
@@ -1443,11 +1443,11 @@ public class StreamCatalogService {
     private void removeSourceStreamMapping(TopologySource topologySource, List<Long> streamIds) {
         if (topologySource != null) {
             for (Long outputStreamId : streamIds) {
-                TopologySourceStreamMapping mapping = new TopologySourceStreamMapping(
+                TopologySourceStreamMap mapping = new TopologySourceStreamMap(
                         topologySource.getId(),
                         topologySource.getVersionId(),
                         outputStreamId);
-                dao.<TopologySourceStreamMapping>remove(mapping.getStorableKey());
+                dao.<TopologySourceStreamMap>remove(mapping.getStorableKey());
             }
         }
     }
@@ -1455,18 +1455,18 @@ public class StreamCatalogService {
     private List<Long> getOutputStreamIds(TopologySource topologySource) {
         List<Long> streamIds = new ArrayList<>();
         if (topologySource != null) {
-            QueryParam qp1 = new QueryParam(TopologySourceStreamMapping.FIELD_SOURCE_ID,
+            QueryParam qp1 = new QueryParam(TopologySourceStreamMap.FIELD_SOURCE_ID,
                     String.valueOf(topologySource.getId()));
-            QueryParam qp2 = new QueryParam(TopologySourceStreamMapping.FIELD_VERSION_ID,
+            QueryParam qp2 = new QueryParam(TopologySourceStreamMap.FIELD_VERSION_ID,
                     String.valueOf(topologySource.getVersionId()));
-            for (TopologySourceStreamMapping mapping : listTopologySourceStreamMapping(ImmutableList.of(qp1, qp2))) {
+            for (TopologySourceStreamMap mapping : listTopologySourceStreamMapping(ImmutableList.of(qp1, qp2))) {
                 streamIds.add(mapping.getStreamId());
             }
         }
         return streamIds;
     }
 
-    private Collection<TopologySourceStreamMapping> listTopologySourceStreamMapping(List<QueryParam> params) {
+    private Collection<TopologySourceStreamMap> listTopologySourceStreamMapping(List<QueryParam> params) {
         try {
             return dao.find(TOPOLOGY_SOURCE_STREAM_MAPPING_NAMESPACE, params);
         } catch (Exception ex) {
@@ -1500,11 +1500,11 @@ public class StreamCatalogService {
     private List<TopologyStream> getOutputStreams(TopologyProcessor topologyProcessor) {
         List<TopologyStream> streams = new ArrayList<>();
         if (topologyProcessor != null) {
-            QueryParam qp1 = new QueryParam(TopologyProcessorStreamMapping.FIELD_PROCESSOR_ID,
+            QueryParam qp1 = new QueryParam(TopologyProcessorStreamMap.FIELD_PROCESSOR_ID,
                     String.valueOf(topologyProcessor.getId()));
-            QueryParam qp2 = new QueryParam(TopologyProcessorStreamMapping.FIELD_VERSION_ID,
+            QueryParam qp2 = new QueryParam(TopologyProcessorStreamMap.FIELD_VERSION_ID,
                     String.valueOf(topologyProcessor.getVersionId()));
-            for (TopologyProcessorStreamMapping mapping : listTopologyProcessorStreamMapping(ImmutableList.of(qp1, qp2))) {
+            for (TopologyProcessorStreamMap mapping : listTopologyProcessorStreamMapping(ImmutableList.of(qp1, qp2))) {
                 TopologyStream topologyStream = getStreamInfo(topologyProcessor.getTopologyId(), mapping.getStreamId(), topologyProcessor.getVersionId());
                 if (topologyStream != null) {
                     streams.add(topologyStream);
@@ -1540,11 +1540,11 @@ public class StreamCatalogService {
     private List<TopologyStream> getOutputStreams(TopologySource topologySource) {
         List<TopologyStream> streams = new ArrayList<>();
         if (topologySource != null) {
-            QueryParam qp1 = new QueryParam(TopologySourceStreamMapping.FIELD_SOURCE_ID,
+            QueryParam qp1 = new QueryParam(TopologySourceStreamMap.FIELD_SOURCE_ID,
                     String.valueOf(topologySource.getId()));
-            QueryParam qp2 = new QueryParam(TopologySourceStreamMapping.FIELD_VERSION_ID,
+            QueryParam qp2 = new QueryParam(TopologySourceStreamMap.FIELD_VERSION_ID,
                     String.valueOf(topologySource.getVersionId()));
-            for (TopologySourceStreamMapping mapping : listTopologySourceStreamMapping(ImmutableList.of(qp1, qp2))) {
+            for (TopologySourceStreamMap mapping : listTopologySourceStreamMapping(ImmutableList.of(qp1, qp2))) {
                 TopologyStream topologyStream = getStreamInfo(topologySource.getTopologyId(), mapping.getStreamId(), topologySource.getVersionId());
                 if (topologyStream != null) {
                     streams.add(topologyStream);
@@ -1722,7 +1722,7 @@ public class StreamCatalogService {
     private void createProcessorStreamMapping(TopologyProcessor topologyProcessor, List<TopologyStream> streams) {
         for (TopologyStream outputStream : streams) {
             TopologyStream addedStream = addStreamInfo(topologyProcessor.getTopologyId(), outputStream);
-            dao.<TopologyProcessorStreamMapping>add(new TopologyProcessorStreamMapping(topologyProcessor.getId(),
+            dao.<TopologyProcessorStreamMap>add(new TopologyProcessorStreamMap(topologyProcessor.getId(),
                     topologyProcessor.getVersionId(),
                     addedStream.getId()));
         }
@@ -1730,7 +1730,7 @@ public class StreamCatalogService {
 
     private void addProcessorStreamMapping(TopologyProcessor topologyProcessor, List<Long> streamIds) {
         for (Long outputStreamId : streamIds) {
-            dao.<TopologyProcessorStreamMapping>add(new TopologyProcessorStreamMapping(topologyProcessor.getId(),
+            dao.<TopologyProcessorStreamMap>add(new TopologyProcessorStreamMap(topologyProcessor.getId(),
                     topologyProcessor.getVersionId(),
                     outputStreamId));
         }
@@ -1745,10 +1745,10 @@ public class StreamCatalogService {
     private void removeProcessorStreamMapping(TopologyProcessor topologyProcessor, List<Long> streamIds) {
         if (topologyProcessor != null) {
             for (Long outputStreamId : streamIds) {
-                TopologyProcessorStreamMapping mapping = new TopologyProcessorStreamMapping(topologyProcessor.getId(),
+                TopologyProcessorStreamMap mapping = new TopologyProcessorStreamMap(topologyProcessor.getId(),
                         topologyProcessor.getVersionId(),
                         outputStreamId);
-                dao.<TopologyProcessorStreamMapping>remove(mapping.getStorableKey());
+                dao.<TopologyProcessorStreamMap>remove(mapping.getStorableKey());
             }
         }
     }
@@ -1756,18 +1756,18 @@ public class StreamCatalogService {
     private List<Long> getOutputStreamIds(TopologyProcessor topologyProcessor) {
         List<Long> streamIds = new ArrayList<>();
         if (topologyProcessor != null) {
-            QueryParam qp1 = new QueryParam(TopologyProcessorStreamMapping.FIELD_PROCESSOR_ID,
+            QueryParam qp1 = new QueryParam(TopologyProcessorStreamMap.FIELD_PROCESSOR_ID,
                     String.valueOf(topologyProcessor.getId()));
-            QueryParam qp2 = new QueryParam(TopologyProcessorStreamMapping.FIELD_VERSION_ID,
+            QueryParam qp2 = new QueryParam(TopologyProcessorStreamMap.FIELD_VERSION_ID,
                     String.valueOf(topologyProcessor.getVersionId()));
-            for (TopologyProcessorStreamMapping mapping : listTopologyProcessorStreamMapping(ImmutableList.of(qp1, qp2))) {
+            for (TopologyProcessorStreamMap mapping : listTopologyProcessorStreamMapping(ImmutableList.of(qp1, qp2))) {
                 streamIds.add(mapping.getStreamId());
             }
         }
         return streamIds;
     }
 
-    private Collection<TopologyProcessorStreamMapping> listTopologyProcessorStreamMapping(List<QueryParam> params) {
+    private Collection<TopologyProcessorStreamMap> listTopologyProcessorStreamMapping(List<QueryParam> params) {
         try {
             return dao.find(TOPOLOGY_PROCESSOR_STREAM_MAPPING_NAMESPACE, params);
         } catch (Exception ex) {
@@ -1843,8 +1843,8 @@ public class StreamCatalogService {
     private void setReconfigureTarget(TopologyStream stream) {
         // reconfigure all targets of processors that use this output stream
         List<QueryParam> params = QueryParam.params(
-                TopologyProcessorStreamMapping.FIELD_VERSION_ID, String.valueOf(stream.getVersionId()),
-                TopologyProcessorStreamMapping.FIELD_STREAM_ID, String.valueOf(stream.getId()));
+                TopologyProcessorStreamMap.FIELD_VERSION_ID, String.valueOf(stream.getVersionId()),
+                TopologyProcessorStreamMap.FIELD_STREAM_ID, String.valueOf(stream.getId()));
         listTopologyProcessorStreamMapping(params)
                 .stream()
                 .map(sm -> getTopologyProcessor(stream.getTopologyId(), sm.getProcessorId(), sm.getVersionId()))
@@ -1854,8 +1854,8 @@ public class StreamCatalogService {
 
         // reconfigure all targets of source that use this output stream
         params = QueryParam.params(
-                TopologySourceStreamMapping.FIELD_VERSION_ID, String.valueOf(stream.getVersionId()),
-                TopologySourceStreamMapping.FIELD_STREAM_ID, String.valueOf(stream.getId()));
+                TopologySourceStreamMap.FIELD_VERSION_ID, String.valueOf(stream.getVersionId()),
+                TopologySourceStreamMap.FIELD_STREAM_ID, String.valueOf(stream.getId()));
         listTopologySourceStreamMapping(params)
                 .stream()
                 .map(sm -> getTopologySource(stream.getTopologyId(), sm.getSourceId(), sm.getVersionId()))
