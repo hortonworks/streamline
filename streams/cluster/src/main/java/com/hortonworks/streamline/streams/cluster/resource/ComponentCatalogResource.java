@@ -16,7 +16,7 @@
 package com.hortonworks.streamline.streams.cluster.resource;
 
 import com.codahale.metrics.annotation.Timed;
-import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.registries.common.QueryParam;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
 import com.hortonworks.streamline.streams.cluster.catalog.Component;

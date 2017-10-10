@@ -2,11 +2,11 @@ package com.hortonworks.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.registries.common.Schema;
-import com.hortonworks.streamline.storage.PrimaryKey;
-import com.hortonworks.streamline.storage.Storable;
-import com.hortonworks.streamline.storage.StorableKey;
-import com.hortonworks.streamline.storage.annotation.StorableEntity;
-import com.hortonworks.streamline.storage.catalog.AbstractStorable;
+import com.hortonworks.registries.storage.PrimaryKey;
+import com.hortonworks.registries.storage.Storable;
+import com.hortonworks.registries.storage.StorableKey;
+import com.hortonworks.registries.storage.annotation.StorableEntity;
+import com.hortonworks.registries.storage.catalog.AbstractStorable;
 
 import java.util.HashMap;
 import java.util.Map;

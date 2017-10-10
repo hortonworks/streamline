@@ -17,7 +17,7 @@ package com.hortonworks.streamline.streams.security;
 
 import com.hortonworks.streamline.common.exception.service.exception.request.WebserviceAuthorizationException;
 import com.hortonworks.streamline.common.function.SupplierException;
-import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.registries.storage.Storable;
 import com.hortonworks.streamline.streams.security.authentication.StreamlineSecurityContext;
 
 import org.apache.hadoop.hbase.security.User;

@@ -21,9 +21,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.registries.common.Schema.Field;
 import com.hortonworks.registries.common.Schema.Type;
-import com.hortonworks.streamline.storage.annotation.StorableEntity;
-import com.hortonworks.streamline.storage.PrimaryKey;
-import com.hortonworks.streamline.storage.catalog.AbstractStorable;
+import com.hortonworks.registries.storage.PrimaryKey;
+import com.hortonworks.registries.storage.annotation.StorableEntity;
+import com.hortonworks.registries.storage.catalog.AbstractStorable;
 
 import java.util.HashMap;
 import java.util.Map;

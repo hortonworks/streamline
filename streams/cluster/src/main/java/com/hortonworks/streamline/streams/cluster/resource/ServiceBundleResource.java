@@ -17,12 +17,12 @@
 package com.hortonworks.streamline.streams.cluster.resource;
 
 import com.codahale.metrics.annotation.Timed;
-import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.registries.common.QueryParam;
 import com.hortonworks.streamline.common.exception.ComponentConfigException;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
-import com.hortonworks.streamline.storage.exception.AlreadyExistsException;
+import com.hortonworks.registries.storage.exception.AlreadyExistsException;
 import com.hortonworks.streamline.streams.cluster.catalog.ServiceBundle;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 

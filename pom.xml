@@ -127,8 +127,6 @@
     <modules>
         <module>streamline-findbugs</module>
         <module>common</module>
-        <module>cache</module>
-        <module>storage</module>
         <module>streams</module>
         <module>registries</module>
         <module>webservice</module>
@@ -190,7 +188,7 @@
         <maven-surefire.version>2.18.1</maven-surefire.version>
 
         <!-- This should match the version in streamline-findbugs module -->
-        <streamline-findbugs.version>0.2</streamline-findbugs.version>
+        <streamline-findbugs.version>0.3</streamline-findbugs.version>
     </properties>
 
     <distributionManagement>
@@ -599,9 +597,9 @@
 
             <!-- Project Artifact Dependencies -->
             <dependency>
-                <groupId>com.hortonworks.streamline</groupId>
+                <groupId>com.hortonworks.registries</groupId>
                 <artifactId>cache</artifactId>
-                <version>${project.version}</version>
+                <version>${schema-registry.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hortonworks.streamline</groupId>
@@ -652,14 +650,14 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.hortonworks.streamline</groupId>
-                <artifactId>storage</artifactId>
-                <version>${project.version}</version>
+                <groupId>com.hortonworks.registries</groupId>
+                <artifactId>storage-core</artifactId>
+                <version>${schema-registry.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.hortonworks.streamline</groupId>
-                <artifactId>storage-core</artifactId>
-                <version>${project.version}</version>
+                <groupId>com.hortonworks.registries</groupId>
+                <artifactId>storage-tool</artifactId>
+                <version>${schema-registry.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hortonworks.streamline</groupId>
@@ -1093,8 +1091,6 @@
          <id>all</id>
          <modules>
            <module>common</module>
-           <module>cache</module>
-           <module>storage</module>
            <module>streams</module>
            <module>registries</module>
            <module>webservice</module>
@@ -1125,8 +1121,6 @@
          </properties>
          <modules>
            <module>common</module>
-           <module>cache</module>
-           <module>storage</module>
            <module>streams</module>
            <module>registries</module>
            <module>webservice</module>
@@ -1154,8 +1148,6 @@
           </activation>
           <modules>
             <module>common</module>
-            <module>cache</module>
-            <module>storage</module>
             <module>streams</module>
             <module>registries</module>
             <module>webservice</module>

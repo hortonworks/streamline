@@ -30,6 +30,18 @@
             <useProjectArtifact>false</useProjectArtifact>
             <outputDirectory>libs</outputDirectory>
             <unpack>false</unpack>
+	    <excludes>
+	      <exclude>com.hortonworks.registries:storage-tool</exclude>
+	      <exclude>org.mariadb.jdbc:mariadb-java-client</exclude>
+	    </excludes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>bootstrap/lib</outputDirectory>
+            <unpack>false</unpack>
+	    <includes>
+	      <include>com.hortonworks.registries:storage-tool</include>
+	    </includes>
         </dependencySet>
     </dependencySets>
 
@@ -64,20 +76,6 @@
             <outputDirectory>/examples/topology/simulator</outputDirectory>
             <includes>
                 <include>simulator*jar</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>${project.basedir}./storage/tool/target</directory>
-            <outputDirectory>/bootstrap/lib</outputDirectory>
-            <includes>
-                <include>storage-tool*jar</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>${project.basedir}./storage/core/target/dependency</directory>
-            <outputDirectory>/libs</outputDirectory>
-            <includes>
-                <include>postgresql*</include>
             </includes>
         </fileSet>
         <fileSet>

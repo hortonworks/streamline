@@ -17,12 +17,12 @@
 package com.hortonworks.streamline.registries.model.service;
 
 import org.apache.commons.io.IOUtils;
-import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.registries.common.QueryParam;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.registries.model.data.MLModel;
-import com.hortonworks.streamline.storage.Storable;
-import com.hortonworks.streamline.storage.StorageManager;
-import com.hortonworks.streamline.storage.util.StorageUtils;
+import com.hortonworks.registries.storage.Storable;
+import com.hortonworks.registries.storage.StorageManager;
+import com.hortonworks.registries.storage.util.StorageUtils;
 import org.dmg.pmml.Field;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.IOUtil;

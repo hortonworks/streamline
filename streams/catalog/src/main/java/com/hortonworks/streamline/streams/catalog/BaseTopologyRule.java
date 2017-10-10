@@ -18,8 +18,8 @@ package com.hortonworks.streamline.streams.catalog;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.registries.common.Schema;
-import com.hortonworks.streamline.storage.Storable;
-import com.hortonworks.streamline.storage.catalog.AbstractStorable;
+import com.hortonworks.registries.storage.Storable;
+import com.hortonworks.registries.storage.catalog.AbstractStorable;
 import com.hortonworks.streamline.streams.layout.component.rule.Rule;
 
 import java.io.IOException;

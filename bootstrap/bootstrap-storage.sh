@@ -41,7 +41,7 @@ else
   JAVA="${JAVA_HOME}/bin/java"
 fi
 
-TABLE_INITIALIZER_MAIN_CLASS=com.hortonworks.streamline.storage.tool.TablesInitializer
+TABLE_INITIALIZER_MAIN_CLASS=com.hortonworks.registries.storage.tool.TablesInitializer
 for file in "${BOOTSTRAP_DIR}"/lib/*.jar;
 do
     CLASSPATH="$CLASSPATH":"$file"

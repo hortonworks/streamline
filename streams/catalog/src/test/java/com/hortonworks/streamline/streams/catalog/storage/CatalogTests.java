@@ -15,8 +15,8 @@
  **/
 package com.hortonworks.streamline.streams.catalog.storage;
 
-import com.hortonworks.streamline.storage.Storable;
-import com.hortonworks.streamline.storage.StorableTest;
+import com.hortonworks.registries.storage.Storable;
+import com.hortonworks.registries.storage.StorableTest;
 import com.hortonworks.streamline.streams.catalog.File;
 
 import java.util.ArrayList;

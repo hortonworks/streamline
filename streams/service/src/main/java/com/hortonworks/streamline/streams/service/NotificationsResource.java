@@ -17,20 +17,13 @@
 
 package com.hortonworks.streamline.streams.service;
 
-/**
- * Created by aiyer on 10/4/15.
- */
-
 import com.codahale.metrics.annotation.Timed;
-import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.registries.common.QueryParam;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.StreamlineEvent;
-import com.hortonworks.streamline.streams.catalog.Topology;
-import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
-import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
 import com.hortonworks.streamline.streams.notification.Notification;
 import com.hortonworks.streamline.streams.notification.service.NotificationService;
-import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.streams.security.Roles;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
@@ -52,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static com.hortonworks.streamline.streams.security.Permission.READ;
 import static javax.ws.rs.core.Response.Status.OK;
 
 /**

@@ -16,9 +16,9 @@
 package com.hortonworks.streamline.streams.catalog;
 
 import com.hortonworks.registries.common.Schema;
-import com.hortonworks.streamline.storage.PrimaryKey;
-import com.hortonworks.streamline.storage.annotation.StorableEntity;
-import com.hortonworks.streamline.storage.catalog.AbstractStorable;
+import com.hortonworks.registries.storage.PrimaryKey;
+import com.hortonworks.registries.storage.annotation.StorableEntity;
+import com.hortonworks.registries.storage.catalog.AbstractStorable;
 import org.codehaus.jackson.annotate.JsonIgnore;
 
 import java.util.HashMap;

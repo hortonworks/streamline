@@ -21,9 +21,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.registries.common.Schema;
-import com.hortonworks.streamline.storage.PrimaryKey;
-import com.hortonworks.streamline.storage.Storable;
-import com.hortonworks.streamline.storage.annotation.StorableEntity;
+import com.hortonworks.registries.storage.PrimaryKey;
+import com.hortonworks.registries.storage.Storable;
+import com.hortonworks.registries.storage.annotation.StorableEntity;
 import com.hortonworks.streamline.streams.layout.component.rule.action.Action;
 import org.apache.commons.lang3.StringUtils;
 

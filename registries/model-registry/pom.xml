@@ -16,7 +16,7 @@
             <artifactId>common</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.hortonworks.streamline</groupId>
+            <groupId>com.hortonworks.registries</groupId>
             <artifactId>storage-core</artifactId>
         </dependency>
         <dependency>

@@ -15,8 +15,8 @@
  **/
 package com.hortonworks.streamline.streams.cluster.register.impl;
 
-import com.hortonworks.streamline.storage.StorageManager;
-import com.hortonworks.streamline.storage.impl.memory.InMemoryStorageManager;
+import com.hortonworks.registries.storage.StorageManager;
+import com.hortonworks.registries.storage.impl.memory.InMemoryStorageManager;
 import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 

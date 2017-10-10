@@ -37,7 +37,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.hortonworks.streamline</groupId>
+            <groupId>com.hortonworks.registries</groupId>
             <artifactId>storage-core</artifactId>
             <exclusions>
               <exclusion>
@@ -77,6 +77,10 @@
                 <artifactId>log4j-slf4j-impl</artifactId>
               </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.hortonworks.registries</groupId>
+            <artifactId>storage-tool</artifactId>
         </dependency>
         <dependency>
             <groupId>com.hortonworks.streamline</groupId>
