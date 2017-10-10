@@ -24,7 +24,7 @@ import {
   Td,
   unsafe
 } from 'reactable';
-import {FormGroup,InputGroup,FormControl,Button} from 'react-bootstrap';
+import {FormGroup,InputGroup,FormControl,Button,OverlayTrigger,Popover} from 'react-bootstrap';
 import {BtnDelete, BtnEdit} from '../../components/ActionButtons';
 import ConfigFieldsForm from './ConfigFieldsForm';
 import CustomProcessorREST from '../../rest/CustomProcessorREST';
@@ -675,6 +675,38 @@ class CustomProcessorForm extends Component {
                   <div className="form-group">
                     <label className="col-sm-2 control-label" data-stest="inputSchemaLable">Input Schema
                       <span className="text-danger">*</span>
+                      &nbsp;
+                      <OverlayTrigger trigger={['hover']} placement="right"
+                        overlay={
+                          <Popover id="popover-trigger-hover" title="Example">
+                            <div className="sample-schema">
+                              <div>[</div>
+                              <div>&nbsp;{'{'}</div>
+                              <ul>
+                                <li>"name": "field1",</li>
+                                <li>"type": "INTEGER",</li>
+                                <li>"optional": false</li>
+                              </ul>
+                              <span>&nbsp;{'} , {'}</span>
+                              <ul>
+                                <li>"name": "field2",</li>
+                                <li>"type": "BOOLEAN",</li>
+                                <li>"optional": false</li>
+                              </ul>
+                              <span>&nbsp;{'} , {'}</span>
+                              <ul>
+                                <li>"name": "stringField",</li>
+                                <li>"type": "STRING",</li>
+                                <li>"optional": false</li>
+                              </ul>
+                              <div>&nbsp;{'}'}</div>
+                              <div>]</div>
+                            </div>
+                          </Popover>
+                        }
+                      >
+                        <i className="fa fa-info-circle"></i>
+                      </OverlayTrigger>
                     </label>
                     <div className={`${expandCodemirrorInput ? 'col-md-10' : 'col-sm-6'}`}  onDrop={this.fileHandler.bind(this,'drop', 'inputSchema')} onDragOver={(e) => {
                       e.preventDefault();
@@ -688,7 +720,9 @@ class CustomProcessorForm extends Component {
                       </a>
                       {
                         showCodeMirrorInput
-                        ? <ReactCodemirror ref="JSONCodemirror" value={this.state.inputSchema} onChange={this.handleInputSchemaChange.bind(this)} options={jsonoptions}/>
+                        ? <div style={{clear: "both"}}>
+                            <ReactCodemirror ref="JSONCodemirror" value={this.state.inputSchema} onChange={this.handleInputSchemaChange.bind(this)} options={jsonoptions}/>
+                          </div>
                         : <div ref="browseFileContainer" className={"addSchemaBrowseFileContainer"}>
                             <div onClick={this.outerDivClicked.bind(this, 'inputSchema')} data-stest="inputSchemaBox">
                             <div className="main-title">Copy & Paste</div>
@@ -710,6 +744,38 @@ class CustomProcessorForm extends Component {
                   <div className="form-group">
                     <label className="col-sm-2 control-label" data-stest="outputSchemaLable">Output Schema
                       <span className="text-danger">*</span>
+                      &nbsp;
+                      <OverlayTrigger trigger={['hover']} placement="right"
+                        overlay={
+                          <Popover id="popover-trigger-hover" title="Example">
+                            <div className="sample-schema">
+                              <div>[</div>
+                              <div>&nbsp;{'{'}</div>
+                              <ul>
+                                <li>"name": "field1",</li>
+                                <li>"type": "INTEGER",</li>
+                                <li>"optional": false</li>
+                              </ul>
+                              <span>&nbsp;{'} , {'}</span>
+                              <ul>
+                                <li>"name": "field2",</li>
+                                <li>"type": "BOOLEAN",</li>
+                                <li>"optional": false</li>
+                              </ul>
+                              <span>&nbsp;{'} , {'}</span>
+                              <ul>
+                                <li>"name": "stringField",</li>
+                                <li>"type": "STRING",</li>
+                                <li>"optional": false</li>
+                              </ul>
+                              <div>&nbsp;{'}'}</div>
+                              <div>]</div>
+                            </div>
+                          </Popover>
+                        }
+                      >
+                        <i className="fa fa-info-circle"></i>
+                      </OverlayTrigger>
                     </label>
                     <div className={`${expandCodemirrorOutput ? 'col-md-10' : 'col-sm-6'}`}  onDrop={this.fileHandler.bind(this,'drop', 'outputSchema')} onDragOver={(e) => {
                       e.preventDefault();
@@ -723,7 +789,9 @@ class CustomProcessorForm extends Component {
                       </a>
                       {
                         showCodeMirrorOutput
-                        ? <ReactCodemirror ref="JSONCodemirror" value={this.state.outputSchema} onChange={this.handleOutputSchemaChange.bind(this)} options={jsonoptions}/>
+                        ? <div style={{clear: "both"}}>
+                            <ReactCodemirror ref="JSONCodemirror" value={this.state.outputSchema} onChange={this.handleOutputSchemaChange.bind(this)} options={jsonoptions}/>
+                          </div>
                         : <div ref="browseFileContainer" className={"addSchemaBrowseFileContainer"}>
                             <div onClick={this.outerDivClicked.bind(this, 'outputSchema')} data-stest="outputSchemaBox">
                             <div className="main-title">Copy & Paste</div>

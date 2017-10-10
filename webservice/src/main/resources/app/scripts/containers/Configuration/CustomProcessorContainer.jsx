@@ -144,6 +144,7 @@ export default class CustomProcessorContainer extends Component {
   }
 
   handleEditCP(id) {
+    this.refs.CustomProcessorForm.getWrappedInstance().setDefaultValues();
     this.setState({showListing: false, processorId: id});
   }
 

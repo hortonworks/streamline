@@ -922,6 +922,10 @@ label {
   text-align: center;
 }
 
+.table-CP-configFields td {
+  word-break: break-all;
+}
+
 .schema-stats>i.fa, .schema-stats>div {
   float: left;
 }
@@ -3586,4 +3590,16 @@ a.formatterFont:hover{
 .testDiv.hideMe{
   height: 0;
   overflow: hidden;
+}
+
+.sample-schema  {
+  color: #5a5b5e;
+  font-size: 11px;
+}
+.sample-schema ul {
+  margin-bottom: 0px;
+  padding-left: 10px;
+}
+.sample-schema li{
+  list-style-type: none;
 }
