@@ -21,8 +21,8 @@ import com.hortonworks.streamline.streams.layout.Transform;
 import com.hortonworks.streamline.streams.layout.component.Stream;
 import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.JoinAction;
-import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.JoinProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.SplitAction;
+import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.SplitJoinProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.SplitProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.StageAction;
 import com.hortonworks.streamline.streams.layout.component.impl.splitjoin.StageProcessor;
@@ -141,7 +141,7 @@ public class SplitJoinTopologyTest {
         public RulesProcessor get() {
             JoinAction joinAction = new JoinAction();
             joinAction.setOutputStreams(Collections.singleton(JOIN_OUTPUT_STREAM.getId()));
-            JoinProcessor joinProcessor = new JoinProcessor();
+            SplitJoinProcessor joinProcessor = new SplitJoinProcessor();
             joinProcessor.addOutputStreams(Collections.singleton(JOIN_OUTPUT_STREAM));
             joinProcessor.setJoinAction(joinAction);
             joinProcessor.setName("join-processor-"+System.currentTimeMillis());
