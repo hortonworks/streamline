@@ -2,7 +2,7 @@ package com.hortonworks.streamline.streams.actions.storm.topology;
 
 import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
 import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
-import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMapping;
+import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMap;
 import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.storm.common.ServiceConfigurationReadable;
@@ -54,7 +54,7 @@ public class AutoCredsServiceConfigurationReader implements ServiceConfiguration
 
         Long namespaceId = namespace.getId();
 
-        Collection<NamespaceServiceClusterMapping> mappings = environmentService.listServiceClusterMapping(namespaceId, serviceName);
+        Collection<NamespaceServiceClusterMap> mappings = environmentService.listServiceClusterMapping(namespaceId, serviceName);
 
         List<Long> clusters = mappings.stream()
                 .map(mapping -> mapping.getClusterId())
@@ -76,7 +76,7 @@ public class AutoCredsServiceConfigurationReader implements ServiceConfiguration
             throw new IllegalArgumentException("Cluster with id " + clusterId + " doesn't exist.");
         }
 
-        Collection<NamespaceServiceClusterMapping> mappings = environmentService.listServiceClusterMapping(namespaceId, serviceName);
+        Collection<NamespaceServiceClusterMap> mappings = environmentService.listServiceClusterMapping(namespaceId, serviceName);
         boolean associated = mappings.stream().anyMatch(map -> map.getClusterId().equals(clusterId));
         if (!associated) {
             return Collections.emptyMap();

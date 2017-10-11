@@ -14,4 +14,8 @@ public class SchemaValidationFailedException extends RuntimeException {
     public static SchemaValidationFailedException requiredFieldsNotFoundInValue(List<String> fields) {
         return new SchemaValidationFailedException("The value doesn't have required fields: " + fields);
     }
+
+    public static SchemaValidationFailedException nullValueForField(String field) {
+        return new SchemaValidationFailedException("Null value for field: " + field);
+    }
 }

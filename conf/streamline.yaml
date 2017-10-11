@@ -102,6 +102,21 @@ storageProviderConfiguration:
 #     dataSource.password: "streamline_password"
 
 # --
+# Oracle based storage provider configuration
+# --
+#storageProviderConfiguration:
+# providerClass: "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager"
+# properties:
+#   db.type: "oracle"
+#   queryTimeoutInSecs: 30
+#   db.properties:
+#     dataSourceClassName: "oracle.jdbc.pool.OracleDataSource"
+#     dataSource.url: "jdbc:oracle:thin:@localhost:1521/orclpdb1.localdomain"
+#     dataSource.user: "streamline_user"
+#     dataSource.password: "streamline_password"
+
+
+# --
 # In-memory storage provider configuration:
 # --
 #storageProviderConfiguration:

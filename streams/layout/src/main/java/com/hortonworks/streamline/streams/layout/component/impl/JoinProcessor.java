@@ -14,30 +14,23 @@
   * limitations under the License.
  **/
 
-package com.hortonworks.streamline.streams.layout.component.impl.splitjoin;
+package com.hortonworks.streamline.streams.layout.component.impl;
 
-import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
-import com.hortonworks.streamline.streams.layout.component.impl.Utils;
-
-import java.util.Collections;
+import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
+import com.hortonworks.streamline.streams.layout.component.TopologyDagVisitor;
 
 /**
- * Joins incoming streams and generate a joined event.
+ * Design time component for JOIN
  *
  */
-public class JoinProcessor extends RulesProcessor {
-
-    public static final String CONFIG_KEY_JOIN = "join-config";
-
-    public JoinProcessor() {
-    }
-
-    public void setJoinAction(JoinAction joinAction) {
-        setRules(Collections.singletonList(Utils.createTrueRule(joinAction)));
+public class JoinProcessor extends StreamlineProcessor {
+    @Override
+    public void accept(TopologyDagVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override
     public String toString() {
-        return "JoinProcessor{}"+super.toString();
+        return "JoinProcessor{ " + super.toString() + " }";
     }
 }

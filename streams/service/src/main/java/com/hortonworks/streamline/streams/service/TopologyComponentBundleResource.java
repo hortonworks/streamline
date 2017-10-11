@@ -563,7 +563,7 @@ public class TopologyComponentBundleResource {
             missingParam = Optional.of(TopologyComponentBundle.TRANSFORMATION_CLASS);
         }
         if (topologyComponentBundle.getTopologyComponentUISpecification() == null) {
-            missingParam = Optional.of(TopologyComponentBundle.UI_SPECIFICATION);
+            missingParam = Optional.of(TopologyComponentBundle.UI_SPEC);
         }
 
         if (missingParam.isPresent()) {

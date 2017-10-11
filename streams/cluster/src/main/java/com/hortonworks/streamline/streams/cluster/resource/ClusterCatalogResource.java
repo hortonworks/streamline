@@ -27,7 +27,7 @@ import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
 import com.hortonworks.streamline.streams.cluster.catalog.Component;
 import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
-import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMapping;
+import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMap;
 import com.hortonworks.streamline.streams.cluster.catalog.Service;
 import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.AmbariServiceNodeDiscoverer;
@@ -338,7 +338,7 @@ public class ClusterCatalogResource {
         Collection<Namespace> namespaces = environmentService.listNamespaces();
         if (namespaces != null) {
             for (Namespace namespace : namespaces) {
-                Collection<NamespaceServiceClusterMapping> mappings =
+                Collection<NamespaceServiceClusterMap> mappings =
                         environmentService.listServiceClusterMapping(namespace.getId());
                 if (mappings != null) {
                     boolean matched = mappings.stream().anyMatch(m -> Objects.equals(m.getClusterId(), clusterId));

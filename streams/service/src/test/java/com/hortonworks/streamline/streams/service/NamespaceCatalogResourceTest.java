@@ -16,6 +16,7 @@
 package com.hortonworks.streamline.streams.service;
 
 import com.google.common.collect.Lists;
+import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMap;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import com.hortonworks.streamline.streams.security.impl.NoopAuthorizer;
 import mockit.Expectations;
@@ -26,7 +27,6 @@ import mockit.integration.junit4.JMockit;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
 import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
-import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMapping;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
@@ -72,11 +72,11 @@ public class NamespaceCatalogResourceTest {
 
         Namespace testNamespace = createTestNamespace(testNamespaceId, TEST_STREAMING_ENGINE, TEST_TIME_SERIES_DB);
 
-        Collection<NamespaceServiceClusterMapping> existingMappings = createTestMappingsForExisting(testNamespaceId);
+        Collection<NamespaceServiceClusterMap> existingMappings = createTestMappingsForExisting(testNamespaceId);
 
         setupExpectationForSimulatingTopologyIsRunning(testNamespaceId, testNamespace, existingMappings);
 
-        List<NamespaceServiceClusterMapping> mappingsToApply = existingMappings.stream()
+        List<NamespaceServiceClusterMap> mappingsToApply = existingMappings.stream()
                 .filter(m -> !m.getServiceName().equals(TEST_STREAMING_ENGINE)).collect(toList());
 
         try {
@@ -99,14 +99,14 @@ public class NamespaceCatalogResourceTest {
 
         Namespace testNamespace = createTestNamespace(testNamespaceId, TEST_STREAMING_ENGINE, TEST_TIME_SERIES_DB);
 
-        Collection<NamespaceServiceClusterMapping> existingMappings = createTestMappingsForExisting(testNamespaceId);
+        Collection<NamespaceServiceClusterMap> existingMappings = createTestMappingsForExisting(testNamespaceId);
 
         setupExpectationForSimulatingTopologyIsRunning(testNamespaceId, testNamespace, existingMappings);
 
-        List<NamespaceServiceClusterMapping> mappingsToApply = existingMappings.stream()
+        List<NamespaceServiceClusterMap> mappingsToApply = existingMappings.stream()
                 .filter(m -> !m.getServiceName().equals(TEST_STREAMING_ENGINE)).collect(toList());
         // change the mapping of streaming engine to cluster id 2
-        mappingsToApply.add(new NamespaceServiceClusterMapping(testNamespaceId, TEST_STREAMING_ENGINE, 2L));
+        mappingsToApply.add(new NamespaceServiceClusterMap(testNamespaceId, TEST_STREAMING_ENGINE, 2L));
 
         try {
             namespaceCatalogResource.setServicesToClusterInNamespace(testNamespaceId, mappingsToApply, securityContext);
@@ -128,7 +128,7 @@ public class NamespaceCatalogResourceTest {
 
         Namespace testNamespace = createTestNamespace(testNamespaceId, TEST_STREAMING_ENGINE, TEST_TIME_SERIES_DB);
 
-        Collection<NamespaceServiceClusterMapping> existingMappings = createTestMappingsForExisting(testNamespaceId);
+        Collection<NamespaceServiceClusterMap> existingMappings = createTestMappingsForExisting(testNamespaceId);
 
         new Expectations() {{
             environmentService.getNamespace(testNamespaceId);
@@ -146,7 +146,7 @@ public class NamespaceCatalogResourceTest {
             times = 0;
             environmentService.removeServiceClusterMapping(testNamespaceId, anyString, anyLong);
             times = existingMappings.size();
-            environmentService.addOrUpdateServiceClusterMapping(withAny(new NamespaceServiceClusterMapping()));
+            environmentService.addOrUpdateServiceClusterMapping(withAny(new NamespaceServiceClusterMap()));
             times = existingMappings.size();
         }};
     }
@@ -157,7 +157,7 @@ public class NamespaceCatalogResourceTest {
 
         Namespace testNamespace = createTestNamespace(testNamespaceId, TEST_STREAMING_ENGINE, TEST_TIME_SERIES_DB);
 
-        Collection<NamespaceServiceClusterMapping> existingMappings = createTestMappingsForExisting(testNamespaceId);
+        Collection<NamespaceServiceClusterMap> existingMappings = createTestMappingsForExisting(testNamespaceId);
 
         new Expectations() {{
             environmentService.getNamespace(testNamespaceId);
@@ -166,11 +166,11 @@ public class NamespaceCatalogResourceTest {
             result = existingMappings;
         }};
 
-        List<NamespaceServiceClusterMapping> mappingsToApply = Lists.newArrayList(
-                new NamespaceServiceClusterMapping(testNamespaceId, TEST_STREAMING_ENGINE, 1L),
-                new NamespaceServiceClusterMapping(testNamespaceId, TEST_STREAMING_ENGINE, 2L),
-                new NamespaceServiceClusterMapping(testNamespaceId, TEST_TIME_SERIES_DB, 1L),
-                new NamespaceServiceClusterMapping(testNamespaceId, "KAFKA", 1L)
+        List<NamespaceServiceClusterMap> mappingsToApply = Lists.newArrayList(
+                new NamespaceServiceClusterMap(testNamespaceId, TEST_STREAMING_ENGINE, 1L),
+                new NamespaceServiceClusterMap(testNamespaceId, TEST_STREAMING_ENGINE, 2L),
+                new NamespaceServiceClusterMap(testNamespaceId, TEST_TIME_SERIES_DB, 1L),
+                new NamespaceServiceClusterMap(testNamespaceId, "KAFKA", 1L)
         );
 
         try {
@@ -197,7 +197,7 @@ public class NamespaceCatalogResourceTest {
 
         Namespace testNamespace = createTestNamespace(testNamespaceId, TEST_STREAMING_ENGINE, TEST_TIME_SERIES_DB);
 
-        Collection<NamespaceServiceClusterMapping> existingMappings = createTestMappingsForExisting(testNamespaceId);
+        Collection<NamespaceServiceClusterMap> existingMappings = createTestMappingsForExisting(testNamespaceId);
 
         new Expectations() {{
             environmentService.getNamespace(testNamespaceId);
@@ -206,11 +206,11 @@ public class NamespaceCatalogResourceTest {
             result = existingMappings;
         }};
 
-        List<NamespaceServiceClusterMapping> mappingsToApply = Lists.newArrayList(
-                new NamespaceServiceClusterMapping(testNamespaceId, TEST_STREAMING_ENGINE, 1L),
-                new NamespaceServiceClusterMapping(testNamespaceId, TEST_TIME_SERIES_DB, 1L),
-                new NamespaceServiceClusterMapping(testNamespaceId, TEST_TIME_SERIES_DB, 2L),
-                new NamespaceServiceClusterMapping(testNamespaceId, "KAFKA", 1L)
+        List<NamespaceServiceClusterMap> mappingsToApply = Lists.newArrayList(
+                new NamespaceServiceClusterMap(testNamespaceId, TEST_STREAMING_ENGINE, 1L),
+                new NamespaceServiceClusterMap(testNamespaceId, TEST_TIME_SERIES_DB, 1L),
+                new NamespaceServiceClusterMap(testNamespaceId, TEST_TIME_SERIES_DB, 2L),
+                new NamespaceServiceClusterMap(testNamespaceId, "KAFKA", 1L)
         );
 
         try {
@@ -237,7 +237,7 @@ public class NamespaceCatalogResourceTest {
 
         Namespace testNamespace = createTestNamespace(testNamespaceId, TEST_STREAMING_ENGINE, TEST_TIME_SERIES_DB);
 
-        Collection<NamespaceServiceClusterMapping> existingMappings = createTestMappingsForExisting(testNamespaceId);
+        Collection<NamespaceServiceClusterMap> existingMappings = createTestMappingsForExisting(testNamespaceId);
 
         new Expectations() {{
             environmentService.getNamespace(testNamespaceId);
@@ -246,7 +246,7 @@ public class NamespaceCatalogResourceTest {
             result = existingMappings;
         }};
 
-        NamespaceServiceClusterMapping newMapping = new NamespaceServiceClusterMapping(testNamespaceId, TEST_STREAMING_ENGINE, 2L);
+        NamespaceServiceClusterMap newMapping = new NamespaceServiceClusterMap(testNamespaceId, TEST_STREAMING_ENGINE, 2L);
 
         try {
             namespaceCatalogResource.mapServiceToClusterInNamespace(testNamespaceId, newMapping, securityContext);
@@ -256,7 +256,7 @@ public class NamespaceCatalogResourceTest {
         }
 
         new Verifications() {{
-            environmentService.addOrUpdateServiceClusterMapping(withAny(new NamespaceServiceClusterMapping()));
+            environmentService.addOrUpdateServiceClusterMapping(withAny(new NamespaceServiceClusterMap()));
             times = 0;
         }};
     }
@@ -267,7 +267,7 @@ public class NamespaceCatalogResourceTest {
 
         Namespace testNamespace = createTestNamespace(testNamespaceId, TEST_STREAMING_ENGINE, TEST_TIME_SERIES_DB);
 
-        Collection<NamespaceServiceClusterMapping> existingMappings = createTestMappingsForExisting(testNamespaceId);
+        Collection<NamespaceServiceClusterMap> existingMappings = createTestMappingsForExisting(testNamespaceId);
 
         new Expectations() {{
             environmentService.getNamespace(testNamespaceId);
@@ -276,7 +276,7 @@ public class NamespaceCatalogResourceTest {
             result = existingMappings;
         }};
 
-        NamespaceServiceClusterMapping newMapping = new NamespaceServiceClusterMapping(testNamespaceId, TEST_TIME_SERIES_DB, 2L);
+        NamespaceServiceClusterMap newMapping = new NamespaceServiceClusterMap(testNamespaceId, TEST_TIME_SERIES_DB, 2L);
 
         try {
             namespaceCatalogResource.mapServiceToClusterInNamespace(testNamespaceId, newMapping, securityContext);
@@ -286,7 +286,7 @@ public class NamespaceCatalogResourceTest {
         }
 
         new Verifications() {{
-            environmentService.addOrUpdateServiceClusterMapping(withAny(new NamespaceServiceClusterMapping()));
+            environmentService.addOrUpdateServiceClusterMapping(withAny(new NamespaceServiceClusterMap()));
             times = 0;
         }};
     }
@@ -297,7 +297,7 @@ public class NamespaceCatalogResourceTest {
 
         Namespace testNamespace = createTestNamespace(testNamespaceId, TEST_STREAMING_ENGINE, TEST_TIME_SERIES_DB);
 
-        Collection<NamespaceServiceClusterMapping> existingMappings = createTestMappingsForExisting(testNamespaceId);
+        Collection<NamespaceServiceClusterMap> existingMappings = createTestMappingsForExisting(testNamespaceId);
 
         new Expectations() {{
             environmentService.getNamespace(testNamespaceId);
@@ -306,13 +306,13 @@ public class NamespaceCatalogResourceTest {
             result = existingMappings;
         }};
 
-        NamespaceServiceClusterMapping existingStreamingEngineMapping = existingMappings.stream()
+        NamespaceServiceClusterMap existingStreamingEngineMapping = existingMappings.stream()
                 .filter(m -> m.getServiceName().equals(TEST_STREAMING_ENGINE)).findAny().get();
 
         namespaceCatalogResource.mapServiceToClusterInNamespace(testNamespaceId, existingStreamingEngineMapping, securityContext);
 
         new Verifications() {{
-            environmentService.addOrUpdateServiceClusterMapping(withAny(new NamespaceServiceClusterMapping()));
+            environmentService.addOrUpdateServiceClusterMapping(withAny(new NamespaceServiceClusterMap()));
             times = 1;
         }};
     }
@@ -323,7 +323,7 @@ public class NamespaceCatalogResourceTest {
 
         Namespace testNamespace = createTestNamespace(testNamespaceId, TEST_STREAMING_ENGINE, TEST_TIME_SERIES_DB);
 
-        Collection<NamespaceServiceClusterMapping> existingMappings = createTestMappingsForExisting(testNamespaceId);
+        Collection<NamespaceServiceClusterMap> existingMappings = createTestMappingsForExisting(testNamespaceId);
 
         new Expectations() {{
             environmentService.getNamespace(testNamespaceId);
@@ -332,13 +332,13 @@ public class NamespaceCatalogResourceTest {
             result = existingMappings;
         }};
 
-        NamespaceServiceClusterMapping existingTimeSeriesDBMapping = existingMappings.stream()
+        NamespaceServiceClusterMap existingTimeSeriesDBMapping = existingMappings.stream()
                 .filter(m -> m.getServiceName().equals(TEST_TIME_SERIES_DB)).findAny().get();
 
         namespaceCatalogResource.mapServiceToClusterInNamespace(testNamespaceId, existingTimeSeriesDBMapping, securityContext);
 
         new Verifications() {{
-            environmentService.addOrUpdateServiceClusterMapping(withAny(new NamespaceServiceClusterMapping()));
+            environmentService.addOrUpdateServiceClusterMapping(withAny(new NamespaceServiceClusterMap()));
             times = 1;
         }};
     }
@@ -349,7 +349,7 @@ public class NamespaceCatalogResourceTest {
 
         Namespace testNamespace = createTestNamespace(testNamespaceId, TEST_STREAMING_ENGINE, TEST_TIME_SERIES_DB);
 
-        Collection<NamespaceServiceClusterMapping> existingMappings = createTestMappingsForExisting(testNamespaceId);
+        Collection<NamespaceServiceClusterMap> existingMappings = createTestMappingsForExisting(testNamespaceId);
 
         setupExpectationForSimulatingTopologyIsRunning(testNamespaceId, testNamespace, existingMappings);
 
@@ -372,7 +372,7 @@ public class NamespaceCatalogResourceTest {
 
         Namespace testNamespace = createTestNamespace(testNamespaceId, TEST_STREAMING_ENGINE, TEST_TIME_SERIES_DB);
 
-        Collection<NamespaceServiceClusterMapping> existingMappings = createTestMappingsForExisting(testNamespaceId);
+        Collection<NamespaceServiceClusterMap> existingMappings = createTestMappingsForExisting(testNamespaceId);
 
         setupExpectationForSimulatingTopologyIsRunning(testNamespaceId, testNamespace, existingMappings);
 
@@ -414,17 +414,17 @@ public class NamespaceCatalogResourceTest {
         return testNamespace;
     }
 
-    private Collection<NamespaceServiceClusterMapping> createTestMappingsForExisting(Long testNamespaceId) {
+    private Collection<NamespaceServiceClusterMap> createTestMappingsForExisting(Long testNamespaceId) {
         return Lists.newArrayList(
-                new NamespaceServiceClusterMapping(testNamespaceId, TEST_STREAMING_ENGINE, 1L),
-                new NamespaceServiceClusterMapping(testNamespaceId, TEST_TIME_SERIES_DB, 1L),
-                new NamespaceServiceClusterMapping(testNamespaceId, "KAFKA", 1L),
-                new NamespaceServiceClusterMapping(testNamespaceId, "ZOOKEEPER", 1L)
+                new NamespaceServiceClusterMap(testNamespaceId, TEST_STREAMING_ENGINE, 1L),
+                new NamespaceServiceClusterMap(testNamespaceId, TEST_TIME_SERIES_DB, 1L),
+                new NamespaceServiceClusterMap(testNamespaceId, "KAFKA", 1L),
+                new NamespaceServiceClusterMap(testNamespaceId, "ZOOKEEPER", 1L)
         );
     }
 
     private void setupExpectationForSimulatingTopologyIsRunning(final Long testNamespaceId, final Namespace testNamespace,
-                                                                final Collection<NamespaceServiceClusterMapping> existingMappings) throws IOException {
+                                                                final Collection<NamespaceServiceClusterMap> existingMappings) throws IOException {
         List<Topology> topologies = createTestTopologies(testNamespaceId);
         new Expectations() {{
             environmentService.getNamespace(testNamespaceId);

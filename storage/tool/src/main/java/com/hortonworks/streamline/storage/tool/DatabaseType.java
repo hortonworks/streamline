@@ -19,7 +19,8 @@ package com.hortonworks.streamline.storage.tool;
 public enum DatabaseType {
 
     MYSQL("mysql"),
-    POSTGRES("postgresql");
+    POSTGRES("postgresql"),
+    ORACLE("oracle");
 
     private final String value;
 

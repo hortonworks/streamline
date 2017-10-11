@@ -25,18 +25,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 @StorableEntity
-public class WidgetDatasourceMapping extends AbstractStorable {
-    public static final String NAMESPACE = "widget_datasource_mapping";
+public class WidgetDatasourceMap extends AbstractStorable {
+    public static final String NAMESPACE = "widget_datasource_map";
     public static final String WIDGET_ID = "widgetId";
     public static final String DATASOURCE_ID = "datasourceId";
 
     private Long widgetId;
     private Long datasourceId;
 
-    public WidgetDatasourceMapping() {
+    public WidgetDatasourceMap() {
     }
 
-    public WidgetDatasourceMapping(Long widgetId, Long datasourceId) {
+    public WidgetDatasourceMap(Long widgetId, Long datasourceId) {
         this.widgetId = widgetId;
         this.datasourceId = datasourceId;
     }
@@ -74,7 +74,7 @@ public class WidgetDatasourceMapping extends AbstractStorable {
 
     @Override
     public String toString() {
-        return "WidgetDatasourceMapping{" +
+        return "WidgetDatasourceMap{" +
                 "widgetId=" + widgetId +
                 ", datasourceId=" + datasourceId +
                 "}";
