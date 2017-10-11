@@ -48,6 +48,19 @@ public class SchemaValueConverterTest {
         Assert.assertEquals(123.456d, (double) converted.get("e"), 0.001);
     }
 
+    @Test (expected = SchemaValidationFailedException.class)
+    public void convertMapHavingNull() throws Exception {
+        Schema schema = Schema.of(
+                Schema.Field.of("a", Schema.Type.STRING),
+                Schema.Field.of("b", Schema.Type.LONG));
+
+        Map<String, Object> value = new HashMap<>();
+        value.put("a", null);
+        value.put("b", 1234);
+
+        SchemaValueConverter.convertMap(schema, value);
+    }
+
     @Test
     public void convertMapValueDoesNotHaveOptionalField() throws ParserException {
         Schema schema = Schema.of(

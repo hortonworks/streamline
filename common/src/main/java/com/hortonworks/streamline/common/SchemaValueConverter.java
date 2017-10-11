@@ -19,6 +19,7 @@ package com.hortonworks.streamline.common;
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.common.exception.SchemaValidationFailedException;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -70,8 +71,14 @@ public final class SchemaValueConverter {
                     requiredFieldsNotFoundInValue.stream().map(Schema.Field::getName).collect(toList()));
         }
 
-        return value.entrySet().stream()
-                .collect(toMap(Map.Entry::getKey, e -> convert(fieldToType.get(e.getKey()), e.getValue())));
+        Map<String, Object> result = new HashMap<>();
+        value.forEach((k, v) -> {
+            if (v == null) {
+                throw SchemaValidationFailedException.nullValueForField(k);
+            }
+            result.put(k, convert(fieldToType.get(k), v));
+        });
+        return result;
     }
 
     /**
