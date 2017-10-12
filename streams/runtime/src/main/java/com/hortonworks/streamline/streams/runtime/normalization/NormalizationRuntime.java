@@ -41,7 +41,7 @@ public abstract class NormalizationRuntime {
 
     public final StreamlineEvent execute(StreamlineEvent event) throws NormalizationException {
         Map<String, Object> result = normalize(event);
-        return new StreamlineEventImpl(result, event.getDataSourceId(), event.getId(), event.getHeader());
+        return StreamlineEventImpl.builder().from(event).fieldsAndValues(result).build();
     }
 
     protected abstract Map<String, Object> normalize(StreamlineEvent event) throws NormalizationException;

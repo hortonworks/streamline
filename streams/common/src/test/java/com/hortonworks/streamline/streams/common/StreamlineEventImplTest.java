@@ -42,8 +42,7 @@ public class StreamlineEventImplTest {
         map.put("b", "bval");
 
 
-        StreamlineEvent event = new StreamlineEventImpl(map, StringUtils.EMPTY);
-
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(map).build();
         assertEquals(map, event);
     }
 
@@ -53,9 +52,7 @@ public class StreamlineEventImplTest {
         map.put("a", "aval");
         map.put("b", "bval");
 
-
-        StreamlineEvent event = new StreamlineEventImpl(map, org.apache.commons.lang.StringUtils.EMPTY);
-
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(map).build();
         assertNotNull(UUID.fromString(event.getId()));
     }
 
@@ -65,9 +62,7 @@ public class StreamlineEventImplTest {
         map.put("a", "aval");
         map.put("b", "bval");
 
-
-        StreamlineEvent event = new StreamlineEventImpl(map, "1");
-
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(map).dataSourceId("1").build();
         assertEquals("1", event.getDataSourceId());
 
     }
@@ -75,39 +70,10 @@ public class StreamlineEventImplTest {
     @Test
     public void testGetSourceStream() throws Exception {
         String sourceStream = "stream";
-        StreamlineEvent event = new StreamlineEventImpl(new HashMap<String, Object>(), "1");
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(Collections.emptyMap()).dataSourceId("1").build();
         assertEquals(StreamlineEventImpl.DEFAULT_SOURCE_STREAM, event.getSourceStream());
-        event = new StreamlineEventImpl(new HashMap<String, Object>(), "1", "1", new HashMap<String, Object>(), sourceStream);
+        event = StreamlineEventImpl.builder().fieldsAndValues(Collections.emptyMap()).dataSourceId("1").sourceStream(sourceStream).build();
         assertEquals(sourceStream, event.getSourceStream());
-    }
-
-    @Test
-    public void testEquals() throws Exception {
-
-        Map<String, Object> map = new HashMap<>();
-        map.put("a", "aval");
-        map.put("b", "bval");
-
-
-        StreamlineEvent event1 = new StreamlineEventImpl(map, StringUtils.EMPTY);
-
-        StreamlineEvent event2 = new StreamlineEventImpl(map, StringUtils.EMPTY, event1.getId());
-
-        assertEquals(event1, event2);
-    }
-
-    @Test
-    public void testHashcode() throws Exception {
-        Map<String, Object> map = new HashMap<>();
-        map.put("a", "aval");
-        map.put("b", "bval");
-
-
-        StreamlineEvent event1 = new StreamlineEventImpl(map, StringUtils.EMPTY);
-
-        StreamlineEvent event2 = new StreamlineEventImpl(map, StringUtils.EMPTY, event1.getId());
-
-        assertEquals(event1.hashCode(), event2.hashCode());
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -115,7 +81,7 @@ public class StreamlineEventImplTest {
         Map<String, Object> map = new HashMap<>();
         map.put("foo", "bar");
 
-        StreamlineEvent event = new StreamlineEventImpl(map, StringUtils.EMPTY);
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(map).build();
         event.put("key", "val");
     }
 
@@ -124,7 +90,7 @@ public class StreamlineEventImplTest {
         Map<String, Object> map = new HashMap<>();
         map.put("foo", "bar");
 
-        StreamlineEvent event = new StreamlineEventImpl(map, StringUtils.EMPTY);
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(map).build();
         event.clear();
     }
 
@@ -133,7 +99,7 @@ public class StreamlineEventImplTest {
         Map<String, Object> map = new HashMap<>();
         map.put("foo", "bar");
 
-        StreamlineEvent event = new StreamlineEventImpl(Collections.emptyMap(), StringUtils.EMPTY);
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(Collections.emptyMap()).build();
         event.putAll(map);
     }
 
@@ -142,7 +108,7 @@ public class StreamlineEventImplTest {
         Map<String, Object> map = new HashMap<>();
         map.put("foo", "bar");
 
-        StreamlineEvent event = new StreamlineEventImpl(Collections.emptyMap(), StringUtils.EMPTY);
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(Collections.emptyMap()).build();
         event.remove("foo");
     }
 
@@ -151,7 +117,7 @@ public class StreamlineEventImplTest {
         Map<String, Object> map = new HashMap<>();
         map.put("foo", "bar");
 
-        StreamlineEvent event = new StreamlineEventImpl(map, StringUtils.EMPTY);
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(map).build();
         Iterator<Map.Entry<String, Object>> it = event.entrySet().iterator();
         while(it.hasNext()) {
             it.next();

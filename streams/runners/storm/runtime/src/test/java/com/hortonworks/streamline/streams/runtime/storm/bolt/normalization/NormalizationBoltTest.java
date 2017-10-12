@@ -28,6 +28,7 @@ import com.hortonworks.streamline.streams.layout.component.impl.normalization.No
 import com.hortonworks.streamline.streams.layout.component.impl.normalization.NormalizationProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.normalization.Transformer;
 import com.hortonworks.streamline.streams.runtime.normalization.NormalizationException;
+import com.hortonworks.streamline.streams.runtime.utils.StreamlineEventTestUtil;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import mockit.Expectations;
@@ -53,6 +54,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
 /**
  *
  */
@@ -72,19 +77,25 @@ public class NormalizationBoltTest {
     @Injectable
     private Tuple tuple;
 
-    public static final StreamlineEventImpl INPUT_STREAMLINE_EVENT = new StreamlineEventImpl(new HashMap<String, Object>() {{
-        put("illuminance", 70);
-        put("temp", 104);
-        put("foo", 100);
-        put("humidity", "40h");
-    }}, "ds-" + System.currentTimeMillis(), "id-" + System.currentTimeMillis());
+    private static final String INPUT_STREAM_ID = String.valueOf(1L);
 
-    public static final StreamlineEventImpl INVALID_INPUT_STREAMLINE_EVENT = new StreamlineEventImpl(new HashMap<String, Object>() {{
-        put("illuminance", 70);
-        put("tmprtr", 101);
-        put("foo", 100);
-        put("humidity", "40");
-    }}, "ds-" + System.currentTimeMillis(), "id-" + System.currentTimeMillis());
+    public static final StreamlineEventImpl INPUT_STREAMLINE_EVENT = StreamlineEventImpl.builder()
+            .fieldsAndValues(new HashMap<String, Object>() {{
+                put("illuminance", 70);
+                put("temp", 104);
+                put("foo", 100);
+                put("humidity", "40h");
+            }})
+            .dataSourceId("ds-" + System.currentTimeMillis()).sourceStream(INPUT_STREAM_ID).build();
+
+    public static final StreamlineEventImpl INVALID_INPUT_STREAMLINE_EVENT = StreamlineEventImpl.builder()
+            .fieldsAndValues(new HashMap<String, Object>() {{
+                put("illuminance", 70);
+                put("tmprtr", 101);
+                put("foo", 100);
+                put("humidity", "40");
+            }})
+            .dataSourceId("ds-" + System.currentTimeMillis()).sourceStream(INPUT_STREAM_ID).build();
 
     public static final Schema OUTPUT_SCHEMA_FIELDS = Schema.of(
             new Schema.Field("temperature", Schema.Type.FLOAT),
@@ -93,14 +104,14 @@ public class NormalizationBoltTest {
             new Schema.Field("new-field", Schema.Type.STRING));
 
     private static final StreamlineEvent VALID_OUTPUT_STREAMLINE_EVENT =
-            new StreamlineEventImpl(new HashMap<String, Object>() {{
-                put("temperature", 40);
+            StreamlineEventImpl.builder().fieldsAndValues(new HashMap<String, Object>() {{
+                put("temperature", 40.0f);
                 put("humidity", "40h");
                 put("illuminance", 70);
                 put("new-field", "new value");
-            }}, INPUT_STREAMLINE_EVENT.getDataSourceId(), INPUT_STREAMLINE_EVENT.getId());
+            }}).dataSourceId(INPUT_STREAMLINE_EVENT.getDataSourceId()).sourceStream(INPUT_STREAM_ID).build();
 
-    private static final String INPUT_STREAM_ID = String.valueOf(1L);
+
     @Test
     public void testFieldBasedNormalization() throws NormalizationException {
         testNormalizationBolt(createNormalizationBolt(createFieldBasedNormalizationProcessor("normalized-output")));
@@ -125,12 +136,17 @@ public class NormalizationBoltTest {
         new Expectations() {{
             tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
             returns(INPUT_STREAMLINE_EVENT);
+
+            tuple.getSourceStreamId();
+            returns(INPUT_STREAM_ID);
         }};
 
         normalizationBolt.execute(tuple);
 
         new Verifications() {{
-            outputCollector.emit(withAny(""), tuple, new Values(VALID_OUTPUT_STREAMLINE_EVENT));
+            List<Object> capturedValues;
+            outputCollector.emit(withAny(""), tuple, capturedValues = withCapture());
+            StreamlineEventTestUtil.assertEventIsProperlyCopied(VALID_OUTPUT_STREAMLINE_EVENT, (StreamlineEvent) capturedValues.get(0));
             times = 1;
             outputCollector.ack(tuple);
         }};
@@ -264,5 +280,4 @@ public class NormalizationBoltTest {
                     '}';
         }
     }
-
 }

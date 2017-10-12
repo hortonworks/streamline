@@ -162,7 +162,10 @@ public class NotificationBoltTest {
         Map<String, Object> fieldsAndValues = new HashMap<>();
         fieldsAndValues.put("foo", "100");
         fieldsAndValues.put("bar", "200");
-        final StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "srcid");
+        final StreamlineEvent event = StreamlineEventImpl.builder()
+                .fieldsAndValues(fieldsAndValues)
+                .dataSourceId("srcid")
+                .build();
         NotificationBolt consoleNotificationBolt = new NotificationBolt(new NotificationSink() {
             @Override
             public String getNotifierName() {
@@ -227,7 +230,10 @@ public class NotificationBoltTest {
 
         Map<String, Object> fieldsAndValues = new HashMap<>();
         fieldsAndValues.put("temperature", "100");
-        final StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "srcid");
+        final StreamlineEvent event = StreamlineEventImpl.builder()
+                .fieldsAndValues(fieldsAndValues)
+                .dataSourceId("srcid")
+                .build();
         final Notification notification = new StreamlineEventAdapter(event);
         new MockUp<NotificationQueueHandler>() {
             @Mock
@@ -267,7 +273,10 @@ public class NotificationBoltTest {
 
         Map<String, Object> fieldsAndValues = new HashMap<>();
         fieldsAndValues.put("foobar", "100");
-        final StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "srcid");
+        final StreamlineEvent event = StreamlineEventImpl.builder()
+                .fieldsAndValues(fieldsAndValues)
+                .dataSourceId("srcid")
+                .build();
         final Notification notification = new StreamlineEventAdapter(event);
 
         new MockUp<NotificationQueueHandler>() {

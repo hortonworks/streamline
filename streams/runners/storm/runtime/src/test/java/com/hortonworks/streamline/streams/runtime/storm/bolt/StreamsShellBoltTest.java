@@ -111,7 +111,7 @@ public class StreamsShellBoltTest {
             mockContext.getCodeDir();
             result = "/tmp";
             mockContext.getThisComponentId();
-            result = "dsrid";
+            result = "dsrid"; minTimes = 0;
         }};
     }
 
@@ -121,7 +121,9 @@ public class StreamsShellBoltTest {
     }
 
     private Tuple getNextTuple(int i) {
-        StreamlineEvent event = new StreamlineEventImpl(ImmutableMap.<String, Object>of("sentence", "THIS IS RANDOM SENTENCE"+ i), "dsrcid");
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(
+                ImmutableMap.of("sentence", "THIS IS RANDOM SENTENCE"+ i)
+        ).dataSourceId("dsrcid").build();
         return new TupleImpl(mockContext, new Values(event), 1, "inputstream");
     }
 

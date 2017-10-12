@@ -140,7 +140,7 @@ public class CustomProcessorBoltTest {
         customProcessorBolt.inputSchema(inputSchema);
         Map<String, Object> data = new HashMap<>();
         data.put("key", "value");
-        final StreamlineEvent event = new StreamlineEventImpl(data, "dsrcid");
+        final StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(data).dataSourceId("dsrcid").build();
         final List<StreamlineEvent> result =  Arrays.asList(event);
         final ProcessingException pe = new ProcessingException("Test");
         new Expectations() {{

@@ -203,17 +203,23 @@ public class CustomProcessorBolt extends AbstractProcessorBolt {
     @Override
     protected void process (Tuple input, StreamlineEvent event) {
         try {
-            Map<String, Object> mappedEvent = new HashMap<>();
+            Map<String, Object> mappedEventMap = new HashMap<>();
             if (!inputSchemaMap.containsKey(input.getSourceStreamId()))
                 throw new RuntimeException("Received an event on an input stream that does not have mapping for input schema fields");
             // Create a new mapped event based on mapping to pass it to CP implementation
             for (Map.Entry<String, String> entry: inputSchemaMap.get(input.getSourceStreamId()).entrySet()) {
                 if (event.get(entry.getValue()) != null) {
-                    mappedEvent.put(entry.getKey(), event.get(entry.getValue()));
+                    mappedEventMap.put(entry.getKey(), event.get(entry.getValue()));
                 }
             }
-            List<StreamlineEvent> results = customProcessorRuntime.process(new StreamlineEventImpl(mappedEvent, event.getDataSourceId(), event
-                    .getId(), event.getHeader(), input.getSourceStreamId(), event.getAuxiliaryFieldsAndValues()));
+
+            StreamlineEvent mappedEvent = StreamlineEventImpl.builder()
+                    .from(event)
+                    .sourceStream(input.getSourceStreamId())
+                    .fieldsAndValues(mappedEventMap)
+                    .build();
+
+            List<StreamlineEvent> results = customProcessorRuntime.process(mappedEvent);
             if (results != null) {
                 for (StreamlineEvent e : results) {
                     Map<String, Object> newFieldsAndValues = new HashMap<>();
@@ -224,8 +230,11 @@ public class CustomProcessorBolt extends AbstractProcessorBolt {
                         //value has to be present either in the input event
                         newFieldsAndValues.put(field.getName(), e.containsKey(field.getName()) ? e.get(field.getName()) : event.get(field.getName()));
                     }
-                    StreamlineEvent toEmit = new StreamlineEventImpl(newFieldsAndValues, e.getDataSourceId(), e.getId(), e.getHeader(), e.getSourceStream(),
-                            e.getAuxiliaryFieldsAndValues());
+
+                    StreamlineEvent toEmit = StreamlineEventImpl.builder()
+                            .from(e)
+                            .fieldsAndValues(newFieldsAndValues)
+                            .build();
                     collector.emit(outputSchema.keySet().iterator().next(), input, new Values(toEmit));
                 }
             }

@@ -22,10 +22,13 @@ import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A mapper for the StreamlineEvent
@@ -51,7 +54,8 @@ public class StreamlineEventMapper implements Mapper<StreamlineEvent> {
             fieldsAndValues.put(Bytes.toString(entry.getKey()), Bytes.toString(entry.getValue()));
         }
         String dataSourceId = Bytes.toString(result.getFamilyMap(CF_DATASOURCE_ID).firstEntry().getKey());
-        return new StreamlineEventImpl(fieldsAndValues, dataSourceId, id);
+        StreamlineEventImpl event = StreamlineEventImpl.builder().fieldsAndValues(fieldsAndValues).dataSourceId(dataSourceId).build();
+        return new StreamlineEventWithID(event, id);
     }
 
     @Override
@@ -63,5 +67,120 @@ public class StreamlineEventMapper implements Mapper<StreamlineEvent> {
     public List<byte[]> mapMemberValue(String memberName, String value) {
         // Does not support querying by field.
         return null;
+    }
+
+    // keep the implementation in this class unless there're other cases which needs to associate ID as well
+    private static class StreamlineEventWithID implements StreamlineEvent {
+
+        private StreamlineEvent underlyingEvent;
+        private String id;
+
+        public StreamlineEventWithID(StreamlineEvent underlyingEvent, String id) {
+            this.underlyingEvent = underlyingEvent;
+            this.id = id;
+        }
+
+        @Override
+        public Map<String, Object> getAuxiliaryFieldsAndValues() {
+            return underlyingEvent.getAuxiliaryFieldsAndValues();
+        }
+
+        @Override
+        public StreamlineEvent addAuxiliaryFieldAndValue(String field, Object value) {
+            // note that returning event doesn't preserve ID
+            return underlyingEvent.addAuxiliaryFieldAndValue(field, value);
+        }
+
+        @Override
+        public Map<String, Object> getHeader() {
+            return underlyingEvent.getHeader();
+        }
+
+        @Override
+        public String getId() {
+            return id;
+        }
+
+        @Override
+        public String getDataSourceId() {
+            return underlyingEvent.getDataSourceId();
+        }
+
+        @Override
+        public String getSourceStream() {
+            return underlyingEvent.getSourceStream();
+        }
+
+        @Override
+        public StreamlineEvent addFieldsAndValues(Map<String, Object> fieldsAndValues) {
+            return underlyingEvent.addFieldsAndValues(fieldsAndValues);
+        }
+
+        @Override
+        public StreamlineEvent addFieldAndValue(String key, Object value) {
+            return underlyingEvent.addFieldAndValue(key, value);
+        }
+
+        @Override
+        public StreamlineEvent addHeaders(Map<String, Object> headers) {
+            return underlyingEvent.addHeaders(headers);
+        }
+
+        @Override
+        public byte[] getBytes() {
+            try {
+                return this.toString().getBytes("UTF-8");
+            } catch (UnsupportedEncodingException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        @Override
+        public int size() {
+            return underlyingEvent.size();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return underlyingEvent.isEmpty();
+        }
+
+        @Override
+        public boolean containsKey(Object key) {
+            return underlyingEvent.containsKey(key);
+        }
+
+        @Override
+        public boolean containsValue(Object value) {
+            return underlyingEvent.containsValue(value);
+        }
+
+        @Override
+        public Object get(Object key) {
+            return underlyingEvent.get(key);
+        }
+
+        @Override
+        public Set<String> keySet() {
+            return underlyingEvent.keySet();
+        }
+
+        @Override
+        public Collection<Object> values() {
+            return underlyingEvent.values();
+        }
+
+        @Override
+        public Set<Entry<String, Object>> entrySet() {
+            return underlyingEvent.entrySet();
+        }
+
+        @Override
+        public String toString() {
+            return "StreamlineEventWithID{" +
+                    "underlyingEvent=" + underlyingEvent +
+                    ", id='" + id + '\'' +
+                    '}';
+        }
     }
 }
