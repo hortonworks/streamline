@@ -57,12 +57,12 @@ public class ProxyUtil<O> {
         this.cachedClassLoaders = new ConcurrentHashMap<>();
     }
 
-    public O loadClassFromLibsDirectory(Path libsDirectory, String classFqdn) throws MalformedURLException, InstantiationException, IllegalAccessException, ClassNotFoundException {
+    public O loadClassFromLibDirectory(Path libDirectory, String classFqdn) throws MalformedURLException, InstantiationException, IllegalAccessException, ClassNotFoundException {
         ClassLoader classLoader;
         if (isClassLoadedFromParent(classFqdn)) {
             classLoader = parentClassLoader;
         } else {
-            File file = libsDirectory.toFile();
+            File file = libDirectory.toFile();
             classLoader = findCachedClassLoader(file.getAbsolutePath());
             if (classLoader == null) {
                classLoader = getJarsAddedClassLoader(file);
@@ -142,21 +142,21 @@ public class ProxyUtil<O> {
         return classLoader;
     }
 
-    private ClassLoader getJarsAddedClassLoader(File file) throws MalformedURLException {
+    private ClassLoader getJarsAddedClassLoader(File directory) throws MalformedURLException {
         ClassLoader classLoader = new MutableURLClassLoader(new URL[0], parentClassLoader);
         File[] files;
-        if ((file != null) && ((files = file.listFiles(JAR_FILENAME_FILTER)) != null)) {
+        if ((directory != null) && ((files = directory.listFiles(JAR_FILENAME_FILTER)) != null)) {
             for (File jar : files) {
                 URL u = (jar.toURI().toURL());
                 ((MutableURLClassLoader) classLoader).addURL(u);
             }
-            ClassLoader oldCl = cachedClassLoaders.putIfAbsent(file.getAbsolutePath(), classLoader);
+            ClassLoader oldCl = cachedClassLoaders.putIfAbsent(directory.getAbsolutePath(), classLoader);
             if (oldCl != null) {
                 // discard and pick old thing
                 classLoader = oldCl;
             }
         } else {
-            String errorMessage = "Cannot get a class loader with all jars in directory: " + file;
+            String errorMessage = "Cannot get a class loader with all jars in directory: " + directory;
             LOG.warn(errorMessage);
             throw new RuntimeException(errorMessage);
         }

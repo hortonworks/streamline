@@ -84,10 +84,8 @@ public class FileReaderSpout extends BaseRichSpout {
 
     @Override
     public void nextTuple() {
-        BufferedReader br = null;
-        try {
+        try (BufferedReader br = new BufferedReader(Files.newBufferedReader(Paths.get(path), StandardCharsets.UTF_8))) {
             String line;
-            br = new BufferedReader(Files.newBufferedReader(Paths.get(path), StandardCharsets.UTF_8));
             while ((line = br.readLine()) != null) {
                 String[] result = line.split(delimiter);
                 if (result.length != 2) {
@@ -104,15 +102,7 @@ public class FileReaderSpout extends BaseRichSpout {
         } catch (IOException e) {
             LOG.error("Got exception while reading file at {}", path);
             throw new RuntimeException(e);
-        } finally {
-            if (br != null) try {
-                br.close();
-            } catch (IOException e) {
-                LOG.error("Got exception while closing buffered reader");
-                throw new RuntimeException(e);
-            }
         }
-
     }
 
     private static class MyStreamlineEvent implements StreamlineEvent {
