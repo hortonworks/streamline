@@ -8,6 +8,9 @@ All the files needed to build, register and run are present in this module.
 2. Open the `file-source-topology-component.json` file under resources directory and make sure that the mavenDeps property(which is of the form 
 groupId:artifactId:version) has the correct value for version. Version should be the version defined in the pom file of this module
 3. Export the variable `data`. Its value should be the location of the json file edited in step 2 above.
+
+`export data=/tmp/file-source-topology-component.json`
+
 4. Run the below curl command to register it as a SAM source. Before doing that, make sure you replace sam_host and sam_port with values for your environment
  and that bundleJar form parameter points to the jar file that you build in step 1. 
 

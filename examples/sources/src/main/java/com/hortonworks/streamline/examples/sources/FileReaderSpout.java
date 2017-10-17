@@ -16,6 +16,7 @@
 package com.hortonworks.streamline.examples.sources;
 
 import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import org.apache.storm.spout.SpoutOutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -91,11 +92,9 @@ public class FileReaderSpout extends BaseRichSpout {
                 if (result.length != 2) {
                    LOG.error("Format of input file not as expected. Expecting {} separated first name and last name", delimiter);
                 } else {
-                    Map<String, Object> event = new HashMap<>();
-                    event.put(FIRST_NAME, result[0].trim());
-                    event.put(LAST_NAME, result[1].trim());
                     List<Object> values = new ArrayList<>();
-                    values.add(new MyStreamlineEvent(event, outputStream));
+                    values.add(StreamlineEventImpl.builder().sourceStream(outputStream).put(FIRST_NAME, result[0].trim()).put(LAST_NAME, result[1].trim())
+                            .build());
                     spoutOutputCollector.emit(outputStream, values, UUID.randomUUID());
                 }
             }
@@ -105,109 +104,5 @@ public class FileReaderSpout extends BaseRichSpout {
         }
     }
 
-    private static class MyStreamlineEvent implements StreamlineEvent {
 
-        private final Map<String, Object> unmodifiableMap;
-        private final String outputStream;
-        private MyStreamlineEvent (Map<String, Object> fields, String outputStream) {
-            unmodifiableMap = Collections.unmodifiableMap(fields);
-            this.outputStream = outputStream;
-        }
-
-        @Override
-        public Map<String, Object> getAuxiliaryFieldsAndValues() {
-            return null;
-        }
-
-        @Override
-        public void addAuxiliaryFieldAndValue(String field, Object value) {
-
-        }
-
-        @Override
-        public Map<String, Object> getHeader() {
-            return null;
-        }
-
-        @Override
-        public String getId() {
-            return null;
-        }
-
-        @Override
-        public String getDataSourceId() {
-            return null;
-        }
-
-        @Override
-        public String getSourceStream() {
-            return outputStream;
-        }
-
-        @Override
-        public StreamlineEvent addFieldsAndValues(Map<String, Object> fieldsAndValues) {
-            Map<String, Object> newFieldsAndValues = new HashMap<>();
-            newFieldsAndValues.putAll(unmodifiableMap);
-            newFieldsAndValues.putAll(fieldsAndValues);
-            return new MyStreamlineEvent(newFieldsAndValues, this.outputStream);
-        }
-
-        @Override
-        public StreamlineEvent addFieldAndValue(String key, Object value) {
-            Map<String, Object> fieldsAndValues = new HashMap<>();
-            fieldsAndValues.put(key, value);
-            fieldsAndValues.putAll(unmodifiableMap);
-            return new MyStreamlineEvent(fieldsAndValues, this.outputStream);
-        }
-
-        @Override
-        public StreamlineEvent addHeaders(Map<String, Object> headers) {
-            return this;
-        }
-
-        @Override
-        public byte[] getBytes() {
-            return new byte[0];
-        }
-
-        @Override
-        public int size() {
-            return unmodifiableMap.size();
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return unmodifiableMap.isEmpty();
-        }
-
-        @Override
-        public boolean containsKey(Object key) {
-            return unmodifiableMap.containsKey(key);
-        }
-
-        @Override
-        public boolean containsValue(Object value) {
-            return unmodifiableMap.containsValue(value);
-        }
-
-        @Override
-        public Object get(Object key) {
-            return unmodifiableMap.get(key);
-        }
-
-        @Override
-        public Set<String> keySet() {
-            return unmodifiableMap.keySet();
-        }
-
-        @Override
-        public Collection<Object> values() {
-            return unmodifiableMap.values();
-        }
-
-        @Override
-        public Set<Entry<String, Object>> entrySet() {
-            return unmodifiableMap.entrySet();
-        }
-    }
 }
