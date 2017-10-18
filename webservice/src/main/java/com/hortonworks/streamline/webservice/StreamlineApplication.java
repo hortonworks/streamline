@@ -30,10 +30,12 @@ import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.storage.StorageManagerAware;
+import com.hortonworks.streamline.storage.TransactionManagerAware;
 import com.hortonworks.streamline.storage.cache.impl.GuavaCache;
 import com.hortonworks.streamline.storage.cache.writer.StorageWriteThrough;
 import com.hortonworks.streamline.storage.cache.writer.StorageWriter;
 import com.hortonworks.streamline.common.exception.ConfigException;
+import com.hortonworks.streamline.storage.impl.jdbc.transaction.TransactionManager;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import com.hortonworks.streamline.streams.security.authentication.StreamlineKerberosRequestFilter;
 import com.hortonworks.streamline.streams.security.impl.DefaultStreamlineAuthorizer;
@@ -45,6 +47,7 @@ import com.hortonworks.streamline.webservice.configurations.StorageProviderConfi
 import com.hortonworks.streamline.webservice.configurations.StreamlineConfiguration;
 import com.hortonworks.streamline.webservice.configurations.ModuleConfiguration;
 import com.hortonworks.streamline.webservice.resources.StreamlineConfigurationResource;
+import com.hortonworks.streamline.webservice.transaction.TransactionEventListener;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.jetty.HttpConnectorFactory;
@@ -236,6 +239,8 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
     private void registerResources(StreamlineConfiguration configuration, Environment environment, Subject subject) throws ConfigException,
             ClassNotFoundException, IllegalAccessException, InstantiationException {
         StorageManager storageManager = getCacheBackedDao(configuration);
+        TransactionManager transactionManager = new TransactionManager(storageManager);
+        environment.jersey().register(new TransactionEventListener(transactionManager));
         Collection<Class<? extends Storable>> streamlineEntities = getStreamlineEntities();
         storageManager.registerStorables(streamlineEntities);
         LOG.info("Registered streamline entities {}", streamlineEntities);
@@ -294,6 +299,11 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
                 LOG.info("Module [{}] is StorageManagerAware and setting StorageManager.", moduleName);
                 StorageManagerAware storageManagerAware = (StorageManagerAware) moduleRegistration;
                 storageManagerAware.setStorageManager(storageManager);
+            }
+            if(moduleRegistration instanceof TransactionManagerAware) {
+                LOG.info("Module [{}] is TransactionManagerAware and setting TransactionManager.", moduleName);
+                TransactionManagerAware transactionManagerAware = (TransactionManagerAware) moduleRegistration;
+                transactionManagerAware.setTransactionManager(transactionManager);
             }
             resourcesToRegister.addAll(moduleRegistration.getResources());
 

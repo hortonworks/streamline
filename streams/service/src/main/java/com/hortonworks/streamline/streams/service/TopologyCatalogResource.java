@@ -702,8 +702,7 @@ public class TopologyCatalogResource {
         Stopwatch stopwatch = Stopwatch.createStarted();
 
         try {
-            List<CatalogResourceUtil.TopologyDetailedResponse> responses = ParallelStreamUtil.execute(() ->
-                    topologies.parallelStream()
+            List<CatalogResourceUtil.TopologyDetailedResponse> responses = topologies.stream()
                             .map(t -> CatalogResourceUtil.enrichTopology(t, asUser, latencyTopN,
                                     environmentService, actionsService, metricsService, catalogService))
                             .sorted((c1, c2) -> {
@@ -725,7 +724,7 @@ public class TopologyCatalogResource {
 
                                 return ascending ? compared : (compared * -1);
                             })
-                            .collect(toList()), forkJoinPool);
+                            .collect(toList());
 
             LOG.debug("[END] enrichTopologies - elapsed: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
