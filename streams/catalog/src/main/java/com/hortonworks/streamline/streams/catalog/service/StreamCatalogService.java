@@ -94,6 +94,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -902,13 +903,15 @@ public class StreamCatalogService {
         return this.dao.get(topologyComponentBundle.getStorableKey());
     }
 
-    public TopologyComponentBundle addTopologyComponentBundle (TopologyComponentBundle topologyComponentBundle, InputStream bundleJar) throws
+    public TopologyComponentBundle addTopologyComponentBundle (TopologyComponentBundle topologyComponentBundle, java.io.File bundleJar) throws
             ComponentConfigException, IOException {
         topologyComponentBundle.getTopologyComponentUISpecification().validate();
         loadTransformationClassForBundle(topologyComponentBundle, bundleJar);
         if (!topologyComponentBundle.getBuiltin()) {
             topologyComponentBundle.setBundleJar(getTopologyComponentBundleJarName(topologyComponentBundle));
-            uploadFileToStorage(bundleJar, topologyComponentBundle.getBundleJar());
+            try (InputStream is = new FileInputStream(bundleJar)) {
+                uploadFileToStorage(is, topologyComponentBundle.getBundleJar());
+            }
         }
         try {
             if (topologyComponentBundle.getId() == null) {
@@ -928,13 +931,15 @@ public class StreamCatalogService {
         return topologyComponentBundle;
     }
 
-    public TopologyComponentBundle addOrUpdateTopologyComponentBundle (Long id, TopologyComponentBundle topologyComponentBundle, InputStream bundleJar) throws
+    public TopologyComponentBundle addOrUpdateTopologyComponentBundle (Long id, TopologyComponentBundle topologyComponentBundle, java.io.File bundleJar) throws
             ComponentConfigException, IOException {
         topologyComponentBundle.getTopologyComponentUISpecification().validate();
         loadTransformationClassForBundle(topologyComponentBundle, bundleJar);
         if (!topologyComponentBundle.getBuiltin()) {
             topologyComponentBundle.setBundleJar(getTopologyComponentBundleJarName(topologyComponentBundle));
-            uploadFileToStorage(bundleJar, topologyComponentBundle.getBundleJar());
+            try (InputStream is = new FileInputStream(bundleJar)) {
+                uploadFileToStorage(is, topologyComponentBundle.getBundleJar());
+            }
         }
         TopologyComponentBundle existing = new TopologyComponentBundle();
         existing.setId(id);
@@ -2607,7 +2612,7 @@ public class StreamCatalogService {
         return udf;
     }
 
-    private void loadTransformationClassForBundle (TopologyComponentBundle topologyComponentBundle, InputStream bundleJar) {
+    private void loadTransformationClassForBundle (TopologyComponentBundle topologyComponentBundle, java.io.File bundleJar) {
         if (topologyComponentBundle.getStreamingEngine().equals(TopologyLayoutConstants.STORM_STREAMING_ENGINE)) {
             if (topologyComponentBundle.getBuiltin()) {
                 // no transformation class validations for top level topology type
@@ -2623,26 +2628,12 @@ public class StreamCatalogService {
                 }
             } else {
                 ProxyUtil<FluxComponent> fluxComponentProxyUtil = new ProxyUtil<FluxComponent>(FluxComponent.class);
-                OutputStream os = null;
-                InputStream is = null;
                 try {
-                    java.io.File tmpFile = java.io.File.createTempFile(UUID.randomUUID().toString(), ".jar");
-                    tmpFile.deleteOnExit();
-                    os = new FileOutputStream(tmpFile);
-                    ByteStreams.copy(bundleJar, os);
-                    FluxComponent fluxComponent = fluxComponentProxyUtil.loadClassFromJar(tmpFile.getAbsolutePath(), topologyComponentBundle
-                            .getTransformationClass());
+                    fluxComponentProxyUtil.loadClassFromJar(bundleJar.getAbsolutePath(), topologyComponentBundle.getTransformationClass());
                 } catch (IOException | ClassNotFoundException | IllegalAccessException | InstantiationException ex) {
                     LOG.debug("Got exception", ex);
-                    throw new RuntimeException("Cannot load transformation class " + topologyComponentBundle.getTransformationClass() + " from bundle Jar: ");
-                } finally {
-                    try {
-                        if (os != null) {
-                            os.close();
-                        }
-                    } catch (IOException ex) {
-                        LOG.error("Got exception", ex);
-                    }
+                    throw new RuntimeException("Cannot load transformation class " + topologyComponentBundle.getTransformationClass() + " from bundle Jar: "
+                            + bundleJar.getAbsolutePath());
                 }
             }
         }
