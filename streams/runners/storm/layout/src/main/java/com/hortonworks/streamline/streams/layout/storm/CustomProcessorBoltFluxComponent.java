@@ -39,14 +39,13 @@ public class CustomProcessorBoltFluxComponent extends AbstractFluxComponent {
     protected void generateComponent () {
         String boltId = "customProcessorBolt" + UUID_FOR_COMPONENTS;
         String boltClassName = "com.hortonworks.streamline.streams.runtime.storm.bolt.CustomProcessorBolt";
-        String[] configMethodNames = {"customProcessorImpl", "outputSchema", "inputSchema", "config", "inputSchemaMap"};
+        String[] configMethodNames = {"customProcessorImpl", "outputSchema", "config", "inputSchemaMap"};
         Object[] values = new Object[configMethodNames.length];
         values[0] = conf.get(TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_IMPL);
         try {
             values[1] = getOutputSchemaJson();
-            values[2] = getInputSchemaJson();
-            values[3] = getObjectAsJson(getCustomConfig());
-            values[4] = getInputSchemaMapAsJson();
+            values[2] = getObjectAsJson(getCustomConfig());
+            values[3] = getInputSchemaMapAsJson();
         } catch (JsonProcessingException e) {
             String message = "Error while parsing input/output/config for custom processor config while generating yaml.";
             LOG.error(message);
@@ -61,12 +60,8 @@ public class CustomProcessorBoltFluxComponent extends AbstractFluxComponent {
     public void validateConfig () throws ComponentConfigException {
         super.validateConfig();
         validateStringFields();
-        String fieldToValidate = TopologyLayoutConstants.JSON_KEY_INPUT_SCHEMA;
+        String fieldToValidate = TopologyLayoutConstants.JSON_KEY_OUTPUT_STREAMS_SCHEMA;
         try {
-            Map inputSchema = (Map) conf.get(fieldToValidate);
-            Utils.getSchemaFromConfig(inputSchema);
-            fieldToValidate = TopologyLayoutConstants.JSON_KEY_INPUT_SCHEMA_MAP;
-            fieldToValidate = TopologyLayoutConstants.JSON_KEY_OUTPUT_STREAMS_SCHEMA;
             Map<String, Map> outputSchema = (Map) conf.get(fieldToValidate);
             if (outputSchema == null || outputSchema.keySet().isEmpty()) {
                 throw new ComponentConfigException(String.format(TopologyLayoutConstants.ERR_MSG_MISSING_INVALID_CONFIG, fieldToValidate));
@@ -83,17 +78,10 @@ public class CustomProcessorBoltFluxComponent extends AbstractFluxComponent {
     private void validateStringFields () throws ComponentConfigException {
         String[] requiredStringFields = {
             TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_IMPL,
-            TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_JAR_FILENAME,
-            TopologyLayoutConstants.JSON_KEY_LOCAL_JAR_PATH,
             TopologyLayoutConstants.JSON_KEY_NAME,
-            TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_DESCRIPTION,
-            TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_IMAGE_FILENAME
+            TopologyLayoutConstants.JSON_KEY_CUSTOM_PROCESSOR_DESCRIPTION
         };
         validateStringFields(requiredStringFields, true);
-    }
-
-    private String getInputSchemaJson () throws JsonProcessingException {
-        return getObjectAsJson(conf.get(TopologyLayoutConstants.JSON_KEY_INPUT_SCHEMA));
     }
 
     private String getInputSchemaMapAsJson () throws JsonProcessingException {

@@ -49,7 +49,6 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(JMockit.class)
 public class CustomProcessorBoltTest {
-    private Schema inputSchema = new Schema.SchemaBuilder().field(new Schema.Field("A", Schema.Type.INTEGER)).build();
     private Schema outputSchema = new Schema.SchemaBuilder().field(new Schema.Field("A", Schema.Type.INTEGER)).build();
     private String outputStream = "stream";
     private Map<String, Schema> outputStreamToSchema = new HashMap<>();
@@ -137,7 +136,6 @@ public class CustomProcessorBoltTest {
     private void testExecute (boolean isSuccess) throws ProcessingException, ClassNotFoundException, MalformedURLException, InstantiationException, IllegalAccessException {
                 customProcessorBolt.customProcessorImpl(ConsoleCustomProcessor.class.getCanonicalName());
         customProcessorBolt.outputSchema(outputStreamToSchema);
-        customProcessorBolt.inputSchema(inputSchema);
         Map<String, Object> data = new HashMap<>();
         data.put("key", "value");
         final StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(data).dataSourceId("dsrcid").build();
