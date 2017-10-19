@@ -201,9 +201,9 @@ public class CustomProcessorInfo {
         uiFields.add(this.createUIField(CUSTOM_PROCESSOR_IMPL, CUSTOM_PROCESSOR_IMPL, false, false, "Custom processor interface implementation class",
                 ComponentUISpecification.UIFieldType.STRING, this.customProcessorImpl));
         ObjectMapper objectMapper = new ObjectMapper();
-        uiFields.add(this.createUIField(INPUT_SCHEMA, INPUT_SCHEMA, false, false, "Custom processor input schema", ComponentUISpecification
+        uiFields.add(this.createUIField(INPUT_SCHEMA, INPUT_SCHEMA, true, false, "Custom processor input schema", ComponentUISpecification
                 .UIFieldType.STRING, objectMapper.writeValueAsString(this.inputSchema)));
-        uiFields.add(this.createUIField(OUTPUT_SCHEMA, OUTPUT_SCHEMA, false, false, "Custom processor output schema",
+        uiFields.add(this.createUIField(OUTPUT_SCHEMA, OUTPUT_SCHEMA, true, false, "Custom processor output schema",
                 ComponentUISpecification.UIFieldType.STRING, objectMapper.writeValueAsString(this.outputSchema)));
         ComponentUISpecification componentUISpecification = new ComponentUISpecification();
         componentUISpecification.setFields(uiFields);
@@ -222,7 +222,7 @@ public class CustomProcessorInfo {
             }
         }
         result.setFields(fields);
-        return result;
+        return (result.getFields().size() == 0 ? null : result);
     }
 
     private List<ComponentUISpecification.UIField> getCustomProcessorUIFieldsWithPrefix () {
