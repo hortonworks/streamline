@@ -23,17 +23,25 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ProxyUtil<O> {
     private static final Logger LOG = LoggerFactory.getLogger(ProxyUtil.class);
+    private static final FilenameFilter JAR_FILENAME_FILTER = new FilenameFilter() {
+        @Override
+        public boolean accept(File dir, String name) {
+            return name.endsWith(".jar");
+        }
+    };
 
     private final Class<O> interfaceClazz;
     private final ClassLoader parentClassLoader;
@@ -47,6 +55,21 @@ public class ProxyUtil<O> {
         this.interfaceClazz = interfaceClazz;
         this.parentClassLoader = parentClassLoader;
         this.cachedClassLoaders = new ConcurrentHashMap<>();
+    }
+
+    public O loadClassFromLibDirectory(Path libDirectory, String classFqdn) throws MalformedURLException, InstantiationException, IllegalAccessException, ClassNotFoundException {
+        ClassLoader classLoader;
+        if (isClassLoadedFromParent(classFqdn)) {
+            classLoader = parentClassLoader;
+        } else {
+            File file = libDirectory.toFile();
+            classLoader = findCachedClassLoader(file.getAbsolutePath());
+            if (classLoader == null) {
+               classLoader = getJarsAddedClassLoader(file);
+            }
+        }
+        O actualObject = initInstanceFromClassloader(classFqdn, classLoader);
+        return createClassLoaderAwareProxyInstance(classLoader, actualObject);
     }
 
     public O loadClassFromJar(String jarPath, String classFqdn)
@@ -115,6 +138,27 @@ public class ProxyUtil<O> {
         if (oldCl != null) {
             // discard and pick old thing
             classLoader = oldCl;
+        }
+        return classLoader;
+    }
+
+    private ClassLoader getJarsAddedClassLoader(File directory) throws MalformedURLException {
+        ClassLoader classLoader = new MutableURLClassLoader(new URL[0], parentClassLoader);
+        File[] files;
+        if ((directory != null) && ((files = directory.listFiles(JAR_FILENAME_FILTER)) != null)) {
+            for (File jar : files) {
+                URL u = (jar.toURI().toURL());
+                ((MutableURLClassLoader) classLoader).addURL(u);
+            }
+            ClassLoader oldCl = cachedClassLoaders.putIfAbsent(directory.getAbsolutePath(), classLoader);
+            if (oldCl != null) {
+                // discard and pick old thing
+                classLoader = oldCl;
+            }
+        } else {
+            String errorMessage = "Cannot get a class loader with all jars in directory: " + directory;
+            LOG.warn(errorMessage);
+            throw new RuntimeException(errorMessage);
         }
         return classLoader;
     }

@@ -53,6 +53,13 @@
             </includes>
         </fileSet>
         <fileSet>
+            <directory>${project.basedir}./examples/sources/target</directory>
+            <outputDirectory>/examples/sources</outputDirectory>
+            <includes>
+                <include>streamline-examples-sources*jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
             <directory>${project.basedir}./notifiers/target</directory>
             <outputDirectory>/examples/topology/notifications</outputDirectory>
             <includes>
