@@ -33,7 +33,7 @@ class FluxComponentFactory {
     FluxComponent getFluxComponent(StreamlineComponent streamlineComponent) {
         ProxyUtil<FluxComponent> proxyUtil = new ProxyUtil<>(FluxComponent.class);
         try {
-            FluxComponent fluxComponent = proxyUtil.loadClassFromJar(extraJarsLocation.toAbsolutePath().toString(), streamlineComponent.getTransformationClass());
+            FluxComponent fluxComponent = proxyUtil.loadClassFromLibDirectory(extraJarsLocation, streamlineComponent.getTransformationClass());
             return fluxComponent;
         } catch (ClassNotFoundException | MalformedURLException | InstantiationException | IllegalAccessException e) {
             LOG.error("Error while creating flux component", e);

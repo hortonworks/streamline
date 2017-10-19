@@ -133,7 +133,7 @@
         <module>registries</module>
         <module>webservice</module>
         <!--examples-->
-        <module>examples/processors</module>
+        <module>examples</module>
         <module>docker</module>
     </modules>
 
@@ -1098,7 +1098,7 @@
            <module>streams</module>
            <module>registries</module>
            <module>webservice</module>
-           <module>examples/processors</module>
+           <module>examples</module>
          </modules>
          <properties>
            <exclude.unit.test.groups>
@@ -1130,7 +1130,7 @@
            <module>streams</module>
            <module>registries</module>
            <module>webservice</module>
-           <module>examples/processors</module>
+           <module>examples</module>
            <module>streamline-dist</module>
          </modules>
         </profile>
@@ -1160,7 +1160,7 @@
             <module>registries</module>
             <module>webservice</module>
             <!--examples-->
-            <module>examples/processors</module>
+            <module>examples</module>
           </modules>
           <properties>
             <exclude.unit.test.groups>

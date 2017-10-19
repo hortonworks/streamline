@@ -1,0 +1,54 @@
+{
+  "type": "SOURCE",
+  "name": "File",
+  "subType": "FILE",
+  "streamingEngine": "STORM",
+  "builtin": false,
+  "transformationClass": "com.hortonworks.streamline.examples.sources.FileReaderSpoutFluxComponent",
+  "mavenDeps": "com.hortonworks.streamline:streamline-examples-sources:0.1.0-SNAPSHOT",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "File schema",
+        "fieldName": "fileSchema",
+        "isOptional": false,
+        "tooltip": "Schema of file source",
+        "type": "string",
+        "hint": "schema,override"
+      },
+      {
+        "uiName": "File schema version",
+        "fieldName": "fileSchemaVersion",
+        "isOptional": false,
+        "tooltip": "Version of schema of file source",
+        "type": "enumstring",
+        "options": [],
+        "hint": "dependsOn-fileSchema,schemaVersion"
+      },
+      {
+        "uiName": "Source file path",
+        "fieldName": "path",
+        "isOptional": false,
+        "tooltip": "Path to the file from which this source will read",
+        "type": "string"
+      },
+      {
+        "uiName": "Delimiter",
+        "fieldName": "delimiter",
+        "isOptional": false,
+        "tooltip": "Delimiter for fields of a row in the file",
+        "type": "string"
+      },
+      {
+        "uiName": "Parallelism",
+        "fieldName": "parallelism",
+        "isOptional": true,
+        "tooltip": "Parallelism hint for Kafka spout",
+        "type": "number",
+        "defaultValue": 1,
+        "min": 1,
+        "hint": "hidden"
+      }
+    ]
+  }
+}
