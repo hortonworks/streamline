@@ -27,6 +27,6 @@ public class MySqlQuery extends AbstractSqlQuery {
 
     @Override
     protected void setParameterizedSql() {
-        log.debug(sql);
+        LOG.debug(sql);
     }
 }

@@ -33,6 +33,6 @@ public class MySqlInsertUpdateDuplicate extends AbstractStorableSqlQuery {
                 + join(getColumnNames(columns, "`%s`"), ", ")
                 + ") VALUES(" + getBindVariables("?,", columns.size()) + ")"
                 + " ON DUPLICATE KEY UPDATE " + join(getColumnNames(columns, "`%s` = ?"), ", ");
-        log.debug(sql);
+        LOG.debug(sql);
     }
 }

@@ -30,7 +30,7 @@ import com.hortonworks.streamline.streams.actions.topology.state.TopologyStateFa
 import com.hortonworks.streamline.streams.actions.topology.state.TopologyStates;
 import com.hortonworks.streamline.streams.catalog.CatalogToLayoutConverter;
 import com.hortonworks.streamline.streams.catalog.Namespace;
-import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
+import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMap;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.catalog.Topology;
@@ -228,8 +228,8 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
         Path artifactsDir = topologyActions.getArtifactsLocation(CatalogToLayoutConverter.getTopologyLayout(topology));
         makeEmptyDir(artifactsDir);
 
-        Collection<NamespaceServiceClusterMapping> serviceClusterMappings = environmentService.listServiceClusterMapping(namespace.getId());
-        for (NamespaceServiceClusterMapping serviceClusterMapping : serviceClusterMappings) {
+        Collection<NamespaceServiceClusterMap> serviceClusterMappings = environmentService.listServiceClusterMapping(namespace.getId());
+        for (NamespaceServiceClusterMap serviceClusterMapping : serviceClusterMappings) {
             Service service = environmentService.getServiceByName(serviceClusterMapping.getClusterId(),
                     serviceClusterMapping.getServiceName());
             if (service != null) {

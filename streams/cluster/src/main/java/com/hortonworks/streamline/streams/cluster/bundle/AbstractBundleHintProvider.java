@@ -17,7 +17,7 @@ package com.hortonworks.streamline.streams.cluster.bundle;
 
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Namespace;
-import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
+import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMap;
 import com.hortonworks.streamline.streams.catalog.exception.ClusterNotFoundException;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 
@@ -42,9 +42,9 @@ public abstract class AbstractBundleHintProvider implements ComponentBundleHintP
     public Map<Long, BundleHintsResponse> provide(Namespace namespace, SecurityContext securityContext, Subject subject) {
 
         Map<Long, BundleHintsResponse> hintMap = new HashMap<>();
-        Collection<NamespaceServiceClusterMapping> serviceMappings = environmentService.listServiceClusterMapping(
+        Collection<NamespaceServiceClusterMap> serviceMappings = environmentService.listServiceClusterMapping(
                 namespace.getId(), getServiceName());
-        for (NamespaceServiceClusterMapping mapping : serviceMappings) {
+        for (NamespaceServiceClusterMap mapping : serviceMappings) {
             Long clusterId = mapping.getClusterId();
             Cluster cluster = environmentService.getCluster(clusterId);
             if (cluster == null) {

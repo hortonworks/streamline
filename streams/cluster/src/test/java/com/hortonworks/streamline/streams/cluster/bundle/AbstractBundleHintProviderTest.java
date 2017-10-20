@@ -16,12 +16,12 @@
 package com.hortonworks.streamline.streams.cluster.bundle;
 
 import com.google.common.collect.Lists;
+import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMap;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Namespace;
-import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import org.junit.Assert;
 import org.junit.Before;
@@ -69,7 +69,7 @@ public class AbstractBundleHintProviderTest {
         Cluster cluster2 = createDummyCluster(2L, "cluster2");
         Cluster cluster3 = createDummyCluster(3L, "cluster3");
 
-        List<NamespaceServiceClusterMapping> testServiceClusterMappings = createDummyServiceClusterMappings(
+        List<NamespaceServiceClusterMap> testServiceClusterMappings = createDummyServiceClusterMappings(
                 Lists.newArrayList(cluster1, cluster2, cluster3));
 
         new Expectations() {{
@@ -106,11 +106,11 @@ public class AbstractBundleHintProviderTest {
         return cluster;
     }
 
-    private List<NamespaceServiceClusterMapping> createDummyServiceClusterMappings(List<Cluster> clusters) {
-        List<NamespaceServiceClusterMapping> ret = new ArrayList<>();
+    private List<NamespaceServiceClusterMap> createDummyServiceClusterMappings(List<Cluster> clusters) {
+        List<NamespaceServiceClusterMap> ret = new ArrayList<>();
 
         for (Cluster cluster : clusters) {
-            ret.add(new NamespaceServiceClusterMapping(TEST_NAMESPACE_ID, TEST_SERVICE_NAME, cluster.getId()));
+            ret.add(new NamespaceServiceClusterMap(TEST_NAMESPACE_ID, TEST_SERVICE_NAME, cluster.getId()));
         }
 
         return ret;

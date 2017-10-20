@@ -17,15 +17,18 @@
 
 package com.hortonworks.streamline.storage.impl.jdbc.provider.sql.factory;
 
+import com.hortonworks.streamline.storage.PrimaryKey;
 import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableFactory;
 import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.storage.exception.NonIncrementalColumnException;
 import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
+import com.hortonworks.streamline.storage.impl.jdbc.util.CaseAgnosticStringSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Collection;
 
 /**
@@ -81,4 +84,9 @@ public interface QueryExecutor {
     ExecutionConfig getConfig();
 
     void setStorableFactory(StorableFactory storableFactory);
+
+    /**
+     *  @return returns set of column names for a given table
+     */
+    CaseAgnosticStringSet getColumnNames(String namespace) throws SQLException;
 }

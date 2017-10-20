@@ -32,6 +32,7 @@ public class StorageProviderConfigurationReader {
     private static final String JDBC_DRIVER_CLASS = "jdbcDriverClass";
     private static final String MYSQL = "mysql";
     private static final String POSTGRESQL = "postgresql";
+    private static final String ORACLE = "oracle";
 
     public StorageProviderConfiguration readStorageConfig(Map<String, Object> conf) {
         Map<String, Object> storageConf = (Map<String, Object>) conf.get(
@@ -62,6 +63,9 @@ public class StorageProviderConfigurationReader {
 
             case POSTGRESQL:
                 return readPostgresqlProperties(dbProps);
+
+            case ORACLE:
+                return readOracleProperties(dbProps);
 
             default:
                 throw new RuntimeException("Not supported DB type: " + dbType);
@@ -106,5 +110,27 @@ public class StorageProviderConfigurationReader {
         String password = (String) dbProperties.getOrDefault(DATA_SOURCE_PASSWORD, "");
 
         return StorageProviderConfiguration.postgresql(jdbcDriverClass, jdbcUrl, user, password);
+    }
+
+    /**
+     *
+     storageProviderConfiguration:
+     providerClass: "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager"
+     properties:
+     db.type: "oracle"
+     queryTimeoutInSecs: 5
+     db.properties:
+     dataSourceClassName: "oracle.jdbc.pool.OracleDataSource"
+     dataSource.url: "jdbc:oracle:thin:@localhost:1521/orclpdb1.localdomain"
+     dataSource.user: "registry_user"
+     dataSource.password: "registry_user_passwd"
+     */
+    private static StorageProviderConfiguration readOracleProperties(Map<String, Object> dbProperties) {
+        String jdbcDriverClass = (String) dbProperties.get(DATA_SOURCE_CLASS_NAME);
+        String jdbcUrl = (String) dbProperties.get(DATA_SOURCE_URL);
+        String user = (String) dbProperties.getOrDefault(DATA_SOURCE_USER, "");
+        String password = (String) dbProperties.getOrDefault(DATA_SOURCE_PASSWORD, "");
+
+        return StorageProviderConfiguration.oracle(jdbcDriverClass, jdbcUrl, user, password);
     }
 }

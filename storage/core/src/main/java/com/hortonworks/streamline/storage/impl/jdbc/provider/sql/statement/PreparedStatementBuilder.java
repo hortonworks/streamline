@@ -22,7 +22,9 @@ import com.hortonworks.streamline.storage.exception.MalformedQueryException;
 import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.AbstractStorableKeyQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.AbstractStorableSqlQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.AbstractStorableUpdateQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +33,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -48,6 +49,7 @@ public class PreparedStatementBuilder {
     private final Connection connection;
     private PreparedStatement preparedStatement;
     private final SqlQuery sqlBuilder;
+    private final StorageDataTypeContext storageDataTypeContext;
     private final ExecutionConfig config;
     private int numPrepStmtParams;                          // Number of prepared statement parameters
 
@@ -61,11 +63,12 @@ public class PreparedStatementBuilder {
      * @param returnGeneratedKeys Whether statement has option 'Statement.RETURN_GENERATED_KEYS' or not.
      * @throws SQLException
      */
-    protected PreparedStatementBuilder(Connection connection, ExecutionConfig config,
+    protected PreparedStatementBuilder(Connection connection, ExecutionConfig config, StorageDataTypeContext storageDataTypeContext,
                                     SqlQuery sqlBuilder, boolean returnGeneratedKeys) throws SQLException {
         this.connection = connection;
         this.config = config;
         this.sqlBuilder = sqlBuilder;
+        this.storageDataTypeContext = storageDataTypeContext;
         setPreparedStatement(returnGeneratedKeys);
         setNumPrepStmtParams();
     }
@@ -79,9 +82,9 @@ public class PreparedStatementBuilder {
      * @param sqlBuilder Sql builder object for which to build the {@link PreparedStatement}
      * @throws SQLException
      */
-    public static PreparedStatementBuilder of(Connection connection, ExecutionConfig config,
+    public static PreparedStatementBuilder of(Connection connection, ExecutionConfig config, StorageDataTypeContext storageDataTypeContext,
                                               SqlQuery sqlBuilder) throws SQLException {
-        return new PreparedStatementBuilder(connection, config, sqlBuilder, false);
+        return new PreparedStatementBuilder(connection, config, storageDataTypeContext, sqlBuilder, false);
     }
 
     /**
@@ -94,9 +97,9 @@ public class PreparedStatementBuilder {
      * @param sqlBuilder Sql builder object for which to build the {@link PreparedStatement}
      * @throws SQLException
      */
-    public static PreparedStatementBuilder supportReturnGeneratedKeys(Connection connection, ExecutionConfig config,
+    public static PreparedStatementBuilder supportReturnGeneratedKeys(Connection connection, ExecutionConfig config, StorageDataTypeContext storageDataTypeContext,
                                                                       SqlQuery sqlBuilder) throws SQLException {
-        return new PreparedStatementBuilder(connection, config, sqlBuilder, true);
+        return new PreparedStatementBuilder(connection, config, storageDataTypeContext, sqlBuilder, true);
     }
 
     /** Creates the prepared statement with the parameters in place to be replaced */
@@ -137,7 +140,9 @@ public class PreparedStatementBuilder {
         final List<Schema.Field> columns = sqlBuilder.getColumns();
         boolean isMultiple;
 
-        if (columns == null || columns.size() == 0) {
+        if (sqlBuilder instanceof AbstractStorableUpdateQuery) {
+            isMultiple = (groupCount % ((AbstractStorableUpdateQuery) sqlBuilder).getBindings().size()) == 0;
+        } else if (columns == null || columns.size() == 0) {
             isMultiple = groupCount == 0;
         } else {
             isMultiple = ((groupCount % sqlBuilder.getColumns().size()) == 0);
@@ -157,7 +162,9 @@ public class PreparedStatementBuilder {
      * */
     public PreparedStatement getPreparedStatement(SqlQuery sqlBuilder) throws SQLException {
         // If more types become available consider subclassing instead of going with this approach, which was chosen here for simplicity
-        if (sqlBuilder instanceof AbstractStorableKeyQuery) {
+        if (sqlBuilder instanceof AbstractStorableUpdateQuery) {
+            setStorableUpdatePreparedStatement((AbstractStorableUpdateQuery)sqlBuilder);
+        } else if (sqlBuilder instanceof AbstractStorableKeyQuery) {
             setStorableKeyPreparedStatement(sqlBuilder);
         } else if (sqlBuilder instanceof AbstractStorableSqlQuery) {
             setStorablePreparedStatement(sqlBuilder);
@@ -176,8 +183,17 @@ public class PreparedStatementBuilder {
             for (int j = 0; j < numPrepStmtParams; j++) {
                 Schema.Field column = columns.get(j % len);
                 Schema.Type javaType = column.getType();
-                setPreparedStatementParams(preparedStatement, javaType, j + 1, columnsToValues.get(column));
+                storageDataTypeContext.setPreparedStatementParams(preparedStatement, javaType, j + 1, columnsToValues.get(column));
             }
+        }
+    }
+
+    private void setStorableUpdatePreparedStatement(AbstractStorableUpdateQuery updateQuery) throws SQLException {
+        List<Pair<Schema.Field, Object>> bindings = updateQuery.getBindings();
+        for (int i = 0; i < bindings.size(); i++) {
+            Pair<Schema.Field, Object> binding = bindings.get(i);
+            Schema.Type javaType = binding.getKey().getType();
+            storageDataTypeContext.setPreparedStatementParams(preparedStatement, javaType, i + 1, binding.getValue());
         }
     }
 
@@ -192,7 +208,7 @@ public class PreparedStatementBuilder {
                 Schema.Field column = columns.get(j % len);
                 Schema.Type javaType = column.getType();
                 String columnName = column.getName();
-                setPreparedStatementParams(preparedStatement, javaType, j + 1, columnsToValues.get(columnName));
+                storageDataTypeContext.setPreparedStatementParams(preparedStatement, javaType, j + 1, columnsToValues.get(columnName));
             }
         }
     }
@@ -214,77 +230,5 @@ public class PreparedStatementBuilder {
                 ", preparedStatement=" + preparedStatement +
                 ", config=" + config +
                 '}';
-    }
-
-    private void setPreparedStatementParams(PreparedStatement preparedStatement,
-                                              Schema.Type type, int index, Object val) throws SQLException {
-        if (val == null) {
-            preparedStatement.setNull(index, getSqlType(type));
-            return;
-        }
-
-        switch (type) {
-            case BOOLEAN:
-                preparedStatement.setBoolean(index, (Boolean) val);
-                break;
-            case BYTE:
-                preparedStatement.setByte(index, (Byte) val);
-                break;
-            case SHORT:
-                preparedStatement.setShort(index, (Short) val);
-                break;
-            case INTEGER:
-                preparedStatement.setInt(index, (Integer) val);
-                break;
-            case LONG:
-                preparedStatement.setLong(index, (Long) val);
-                break;
-            case FLOAT:
-                preparedStatement.setFloat(index, (Float) val);
-                break;
-            case DOUBLE:
-                preparedStatement.setDouble(index, (Double) val);
-                break;
-            case STRING:
-                preparedStatement.setString(index, (String) val);
-                break;
-            case BINARY:
-                preparedStatement.setBytes(index, (byte[]) val);
-                break;
-            case NESTED:
-            case ARRAY:
-                preparedStatement.setObject(index, val);    //TODO check this
-                break;
-        }
-    }
-
-    private int getSqlType(Schema.Type type) {
-        switch (type) {
-            case BOOLEAN:
-                return Types.BOOLEAN;
-            case BYTE:
-                return Types.TINYINT;
-            case SHORT:
-                return Types.SMALLINT;
-            case INTEGER:
-                return Types.INTEGER;
-            case LONG:
-                return Types.BIGINT;
-            case FLOAT:
-                return Types.REAL;
-            case DOUBLE:
-                return Types.DOUBLE;
-            case STRING:
-                // it might be a VARCHAR or LONGVARCHAR
-                return Types.VARCHAR;
-            case BINARY:
-                // it might be a VARBINARY or LONGVARBINARY
-                return Types.VARBINARY;
-            case NESTED:
-            case ARRAY:
-                return Types.JAVA_OBJECT;
-            default:
-                throw new IllegalArgumentException("Not supported type: " + type);
-        }
     }
 }

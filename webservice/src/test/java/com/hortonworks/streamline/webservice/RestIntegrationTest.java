@@ -27,7 +27,7 @@ import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.File;
 import com.hortonworks.streamline.streams.catalog.Namespace;
-import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
+import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMap;
 import com.hortonworks.streamline.streams.catalog.Notifier;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
@@ -75,7 +75,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -609,15 +608,15 @@ public class RestIntegrationTest {
         String namespaceName = "nstest";
 
         storeTestNamespace(client, namespaceId, namespaceName);
-        NamespaceServiceClusterMapping retrMapping;
-        List<NamespaceServiceClusterMapping> entities;
+        NamespaceServiceClusterMap retrMapping;
+        List<NamespaceServiceClusterMap> entities;
         String response;
 
         // add
         String serviceName = "STORM";
         Long clusterId = 1L;
 
-        NamespaceServiceClusterMapping mapping1 = new NamespaceServiceClusterMapping(namespaceId, serviceName, clusterId);
+        NamespaceServiceClusterMap mapping1 = new NamespaceServiceClusterMap(namespaceId, serviceName, clusterId);
         retrMapping = mapNamespaceServiceCluster(client, mapping1);
         Assert.assertEquals(mapping1, retrMapping);
 
@@ -625,14 +624,14 @@ public class RestIntegrationTest {
         String serviceName2 = "HDFS";
         Long cluster2Id = 2L;
 
-        NamespaceServiceClusterMapping mapping2 = new NamespaceServiceClusterMapping(namespaceId, serviceName2, cluster2Id);
+        NamespaceServiceClusterMap mapping2 = new NamespaceServiceClusterMap(namespaceId, serviceName2, cluster2Id);
         retrMapping = mapNamespaceServiceCluster(client, mapping2);
         Assert.assertEquals(mapping2, retrMapping);
 
         // remove (used once so no extraction)
         String removeMappingUrl = rootUrl + "namespaces/" + namespaceId + "/mapping/" + serviceName + "/cluster/" + clusterId;
         response = client.target(removeMappingUrl).request().delete(String.class);
-        retrMapping = getEntity(response, NamespaceServiceClusterMapping.class);
+        retrMapping = getEntity(response, NamespaceServiceClusterMap.class);
         Assert.assertEquals(mapping1, retrMapping);
 
         entities = listMappingInNamespace(client, namespaceId);
@@ -642,14 +641,14 @@ public class RestIntegrationTest {
         String serviceName3 = "HBASE";
         Long cluster3Id = 2L;
 
-        NamespaceServiceClusterMapping mapping3 = new NamespaceServiceClusterMapping(namespaceId, serviceName3, cluster3Id);
+        NamespaceServiceClusterMap mapping3 = new NamespaceServiceClusterMap(namespaceId, serviceName3, cluster3Id);
         retrMapping = mapNamespaceServiceCluster(client, mapping3);
         Assert.assertEquals(mapping3, retrMapping);
 
         // remove all (used once so no extraction)
         String removeAllMappingsUrl = rootUrl + "namespaces/" + namespaceId + "/mapping";
         response = client.target(removeAllMappingsUrl).request().delete(String.class);
-        entities = getEntities(response, NamespaceServiceClusterMapping.class);
+        entities = getEntities(response, NamespaceServiceClusterMap.class);
         Assert.assertEquals(2, entities.size());
 
         entities = listMappingInNamespace(client, namespaceId);
@@ -660,17 +659,17 @@ public class RestIntegrationTest {
         client.target(removeNamespaceUrl).request().delete();
     }
 
-    private NamespaceServiceClusterMapping mapNamespaceServiceCluster(Client client, NamespaceServiceClusterMapping mapping) {
+    private NamespaceServiceClusterMap mapNamespaceServiceCluster(Client client, NamespaceServiceClusterMap mapping) {
         String mappingUrl = rootUrl + "namespaces/" + mapping.getNamespaceId() + "/mapping";
         String response = client.target(mappingUrl).request().post(Entity.entity(mapping, MediaType.APPLICATION_JSON_TYPE), String.class);
-        NamespaceServiceClusterMapping retrMapping = getEntity(response, NamespaceServiceClusterMapping.class);
+        NamespaceServiceClusterMap retrMapping = getEntity(response, NamespaceServiceClusterMap.class);
         return retrMapping;
     }
 
-    private List<NamespaceServiceClusterMapping> listMappingInNamespace(Client client, Long namespaceId) {
+    private List<NamespaceServiceClusterMap> listMappingInNamespace(Client client, Long namespaceId) {
         String mappingUrl = rootUrl + "namespaces/" + namespaceId + "/mapping";
         String response = client.target(mappingUrl).request().get(String.class);
-        return getEntities(response, NamespaceServiceClusterMapping.class);
+        return getEntities(response, NamespaceServiceClusterMap.class);
     }
 
     private Namespace storeTestNamespace(Client client, Long namespaceId, String namespaceName) {
@@ -732,10 +731,10 @@ public class RestIntegrationTest {
         String namespaceName = "nstest";
         storeTestNamespace(client, namespaceId, namespaceName);
 
-        NamespaceServiceClusterMapping mapping = new NamespaceServiceClusterMapping(namespaceId, "STORM", clusterId);
+        NamespaceServiceClusterMap mapping = new NamespaceServiceClusterMap(namespaceId, "STORM", clusterId);
         mapNamespaceServiceCluster(client, mapping);
 
-        NamespaceServiceClusterMapping mapping2 = new NamespaceServiceClusterMapping(namespaceId, "KAFKA", clusterId2);
+        NamespaceServiceClusterMap mapping2 = new NamespaceServiceClusterMap(namespaceId, "KAFKA", clusterId2);
         mapNamespaceServiceCluster(client, mapping2);
 
         String removeClusterUrl = rootUrl + "clusters/" + clusterId;

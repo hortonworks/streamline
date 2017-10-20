@@ -32,7 +32,7 @@ public class PostgresqlInsertQuery extends AbstractStorableSqlQuery {
         sql = "INSERT INTO \"" + tableName + "\" ("
                 + join(columnNames, ", ")
                 + ") VALUES( " + getBindVariables("?,", columnNames.size()) + ")";
-        log.debug(sql);
+        LOG.debug(sql);
     }
 
     @Override

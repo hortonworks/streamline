@@ -32,6 +32,6 @@ public class SqlDeleteQuery extends AbstractStorableKeyQuery {
     protected void setParameterizedSql() {
         sql = "DELETE FROM  " + tableName + " WHERE "
                 + join(getColumnNames(columns, "%s = ?"), " AND ");
-        log.debug(sql);
+        LOG.debug(sql);
     }
 }

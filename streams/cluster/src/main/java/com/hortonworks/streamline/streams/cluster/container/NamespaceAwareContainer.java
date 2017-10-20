@@ -18,7 +18,7 @@ package com.hortonworks.streamline.streams.cluster.container;
 import com.hortonworks.streamline.streams.catalog.Cluster;
 import com.hortonworks.streamline.streams.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.Namespace;
-import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMapping;
+import com.hortonworks.streamline.streams.catalog.NamespaceServiceClusterMap;
 import com.hortonworks.streamline.streams.catalog.Service;
 import com.hortonworks.streamline.streams.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
@@ -72,7 +72,7 @@ public abstract class NamespaceAwareContainer<T> {
     }
 
     protected Collection<Service> getServiceForNamespace(Namespace namespace, String serviceName) {
-        Collection<NamespaceServiceClusterMapping> serviceClusterMappings =
+        Collection<NamespaceServiceClusterMap> serviceClusterMappings =
                 environmentService.listServiceClusterMapping(namespace.getId(), serviceName);
         if (serviceClusterMappings == null) {
             throw new RuntimeException("Service name " + serviceName + " is not set in namespace " +
@@ -80,7 +80,7 @@ public abstract class NamespaceAwareContainer<T> {
         }
 
         Collection<Service> services = new ArrayList<>(serviceClusterMappings.size());
-        for (NamespaceServiceClusterMapping mapping : serviceClusterMappings) {
+        for (NamespaceServiceClusterMap mapping : serviceClusterMappings) {
             Long clusterId = mapping.getClusterId();
             Cluster cluster = environmentService.getCluster(clusterId);
             if (cluster == null) {

@@ -485,3 +485,11 @@ CREATE TABLE IF NOT EXISTS topology_test_run_histories (
   FOREIGN KEY (topologyId, versionId) REFERENCES topology(id, versionId),
   FOREIGN KEY (testCaseId) REFERENCES topology_test_run_case(id)
 );
+
+RENAME TABLE `widget_datasource_mapping` TO `widget_datasource_map`;
+RENAME TABLE `namespace_service_cluster_mapping` TO `namespace_service_cluster_map`;
+RENAME TABLE `tag_storable_mapping` TO `tag_storable_map`;
+RENAME TABLE `topology_source_stream_mapping` TO `topology_source_stream_map`;
+RENAME TABLE `topology_processor_stream_mapping` TO `topology_processor_stream_map`;
+
+ALTER TABLE `topology_component_bundle` CHANGE COLUMN `topologyComponentUISpecification` `topologyComponentUISpec` TEXT NOT NULL;

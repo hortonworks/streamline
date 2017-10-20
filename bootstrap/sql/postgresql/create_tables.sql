@@ -463,3 +463,26 @@ CREATE TABLE IF NOT EXISTS topology_test_run_histories (
   FOREIGN KEY ("topologyId", "versionId") REFERENCES topology("id", "versionId"),
   FOREIGN KEY ("testCaseId") REFERENCES topology_test_run_case("id")
 );
+
+
+ALTER TABLE "widget_datasource_mapping" DROP CONSTRAINT "widget_datasource_mapping_pkey";
+ALTER TABLE "namespace_service_cluster_mapping" DROP CONSTRAINT "namespace_service_cluster_mapping_pkey";
+ALTER TABLE "tag_storable_mapping" DROP CONSTRAINT "tag_storable_mapping_pkey";
+ALTER TABLE "topology_source_stream_mapping" DROP CONSTRAINT "topology_source_stream_mapping_pkey";
+ALTER TABLE "topology_processor_stream_mapping" DROP CONSTRAINT "topology_processor_stream_mapping_pkey";
+
+ALTER TABLE "widget_datasource_mapping" RENAME TO "widget_datasource_map";
+ALTER TABLE "namespace_service_cluster_mapping" RENAME TO "namespace_service_cluster_map";
+ALTER TABLE "tag_storable_mapping" RENAME TO "tag_storable_map";
+ALTER TABLE "topology_source_stream_mapping" RENAME TO "topology_source_stream_map";
+ALTER TABLE "topology_processor_stream_mapping" RENAME TO "topology_processor_stream_map";
+
+
+ALTER TABLE "widget_datasource_map" ADD PRIMARY KEY ("widgetId", "datasourceId");
+ALTER TABLE "namespace_service_cluster_map" ADD PRIMARY KEY ("namespaceId", "serviceName", "clusterId");
+ALTER TABLE "tag_storable_map" ADD PRIMARY KEY ("tagId", "storableNamespace", "storableId");
+ALTER TABLE "topology_source_stream_map" ADD PRIMARY KEY ("sourceId", "versionId", "streamId");
+ALTER TABLE "topology_processor_stream_map" ADD PRIMARY KEY ("processorId", "versionId", "streamId");
+
+
+ALTER TABLE "topology_component_bundle" RENAME COLUMN "topologyComponentUISpecification" TO "topologyComponentUISpec";

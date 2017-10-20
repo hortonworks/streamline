@@ -16,6 +16,7 @@
 
 package com.hortonworks.streamline.storage.impl.jdbc.util;
 
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.sql.Date;
 import java.sql.Time;
@@ -39,7 +40,7 @@ public class Util {
         throw new RuntimeException("Unknown sqlType " + sqlType);
     }
 
-    public static Class getJavaType(int sqlType) {
+    public static Class getJavaType(int sqlType, int precision) {
         switch (sqlType) {
             case Types.CHAR:
             case Types.VARCHAR:
@@ -48,7 +49,6 @@ public class Util {
                 return String.class;
             case Types.BINARY:
             case Types.VARBINARY:
-            case Types.LONGVARBINARY:
                 return byte[].class;
             case Types.BIT:
                 return Boolean.class;
@@ -70,6 +70,20 @@ public class Util {
                 return Time.class;
             case Types.TIMESTAMP:
                 return Timestamp.class;
+            case Types.BLOB:
+            case Types.LONGVARBINARY:
+                return InputStream.class;
+            case Types.NUMERIC:
+                switch (precision) {
+                    case 1:
+                        return Boolean.class;
+                    case 3:
+                        return Byte.class;
+                    case 10:
+                        return Integer.class;
+                    default:
+                        return Long.class;
+                }
             default:
                 throw new RuntimeException("We do not support tables with SqlType: " + getSqlTypeName(sqlType));
         }

@@ -26,24 +26,21 @@ import com.hortonworks.streamline.storage.exception.StorageException;
 import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.streamline.storage.impl.jdbc.connection.ConnectionBuilder;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlDeleteQuery;
-import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlInsertQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlQuery;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.query.SqlSelectQuery;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.statement.DefaultStorageDataTypeContext;
 import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.statement.PreparedStatementBuilder;
-import com.hortonworks.streamline.storage.impl.jdbc.util.Util;
+import com.hortonworks.streamline.storage.impl.jdbc.provider.sql.statement.StorageDataTypeContext;
+import com.hortonworks.streamline.storage.impl.jdbc.util.CaseAgnosticStringSet;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,25 +57,31 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
     protected final int queryTimeoutSecs;
     protected final ConnectionBuilder connectionBuilder;
     protected final List<Connection> activeConnections;
+    protected final StorageDataTypeContext storageDataTypeContext;
 
     private final Cache<SqlQuery, PreparedStatementBuilder> cache;
     private StorableFactory storableFactory;
 
     public AbstractQueryExecutor(ExecutionConfig config, ConnectionBuilder connectionBuilder) {
-        this(config, connectionBuilder, null);
+        this(config, connectionBuilder, null, new DefaultStorageDataTypeContext());
     }
 
     public AbstractQueryExecutor(ExecutionConfig config, ConnectionBuilder connectionBuilder, CacheBuilder<SqlQuery, PreparedStatementBuilder> cacheBuilder) {
+        this(config, connectionBuilder, cacheBuilder, new DefaultStorageDataTypeContext());
+    }
+
+    public AbstractQueryExecutor(ExecutionConfig config, ConnectionBuilder connectionBuilder, StorageDataTypeContext storageDataTypeContext) {
+        this(config, connectionBuilder, null, storageDataTypeContext);
+    }
+
+    public AbstractQueryExecutor(ExecutionConfig config, ConnectionBuilder connectionBuilder, CacheBuilder<SqlQuery, PreparedStatementBuilder> cacheBuilder, StorageDataTypeContext storageDataTypeContext) {
         this.connectionBuilder = connectionBuilder;
         this.config = config;
         cache = cacheBuilder != null ? buildCache(cacheBuilder) : null;
         this.queryTimeoutSecs = config.getQueryTimeoutSecs();
+        this.storageDataTypeContext = storageDataTypeContext;
         activeConnections = Collections.synchronizedList(new ArrayList<Connection>());
     }
-
-    public abstract void insert(Storable storable);
-
-    public abstract void insertOrUpdate(Storable storable);
 
     @Override
     public void delete(StorableKey storableKey) {
@@ -107,6 +110,22 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
         log.debug("Opened connection {}", connection);
         activeConnections.add(connection);
         return connection;
+    }
+
+    @Override
+    public CaseAgnosticStringSet getColumnNames(String namespace) throws SQLException {
+        CaseAgnosticStringSet columns = new CaseAgnosticStringSet();
+        try(Connection connection = getConnection()) {
+            final ResultSetMetaData rsMetadata = PreparedStatementBuilder.of(connection, new ExecutionConfig(queryTimeoutSecs), storageDataTypeContext,
+                    new SqlSelectQuery(namespace)).getMetaData();
+            for (int i = 1; i <= rsMetadata.getColumnCount(); i++) {
+                columns.add(rsMetadata.getColumnName(i));
+            }
+            return columns;
+        } catch (SQLException e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
     }
 
     public void closeConnection(Connection connection) {
@@ -264,7 +283,7 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
             } else {
                 connection = getConnection();
                 log.debug("sqlBuilder {}", sqlBuilder.toString());
-                preparedStatementBuilder = PreparedStatementBuilder.of(connection, config, sqlBuilder);
+                preparedStatementBuilder = PreparedStatementBuilder.of(connection, config, storageDataTypeContext, sqlBuilder);
             }
             return preparedStatementBuilder.getPreparedStatement(sqlBuilder);
         }
@@ -276,7 +295,7 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
                 preparedStatementBuilder = cache.get(sqlBuilder, new PreparedStatementBuilderCallable(sqlBuilder, true));
             } else {
                 connection = getConnection();
-                preparedStatementBuilder = PreparedStatementBuilder.supportReturnGeneratedKeys(connection, config, sqlBuilder);
+                preparedStatementBuilder = PreparedStatementBuilder.supportReturnGeneratedKeys(connection, config, storageDataTypeContext, sqlBuilder);
             }
             return preparedStatementBuilder.getPreparedStatement(sqlBuilder);
         }
@@ -304,9 +323,9 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
                 // opens a new connection which remains open for as long as this entry is in the cache
                 final PreparedStatementBuilder preparedStatementBuilder;
                 if (returnGeneratedKeys) {
-                    preparedStatementBuilder = PreparedStatementBuilder.supportReturnGeneratedKeys(getConnection(), config, sqlBuilder);
+                    preparedStatementBuilder = PreparedStatementBuilder.supportReturnGeneratedKeys(getConnection(), config, storageDataTypeContext, sqlBuilder);
                 } else {
-                    preparedStatementBuilder = PreparedStatementBuilder.of(getConnection(), config, sqlBuilder);
+                    preparedStatementBuilder = PreparedStatementBuilder.of(getConnection(), config, storageDataTypeContext, sqlBuilder);
                 }
                 log.debug("Loading cache with [key: {}, val: {}]", sqlBuilder, preparedStatementBuilder);
                 return preparedStatementBuilder;
@@ -339,7 +358,7 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
                     maps = new LinkedList<>();
                     ResultSetMetaData rsMetadata = resultSet.getMetaData();
                     do {
-                        Map<String, Object> map = newMapWithRowContents(resultSet, rsMetadata);
+                        Map<String, Object> map = storageDataTypeContext.getMapWithRowContents(resultSet, rsMetadata);
                         maps.add(map);
                     } while(resultSet.next());
                 }
@@ -351,47 +370,6 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
 
         private <T extends Storable> T newStorableInstance(String nameSpace) {
             return (T) storableFactory.create(nameSpace);
-        }
-
-        private Map<String, Object> newMapWithRowContents(ResultSet resultSet, ResultSetMetaData rsMetadata) throws SQLException {
-            final Map<String, Object> map = new HashMap<>();
-            final int columnCount = rsMetadata.getColumnCount();
-
-            for (int i = 1 ; i <= columnCount; i++) {
-                final String columnLabel = rsMetadata.getColumnLabel(i);
-                final int columnType = rsMetadata.getColumnType(i);
-                final Class columnJavaType = Util.getJavaType(columnType);
-
-                if (columnJavaType.equals(String.class)) {
-                    map.put(columnLabel, resultSet.getString(columnLabel));
-                } else if (columnJavaType.equals(Integer.class)) {
-                    map.put(columnLabel, resultSet.getInt(columnLabel));
-                } else if (columnJavaType.equals(Double.class)) {
-                    map.put(columnLabel, resultSet.getDouble(columnLabel));
-                } else if (columnJavaType.equals(Float.class)) {
-                    map.put(columnLabel, resultSet.getFloat(columnLabel));
-                } else if (columnJavaType.equals(Short.class)) {
-                    map.put(columnLabel, resultSet.getShort(columnLabel));
-                } else if (columnJavaType.equals(Boolean.class)) {
-                    map.put(columnLabel, resultSet.getBoolean(columnLabel));
-                } else if (columnJavaType.equals(byte[].class)) {
-                    map.put(columnLabel, resultSet.getBytes(columnLabel));
-                } else if (columnJavaType.equals(Long.class)) {
-                    map.put(columnLabel, resultSet.getLong(columnLabel));
-                } else if (columnJavaType.equals(Date.class)) {
-                    map.put(columnLabel, resultSet.getDate(columnLabel));
-                } else if (columnJavaType.equals(Time.class)) {
-                    map.put(columnLabel, resultSet.getTime(columnLabel));
-                } else if (columnJavaType.equals(Timestamp.class)) {
-                    map.put(columnLabel, resultSet.getTimestamp(columnLabel));
-                } else {
-                    throw new StorageException("type =  [" + columnType + "] for column [" + columnLabel + "] not supported.");
-                }
-            }
-            if (log.isDebugEnabled()) {
-                log.debug("Row for ResultSet [{}] with metadata [{}] generated Map [{}]", resultSet, rsMetadata, map);
-            }
-            return map;
         }
     }
 
