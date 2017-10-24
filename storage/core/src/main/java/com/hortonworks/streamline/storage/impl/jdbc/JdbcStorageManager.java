@@ -24,6 +24,7 @@ import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableFactory;
 import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.storage.TransactionalStorageManager;
 import com.hortonworks.streamline.storage.exception.AlreadyExistsException;
 import com.hortonworks.streamline.storage.exception.ConcurrentUpdateException;
 import com.hortonworks.streamline.storage.exception.IllegalQueryParameterException;
@@ -35,6 +36,7 @@ import com.hortonworks.streamline.storage.impl.jdbc.util.CaseAgnosticStringSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,7 +44,7 @@ import java.util.List;
 import java.util.Map;
 
 //Use unique constraints on respective columns of a table for handling concurrent inserts etc.
-public class JdbcStorageManager implements StorageManager {
+public class JdbcStorageManager implements TransactionalStorageManager {
     private static final Logger log = LoggerFactory.getLogger(StorageManager.class);
     public static final String DB_TYPE = "db.type";
 
@@ -222,4 +224,18 @@ public class JdbcStorageManager implements StorageManager {
         this.queryExecutor.setStorableFactory(storableFactory);
     }
 
+    @Override
+    public void beginTransaction() throws StorageException {
+        queryExecutor.beginTransaction();
+    }
+
+    @Override
+    public void rollbackTransaction() throws StorageException {
+        queryExecutor.rollbackTransaction();
+    }
+
+    @Override
+    public void commitTransaction() throws StorageException {
+        queryExecutor.commitTransaction();
+    }
 }

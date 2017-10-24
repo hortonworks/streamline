@@ -22,6 +22,7 @@ import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.storage.StorableFactory;
 import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.storage.exception.NonIncrementalColumnException;
+import com.hortonworks.streamline.storage.exception.StorageException;
 import com.hortonworks.streamline.storage.impl.jdbc.config.ExecutionConfig;
 import com.hortonworks.streamline.storage.impl.jdbc.util.CaseAgnosticStringSet;
 import org.slf4j.Logger;
@@ -96,4 +97,21 @@ public interface QueryExecutor {
      *  @return returns set of column names for a given table
      */
     CaseAgnosticStringSet getColumnNames(String namespace) throws SQLException;
+
+    /**
+     *  Begins the transaction
+     */
+    void beginTransaction() throws StorageException;
+
+
+    /**
+     *  Discards the changes made to the storage layer and reverts to the last committed point
+     */
+    void rollbackTransaction() throws StorageException;
+
+
+    /**
+     *  Flushes the changes made to the storage layer
+     */
+    void commitTransaction() throws StorageException;
 }

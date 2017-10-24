@@ -22,6 +22,7 @@ import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.exception.ComponentConfigException;
 import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.storage.impl.jdbc.transaction.TransactionManager;
 import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
 import com.hortonworks.streamline.streams.cluster.catalog.Component;
 import com.hortonworks.streamline.streams.cluster.catalog.ComponentProcess;
@@ -67,9 +68,9 @@ public class EnvironmentService {
     private final List<ContainingNamespaceAwareContainer> containers;
     private final ObjectMapper objectMapper;
 
-    public EnvironmentService(StorageManager dao) {
-        this.dao = dao;
-        this.clusterImporter = new ClusterImporter(this);
+    public EnvironmentService(TransactionManager transactionManager) {
+        this.dao = transactionManager.getStorageManager();
+        this.clusterImporter = new ClusterImporter(this, transactionManager);
         this.containers = new ArrayList<>();
         this.objectMapper = new ObjectMapper();
     }

@@ -25,6 +25,8 @@ import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
 import com.hortonworks.streamline.registries.tag.client.TagClient;
 import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.storage.StorageManagerAware;
+import com.hortonworks.streamline.storage.TransactionManagerAware;
+import com.hortonworks.streamline.storage.impl.jdbc.transaction.TransactionManager;
 import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
 import com.hortonworks.streamline.streams.catalog.TopologyVersion;
 import com.hortonworks.streamline.streams.catalog.service.CatalogService;
@@ -56,10 +58,11 @@ import javax.security.auth.Subject;
 /**
  * Implementation for the streams module for registration with web service module
  */
-public class StreamsModule implements ModuleRegistration, StorageManagerAware {
+public class StreamsModule implements ModuleRegistration, StorageManagerAware, TransactionManagerAware {
     private FileStorage fileStorage;
     private Map<String, Object> config;
     private StorageManager storageManager;
+    private TransactionManager transactionManager;
 
     @Override
     public void init(Map<String, Object> config, FileStorage fileStorage) {
@@ -74,7 +77,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         final Subject subject = (Subject) config.get(Constants.CONFIG_SUBJECT);  // Authorized subject
         MLModelRegistryClient modelRegistryClient = new MLModelRegistryClient(catalogRootUrl, subject);
         final StreamCatalogService streamcatalogService = new StreamCatalogService(storageManager, fileStorage, modelRegistryClient);
-        final EnvironmentService environmentService = new EnvironmentService(storageManager);
+        final EnvironmentService environmentService = new EnvironmentService(transactionManager);
         TagClient tagClient = new TagClient(catalogRootUrl);
         final CatalogService catalogService = new CatalogService(storageManager, fileStorage, tagClient);
         final TopologyActionsService topologyActionsService = new TopologyActionsService(streamcatalogService,
@@ -133,7 +136,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
                                                      SecurityCatalogService securityCatalogService,
                                                      Subject subject) {
         return Arrays.asList(
-                new TopologyCatalogResource(authorizer, streamcatalogService, environmentService, actionsService, metricsService),
+                new TopologyCatalogResource(authorizer, streamcatalogService, environmentService, actionsService, metricsService, transactionManager),
                 new TopologyComponentBundleResource(authorizer, streamcatalogService, environmentService, subject),
                 new TopologyStreamCatalogResource(authorizer, streamcatalogService),
                 new TopologyEditorMetadataResource(authorizer, streamcatalogService),
@@ -200,7 +203,14 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
     }
 
     private void setupPlaceholderEntities(StreamCatalogService catalogService) {
-        setupPlaceholderTopologyVersionInfo(catalogService);
+        try {
+            transactionManager.beginTransaction();
+            setupPlaceholderTopologyVersionInfo(catalogService);
+            transactionManager.commitTransaction();
+        } catch (Exception e) {
+            transactionManager.rollbackTransaction();
+            throw e;
+        }
     }
 
     private void setupPlaceholderTopologyVersionInfo(StreamCatalogService catalogService) {
@@ -216,4 +226,8 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware {
         }
     }
 
+    @Override
+    public void setTransactionManager(TransactionManager transactionManager) {
+        this.transactionManager = transactionManager;
+    }
 }

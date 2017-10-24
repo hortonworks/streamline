@@ -129,4 +129,8 @@ public class CacheBackedStorageManager implements StorageManager {
     public void registerStorables(Collection<Class<? extends Storable>> classes) throws StorageException {
         dao.registerStorables(classes);
     }
+
+    public StorageManager getStorageManager() {
+        return dao;
+    }
 }
