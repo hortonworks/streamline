@@ -38,6 +38,7 @@ import com.hortonworks.streamline.streams.layout.component.rule.expression.Windo
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -127,10 +128,11 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
             int windowedRulesProcessorId = 0;
             // create windowed bolt per unique window configuration
             for (Map.Entry<Window, Collection<Rule>> entry : windowedRules.asMap().entrySet()) {
-                RulesProcessor windowedRulesProcessor = new RulesProcessor(rulesProcessor);
+                RulesProcessor windowedRulesProcessor = copyRulesProcessor(rulesProcessor);
+                windowedRulesProcessorId++;
                 windowedRulesProcessor.setRules(new ArrayList<>(entry.getValue()));
-                windowedRulesProcessor.setId(rulesProcessor.getId() + "." + ++windowedRulesProcessorId);
-                windowedRulesProcessor.setName("WindowedRulesProcessor");
+                windowedRulesProcessor.setId(rulesProcessor.getId() + "." + windowedRulesProcessorId);
+                windowedRulesProcessor.setName(rulesProcessor.getName() + "$$windowed-" + windowedRulesProcessorId);
                 windowedRulesProcessor.getConfig().setAny(RulesProcessor.CONFIG_KEY_RULES, Collections2.transform(entry.getValue(), new Function<Rule, Long>() {
                     @Override
                     public Long apply(Rule input) {
@@ -159,6 +161,23 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
             keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
                     getYamlComponents(fluxComponentFactory.getFluxComponent(rulesProcessor), rulesProcessor)));
         }
+    }
+
+    private RulesProcessor copyRulesProcessor(RulesProcessor rulesProcessor) {
+        // It may be derived class of RulesProcessor, so we should create the object for that class.
+        // It relies on copy constructor, assuming that we don't want to deal with Cloneable.
+        RulesProcessor windowedRulesProcessor;
+        try {
+            windowedRulesProcessor = rulesProcessor.getClass()
+                    .getDeclaredConstructor(new Class[]{rulesProcessor.getClass()}).newInstance(rulesProcessor);
+        } catch (NoSuchMethodException e) {
+            // copy constructor not provided...
+            // failing back to initialize RulesProcessor. not guaranteed to work for all derived classes.
+            windowedRulesProcessor = new RulesProcessor(rulesProcessor);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+        return windowedRulesProcessor;
     }
 
     private void mayBeUpdateTopologyConfig(Window window) {

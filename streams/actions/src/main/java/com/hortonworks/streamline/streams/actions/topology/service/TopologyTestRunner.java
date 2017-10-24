@@ -34,6 +34,7 @@ import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.JoinProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunProcessor;
+import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunRulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
 import org.apache.commons.lang.StringUtils;
@@ -91,8 +92,13 @@ public class TopologyTestRunner {
                 .collect(toList());
 
         List<StreamlineProcessor> processors = topology.getTopologyDag().getOutputComponents().stream()
-                .filter(c -> c instanceof StreamlineProcessor)
+                .filter(c -> c instanceof StreamlineProcessor && !(c instanceof RulesProcessor))
                 .map(c -> (StreamlineProcessor) c)
+                .collect(toList());
+
+        List<RulesProcessor> rulesProcessors = topology.getTopologyDag().getOutputComponents().stream()
+                .filter(c -> c instanceof RulesProcessor)
+                .map(c -> (RulesProcessor) c)
                 .collect(toList());
 
         // load test case sources for all sources
@@ -139,15 +145,7 @@ public class TopologyTestRunner {
 
         Map<String, TestRunProcessor> testRunProcessorMap = processors.stream()
                 .collect(toMap(s -> s.getName(), s -> {
-                    // currently only RulesProcessor and successors are candidates for windowing
-                    if (s instanceof RulesProcessor) {
-                        RulesProcessor rulesProcessor = (RulesProcessor) s;
-
-                        boolean windowed = rulesProcessor.getRules().stream().anyMatch(r -> r.getWindow() != null);
-                        TestRunProcessor testRunProcessor = new TestRunProcessor(s, windowed, eventLogFilePath);
-                        testRunProcessor.setName(s.getName());
-                        return testRunProcessor;
-                    } else if (s instanceof JoinProcessor) {
+                    if (s instanceof JoinProcessor) {
                         TestRunProcessor testRunProcessor = new TestRunProcessor(s, true, eventLogFilePath);
                         testRunProcessor.setName(s.getName());
                         return testRunProcessor;
@@ -156,6 +154,13 @@ public class TopologyTestRunner {
                         testRunProcessor.setName(s.getName());
                         return testRunProcessor;
                     }
+                }));
+
+        Map<String, TestRunRulesProcessor> testRunRulesProcessorMap = rulesProcessors.stream()
+                .collect(toMap(s -> s.getName(), s -> {
+                    TestRunRulesProcessor testRunRulesProcessor = new TestRunRulesProcessor(s, eventLogFilePath);
+                    testRunRulesProcessor.setName(s.getName());
+                    return testRunRulesProcessor;
                 }));
 
         // just create event file before running actual test run process
@@ -167,8 +172,8 @@ public class TopologyTestRunner {
 
         Optional<Long> finalDurationSecs = Optional.ofNullable(durationSecs);
         ParallelStreamUtil.runAsync(() -> runTestInBackground(topologyActions, topology, history,
-                testRunSourceMap, testRunProcessorMap, testRunSinkMap, expectedOutputRecordsMap,
-                finalDurationSecs), forkJoinPool);
+                testRunSourceMap, testRunProcessorMap, testRunRulesProcessorMap, testRunSinkMap,
+                expectedOutputRecordsMap, finalDurationSecs), forkJoinPool);
 
         return history;
     }
@@ -196,6 +201,7 @@ public class TopologyTestRunner {
                                      TopologyTestRunHistory history,
                                      Map<String, TestRunSource> testRunSourceMap,
                                      Map<String, TestRunProcessor> testRunProcessorMap,
+                                     Map<String, TestRunRulesProcessor> testRunRulesProcessorMap,
                                      Map<String, TestRunSink> testRunSinkMap,
                                      Map<String, List<Map<String, Object>>> expectedOutputRecordsMap,
                                      Optional<Long> durationSecs) throws IOException {
@@ -205,7 +211,7 @@ public class TopologyTestRunner {
             String mavenArtifacts = topologyActionsService.setUpExtraJars(topology, topologyActions);
 
             topologyActions.runTest(topologyLayout, history, mavenArtifacts, testRunSourceMap, testRunProcessorMap,
-                    testRunSinkMap, durationSecs);
+                    testRunRulesProcessorMap, testRunSinkMap, durationSecs);
 
             history.finishSuccessfully();
 
