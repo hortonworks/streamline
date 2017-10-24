@@ -19,7 +19,7 @@ package com.hortonworks.streamline.streams.catalog.rule;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
-import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.registries.common.QueryParam;
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.streams.catalog.TopologyRule;
 import com.hortonworks.streamline.streams.catalog.TopologyStream;

@@ -80,7 +80,7 @@ done
 # Get catalogRootUrl from configuration file
 #---------------------------------------------
 
-CONF_READER_MAIN_CLASS=com.hortonworks.streamline.storage.tool.StreamlinePropertiesReader
+CONF_READER_MAIN_CLASS=com.hortonworks.registries.storage.tool.PropertiesReader
 
 for file in "${bootstrap_dir}"/lib/*.jar;
 do

@@ -18,7 +18,7 @@ package com.hortonworks.streamline.streams.actions.topology.service;
 import com.google.common.base.Joiner;
 import com.hortonworks.streamline.common.ComponentTypes;
 import com.hortonworks.streamline.common.Config;
-import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.registries.common.QueryParam;
 import com.hortonworks.streamline.streams.catalog.UDF;
 import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;

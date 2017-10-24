@@ -17,7 +17,7 @@
 package com.hortonworks.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hortonworks.streamline.storage.annotation.StorableEntity;
+import com.hortonworks.registries.storage.annotation.StorableEntity;
 
 @StorableEntity
 public class TopologySink extends TopologyComponent {

@@ -17,8 +17,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.hortonworks.streamline</groupId>
+            <groupId>com.hortonworks.registries</groupId>
             <artifactId>cache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hortonworks.streamline</groupId>
+            <artifactId>common</artifactId>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

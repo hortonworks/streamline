@@ -21,10 +21,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.registries.common.Schema;
-import com.hortonworks.streamline.storage.annotation.StorableEntity;
-import com.hortonworks.streamline.storage.PrimaryKey;
-import com.hortonworks.streamline.storage.Storable;
-import com.hortonworks.streamline.storage.catalog.AbstractStorable;
+import com.hortonworks.registries.storage.annotation.StorableEntity;
+import com.hortonworks.registries.storage.PrimaryKey;
+import com.hortonworks.registries.storage.Storable;
+import com.hortonworks.registries.storage.catalog.AbstractStorable;
 
 import java.io.IOException;
 import java.util.ArrayList;

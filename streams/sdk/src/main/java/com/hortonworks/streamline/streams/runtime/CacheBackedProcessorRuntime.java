@@ -15,7 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.runtime;
 
-import com.hortonworks.streamline.cache.Cache;
+import com.hortonworks.registries.cache.Cache;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.exception.ProcessingException;
 

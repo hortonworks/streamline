@@ -15,28 +15,23 @@
  **/
 package com.hortonworks.streamline.streams.security;
 
+import com.hortonworks.registries.storage.Storable;
 import com.hortonworks.streamline.common.exception.service.exception.request.WebserviceAuthorizationException;
 import com.hortonworks.streamline.common.function.SupplierException;
-import com.hortonworks.streamline.storage.Storable;
 import com.hortonworks.streamline.streams.security.authentication.StreamlineSecurityContext;
-
-import org.apache.hadoop.hbase.security.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import javax.security.auth.Subject;
+import javax.ws.rs.core.SecurityContext;
 import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import javax.security.auth.Subject;
-import javax.ws.rs.core.SecurityContext;
 
 public final class SecurityUtil {
     private static final Logger LOG = LoggerFactory.getLogger(SecurityUtil.class);
@@ -159,19 +154,6 @@ public final class SecurityUtil {
         } else {
             LOG.debug("Executing action [{}] for subject [{}] with security context [{}] without Kerberos authentication",
                     action, securityContext, subject);
-            return action.get();
-        }
-    }
-
-    public static <T, E extends Exception> T execute(SupplierException<T, E> action, SecurityContext securityContext, User user)
-            throws E, PrivilegedActionException, IOException, InterruptedException {
-        if (user != null && isKerberosAuthenticated(securityContext)) {
-            LOG.debug("Executing action [{}] for user [{}] with security context [{}] using Kerberos authentication",
-                    action, securityContext, user);
-            return user.runAs((PrivilegedExceptionAction<T>) action::get);
-        } else {
-            LOG.debug("Executing action [{}] for user [{}] with security context [{}] without Kerberos authentication",
-                    action, securityContext, user);
             return action.get();
         }
     }

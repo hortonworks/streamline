@@ -20,19 +20,19 @@ package com.hortonworks.streamline.webservice;
 import com.google.common.cache.CacheBuilder;
 import com.hortonworks.registries.auth.Login;
 import com.hortonworks.registries.common.ServletFilterConfiguration;
-import com.hortonworks.streamline.cache.Cache;
+import com.hortonworks.registries.cache.Cache;
 import com.hortonworks.streamline.common.Constants;
 import com.hortonworks.streamline.common.ModuleRegistration;
 import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.common.util.ReflectionHelper;
-import com.hortonworks.streamline.storage.CacheBackedStorageManager;
-import com.hortonworks.streamline.storage.Storable;
-import com.hortonworks.streamline.storage.StorableKey;
-import com.hortonworks.streamline.storage.StorageManager;
-import com.hortonworks.streamline.storage.StorageManagerAware;
-import com.hortonworks.streamline.storage.cache.impl.GuavaCache;
-import com.hortonworks.streamline.storage.cache.writer.StorageWriteThrough;
-import com.hortonworks.streamline.storage.cache.writer.StorageWriter;
+import com.hortonworks.registries.storage.CacheBackedStorageManager;
+import com.hortonworks.registries.storage.Storable;
+import com.hortonworks.registries.storage.StorableKey;
+import com.hortonworks.registries.storage.StorageManager;
+import com.hortonworks.registries.storage.StorageManagerAware;
+import com.hortonworks.registries.storage.cache.impl.GuavaCache;
+import com.hortonworks.registries.storage.cache.writer.StorageWriteThrough;
+import com.hortonworks.registries.storage.cache.writer.StorageWriter;
 import com.hortonworks.streamline.common.exception.ConfigException;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import com.hortonworks.streamline.streams.security.authentication.StreamlineKerberosRequestFilter;
@@ -71,7 +71,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.hortonworks.streamline.storage.util.StorageUtils.getStreamlineEntities;
+import static com.hortonworks.registries.storage.util.StorageUtils.getStorableEntities;
 
 public class StreamlineApplication extends Application<StreamlineConfiguration> {
     private static final Logger LOG = LoggerFactory.getLogger(StreamlineApplication.class);
@@ -236,7 +236,7 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
     private void registerResources(StreamlineConfiguration configuration, Environment environment, Subject subject) throws ConfigException,
             ClassNotFoundException, IllegalAccessException, InstantiationException {
         StorageManager storageManager = getCacheBackedDao(configuration);
-        Collection<Class<? extends Storable>> streamlineEntities = getStreamlineEntities();
+        Collection<Class<? extends Storable>> streamlineEntities = getStorableEntities();
         storageManager.registerStorables(streamlineEntities);
         LOG.info("Registered streamline entities {}", streamlineEntities);
         FileStorage fileStorage = this.getJarStorage(configuration, storageManager);
