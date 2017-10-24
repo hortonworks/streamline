@@ -223,12 +223,17 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
     @Override
     public void beginTransaction() throws StorageException {
         try {
-            log.debug(" --- Begin transaction for thread id : {} --- ", Thread.currentThread().getId());
-            Connection connection = connectionBuilder.getConnection();
-            log.debug("Opened connection {}", connection);
-            activeConnections.add(connection);
-            connection.setAutoCommit(false);
-            transactionBookKeeper.addTransaction(Thread.currentThread().getId(), connection);
+            if (!transactionBookKeeper.hasActiveTransaction(Thread.currentThread().getId())) {
+                log.debug(" --- Begin transaction for thread id : {} --- ", Thread.currentThread().getId());
+                Connection connection = connectionBuilder.getConnection();
+                log.debug("Opened connection {}", connection);
+                activeConnections.add(connection);
+                connection.setAutoCommit(false);
+                transactionBookKeeper.addTransaction(Thread.currentThread().getId(), connection);
+            } else {
+                log.debug(" --- Reusing transaction for thread if : {} --- ", Thread.currentThread().getId());
+                transactionBookKeeper.incrementTransactionUse(Thread.currentThread().getId());
+            }
         } catch (SQLException e) {
             throw new StorageException("Failed to start transaction", e);
         }
@@ -260,9 +265,10 @@ public abstract class AbstractQueryExecutor implements QueryExecutor {
     }
 
     private void closeTransaction(Connection connection) throws SQLException {
-        transactionBookKeeper.removeTransaction(Thread.currentThread().getId());
-        connection.setAutoCommit(true);
-        closeConnection(connection);
+        if (transactionBookKeeper.removeTransaction(Thread.currentThread().getId())) {
+            connection.setAutoCommit(true);
+            closeConnection(connection);
+        }
     }
 
     protected class QueryExecution {

@@ -9,7 +9,7 @@ public class TransactionBookKeeper {
 
     private static final TransactionBookKeeper transactionBookKeeper = new TransactionBookKeeper();
 
-    protected final ConcurrentHashMap<Long, Connection> threadIdToConnectionMap = new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<Long, TransactionContext> threadIdToConnectionMap = new ConcurrentHashMap<>();
 
     private TransactionBookKeeper() {
 
@@ -20,19 +20,33 @@ public class TransactionBookKeeper {
     }
 
     public Connection getConnection(Long threadId) {
-        return threadIdToConnectionMap.get(threadId);
+        return threadIdToConnectionMap.get(threadId).getConnection();
     }
 
     public void addTransaction(Long threadId, Connection connection) {
         if (!threadIdToConnectionMap.containsKey(threadId)) {
-            threadIdToConnectionMap.put(threadId, connection);
-        } else
-            throw new TransactionException(String.format("A transaction is already associated with thread id : %s ", Long.toString(threadId)));
+            threadIdToConnectionMap.put(threadId, new TransactionContext(connection));
+        } else {
+            throw new TransactionException(String.format("A transaction is already associated with thread id : %s", Long.toString(threadId)));
+        }
     }
 
-    public void removeTransaction(Long threadId) {
+    public void incrementTransactionUse(Long threadId) {
+        TransactionContext transactionContext = threadIdToConnectionMap.get(threadId);
+        transactionContext.incrementNestedTransactionCount();
+        threadIdToConnectionMap.put(threadId, transactionContext);
+    }
+
+    public boolean removeTransaction(Long threadId) {
         if (threadIdToConnectionMap.containsKey(threadId)) {
-            threadIdToConnectionMap.remove(threadId);
+            TransactionContext transactionContext = threadIdToConnectionMap.get(threadId);
+            transactionContext.decrementNestedTransactionCount();
+            if (transactionContext.getNestedTransactionCount() == 0) {
+                threadIdToConnectionMap.remove(threadId);
+                return true;
+            } else
+                threadIdToConnectionMap.put(threadId, transactionContext);
+            return false;
         } else
             throw new TransactionException(String.format("No transaction is associated with thread id : %s", Long.toString(threadId)));
     }

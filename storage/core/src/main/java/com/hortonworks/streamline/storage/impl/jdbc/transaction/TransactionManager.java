@@ -4,6 +4,8 @@ import com.hortonworks.streamline.storage.CacheBackedStorageManager;
 import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.storage.TransactionalStorageManager;
 
+import java.util.function.Consumer;
+
 public class TransactionManager {
     private final StorageManager storageManager;
     private final boolean isStorageManagerTransactional;
@@ -35,5 +37,9 @@ public class TransactionManager {
     public void commitTransaction() {
         if (isStorageManagerTransactional)
             ((TransactionalStorageManager) storageManager).commitTransaction();
+    }
+
+    public StorageManager getStorageManager() {
+        return this.storageManager;
     }
 }

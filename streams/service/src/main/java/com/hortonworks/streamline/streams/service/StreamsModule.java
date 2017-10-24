@@ -77,7 +77,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware, T
         final Subject subject = (Subject) config.get(Constants.CONFIG_SUBJECT);  // Authorized subject
         MLModelRegistryClient modelRegistryClient = new MLModelRegistryClient(catalogRootUrl, subject);
         final StreamCatalogService streamcatalogService = new StreamCatalogService(storageManager, fileStorage, modelRegistryClient);
-        final EnvironmentService environmentService = new EnvironmentService(storageManager);
+        final EnvironmentService environmentService = new EnvironmentService(transactionManager);
         TagClient tagClient = new TagClient(catalogRootUrl);
         final CatalogService catalogService = new CatalogService(storageManager, fileStorage, tagClient);
         final TopologyActionsService topologyActionsService = new TopologyActionsService(streamcatalogService,
@@ -136,7 +136,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware, T
                                                      SecurityCatalogService securityCatalogService,
                                                      Subject subject) {
         return Arrays.asList(
-                new TopologyCatalogResource(authorizer, streamcatalogService, environmentService, actionsService, metricsService),
+                new TopologyCatalogResource(authorizer, streamcatalogService, environmentService, actionsService, metricsService, transactionManager),
                 new TopologyComponentBundleResource(authorizer, streamcatalogService, environmentService, subject),
                 new TopologyStreamCatalogResource(authorizer, streamcatalogService),
                 new TopologyEditorMetadataResource(authorizer, streamcatalogService),
