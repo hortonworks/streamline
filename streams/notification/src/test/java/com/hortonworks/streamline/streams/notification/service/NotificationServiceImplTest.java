@@ -17,7 +17,7 @@
 
 package com.hortonworks.streamline.streams.notification.service;
 
-import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.registries.common.QueryParam;
 import com.hortonworks.streamline.common.util.ProxyUtil;
 import com.hortonworks.streamline.streams.notification.Notification;
 import com.hortonworks.streamline.streams.notification.NotificationContext;

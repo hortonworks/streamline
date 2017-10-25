@@ -151,9 +151,9 @@ public class MetricsResource {
         Topology topology = catalogService.getTopology(id);
         if (topology != null) {
             List<TopologyComponent> topologyComponents = new ArrayList<>();
-            List<com.hortonworks.streamline.common.QueryParam> queryParams = new ArrayList<>();
-            queryParams.add(new com.hortonworks.streamline.common.QueryParam("topologyId", String.valueOf(topology.getId())));
-            queryParams.add(new com.hortonworks.streamline.common.QueryParam("versionId", String.valueOf(topology.getVersionId())));
+            List<com.hortonworks.registries.common.QueryParam> queryParams = new ArrayList<>();
+            queryParams.add(new com.hortonworks.registries.common.QueryParam("topologyId", String.valueOf(topology.getId())));
+            queryParams.add(new com.hortonworks.registries.common.QueryParam("versionId", String.valueOf(topology.getVersionId())));
 
             topologyComponents.addAll(catalogService.listTopologySources(queryParams));
             topologyComponents.addAll(catalogService.listTopologyProcessors(queryParams));

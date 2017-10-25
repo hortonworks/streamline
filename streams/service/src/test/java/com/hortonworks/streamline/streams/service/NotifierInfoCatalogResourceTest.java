@@ -16,7 +16,7 @@
 package com.hortonworks.streamline.streams.service;
 
 import com.hortonworks.streamline.common.CollectionResponse;
-import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.registries.common.QueryParam;
 import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.streams.catalog.Notifier;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
@@ -41,9 +41,6 @@ import java.util.Arrays;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static org.junit.Assert.assertEquals;
 
-/**
- * Created by aiyer on 9/28/15.
- */
 @RunWith(JMockit.class)
 public class NotifierInfoCatalogResourceTest {
 

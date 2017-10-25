@@ -19,13 +19,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.registries.common.QueryParam;
 import com.hortonworks.streamline.registries.tag.Tag;
 import com.hortonworks.streamline.registries.tag.TagStorableMap;
 import com.hortonworks.streamline.registries.tag.TaggedEntity;
-import com.hortonworks.streamline.storage.StorableKey;
-import com.hortonworks.streamline.storage.StorageManager;
-import com.hortonworks.streamline.storage.util.StorageUtils;
+import com.hortonworks.registries.storage.StorableKey;
+import com.hortonworks.registries.storage.StorageManager;
+import com.hortonworks.registries.storage.util.StorageUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;

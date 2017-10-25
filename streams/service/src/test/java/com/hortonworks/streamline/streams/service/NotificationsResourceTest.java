@@ -17,7 +17,9 @@
 
 package com.hortonworks.streamline.streams.service;
 
-import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.registries.common.QueryParam;
+import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
+import com.hortonworks.streamline.streams.notification.service.NotificationService;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import com.hortonworks.streamline.streams.security.impl.NoopAuthorizer;
 import mockit.Expectations;
@@ -25,9 +27,6 @@ import mockit.Injectable;
 import mockit.Mocked;
 import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
-import com.hortonworks.streamline.common.QueryParam;
-import com.hortonworks.streamline.streams.notification.service.NotificationService;
-import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

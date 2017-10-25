@@ -18,7 +18,7 @@ package com.hortonworks.streamline.registries.dashboard.service;
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.registries.common.QueryParam;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.registries.dashboard.dto.WidgetDto;
