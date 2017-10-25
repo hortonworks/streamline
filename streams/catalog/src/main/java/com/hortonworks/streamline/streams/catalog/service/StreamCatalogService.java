@@ -27,13 +27,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.common.io.ByteStreams;
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.common.ComponentTypes;
 import com.hortonworks.streamline.common.ComponentUISpecification;
 import com.hortonworks.registries.common.QueryParam;
 import com.hortonworks.streamline.common.exception.ComponentConfigException;
 import com.hortonworks.registries.common.util.FileStorage;
+import com.hortonworks.streamline.common.util.FileUtil;
 import com.hortonworks.streamline.common.util.ProxyUtil;
 import com.hortonworks.streamline.common.util.Utils;
 import com.hortonworks.streamline.common.util.WSUtils;
@@ -89,16 +89,19 @@ import com.hortonworks.streamline.streams.rule.UDF4;
 import com.hortonworks.streamline.streams.rule.UDF5;
 import com.hortonworks.streamline.streams.rule.UDF6;
 import com.hortonworks.streamline.streams.rule.UDF7;
+import com.hortonworks.streamline.streams.runtime.CustomProcessorRuntime;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1000,7 +1003,7 @@ public class StreamCatalogService {
             }
         }
         Collection<TopologyComponentBundle> customProcessors = this.listTopologyComponentBundlesForTypeWithFilter(TopologyComponentBundle.TopologyComponentType
-                        .PROCESSOR, queryParamsForTopologyComponent);
+                .PROCESSOR, queryParamsForTopologyComponent);
         Collection<TopologyComponentBundle> result = new ArrayList<>();
         for (TopologyComponentBundle cp : customProcessors) {
             Map<String, Object> config = new HashMap<>();
@@ -1022,41 +1025,57 @@ public class StreamCatalogService {
     }
 
     public CustomProcessorInfo addCustomProcessorInfoAsBundle(CustomProcessorInfo customProcessorInfo, InputStream jarFile) throws IOException,
-            ComponentConfigException {
-        try {
-            uploadFileToStorage(jarFile, customProcessorInfo.getJarFileName());
-            TopologyComponentBundle topologyComponentBundle = customProcessorInfo.toTopologyComponentBundle();
-            this.addTopologyComponentBundle(topologyComponentBundle, null);
-        } catch (IOException e) {
-            LOG.error("IOException thrown while trying to upload jar for %s", customProcessorInfo.getName());
-            throw e;
-        } catch (StorageException se) {
-            LOG.error("StorageException thrown while adding custom processor info %s", customProcessorInfo.getName());
-            try {
-                deleteFileFromStorage(customProcessorInfo.getJarFileName());
-            } catch (IOException e) {
-                LOG.error("Unexpected exception thrown while cleaning up custom processor info %s", customProcessorInfo.getName());
-                throw e;
-            }
-            throw se;
+            ComponentConfigException, NoSuchAlgorithmException {
+        List<QueryParam> queryParams = new ArrayList<>();
+        queryParams.add(new QueryParam(CustomProcessorInfo.NAME, customProcessorInfo.getName()));
+        Collection<TopologyComponentBundle> result = this.listCustomProcessorBundlesWithFilter(queryParams);
+        if (!result.isEmpty()) {
+            throw new IOException("Custom processor already exists with name:" + customProcessorInfo.getName());
         }
+        this.handleCustomProcessorJar(jarFile, customProcessorInfo, true);
+        TopologyComponentBundle topologyComponentBundle = customProcessorInfo.toTopologyComponentBundle();
+        this.addTopologyComponentBundle(topologyComponentBundle, null);
         return customProcessorInfo;
     }
 
-    public CustomProcessorInfo updateCustomProcessorInfoAsBundle(CustomProcessorInfo customProcessorInfo, InputStream jarFile) throws
-            IOException, ComponentConfigException {
+    public CustomProcessorInfo updateCustomProcessorInfoAsBundle(CustomProcessorInfo customProcessorInfo, InputStream jarFile, boolean verify) throws
+            IOException, ComponentConfigException, NoSuchAlgorithmException {
         List<QueryParam> queryParams = new ArrayList<>();
         queryParams.add(new QueryParam(CustomProcessorInfo.NAME, customProcessorInfo.getName()));
         Collection<TopologyComponentBundle> result = this.listCustomProcessorBundlesWithFilter(queryParams);
         if (result.isEmpty() || result.size() != 1) {
             throw new IOException("Failed to update custom processor with name:" + customProcessorInfo.getName());
         }
-        TopologyComponentBundle customProcessorBundle = result.iterator().next();
-        deleteFileFromStorage(new CustomProcessorInfo().fromTopologyComponentBundle(customProcessorBundle).getJarFileName());
-        uploadFileToStorage(jarFile, customProcessorInfo.getJarFileName());
+        this.handleCustomProcessorJar(jarFile, customProcessorInfo, verify);
         TopologyComponentBundle newCustomProcessorBundle = customProcessorInfo.toTopologyComponentBundle();
-        this.addOrUpdateTopologyComponentBundle(customProcessorBundle.getId(), newCustomProcessorBundle, null);
+        this.addOrUpdateTopologyComponentBundle(result.iterator().next().getId(), newCustomProcessorBundle, null);
         return customProcessorInfo;
+    }
+
+    public Collection<CustomProcessorInfo> upgradeCustomProcessorsWithDigest () throws IOException, ComponentConfigException, NoSuchAlgorithmException {
+        Collection<CustomProcessorInfo> customProcessorInfos = this.listCustomProcessorsFromBundleWithFilter(new ArrayList<>());
+        if (customProcessorInfos.isEmpty()) {
+            // Most likely a fresh install or no CPs registered so far
+            LOG.info("No custom processors registered. No need to update with digest");
+            return customProcessorInfos;
+        } else {
+            Collection<CustomProcessorInfo> updatedCustomProcessorInfos = new ArrayList<>();
+            for (CustomProcessorInfo customProcessorInfo: customProcessorInfos) {
+                if (customProcessorInfo.getDigest() != null) {
+                    // if a digest is found that means its HDF-3.1.0.0 or higher and hence no upgrade needed
+                    LOG.info("Digest already present for custom processor {}. No need to upgrade.", customProcessorInfo.getName());
+                } else {
+                    LOG.info("Digest not present for custom processor {}", customProcessorInfo.getName());
+                    String oldJarToDelete = customProcessorInfo.getJarFileName();
+                    updateCustomProcessorInfoAsBundle(customProcessorInfo, downloadFileFromStorage(oldJarToDelete), false);
+                    deleteFileFromStorage(oldJarToDelete);
+                    LOG.info("Updated custom processor {} with digest {} and jarFileName {}", customProcessorInfo.getName(), customProcessorInfo.getDigest(),
+                            customProcessorInfo.getJarFileName());
+                    updatedCustomProcessorInfos.add(customProcessorInfo);
+                }
+            }
+            return updatedCustomProcessorInfos;
+        }
     }
 
     public String uploadFileToStorage(InputStream inputStream, String jarFileName) throws IOException {
@@ -1088,7 +1107,6 @@ public class StreamCatalogService {
             }
         }
         CustomProcessorInfo customProcessorInfo = new CustomProcessorInfo();
-        deleteFileFromStorage(customProcessorInfo.fromTopologyComponentBundle(customProcessorBundle).getJarFileName());
         this.removeTopologyComponentBundle(customProcessorBundle.getId());
         return customProcessorInfo;
     }
@@ -2918,6 +2936,45 @@ public class StreamCatalogService {
 
     public Collection<TopologyTestRunCaseSink> listTopologyTestRunCaseSink(List<QueryParam> queryParams) {
         return dao.find(TopologyTestRunCaseSink.NAMESPACE, queryParams);
+    }
+
+    private void handleCustomProcessorJar (InputStream jarFile, CustomProcessorInfo customProcessorInfo, boolean verify) throws NoSuchAlgorithmException,
+            IOException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        java.io.File tmpFile;
+        try (DigestInputStream dis = new DigestInputStream(jarFile, md)) {
+            tmpFile = FileUtil.writeInputStreamToTempFile(dis, ".jar");
+        }
+        customProcessorInfo.setDigest(Hex.encodeHexString(md.digest()));
+        LOG.debug("Digest: {}", customProcessorInfo.getDigest());
+        if (verify && !verifyCustomProcessorImplFromJar(tmpFile, customProcessorInfo)) {
+            String message = "Custom Processor jar file is missing customProcessorImpl class " + customProcessorInfo.getCustomProcessorImpl();
+            LOG.debug(message);
+            throw new RuntimeException(message);
+        }
+        Collection<CustomProcessorInfo> customProcessorInfos = this.listCustomProcessorsFromBundleWithFilter(Collections.singletonList(new QueryParam
+                (CustomProcessorInfo.DIGEST, customProcessorInfo.getDigest())));
+        if (!customProcessorInfos.isEmpty()) {
+            customProcessorInfo.setJarFileName(customProcessorInfos.iterator().next().getJarFileName());
+        } else {
+            customProcessorInfo.setJarFileName(String.format("custom-processor-%s.jar", UUID.randomUUID().toString()));
+            try (InputStream inputStream = new FileInputStream(tmpFile)) {
+                uploadFileToStorage(inputStream, customProcessorInfo.getJarFileName());
+            }
+        }
+    }
+
+    private boolean verifyCustomProcessorImplFromJar (java.io.File jarFile, CustomProcessorInfo customProcessorInfo) {
+        boolean result = false;
+        try {
+            Collection<String> impls = ProxyUtil.canonicalNames(ProxyUtil.loadAllClassesFromJar(jarFile, CustomProcessorRuntime.class));
+            if ((impls != null) && impls.contains(customProcessorInfo.getCustomProcessorImpl())) {
+                result = true;
+            }
+        } catch (IOException e) {
+            //swallow to return false
+        }
+        return result;
     }
 
 }

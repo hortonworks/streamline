@@ -15,6 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.catalog.processor;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.common.util.Utils;
@@ -40,6 +41,7 @@ public class CustomProcessorInfo {
     public static final String INPUT_SCHEMA = "inputSchema";
     public static final String OUTPUT_SCHEMA = "outputSchema";
     public static final String CUSTOM_PROCESSOR_IMPL = "customProcessorImpl";
+    public static final String DIGEST = "digest";
 
     private String streamingEngine;
     private String name;
@@ -49,6 +51,12 @@ public class CustomProcessorInfo {
     private Schema inputSchema;
     private Schema outputSchema;
     private String customProcessorImpl;
+    /**
+     * The jar file digest which can be used to de-dup jar files.
+     * If a newly submitted jar's digest matches with that of an already
+     * existing jar, we just use that jar file path rather than storing a copy.
+     */
+    private String digest;
 
     @Override
     public String toString() {
@@ -60,6 +68,7 @@ public class CustomProcessorInfo {
                 ", topologyComponentUISpecification='" + topologyComponentUISpecification+ '\'' +
                 ", inputSchema=" + inputSchema +
                 ", outputSchema=" + outputSchema +
+                ", digest=" + digest +
                 ", customProcessorImpl='" + customProcessorImpl + '\'' +
                 '}';
     }
@@ -80,6 +89,7 @@ public class CustomProcessorInfo {
             return false;
         if (inputSchema != null ? !inputSchema.equals(that.inputSchema) : that.inputSchema != null) return false;
         if (outputSchema != null ? !outputSchema.equals(that.outputSchema) : that.outputSchema != null) return false;
+        if (digest != null ? !digest.equals(that.digest) : that.digest != null) return false;
         return !(customProcessorImpl != null ? !customProcessorImpl.equals(that.customProcessorImpl) : that.customProcessorImpl != null);
 
     }
@@ -93,6 +103,7 @@ public class CustomProcessorInfo {
         result = 31 * result + (topologyComponentUISpecification != null ? topologyComponentUISpecification.hashCode() : 0);
         result = 31 * result + (inputSchema != null ? inputSchema.hashCode() : 0);
         result = 31 * result + (outputSchema != null ? outputSchema.hashCode() : 0);
+        result = 31 * result + (digest != null ? digest.hashCode() : 0);
         result = 31 * result + (customProcessorImpl != null ? customProcessorImpl.hashCode() : 0);
         return result;
     }
@@ -129,10 +140,12 @@ public class CustomProcessorInfo {
         this.description = description;
     }
 
+    @JsonIgnore
     public String getJarFileName() {
         return jarFileName;
     }
 
+    @JsonIgnore
     public void setJarFileName(String jarFileName) {
         this.jarFileName = jarFileName;
     }
@@ -161,6 +174,16 @@ public class CustomProcessorInfo {
         this.topologyComponentUISpecification = componentUISpecification;
     }
 
+    @JsonIgnore
+    public String getDigest() {
+        return digest;
+    }
+
+    @JsonIgnore
+    public void setDigest (String digest) {
+        this.digest = digest;
+    }
+
     public CustomProcessorInfo fromTopologyComponentBundle (TopologyComponentBundle topologyComponentBundle) throws IOException {
         if (topologyComponentBundle != null) {
             this.setStreamingEngine(topologyComponentBundle.getStreamingEngine());
@@ -174,6 +197,7 @@ public class CustomProcessorInfo {
             this.setInputSchema(Utils.getSchemaFromConfig(config.get(INPUT_SCHEMA)));
             this.setOutputSchema(Utils.getSchemaFromConfig(config.get(OUTPUT_SCHEMA)));
             this.setTopologyComponentUISpecification(getCustomProcessorUISpecification(componentUISpecification));
+            this.setDigest(config.get(DIGEST));
         }
         return this;
     }
@@ -205,6 +229,8 @@ public class CustomProcessorInfo {
                 .UIFieldType.STRING, objectMapper.writeValueAsString(this.inputSchema)));
         uiFields.add(this.createUIField(OUTPUT_SCHEMA, OUTPUT_SCHEMA, true, false, "Custom processor output schema",
                 ComponentUISpecification.UIFieldType.STRING, objectMapper.writeValueAsString(this.outputSchema)));
+        uiFields.add(this.createUIField(DIGEST, DIGEST, false, false, "MD5 digest of the jar file for this CP implementation",
+                ComponentUISpecification.UIFieldType.STRING, this.digest));
         ComponentUISpecification componentUISpecification = new ComponentUISpecification();
         componentUISpecification.setFields(uiFields);
         result.setTopologyComponentUISpecification(componentUISpecification);
@@ -257,6 +283,7 @@ public class CustomProcessorInfo {
         result.add(INPUT_SCHEMA);
         result.add(OUTPUT_SCHEMA);
         result.add(CUSTOM_PROCESSOR_IMPL);
+        result.add(DIGEST);
         return result;
     }
 

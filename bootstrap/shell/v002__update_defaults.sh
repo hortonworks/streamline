@@ -112,6 +112,13 @@ function put_service_bundle {
 
 }
 
+function update_custom_processors_with_digest {
+  echo "Running update script to update all custom processors with digests"
+  cp_upgrade_uri_suffix="/streams/componentbundles/PROCESSOR/custom/upgrade"
+  cmd="curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -sS -X PUT ${CATALOG_ROOT_URL}$cp_upgrade_uri_suffix -H 'Content-Type: application/json'"
+  run_cmd $cmd
+}
+
 #Below command to update storm version will be called by RE script. Need to remove later. Adding now for convenience
 update_storm_version_command="$bootstrap_dir/update-storm-version.sh 1.1.0.3.0.0.0-453"
 run_cmd $update_storm_version_command
@@ -258,6 +265,10 @@ function main {
 
     update_bundles
     add_udfs
+    #For HDf-3.0.x line we have don't store digest for custom processor jars.
+    #This can be removed once we reach a point where we dont have a user on
+    #HDF-3.0.x versions
+    update_custom_processors_with_digest
 }
 
 main
