@@ -35,6 +35,7 @@ import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.rule.Rule;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.Window;
+import com.hortonworks.streamline.streams.storm.common.StormTopologyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,7 +133,9 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
                 windowedRulesProcessorId++;
                 windowedRulesProcessor.setRules(new ArrayList<>(entry.getValue()));
                 windowedRulesProcessor.setId(rulesProcessor.getId() + "." + windowedRulesProcessorId);
-                windowedRulesProcessor.setName(rulesProcessor.getName() + "$$windowed-" + windowedRulesProcessorId);
+                String newComponentName = StormTopologyUtil.createComponentNameWithAuxPart(rulesProcessor.getName(),
+                        "windowed-" + windowedRulesProcessorId);
+                windowedRulesProcessor.setName(newComponentName);
                 windowedRulesProcessor.getConfig().setAny(RulesProcessor.CONFIG_KEY_RULES, Collections2.transform(entry.getValue(), new Function<Rule, Long>() {
                     @Override
                     public Long apply(Rule input) {

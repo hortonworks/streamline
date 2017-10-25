@@ -303,7 +303,7 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
     private void extractMetrics(Map<String, ComponentMetric> metricMap, List<Map<String, ?>> components, String topologyJsonID) {
         for (Map<String, ?> component : components) {
             String name = (String) component.get(topologyJsonID);
-            String componentId = getComponentIDInStreamline(name);
+            String componentId = StormTopologyUtil.extractStreamlineComponentId(name);
             ComponentMetric metric = extractMetric(name, component);
             metricMap.put(componentId, metric);
         }
@@ -315,7 +315,8 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
         Long failedRecords = getLongValueOrDefault(componentMap, STATS_JSON_FAILED_TUPLES, 0L);
         Double processedTime = getDoubleValueFromStringOrDefault(componentMap, STATS_JSON_PROCESS_LATENCY, 0.0d);
 
-        return new ComponentMetric(getComponentNameInStreamline(componentName), inputRecords, outputRecords, failedRecords, processedTime);
+        return new ComponentMetric(StormTopologyUtil.extractStreamlineComponentName(componentName), inputRecords,
+                outputRecords, failedRecords, processedTime);
     }
 
     private Long convertWindowString(String windowStr, Long uptime) {
@@ -349,16 +350,6 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
             }
         }
         return defaultValue;
-    }
-
-    private String getComponentIDInStreamline(String componentNameInStorm) {
-        // removes all starting from first '-'
-        return componentNameInStorm.substring(0, componentNameInStorm.indexOf('-'));
-    }
-
-    private String getComponentNameInStreamline(String componentNameInStorm) {
-        // removes (ID + '-')
-        return componentNameInStorm.substring(componentNameInStorm.indexOf('-') + 1);
     }
 
     private Map<String, ?> getTopologyInfo(String topologyId, String asUser) {
@@ -395,6 +386,7 @@ public class StormTopologyMetricsImpl implements TopologyMetrics {
     }
 
     private Map<String, ?> getComponentInfo(String topologyId, String componentId, String asUser) {
+        // FIXME: we still couldn't handle the case which contains auxiliary part on component name... how to handle?
         LOG.debug("[START] getComponentInfo - topology id: {}, component id: {}, asUser: {}", topologyId, componentId, asUser);
         Stopwatch stopwatch = Stopwatch.createStarted();
 
