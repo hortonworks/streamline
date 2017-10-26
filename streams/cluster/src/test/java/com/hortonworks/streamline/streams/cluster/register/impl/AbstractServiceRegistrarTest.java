@@ -17,6 +17,7 @@ package com.hortonworks.streamline.streams.cluster.register.impl;
 
 import com.hortonworks.registries.storage.StorageManager;
 import com.hortonworks.registries.storage.impl.memory.InMemoryStorageManager;
+import com.hortonworks.registries.storage.transaction.TransactionManager;
 import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 
@@ -34,6 +35,7 @@ public class AbstractServiceRegistrarTest<T extends AbstractServiceRegistrar> {
     }
 
     protected StorageManager dao;
+    protected TransactionManager transactionManager;
     protected EnvironmentService environmentService;
 
     protected Cluster getTestCluster(Long clusterId) {
@@ -45,7 +47,8 @@ public class AbstractServiceRegistrarTest<T extends AbstractServiceRegistrar> {
 
     protected void resetEnvironmentService() {
         dao = new InMemoryStorageManager();
-        environmentService = new EnvironmentService(dao);
+        transactionManager = new TransactionManager(dao);
+        environmentService = new EnvironmentService(transactionManager);
     }
 
     protected T initializeServiceRegistrar() {
