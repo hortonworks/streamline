@@ -26,6 +26,7 @@ import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
 import com.hortonworks.streamline.streams.layout.component.TopologyDag;
 import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunProcessor;
+import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunRulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
 import org.junit.Test;
@@ -54,7 +55,7 @@ public class TestTopologyDagCreatingVisitorTest {
         TestTopologyDagCreatingVisitor visitor =
                 new TestTopologyDagCreatingVisitor(originTopologyDag,
                         Collections.singletonMap(originSource.getName(), testSource),
-                        Collections.emptyMap(), Collections.emptyMap());
+                        Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap());
         visitor.visit(originSource);
 
         TopologyDag testTopologyDag = visitor.getTestTopologyDag();
@@ -79,7 +80,7 @@ public class TestTopologyDagCreatingVisitorTest {
 
         TestTopologyDagCreatingVisitor visitor =
                 new TestTopologyDagCreatingVisitor(originTopologyDag, Collections.emptyMap(), Collections.emptyMap(),
-                        Collections.emptyMap());
+                        Collections.emptyMap(), Collections.emptyMap());
 
         try {
             visitor.visit(originSource);
@@ -105,7 +106,8 @@ public class TestTopologyDagCreatingVisitorTest {
         TestTopologyDagCreatingVisitor visitor =
                 new TestTopologyDagCreatingVisitor(originTopologyDag,
                         Collections.singletonMap(originSource.getName(), testSource),
-                        Collections.emptyMap(), Collections.singletonMap(originSink.getName(), testSink));
+                        Collections.emptyMap(), Collections.emptyMap(),
+                        Collections.singletonMap(originSink.getName(), testSink));
 
         visitor.visit(originSource);
         visitor.visit(originSink);
@@ -150,6 +152,7 @@ public class TestTopologyDagCreatingVisitorTest {
                 new TestTopologyDagCreatingVisitor(originTopologyDag,
                         Collections.emptyMap(),
                         Collections.singletonMap(originProcessor.getName(), testProcessor),
+                        Collections.emptyMap(),
                         Collections.singletonMap(originSink.getName(), testSink));
 
         visitor.visit(originProcessor);
@@ -190,7 +193,7 @@ public class TestTopologyDagCreatingVisitorTest {
 
         TestTopologyDagCreatingVisitor visitor =
                 new TestTopologyDagCreatingVisitor(originTopologyDag, Collections.emptyMap(), Collections.emptyMap(),
-                        Collections.emptyMap());
+                        Collections.emptyMap(), Collections.emptyMap());
 
         try {
             visitor.visit(originSink);
@@ -217,7 +220,7 @@ public class TestTopologyDagCreatingVisitorTest {
                 new TestTopologyDagCreatingVisitor(originTopologyDag,
                         Collections.singletonMap(originSource.getName(), testSource),
                         Collections.singletonMap(originProcessor.getName(), testProcessor),
-                        Collections.emptyMap());
+                        Collections.emptyMap(), Collections.emptyMap());
 
         visitor.visit(originSource);
         visitor.visit(originProcessor);
@@ -260,7 +263,7 @@ public class TestTopologyDagCreatingVisitorTest {
 
         TestTopologyDagCreatingVisitor visitor =
                 new TestTopologyDagCreatingVisitor(originTopologyDag,
-                        Collections.emptyMap(), processorMap, Collections.emptyMap());
+                        Collections.emptyMap(), processorMap, Collections.emptyMap(), Collections.emptyMap());
 
         visitor.visit(originProcessor);
         visitor.visit(originProcessor2);
@@ -302,33 +305,34 @@ public class TestTopologyDagCreatingVisitorTest {
         originTopologyDag.addEdge(new Edge("e1", originSource, rulesProcessor, "default", Stream.Grouping.SHUFFLE));
 
         TestRunSource testSource = createTestRunSource(originSource);
-        TestRunProcessor testProcessor = createTestRunProcessor(rulesProcessor);
+        TestRunRulesProcessor testRulesProcessor = createTestRunRulesProcessor(rulesProcessor);
 
         TestTopologyDagCreatingVisitor visitor =
                 new TestTopologyDagCreatingVisitor(originTopologyDag,
                         Collections.singletonMap(originSource.getName(), testSource),
-                        Collections.singletonMap(rulesProcessor.getName(), testProcessor), Collections.emptyMap());
+                        Collections.emptyMap(),
+                        Collections.singletonMap(rulesProcessor.getName(), testRulesProcessor), Collections.emptyMap());
 
         visitor.visit(originSource);
         visitor.visit(rulesProcessor);
 
         TopologyDag testTopologyDag = visitor.getTestTopologyDag();
 
-        List<OutputComponent> testProcessors = testTopologyDag.getOutputComponents().stream()
-                .filter(o -> (o instanceof TestRunProcessor && o.getName().equals(rulesProcessor.getName())))
+        List<OutputComponent> testRulesProcessors = testTopologyDag.getOutputComponents().stream()
+                .filter(o -> (o instanceof TestRunRulesProcessor && o.getName().equals(rulesProcessor.getName())))
                 .collect(toList());
 
         List<OutputComponent> testSources = testTopologyDag.getOutputComponents().stream()
                 .filter(o -> (o instanceof TestRunSource && o.getName().equals(originSource.getName())))
                 .collect(toList());
 
-        TestRunProcessor testRunProcessor = (TestRunProcessor) testProcessors.get(0);
+        TestRunRulesProcessor testRunRulesProcessor = (TestRunRulesProcessor) testRulesProcessors.get(0);
         TestRunSource testRunSource = (TestRunSource) testSources.get(0);
 
         assertEquals(1, testTopologyDag.getEdgesFrom(testRunSource).size());
-        assertEquals(1, testTopologyDag.getEdgesTo(testRunProcessor).size());
+        assertEquals(1, testTopologyDag.getEdgesTo(testRunRulesProcessor).size());
 
-        assertTrue(testTopologyDag.getEdgesFrom(testRunSource).get(0) == testTopologyDag.getEdgesTo(testRunProcessor).get(0));
+        assertTrue(testTopologyDag.getEdgesFrom(testRunSource).get(0) == testTopologyDag.getEdgesTo(testRunRulesProcessor).get(0));
     }
 
     @Test
@@ -342,15 +346,12 @@ public class TestTopologyDagCreatingVisitorTest {
         originTopologyDag.addEdge(new Edge("e1", originProcessor, rulesProcessor, "default", Stream.Grouping.SHUFFLE));
 
         TestRunProcessor testProcessor = createTestRunProcessor(originProcessor);
-        TestRunProcessor testRulesProcessor = createTestRunProcessor(rulesProcessor);
-
-        Map<String, TestRunProcessor> processorMap = new HashMap<>();
-        processorMap.put(originProcessor.getName(), testProcessor);
-        processorMap.put(rulesProcessor.getName(), testRulesProcessor);
+        TestRunRulesProcessor testRulesProcessor = createTestRunRulesProcessor(rulesProcessor);
 
         TestTopologyDagCreatingVisitor visitor =
                 new TestTopologyDagCreatingVisitor(originTopologyDag,
-                        Collections.emptyMap(), processorMap, Collections.emptyMap());
+                        Collections.emptyMap(), Collections.singletonMap(originProcessor.getName(), testProcessor),
+                        Collections.singletonMap(rulesProcessor.getName(), testRulesProcessor), Collections.emptyMap());
 
         visitor.visit(originProcessor);
         visitor.visit(rulesProcessor);
@@ -361,11 +362,15 @@ public class TestTopologyDagCreatingVisitorTest {
                 .filter(o -> (o instanceof TestRunProcessor))
                 .collect(toList());
 
+        List<OutputComponent> testRulesProcessors = testTopologyDag.getOutputComponents().stream()
+                .filter(o -> (o instanceof TestRunRulesProcessor))
+                .collect(toList());
+
         Optional<OutputComponent> testRunProcessorOptional = testProcessors.stream()
                 .filter(o -> o.getName().equals(originProcessor.getName()))
                 .findAny();
 
-        Optional<OutputComponent> testRunRuleProcessorOptional = testProcessors.stream()
+        Optional<OutputComponent> testRunRuleProcessorOptional = testRulesProcessors.stream()
                 .filter(o -> o.getName().equals(rulesProcessor.getName()))
                 .findAny();
 
@@ -373,7 +378,7 @@ public class TestTopologyDagCreatingVisitorTest {
         assertTrue(testRunRuleProcessorOptional.isPresent());
 
         TestRunProcessor testRunProcessor = (TestRunProcessor) testRunProcessorOptional.get();
-        TestRunProcessor testRunRuleProcessor = (TestRunProcessor) testRunRuleProcessorOptional.get();
+        TestRunRulesProcessor testRunRuleProcessor = (TestRunRulesProcessor) testRunRuleProcessorOptional.get();
 
         assertEquals(1, testTopologyDag.getEdgesFrom(testRunProcessor).size());
         assertEquals(1, testTopologyDag.getEdgesTo(testRunRuleProcessor).size());
@@ -392,18 +397,15 @@ public class TestTopologyDagCreatingVisitorTest {
     }
 
     private TestRunProcessor createTestRunProcessor(StreamlineProcessor originProcessor) {
-        if (originProcessor instanceof RulesProcessor) {
-            RulesProcessor rulesProcessor = (RulesProcessor) originProcessor;
+        TestRunProcessor testRunProcessor = new TestRunProcessor(originProcessor, false, "");
+        testRunProcessor.setName(originProcessor.getName());
+        return testRunProcessor;
+    }
 
-            boolean windowed = rulesProcessor.getRules().stream().anyMatch(r -> r.getWindow() != null);
-            TestRunProcessor testRunProcessor = new TestRunProcessor(originProcessor, windowed, "");
-            testRunProcessor.setName(originProcessor.getName());
-            return testRunProcessor;
-        } else {
-            TestRunProcessor testRunProcessor = new TestRunProcessor(originProcessor, false, "");
-            testRunProcessor.setName(originProcessor.getName());
-            return testRunProcessor;
-        }
+    private TestRunRulesProcessor createTestRunRulesProcessor(RulesProcessor originProcessor) {
+        TestRunRulesProcessor testRunRulesProcessor = new TestRunRulesProcessor(originProcessor, "");
+        testRunRulesProcessor.setName(originProcessor.getName());
+        return testRunRulesProcessor;
     }
 
     private TestRunSink createTestRunSink(StreamlineSink originSink) {

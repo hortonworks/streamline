@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.actions;
 import com.hortonworks.streamline.streams.catalog.TopologyTestRunHistory;
 import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunProcessor;
+import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunRulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
 
@@ -43,6 +44,7 @@ public interface TopologyActions {
     void runTest(TopologyLayout topology, TopologyTestRunHistory testRunHistory, String mavenArtifacts,
                  Map<String, TestRunSource> testRunSourcesForEachSource,
                  Map<String, TestRunProcessor> testRunProcessorsForEachProcessor,
+                 Map<String, TestRunRulesProcessor> testRunRulesProcessorsForEachProcessor,
                  Map<String, TestRunSink> testRunSinksForEachSink, Optional<Long> durationSecs) throws Exception;
 
     // Kill topology running as test mode if exists.
