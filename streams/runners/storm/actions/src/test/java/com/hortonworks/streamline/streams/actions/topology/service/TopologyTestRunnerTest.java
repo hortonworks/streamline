@@ -34,6 +34,7 @@ import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
 import com.hortonworks.streamline.streams.layout.component.TopologyDag;
 import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunProcessor;
+import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunRulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
 import mockit.Delegate;
@@ -336,12 +337,13 @@ public class TopologyTestRunnerTest {
     private void setSucceedTopologyActionsExpectations() throws Exception {
         new Expectations() {{
             topologyActions.runTest(withInstanceOf(TopologyLayout.class), withInstanceOf(TopologyTestRunHistory.class),
-                    anyString, withInstanceOf(Map.class),
+                    anyString, withInstanceOf(Map.class), withInstanceOf(Map.class),
                     withInstanceOf(Map.class), withInstanceOf(Map.class), withInstanceOf(Optional.class));
             result = new Delegate<Object>() {
                 Object delegate(TopologyLayout topology, TopologyTestRunHistory testRunHistory, String mavenArtifacts,
                                 Map<String, TestRunSource> testRunSourcesForEachSource,
                                 Map<String, TestRunProcessor> testRunProcessorsForEachProcessor,
+                                Map<String, TestRunRulesProcessor> testRunRulesProcessorsForEachProcessor,
                                 Map<String, TestRunSink> testRunSinksForEachSink,
                                 Optional<Long> durationSecs) throws Exception {
                     Map<String, List<Map<String, Object>>> testOutputRecords =
@@ -370,7 +372,7 @@ public class TopologyTestRunnerTest {
     private void setTopologyActionsThrowingExceptionExpectations() throws Exception {
         new Expectations() {{
             topologyActions.runTest(withInstanceOf(TopologyLayout.class), withInstanceOf(TopologyTestRunHistory.class),
-                    anyString, withInstanceOf(Map.class),
+                    anyString, withInstanceOf(Map.class), withInstanceOf(Map.class),
                     withInstanceOf(Map.class), withInstanceOf(Map.class), withInstanceOf(Optional.class));
             result = new RuntimeException("Topology test run failed!");
         }};

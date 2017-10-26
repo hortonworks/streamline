@@ -36,6 +36,7 @@ import com.hortonworks.streamline.streams.layout.component.impl.HdfsSink;
 import com.hortonworks.streamline.streams.layout.component.impl.HdfsSource;
 import com.hortonworks.streamline.streams.layout.component.impl.HiveSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunProcessor;
+import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunRulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
 import com.hortonworks.streamline.streams.layout.storm.StormTopologyFluxGenerator;
@@ -269,11 +270,13 @@ public class StormTopologyActionsImpl implements TopologyActions {
     public void runTest(TopologyLayout topology, TopologyTestRunHistory testRunHistory, String mavenArtifacts,
                         Map<String, TestRunSource> testRunSourcesForEachSource,
                         Map<String, TestRunProcessor> testRunProcessorsForEachProcessor,
+                        Map<String, TestRunRulesProcessor> testRunRulesProcessorsForEachProcessor,
                         Map<String, TestRunSink> testRunSinksForEachSink, Optional<Long> durationSecs) throws Exception {
         TopologyDag originalTopologyDag = topology.getTopologyDag();
 
         TestTopologyDagCreatingVisitor visitor = new TestTopologyDagCreatingVisitor(originalTopologyDag,
-                testRunSourcesForEachSource, testRunProcessorsForEachProcessor, testRunSinksForEachSink);
+                testRunSourcesForEachSource, testRunProcessorsForEachProcessor, testRunRulesProcessorsForEachProcessor,
+                testRunSinksForEachSink);
         originalTopologyDag.traverse(visitor);
         TopologyDag testTopologyDag = visitor.getTestTopologyDag();
 

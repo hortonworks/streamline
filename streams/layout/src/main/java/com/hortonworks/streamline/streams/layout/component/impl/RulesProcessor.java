@@ -34,6 +34,7 @@ import java.util.Set;
 
 /**
  * Represents a design time rules processor.
+ * Note that derived classes should implement its copy constructor.
  */
 public class RulesProcessor extends StreamlineProcessor {     //TODO: Rename to RuleProcessor
     private static final Logger log = LoggerFactory.getLogger(RulesProcessor.class);

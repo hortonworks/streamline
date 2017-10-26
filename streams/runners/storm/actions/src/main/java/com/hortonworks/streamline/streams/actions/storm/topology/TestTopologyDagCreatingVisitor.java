@@ -26,9 +26,11 @@ import com.hortonworks.streamline.streams.layout.component.TopologyDag;
 import com.hortonworks.streamline.streams.layout.component.TopologyDagVisitor;
 import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunProcessor;
+import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunRulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
 import com.hortonworks.streamline.streams.layout.storm.TestRunProcessorBoltFluxComponent;
+import com.hortonworks.streamline.streams.layout.storm.TestRunRulesProcessorBoltFluxComponent;
 import com.hortonworks.streamline.streams.layout.storm.TestRunSinkBoltFluxComponent;
 import com.hortonworks.streamline.streams.layout.storm.TestRunSourceSpoutFluxComponent;
 
@@ -43,6 +45,7 @@ public class TestTopologyDagCreatingVisitor extends TopologyDagVisitor {
     private final Map<String, StreamlineSink> sinkToReplacedTestSinkMap;
     private final Map<String, TestRunSource> testRunSourcesForEachSource;
     private final Map<String, TestRunProcessor> testRunProcessorsForEachProcessor;
+    private final Map<String, TestRunRulesProcessor> testRunRulesProcessorsForEachProcessor;
     private final Map<String, TestRunSink> testRunSinksForEachSink;
     private final TopologyDag originTopologyDag;
 
@@ -51,10 +54,12 @@ public class TestTopologyDagCreatingVisitor extends TopologyDagVisitor {
     public TestTopologyDagCreatingVisitor(TopologyDag originTopologyDag,
                                           Map<String, TestRunSource> testRunSourcesForEachSource,
                                           Map<String, TestRunProcessor> testRunProcessorsForEachProcessor,
+                                          Map<String, TestRunRulesProcessor> testRunRulesProcessorsForEachProcessor,
                                           Map<String, TestRunSink> testRunSinksForEachSink) {
         this.originTopologyDag = originTopologyDag;
         this.testRunSourcesForEachSource = testRunSourcesForEachSource;
         this.testRunProcessorsForEachProcessor = testRunProcessorsForEachProcessor;
+        this.testRunRulesProcessorsForEachProcessor = testRunRulesProcessorsForEachProcessor;
         this.testRunSinksForEachSink = testRunSinksForEachSink;
 
         this.testTopologyDag = new TopologyDag();
@@ -65,7 +70,26 @@ public class TestTopologyDagCreatingVisitor extends TopologyDagVisitor {
 
     @Override
     public void visit(RulesProcessor rulesProcessor) {
-        visit((StreamlineProcessor) rulesProcessor);
+        String id = rulesProcessor.getId();
+        String processorName = rulesProcessor.getName();
+
+        if (!testRunRulesProcessorsForEachProcessor.containsKey(processorName)) {
+            throw new IllegalStateException("Not all processors have corresponding TestRunRulesProcessor instance. processor name: " + processorName);
+        }
+
+        Config config = new Config(rulesProcessor.getConfig());
+
+        TestRunRulesProcessor testRunRulesProcessor = testRunRulesProcessorsForEachProcessor.get(processorName);
+
+        testRunRulesProcessor.setId(id);
+        testRunRulesProcessor.setName(processorName);
+        testRunRulesProcessor.setConfig(config);
+        testRunRulesProcessor.setTransformationClass(TestRunRulesProcessorBoltFluxComponent.class.getName());
+
+        testTopologyDag.add(testRunRulesProcessor);
+        processorToReplacedTestProcessorMap.put(processorName, testRunRulesProcessor);
+
+        copyEdges(rulesProcessor);
     }
 
     @Override
