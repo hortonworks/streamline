@@ -16,8 +16,8 @@
 package com.hortonworks.streamline.storage.tool;
 
 public class StorageProviderConfiguration {
-    private static final String MYSQL_DELIMITER = ";";
-    private static final String POSTGRESQL_DELIMITER = ";";
+    private static final String MYSQL_DELIMITER = "#";
+    private static final String POSTGRESQL_DELIMITER = "#";
     private static final String MYSQL = "mysql";
     private static final String POSTGRESQL = "postgresql";
     private static final String ORACLE = "oracle";

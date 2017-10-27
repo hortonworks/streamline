@@ -48,8 +48,8 @@ storageProviderConfiguration:
    db.properties:
      dataSourceClassName: "oracle.jdbc.pool.OracleDataSource"
      dataSource.url: "jdbc:oracle:thin:@localhost:1521/orclpdb1.localdomain"
-     dataSource.user: "cat"
-     dataSource.password: "meow"
+     dataSource.user: "streamline_user"
+     dataSource.password: "streamline_password"
 
 # Truststore information which is needed for importing certificated Ambari cluster.
 # which default truststore doesn't cover the CA or self-certified.

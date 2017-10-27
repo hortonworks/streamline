@@ -1,13 +1,13 @@
-CREATE OR REPLACE PROCEDURE drop_if_exists( pv_type IN VARCHAR2, pv_table IN VARCHAR2 ) AS
+CREATE OR REPLACE PROCEDURE drop_if_exists( object_type IN VARCHAR2, object_name IN VARCHAR2 ) AS
 BEGIN
-   IF (pv_type='TABLE') THEN
-      EXECUTE IMMEDIATE 'DROP ' || pv_type || ' "' || pv_table || '" CASCADE CONSTRAINTS';
-   ELSIF (pv_type='SEQUENCE') THEN
-      EXECUTE IMMEDIATE 'DROP ' || pv_type || ' "' || pv_table || '"';
+   IF (object_type='TABLE') THEN
+      EXECUTE IMMEDIATE 'DROP ' || object_type || ' "' || object_name || '" CASCADE CONSTRAINTS';
+   ELSIF (object_type='SEQUENCE') THEN
+      EXECUTE IMMEDIATE 'DROP ' || object_type || ' "' || object_name || '"';
    END IF;
 EXCEPTION
    WHEN OTHERS THEN
-      IF (pv_type='TABLE' AND SQLCODE != -942) OR (pv_type='SEQUENCE' AND SQLCODE != -2289) THEN
+      IF (object_type='TABLE' AND SQLCODE != -942) OR (object_type='SEQUENCE' AND SQLCODE != -2289) THEN
          RAISE;
       END IF;
 END drop_if_exists;
