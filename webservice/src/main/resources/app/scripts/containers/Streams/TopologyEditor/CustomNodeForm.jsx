@@ -17,12 +17,16 @@ import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import Select from 'react-select';
+import {Table, Thead, Th, Tr, Td, unsafe} from 'reactable';
 import {Tabs, Tab, Radio, OverlayTrigger, Popover} from 'react-bootstrap';
+import {BtnDelete, BtnEdit} from '../../../components/ActionButtons';
 import FSReactToastr from '../../../components/FSReactToastr';
 import TopologyREST from '../../../rest/TopologyREST';
 import CustomProcessorREST from '../../../rest/CustomProcessorREST';
 import {Scrollbars} from 'react-custom-scrollbars';
 import ProcessorUtils from '../../../utils/ProcessorUtils';
+import Modal from '../../../components/FSModal';
+import AddOutputFieldsForm from './AddOutputFieldsForm';
 
 export default class CustomNodeForm extends Component {
   static propTypes = {
@@ -45,6 +49,7 @@ export default class CustomNodeForm extends Component {
     this.fetchData(id);
     this.fetchDataAgain = false;
     this.mappingObj = {};
+    this.idCount = 1;
     var obj = {
       editMode: editMode,
       showSchema: true,
@@ -53,8 +58,12 @@ export default class CustomNodeForm extends Component {
       showErrorLabel: false,
       outputKeys: [],
       fieldList: [],
-      showLoading:true
+      showLoading:true,
+      newOpFields: [],
+      fieldId: null,
+      modalTitle: 'Add New Output Field'
     };
+    this.modalContent = () => {};
 
     this.customConfig.map((o) => {
       if (o.type === "boolean"){
@@ -102,7 +111,8 @@ export default class CustomNodeForm extends Component {
           imageFileName: imageFileName,
           jarFileName: jarFileName,
           inputSchema: inputSchema,
-          outputSchema: outputSchema
+          outputSchema: outputSchema,
+          hasOutputSchema: !!outputSchema
         };
 
         if(this.context.ParentForm.state.inputStreamOptions.length){
@@ -151,9 +161,17 @@ export default class CustomNodeForm extends Component {
     }
 
     keysList = JSON.parse(JSON.stringify(keysList));
+    stateObj.outputKeys = this.streamObj.fields ? JSON.parse(JSON.stringify(this.streamObj.fields)) : [];
 
-    Array.prototype.push.apply(keysList.fields,this.state.outputSchema.fields);
-    stateObj.outputKeys = this.streamObj.fields;
+    if(this.state.outputSchema){
+      Array.prototype.push.apply(keysList.fields, this.state.outputSchema.fields);
+    } else {
+      stateObj.newOpFields = _.remove(stateObj.outputKeys, function(obj){ return !_.find(keysList.fields, obj); });
+      stateObj.newOpFields.map((field)=>{
+        field.id = this.idCount++;
+      });
+    }
+
     stateObj.fieldList = _.unionBy(keysList.fields,'name');
     stateObj.showLoading = false;
     this.setState(stateObj);
@@ -261,9 +279,11 @@ export default class CustomNodeForm extends Component {
       [this.nodeData.outputStreams[0].streamId]: {fields: streamFields}
     };
 
-    this.nodeData.config.properties.inputSchemaMap = {
-      [this.inputStream.streamId]: this.mappingObj
-    };
+    if(this.state.inputSchema){
+      this.nodeData.config.properties.inputSchemaMap = {
+        [this.inputStream.streamId]: this.mappingObj
+      };
+    }
 
     return TopologyREST.updateNode(topologyId, versionId, nodeType, nodeId, {
       body: JSON.stringify(this.nodeData)
@@ -271,15 +291,20 @@ export default class CustomNodeForm extends Component {
   }
 
   handleOutputKeysChange(arr){
+    let fields = [];
     if(arr.length){
-      this.setState({outputKeys : arr});
-      this.streamObj.fields = arr;
-      this.context.ParentForm.setState({outputStreamObj: this.streamObj});
-    } else {
-      this.setState({outputKeys : []});
-      this.streamObj.fields = [];
-      this.context.ParentForm.setState({outputStreamObj: this.streamObj});
+      fields = arr;
     }
+    this.setState({outputKeys : fields});
+
+    if(this.state.newOpFields.length){
+      let tempFieldsArr = JSON.parse(JSON.stringify(fields));
+      Array.prototype.push.apply(tempFieldsArr, this.state.newOpFields);
+      this.streamObj.fields = tempFieldsArr;
+    } else {
+      this.streamObj.fields = fields;
+    }
+    this.context.ParentForm.setState({outputStreamObj: this.streamObj});
   }
 
   getMappingOptions(fieldObj) {
@@ -295,8 +320,75 @@ export default class CustomNodeForm extends Component {
   }
 
   handleMappingChange(obj, value){
-    this.mappingObj[obj.name] = value.name;
+    this.mappingObj[obj.name] = value ? value.name : '';
     this.forceUpdate();
+  }
+
+  handleAddNewField(){
+    this.modalContent = () => {
+      return <AddOutputFieldsForm ref="addField" id={this.idCount++}/>;
+    };
+    this.setState({
+      fieldId: null,
+      modalTitle: 'Add Output Field'
+    }, () => {
+      this.refs.OpFieldModal.show();
+    });
+  }
+
+  handleNewFieldsEdit(id){
+    let obj = this.state.newOpFields.find((o) => o.id === id);
+
+    this.modalContent = () => {
+      return <AddOutputFieldsForm ref="addField" id={id} fieldData={JSON.parse(JSON.stringify(obj))}/>;
+    };
+    this.setState({
+      fieldId: id,
+      modalTitle: 'Edit Output Field'
+    }, () => {
+      this.refs.OpFieldModal.show();
+    });
+  }
+
+  handleNewFieldsDelete(id) {
+    let fields = _.reject(this.state.newOpFields, (o) => o.id === id);
+    this.setState({
+      newOpFields: fields
+    });
+    this.updateOutputStream(fields);
+  }
+
+  handleSaveOpFieldModal(){
+    if (this.refs.addField.validate()) {
+      let data = this.refs.addField.getConfigField();
+      let arr = [];
+      if (this.state.fieldId) {
+        let index = this.state.newOpFields.findIndex((o) => o.id === this.state.fieldId);
+        arr = this.state.newOpFields;
+        arr[index] = data;
+      } else {
+        arr = [
+          ...this.state.newOpFields,
+          data
+        ];
+      }
+      this.setState({newOpFields: arr});
+      this.updateOutputStream(arr);
+
+      this.refs.OpFieldModal.hide();
+    }
+  }
+
+  updateOutputStream(arr){
+    let combinedFields = [];
+    Array.prototype.push.apply(combinedFields, this.state.outputKeys);
+    Array.prototype.push.apply(combinedFields, arr);
+    this.streamObj.fields = combinedFields;
+    this.context.ParentForm.setState({outputStreamObj: this.streamObj});
+  }
+
+  handleSelectAllOutputFields = () => {
+    this.handleOutputKeysChange(this.state.fieldList);
   }
 
   render() {
@@ -384,6 +476,7 @@ export default class CustomNodeForm extends Component {
                     );
                   })
                 }
+                {this.state.inputSchema ?
                 <div className="form-group">
                   <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Map each field in Custom Processor input schema to a field in incoming event schema</Popover>}>
                     <label>Input Schema Mapping</label>
@@ -398,17 +491,85 @@ export default class CustomNodeForm extends Component {
                     })}
                   </div>
                 </div>
+                : ''}
                 <div className="form-group">
                   <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Choose output fields. It can be a field from either incoming event schema or Custom Processor output schema</Popover>}>
-                  <label>Output Fields
-                    <span className="text-danger">*</span>
-                  </label>
+                    <label>Output Fields
+                      {this.state.hasOutputSchema ? <span className="text-danger">*</span> : null}
+                    </label>
                   </OverlayTrigger>
-                    <Select className="menu-outer-top" value={outputKeys} options={fieldList} onChange={this.handleOutputKeysChange.bind(this)} multi={true} required={true} disabled={disabledFields} valueKey="name" labelKey="name"/>
+                  <label className="pull-right">
+                    <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Select All Keys</Popover>}>
+                      <a href="javascript:void(0)" onClick={this.handleSelectAllOutputFields}>Select All</a>
+                    </OverlayTrigger>
+                  </label>
+                  <div>
+                    <Select className="" value={outputKeys} options={fieldList} onChange={this.handleOutputKeysChange.bind(this)} multi={true} required={true} disabled={disabledFields} valueKey="name" labelKey="name"/>
+                  </div>
                 </div>
+                {
+                !this.state.hasOutputSchema ?
+                  (
+                    <div>
+                      <div className="form-group row">
+                        <div className="col-sm-4" style={{"marginRight": "-40px"}}>
+                          <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">New fields to be added on the fly to the output schema.</Popover>}>
+                            <label>New output fields</label>
+                          </OverlayTrigger>
+                        </div>
+                        <div className="col-sm-2">
+                          <button className="btn btn-success btn-xs" type="button" onClick={this.handleAddNewField.bind(this)}>
+                            <i className="fa fa-plus"></i>
+                          </button>
+                        </div>
+                      </div>
+                      <div className="row">
+                        <div className="col-sm-12">
+                          <Table className="table table-hover table-bordered table-CP-configFields"
+                            noDataText="No fields added."
+                          >
+                            <Thead>
+                              <Th column="field">Field Name</Th>
+                              <Th column="type">Type</Th>
+                              <Th column="isOptional">Optional</Th>
+                              <Th column="action">Actions</Th>
+                            </Thead>
+                            {this.state.newOpFields.map((obj, i) => {
+                              return (
+                                <Tr key={i}>
+                                  <Td column="field">{obj.name}</Td>
+                                  <Td column="type">{obj.type}</Td>
+                                  <Td column="isOptional">{obj.optional}</Td>
+                                  <Td column="action">
+                                    <div className="btn-action">
+                                      <BtnEdit callback={this.handleNewFieldsEdit.bind(this, obj.id)}/>
+                                    <BtnDelete callback={this.handleNewFieldsDelete.bind(this, obj.id)}/>
+                                    </div>
+                                  </Td>
+                                </Tr>
+                              );
+                            })}
+                          </Table>
+                        </div>
+                      </div>
+                    </div>
+                  ) : ''
+                }
                 </div>
             }
           </form>
+          <Modal
+            ref="OpFieldModal"
+            onKeyPress={this.handleKeyPress}
+            data-title={this.state.modalTitle}
+            data-resolve={this.handleSaveOpFieldModal.bind(this)}
+            data-reject={()=>{
+              this.refs.addField.refs.OutputFieldForm.clearErrors();
+              this.refs.OpFieldModal.hide();
+            }}
+          >
+            {this.modalContent()}
+          </Modal>
         </Scrollbars>
       </div>
     );

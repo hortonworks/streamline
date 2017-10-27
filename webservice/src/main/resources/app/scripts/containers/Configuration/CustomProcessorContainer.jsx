@@ -115,6 +115,9 @@ export default class CustomProcessorContainer extends Component {
                 : "added "}
               successfully</strong>
           );
+          if(this.state.processorId){
+            FSReactToastr.warning(<strong>Kindly reconfigure the updated processor component if being used in any topology.</strong>);
+          }
           this.handleCancel();
           this.fetchData();
         }
