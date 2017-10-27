@@ -359,6 +359,9 @@ const selectAllOutputFields = function(tempFields,sinkForm){
       }
     }
   });
+  if(!!sinkForm){
+    tempAllFields = tempAllFields.map((field)=>{return field.value;});
+  }
   return tempAllFields;
 };
 
