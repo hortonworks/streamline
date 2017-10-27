@@ -416,6 +416,94 @@ const getNestedKeyFromGroup = function(str){
   return str;
 };
 
+export class Streams {
+  constructor(streams){
+    this.streams = streams;
+  }
+  setParent(streams){
+    const setParentOfChild = (stream, parent) => {
+      stream._parent = parent;
+      if(stream.fields && stream.fields.length){
+        stream.fields.forEach((s) => {
+          setParentOfChild(s, stream);
+        });
+      }
+    };
+    streams.forEach((s) => {
+      setParentOfChild(s);
+    });
+  }
+  cloneStreams(streams){
+    return JSON.parse(JSON.stringify(streams));
+  }
+  filterByType(type){
+    const streams = this.cloneStreams(this.streams);
+    this.setParent(streams);
+
+    const filter = (stream, arr) => {
+      if(stream.fields && stream.fields.length){
+        /*stream.fields.forEach((s) => {
+          filter(s, stream.fields);
+        });*/
+        for(let i = 0; i< stream.fields.length;){
+          const removed = filter(stream.fields[i], stream.fields);
+          if(!removed){
+            i++;
+          }
+        }
+      } else if(stream.type != type) {
+        const i = arr.indexOf(stream);
+        arr.splice(i,1);
+        return true;
+      }
+    };
+    /*streams.forEach((s) => {
+      filter(s, streams);
+    });*/
+    for(let i = 0; i< streams.length;){
+      const removed = filter(streams[i], streams);
+      if(removed !== true){
+        i++;
+      }
+    }
+    return streams;
+  }
+  toSelectOption(streams){
+    const options = [];
+    const pushOptions = (fields, level, keyArr = [], streamId = '') => {
+      fields.forEach((f) => {
+        if(!f.name){
+          f.name = f.streamId;
+        }
+        f.level = level;
+        f.value = f.name;
+
+        let _streamId = streamId;
+        if(_streamId === ''){
+          _streamId = f.streamId;
+          f.uniqueID = _streamId;
+        } else {
+          const tempKeyArr = _.clone(keyArr);
+          tempKeyArr.push(f.name);
+          f.uniqueID = _streamId + ':' + tempKeyArr.join('.');
+        }
+
+        options.push(f);
+        if(f.fields && f.fields.length){
+          f.disabled = true;
+          const newKeyArr = _.clone(keyArr);
+          if(_streamId !== f.name){
+            newKeyArr.push(f.name);
+          }
+          pushOptions(f.fields, level+1, newKeyArr, _streamId);
+        }
+      });
+    };
+    pushOptions(streams, 0);
+
+    return options;
+  }
+}
 
 export default {
   getSchemaFields,
