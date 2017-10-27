@@ -18,7 +18,7 @@ package com.hortonworks.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.hortonworks.streamline.storage.annotation.StorableEntity;
+import com.hortonworks.registries.storage.annotation.StorableEntity;
 
 @StorableEntity
 @JsonInclude(JsonInclude.Include.NON_NULL)

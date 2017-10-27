@@ -19,7 +19,7 @@ package com.hortonworks.streamline.streams.service;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.registries.common.Schema;
-import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.registries.common.QueryParam;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.CustomProcessorOnlyException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
@@ -183,6 +183,7 @@ public class TopologyComponentBundleResource {
                                                 @Context SecurityContext securityContext) throws IOException, ComponentConfigException {
         SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN);
         InputStream bundleJar = null;
+        File tmpFile = null;
         try {
             String bundleJsonString = this.getFormDataFromMultiPartRequestAs(String.class, form,
                     TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME);
@@ -207,11 +208,13 @@ public class TopologyComponentBundleResource {
                 if (bundleJar == null) {
                     LOG.debug(BUNDLE_JAR_FILE_PARAM_NAME + " is missing or invalid");
                     throw BadRequestException.missingParameter(BUNDLE_JAR_FILE_PARAM_NAME);
+                } else {
+                    tmpFile = FileUtil.writeInputStreamToTempFile(bundleJar, ".jar");
                 }
             }
             validateTopologyBundle(topologyComponentBundle);
             topologyComponentBundle.setType(componentType);
-            TopologyComponentBundle createdBundle = catalogService.addTopologyComponentBundle(topologyComponentBundle, bundleJar);
+            TopologyComponentBundle createdBundle = catalogService.addTopologyComponentBundle(topologyComponentBundle, tmpFile);
             return WSUtils.respondEntity(createdBundle, CREATED);
         } catch (RuntimeException e) {
             LOG.debug("Error occured while adding topology component bundle", e);
@@ -241,6 +244,7 @@ public class TopologyComponentBundleResource {
                                                             @Context SecurityContext securityContext) throws IOException, ComponentConfigException {
         SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN);
         InputStream bundleJar = null;
+        File tmpFile = null;
         try {
             String bundleJsonString = this.getFormDataFromMultiPartRequestAs(String.class, form, TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME);
             TopologyComponentBundle topologyComponentBundle = new ObjectMapper().readValue(bundleJsonString, TopologyComponentBundle.class);
@@ -253,11 +257,13 @@ public class TopologyComponentBundleResource {
                 if (bundleJar == null) {
                     LOG.debug(BUNDLE_JAR_FILE_PARAM_NAME + " is missing or invalid");
                     throw BadRequestException.missingParameter(BUNDLE_JAR_FILE_PARAM_NAME);
+                } else {
+                    tmpFile = FileUtil.writeInputStreamToTempFile(bundleJar, ".jar");
                 }
             }
             validateTopologyBundle(topologyComponentBundle);
             topologyComponentBundle.setType(componentType);
-            TopologyComponentBundle updatedBundle = catalogService.addOrUpdateTopologyComponentBundle(id, topologyComponentBundle, bundleJar);
+            TopologyComponentBundle updatedBundle = catalogService.addOrUpdateTopologyComponentBundle(id, topologyComponentBundle, tmpFile);
             return WSUtils.respondEntity(updatedBundle, OK);
         } catch (RuntimeException e) {
             LOG.debug("Error occured while updating topology component bundle", e);
@@ -287,6 +293,7 @@ public class TopologyComponentBundleResource {
                                                         @Context SecurityContext securityContext) throws IOException, ComponentConfigException {
         SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN);
         InputStream bundleJar = null;
+        File tmpFile = null;
         try {
             String bundleJsonString = this.getFormDataFromMultiPartRequestAs(String.class, form, TOPOLOGY_COMPONENT_BUNDLE_PARAM_NAME);
             TopologyComponentBundle topologyComponentBundle = new ObjectMapper().readValue(bundleJsonString, TopologyComponentBundle.class);
@@ -304,6 +311,8 @@ public class TopologyComponentBundleResource {
                 if (bundleJar == null) {
                     LOG.debug(BUNDLE_JAR_FILE_PARAM_NAME + " is missing or invalid");
                     throw BadRequestException.missingParameter(BUNDLE_JAR_FILE_PARAM_NAME);
+                } else {
+                    tmpFile = FileUtil.writeInputStreamToTempFile(bundleJar, ".jar");
                 }
             }
             validateTopologyBundle(topologyComponentBundle);
@@ -313,7 +322,8 @@ public class TopologyComponentBundleResource {
             queryParams.add(new QueryParam(TopologyComponentBundle.SUB_TYPE, topologyComponentBundle.getSubType()));
             Collection<TopologyComponentBundle> existing = catalogService.listTopologyComponentBundlesForTypeWithFilter(componentType, queryParams);
             if (existing != null && existing.size() == 1) {
-                TopologyComponentBundle updatedBundle = catalogService.addOrUpdateTopologyComponentBundle(existing.iterator().next().getId(), topologyComponentBundle, bundleJar);
+                TopologyComponentBundle updatedBundle = catalogService.addOrUpdateTopologyComponentBundle(existing.iterator().next().getId(),
+                        topologyComponentBundle, tmpFile);
                 return WSUtils.respondEntity(updatedBundle, OK);
             } else {
                 String message = "Cant update because lookup using streaming engine, type and subtype returned either no existing bundle or more than one";

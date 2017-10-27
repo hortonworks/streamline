@@ -107,11 +107,13 @@ export default class ComponentNodeContainer extends Component {
     let sinksBundlesId = this.getComponentIdArr(data.sinks);
 
     let newSourceAdded = this.isNewComponentAdded(this.state.datasources, sourceBundlesId, data.sources);
+    let sourceDeleted = this.isComponentDeleted(this.state.datasources, sourceBundlesId, data.sources);
     let newProcessorAdded = this.isNewComponentAdded(this.state.processors, processorsBundlesId, data.processors);
     let processorDeleted = this.isComponentDeleted(this.state.processors, processorsBundlesId, data.processors);
-    let newSinkAdded = this.isNewComponentAdded(this.state.sinks, sinksBundlesId, data.processors);
+    let newSinkAdded = this.isNewComponentAdded(this.state.sinks, sinksBundlesId, data.sinks);
+    let sinkDeleted = this.isComponentDeleted(this.state.sinks, sinksBundlesId, data.sinks);
 
-    if(newSourceAdded || newProcessorAdded || processorDeleted || newSinkAdded) {
+    if(newSourceAdded || sourceDeleted || newProcessorAdded || processorDeleted || newSinkAdded || sinkDeleted) {
       TopologyREST.putTopologyEditorToolbar({body: JSON.stringify({data: JSON.stringify(data), userId: userId})})
       .then((resultData)=>{
         this.setState({toolbar: JSON.parse(resultData.data), userId: userId});

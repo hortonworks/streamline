@@ -45,10 +45,6 @@
             <artifactId>streamline-notification</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.hortonworks.streamline</groupId>
-            <artifactId>streamline-cluster</artifactId>
-        </dependency>
-        <dependency>
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-core</artifactId>
         </dependency>

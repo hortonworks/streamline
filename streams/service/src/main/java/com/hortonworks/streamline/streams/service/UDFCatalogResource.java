@@ -22,7 +22,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.registries.common.exception.ParserException;
-import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.registries.common.QueryParam;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityAlreadyExistsException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.exception.service.exception.request.UnsupportedMediaTypeException;

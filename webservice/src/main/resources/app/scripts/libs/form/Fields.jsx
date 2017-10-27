@@ -331,7 +331,10 @@ export class enumstring extends BaseField {
           Form.props.handleSecurityProtocol(val.value);
         }
       } else if (this.validate() && (this.props.fieldJson !== undefined && this.props.fieldJson.hint !== undefined  && Utils.matchStringInArr(this.props.fieldJson.hint, "schemaVersion"))) {
-        const topicName = this.props.data['topic'];
+        let fieldName = this.props.fieldJson.hint.split(',')
+                          .filter((h)=>{return h.indexOf('dependsOn') !== -1;})[0]
+                          .split('-')[1];
+        const topicName = this.props.data[fieldName];
         this.getSchema(topicName,this.props.data[this.props.value],true);
       }
     });

@@ -18,8 +18,13 @@ package com.hortonworks.streamline.streams.storm.common;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class StormTopologyUtil {
+    public static final String COMPONENT_NAME_STORM_AUXILIARY_PART_DELIMITER = "$$";
+    public static final String REGEX_COMPONENT_NAME_STORM_AUXILIARY_PART_DELIMITER = "\\$\\$";
+    public static final String REGEX_COMPONENT_ID_STORM_AUXILIARY_PART_DELIMITER = "\\.";
+
     private StormTopologyUtil() {
     }
 
@@ -70,6 +75,10 @@ public class StormTopologyUtil {
         }
         return actualTopologyName;
     }
+    
+    public static String createComponentNameWithAuxPart(String streamlineComponentName, String auxiliaryPart) {
+        return streamlineComponentName + COMPONENT_NAME_STORM_AUXILIARY_PART_DELIMITER + auxiliaryPart;
+    }
 
     public static String extractStreamlineComponentName(String stormComponentId) {
         String[] splitted = stormComponentId.split("-");
@@ -78,6 +87,13 @@ public class StormTopologyUtil {
         }
 
         List<String> splittedList = Arrays.asList(splitted);
-        return String.join("-", splittedList.subList(1, splittedList.size()));
+        String componentName = String.join("-", splittedList.subList(1, splittedList.size()));
+        return componentName.split(REGEX_COMPONENT_NAME_STORM_AUXILIARY_PART_DELIMITER)[0];
+    }
+
+    public static String extractStreamlineComponentId(String stormComponentId) {
+        // removes all starting from first '-'
+        String componentId = stormComponentId.substring(0, stormComponentId.indexOf('-'));
+        return componentId.split(REGEX_COMPONENT_ID_STORM_AUXILIARY_PART_DELIMITER)[0];
     }
 }

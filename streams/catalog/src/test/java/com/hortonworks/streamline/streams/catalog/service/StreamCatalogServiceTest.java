@@ -17,8 +17,8 @@ package com.hortonworks.streamline.streams.catalog.service;
 
 import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
-import com.hortonworks.streamline.storage.StorableKey;
-import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.registries.storage.StorableKey;
+import com.hortonworks.registries.storage.StorageManager;
 import com.hortonworks.streamline.streams.catalog.Projection;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyVersion;

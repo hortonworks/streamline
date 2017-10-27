@@ -40,7 +40,8 @@ class ImportTopology extends Component {
       namespaceOptions: [],
       validInput: true,
       validSelect: true,
-      showRequired: true
+      showRequired: true,
+      nameError : true
     };
     this.fetchData();
   }
@@ -107,9 +108,12 @@ class ImportTopology extends Component {
       this.setState({namespaceId: '', validSelect: false});
     }
   }
+  topologyNameChange = (e) => {
+    this.setState({nameError : Utils.noSpecialCharString(e.target.value)});
+  }
 
   render() {
-    const {validInput, validSelect, showRequired, namespaceId, namespaceOptions} = this.state;
+    const {validInput, validSelect, showRequired, namespaceId, namespaceOptions,nameError} = this.state;
 
     return (
       <div className="modal-form config-modal-form">
@@ -127,7 +131,7 @@ class ImportTopology extends Component {
           <label data-stest="topologyNameLabel">Application Name
           </label>
           <div>
-            <input type="text" className="form-control" name="name" title="Application Name" ref="topologyName"/>
+            <input type="text" className={nameError ? "form-control" : "form-control invalidInput" } name="name" title="Application Name" ref="topologyName" onChange={this.topologyNameChange.bind(this)}/>
           </div>
         </div>
         <div className="form-group">

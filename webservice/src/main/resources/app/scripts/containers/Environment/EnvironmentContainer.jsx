@@ -187,7 +187,7 @@ class EnvironmentCards extends Component {
               </div>
               <div className="service-body environment-body clearfix">
                 <Scrollbars style={{
-                  height: "500px"
+                  height: "480px"
                 }} autoHide renderThumbHorizontal={props => <div {...props} style={{
                   display: "none"
                 }}/>}>

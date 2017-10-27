@@ -681,6 +681,13 @@ const validateReconfigFlag = function(arr){
   return errorArr.length ? false : true;
 };
 
+const noSpecialCharString = function(string){
+  if(string === ''){
+    return;
+  }
+  return /^[a-zA-Z0-9/_//-]+$/.test(string);
+};
+
 export default {
   sortArray,
   numberToMilliseconds,
@@ -718,5 +725,6 @@ export default {
   clusterField,
   matchStringInArr,
   populateSchemaVersionOptions,
-  validateReconfigFlag
+  validateReconfigFlag,
+  noSpecialCharString
 };

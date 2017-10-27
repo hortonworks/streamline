@@ -20,10 +20,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.common.ComponentUISpecification;
-import com.hortonworks.streamline.storage.annotation.StorableEntity;
-import com.hortonworks.streamline.storage.PrimaryKey;
-import com.hortonworks.streamline.storage.Storable;
-import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.registries.storage.annotation.StorableEntity;
+import com.hortonworks.registries.storage.PrimaryKey;
+import com.hortonworks.registries.storage.Storable;
+import com.hortonworks.registries.storage.StorableKey;
 import com.hortonworks.streamline.streams.layout.storm.FluxComponent;
 
 import java.io.IOException;

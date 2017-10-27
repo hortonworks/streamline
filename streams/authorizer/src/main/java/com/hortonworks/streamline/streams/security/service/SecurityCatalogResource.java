@@ -17,7 +17,7 @@ package com.hortonworks.streamline.streams.security.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.collect.Sets;
-import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.registries.common.QueryParam;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.exception.service.exception.request.WebserviceAuthorizationException;
 import com.hortonworks.streamline.common.util.WSUtils;

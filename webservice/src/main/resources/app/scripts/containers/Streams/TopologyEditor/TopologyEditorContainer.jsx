@@ -761,7 +761,7 @@ class TopologyEditorContainer extends Component {
               ? FSReactToastr.info(
                 <CommonNotification flag="error" content={`Please create atleast one Test Case to configure ${nodeText}`}/>, '', toastOpt)
               : this.refs.NodeModal.show()
-        : (this.node.currentType.toLowerCase() === 'rt-join' && currentEdges.length !== 2)
+        : (this.node.currentType.toLowerCase() === 'rt-join' && currentEdges.filter((o)=>{return o.target === node;}).length !== 2)
           ? FSReactToastr.info(
             <CommonNotification flag="error" content={`Two incoming streams are required for configuring ${this.node.uiname} processor`}/>, '', toastOpt)
           :  this.refs.NodeModal.show();

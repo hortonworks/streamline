@@ -16,13 +16,13 @@
 package com.hortonworks.streamline.registries.dashboard.service;
 
 import com.hortonworks.streamline.registries.dashboard.entites.WidgetDatasourceMap;
-import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.registries.common.QueryParam;
 import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.registries.dashboard.entites.Dashboard;
 import com.hortonworks.streamline.registries.dashboard.entites.Datasource;
 import com.hortonworks.streamline.registries.dashboard.entites.Widget;
-import com.hortonworks.streamline.storage.StorableKey;
-import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.registries.storage.StorableKey;
+import com.hortonworks.registries.storage.StorageManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

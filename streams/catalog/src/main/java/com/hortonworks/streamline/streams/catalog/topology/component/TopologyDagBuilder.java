@@ -16,7 +16,7 @@
 package com.hortonworks.streamline.streams.catalog.topology.component;
 
 
-import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.registries.common.QueryParam;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyComponent;
@@ -25,10 +25,7 @@ import com.hortonworks.streamline.streams.catalog.TopologyProcessor;
 import com.hortonworks.streamline.streams.catalog.TopologySink;
 import com.hortonworks.streamline.streams.catalog.TopologySource;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
-import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
 import com.hortonworks.streamline.streams.layout.component.TopologyDag;
-import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
-import com.hortonworks.streamline.streams.layout.component.rule.Rule;
 
 import java.util.ArrayList;
 import java.util.List;

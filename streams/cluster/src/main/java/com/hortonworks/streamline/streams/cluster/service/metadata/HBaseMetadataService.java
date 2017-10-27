@@ -55,6 +55,7 @@ import javax.security.auth.Subject;
 import javax.ws.rs.core.SecurityContext;
 import java.io.IOException;
 import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Collection;
@@ -220,7 +221,7 @@ public class HBaseMetadataService implements AutoCloseable {
 
     private <T, E extends Exception> T executeSecure(SupplierException<T, E> action)
             throws PrivilegedActionException, E, IOException, InterruptedException {
-        return SecurityUtil.execute(action, securityContext, user);
+        return execute(action, securityContext, user);
     }
 
     private static Configuration overrideConfig(Configuration hbaseConfig, EnvironmentService environmentService, Long clusterId)
@@ -271,4 +272,18 @@ public class HBaseMetadataService implements AutoCloseable {
                 ", hbaseMaster=" + hbaseMaster +
                 '}';
     }
+
+    public static <T, E extends Exception> T execute(SupplierException<T, E> action, SecurityContext securityContext, User user)
+            throws E, PrivilegedActionException, IOException, InterruptedException {
+        if (user != null && SecurityUtil.isKerberosAuthenticated(securityContext)) {
+            LOG.debug("Executing action [{}] for user [{}] with security context [{}] using Kerberos authentication",
+                    action, securityContext, user);
+            return user.runAs((PrivilegedExceptionAction<T>) action::get);
+        } else {
+            LOG.debug("Executing action [{}] for user [{}] with security context [{}] without Kerberos authentication",
+                    action, securityContext, user);
+            return action.get();
+        }
+    }
+
 }
