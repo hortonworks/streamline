@@ -23,6 +23,10 @@ import FSReactToastr from '../../../components/FSReactToastr';
 import TopologyREST from '../../../rest/TopologyREST';
 import {Scrollbars} from 'react-custom-scrollbars';
 import ProcessorUtils, {Streams}  from '../../../utils/ProcessorUtils';
+import TimeStamp from '../../../components/TimeStamp';
+import CommonNotification from '../../../utils/CommonNotification';
+import {toastOpt} from '../../../utils/Constants';
+import SelectInputComponent from '../../../components/SelectInputComponent';
 
 export default class JoinNodeForm extends Component {
   static propTypes = {
@@ -59,8 +63,8 @@ export default class JoinNodeForm extends Component {
           label: "Count"
         }
       ],
-      windowNum: '',
-      slidingNum: '',
+      windowNum: 1,
+      slidingNum: 1,
       durationType: "Seconds",
       slidingDurationType: "Seconds",
       durationTypeArr: [
@@ -87,11 +91,14 @@ export default class JoinNodeForm extends Component {
       showLoading : true,
       outputGroupByDotKeys : [],
       lagMs: 0,
-      tsField: null
+      tsFields: null,
+      validationErrors: {},
+      outputKeysObjArr : []
     };
     this.state = obj;
     this.fetchDataAgain = false;
     this.streamData = {};
+    this.legends=[];
   }
 
   /*
@@ -146,17 +153,14 @@ export default class JoinNodeForm extends Component {
     let fields = [],joinStreams=[],unModifyList=[];
     inputStreamFromContext.map((stream, i) => {
       // modify fields if inputStreamFromContext >  1
-      if(inputStreamFromContext.length > 1){
-        const obj = {
-          name : inputStreamFromContext[i].streamId,
-          fields : stream.fields,
-          optional : false,
-          type : "NESTED"
-        };
-        fields.push(obj);
-      } else {
-        fields.push(...stream.fields);
-      }
+      const obj = {
+        name : inputStreamFromContext[i].streamId,
+        fields : stream.fields,
+        optional : false,
+        type : "NESTED"
+      };
+      fields.push(obj);
+      this.legends.push(stream.streamId);
 
       // UnModify fieldsList
       unModifyList.push(...stream.fields);
@@ -177,15 +181,17 @@ export default class JoinNodeForm extends Component {
 
     this.fieldsArr = fields;
 
-    const tempFieldsArr = ProcessorUtils.getSchemaFields(fields, 0,false);
+    const tempFieldsArr = ProcessorUtils.getSchemaFields(fields, 0,false, [], false);
     // create a uniqueID for select2 to support duplicate label in options
     _.map(tempFieldsArr, (f) => {
       f.uniqueID = f.keyPath.split('.').join('-')+"_"+f.name;
+      f.alias = f.name;
     });
     const unModifyFieldList = ProcessorUtils.getSchemaFields(unModifyList, 0,false);
 
     const streams = new Streams(inputStreamFromContext);
     const filteredStreams = streams.filterByType('LONG');
+    streams.toSelectOption(filteredStreams);
 
     let stateObj = {
       fieldList: unModifyFieldList,
@@ -194,11 +200,11 @@ export default class JoinNodeForm extends Component {
         ? configFields.outputKeys.map((key) => {
           return ProcessorUtils.splitNestedKey(key);
         })
-        : undefined,
+        : [],
       inputStreamsArr: inputStreamFromContext,
       joinStreams: joinStreams,
       outputFieldsList : tempFieldsArr,
-      tsFieldOptions: streams.toSelectOption(filteredStreams)
+      tsFieldsOptions: filteredStreams
     };
 
     // prefetchValue is use to call the this.populateOutputStreamsFromServer() after state has been SET
@@ -213,6 +219,10 @@ export default class JoinNodeForm extends Component {
         fields: stateObj.outputStreamFields
       };
       stateObj.showLoading = false;
+      if(inputStreamFromContext.length === 1){
+        stateObj.joinFromStreamName = inputStreamFromContext[0].streamId;
+        stateObj.joinFromStreamKeys = ProcessorUtils.getSchemaFields(inputStreamFromContext[0].fields, 0,false);
+      }
       this.context.ParentForm.setState({outputStreamObj: this.streamData});
     }
     this.setState(stateObj, () => {
@@ -240,32 +250,59 @@ export default class JoinNodeForm extends Component {
       stateObj.joinFromStreamKey = ProcessorUtils.splitNestedKey(fromObject.key);
 
       let selectedStream = _.find(inputStreamsArr, {streamId: fromObject.stream});
-      stateObj.joinFromStreamKeys = ProcessorUtils.getSchemaFields(selectedStream.fields, 0, false);
+      stateObj.joinFromStreamKeys = selectedStream !== undefined ? ProcessorUtils.getSchemaFields(selectedStream.fields, 0, false) : '';
     }
 
     //set values of joins Type
     const configJoinFields = this.joinProcessorNode.config.properties.joins;
     if(!_.isEmpty(configJoinFields)){
       _.map(configJoinFields, (o , index) => {
-        let joinStreamOptions = this.getStreamObjArray(o.stream);
-        stateObj.joinStreams[index].type = o.type;
-        stateObj.joinStreams[index].stream = o.stream;
-        stateObj.joinStreams[index].streamOptions = joinStreamOptions;
-        stateObj.joinStreams[index].key = ProcessorUtils.splitNestedKey(o.key);
-        stateObj.joinStreams[index].keyOptions = ProcessorUtils.getSchemaFields(joinStreamOptions[0].fields, 0, false);
-        stateObj.joinStreams[index].with = o.with;
-        stateObj.joinStreams[index].withOptions = this.getStreamObjArray(o.with);
+        let joinStreamOptions = this.getStreamObjArray(o.stream,null);
+        if(stateObj.joinStreams[index] !== undefined){
+          stateObj.joinStreams[index].type = o.type;
+          stateObj.joinStreams[index].stream = o.stream;
+          stateObj.joinStreams[index].streamOptions = this.getStreamObjArray(o.with,stateObj.joinFromStreamName);
+          stateObj.joinStreams[index].key = ProcessorUtils.splitNestedKey(o.key);
+          stateObj.joinStreams[index].keyOptions = ProcessorUtils.getSchemaFields(joinStreamOptions.length ? joinStreamOptions[0].fields : [], 0, false);
+          stateObj.joinStreams[index].with = o.with;
+          stateObj.joinStreams[index].withOptions = this.getStreamObjArray(o.stream,'options');
+        }
       });
+
+      // If new stream is connected after configuration
+      if(configJoinFields.length !== stateObj.joinStreams.length){
+        let tempObj={};
+        _.map(stateObj.joinStreams, (stJoin,i) => {
+          if(configJoinFields[i] === undefined){
+            const ind = _.findIndex(inputStreamsArr, (input) => { return tempObj[input.streamId] === undefined;});
+            if(ind !== -1){
+              let joinStreamOptions = this.getStreamObjArray(inputStreamsArr[ind].streamId, null);
+              stJoin.streamOptions = joinStreamOptions;
+              stJoin.keyOptions = ProcessorUtils.getSchemaFields(joinStreamOptions[0].fields, 0, false);
+              stJoin.withOptions = this.getStreamObjArray(joinStreamOptions[0].streamId, 'options');
+            }
+          } else {
+            const index = (tempObj[stJoin.stream] === stJoin.stream && tempObj[stJoin.with] === stJoin.with) ? 0 : -1;
+            if(index === -1){
+              tempObj[stJoin.stream] = stJoin.stream;
+              tempObj[stJoin.with] = stJoin.with;
+            }
+          }
+        });
+      }
+    }else if(this.state.inputStreamsArr.length > 1){
+      this.handleJoinFromStreamChange(this.state.inputStreamsArr[0]);
+      stateObj.joinStreams = this.state.joinStreams;
     }
 
     //set values of windows fields
     const configWindowObj = this.joinProcessorNode.config.properties.window;
     if(!_.isEmpty(configWindowObj)){
       if (configWindowObj.windowLength.class === '.Window$Duration') {
-        if(configWindowObj.tsField != null){
+        if(configWindowObj.tsFields != null){
           stateObj.intervalType = '.Window$EventTime';
           stateObj.lagMs = configWindowObj.lagMs;
-          stateObj.tsField = configWindowObj.tsField;
+          stateObj.tsFields = this.gettsFieldssFormSelection(configWindowObj.tsFields);
         }else{
           stateObj.intervalType = '.Window$Duration';
         }
@@ -286,12 +323,18 @@ export default class JoinNodeForm extends Component {
       }
     }
 
+    let alaisArray=[];
     // set the outputKeys And outputFieldsObj for parentContext
-    const outputKeysAFormServer = this.joinProcessorNode.config.properties.outputKeys.map((fieldName)=>{return fieldName.split(' as ')[0];});
+    const outputKeysAFormServer = this.joinProcessorNode.config.properties.outputKeys.map((fieldName)=>{
+      // push streamName and alias to populate further.
+      alaisArray.push({key : fieldName.split(' as ')[0], alias : fieldName.split(' as ')[1]});
+      return fieldName.split(' as ')[0];
+    });
 
     // remove the dot from the keys
-    stateObj.outputKeys = _.map(outputKeysAFormServer, (key) => {
-      return ProcessorUtils.splitNestedKey(key);
+    stateObj.outputKeys = _.filter(outputKeysAFormServer, (key) => {
+      const outputKey = ProcessorUtils.splitNestedKey(key);
+      return _.find(outputFieldsList, {name : outputKey}) !== undefined;
     });
 
     // get the keyObj from the outputFieldsList for the particular key
@@ -300,7 +343,15 @@ export default class JoinNodeForm extends Component {
     // To remove the undefined if the schemsa get change from the source Node
     const outputKeysObjArr = _.compact(outputKeysObjArray);
 
-    stateObj.outputKeysObjArr = outputKeysObjArr;
+    stateObj.outputKeysObjArr = _.map(outputKeysObjArr, (obj,i) => {
+      // const streamName = alaisArray[i].key.split(':');
+      // assign tha alias if the streamName and field name is equal.... to obj.
+      // if(obj.name === streamName[1] && obj.keyPath === streamName[0]){
+      //   obj.alias = alaisArray[i].alias;
+      // }
+      obj.alias = alaisArray[i].alias;
+      return obj;
+    });
 
     const keyData = ProcessorUtils.createSelectedKeysHierarchy(outputKeysObjArr,outputFieldsList);
     stateObj.outputStreamFields=[];
@@ -308,9 +359,11 @@ export default class JoinNodeForm extends Component {
       stateObj.outputStreamFields = _.concat(stateObj.outputStreamFields, o.fields ? o.fields : o);
     });
 
+    ProcessorUtils.addChildren(outputKeysObjArr, outputFieldsList);
+
     this.streamData = {
       streamId: this.joinProcessorNode.outputStreams[0].streamId,
-      fields: stateObj.outputStreamFields
+      fields: outputKeysObjArr
     };
 
     const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey(outputKeysObjArr);
@@ -319,6 +372,13 @@ export default class JoinNodeForm extends Component {
 
     this.setState(stateObj);
     this.context.ParentForm.setState({outputStreamObj: this.streamData});
+  }
+
+  gettsFieldssFormSelection = (tsFields) => {
+    const {tsFieldsOptions} = this.state;
+    return _.filter(tsFields, (v) => {
+      return _.findIndex(tsFieldsOptions, (o) => o.streamId === v.split(':')[0]) !== -1;
+    });
   }
 
   /*
@@ -337,15 +397,44 @@ export default class JoinNodeForm extends Component {
     );
   }
 
+  renderValueInputChange = (node,value) => {
+    const {outputKeysObjArr,outputStreamFields,outputFieldsList} = this.state;
+    const index = _.findIndex(outputKeysObjArr, (output) => output === node);
+    if(index !== -1){
+      outputKeysObjArr[index].alias = value;
+      const keyData = ProcessorUtils.createSelectedKeysHierarchy(outputKeysObjArr,outputFieldsList);
+      // this.streamData.fields = this.generateStreamFields(keyData);
+      this.streamData.fields = outputKeysObjArr;
+      this.setState({outputStreamFields:keyData,outputKeysObjArr});
+      this.context.ParentForm.setState({outputStreamObj: this.streamData},() => {
+        // let elNode = this.selectInputChange.refs[node.keyPath+'_'+node.name];
+        // const len = value.length;
+        // elNode.focus();
+        // elNode.setSelectionRange(len,len);
+      });
+    }
+  }
+
+  renderValueComponent(node){
+    const {outputKeysObjArr} = this.state;
+    return (
+      <SelectInputComponent ref={(ref) => this.selectInputChange = ref} node={node} legends={this.legends} outputKeysObjArr={outputKeysObjArr} renderValueInputChange={this.renderValueInputChange.bind(this)} />
+    );
+  }
+
   /*
     getStreamObjArray Method accept the string of streams
     return
     streamsObj Array filter from inputStreamsArr
   */
-  getStreamObjArray(string){
+  getStreamObjArray(string,keyOption){
     const {inputStreamsArr} = this.state;
     return inputStreamsArr.filter((s) => {
-      return s.streamId === string;
+      return keyOption === null
+              ? s.streamId === string
+              : keyOption !== 'options'
+                ? s.streamId !== string && s.streamId !== keyOption
+                : s.streamId !== string ;
     });
   }
 
@@ -358,40 +447,145 @@ export default class JoinNodeForm extends Component {
   */
   handleFieldsChange(arr){
     if(arr.length > 0){
-      // splice the last index of arr as it's a new object selected
-      const last_IdData = arr.splice(arr.length - 1 ,1);
-      // check the object left in the arr are the same which we splice from it
-      // if yes then replace the object with which we have splice earlier
-      const checkIndex = _.findIndex(arr , {name : last_IdData[0].name});
-      (checkIndex !== -1) ? arr[checkIndex] = last_IdData[0] : arr = _.concat(arr , last_IdData[0]);
       this.setOutputFields(arr);
     } else {
       this.streamData.fields = [];
-      this.setState({outputKeysObjArr : arr, outputKeys: [], outputStreamFields: [],outputGroupByDotKeys : []});
+      this.setState({outputKeysObjArr : arr, outputKeys: [], outputStreamFields: [],outputGroupByDotKeys : []}, () => {
+        this.validateField('outputKeysObjArr');
+      });
       this.context.ParentForm.setState({outputStreamObj: this.streamData});
     }
   }
 
   handleSelectAllOutputFields = () => {
-    let tempFields = _.cloneDeep(this.state.outputFieldsList);
-    const allOutPutFields = ProcessorUtils.selectAllOutputFields(tempFields);
+    const {inputStreamsArr,outputFieldsList} = this.state;
+    let tempFields = _.cloneDeep(outputFieldsList);
+    const allOutPutFields = _.filter(tempFields, (t) => {
+      return _.findIndex(inputStreamsArr,(input) => {return input.streamId === t.name;}) === -1;
+    });
     this.setOutputFields(allOutPutFields);
   }
 
   setOutputFields = (arr) => {
     let {outputFieldsList} = this.state;
+    arr = JSON.parse(JSON.stringify(arr));
+    ProcessorUtils.removeChildren(arr);
+    ProcessorUtils.addChildren(arr, outputFieldsList);
+
+
     const keyData = ProcessorUtils.createSelectedKeysHierarchy(arr,outputFieldsList);
+    // this.streamData.fields = this.generateStreamFields(keyData);
+    this.streamData.fields = arr;
+
+    const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey(arr);
+    const groupKeysByDots = ProcessorUtils.modifyGroupKeyByDots(gKeys);
+    this.setState({outputKeysObjArr : arr, outputKeys: keys, outputStreamFields: keyData,outputGroupByDotKeys : groupKeysByDots}, () => {
+      this.validateField('outputKeysObjArr');
+    });
+    this.context.ParentForm.setState({outputStreamObj: this.streamData});
+  }
+
+  validateField(fieldName, _value){
+    const value = _value || this.state[fieldName];
+    let validate;
+    if (_.isUndefined(value) || _.isNull(value)) {
+      this.state.validationErrors[fieldName] = "Required!";
+      validate = false;
+    } else {
+      if (value instanceof Array) {
+        if (value.length === 0) {
+          this.state.validationErrors[fieldName] = "Required!";
+          validate = false;
+        }else{
+          this.state.validationErrors[fieldName] = "";
+          validate = true;
+        }
+      } else if (value === '' || (typeof value == 'string' && value.trim() === '') || _.isUndefined(value)) {
+        this.state.validationErrors[fieldName] = "Required!";
+        validate = false;
+      } else if(typeof value === "number" && value !== '' && value <= 0 && fieldName !== 'lagMs'){
+        const name = fieldName === "windowNum" ? "Window" : "Sliding" ;
+        this.state.validationErrors[fieldName] = name +" interval should be greater than '0'";
+        validate = false;
+      } else {
+        this.state.validationErrors[fieldName] = "";
+        validate = true;
+      }
+    }
+    this.forceUpdate();
+    return validate;
+  }
+
+  validatetsFields(){
+    const {tsFields,inputStreamsArr,intervalType} = this.state;
+
+    const arr=[];
+    inputStreamsArr.forEach(function(inputStream){
+      const index = _.findIndex(tsFields, (ts) => {
+        return inputStream.streamId === ts.split(':')[0];
+      });
+      if(index === -1){
+        arr.push(inputStream.streamId);
+      }
+    });
+    if(arr.length && intervalType === '.Window$EventTime'){
+      FSReactToastr.error(
+        <CommonNotification flag="error" content={"Select timestamp field from the "+arr.join(', ')}/>, '', toastOpt);
+    }
+    return arr.length && intervalType === '.Window$EventTime' ? arr: [];
+  }
+
+  /*
+    validateData check the validation of
+     outputKeys,windowNum and joinStreams array
+  */
+  validateData() {
+    let {outputKeys, windowNum, joinStreams, intervalType, tsFields, lagMs} = this.state;
+    let validData = true;
+    if(!this.validateField('joinFromStreamName')){
+      validData = false;
+    }
+    if(!this.validateField('joinFromStreamKey')){
+      validData = false;
+    }
+    if (!this.validateField('outputKeysObjArr') || outputKeys.length !== this.aliasValidator()) {
+      validData = false;
+    }
+    if (!this.validateField('windowNum')){
+      validData = false;
+    }
+    if(intervalType === '.Window$EventTime' && (!this.validateField('tsFields') || this.validatetsFields().length || !this.validateField('lagMs'))){
+      validData = false;
+    }
+    joinStreams.map((s, i) => {
+      if(!this.validateField('joinStreams'+i+'type', s.type)){
+        validData = false;
+      }
+      if(!this.validateField('joinStreams'+i+'stream', s.stream)){
+        validData = false;
+      }
+      if(!this.validateField('joinStreams'+i+'key', s.key)){
+        validData = false;
+      }
+      if(!this.validateField('joinStreams'+i+'with', s.with)){
+        validData = false;
+      }
+      /*if (s.stream === '' || s.type === '' || s.key === '' || s.with === '') {
+        validData = false;
+      }*/
+    });
+    return validData;
+  }
+
+  generateStreamFields = (keyData) => {
     let tempFieldsArr=[];
     _.map(keyData,(o) => {
       tempFieldsArr = _.concat(tempFieldsArr, o.fields ? o.fields : o);
     });
-    this.streamData.fields = tempFieldsArr;
-
-    const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey(arr);
-    const groupKeysByDots = ProcessorUtils.modifyGroupKeyByDots(gKeys);
-    this.setState({outputKeysObjArr : arr, outputKeys: keys, outputStreamFields: keyData,outputGroupByDotKeys : groupKeysByDots});
-    this.context.ParentForm.setState({outputStreamObj: this.streamData});
+    return tempFieldsArr;
   }
+
+
 
   /*
     commonHandlerChange Method accept keyType, obj and it handles multiple event [durationType,slidingDurationType,intervalType]
@@ -409,15 +603,15 @@ export default class JoinNodeForm extends Component {
       }else if(keyName === 'intervalType'){
         const stateObj = {intervalType : obj.value};
         if(obj.value !== '.Window$EventTime'){
-          stateObj.tsField = null;
+          stateObj.tsFields = null;
           stateObj.lagMs = 0;
         }
         this.setState(stateObj);
-      }else if(keyName === 'tsField'){
+      }else if(keyName === 'tsFields'){
         this.setState({
-          tsField: obj.map((o) => {
-            return o.uniqueID;
-          }).join(',')
+          tsFields: obj
+        }, () => {
+          this.validateField('tsFields');
         });
       }
     }
@@ -437,7 +631,11 @@ export default class JoinNodeForm extends Component {
     if (name === 'windowNum') {
       obj['slidingNum'] = value;
     }
-    this.setState(obj);
+    this.setState(obj, () => {
+      if(name !== "lagMs"){
+        this.validateField(name);
+      }
+    });
   }
 
   /*
@@ -472,6 +670,8 @@ export default class JoinNodeForm extends Component {
           [],
         joinFromStreamKey: '',
         joinStreams: joinStreams
+      }, () => {
+        this.validateField('joinFromStreamName');
       });
     }
   }
@@ -485,6 +685,8 @@ export default class JoinNodeForm extends Component {
       joinFromStreamKey: obj
         ? obj.name
         : ""
+    }, () => {
+      this.validateField('joinFromStreamKey');
     });
   }
 
@@ -497,7 +699,9 @@ export default class JoinNodeForm extends Component {
     joinStreams[key].type = obj
       ? obj.value
       : '';
-    this.setState({joinStreams: joinStreams});
+    this.setState({joinStreams: joinStreams}, () => {
+      this.validateField('joinStreams'+key+'type', joinStreams[key].type);
+    });
   }
 
   /*
@@ -544,7 +748,9 @@ export default class JoinNodeForm extends Component {
       joinStreams[key].stream = '';
       joinStreams[key].keyOptions = [];
     }
-    this.setState({joinStreams: joinStreams});
+    this.setState({joinStreams: joinStreams}, () => {
+      this.validateField('joinStreams'+key+'stream', joinStreams[key].stream);
+    });
   }
 
   /*
@@ -556,7 +762,9 @@ export default class JoinNodeForm extends Component {
     joinStreams[key].key = obj
       ? obj.name
       : '';
-    this.setState({joinStreams: joinStreams});
+    this.setState({joinStreams: joinStreams}, () => {
+      this.validateField('joinStreams'+key+'key', joinStreams[key].key);
+    });
   }
 
   /*
@@ -568,28 +776,15 @@ export default class JoinNodeForm extends Component {
     joinStreams[key].with = obj
       ? obj.streamId
       : '';
-    this.setState({joinStreams: joinStreams});
+    this.setState({joinStreams: joinStreams}, () => {
+      this.validateField('joinStreams'+key+'with', joinStreams[key].with);
+    });
   }
 
-  /*
-    validateData check the validation of
-     outputKeys,windowNum and joinStreams array
-  */
-  validateData() {
-    let {outputKeys, windowNum, joinStreams, intervalType, tsField, lagMs} = this.state;
-    let validData = true;
-    if (outputKeys.length === 0 || windowNum === '') {
-      return false;
-    }
-    if(intervalType === '.Window$EventTime' && (tsField === null || tsField.length === 0 || lagMs === '')){
-      return false;
-    }
-    joinStreams.map((s) => {
-      if (s.stream === '' || s.type === '' || s.key === '' || s.with === '') {
-        validData = false;
-      }
-    });
-    return validData;
+  aliasValidator = () => {
+    const {outputKeysObjArr} = this.state;
+    let  arr = _.uniqBy(outputKeysObjArr, 'alias');
+    return arr.length;
   }
 
   formatNestedField(obj) {
@@ -701,7 +896,8 @@ export default class JoinNodeForm extends Component {
       fieldList,
       outputGroupByDotKeys,
       lagMs,
-      tsField
+      tsFields,
+      outputKeysObjArr
     } = this.state;
     if(intervalType === '.Window$EventTime'){
       intervalType = '.Window$Duration';
@@ -718,12 +914,12 @@ export default class JoinNodeForm extends Component {
     const tempStreamArr = _.cloneDeep(inputStreamsArr);
     const modifyGroup = ProcessorUtils.modifyGroupArrKeys(tempGroupData,tempStreamArr);
 
-    let finalOutputKeys = modifyGroup.map((keyName)=>{
+    let finalOutputKeys = modifyGroup.map((keyName,i)=>{
       if(keyName.search(':') === -1){
-        return keyName;
+        return keyName +' as ' + outputKeysObjArr[i].alias;
       } else {
         let fieldName = keyName.split(':')[1];
-        return keyName +' as ' + fieldName;
+        return keyName +' as ' + outputKeysObjArr[i].alias;
       }
     });
 
@@ -741,7 +937,7 @@ export default class JoinNodeForm extends Component {
         slidingInterval: {
           class: intervalType
         },
-        tsField: tsField,
+        tsFields: tsFields,
         lagMs: lagMs
       },
       outputStream: this.streamData.streamId
@@ -780,7 +976,7 @@ export default class JoinNodeForm extends Component {
     }
 
     // outputStreams data is formated for the server
-    const streamFields  = ProcessorUtils.generateOutputStreamsArr(this.streamData.fields,0);
+    const streamFields  = ProcessorUtils.generateOutputStreamsArr(this.streamData.fields,0,'alias');
 
     if(this.joinProcessorNode.outputStreams.length > 0){
       this.joinProcessorNode.outputStreams[0].fields = streamFields;
@@ -832,8 +1028,9 @@ export default class JoinNodeForm extends Component {
       outputFieldsList,
       outputKeysObjArr,
       lagMs,
-      tsField,
-      tsFieldOptions
+      tsFields,
+      tsFieldsOptions,
+      validationErrors
     } = this.state;
     const disabledFields = this.props.testRunActivated ? true : !editMode;
     return(
@@ -852,10 +1049,11 @@ export default class JoinNodeForm extends Component {
               <div className="form-group row">
                 <div className="col-sm-3">
                   <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Name of input stream</Popover>}>
-                    <label>Select Stream</label>
+                    <label>Select Stream<span className="text-danger">*</span></label>
                   </OverlayTrigger>
                   <div>
-                    <Select value={joinFromStreamName} options={inputStreamsArr} onChange={this.handleJoinFromStreamChange.bind(this)} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
+                    <Select value={joinFromStreamName} options={inputStreamsArr} className={!!validationErrors.joinFromStreamName ? 'invalidSelect' : ''} onChange={this.handleJoinFromStreamChange.bind(this)} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
+                    <p className="text-danger">{validationErrors.joinFromStreamName}</p>
                   </div>
                 </div>
                 <div className="col-sm-3">
@@ -864,10 +1062,13 @@ export default class JoinNodeForm extends Component {
                         ? (
                           <strong>with</strong>
                         )
-                        : ''}</label>
+                        : ''}
+                      <span className="text-danger">*</span>
+                    </label>
                   </OverlayTrigger>
                   <div>
-                    <Select value={joinFromStreamKey} options={this.state.joinFromStreamKeys} onChange={this.handleJoinFromKeyChange.bind(this)} required={true} disabled={disabledFields || joinFromStreamName === ''} clearable={false} backspaceRemoves={false} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+                    <Select value={joinFromStreamKey} options={this.state.joinFromStreamKeys} className={!!validationErrors.joinFromStreamKey ? 'invalidSelect' : ''} onChange={this.handleJoinFromKeyChange.bind(this)} required={true} disabled={disabledFields || joinFromStreamName === ''} clearable={false} backspaceRemoves={false} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+                    <p className="text-danger">{validationErrors.joinFromStreamKey}</p>
                   </div>
                 </div>
               </div>
@@ -875,24 +1076,32 @@ export default class JoinNodeForm extends Component {
                 ? <div className="form-group row no-margin">
                     <div className="col-sm-3">
                       <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Type of join</Popover>}>
-                        <label>Join Type</label>
+                        <label>Join Type
+                          <span className="text-danger">*</span>
+                        </label>
                       </OverlayTrigger>
                     </div>
                     <div className="col-sm-3">
                       <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Name of input stream</Popover>}>
-                        <label>Select Stream</label>
+                        <label>Select Stream
+                          <span className="text-danger">*</span>
+                        </label>
                       </OverlayTrigger>
                     </div>
                     <div className="col-sm-3">
                       <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Field name</Popover>}>
-                        <label>Select Field</label>
+                        <label>Select Field
+                          <span className="text-danger">*</span>
+                        </label>
                       </OverlayTrigger>
                     </div>
                     <div className="col-sm-3">
                       <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Name of input stream</Popover>}>
                         <label>
                           <strong>With </strong>
-                          Stream</label>
+                          Stream
+                          <span className="text-danger">*</span>
+                        </label>
                       </OverlayTrigger>
                     </div>
                   </div>
@@ -902,16 +1111,16 @@ export default class JoinNodeForm extends Component {
                 return (
                   <div className="form-group row" key={i}>
                     <div className="col-sm-3">
-                      <Select value={s.type} options={joinTypes} onChange={this.handleJoinTypeChange.bind(this, i)} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false}/>
+                      <Select value={s.type} options={joinTypes} className={!!(validationErrors['joinStreams'+i+'type']) ? 'invalidSelect' : ''} onChange={this.handleJoinTypeChange.bind(this, i)} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false}/>
                     </div>
                     <div className="col-sm-3">
-                      <Select value={s.stream} options={s.streamOptions} onChange={this.handleJoinStreamChange.bind(this, i)} required={true} disabled={disabledFields || s.streamOptions.length === 0} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
+                      <Select value={s.stream} options={s.streamOptions} className={!!(validationErrors['joinStreams'+i+'stream']) ? 'invalidSelect' : ''} onChange={this.handleJoinStreamChange.bind(this, i)} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
                     </div>
                     <div className="col-sm-3">
-                      <Select value={s.key} options={s.keyOptions} onChange={this.handleJoinKeyChange.bind(this, i)} required={true} disabled={disabledFields || s.stream === '' || s.keyOptions.length === 0} clearable={false} backspaceRemoves={false} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+                      <Select value={s.key} options={s.keyOptions} className={!!(validationErrors['joinStreams'+i+'key']) ? 'invalidSelect' : ''} onChange={this.handleJoinKeyChange.bind(this, i)} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
                     </div>
                     <div className="col-sm-3">
-                      <Select value={s.with} options={s.withOptions} onChange={this.handleJoinWithChange.bind(this, i)} required={true} disabled={disabledFields || s.withOptions.length === 0} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
+                      <Select value={s.with} options={s.withOptions} className={!!(validationErrors['joinStreams'+i+'with']) ? 'invalidSelect' : ''} onChange={this.handleJoinWithChange.bind(this, i)} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
                     </div>
                   </div>
                 );
@@ -921,7 +1130,7 @@ export default class JoinNodeForm extends Component {
                 <div className="row">
                   <div className="col-sm-6">
                     <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Window interval type</Popover>}>
-                      <label>Window Interval Type
+                      <label>Window Type
                         <span className="text-danger">*</span>
                       </label>
                     </OverlayTrigger>
@@ -931,22 +1140,23 @@ export default class JoinNodeForm extends Component {
                   </div>
                   {intervalType === '.Window$EventTime' ?
                   [
-                    <div className="col-sm-3">
-                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Timestamp Field</Popover>}>
-                        <label>Timestamp Field
+                    <div className="col-sm-3" key={10}>
+                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Field (of type long) indicating the event's time</Popover>}>
+                        <label>Timestamp Fields
                           <span className="text-danger">*</span>
                         </label>
                       </OverlayTrigger>
-                      <Select value={tsField} options={tsFieldOptions} onChange={this.commonHandlerChange.bind(this, 'tsField')} multi={true} required={true} disabled={disabledFields} valueKey="uniqueID" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
-                      {/*<Select value={tsField} options={tsFieldOptions} onChange={this.commonHandlerChange.bind(this, 'tsField')} required={true} disabled={disabledFields} clearable={false}/>*/}
+                      {/*<Select value={tsFields} options={tsFieldsOptions} className={!!validationErrors.tsFields ? 'invalidSelect' : ''} onChange={this.commonHandlerChange.bind(this, 'tsFields')} multi={true} required={true} disabled={disabledFields} valueKey="uniqueID" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>*/}
+                      <TimeStamp value={tsFields} options={tsFieldsOptions} onChange={this.commonHandlerChange.bind(this, 'tsFields')}/>
+                      <p className="text-danger">{validationErrors.tsFields}</p>
                     </div>,
-                    <div className="col-sm-3">
-                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Lag Milliseconds</Popover>}>
+                    <div className="col-sm-3" key={20}>
+                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Max time to wait after window close, for a late arriving event to be part of its window</Popover>}>
                         <label>Lag Milliseconds
                           <span className="text-danger">*</span>
                         </label>
                       </OverlayTrigger>
-                      <input name="lagMs" value={lagMs} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={disabledFields} min="0" inputMode="numeric"/>
+                      <input name="lagMs" value={lagMs} onChange={this.handleValueChange.bind(this)} type="number" className="form-control"  required={true} disabled={disabledFields} min="0" inputMode="numeric"/>
                     </div>
                   ]
                     :
@@ -977,7 +1187,8 @@ export default class JoinNodeForm extends Component {
                   </OverlayTrigger>
                   <div className="row">
                     <div className="col-sm-6">
-                      <input name="windowNum" value={windowNum} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={disabledFields} min="0" inputMode="numeric"/>
+                      <input name="windowNum" value={windowNum} onChange={this.handleValueChange.bind(this)} type="number" className={"form-control " + (!!validationErrors.windowNum ? 'invalidInput' : '')} required={true} disabled={disabledFields} min="0" inputMode="numeric"/>
+                      <p className="text-danger">{validationErrors.windowNum}</p>
                     </div>
                     {intervalType === '.Window$Duration' || intervalType === '.Window$EventTime'
                       ? <OverlayTrigger trigger={['hover']} placement="top" overlay={<Popover id="popover-trigger-hover">Duration type</Popover>}>
@@ -994,7 +1205,8 @@ export default class JoinNodeForm extends Component {
                   </OverlayTrigger>
                   <div className="row">
                     <div className="col-sm-6">
-                      <input name="slidingNum" value={slidingNum} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={disabledFields} min="0" inputMode="numeric"/>
+                      <input name="slidingNum" value={slidingNum} onChange={this.handleValueChange.bind(this)} type="number" className={"form-control "+ (!!validationErrors.slidingNum ? 'invalidInput' : '')} required={true} disabled={disabledFields} min="0" inputMode="numeric"/>
+                      <p className="text-danger">{validationErrors.slidingNum}</p>
                     </div>
                     {intervalType === '.Window$Duration' || intervalType === '.Window$EventTime'
                       ? <OverlayTrigger trigger={['hover']} placement="top" overlay={<Popover id="popover-trigger-hover">Duration type</Popover>}>
@@ -1007,23 +1219,41 @@ export default class JoinNodeForm extends Component {
                 </div>
               </div>
               <div className="form-group">
-                <div className="col-sm-6">
-                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Output keys</Popover>}>
+                <div className="col-sm-8">
+                  <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Output Fields<br /> Alias for output fields are mandatory</Popover>}>
                     <label>Output Fields
                       <span className="text-danger">*</span>
+                      <span style={{marginLeft : '10px'}}className="text-info"><i className="fa fa-info-circle" aria-hidden="true"></i> Alias for output fields are mandatory</span>
                     </label>
                   </OverlayTrigger>
                 </div>
-                <div className="col-sm-6">
+                <div className="col-sm-4">
                   <label className="pull-right">
                     <a href="javascript:void(0)" onClick={this.handleSelectAllOutputFields}>Select All</a>
                   </label>
                 </div>
                 <div className="row">
                   <div className="col-sm-12">
-                    <Select className="menu-outer-top" value={outputKeysObjArr} options={outputFieldsList} onChange={this.handleFieldsChange.bind(this)} multi={true} required={true} disabled={disabledFields} valueKey="uniqueID" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+                    <Select className={"menu-outer-top " + (!!validationErrors.outputKeysObjArr ? 'invalidSelect' : '')} value={outputKeysObjArr} options={ProcessorUtils.filterOptions(outputKeysObjArr, outputFieldsList)} onChange={this.handleFieldsChange.bind(this)} multi={true} required={true} disabled={disabledFields} valueKey="uniqueID" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)} valueRenderer={this.renderValueComponent.bind(this)} backspaceRemoves={false} deleteRemoves={false}/>
+                    <p className="text-danger">{validationErrors.outputKeysObjArr}</p>
                   </div>
                 </div>
+                {inputStreamsArr.length > 1 ?
+                <div className="row">
+                  <div className="col-sm-12" style={{marginTop: '5px'}}>
+                    <label>OUTPUT STREAM LEGENDS : </label>
+                      {
+                        _.map(this.legends, (legend,i) => {
+                          return (
+                            <div  key={legend+i} style={{display:'inline', margin: '0px 10px'}}>
+                              <label className="label label-info" style={{color: 'white', padding: '2px 6px'}}>{(++i)}</label> =  <span>{legend}</span>
+                            </div>
+                          );
+                        })
+                      }
+                  </div>
+                </div>
+                : null }
               </div>
             </form>
         }
