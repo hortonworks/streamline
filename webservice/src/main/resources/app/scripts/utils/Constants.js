@@ -97,6 +97,8 @@ const unknownAccessCode = {
   'loggedOut': 2
 };
 
+const schemaDataType = ["STRING", "INTEGER", "FLOAT", "LONG", "DOUBLE", "BOOLEAN", "BYTE", "SHORT"];
+
 export {
   baseUrl,
   pageSize,
@@ -111,5 +113,6 @@ export {
   rolePriorities,
   menuName,
   accessCapabilities,
-  unknownAccessCode
+  unknownAccessCode,
+  schemaDataType
 };
