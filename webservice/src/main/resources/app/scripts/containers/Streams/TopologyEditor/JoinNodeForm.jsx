@@ -22,7 +22,7 @@ import Utils from '../../../utils/Utils';
 import FSReactToastr from '../../../components/FSReactToastr';
 import TopologyREST from '../../../rest/TopologyREST';
 import {Scrollbars} from 'react-custom-scrollbars';
-import ProcessorUtils  from '../../../utils/ProcessorUtils';
+import ProcessorUtils, {Streams}  from '../../../utils/ProcessorUtils';
 
 export default class JoinNodeForm extends Component {
   static propTypes = {
@@ -45,11 +45,15 @@ export default class JoinNodeForm extends Component {
       parallelism: 1,
       editMode: editMode,
       fieldList: [],
-      intervalType: ".Window$Duration",
+      intervalType: ".Window$EventTime",
       intervalTypeArr: [
         {
+          value: ".Window$EventTime",
+          label: "Event Time"
+        },
+        {
           value: ".Window$Duration",
-          label: "Time"
+          label: "Processing Time"
         }, {
           value: ".Window$Count",
           label: "Count"
@@ -81,7 +85,9 @@ export default class JoinNodeForm extends Component {
       inputStreamsArr: [],
       outputFieldsList : [],
       showLoading : true,
-      outputGroupByDotKeys : []
+      outputGroupByDotKeys : [],
+      lagMs: 0,
+      tsField: null
     };
     this.state = obj;
     this.fetchDataAgain = false;
@@ -178,6 +184,9 @@ export default class JoinNodeForm extends Component {
     });
     const unModifyFieldList = ProcessorUtils.getSchemaFields(unModifyList, 0,false);
 
+    const streams = new Streams(inputStreamFromContext);
+    const filteredStreams = streams.filterByType('LONG');
+
     let stateObj = {
       fieldList: unModifyFieldList,
       parallelism: configFields.parallelism || 1,
@@ -188,7 +197,8 @@ export default class JoinNodeForm extends Component {
         : undefined,
       inputStreamsArr: inputStreamFromContext,
       joinStreams: joinStreams,
-      outputFieldsList : tempFieldsArr
+      outputFieldsList : tempFieldsArr,
+      tsFieldOptions: streams.toSelectOption(filteredStreams)
     };
 
     // prefetchValue is use to call the this.populateOutputStreamsFromServer() after state has been SET
@@ -252,7 +262,13 @@ export default class JoinNodeForm extends Component {
     const configWindowObj = this.joinProcessorNode.config.properties.window;
     if(!_.isEmpty(configWindowObj)){
       if (configWindowObj.windowLength.class === '.Window$Duration') {
-        stateObj.intervalType = '.Window$Duration';
+        if(configWindowObj.tsField != null){
+          stateObj.intervalType = '.Window$EventTime';
+          stateObj.lagMs = configWindowObj.lagMs;
+          stateObj.tsField = configWindowObj.tsField;
+        }else{
+          stateObj.intervalType = '.Window$Duration';
+        }
         let obj = Utils.millisecondsToNumber(configWindowObj.windowLength.durationMs);
         stateObj.windowNum = obj.number;
         stateObj.durationType = obj.type;
@@ -385,11 +401,25 @@ export default class JoinNodeForm extends Component {
   commonHandlerChange(keyType,obj){
     if(obj){
       const keyName = keyType.trim();
-      keyName === "durationType"
-      ? this.setState({durationType : obj.value,slidingDurationType: obj.value})
-      : keyName === "slidingDurationType"
-        ? this.setState({slidingDurationType : obj.value})
-        : this.setState({intervalType : obj.value});
+
+      if(keyName === "durationType"){
+        this.setState({durationType : obj.value,slidingDurationType: obj.value});
+      }else if(keyName === "slidingDurationType"){
+        this.setState({slidingDurationType : obj.value});
+      }else if(keyName === 'intervalType'){
+        const stateObj = {intervalType : obj.value};
+        if(obj.value !== '.Window$EventTime'){
+          stateObj.tsField = null;
+          stateObj.lagMs = 0;
+        }
+        this.setState(stateObj);
+      }else if(keyName === 'tsField'){
+        this.setState({
+          tsField: obj.map((o) => {
+            return o.uniqueID;
+          }).join(',')
+        });
+      }
     }
   }
 
@@ -546,9 +576,12 @@ export default class JoinNodeForm extends Component {
      outputKeys,windowNum and joinStreams array
   */
   validateData() {
-    let {outputKeys, windowNum, joinStreams} = this.state;
+    let {outputKeys, windowNum, joinStreams, intervalType, tsField, lagMs} = this.state;
     let validData = true;
     if (outputKeys.length === 0 || windowNum === '') {
+      return false;
+    }
+    if(intervalType === '.Window$EventTime' && (tsField === null || tsField.length === 0 || lagMs === '')){
       return false;
     }
     joinStreams.map((s) => {
@@ -666,8 +699,13 @@ export default class JoinNodeForm extends Component {
       joinStreams,
       inputStreamsArr,
       fieldList,
-      outputGroupByDotKeys
+      outputGroupByDotKeys,
+      lagMs,
+      tsField
     } = this.state;
+    if(intervalType === '.Window$EventTime'){
+      intervalType = '.Window$Duration';
+    }
     let fromStreamObj = fieldList.find((field) => {
       return field.name === joinFromStreamKey;
     });
@@ -703,8 +741,8 @@ export default class JoinNodeForm extends Component {
         slidingInterval: {
           class: intervalType
         },
-        tsField: null,
-        lagMs: 0
+        tsField: tsField,
+        lagMs: lagMs
       },
       outputStream: this.streamData.streamId
     };
@@ -792,7 +830,10 @@ export default class JoinNodeForm extends Component {
       joinTypes,
       showLoading,
       outputFieldsList,
-      outputKeysObjArr
+      outputKeysObjArr,
+      lagMs,
+      tsField,
+      tsFieldOptions
     } = this.state;
     const disabledFields = this.props.testRunActivated ? true : !editMode;
     return(
@@ -878,7 +919,7 @@ export default class JoinNodeForm extends Component {
   }
               <div className="form-group">
                 <div className="row">
-                  <div className="col-sm-12">
+                  <div className="col-sm-6">
                     <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Window interval type</Popover>}>
                       <label>Window Interval Type
                         <span className="text-danger">*</span>
@@ -888,6 +929,29 @@ export default class JoinNodeForm extends Component {
                       <Select value={intervalType} options={intervalTypeArr} onChange={this.commonHandlerChange.bind(this,'intervalType')} required={true} disabled={disabledFields} clearable={false}/>
                     </div>
                   </div>
+                  {intervalType === '.Window$EventTime' ?
+                  [
+                    <div className="col-sm-3">
+                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Timestamp Field</Popover>}>
+                        <label>Timestamp Field
+                          <span className="text-danger">*</span>
+                        </label>
+                      </OverlayTrigger>
+                      <Select value={tsField} options={tsFieldOptions} onChange={this.commonHandlerChange.bind(this, 'tsField')} multi={true} required={true} disabled={disabledFields} valueKey="uniqueID" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+                      {/*<Select value={tsField} options={tsFieldOptions} onChange={this.commonHandlerChange.bind(this, 'tsField')} required={true} disabled={disabledFields} clearable={false}/>*/}
+                    </div>,
+                    <div className="col-sm-3">
+                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Lag Milliseconds</Popover>}>
+                        <label>Lag Milliseconds
+                          <span className="text-danger">*</span>
+                        </label>
+                      </OverlayTrigger>
+                      <input name="lagMs" value={lagMs} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={disabledFields} min="0" inputMode="numeric"/>
+                    </div>
+                  ]
+                    :
+                    null
+                  }
                   {/*<div className="col-sm-6">
                                                       <label>Parallelism</label>
                                                       <input
@@ -915,7 +979,7 @@ export default class JoinNodeForm extends Component {
                     <div className="col-sm-6">
                       <input name="windowNum" value={windowNum} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={disabledFields} min="0" inputMode="numeric"/>
                     </div>
-                    {intervalType === '.Window$Duration'
+                    {intervalType === '.Window$Duration' || intervalType === '.Window$EventTime'
                       ? <OverlayTrigger trigger={['hover']} placement="top" overlay={<Popover id="popover-trigger-hover">Duration type</Popover>}>
                         <div className="col-sm-6">
                           <Select value={durationType} options={durationTypeArr} onChange={this.commonHandlerChange.bind(this,'durationType')} required={true} disabled={disabledFields} clearable={false}/>
@@ -932,7 +996,7 @@ export default class JoinNodeForm extends Component {
                     <div className="col-sm-6">
                       <input name="slidingNum" value={slidingNum} onChange={this.handleValueChange.bind(this)} type="number" className="form-control" required={true} disabled={disabledFields} min="0" inputMode="numeric"/>
                     </div>
-                    {intervalType === '.Window$Duration'
+                    {intervalType === '.Window$Duration' || intervalType === '.Window$EventTime'
                       ? <OverlayTrigger trigger={['hover']} placement="top" overlay={<Popover id="popover-trigger-hover">Duration type</Popover>}>
                         <div className="col-sm-6">
                           <Select value={slidingDurationType} options={durationTypeArr} onChange={this.commonHandlerChange.bind(this,'slidingDurationType')} required={true} disabled={disabledFields} clearable={false}/>
