@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+
+    <lst name="responseHeader">
+        <int name="status">0</int>
+        <int name="QTime">9</int>
+        <lst name="params">
+            <str name="q">*:*</str>
+            <str name="indent">on</str>
+            <arr name="fq">
+                <str>type:storm_worker</str>
+                <str>sdi_streamline_topology_id:1</str>
+            </arr>
+            <str name="sort">logtime desc</str>
+            <str name="rows">5</str>
+            <str name="wt">xml</str>
+            <str name="_">1511508905220</str>
+        </lst>
+    </lst>
+    <result name="response" numFound="1434" start="0">
+        <doc>
+            <str name="cluster">cl1</str>
+            <str name="sdi_storm_worker_port">6700</str>
+            <str name="level">DEBUG</str>
+            <long name="event_count">1</long>
+            <str name="ip">8.8.8.8</str>
+            <str name="sdi_storm_topology_id">streamline-1-SimpleTopology-2-1511506224</str>
+            <str name="type">storm_worker</str>
+            <str name="sdi_streamline_component_name">SOURCE</str>
+            <long name="seq_num">8139</long>
+            <str name="path">/var/log/storm/workers-artifacts/streamline-1-SimpleTopology-2-1511506224/6700/worker.log</str>
+            <str name="sdi_streamline_topology_id">1</str>
+            <str name="thread_name">Thread-8-1-SOURCE-executor[1 1]</str>
+            <str name="host">host1</str>
+            <str name="log_message">Polled [0] records from Kafka. [0] uncommitted offsets across all topic partitions</str>
+            <str name="logger_name">o.a.s.k.s.KafkaSpout</str>
+            <str name="sdi_streamline_topology_name">SimpleTopology</str>
+            <str name="id">6ccf2d8b-a054-4101-a9fc-eaf849f8641d</str>
+            <str name="message_md5">-781060069358189183</str>
+            <date name="logtime">2017-11-24T07:48:58.347Z</date>
+            <str name="event_md5">15115097383476641010307367239884</str>
+            <int name="logfile_line_number">5867</int>
+            <str name="_ttl_">+7DAYS</str>
+            <date name="_expire_at_">2017-12-01T07:48:58.751Z</date>
+            <long name="_version_">1584932835825811465</long></doc>
+        <doc>
+            <str name="cluster">cl1</str>
+            <str name="sdi_storm_worker_port">6700</str>
+            <str name="level">DEBUG</str>
+            <long name="event_count">1</long>
+            <str name="ip">8.8.8.8</str>
+            <str name="sdi_storm_topology_id">streamline-1-SimpleTopology-2-1511506224</str>
+            <str name="type">storm_worker</str>
+            <str name="sdi_streamline_component_name">SOURCE</str>
+            <long name="seq_num">8140</long>
+            <str name="path">/var/log/storm/workers-artifacts/streamline-1-SimpleTopology-2-1511506224/6700/worker.log</str>
+            <str name="sdi_streamline_topology_id">1</str>
+            <str name="thread_name">Thread-8-1-SOURCE-executor[1 1]</str>
+            <str name="host">host1</str>
+            <str name="log_message">Topic partitions with entries ready to be retried [{}]</str>
+            <str name="logger_name">o.a.s.k.s.KafkaSpoutRetryExponentialBackoff</str>
+            <str name="sdi_streamline_topology_name">SimpleTopology</str>
+            <str name="id">5057fbe4-e672-45bf-bae0-38199983a1af</str>
+            <str name="message_md5">-5370743142998518809</str>
+            <date name="logtime">2017-11-24T07:48:58.348Z</date>
+            <str name="event_md5">1511509738348-627861834468380206</str>
+            <int name="logfile_line_number">5868</int>
+            <str name="_ttl_">+7DAYS</str>
+            <date name="_expire_at_">2017-12-01T07:48:58.751Z</date>
+            <long name="_version_">1584932835825811466</long></doc>
+
+        <doc>
+            <str name="cluster">cl1</str>
+            <str name="sdi_storm_worker_port">6700</str>
+            <str name="level">DEBUG</str>
+            <long name="event_count">1</long>
+            <str name="ip">8.8.8.8</str>
+            <str name="sdi_storm_topology_id">streamline-1-SimpleTopology-2-1511506224</str>
+            <str name="type">storm_worker</str>
+            <str name="sdi_streamline_component_name">SOURCE</str>
+            <long name="seq_num">8141</long>
+            <str name="path">/var/log/storm/workers-artifacts/streamline-1-SimpleTopology-2-1511506224/6700/worker.log</str>
+            <str name="sdi_streamline_topology_id">1</str>
+            <str name="thread_name">Thread-8-1-SOURCE-executor[1 1]</str>
+            <str name="host">host1</str>
+            <str name="log_message">Polled [0] records from Kafka. [0] uncommitted offsets across all topic partitions</str>
+            <str name="logger_name">o.a.s.k.s.KafkaSpout</str>
+            <str name="sdi_streamline_topology_name">SimpleTopology</str>
+            <str name="id">836c723e-90e9-4824-95c5-b99b3967ea26</str>
+            <str name="message_md5">-781060069358189183</str>
+            <date name="logtime">2017-11-24T07:48:58.549Z</date>
+            <str name="event_md5">1511509738549-8043280530774360873</str>
+            <int name="logfile_line_number">5869</int>
+            <str name="_ttl_">+7DAYS</str>
+            <date name="_expire_at_">2017-12-01T07:48:58.751Z</date>
+            <long name="_version_">1584932835825811467</long></doc>
+        <doc>
+            <str name="cluster">cl1</str>
+            <str name="sdi_storm_worker_port">6700</str>
+            <str name="level">DEBUG</str>
+            <long name="event_count">1</long>
+            <str name="ip">8.8.8.8</str>
+            <str name="sdi_storm_topology_id">streamline-1-SimpleTopology-2-1511506224</str>
+            <str name="type">storm_worker</str>
+            <str name="sdi_streamline_component_name">SOURCE</str>
+            <long name="seq_num">8142</long>
+            <str name="path">/var/log/storm/workers-artifacts/streamline-1-SimpleTopology-2-1511506224/6700/worker.log</str>
+            <str name="sdi_streamline_topology_id">1</str>
+            <str name="thread_name">Thread-8-1-SOURCE-executor[1 1]</str>
+            <str name="host">host1</str>
+            <str name="log_message">Topic partitions with entries ready to be retried [{}]</str>
+            <str name="logger_name">o.a.s.k.s.KafkaSpoutRetryExponentialBackoff</str>
+            <str name="sdi_streamline_topology_name">SimpleTopology</str>
+            <str name="id">8a5836db-2397-4f4f-b6c2-55d61e191881</str>
+            <str name="message_md5">-5370743142998518809</str>
+            <date name="logtime">2017-11-24T07:48:58.55Z</date>
+            <str name="event_md5">1511509738550-8541202563198249423</str>
+            <int name="logfile_line_number">5870</int>
+            <str name="_ttl_">+7DAYS</str>
+            <date name="_expire_at_">2017-12-01T07:48:58.751Z</date>
+            <long name="_version_">1584932835826860032</long></doc>
+        <doc>
+            <str name="cluster">cl1</str>
+            <str name="sdi_storm_worker_port">6700</str>
+            <str name="level">INFO</str>
+            <long name="event_count">1</long>
+            <str name="ip">8.8.8.8</str>
+            <str name="sdi_storm_topology_id">streamline-1-SimpleTopology-2-1511506224</str>
+            <str name="type">storm_worker</str>
+            <str name="sdi_streamline_component_name">SOURCE</str>
+            <long name="seq_num">162</long>
+            <str name="path">/var/log/storm/workers-artifacts/streamline-1-SimpleTopology-2-1511506224/6700/worker.log</str>
+            <str name="sdi_streamline_topology_id">1</str>
+            <str name="thread_name">Thread-8-1-SOURCE-executor[1 1]</str>
+            <str name="host">host1</str>
+            <str name="log_message">Trying to load entry for cache with key [Key{schemaVersionKey=null, schemaIdVersion=SchemaIdVersion{schemaMetadataId=2, version=1, schemaVersionId=null}}] from target service</str>
+            <str name="logger_name">c.h.r.s.SchemaVersionInfoCache</str>
+            <str name="sdi_streamline_topology_name">SimpleTopology</str>
+            <str name="id">f7284874-717b-4251-b750-271cf33627ad</str>
+            <str name="message_md5">3777527502925731377</str>
+            <date name="logtime">2017-11-24T15:43:37.902Z</date>
+            <str name="event_md5">1511538217902-4326451453828180819</str>
+            <int name="logfile_line_number">325</int>
+            <str name="_ttl_">+7DAYS</str>
+            <date name="_expire_at_">2017-12-01T07:25:22.939Z</date>
+            <long name="_version_">1584931351287562242</long></doc>
+    </result>
+</response>
