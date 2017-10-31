@@ -21,13 +21,16 @@ import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.storm.common.logger.LogLevelLoggerResponse;
 import com.hortonworks.streamline.streams.storm.common.logger.LogLevelRequest;
 import com.hortonworks.streamline.streams.storm.common.logger.LogLevelResponse;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.glassfish.jersey.client.ClientConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.Subject;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import java.io.IOException;
@@ -43,6 +46,10 @@ public class StormRestAPIClient {
     private final String stormApiRootUrl;
     private final Subject subject;
     private final Client client;
+
+    public StormRestAPIClient(String stormApiRootUrl, Subject subject) {
+        this(ClientBuilder.newClient(new ClientConfig()), stormApiRootUrl, subject);
+    }
 
     public StormRestAPIClient(Client client, String stormApiRootUrl, Subject subject) {
         this.client = client;
@@ -109,6 +116,62 @@ public class StormRestAPIClient {
         });
 
         return response;
+    }
+
+    public boolean enableSampling(String stormTopologyId, int samplingPct, String asUser) {
+        // topology/<topologyId>/debug/enable/<pct>?doAsUser=<asUser>
+        Map result = doPostRequestWithEmptyBody(generateTopologyUrl(stormTopologyId, asUser, "debug/enable/" + samplingPct));
+        return isPostOperationSuccess(result);
+    }
+
+    public boolean enableSampling(String stormTopologyId, String componentId, int samplingPct, String asUser) {
+        // topology/<topologyId>/component/:component/debug/enable/<pct>?doAsUser=<asUser>
+        Map result = doPostRequestWithEmptyBody(generateTopologyUrl(
+                stormTopologyId, asUser, "component/" + componentId + "/debug/enable/" + samplingPct));
+        return isPostOperationSuccess(result);
+    }
+
+    public boolean disableSampling(String stormTopologyId, String asUser) {
+        // topology/<topologyId>/debug/disable/0?doAsUser=<asUser>
+        Map result = doPostRequestWithEmptyBody(generateTopologyUrl(stormTopologyId, asUser, "debug/disable/0"));
+        return isPostOperationSuccess(result);
+    }
+
+    public boolean disableSampling(String stormTopologyId, String componentId, String asUser) {
+        // topology/<topologyId>/component/<componentid>/debug/disable/0?doAsUser=<asUser>
+        Map result = doPostRequestWithEmptyBody(generateTopologyUrl(
+                stormTopologyId, asUser, "component/" + componentId + "/debug/disable/0"));
+        return isPostOperationSuccess(result);
+    }
+
+    public Map getSamplingStatus(String stormTopologyId, String asUser) {
+        // topology/<topologyId>/?doAsUser=<asUser>
+        return doGetRequest(generateTopologyUrl(stormTopologyId, asUser, ""));
+    }
+
+
+    public Map getSamplingStatus(String stormTopologyId, String componentId, String asUser) {
+        // topology/<topologyId>/component/<componentId>?doAsUser=<asUser>
+        return doGetRequest(generateTopologyUrl(stormTopologyId, asUser, "component/" + componentId));
+    }
+
+    public String getSampledEvents(String stormTopologyId, String componentId, String asUser, Long start, Integer length) {
+        String result = "";
+        Map componentPage = doGetRequest(generateTopologyUrl(stormTopologyId, asUser, "component/" + componentId));
+        if (componentPage != null) {
+            String eventLogLink = (String) componentPage.get("eventLogLink");
+            if (eventLogLink != null) {
+                if (start != null) {
+                    eventLogLink += "&start=" + start;
+                }
+                if (length != null) {
+                    eventLogLink += "&length=" + length;
+                }
+                LOG.debug("GET request to Storm cluster: {}", eventLogLink);
+                result = client.target(eventLogLink).request().get(String.class);
+            }
+        }
+        return result;
     }
 
     private Map doGetRequest(String requestUrl) {

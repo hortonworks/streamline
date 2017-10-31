@@ -759,6 +759,16 @@
             </dependency>
             <dependency>
                 <groupId>com.hortonworks.streamline</groupId>
+                <artifactId>streamline-sampling</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hortonworks.streamline</groupId>
+                <artifactId>streamline-sampling-storm</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>streamline-notifier</artifactId>
                 <version>${project.version}</version>
                 <exclusions>

@@ -65,7 +65,14 @@
             <artifactId>jool</artifactId>
             <version>0.9.12</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.hortonworks.streamline</groupId>
+            <artifactId>streamline-sampling</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hortonworks.streamline</groupId>
+            <artifactId>streamline-sampling-storm</artifactId>
+        </dependency>
         <!-- test dependency -->
         <dependency>
             <groupId>org.jmockit</groupId>
