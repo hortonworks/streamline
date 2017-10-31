@@ -86,6 +86,9 @@ class AddTopology extends Component {
     } else if (!/[A-Za-z0-9]/g.test(topologyName)) {
       validDataFlag = false;
       this.setState({validInput: false});
+    } else if(Utils.checkWhiteSpace(topologyName)){
+      validDataFlag = false;
+      this.setState({validInput: false});
     } else {
       validDataFlag = true;
       this.setState({validInput: true});
