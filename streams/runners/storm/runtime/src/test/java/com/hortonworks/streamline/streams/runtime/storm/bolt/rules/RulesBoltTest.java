@@ -29,6 +29,7 @@ import mockit.Tested;
 import mockit.VerificationsInOrder;
 import mockit.integration.junit4.JMockit;
 import org.apache.storm.task.OutputCollector;
+import org.apache.storm.task.TopologyContext;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
 import org.junit.Assert;
@@ -58,33 +59,42 @@ public abstract class RulesBoltTest extends RulesTopologyTest {
     };
 
     // Only one rule triggers with these values for temperature, humidity
-    private static final StreamlineEvent STREAMLINE_EVENT_MATCHES_TUPLE = new StreamlineEventImpl(new HashMap<String, Object>() {{
-        put(RulesProcessorMock.TEMPERATURE, 101);
-        put(RulesProcessorMock.HUMIDITY, 51);
-    }}, "dataSrcId_1", "1");
+    private static final StreamlineEvent STREAMLINE_EVENT_MATCHES_TUPLE = StreamlineEventImpl.builder()
+            .fieldsAndValues(new HashMap<String, Object>() {{
+                put(RulesProcessorMock.TEMPERATURE, 101);
+                put(RulesProcessorMock.HUMIDITY, 51);
+            }})
+            .dataSourceId("dataSrcId_1")
+            .build();
 
     private static final Values STREAMLINE_EVENT_MATCHES_TUPLE_VALUES = new Values(STREAMLINE_EVENT_MATCHES_TUPLE);
 
-    private static final StreamlineEvent STREAMLINE_EVENT_NO_MATCH_TUPLE = new StreamlineEventImpl(new HashMap<String, Object>() {{
-        put("non_existent_field1", 101);
-        put("non_existent_field2", 51);
-        put("non_existent_field3", 23);
-    }}, "dataSrcId_2", "2");
+    private static final StreamlineEvent STREAMLINE_EVENT_NO_MATCH_TUPLE = StreamlineEventImpl.builder()
+            .fieldsAndValues(new HashMap<String, Object>() {{
+                put("non_existent_field1", 101);
+                put("non_existent_field2", 51);
+                put("non_existent_field3", 23);
+            }})
+            .dataSourceId("dataSrcId_2")
+            .build();
 
     // Only one rule triggers with these values for temperature, humidity. Other fields are disregarded
-    private static final StreamlineEvent STREAMLINE_EVENT_MATCH_AND_NO_MATCH_TUPLE = new StreamlineEventImpl(new HashMap<String, Object>() {{
-        put("non_existent_field1", 101);
-        put(RulesProcessorMock.TEMPERATURE, 101);
-        put("non_existent_field2", 51);
-        put(RulesProcessorMock.HUMIDITY, 51);
-        put("non_existent_field3", 23);
-    }}, "dataSrcId_2", "3");
+    private static final StreamlineEvent STREAMLINE_EVENT_MATCH_AND_NO_MATCH_TUPLE = StreamlineEventImpl.builder()
+            .fieldsAndValues(new HashMap<String, Object>() {{
+                put("non_existent_field1", 101);
+                put(RulesProcessorMock.TEMPERATURE, 101);
+                put("non_existent_field2", 51);
+                put(RulesProcessorMock.HUMIDITY, 51);
+                put("non_existent_field3", 23);
+            }}).dataSourceId("dataSrcId_2")
+            .build();
 
     private static final Values STREAMLINE_EVENT_MATCH_AND_NO_MATCH_TUPLE_VALUES = new Values(STREAMLINE_EVENT_MATCH_AND_NO_MATCH_TUPLE);
 
-    protected  @Tested RulesBolt rulesBolt;
-    protected  @Injectable OutputCollector mockOutputCollector;
-    protected  @Injectable Tuple mockTuple;
+    protected @Tested RulesBolt rulesBolt;
+    protected @Injectable OutputCollector mockOutputCollector;
+    protected @Injectable Tuple mockTuple;
+    protected @Injectable TopologyContext mockContext;
     protected RulesProcessor rulesProcessor;
 
     @Before

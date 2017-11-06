@@ -16,6 +16,7 @@
 package com.hortonworks.streamline.streams;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -58,7 +59,7 @@ public interface StreamlineEvent  extends Map<String,Object>, Serializable {
     /**
      * Adds given {@code field} and {@code value} to auxiliary Map.
      */
-    void addAuxiliaryFieldAndValue(String field, Object value);
+    StreamlineEvent addAuxiliaryFieldAndValue(String field, Object value);
 
     /**
      * The event header that represents some meta data about

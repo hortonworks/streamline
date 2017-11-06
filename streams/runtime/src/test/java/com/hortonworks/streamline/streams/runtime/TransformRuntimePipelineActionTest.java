@@ -50,7 +50,7 @@ public class TransformRuntimePipelineActionTest {
         defaults.put("2", "TWO");
         defaults.put("3", "THREE");
 
-        StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "dsrcid");
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(fieldsAndValues).dataSourceId("dsrcid").build();
         MergeTransform merge = new MergeTransform(defaults);
         ProjectionTransform projection = new ProjectionTransform("test-projection", defaults.keySet());
         TransformAction transformAction = new TransformAction(ImmutableList.of(merge, projection));
@@ -77,7 +77,7 @@ public class TransformRuntimePipelineActionTest {
         defaults.put("3", "THREE");
         defaults.put("4", "${2} plus ${2}");
 
-        StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "dsrcid");
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(fieldsAndValues).dataSourceId("dsrcid").build();
         MergeTransform merge = new MergeTransform(defaults);
         SubstituteTransform substitute = new SubstituteTransform();
         ProjectionTransform projection = new ProjectionTransform("test-projection", defaults.keySet());

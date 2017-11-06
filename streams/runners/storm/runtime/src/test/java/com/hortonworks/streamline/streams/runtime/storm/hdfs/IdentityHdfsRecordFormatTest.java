@@ -32,7 +32,7 @@ import java.util.HashMap;
 @RunWith(JMockit.class)
 public class IdentityHdfsRecordFormatTest {
 
-    private static final StreamlineEvent STREAMLINEEVENT = new StreamlineEventImpl(new HashMap<>(), "id");
+    private static final StreamlineEvent STREAMLINEEVENT = StreamlineEventImpl.builder().fieldsAndValues(new HashMap<>()).build();
     private static final byte[] TEST_BYTES_RESULT = (STREAMLINEEVENT.toString() + "\n").getBytes();
 
     private IdentityHdfsRecordFormat format = new IdentityHdfsRecordFormat();

@@ -19,6 +19,7 @@ package com.hortonworks.streamline.streams.runtime.storm.bolt.query;
 
 import org.apache.storm.task.GeneralTopologyContext;
 import org.apache.storm.task.OutputCollector;
+import org.apache.storm.task.TopologyContext;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.TupleImpl;
@@ -67,8 +68,9 @@ public class TestWindowedQueryBolt {
         TupleWindow window = makeTupleWindow(userStream);
         WindowedQueryBolt bolt = new WindowedQueryBolt("users", SL_PREFIX + "userId")
                 .selectStreamLine("name,users:city, users:city as cityagain");
+        MockTopologyContext context = new MockTopologyContext(new String[]{StreamlineEvent.STREAMLINE_EVENT});
         MockCollector collector = new MockCollector();
-        bolt.prepare(null, null, collector);
+        bolt.prepare(null, context, collector);
         bolt.execute(window);
         printResults_StreamLine(collector);
         Assert.assertEquals( userStream.size(), collector.actualResults.size() );
@@ -83,8 +85,9 @@ public class TestWindowedQueryBolt {
         WindowedQueryBolt bolt = new WindowedQueryBolt("users", "city")
                 .join("cities", "cityName", "users")
                 .selectStreamLine("name, users:city as city, cities:country");
+        MockTopologyContext context = new MockTopologyContext(new String[]{StreamlineEvent.STREAMLINE_EVENT});
         MockCollector collector = new MockCollector();
-        bolt.prepare(null, null, collector);
+        bolt.prepare(null, context, collector);
         bolt.execute(window);
         printResults_StreamLine(collector);
         Assert.assertEquals( cityStream.size(), collector.actualResults.size() );
@@ -127,7 +130,7 @@ public class TestWindowedQueryBolt {
 
     private static ArrayList<Tuple> makeStreamLineEventStream (String streamName, String[] fieldNames, Object[][] records) {
 
-        MockContext mockContext = new MockContext(new String[]{StreamlineEvent.STREAMLINE_EVENT} );
+        MockTopologyContext mockContext = new MockTopologyContext(new String[]{StreamlineEvent.STREAMLINE_EVENT} );
         ArrayList<Tuple> result = new ArrayList<>(records.length);
 
         // convert each record into a HashMap using fieldNames as keys
@@ -136,7 +139,10 @@ public class TestWindowedQueryBolt {
             for (int i = 0; i < fieldNames.length; i++) {
                 recordMap.put(fieldNames[i], record[i]);
             }
-            StreamlineEvent streamLineEvent = new StreamlineEventImpl(recordMap, "multiple sources");
+            StreamlineEvent streamLineEvent = StreamlineEventImpl.builder()
+                    .fieldsAndValues(recordMap)
+                    .dataSourceId("multiple sources")
+                    .build();
             ArrayList<Object> tupleValues = new ArrayList<>(1);
             tupleValues.add(streamLineEvent);
             TupleImpl tuple = new TupleImpl(mockContext, tupleValues, 0, streamName);
@@ -166,22 +172,35 @@ public class TestWindowedQueryBolt {
 
     } // class MockCollector
 
-    static class MockContext extends GeneralTopologyContext {
+    static class MockTopologyContext extends TopologyContext {
 
         private final Fields fields;
+        private String srcComponentId = "component";
 
-        public MockContext(String[] fieldNames) {
-            super(null, null, null, null, null, null);
+        public MockTopologyContext(String[] fieldNames) {
+            super(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
             this.fields = new Fields(fieldNames);
         }
 
+        public MockTopologyContext(String[] fieldNames, String srcComponentId) {
+            super(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+            this.fields = new Fields(fieldNames);
+            this.srcComponentId = srcComponentId;
+        }
+
+        @Override
+        public String getThisComponentId() {
+            return srcComponentId;
+        }
+
+        @Override
         public String getComponentId(int taskId) {
-            return "component";
+            return srcComponentId;
         }
 
         public Fields getComponentOutputFields(String componentId, String streamId) {
             return fields;
         }
-
     }
+
 }

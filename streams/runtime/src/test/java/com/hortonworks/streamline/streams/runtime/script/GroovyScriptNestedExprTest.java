@@ -46,7 +46,7 @@ public class GroovyScriptNestedExprTest {
         Map<String, Object> kv = new HashMap<>();
         kv.put("x", 2);
         kv.put("y", nested);
-        StreamlineEvent event = new StreamlineEventImpl(kv, "1");
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(kv).dataSourceId("1").build();
         Boolean result = groovyScript.evaluate(event);
         System.out.println(result);
     }
@@ -60,7 +60,7 @@ public class GroovyScriptNestedExprTest {
         Map<String, Object> kv = new HashMap<>();
         kv.put("x", 2);
         kv.put("y", nested);
-        StreamlineEvent event = new StreamlineEventImpl(kv, "1");
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(kv).dataSourceId("1").build();
         Boolean result = groovyScript.evaluate(event);
         System.out.println(result);
     }
@@ -76,7 +76,7 @@ public class GroovyScriptNestedExprTest {
         Map<String, Object> kv = new HashMap<>();
         kv.put("x", 2);
         kv.put("y", nestedMap);
-        StreamlineEvent event = new StreamlineEventImpl(kv, "1");
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(kv).dataSourceId("1").build();
         Boolean result = groovyScript.evaluate(event);
         System.out.println(result);
     }

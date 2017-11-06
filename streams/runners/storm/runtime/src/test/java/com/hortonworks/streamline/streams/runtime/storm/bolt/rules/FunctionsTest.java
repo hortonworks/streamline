@@ -45,6 +45,8 @@ public class FunctionsTest {
             result = new Fields(StreamlineEvent.STREAMLINE_EVENT);
             mockContext.getComponentId(anyInt);
             result = "componentid";
+            mockContext.getThisComponentId();
+            result = "componentid"; minTimes = 0;
         }};
     }
 
@@ -176,7 +178,7 @@ public class FunctionsTest {
         map.put("stringfield4", "aaaa");
         map.put("negativefield", -1.0);
         map.put("doublefield", 1.41);
-        StreamlineEvent event = new StreamlineEventImpl(map, "dsrcid");
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(map).dataSourceId("dsrcid").build();
         return new TupleImpl(mockContext, new Values(event), 1, "inputstream");
     }
 

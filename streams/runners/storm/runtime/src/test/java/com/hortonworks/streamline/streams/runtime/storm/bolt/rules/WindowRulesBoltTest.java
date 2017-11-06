@@ -68,6 +68,8 @@ public class WindowRulesBoltTest {
             result = new Fields(StreamlineEvent.STREAMLINE_EVENT);
             mockContext.getComponentId(anyInt);
             result = "componentid";
+            mockContext.getThisComponentId();
+            result = "componentid"; minTimes = 0;
         }};
     }
 
@@ -259,12 +261,16 @@ public class WindowRulesBoltTest {
     }
 
     private Tuple getNextTuple(int i) {
-        StreamlineEvent event = new StreamlineEventImpl(ImmutableMap.<String, Object>of("empid", i, "salary", i * 10, "deptid", i/5), "dsrcid");
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(
+                ImmutableMap.of("empid", i, "salary", i * 10, "deptid", i/5)
+        ).dataSourceId("dsrcid").build();
         return new TupleImpl(mockContext, new Values(event), 1, "inputstream");
     }
 
     private Tuple getTupleForSum(int i) {
-        StreamlineEvent event = new StreamlineEventImpl(ImmutableMap.<String, Object>of("id", 1, "intField", i, "longField", (long) i, "doubleField", (double)i), "dsrcid");
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(
+                ImmutableMap.of("id", 1, "intField", i, "longField", (long) i, "doubleField", (double)i)
+        ).dataSourceId("dsrcid").build();
         return new TupleImpl(mockContext, new Values(event), 1, "inputstream");
     }
 }

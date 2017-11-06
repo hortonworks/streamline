@@ -44,7 +44,10 @@ public class DefaultJoiner implements Joiner {
             fieldValues.putAll(subEvent);
         }
 
-        return new StreamlineEventImpl(fieldValues, eventGroup.getDataSourceId(),
-                UUID.randomUUID().toString(), Collections.<String, Object>emptyMap(), null, auxiliaryFieldValues);
+        return StreamlineEventImpl.builder()
+                .fieldsAndValues(fieldValues)
+                .dataSourceId(eventGroup.getDataSourceId())
+                .auxiliaryFieldsAndValues(auxiliaryFieldValues)
+                .build();
     }
 }

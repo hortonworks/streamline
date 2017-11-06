@@ -95,8 +95,7 @@ public class StreamsShellBolt extends AbstractProcessorBolt {
     @Override
     protected void process(Tuple input, StreamlineEvent event) {
         //just need an id
-        String genId = Long.toString(rand.nextLong());
-        StreamlineEvent eventWithStream = getStreamlineEventWithStream(event, input, genId);
+        StreamlineEvent eventWithStream = getStreamlineEventWithStream(event, input);
         try {
             for (Result result : processorRuntime.process(eventWithStream)) {
                 for (StreamlineEvent e : result.events) {
@@ -108,10 +107,8 @@ public class StreamsShellBolt extends AbstractProcessorBolt {
         }
     }
 
-    private StreamlineEvent getStreamlineEventWithStream(StreamlineEvent event, Tuple tuple, String genId) {
-        return new StreamlineEventImpl(event,
-                event.getDataSourceId(), genId,
-                event.getHeader(), tuple.getSourceStreamId(), event.getAuxiliaryFieldsAndValues());
+    private StreamlineEvent getStreamlineEventWithStream(StreamlineEvent event, Tuple tuple) {
+        return StreamlineEventImpl.builder().from(event).sourceStream(tuple.getSourceStreamId()).build();
     }
 
     @Override

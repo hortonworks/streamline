@@ -56,7 +56,7 @@ public class EnrichmentTransformRuntime implements TransformRuntime {
         Map<String, Object> enrichments = (Map<String, Object>) auxiliaryFieldsAndValues.get(EnrichmentTransform.ENRICHMENTS_FIELD_NAME);
         if (enrichments == null) {
             enrichments = new HashMap<>();
-            event.addAuxiliaryFieldAndValue(EnrichmentTransform.ENRICHMENTS_FIELD_NAME, enrichments);
+            event = event.addAuxiliaryFieldAndValue(EnrichmentTransform.ENRICHMENTS_FIELD_NAME, enrichments);
         }
 
         for (String fieldName : fieldsToBeEnriched) {

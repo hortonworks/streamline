@@ -46,15 +46,16 @@ public class AddHeaderTransformRuntime implements TransformRuntime {
 
     @Override
     public List<StreamlineEvent> execute(StreamlineEvent input) {
-        Map<String, Object> header = new HashMap<>();
+        Map<String, Object> header = new HashMap<>(input.getHeader());
         if(addHeaderTransform.getFixedHeader() != null) {
             header.putAll(addHeaderTransform.getFixedHeader());
         }
         header.put(HEADER_FIELD_DATASOURCE_IDS, Collections.singletonList(input.getDataSourceId()));
         header.put(HEADER_FIELD_EVENT_IDS, Collections.singletonList(input.getId()));
         header.put(HEADER_FIELD_TIMESTAMP, System.currentTimeMillis());
-        return Collections.<StreamlineEvent>singletonList(
-                new StreamlineEventImpl(input, input.getDataSourceId(), header));
+
+        return Collections.singletonList(
+                StreamlineEventImpl.builder().from(input).header(header).build());
     }
 
     @Override
