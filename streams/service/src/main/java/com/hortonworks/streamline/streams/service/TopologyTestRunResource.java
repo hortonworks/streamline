@@ -40,6 +40,7 @@ import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.common.event.EventInformation;
 import com.hortonworks.streamline.streams.common.event.EventLogFileReader;
 import com.hortonworks.streamline.streams.common.event.correlation.CorrelatedEventsGrouper;
+import com.hortonworks.streamline.streams.common.event.correlation.GroupedCorrelationEvents;
 import com.hortonworks.streamline.streams.common.event.tree.EventInformationTreeBuilder;
 import com.hortonworks.streamline.streams.common.event.tree.EventInformationTreeNode;
 import org.apache.commons.io.FileUtils;
@@ -257,8 +258,8 @@ public class TopologyTestRunResource {
         File eventLogFile = getEventLogFile(topologyId, historyId);
         List<EventInformation> events = eventLogFileReader.loadEventLogFile(eventLogFile);
 
-        Map<String, List<EventInformation>> groupedEvents = new CorrelatedEventsGrouper(events).groupByComponent(rootEventId);
-        if (groupedEvents.isEmpty()) {
+        GroupedCorrelationEvents groupedEvents = new CorrelatedEventsGrouper(events).groupByComponent(rootEventId);
+        if (!groupedEvents.getAllEvents().containsKey(rootEventId)) {
             throw BadRequestException.message("Can't find provided root event " + rootEventId + " from events.");
         }
         return WSUtils.respondEntity(groupedEvents, OK);

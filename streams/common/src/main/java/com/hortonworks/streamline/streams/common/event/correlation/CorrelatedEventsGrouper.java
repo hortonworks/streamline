@@ -29,7 +29,7 @@ public class CorrelatedEventsGrouper {
         this.events = events;
     }
 
-    public Map<String, List<EventInformation>> groupByComponent(String rootEventId) {
+    public GroupedCorrelationEvents groupByComponent(String rootEventId) {
         Map<String, EventInformation> allEventsMap = events.stream()
                 .collect(toMap(EventInformation::getEventId, e -> e));
 
@@ -44,18 +44,7 @@ public class CorrelatedEventsGrouper {
 
         addNonExistingParents(allEventsMap, relatedEventsMap);
 
-        Map<String, List<EventInformation>> eventsGroupByComponent = new HashMap<>();
-
-        relatedEventsMap.values().forEach(event -> {
-            List<EventInformation> events = eventsGroupByComponent.getOrDefault(event.getComponentName(), new ArrayList<>());
-            if (events.isEmpty()) {
-                // the list is newly created, so not from the map
-                eventsGroupByComponent.put(event.getComponentName(), events);
-            }
-            events.add(event);
-        });
-
-        return eventsGroupByComponent;
+        return new GroupedCorrelationEvents(relatedEventsMap);
     }
 
     private void addNonExistingParents(Map<String, EventInformation> allEventsMap,
