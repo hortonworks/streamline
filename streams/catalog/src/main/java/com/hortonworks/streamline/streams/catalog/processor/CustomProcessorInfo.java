@@ -222,7 +222,7 @@ public class CustomProcessorInfo {
             }
         }
         result.setFields(fields);
-        return (result.getFields().size() == 0 ? null : result);
+        return (result.getFields().isEmpty() ? null : result);
     }
 
     private List<ComponentUISpecification.UIField> getCustomProcessorUIFieldsWithPrefix () {
