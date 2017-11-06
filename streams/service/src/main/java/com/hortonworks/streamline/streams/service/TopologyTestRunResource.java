@@ -39,6 +39,7 @@ import com.hortonworks.streamline.streams.catalog.TopologyTestRunHistory;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.common.event.EventInformation;
 import com.hortonworks.streamline.streams.common.event.EventLogFileReader;
+import com.hortonworks.streamline.streams.common.event.correlation.CorrelatedEventsGrouper;
 import com.hortonworks.streamline.streams.common.event.tree.EventInformationTreeBuilder;
 import com.hortonworks.streamline.streams.common.event.tree.EventInformationTreeNode;
 import org.apache.commons.io.FileUtils;
@@ -245,6 +246,22 @@ public class TopologyTestRunResource {
         Stream<String> rootEventIdsStream = rootEventsStream.map(EventInformation::getEventId);
 
         return WSUtils.respondEntities(rootEventIdsStream.collect(toList()), OK);
+    }
+
+    @GET
+    @Path("/topologies/{topologyId}/testhistories/{historyId}/events/correlated/{rootEventId}")
+    public Response getGroupedCorrelatedEventsOfTestRunTopologyHistory(@Context UriInfo urlInfo,
+                                                                       @PathParam("topologyId") Long topologyId,
+                                                                       @PathParam("historyId") Long historyId,
+                                                                       @PathParam("rootEventId") String rootEventId) throws Exception {
+        File eventLogFile = getEventLogFile(topologyId, historyId);
+        List<EventInformation> events = eventLogFileReader.loadEventLogFile(eventLogFile);
+
+        Map<String, List<EventInformation>> groupedEvents = new CorrelatedEventsGrouper(events).groupByComponent(rootEventId);
+        if (groupedEvents.isEmpty()) {
+            throw BadRequestException.message("Can't find provided root event " + rootEventId + " from events.");
+        }
+        return WSUtils.respondEntity(groupedEvents, OK);
     }
 
     @GET
