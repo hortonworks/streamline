@@ -1,6 +1,7 @@
 package com.hortonworks.streamline.streams.runtime.storm.testing;
 
 import com.google.common.collect.Lists;
+import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import mockit.Expectations;
 import mockit.Injectable;
@@ -10,11 +11,11 @@ import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
-import org.apache.storm.utils.Utils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,11 +26,8 @@ import static org.junit.Assert.*;
 @RunWith(JMockit.class)
 public class EventLoggingOutputCollectorTest {
     private static final String TEST_COMPONENT_NAME_FOR_STORM = "1-testComponent";
-    private static final String TEST_COMPONENT_NAME = "testComponent";
     private static final String TEST_TARGET_COMPONENT_FOR_TASK_1_FOR_STORM = "2-testTargetComponent1";
-    private static final String TEST_TARGET_COMPONENT_FOR_TASK_1 = "testTargetComponent1";
     private static final String TEST_TARGET_COMPONENT_FOR_TASK_2_FOR_STORM = "3-testTargetComponent2";
-    private static final String TEST_TARGET_COMPONENT_FOR_TASK_2 = "testTargetComponent2";
     private static final int TASK_1 = 1;
     private static final int TASK_2 = 2;
 
@@ -49,12 +47,14 @@ public class EventLoggingOutputCollectorTest {
 
     private EventLoggingOutputCollector sut;
 
-    public static final StreamlineEventImpl INPUT_STREAMLINE_EVENT = new StreamlineEventImpl(new HashMap<String, Object>() {{
-        put("illuminance", 70);
-        put("temp", 104);
-        put("foo", 100);
-        put("humidity", "40h");
-    }}, "ds-" + System.currentTimeMillis(), "id-" + System.currentTimeMillis());
+    public static final StreamlineEventImpl INPUT_STREAMLINE_EVENT = StreamlineEventImpl.builder()
+            .fieldsAndValues(new HashMap<String, Object>() {{
+                put("illuminance", 70);
+                put("temp", 104);
+                put("foo", 100);
+                put("humidity", "40h");
+            }})
+            .dataSourceId("ds-" + System.currentTimeMillis()).build();
 
     @Before
     public void setUp() {
@@ -82,13 +82,9 @@ public class EventLoggingOutputCollectorTest {
 
         new Verifications() {{
             mockedOutputCollector.emit(testStreamId, anchor, tuple);
-            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    testStreamId, TEST_TARGET_COMPONENT_FOR_TASK_1, INPUT_STREAMLINE_EVENT);
-            times = 1;
-            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    testStreamId, TEST_TARGET_COMPONENT_FOR_TASK_2, INPUT_STREAMLINE_EVENT);
-            times = 1;
         }};
+
+        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, expectedTasks.size());
 
         // String streamId, List<Object> tuple
         new Expectations() {{
@@ -101,13 +97,9 @@ public class EventLoggingOutputCollectorTest {
 
         new Verifications() {{
             mockedOutputCollector.emit(testStreamId, tuple);
-            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    testStreamId, TEST_TARGET_COMPONENT_FOR_TASK_1, INPUT_STREAMLINE_EVENT);
-            times = 1;
-            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    testStreamId, TEST_TARGET_COMPONENT_FOR_TASK_2, INPUT_STREAMLINE_EVENT);
-            times = 1;
         }};
+
+        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, expectedTasks.size());
 
         // Collection<Tuple> anchors, List<Object> tuple
         new Expectations() {{
@@ -120,13 +112,9 @@ public class EventLoggingOutputCollectorTest {
 
         new Verifications() {{
             mockedOutputCollector.emit(anchors, tuple);
-            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    Utils.DEFAULT_STREAM_ID, TEST_TARGET_COMPONENT_FOR_TASK_1, INPUT_STREAMLINE_EVENT);
-            times = 1;
-            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    Utils.DEFAULT_STREAM_ID, TEST_TARGET_COMPONENT_FOR_TASK_2, INPUT_STREAMLINE_EVENT);
-            times = 1;
         }};
+
+        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, expectedTasks.size());
 
         // Tuple anchor, List<Object> tuple
         new Expectations() {{
@@ -139,13 +127,9 @@ public class EventLoggingOutputCollectorTest {
 
         new Verifications() {{
             mockedOutputCollector.emit(anchor, tuple);
-            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    Utils.DEFAULT_STREAM_ID, TEST_TARGET_COMPONENT_FOR_TASK_1, INPUT_STREAMLINE_EVENT);
-            times = 1;
-            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    Utils.DEFAULT_STREAM_ID, TEST_TARGET_COMPONENT_FOR_TASK_2, INPUT_STREAMLINE_EVENT);
-            times = 1;
         }};
+
+        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, expectedTasks.size());
 
         // List<Object> tuple
         new Expectations() {{
@@ -158,13 +142,9 @@ public class EventLoggingOutputCollectorTest {
 
         new Verifications() {{
             mockedOutputCollector.emit(tuple);
-            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    Utils.DEFAULT_STREAM_ID, TEST_TARGET_COMPONENT_FOR_TASK_1, INPUT_STREAMLINE_EVENT);
-            times = 1;
-            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    Utils.DEFAULT_STREAM_ID, TEST_TARGET_COMPONENT_FOR_TASK_2, INPUT_STREAMLINE_EVENT);
-            times = 1;
         }};
+
+        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, expectedTasks.size());
 
         // String streamId, Collection<Tuple> anchors, List<Object> tuple
         new Expectations() {{
@@ -177,14 +157,9 @@ public class EventLoggingOutputCollectorTest {
 
         new Verifications() {{
             mockedOutputCollector.emit(testStreamId, anchors, tuple);
-            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    testStreamId, TEST_TARGET_COMPONENT_FOR_TASK_1, INPUT_STREAMLINE_EVENT);
-            times = 1;
-            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    testStreamId, TEST_TARGET_COMPONENT_FOR_TASK_2, INPUT_STREAMLINE_EVENT);
-            times = 1;
         }};
 
+        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, expectedTasks.size());
     }
 
     @Test
@@ -206,9 +181,9 @@ public class EventLoggingOutputCollectorTest {
 
         new Verifications() {{
             mockedOutputCollector.emitDirect(testTaskId, testStreamId, anchor, tuple);
-            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    testStreamId, TEST_TARGET_COMPONENT_FOR_TASK_1, INPUT_STREAMLINE_EVENT); times = 1;
         }};
+
+        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, 1);
 
         // int taskId, String streamId, List<Object> tuple
         new Expectations() {{
@@ -219,9 +194,9 @@ public class EventLoggingOutputCollectorTest {
 
         new Verifications() {{
             mockedOutputCollector.emitDirect(testTaskId, testStreamId, tuple);
-            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    testStreamId, TEST_TARGET_COMPONENT_FOR_TASK_1, INPUT_STREAMLINE_EVENT); times = 1;
         }};
+
+        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, 1);
 
         // int taskId, Collection<Tuple> anchors, List<Object> tuple
         new Expectations() {{
@@ -232,9 +207,9 @@ public class EventLoggingOutputCollectorTest {
 
         new Verifications() {{
             mockedOutputCollector.emitDirect(testTaskId, anchors, tuple);
-            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    Utils.DEFAULT_STREAM_ID, TEST_TARGET_COMPONENT_FOR_TASK_1, INPUT_STREAMLINE_EVENT); times = 1;
         }};
+
+        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, 1);
 
         // int taskId, Tuple anchor, List<Object> tuple
         new Expectations() {{
@@ -245,9 +220,9 @@ public class EventLoggingOutputCollectorTest {
 
         new Verifications() {{
             mockedOutputCollector.emitDirect(testTaskId, anchor, tuple);
-            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    Utils.DEFAULT_STREAM_ID, TEST_TARGET_COMPONENT_FOR_TASK_1, INPUT_STREAMLINE_EVENT); times = 1;
         }};
+
+        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, 1);
 
         // int taskId, List<Object> tuple
         new Expectations() {{
@@ -258,9 +233,9 @@ public class EventLoggingOutputCollectorTest {
 
         new Verifications() {{
             mockedOutputCollector.emitDirect(testTaskId, tuple);
-            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    Utils.DEFAULT_STREAM_ID, TEST_TARGET_COMPONENT_FOR_TASK_1, INPUT_STREAMLINE_EVENT); times = 1;
         }};
+
+        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, 1);
 
         // int taskId, String streamId, Collection<Tuple> anchors, List<Object> tuple
         new Expectations() {{
@@ -271,10 +246,9 @@ public class EventLoggingOutputCollectorTest {
 
         new Verifications() {{
             mockedOutputCollector.emitDirect(testTaskId, testStreamId, anchors, tuple);
-            mockedEventLogger.writeEvent(anyLong, TestRunEventLogger.EventType.OUTPUT, TEST_COMPONENT_NAME,
-                    testStreamId, TEST_TARGET_COMPONENT_FOR_TASK_1, INPUT_STREAMLINE_EVENT); times = 1;
         }};
 
+        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, 1);
     }
 
     @Test
@@ -326,6 +300,7 @@ public class EventLoggingOutputCollectorTest {
         }};
     }
 
+
     private void setupExpectationsForTopologyContextEmit() {
         new Expectations() {{
             mockedTopologyContext.getComponentId(TASK_1);
@@ -353,5 +328,22 @@ public class EventLoggingOutputCollectorTest {
             mockedTopologyContext.getThisComponentId();
             result = TEST_COMPONENT_NAME_FOR_STORM;
         }};
+    }
+
+    private void verifyEventsAreWrittenProperly(StreamlineEvent event, int numTargets) {
+        new Verifications() {{
+            List<StreamlineEvent> events = new ArrayList<>();
+            mockedEventLogger.writeEvent(anyLong, anyString, anyString, anyString, withCapture(events));
+            assertEquals(numTargets, events.size());
+            assertEquals(createExpectingList(event, numTargets), events);
+        }};
+    }
+
+    private List<StreamlineEvent> createExpectingList(StreamlineEvent event, int numOccurences) {
+        List<StreamlineEvent> events = new ArrayList<>();
+        for (int i = 0 ; i < numOccurences ; i++) {
+            events.add(event);
+        }
+        return events;
     }
 }

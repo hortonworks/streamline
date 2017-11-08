@@ -41,15 +41,21 @@ public class RulesTestSpout extends BaseRichSpout {
 
     private SpoutOutputCollector collector;
 
-    public static final StreamlineEventImpl STREAMLINE_EVENT_1 = new StreamlineEventImpl(new HashMap<String, Object>() {{
-        put("temperature", 101);
-        put("humidity", 51);
-    }}, "dataSrcId_1", "23");
+    public static final StreamlineEventImpl STREAMLINE_EVENT_1 = StreamlineEventImpl.builder()
+            .fieldsAndValues(new HashMap<String, Object>() {{
+                put("temperature", 101);
+                put("humidity", 51);
+            }})
+            .dataSourceId("dataSrcId_1")
+            .build();
 
-    public static final StreamlineEventImpl STREAMLINE_EVENT_2 = new StreamlineEventImpl(new HashMap<String, Object>() {{
-        put("temperature", 99);
-        put("humidity", 49);
-    }}, "dataSrcId_2", "24");
+    public static final StreamlineEventImpl STREAMLINE_EVENT_2 = StreamlineEventImpl.builder()
+            .fieldsAndValues(new HashMap<String, Object>() {{
+                put("temperature", 99);
+                put("humidity", 49);
+            }})
+            .dataSourceId("dataSrcId_2")
+            .build();
 
     private static final List<Values> LIST_VALUES = Lists.newArrayList(new Values(STREAMLINE_EVENT_1), new Values(STREAMLINE_EVENT_2));
 

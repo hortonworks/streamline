@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.runtime.storm.bolt.rules;
 
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.runtime.utils.StreamlineEventTestUtil;
 import mockit.Expectations;
 import mockit.VerificationsInOrder;
 import mockit.integration.junit4.JMockit;
@@ -29,20 +30,30 @@ import org.junit.runner.RunWith;
 
 import java.util.HashMap;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
 @RunWith(JMockit.class)
 public class RulesBoltSqlTest extends RulesBoltTest {
-    private static final StreamlineEvent STREAMLINE_EVENT = new StreamlineEventImpl(new HashMap<String, Object>() {{
-        put("humidity", 51);
-        put("temperature", 101);
-        put("field3", 23);
-        put("devicename", "nestdevice");
-    }}, "dataSrcId_3", "3");
+    private static final StreamlineEvent STREAMLINE_EVENT = StreamlineEventImpl.builder()
+            .fieldsAndValues(new HashMap<String, Object>() {{
+                put("humidity", 51);
+                put("temperature", 101);
+                put("field3", 23);
+                put("devicename", "nestdevice");
+            }})
+            .dataSourceId("dataSrcId_3")
+            .build();
 
-    private static final StreamlineEvent PROJECTED_STREAMLINE_EVENT = new StreamlineEventImpl(new HashMap<String, Object>() {{
-        put("humidity", 51);
-        put("INCR(humidity, 10)", 61);
-        put("UPPER(devicename)", "NESTDEVICE");
-    }}, "dataSrcId_3", "3");
+    private static final StreamlineEvent PROJECTED_STREAMLINE_EVENT = StreamlineEventImpl.builder()
+            .fieldsAndValues(new HashMap<String, Object>() {{
+                put("humidity", 51);
+                put("INCR(humidity, 10)", 61);
+                put("UPPER(devicename)", "NESTDEVICE");
+            }})
+            .dataSourceId("dataSrcId_3")
+            .build();
 
     private static final Values STREAMLINE_EVENT_VALUES = new Values(STREAMLINE_EVENT);
 
@@ -57,6 +68,8 @@ public class RulesBoltSqlTest extends RulesBoltTest {
             result = STREAMLINE_EVENT;
             mockTuple.getSourceStreamId();
             result = "default";
+            mockContext.getThisComponentId();
+            result = "componentid"; minTimes = 0;
         }};
 
         rulesBolt.execute(mockTuple);
@@ -70,8 +83,8 @@ public class RulesBoltSqlTest extends RulesBoltTest {
             mockOutputCollector.emit(rulesProcessor.getRules().get(1).getOutputStreamNameForAction(rulesProcessor.getRules().get(1).getActions().iterator().next()),
                                      mockTuple, actualValues = withCapture());
             times = 1;    // rule 2 triggers
-            Assert.assertEquals(PROJECTED_STREAMLINE_EVENT, ((StreamlineEvent)actualValues.get(0)));
-            mockOutputCollector.ack(mockTuple);
+            StreamlineEventTestUtil.assertEventIsProperlyCopied((StreamlineEvent) actualValues.get(0), PROJECTED_STREAMLINE_EVENT);
+            mockOutputCollector.ack(withAny(mockTuple));
             times = 1;
         }};
 

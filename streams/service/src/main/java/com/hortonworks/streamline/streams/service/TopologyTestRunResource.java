@@ -26,6 +26,7 @@ import com.hortonworks.streamline.common.exception.SchemaValidationFailedExcepti
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologySink;
@@ -36,6 +37,12 @@ import com.hortonworks.streamline.streams.catalog.TopologyTestRunCaseSink;
 import com.hortonworks.streamline.streams.catalog.TopologyTestRunCaseSource;
 import com.hortonworks.streamline.streams.catalog.TopologyTestRunHistory;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.common.event.EventInformation;
+import com.hortonworks.streamline.streams.common.event.EventLogFileReader;
+import com.hortonworks.streamline.streams.common.event.correlation.CorrelatedEventsGrouper;
+import com.hortonworks.streamline.streams.common.event.correlation.GroupedCorrelationEvents;
+import com.hortonworks.streamline.streams.common.event.tree.EventInformationTreeBuilder;
+import com.hortonworks.streamline.streams.common.event.tree.EventInformationTreeNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.datanucleus.util.StringUtils;
@@ -56,13 +63,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -70,7 +78,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static java.util.stream.Collectors.toMap;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -80,15 +88,16 @@ public class TopologyTestRunResource {
     private static final Logger LOG = LoggerFactory.getLogger(TopologyTestRunResource.class);
 
     private static final Integer DEFAULT_LIST_ENTITIES_COUNT = 5;
-    public static final Charset ENCODING_UTF_8 = Charset.forName("UTF-8");
 
     private final StreamCatalogService catalogService;
     private final TopologyActionsService actionsService;
+    private final EventLogFileReader eventLogFileReader;
     private final ObjectMapper objectMapper;
 
     public TopologyTestRunResource(StreamCatalogService catalogService, TopologyActionsService actionsService) {
         this.catalogService = catalogService;
         this.actionsService = actionsService;
+        this.eventLogFileReader = new EventLogFileReader();
         this.objectMapper = new ObjectMapper();
     }
 
@@ -227,6 +236,71 @@ public class TopologyTestRunResource {
     }
 
     @GET
+    @Path("/topologies/{topologyId}/testhistories/{historyId}/events/root")
+    public Response getRootEventsOfTestRunTopologyHistory(@Context UriInfo urlInfo,
+                                                          @PathParam("topologyId") Long topologyId,
+                                                          @PathParam("historyId") Long historyId) throws Exception {
+        File eventLogFile = getEventLogFile(topologyId, historyId);
+        Stream<EventInformation> eventsStream = eventLogFileReader.loadEventLogFileAsStream(eventLogFile);
+
+        Stream<EventInformation> rootEventsStream = eventsStream.filter(e -> e != null && e.getRootIds().isEmpty());
+        Stream<String> rootEventIdsStream = rootEventsStream.map(EventInformation::getEventId);
+
+        return WSUtils.respondEntities(rootEventIdsStream.collect(toList()), OK);
+    }
+
+    @GET
+    @Path("/topologies/{topologyId}/testhistories/{historyId}/events/correlated/{rootEventId}")
+    public Response getGroupedCorrelatedEventsOfTestRunTopologyHistory(@Context UriInfo urlInfo,
+                                                                       @PathParam("topologyId") Long topologyId,
+                                                                       @PathParam("historyId") Long historyId,
+                                                                       @PathParam("rootEventId") String rootEventId) throws Exception {
+        File eventLogFile = getEventLogFile(topologyId, historyId);
+        List<EventInformation> events = eventLogFileReader.loadEventLogFile(eventLogFile);
+
+        GroupedCorrelationEvents groupedEvents = new CorrelatedEventsGrouper(events).groupByComponent(rootEventId);
+        if (!groupedEvents.getAllEvents().containsKey(rootEventId)) {
+            throw BadRequestException.message("Can't find provided root event " + rootEventId + " from events.");
+        }
+        return WSUtils.respondEntity(groupedEvents, OK);
+    }
+
+    @GET
+    @Path("/topologies/{topologyId}/testhistories/{historyId}/events/tree/{rootEventId}")
+    public Response getEventTreeOfTestRunTopologyHistory(@Context UriInfo urlInfo,
+                                                          @PathParam("topologyId") Long topologyId,
+                                                          @PathParam("historyId") Long historyId,
+                                                          @PathParam("rootEventId") String rootEventId) throws Exception {
+        File eventLogFile = getEventLogFile(topologyId, historyId);
+        List<EventInformation> events = eventLogFileReader.loadEventLogFile(eventLogFile);
+
+        EventInformationTreeNode rootEventNode = new EventInformationTreeBuilder(events).constructEventTree(rootEventId);
+
+        if (rootEventNode == null) {
+            throw BadRequestException.message("Can't find provided root event " + rootEventId + " from events.");
+        }
+        return WSUtils.respondEntity(rootEventNode, OK);
+    }
+
+    @GET
+    @Path("/topologies/{topologyId}/testhistories/{historyId}/events/tree/{rootEventId}/subtree/{subRootEventId}")
+    public Response getEventSubTreeOfTestRunTopologyHistory(@Context UriInfo urlInfo,
+                                                            @PathParam("topologyId") Long topologyId,
+                                                            @PathParam("historyId") Long historyId,
+                                                            @PathParam("rootEventId") String rootEventId,
+                                                            @PathParam("subRootEventId") String subRootEventId) throws Exception {
+        File eventLogFile = getEventLogFile(topologyId, historyId);
+        List<EventInformation> events = eventLogFileReader.loadEventLogFile(eventLogFile);
+
+        EventInformationTreeNode subRootEventNode = new EventInformationTreeBuilder(events).constructEventTree(rootEventId, subRootEventId);
+
+        if (subRootEventNode == null) {
+            throw BadRequestException.message("Can't find provided root event " + rootEventId + " from events.");
+        }
+        return WSUtils.respondEntity(subRootEventNode, OK);
+    }
+
+    @GET
     @Path("/topologies/{topologyId}/testhistories/{historyId}/events")
     public Response getEventsOfTestRunTopologyHistory(@Context UriInfo urlInfo,
                                                       @PathParam("topologyId") Long topologyId,
@@ -250,31 +324,23 @@ public class TopologyTestRunResource {
                                                            @PathParam("topologyId") Long topologyId,
                                                            @PathParam("historyId") Long historyId) throws Exception {
         File eventLogFile = getEventLogFile(topologyId, historyId);
-        String content = FileUtils.readFileToString(eventLogFile, ENCODING_UTF_8);
+        String content = FileUtils.readFileToString(eventLogFile, StandardCharsets.UTF_8);
 
         InputStream is = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
         String fileName = String.format("events-topology-%d-history-%d.log", topologyId, historyId);
         return Response.status(OK)
-                .entity(is)
-                .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
-                .build();
+            .entity(is)
+            .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+            .build();
     }
 
     private Response getEventsOfTestRunTopologyHistory(Long topologyId, Long historyId, String componentName) throws IOException {
         File eventLogFile = getEventLogFile(topologyId, historyId);
-
-        List<String> lines = FileUtils.readLines(eventLogFile, ENCODING_UTF_8);
-        Stream<Map<String, Object>> eventsStream = lines.stream().map(line -> {
-            try {
-                return objectMapper.readValue(line, new TypeReference<Map<String, Object>>() {});
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        Stream<EventInformation> eventsStream = eventLogFileReader.loadEventLogFileAsStream(eventLogFile);
 
         if (!StringUtils.isEmpty(componentName)) {
             eventsStream = eventsStream.filter(event -> {
-                String eventComponentName = (String) event.get("componentName");
+                String eventComponentName = event.getComponentName();
                 return eventComponentName != null && eventComponentName.equals(componentName);
             });
         }
@@ -735,5 +801,6 @@ public class TopologyTestRunResource {
             return timestamp;
         }
     }
+
 
 }

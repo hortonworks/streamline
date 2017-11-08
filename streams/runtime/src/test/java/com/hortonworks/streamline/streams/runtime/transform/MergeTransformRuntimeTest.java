@@ -43,7 +43,7 @@ public class MergeTransformRuntimeTest {
         defaults.put("2", "TWO");
         defaults.put("3", "THREE");
 
-        StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "dsrcid");
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(fieldsAndValues).dataSourceId("dsrcid").build();
         TransformRuntime transformRuntime = new MergeTransformRuntime(new MergeTransform(defaults));
         List<StreamlineEvent> result = transformRuntime.execute(event);
         System.out.println(result);

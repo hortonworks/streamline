@@ -42,7 +42,7 @@ import static java.util.stream.Collectors.toList;
 
 public class TestRunSourceSpout extends BaseRichSpout {
     private static final Logger LOG = LoggerFactory.getLogger(TestRunSourceSpout.class);
-    private EventLoggingSpoutOutputCollector collector;
+    private EventCorrelatingSpoutOutputCollector collector;
 
     private final TestRunSource testRunSource;
     private final Map<String, TestRecordsInformation> testRecordsInformationPerOutputStream;
@@ -78,8 +78,10 @@ public class TestRunSourceSpout extends BaseRichSpout {
             throw new RuntimeException("testRunSource cannot be null");
         }
 
-        this.collector = new EventLoggingSpoutOutputCollector(context, collector,
-                TestRunEventLogger.getEventLogger(testRunSource.getEventLogFilePath()));
+        this.collector = new EventCorrelatingSpoutOutputCollector(context,
+                new EventLoggingSpoutOutputCollector(context, collector,
+                        TestRunEventLogger.getEventLogger(testRunSource.getEventLogFilePath()))
+        );
     }
 
     @Override
@@ -101,7 +103,10 @@ public class TestRunSourceSpout extends BaseRichSpout {
             Optional<Map<String, Object>> recordOptional = info.nextRecord();
             if (recordOptional.isPresent()) {
                 Map<String, Object> record = recordOptional.get();
-                StreamlineEventImpl streamlineEvent = new StreamlineEventImpl(record, testRunSource.getId());
+                StreamlineEventImpl streamlineEvent = StreamlineEventImpl.builder()
+                        .fieldsAndValues(record)
+                        .dataSourceId(testRunSource.getId())
+                        .build();
                 LOG.debug("Emitting event {} to stream {}", streamlineEvent, outputStream);
                 collector.emit(outputStream, new Values(streamlineEvent), streamlineEvent.getId());
                 emitCount++;

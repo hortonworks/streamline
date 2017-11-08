@@ -73,12 +73,12 @@ public class StreamlineEventSerializerTest {
         }
         expected.put("fixed", new GenericData.Fixed(Schema.createFixed("fixedSchema", null, null, 10), "bytes".getBytes()));
         expected.put("array", new GenericData.Array<Integer>(Schema.createArray(Schema.create(Schema.Type.INT)), integerList));
-        StreamlineEvent streamlineEvent = new StreamlineEventImpl(data, "dataSourceId");
+        StreamlineEvent streamlineEvent = StreamlineEventImpl.builder().fieldsAndValues(data).dataSourceId("dataSourceId").build();
         Assert.assertEquals(expected, StreamlineEventSerializer.getAvroRecord(streamlineEvent, schema));
     }
 
     private void runPrimitiveTest (Map data, Schema schema, Object expectedValue) {
-        StreamlineEvent streamlineEvent = new StreamlineEventImpl(data, "dataSourceId");
+        StreamlineEvent streamlineEvent = StreamlineEventImpl.builder().fieldsAndValues(data).dataSourceId("dataSourceId").build();
         Assert.assertEquals(expectedValue, StreamlineEventSerializer.getAvroRecord(streamlineEvent, schema));
     }
 

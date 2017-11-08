@@ -1,6 +1,6 @@
 Map<String, Object> result = new HashMap<>();
 binding.getVariables();
-Map<String, Object> defaultValues = ['foo': 'bar', 'new-field': 'new-value'];
+Map<String, Object> defaultValues = ['foo': 'bar', 'new-field': 'new value'];
 __outputSchema.getFields().each
         { field ->
             String key = field.getName();

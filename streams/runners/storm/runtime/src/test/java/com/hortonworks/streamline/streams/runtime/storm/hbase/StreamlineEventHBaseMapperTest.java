@@ -37,13 +37,15 @@ import static com.google.common.base.Charsets.UTF_8;
 @RunWith(JMockit.class)
 public class StreamlineEventHBaseMapperTest {
 
-    private static final String ROW_KEY_FIELD = "rowKey";
     private static final String COLUMN_FAMILY= "columnFamily";
     private static final String COLUMN_FIELD= "columnField";
     private static final Map<String, Object> TEST_PARSED_MAP = new HashMap<String, Object>() {{
        put(COLUMN_FIELD, COLUMN_FIELD);
     }};
-    private static final StreamlineEvent TEST_EVENT = new StreamlineEventImpl(TEST_PARSED_MAP, "dsrcid1", ROW_KEY_FIELD);
+    private static final StreamlineEvent TEST_EVENT = StreamlineEventImpl.builder()
+            .fieldsAndValues(TEST_PARSED_MAP)
+            .dataSourceId("dsrcid1")
+            .build();
 
 
     private StreamlineEventHBaseMapper mapper = new StreamlineEventHBaseMapper(COLUMN_FAMILY);
@@ -59,7 +61,7 @@ public class StreamlineEventHBaseMapperTest {
     @Test
     public void testMapper() {
         byte[] bytes = mapper.rowKey(mockTuple);
-        Assert.assertTrue(Arrays.equals(ROW_KEY_FIELD.getBytes(UTF_8), bytes));
+        Assert.assertTrue(Arrays.equals(TEST_EVENT.getId().getBytes(UTF_8), bytes));
 
         ColumnList columns = mapper.columns(mockTuple);
         Assert.assertEquals(1, columns.getColumns().size());

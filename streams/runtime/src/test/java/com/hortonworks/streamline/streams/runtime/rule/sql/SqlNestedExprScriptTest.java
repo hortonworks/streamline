@@ -62,7 +62,7 @@ public class SqlNestedExprScriptTest {
 
         Map<String, Object> kv = new HashMap<>();
         kv.put("x", 100);
-        StreamlineEvent event = new StreamlineEventImpl(kv, "1");
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(kv).dataSourceId("1").build();
         Collection<StreamlineEvent> result = sqlScript.evaluate(event);
         Assert.assertTrue(result.isEmpty());
     }
@@ -83,7 +83,7 @@ public class SqlNestedExprScriptTest {
         Map<String, Object> kv = new HashMap<>();
         kv.put("x", 10);
         kv.put("y", nested);
-        StreamlineEvent event = new StreamlineEventImpl(kv, "1");
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(kv).dataSourceId("1").build();
         Collection<StreamlineEvent> result = sqlScript.evaluate(event);
         Assert.assertEquals(1, result.size());
     }
@@ -105,7 +105,7 @@ public class SqlNestedExprScriptTest {
         Map<String, Object> kv = new HashMap<>();
         kv.put("x", 10);
         kv.put("y", nestedMap);
-        StreamlineEvent event = new StreamlineEventImpl(kv, "1");
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(kv).dataSourceId("1").build();
         Collection<StreamlineEvent> result = sqlScript.evaluate(event);
         Assert.assertTrue(result.isEmpty());
     }

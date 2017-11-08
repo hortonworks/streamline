@@ -17,6 +17,7 @@
 
 package com.hortonworks.streamline.streams.runtime.script;
 
+import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import com.hortonworks.streamline.streams.runtime.script.engine.GroovyScriptEngine;
 import org.junit.Assert;
@@ -48,7 +49,7 @@ public class GroovyScriptTest {
         fieldsAndValue.put("temperature", 20);
         fieldsAndValue.put("humidity", 10);
         try {
-            assertTrue(groovyScript.evaluate(new StreamlineEventImpl(fieldsAndValue, "1")));
+            assertTrue(groovyScript.evaluate(StreamlineEventImpl.builder().fieldsAndValues(fieldsAndValue).dataSourceId("1").build()));
         } catch (ScriptException e) {
             e.printStackTrace();
             Assert.fail("It shouldn't throw ScriptException");
@@ -57,7 +58,7 @@ public class GroovyScriptTest {
         fieldsAndValue.clear();
         fieldsAndValue.put("no_related_field", 3);
         try {
-            groovyScript.evaluate(new StreamlineEventImpl(fieldsAndValue, "1"));
+            groovyScript.evaluate(StreamlineEventImpl.builder().fieldsAndValues(fieldsAndValue).dataSourceId("1").build());
             // it means that previous bound variables are used now
             Assert.fail("It should not evaluate correctly");
         } catch (ScriptException e) {
@@ -92,7 +93,7 @@ public class GroovyScriptTest {
                         fieldsAndValue.put("a", aVal);
 
                         try {
-                            assertEquals(aVal % 2 == 0, groovyScript.evaluate(new StreamlineEventImpl(fieldsAndValue, "1")));
+                            assertEquals(aVal % 2 == 0, groovyScript.evaluate(StreamlineEventImpl.builder().fieldsAndValues(fieldsAndValue).dataSourceId("1").build()));
                         } catch (Throwable e) {
                             e.printStackTrace();
                             anyException.set(e);

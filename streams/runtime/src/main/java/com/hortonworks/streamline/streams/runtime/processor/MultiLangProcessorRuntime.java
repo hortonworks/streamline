@@ -204,8 +204,10 @@ public class MultiLangProcessorRuntime implements Serializable, ProcessorRuntime
     }
 
     private StreamlineEvent convertShellEvent(ShellMsg.ShellEvent shellEvent, StreamlineEvent inputEvent) {
-        StreamlineEventImpl streamlineEvent = new StreamlineEventImpl(shellEvent.getFieldsAndValues(), inputEvent.getDataSourceId(), inputEvent.getId(), inputEvent.getHeader());
-        return streamlineEvent;
+        return StreamlineEventImpl.builder()
+                .from(inputEvent)
+                .fieldsAndValues(shellEvent.getFieldsAndValues())
+                .build();
     }
 
     private void die(Throwable exception) {
