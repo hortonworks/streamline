@@ -3591,7 +3591,6 @@ a.formatterFont:hover{
   height: 0;
   overflow: hidden;
 }
-
 .sample-schema  {
   color: #5a5b5e;
   font-size: 11px;
@@ -3603,3 +3602,209 @@ a.formatterFont:hover{
 .sample-schema li{
   list-style-type: none;
 }
+.pagination-wrapper{
+  width: 100%;
+  height: 50px;
+  position: absolute;
+  bottom: 30px;
+  text-align: center;
+  z-index: 2;
+}
+.scrollable-containor{
+  width: 100%;
+  height: auto;
+}
+.eventlog-inner-content{
+  width: 95%;
+  height: 135px;
+  display: inline-block;
+  overflow: hidden;
+  padding-left: 5px;
+}
+ul.eventList{
+  margin: 0;
+  -webkit-padding-start : 0;
+  list-style-type: none;
+  width: 100%;
+}
+.event-type{
+  width: 35%;
+  display: inline-block;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #777;
+  vertical-align: middle;
+}
+.event-value{
+  width: 58%;
+  display: inline-block;
+  font-size: 12px;
+  margin-left: 5px;
+  white-space: nowrap;
+}
+.scrollDiv{
+  width: 5px;
+  display: inline-block;;
+  height: 135px;
+  background-color: #eaeaea;
+  border-radius: 5px;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+  filter: alpha(opacity=0);
+  -moz-opacity: 0;
+  -khtml-opacity: 0;
+  opacity: 0;
+}
+.scrollBtn{
+  margin-top:0;
+  width:100%;
+  height:10px;
+  background-color: #808080;
+  border-radius: 5px;
+}
+.eventPagination a,.eventPagination > li > span{
+  color: #656565 !important;
+}
+.eventPagination > li > a > span{
+  font-size: 12px;
+}
+.eventPagination > .active > a,
+.eventPagination > .active > span,
+.eventPagination > .active > a:hover,
+.eventPagination > .active > span:hover,
+.eventPagination > .active > a:focus,
+.eventPagination > .active > span:focus{
+  color: #fff !important;
+  background-color: #656565;
+  border-color: #656565;
+}
+
+
+/*Loader for Test Run */
+.stop {
+  animation-play-state: paused;
+  -moz-animation-play-state: paused;
+  -webkit-animation-play-state: paused;
+}
+#ajaxbar1 {
+  margin: 0 auto;
+  overflow: hidden;
+  width: 55px;
+}
+#ajaxbar1 .barlittle {
+  background-color: #1892c1;
+  width: 8px;
+  height: 8px;
+  float: left;
+  margin-left: 3px;
+  opacity: 0.1;
+  -webkit-animation: pulse 1s linear infinite normal;
+  -moz-animation: pulse 1s linear infinite normal;
+  -ms-animation: pulse 1s linear infinite normal;
+  animation: pulse 1s linear infinite normal;
+  -webkit-animation-delay: 0;
+  -moz-animation-delay: 0;
+  -o-animation-delay: 0;
+  animation-delay: 0;
+}
+#ajaxbar1 #block1 {
+  -webkit-animation-delay: 0.3s;
+  -moz-animation-delay: 0.3s;
+  -o-animation-delay: 0.3s;
+  animation-delay: 0.3s;
+}
+#ajaxbar1 #block2 {
+  -webkit-animation-delay: 0.2s;
+  -moz-animation-delay: 0.2s;
+  -o-animation-delay: 0.2s;
+  animation-delay: 0.2s;
+}
+#ajaxbar1 #block3 {
+  -webkit-animation-delay: 0.1s;
+  -moz-animation-delay: 0.1s;
+  -o-animation-delay: 0.1s;
+  animation-delay: 0.1s;
+}
+#ajaxbar1 #block4 {
+  -webkit-animation-delay: 0.2s;
+  -moz-animation-delay: 0.2s;
+  -o-animation-delay: 0.2s;
+  animation-delay: 0.2s;
+}
+#ajaxbar1 #block5 {
+  -webkit-animation-delay: 0.3s;
+  -moz-animation-delay: 0.3s;
+  -o-animation-delay: 0.3s;
+  animation-delay: 0.3s;
+}
+@keyframes pulse {
+  from {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.7);
+    opacity: 0.1;
+  }
+}
+@-moz-keyframes pulse {
+  from {
+    -moz-transform: scale(1.2);
+    opacity: 1;
+  }
+  to {
+    -moz-transform: scale(0.7);
+    opacity: 0.1;
+  }
+}
+@-webkit-keyframes pulse {
+  from {
+    -webkit-transform: scale(1.2);
+    opacity: 1;
+  }
+  to {
+    -webkit-transform: scale(0.7);
+    opacity: 0.1;
+  }
+}
+/*End of Loader for Test Run */
+.event-pagination-count{
+  width: 90%;
+  margin: -2px auto auto auto;
+  text-align: center;
+  font-size: 11px;
+}
+.event-link{
+  cursor: pointer;
+  color: #098cc5;
+  font-size: 14px;
+}
+.event-hScrollDiv{
+  width: 176px;
+  height: 6px;
+  background-color: #eaeaea;
+  border-radius: 5px;
+  overflow: hidden;
+  display: block;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+  filter: alpha(opacity=0);
+  -moz-opacity: 0;
+  -khtml-opacity: 0;
+  opacity: 0;
+}
+.hScrollBtn{
+  width: 15px;
+  height: 6px;
+  background-color: #808080;
+  border-radius: 5px;
+  cursor:move;
+}
+/*.scrollable-containor:hover .event-hScrollDiv,
+.scrollable-containor:hover .scrollDiv{
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+  filter: alpha(opacity=100);
+  -moz-opacity: 1;
+  -khtml-opacity: 1;
+  opacity: 1;
+}*/
