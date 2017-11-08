@@ -71,15 +71,6 @@ class  ZoomPanelComponent extends Component {
               <i className="fa fa-gear"></i>
             </a>
           </OverlayTrigger>
-          {
-            testCompleted && testRunActivated
-            ? <OverlayTrigger placement="top" overlay={<Tooltip id ="tooltip"> Event Log </Tooltip>}>
-                <a href="javascript:void(0);" className="config" onClick={handleEventLogHide.bind(this,true,'panel')}>
-                  <i className="fa fa-flask"></i>
-                </a>
-              </OverlayTrigger>
-            : ''
-          }
         </div>
       </div>
     );

@@ -93,9 +93,7 @@ public class RulesBolt extends AbstractProcessorBolt {
     }
 
     private StreamlineEvent getStreamlineEventWithStream(StreamlineEvent event, Tuple tuple) {
-        return new StreamlineEventImpl(event,
-                event.getDataSourceId(), event.getId(),
-                event.getHeader(), tuple.getSourceStreamId(), event.getAuxiliaryFieldsAndValues());
+        return StreamlineEventImpl.builder().from(event).sourceStream(tuple.getSourceStreamId()).build();
     }
 
     @Override

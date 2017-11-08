@@ -58,6 +58,8 @@ public class RulesBoltConditionTest {
             result = new Fields(StreamlineEvent.STREAMLINE_EVENT);
             mockContext.getComponentId(anyInt);
             result = "componentid";
+            mockContext.getThisComponentId();
+            result = "componentid"; minTimes = 0;
         }};
     }
 
@@ -109,7 +111,10 @@ public class RulesBoltConditionTest {
 
     @Test
     public void testSimpleRuleStringLiteral() throws Exception {
-        StreamlineEvent event = new StreamlineEventImpl(ImmutableMap.<String, Object>of("foo", "Normal", "bar", "abc", "baz", 200), "dsrcid");
+        StreamlineEvent event = StreamlineEventImpl.builder()
+                .fieldsAndValues(ImmutableMap.<String, Object>of("foo", "Normal", "bar", "abc", "baz", 200))
+                .dataSourceId("dsrcid")
+                .build();
         Tuple tuple = new TupleImpl(mockContext, new Values(event), 1, "inputstream");
 
         doTest(readFile("/simple-rule-string-literal.json"), tuple);
@@ -172,7 +177,10 @@ public class RulesBoltConditionTest {
     }
 
     private Tuple getTuple(int i) {
-        StreamlineEvent event = new StreamlineEventImpl(ImmutableMap.<String, Object>of("foo", i, "bar", 100, "baz", 200), "dsrcid");
+        StreamlineEvent event = StreamlineEventImpl.builder()
+                .fieldsAndValues(ImmutableMap.of("foo", i, "bar", 100, "baz", 200))
+                .dataSourceId("dsrcid")
+                .build();
         return new TupleImpl(mockContext, new Values(event), 1, "inputstream");
     }
 

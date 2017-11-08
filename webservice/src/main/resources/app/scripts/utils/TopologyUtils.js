@@ -950,6 +950,10 @@ const generateNodeData = function(nodes, componentBundle, metadata, resultArr) {
     if (currentMetaObj.streamId) {
       obj.streamId = currentMetaObj.streamId;
     }
+
+    if(!_.isEmpty(componentObj.eventLogData) && componentObj.eventLogData !== undefined){
+      obj.eventLogData =  componentObj.eventLogData;
+    }
     resultArr.push(obj);
   }
 };
@@ -999,7 +1003,11 @@ const createLineOnUI = function(edge, constants) {
       y: (edge.source.y + constants.rectangleHeight / 2)
     }, {
       x: edge.target.x,
-      y: (edge.target.y + constants.rectangleHeight / 2)
+      y: edge.target.eventLogData === undefined
+        ? (edge.target.y + constants.rectangleHeight / 2)
+        : edge.target.eventLogData.length < 1
+          ? (edge.target.y + constants.testNoDataRectHeight / 2)
+          : (edge.target.y + constants.testDataRectHeight / 2)
     });
   }
   return this.defineLinePath(arr[0], arr[1], isFailedTupleflag);

@@ -20,7 +20,7 @@ public class FieldsGroupingAsCustomGroupingTest {
         FieldsGroupingAsCustomGrouping fg = new FieldsGroupingAsCustomGrouping(Collections.singletonList("A"));
         Map<String, Object> keyValues = Collections.singletonMap("A", "PUFPaY9KxDAcGqfsorJp1R");
         fg.prepare(null, null, Arrays.asList(0, 1));
-        List<Integer> res = fg.chooseTasks(0, Collections.singletonList(new StreamlineEventImpl(keyValues, "srcID")));
+        List<Integer> res = fg.chooseTasks(0, Collections.singletonList(StreamlineEventImpl.builder().fieldsAndValues(keyValues).dataSourceId("srcID").build()));
         Assert.assertEquals(1, res.size());
         Assert.assertTrue(res.get(0) == 0 || res.get(0) == 1);
     }

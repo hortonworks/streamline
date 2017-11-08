@@ -184,6 +184,36 @@ const TestRunREST = {
       .then((response) => {
         return response.json();
       });
+  },
+  getAllTestEventRoots(id,historyId,options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    let url = baseUrl + 'topologies/' + id+ "/testhistories/"+historyId+'/events/root';
+    return fetch(url, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  getFullTestEventTree(id,historyId,rootId,options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    let url = baseUrl + 'topologies/' + id+ "/testhistories/"+historyId+'/events/correlated/'+rootId;
+    return fetch(url, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  getSubEventTree(id,historyId,rootId,subRootId,options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    let url = baseUrl + 'topologies/' + id+ "/testhistories/"+historyId+'/events/tree/'+rootId+'/subtree/'+subRootId;
+    return fetch(url, options)
+      .then((response) => {
+        return response.json();
+      });
   }
 };
 

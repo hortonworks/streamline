@@ -82,7 +82,11 @@ public class NotificationsTestBolt extends BaseTickTupleAwareRichBolt {
             header.put(AddHeaderTransformRuntime.HEADER_FIELD_RULE_ID, 1L);
             header.put(AddHeaderTransformRuntime.HEADER_FIELD_TIMESTAMP, System.currentTimeMillis());
 
-            StreamlineEvent streamlineEvent = new StreamlineEventImpl(fieldsMap, "notificationsTestBolt", header);
+            StreamlineEvent streamlineEvent = StreamlineEventImpl.builder()
+                    .fieldsAndValues(fieldsMap)
+                    .dataSourceId("notificationsTestBolt")
+                    .header(header)
+                    .build();
             collector.emit(consoleNotificationStream, new Values(streamlineEvent));
         }
 
@@ -98,8 +102,11 @@ public class NotificationsTestBolt extends BaseTickTupleAwareRichBolt {
                 header.put(AddHeaderTransformRuntime.HEADER_FIELD_RULE_ID, 1L);
                 header.put(AddHeaderTransformRuntime.HEADER_FIELD_TIMESTAMP, System.currentTimeMillis());
 
-                StreamlineEvent streamlineEvent = new StreamlineEventImpl(fieldsMap, "notificationsTestBolt", header);
-
+                StreamlineEvent streamlineEvent = StreamlineEventImpl.builder()
+                        .fieldsAndValues(fieldsMap)
+                        .dataSourceId("notificationsTestBolt")
+                        .header(header)
+                        .build();
                 collector.emit(emailNotificationStream, new Values(streamlineEvent));
             }
         }

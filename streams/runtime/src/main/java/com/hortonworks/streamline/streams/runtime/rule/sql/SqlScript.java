@@ -194,7 +194,6 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
                 }
                 if (inputEvent != null) {
                     result = builder.dataSourceId(inputEvent.getDataSourceId())
-                            .id(inputEvent.getId())
                             .header(inputEvent.getHeader())
                             .sourceStream(inputEvent.getSourceStream())
                             .build();

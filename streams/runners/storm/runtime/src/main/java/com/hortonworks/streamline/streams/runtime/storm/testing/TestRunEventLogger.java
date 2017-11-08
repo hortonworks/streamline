@@ -18,6 +18,9 @@ package com.hortonworks.streamline.streams.runtime.storm.testing;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.common.event.EventInformation;
+import com.hortonworks.streamline.streams.common.event.EventInformationBuilder;
+import com.hortonworks.streamline.streams.common.event.correlation.EventCorrelationInjector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TestRunEventLogger {
@@ -58,12 +62,13 @@ public class TestRunEventLogger {
 
     // Writing event to file should be mutually exclusive.
     // We don't need to worry about performance since it's just for testing topology locally.
-    public synchronized void writeEvent(long timestamp, EventType eventType, String componentName,
+    public synchronized void writeEvent(long timestamp, String componentName,
                                         String streamId, String targetComponentName, StreamlineEvent event) {
         try (FileWriter fw = new FileWriter(eventLogFilePath, true)) {
             LOG.debug("writing event to file " + eventLogFilePath);
 
-            EventInformation eventInfo = new EventInformation(timestamp, eventType, componentName, streamId,
+            EventInformationBuilder informationBuilder = new EventInformationBuilder();
+            EventInformation eventInfo = informationBuilder.build(timestamp, componentName, streamId,
                     targetComponentName, event);
             fw.write(objectMapper.writeValueAsString(eventInfo) + "\n");
             fw.flush();
@@ -76,50 +81,4 @@ public class TestRunEventLogger {
         }
     }
 
-    public static enum EventType {
-        INPUT, OUTPUT
-    }
-
-    public static class EventInformation {
-        private long timestamp;
-        private EventType eventType;
-        private String componentName;
-        private String streamId;
-        private String targetComponentName;
-        private StreamlineEvent streamlineEvent;
-
-        public EventInformation(long timestamp, EventType eventType, String componentName, String streamId,
-                                String targetComponentName, StreamlineEvent streamlineEvent) {
-            this.timestamp = timestamp;
-            this.eventType = eventType;
-            this.componentName = componentName;
-            this.streamId = streamId;
-            this.targetComponentName = targetComponentName;
-            this.streamlineEvent = streamlineEvent;
-        }
-
-        public long getTimestamp() {
-            return timestamp;
-        }
-
-        public EventType getEventType() {
-            return eventType;
-        }
-
-        public String getComponentName() {
-            return componentName;
-        }
-
-        public String getStreamId() {
-            return streamId;
-        }
-
-        public String getTargetComponentName() {
-            return targetComponentName;
-        }
-
-        public StreamlineEvent getStreamlineEvent() {
-            return streamlineEvent;
-        }
-    }
 }

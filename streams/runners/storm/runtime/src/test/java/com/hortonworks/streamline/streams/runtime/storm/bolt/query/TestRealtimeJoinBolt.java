@@ -18,12 +18,16 @@
 
 package com.hortonworks.streamline.streams.runtime.storm.bolt.query;
 
+import clojure.lang.Atom;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import com.hortonworks.streamline.streams.runtime.storm.bolt.query.RealtimeJoinBolt.StreamKind;
 import org.apache.storm.Constants;
+import org.apache.storm.generated.StormTopology;
+import org.apache.storm.metric.api.IMetric;
 import org.apache.storm.task.GeneralTopologyContext;
 import org.apache.storm.task.OutputCollector;
+import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.base.BaseWindowedBolt;
 import org.apache.storm.tuple.*;
 import org.junit.Assert;
@@ -72,8 +76,9 @@ public class TestRealtimeJoinBolt {
                 .innerJoin("ads", 10, false, Cmp.equal("userId", "orders:userId") )
                 .select("ads:id,orders:id,ads:userId,ads:product,orders:product,price");
 
+        MockTopologyContext context = new MockTopologyContext(bolt.getOutputFields());
         MockCollector collector = new MockCollector(bolt.getOutputFields());
-        bolt.prepare(null, null, collector);
+        bolt.prepare(null, context, collector);
 
         for (Tuple tuple : adImpressionStream) {
             bolt.execute(tuple);
@@ -96,8 +101,9 @@ public class TestRealtimeJoinBolt {
                 .innerJoin("ads", Duration.ofSeconds(2), false, Cmp.equal("userId", "orders:userId"))
                 .select("ads:id,orders:id,userId,ads:product,orders:product,price");
 
+        MockTopologyContext context = new MockTopologyContext(bolt.getOutputFields());
         MockCollector collector = new MockCollector(bolt.getOutputFields());
-        bolt.prepare(null, null, collector);
+        bolt.prepare(null, context, collector);
 
         for (Tuple tuple : adImpressionStream) {
             bolt.execute(tuple);
@@ -125,8 +131,9 @@ public class TestRealtimeJoinBolt {
                 .innerJoin("ads", Duration.ofSeconds(2), true, Cmp.equal("userId", "orders:userId"))
                 .select("ads:id,orders:id,userId,ads:product,orders:product,price");
 
+        MockTopologyContext context = new MockTopologyContext(bolt.getOutputFields());
         MockCollector collector = new MockCollector(bolt.getOutputFields());
-        bolt.prepare(null, null, collector);
+        bolt.prepare(null, context, collector);
 
         for (Tuple tuple : adImpressionStream) {
             bolt.execute(tuple);
@@ -147,7 +154,7 @@ public class TestRealtimeJoinBolt {
 
     // adds rec to streamRecs
     private static void appendToStream(ArrayList<Tuple> streamRecs, Object[] rec, String[] fieldNames, String streamName) {
-        streamRecs.add( new TupleImpl(new MockContext(fieldNames), Arrays.asList(rec), 0, streamName) );
+        streamRecs.add( new TupleImpl(new MockTopologyContext(fieldNames), Arrays.asList(rec), 0, streamName) );
     }
 
     @Test
@@ -160,8 +167,9 @@ public class TestRealtimeJoinBolt {
                 .leftJoin("orders", 12, false,  Cmp.equal("userId", "ads:userId"))
                 .select("ads:id, orders:id , ads:userId , ads:product , orders:product , price");
 
+        MockTopologyContext context = new MockTopologyContext(bolt.getOutputFields());
         MockCollector collector = new MockCollector(bolt.getOutputFields());
-        bolt.prepare(null, null, collector);
+        bolt.prepare(null, context, collector);
 
         for (Tuple tuple : orderStream) {
             bolt.execute(tuple);
@@ -184,8 +192,9 @@ public class TestRealtimeJoinBolt {
                 .leftJoin("orders", Duration.ofSeconds(2), false,  Cmp.equal("userId", "ads:userId"))
                 .select("ads:id, orders:id , ads:userId , ads:product , orders:product , price");
 
+        MockTopologyContext context = new MockTopologyContext(bolt.getOutputFields());
         MockCollector collector = new MockCollector(bolt.getOutputFields());
-        bolt.prepare(null, null, collector);
+        bolt.prepare(null, context, collector);
 
         for (Tuple tuple : orderStream) {
             bolt.execute(tuple);
@@ -211,8 +220,9 @@ public class TestRealtimeJoinBolt {
                 .rightJoin("orders", Duration.ofSeconds(1), false, Cmp.equal("userId", "ads:userId"))
                 .select(" orders:id, ads:userId, ads:product, orders:product, price ");
 
+        MockTopologyContext context = new MockTopologyContext(bolt.getOutputFields());
         MockCollector collector = new MockCollector(bolt.getOutputFields());
-        bolt.prepare(null, null, collector);
+        bolt.prepare(null, context, collector);
 
         for (Tuple tuple : orderStream) {
             bolt.execute(tuple);
@@ -245,8 +255,9 @@ public class TestRealtimeJoinBolt {
                 // extra spaces in arg to select() are to test FieldDescriptor
                 .select(" ads:id, orders:id as orderId, ads:userId  as  userId ,ads:product, orders:product, price ");
 
+        MockTopologyContext context = new MockTopologyContext(bolt.getOutputFields());
         MockCollector collector = new MockCollector(bolt.getOutputFields());
-        bolt.prepare(null, null, collector);
+        bolt.prepare(null, context, collector);
 
         for (Tuple tuple : orderStream) {
             bolt.execute(tuple);
@@ -276,8 +287,9 @@ public class TestRealtimeJoinBolt {
                                            , Cmp.ignoreCase("ads:product","orders:product"))
                 .select("orders:id,ads:userId,ads:product,orders:product,price");
 
+        MockTopologyContext context = new MockTopologyContext(bolt.getOutputFields());
         MockCollector collector = new MockCollector(bolt.getOutputFields());
-        bolt.prepare(null, null, collector);
+        bolt.prepare(null, context, collector);
 
         for (Tuple tuple : adImpressionStream) {
             bolt.execute(tuple);
@@ -301,8 +313,9 @@ public class TestRealtimeJoinBolt {
                                                               , Cmp.ignoreCase("ads:product","orders:product") )
                 .select("orders:id,ads:userId,product,price");
 
+        MockTopologyContext context = new MockTopologyContext(bolt.getOutputFields());
         MockCollector collector = new MockCollector(bolt.getOutputFields());
-        bolt.prepare(null, null, collector);
+        bolt.prepare(null, context, collector);
 
         for (Tuple tuple : adImpressionStream) {
             bolt.execute(tuple);
@@ -328,8 +341,9 @@ public class TestRealtimeJoinBolt {
                                                               , SLCmp.ignoreCase("ads:product","orders:product") )
                 .select("orders:id,ads:userId,product,price");
 
+        MockTopologyContext context = new MockTopologyContext(bolt.getOutputFields());
         MockCollector collector = new MockCollector(bolt.getOutputFields());
-        bolt.prepare(null, null, collector);
+        bolt.prepare(null, context, collector);
 
         for (Tuple tuple : adImpressionStream) {
             bolt.execute(tuple);
@@ -347,7 +361,7 @@ public class TestRealtimeJoinBolt {
 
     private static ArrayList<Tuple> makeStream(String streamName, String[] fieldNames, Object[][] data) {
         ArrayList<Tuple> result = new ArrayList<>();
-        MockContext mockContext = new MockContext(fieldNames);
+        MockTopologyContext mockContext = new MockTopologyContext(fieldNames);
 
         for (Object[] record : data) {
             TupleImpl rec = new TupleImpl(mockContext, Arrays.asList(record), 0, streamName);
@@ -360,7 +374,7 @@ public class TestRealtimeJoinBolt {
     // NOTE: Streamline Specific
     private static ArrayList<Tuple> makeStreamLineEventStream (String streamName, String[] fieldNames, Object[][] records) {
 
-        MockContext mockContext = new MockContext(new String[]{StreamlineEvent.STREAMLINE_EVENT} );
+        MockTopologyContext mockContext = new MockTopologyContext(new String[]{StreamlineEvent.STREAMLINE_EVENT} );
         ArrayList<Tuple> result = new ArrayList<>(records.length);
 
         // convert each record into a HashMap using fieldNames as keys
@@ -369,7 +383,10 @@ public class TestRealtimeJoinBolt {
             for (int i = 0; i < fieldNames.length; i++) {
                 recordMap.put(fieldNames[i], record[i]);
             }
-            StreamlineEvent streamLineEvent = new StreamlineEventImpl(recordMap, "multiple sources");
+            StreamlineEvent streamLineEvent = StreamlineEventImpl.builder()
+                    .fieldsAndValues(recordMap)
+                    .dataSourceId("multiple sources")
+                    .build();
             ArrayList<Object> tupleValues = new ArrayList<>(1);
             tupleValues.add(streamLineEvent);
             TupleImpl tuple = new TupleImpl(mockContext, tupleValues, 0, streamName);
@@ -439,22 +456,28 @@ public class TestRealtimeJoinBolt {
         }
     } // class MockCollector
 
-    static class MockContext extends GeneralTopologyContext {
+    static class MockTopologyContext extends TopologyContext {
 
         private final Fields fields;
         private String srcComponentId = "component";
 
-        public MockContext(String[] fieldNames) {
-            super(null, null, null, null, null, null);
+        public MockTopologyContext(String[] fieldNames) {
+            super(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
             this.fields = new Fields(fieldNames);
         }
 
-        public MockContext(String[] fieldNames, String srcComponentId) {
-            super(null, null, null, null, null, null);
+        public MockTopologyContext(String[] fieldNames, String srcComponentId) {
+            super(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
             this.fields = new Fields(fieldNames);
             this.srcComponentId = srcComponentId;
         }
 
+        @Override
+        public String getThisComponentId() {
+            return srcComponentId;
+        }
+
+        @Override
         public String getComponentId(int taskId) {
             return srcComponentId;
         }
@@ -462,11 +485,10 @@ public class TestRealtimeJoinBolt {
         public Fields getComponentOutputFields(String componentId, String streamId) {
             return fields;
         }
-
     }
 
     public Tuple makeTickTuple() {
-        MockContext context = new MockContext(new String[]{StreamlineEvent.STREAMLINE_EVENT}, Constants.SYSTEM_COMPONENT_ID );
+        MockTopologyContext context = new MockTopologyContext(new String[]{StreamlineEvent.STREAMLINE_EVENT}, Constants.SYSTEM_COMPONENT_ID );
 
         return new TupleImpl(context, new Values(1000), (int) Constants.SYSTEM_TASK_ID, Constants.SYSTEM_TICK_STREAM_ID);
     }

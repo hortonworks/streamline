@@ -54,14 +54,13 @@ public class OutputCollectorStreamlineEventLogger {
     }
 
     private void logEvent(String streamId, List<Integer> taskIds, List<Object> tuple) {
+        long now = System.currentTimeMillis();
         StreamlineEvent streamlineEvent = (StreamlineEvent) tuple.get(0);
         for (int taskId : taskIds) {
             String targetComponentId = topologyContext.getComponentId(taskId);
             String targetStreamlineComponentName = StormTopologyUtil.extractStreamlineComponentName(targetComponentId);
-            eventLogger.writeEvent(System.currentTimeMillis(), TestRunEventLogger.EventType.OUTPUT, componentName,
+            eventLogger.writeEvent(now, componentName,
                     streamId, targetStreamlineComponentName, streamlineEvent);
         }
     }
-
-
 }

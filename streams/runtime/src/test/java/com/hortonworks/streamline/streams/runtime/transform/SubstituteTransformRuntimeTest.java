@@ -41,7 +41,7 @@ public class SubstituteTransformRuntimeTest {
         fieldsAndValues.put("2", "two");
         fieldsAndValues.put("3", "three");
 
-        StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "dsrcid");
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(fieldsAndValues).dataSourceId("dsrcid").build();
         TransformRuntime transformRuntime = new SubstituteTransformRuntime();
         List<StreamlineEvent> result = transformRuntime.execute(event);
         assertEquals(1, result.size());
@@ -58,7 +58,7 @@ public class SubstituteTransformRuntimeTest {
         fieldsAndValues.put("2", "two");
         fieldsAndValues.put("3", "${1} plus ${2}");
 
-        StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "dsrcid");
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(fieldsAndValues).dataSourceId("dsrcid").build();
         TransformRuntime transformRuntime = new SubstituteTransformRuntime();
         List<StreamlineEvent> result = transformRuntime.execute(event);
         assertEquals(1, result.size());
@@ -75,7 +75,7 @@ public class SubstituteTransformRuntimeTest {
         fieldsAndValues.put("2", "${1} plus ${1}");
         fieldsAndValues.put("3", "${1} plus two");
 
-        StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "dsrcid");
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(fieldsAndValues).dataSourceId("dsrcid").build();
         TransformRuntime transformRuntime = new SubstituteTransformRuntime(new SubstituteTransform(Collections.singleton("3")));
         List<StreamlineEvent> result = transformRuntime.execute(event);
         assertEquals(1, result.size());
@@ -92,7 +92,7 @@ public class SubstituteTransformRuntimeTest {
         fieldsAndValues.put("2", 2);
         fieldsAndValues.put("3", "${1} plus ${2}");
 
-        StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "dsrcid");
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(fieldsAndValues).dataSourceId("dsrcid").build();
         TransformRuntime transformRuntime = new SubstituteTransformRuntime();
         List<StreamlineEvent> result = transformRuntime.execute(event);
         assertEquals(1, result.size());
@@ -109,7 +109,7 @@ public class SubstituteTransformRuntimeTest {
         fieldsAndValues.put("2", "${1} plus ${1}");
         fieldsAndValues.put("3", "${1} plus ${2}");
 
-        StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "dsrcid");
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(fieldsAndValues).dataSourceId("dsrcid").build();
         TransformRuntime transformRuntime = new SubstituteTransformRuntime();
         List<StreamlineEvent> result = transformRuntime.execute(event);
         assertEquals(1, result.size());
@@ -125,7 +125,7 @@ public class SubstituteTransformRuntimeTest {
         fieldsAndValues.put("1", "${2} minus one");
         fieldsAndValues.put("2", "${1} plus one");
 
-        StreamlineEvent event = new StreamlineEventImpl(fieldsAndValues, "dsrcid");
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(fieldsAndValues).dataSourceId("dsrcid").build();
         TransformRuntime transformRuntime = new SubstituteTransformRuntime();
         List<StreamlineEvent> result = transformRuntime.execute(event);
         System.out.println(result);

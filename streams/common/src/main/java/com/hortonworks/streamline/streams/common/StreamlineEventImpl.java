@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableMap;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -37,13 +38,13 @@ public final class StreamlineEventImpl extends ForwardingMap<String, Object> imp
     // Default value chosen to be blank and not the default used in storm since wanted to keep it independent of storm.
     public final static String DEFAULT_SOURCE_STREAM = "default";
     // special event to trigger evaluation of group by
-    public static final StreamlineEvent GROUP_BY_TRIGGER_EVENT = new StreamlineEventImpl(Collections.emptyMap(), "");
+    public static final StreamlineEvent GROUP_BY_TRIGGER_EVENT = StreamlineEventImpl.builder().build();
 
-    private final Map<String, Object> header;
+    private final ImmutableMap<String, Object> header;
     private final String sourceStream;
-    private final Map<String, Object> auxiliaryFieldsAndValues;
+    private final ImmutableMap<String, Object> auxiliaryFieldsAndValues;
     private final String dataSourceId;
-    private final String id;
+    private final String id = UUID.randomUUID().toString();
     private final ImmutableMap<String, Object> delegate;
 
     @Override
@@ -52,64 +53,19 @@ public final class StreamlineEventImpl extends ForwardingMap<String, Object> imp
     }
 
     /**
-     * Creates an StreamlineEvent with given keyValues, dataSourceId
-     * and a random UUID as the id.
-     */
-    public StreamlineEventImpl(Map<String, Object> keyValues, String dataSourceId) {
-        this(keyValues, dataSourceId, UUID.randomUUID().toString());
-    }
-
-    /**
-     * Creates an StreamlineEvent with given keyValues, dataSourceId and id.
-     */
-    public StreamlineEventImpl(Map<String, Object> keyValues, String dataSourceId, String id) {
-        this(keyValues, dataSourceId, id, new HashMap<>(), DEFAULT_SOURCE_STREAM);
-    }
-
-    /**
-     * Creates an StreamlineEvent with given keyValues, dataSourceId and header.
-     */
-    public StreamlineEventImpl(Map<String, Object> keyValues, String dataSourceId, Map<String, Object> header) {
-        this(keyValues, dataSourceId, UUID.randomUUID().toString(), header, DEFAULT_SOURCE_STREAM);
-    }
-
-
-    /**
-     * Creates an StreamlineEvent with given keyValues, dataSourceId, id and header.
-     */
-    public StreamlineEventImpl(Map<String, Object> keyValues, String dataSourceId, String id, Map<String, Object> header) {
-        this(keyValues, dataSourceId, id, header, DEFAULT_SOURCE_STREAM);
-    }
-
-    /**
-     * Creates an StreamlineEvent with given keyValues, dataSourceId, id and header and sourceStream.
-     */
-    public StreamlineEventImpl(Map<String, Object> fieldsAndValues, String dataSourceId, String id, Map<String, Object> header, String sourceStream) {
-        this(fieldsAndValues, dataSourceId, id, header, sourceStream, null);
-    }
-
-    /**
-     * Creates an StreamlineEvent with given keyValues, dataSourceId, id and header, sourceStream and auxiliary fields.
-     * Creates an StreamlineEvent with given keyValues, dataSourceId, header and sourceStream.
-     */
-    public StreamlineEventImpl(Map<String, Object> keyValues, String dataSourceId, Map<String, Object> header, String sourceStream) {
-        this(keyValues, dataSourceId, UUID.randomUUID().toString(), header, sourceStream);
-    }
-
-    /**
      * Creates an StreamlineEvent with given keyValues, dataSourceId, id, header and sourceStream.
      */
-    public StreamlineEventImpl(Map<String, Object> keyValues, String dataSourceId, String id, Map<String, Object> header, String sourceStream, Map<String, Object> auxiliaryFieldsAndValues) {
+    private StreamlineEventImpl(Map<String, Object> keyValues, String dataSourceId, Map<String, Object> header,
+                                String sourceStream, Map<String, Object> auxiliaryFieldsAndValues) {
         if (keyValues instanceof StreamlineEventImpl) {
             this.delegate = ImmutableMap.copyOf(((StreamlineEventImpl) keyValues).delegate());
         } else {
             this.delegate = ImmutableMap.copyOf(keyValues);
         }
         this.dataSourceId = dataSourceId;
-        this.id = id;
         this.sourceStream = sourceStream;
-        this.header = header != null ? new HashMap<>(header) : new HashMap<>();
-        this.auxiliaryFieldsAndValues = auxiliaryFieldsAndValues != null ? new HashMap<>(auxiliaryFieldsAndValues) : new HashMap<>();
+        this.header = header != null ? ImmutableMap.copyOf(header) : ImmutableMap.of();
+        this.auxiliaryFieldsAndValues = auxiliaryFieldsAndValues != null ? ImmutableMap.copyOf(auxiliaryFieldsAndValues) : ImmutableMap.of();
     }
 
     public static class Builder {
@@ -119,9 +75,16 @@ public final class StreamlineEventImpl extends ForwardingMap<String, Object> imp
         private Map<String, Object> auxiliaryFieldsAndValues;
         private String sourceStream = DEFAULT_SOURCE_STREAM;
         private String dataSourceId = "";
-        private String id = UUID.randomUUID().toString();
 
         private Builder() {}
+
+        public Builder from(StreamlineEvent other) {
+            return this.header(other.getHeader())
+                    .sourceStream(other.getSourceStream())
+                    .dataSourceId(other.getDataSourceId())
+                    .auxiliaryFieldsAndValues(other.getAuxiliaryFieldsAndValues())
+                    .putAll(other);
+        }
 
         public Builder header(Map<String, Object> header) {
             this.header = header;
@@ -140,11 +103,6 @@ public final class StreamlineEventImpl extends ForwardingMap<String, Object> imp
 
         public Builder dataSourceId(String dataSourceId) {
             this.dataSourceId = dataSourceId;
-            return this;
-        }
-
-        public Builder id(String id) {
-            this.id = id;
             return this;
         }
 
@@ -174,6 +132,22 @@ public final class StreamlineEventImpl extends ForwardingMap<String, Object> imp
             return this;
         }
 
+        public Builder fieldsAndValues(Map<String, Object> fieldsAndValues) {
+            if (kvBuilder == null) {
+                // avoids unnecessary copy if the fieldsAndValues is already immutable.
+                if (kv == null) {
+                    kv = fieldsAndValues;
+                } else {
+                    kvBuilder = ImmutableMap.builder();
+                    kvBuilder.putAll(fieldsAndValues);
+                }
+            } else {
+                kvBuilder = ImmutableMap.builder();
+                kvBuilder.putAll(fieldsAndValues);
+            }
+            return this;
+        }
+
         public StreamlineEventImpl build() {
             Map<String, Object> fieldsAndValues;
             if (kvBuilder != null) {
@@ -183,13 +157,16 @@ public final class StreamlineEventImpl extends ForwardingMap<String, Object> imp
             } else {
                 fieldsAndValues = Collections.emptyMap();
             }
+            Map<String, Object> header = this.header != null ? ImmutableMap.copyOf(this.header) : ImmutableMap.of();
+            Map<String, Object> aux = this.auxiliaryFieldsAndValues != null ?
+                    ImmutableMap.copyOf(this.auxiliaryFieldsAndValues) : ImmutableMap.of();
+
             return new StreamlineEventImpl(
                     fieldsAndValues,
                     this.dataSourceId,
-                    this.id,
-                    this.header,
+                    header,
                     this.sourceStream,
-                    this.auxiliaryFieldsAndValues);
+                    aux);
         }
 
     }
@@ -198,34 +175,20 @@ public final class StreamlineEventImpl extends ForwardingMap<String, Object> imp
         return new StreamlineEventImpl.Builder();
     }
 
-    public StreamlineEventImpl(StreamlineEventImpl other) {
-        this.header = other.header;
-        this.sourceStream = other.sourceStream;
-        this.auxiliaryFieldsAndValues = new HashMap<>(other.auxiliaryFieldsAndValues);
-        this.dataSourceId = other.dataSourceId;
-        this.id = other.id;
-        this.delegate = ImmutableMap.copyOf(other.delegate);
-    }
-
-    /*
-     * Creates a copy of 'other' but with the given keyValues.
-     */
-    private StreamlineEventImpl(StreamlineEventImpl other, ImmutableMap<String, Object> keyValues) {
-        this.header = other.header;
-        this.sourceStream = other.sourceStream;
-        this.auxiliaryFieldsAndValues = new HashMap<>(other.auxiliaryFieldsAndValues);
-        this.dataSourceId = other.dataSourceId;
-        this.id = other.id;
-        this.delegate = ImmutableMap.copyOf(keyValues);
-    }
-
     @Override
     public Map<String, Object> getAuxiliaryFieldsAndValues() {
         return auxiliaryFieldsAndValues;
     }
 
-    public void addAuxiliaryFieldAndValue(String field, Object value) {
-        auxiliaryFieldsAndValues.put(field, value);
+    @Override
+    public StreamlineEvent addAuxiliaryFieldAndValue(String field, Object value) {
+        Map<String, Object> aux = new HashMap<>();
+        aux.putAll(this.getAuxiliaryFieldsAndValues());
+        aux.put(field, value);
+
+        return StreamlineEventImpl.builder().from(this)
+                .auxiliaryFieldsAndValues(aux)
+                .build();
     }
 
     @Override
@@ -265,9 +228,7 @@ public final class StreamlineEventImpl extends ForwardingMap<String, Object> imp
     @Override
     public StreamlineEvent addFieldsAndValues(Map<String, Object> fieldsAndValues) {
         Objects.requireNonNull(fieldsAndValues, "keyValues is null");
-        ImmutableMap<String, Object> kv = ImmutableMap.<String, Object>builder()
-                .putAll(delegate).putAll(fieldsAndValues).build();
-        return new StreamlineEventImpl(this, kv);
+        return builder().from(this).putAll(fieldsAndValues).build();
     }
 
     @Override
@@ -283,9 +244,13 @@ public final class StreamlineEventImpl extends ForwardingMap<String, Object> imp
      */
     @Override
     public StreamlineEvent addHeaders(Map<String, Object> headers) {
-        StreamlineEventImpl result = new StreamlineEventImpl(this);
-        result.header.putAll(headers);
-        return result;
+        Map<String, Object> headerMap = new HashMap<>();
+        headerMap.putAll(this.getHeader());
+        headerMap.putAll(headers);
+
+        return StreamlineEventImpl.builder().from(this)
+                .header(headerMap)
+                .build();
     }
 
     @Override
@@ -321,30 +286,29 @@ public final class StreamlineEventImpl extends ForwardingMap<String, Object> imp
      * {@inheritDoc}
      */
     public final Object put(String k, Object v) {
-        return StreamlineEvent.super.put(k, v);
+        throw new UnsupportedOperationException();
     }
 
     /**
      * {@inheritDoc}
      */
     public final Object remove(Object o) {
-        return StreamlineEvent.super.remove(o);
+        throw new UnsupportedOperationException();
     }
 
     /**
      * {@inheritDoc}
      */
     public final void putAll(Map<? extends String, ? extends Object> map) {
-        StreamlineEvent.super.putAll(map);
+        throw new UnsupportedOperationException();
     }
 
     /**
      * {@inheritDoc}
      */
     public final void clear() {
-        StreamlineEvent.super.clear();
+        throw new UnsupportedOperationException();
     }
-
 
     @Override
     public String toString() {

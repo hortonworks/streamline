@@ -262,7 +262,11 @@ public class SplitJoinTest {
     private StreamlineEvent createRootEvent() {
         Map<String, Object> fieldValues = new HashMap<String, Object>(){{put("foo", "foo-value"); put("bar", "bar-"+System.currentTimeMillis());}};
 
-        return new StreamlineEventImpl(fieldValues, "ds-1", UUID.randomUUID().toString(), Collections.<String, Object>emptyMap(), "source-stream");
+        return StreamlineEventImpl.builder()
+                .fieldsAndValues(fieldValues)
+                .dataSourceId("ds-1")
+                .sourceStream("source-stream")
+                .build();
     }
 
     @Mocked
