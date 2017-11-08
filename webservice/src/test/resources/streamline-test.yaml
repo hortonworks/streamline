@@ -24,7 +24,7 @@ catalogRootUrl: "http://localhost:8080/api/v1/catalog"
 
 # Filesystem based jar storage
 fileStorageConfiguration:
-  className: "com.hortonworks.streamline.common.util.LocalFileSystemStorage"
+  className: "com.hortonworks.registries.common.util.LocalFileSystemStorage"
   properties:
     directory: "/tmp"
 
@@ -33,7 +33,7 @@ dashboardConfiguration:
 
 # HDFS based Jar storage
 #fileStorageConfiguration:
-#  className: "com.hortonworks.streamline.common.util.HdfsFileStorage"
+#  className: "com.hortonworks.registries.common.util.HdfsFileStorage"
 #  properties:
 #    fsUrl: "file:///"
 #    directory: "/tmp/test-hdfs"
