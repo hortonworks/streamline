@@ -20,7 +20,7 @@ import com.hortonworks.streamline.common.Constants;
 import com.hortonworks.streamline.common.FileEventHandler;
 import com.hortonworks.streamline.common.FileWatcher;
 import com.hortonworks.streamline.common.ModuleRegistration;
-import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.registries.common.util.FileStorage;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
 import com.hortonworks.streamline.registries.tag.client.TagClient;
 import com.hortonworks.registries.storage.StorageManager;

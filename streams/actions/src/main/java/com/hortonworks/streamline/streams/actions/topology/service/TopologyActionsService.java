@@ -17,7 +17,7 @@ package com.hortonworks.streamline.streams.actions.topology.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.registries.common.util.FileStorage;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
 import com.hortonworks.streamline.streams.actions.TopologyActions;
 import com.hortonworks.streamline.streams.actions.container.TopologyActionsContainer;

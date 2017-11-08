@@ -23,7 +23,7 @@ import com.hortonworks.registries.common.ServletFilterConfiguration;
 import com.hortonworks.registries.cache.Cache;
 import com.hortonworks.streamline.common.Constants;
 import com.hortonworks.streamline.common.ModuleRegistration;
-import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.registries.common.util.FileStorage;
 import com.hortonworks.streamline.common.util.ReflectionHelper;
 import com.hortonworks.registries.storage.CacheBackedStorageManager;
 import com.hortonworks.registries.storage.Storable;

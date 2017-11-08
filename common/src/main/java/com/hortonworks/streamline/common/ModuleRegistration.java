@@ -15,7 +15,7 @@
  **/
 package com.hortonworks.streamline.common;
 
-import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.registries.common.util.FileStorage;
 
 import java.util.List;
 import java.util.Map;
