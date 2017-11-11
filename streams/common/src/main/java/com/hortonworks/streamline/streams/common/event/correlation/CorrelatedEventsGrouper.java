@@ -44,7 +44,7 @@ public class CorrelatedEventsGrouper {
 
         addNonExistingParents(allEventsMap, relatedEventsMap);
 
-        return new GroupedCorrelationEvents(relatedEventsMap);
+        return new GroupedCorrelationEvents(relatedEventsMap, rootEventId);
     }
 
     private void addNonExistingParents(Map<String, EventInformation> allEventsMap,
