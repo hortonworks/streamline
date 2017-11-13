@@ -59,6 +59,8 @@ export default class ContentScrollableComponent extends Component {
         // set an verticalBar height
         container.nextSibling.children[0].style.height = (container.clientHeight/(container.scrollHeight/container.clientHeight))+'px';
       }
+    } else {
+      this.verticalBar = false;
     }
     if(container !== undefined && (container.clientWidth < container.scrollWidth)){
       this.horizontalBar = true;
@@ -71,6 +73,8 @@ export default class ContentScrollableComponent extends Component {
         // set an horizontalBar width
         xScrollDiv.children[0].style.width = (container.clientWidth/((this.maxScrollWidth+20)/container.clientWidth))+'px';
       }
+    } else {
+      this.horizontalBar = false;
     }
   }
 
@@ -164,10 +168,11 @@ export default class ContentScrollableComponent extends Component {
   }
 
   render(){
-    const {content} = this.props;
+    const {contentHeight,contentWidth} = this.props;
     return (
       <div className="scrollable-containor" onMouseEnter={this.handleMouseAction.bind(this,'enter')} onMouseLeave={this.handleMouseAction.bind(this,'leave')}>
-        <div ref="container" className={`${content.length ? 'eventlog-inner-content' : 'text-center'}`}>
+        <div ref="container" className={`${this.props.children instanceof Object ? 'eventlog-inner-content' : 'text-center'}`}
+          style={{height : this.props.children instanceof Object ? contentHeight : 'auto', width : contentWidth !== undefined ? contentWidth : '97%'}}>
           {this.props.children}
         </div>
         <div className="scrollDiv" data-scrollDivY="scrollY">

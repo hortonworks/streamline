@@ -121,8 +121,7 @@ class EditorGraph extends Component {
       addTestCase,
       eventLogData,
       hideEventLog,
-      testRunningMode,
-      handleEventPaginationClick
+      testRunningMode
     } = this.props;
     const {boxes, bundleArr} = this.state;
     const componentsBundle = [...bundleArr.sourceBundle, ...bundleArr.processorsBundle, ...bundleArr.sinksBundle];
@@ -131,7 +130,7 @@ class EditorGraph extends Component {
         <div className="" style={{
           height: actualHeight
         }}>
-          <TopologyGraphComponent ref="TopologyGraph" handleEventPaginationClick={handleEventPaginationClick} height={parseInt(actualHeight, 10)} data={graphData} topologyId={topologyId} versionId={versionId} versionsArr={versionsArr} viewMode={viewMode} getModalScope={getModalScope} setModalContent={setModalContent} getEdgeConfigModal={getEdgeConfigModal} setLastChange={setLastChange} topologyConfigMessageCB={topologyConfigMessageCB} testRunActivated={testRunActivated} eventLogData={eventLogData}  hideEventLog={hideEventLog}/>
+          <TopologyGraphComponent ref="TopologyGraph" height={parseInt(actualHeight, 10)} data={graphData} topologyId={topologyId} versionId={versionId} versionsArr={versionsArr} viewMode={viewMode} getModalScope={getModalScope} setModalContent={setModalContent} getEdgeConfigModal={getEdgeConfigModal} setLastChange={setLastChange} topologyConfigMessageCB={topologyConfigMessageCB} testRunActivated={testRunActivated} eventLogData={eventLogData}  hideEventLog={hideEventLog}/>
           {state.showComponentNodeContainer
             ? <ComponentNodeContainer testRunningMode={testRunningMode} left={boxes.left} top={boxes.top} hideSourceOnDrag={true} viewMode={viewMode} customProcessors={this.props.customProcessors} bundleArr={bundleArr} testRunActivated={testRunActivated} testItemSelected={testItemSelected} testCaseList={testCaseList} selectedTestObj={selectedTestObj} addTestCase={addTestCase} eventLogData={eventLogData} />
             : null

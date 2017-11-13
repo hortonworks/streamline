@@ -3615,8 +3615,8 @@ a.formatterFont:hover{
   height: auto;
 }
 .eventlog-inner-content{
-  width: 95%;
-  height: 135px;
+  width: 97%;
+  height: auto;
   display: inline-block;
   overflow: hidden;
   padding-left: 5px;
