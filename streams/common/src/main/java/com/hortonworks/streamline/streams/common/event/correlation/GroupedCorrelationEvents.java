@@ -15,48 +15,56 @@
  **/
 package com.hortonworks.streamline.streams.common.event.correlation;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.hortonworks.streamline.streams.common.event.EventInformation;
 
 import java.util.*;
 
+import static java.util.stream.Collectors.toMap;
+
 public class GroupedCorrelationEvents {
     private Map<String, EventInformation> allEvents;
-    private Map<String, ComponentGroupedEvents> componentGroupedEvents;
+    private Map<String, SortedComponentGroupedEvents> componentGroupedEvents;
 
-    public GroupedCorrelationEvents(Map<String, EventInformation> correlatedEvents) {
+    public GroupedCorrelationEvents(Map<String, EventInformation> correlatedEvents, String rootEventId) {
         this.allEvents = correlatedEvents;
 
-        this.componentGroupedEvents = new HashMap<>();
+        Map<String, ComponentGroupedEvents> unsortedComponentGroupedEvents = new HashMap<>();
 
         correlatedEvents.values().forEach(event -> {
             String sourceComponentName = event.getComponentName();
             String targetComponentName = event.getTargetComponentName();
 
-            ComponentGroupedEvents groupedEvents = componentGroupedEvents.get(sourceComponentName);
+            ComponentGroupedEvents groupedEvents = unsortedComponentGroupedEvents.get(sourceComponentName);
             if (groupedEvents == null) {
                 groupedEvents = new ComponentGroupedEvents(sourceComponentName);
-                componentGroupedEvents.put(sourceComponentName, groupedEvents);
+                unsortedComponentGroupedEvents.put(sourceComponentName, groupedEvents);
             }
             groupedEvents.addOutputEventId(event.getEventId());
 
-            groupedEvents = componentGroupedEvents.get(targetComponentName);
+            groupedEvents = unsortedComponentGroupedEvents.get(targetComponentName);
             if (groupedEvents == null) {
                 groupedEvents = new ComponentGroupedEvents(targetComponentName);
-                componentGroupedEvents.put(targetComponentName, groupedEvents);
+                unsortedComponentGroupedEvents.put(targetComponentName, groupedEvents);
             }
             groupedEvents.addInputEventId(event.getEventId());
         });
+
+        componentGroupedEvents = unsortedComponentGroupedEvents.entrySet()
+                .stream()
+                .collect(toMap(Map.Entry::getKey,
+                        entry -> new SortedComponentGroupedEvents(entry.getValue(), rootEventId)));
     }
 
     public Map<String, EventInformation> getAllEvents() {
         return allEvents;
     }
 
-    public Map<String, ComponentGroupedEvents> getComponentGroupedEvents() {
+    public Map<String, SortedComponentGroupedEvents> getComponentGroupedEvents() {
         return componentGroupedEvents;
     }
 
-    private static class ComponentGroupedEvents {
+    public static class ComponentGroupedEvents {
         private String componentName;
         private Set<String> inputEventIds;
         private Set<String> outputEventIds;
@@ -86,6 +94,50 @@ public class GroupedCorrelationEvents {
         }
 
         public Set<String> getOutputEventIds() {
+            return outputEventIds;
+        }
+    }
+
+    public static class SortedComponentGroupedEvents {
+        private String componentName;
+        private boolean containingSelectedEvent;
+        private List<String> inputEventIds;
+        private List<String> outputEventIds;
+
+        public SortedComponentGroupedEvents(ComponentGroupedEvents groupedEvents, String selectedEventId) {
+            this.componentName = groupedEvents.getComponentName();
+
+            this.inputEventIds = new LinkedList<>(groupedEvents.getInputEventIds());
+            this.outputEventIds = new LinkedList<>(groupedEvents.getOutputEventIds());
+
+            if (this.outputEventIds.contains(selectedEventId)) {
+                // this component contains selected event Id
+                this.containingSelectedEvent = true;
+
+                this.outputEventIds.remove(selectedEventId);
+                this.outputEventIds.add(0, selectedEventId);
+            } else {
+                this.containingSelectedEvent = false;
+            }
+        }
+
+        public String getComponentName() {
+            return componentName;
+        }
+
+        public boolean isContainingSelectedEvent() {
+            return containingSelectedEvent;
+        }
+
+        public void setContainingSelectedEvent(boolean containingSelectedEvent) {
+            this.containingSelectedEvent = containingSelectedEvent;
+        }
+
+        public List<String> getInputEventIds() {
+            return inputEventIds;
+        }
+
+        public List<String> getOutputEventIds() {
             return outputEventIds;
         }
     }
