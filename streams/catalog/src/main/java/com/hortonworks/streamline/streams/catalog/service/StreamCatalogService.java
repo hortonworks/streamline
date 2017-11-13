@@ -33,7 +33,7 @@ import com.hortonworks.streamline.common.ComponentTypes;
 import com.hortonworks.streamline.common.ComponentUISpecification;
 import com.hortonworks.registries.common.QueryParam;
 import com.hortonworks.streamline.common.exception.ComponentConfigException;
-import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.registries.common.util.FileStorage;
 import com.hortonworks.streamline.common.util.ProxyUtil;
 import com.hortonworks.streamline.common.util.Utils;
 import com.hortonworks.streamline.common.util.WSUtils;

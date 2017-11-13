@@ -47,7 +47,7 @@ server:
 # Filesystem based file storage - uses local file system to store the uploaded files
 # --
 fileStorageConfiguration:
- className: "com.hortonworks.streamline.common.util.LocalFileSystemStorage"
+ className: "com.hortonworks.registries.common.util.LocalFileSystemStorage"
  properties:
    directory: "/tmp"
 
@@ -55,7 +55,7 @@ fileStorageConfiguration:
 # HDFS file storage - uses HDFS to store the uploaded files
 # --
 #fileStorageConfiguration:
-#  className: com.hortonworks.streamline.common.util.HdfsFileStorage
+#  className: com.hortonworks.registries.common.util.HdfsFileStorage
 #  properties:
 #    directory: /hdf/streamline/jars
 #    fsUrl: hdfs://localhost:9090
