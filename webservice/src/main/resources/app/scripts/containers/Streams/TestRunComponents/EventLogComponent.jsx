@@ -71,7 +71,7 @@ class EventLogComponent extends Component {
     return(
       <div>
         <hr className="m-t-xs m-b-xs"></hr>
-        <ContentScrollableComponent content={eventData}>
+        <ContentScrollableComponent contentHeight={135}>
           {eventData.length
             ? this.renderFields(eventData[activeIndex].eventInformation)
             : 'No Records'

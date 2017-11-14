@@ -888,7 +888,11 @@ export default class TopologyGraphComponent extends Component {
     });
 
     thisGraph.rectangles.selectAll('rect').attr('class', function(d){
-      let classStr = `node-rectangle ${TopologyUtils.getNodeRectClass(d)} ${d.reconfigure ? 'reconfig-node' : ''}`;
+      let classStr = "node-rectangle "+ TopologyUtils.getNodeRectClass(d);
+      classStr += d.reconfigure ?  ' reconfig-node ' : '' ;
+      if(thisGraph.testRunActivated && thisGraph.props.eventLogData.length && d.containingSelectedEvent){
+        classStr += ' selected-event ';
+      }
       return classStr;
     }).attr("filter", function(d) {
       if (!d.isConfigured) {
@@ -963,7 +967,11 @@ export default class TopologyGraphComponent extends Component {
       return thisGraph.calculateHeight.call(thisGraph,d);
     })
     .attr("class", function(d) {
-      let classStr = `node-rectangle ${TopologyUtils.getNodeRectClass(d)} ${d.reconfigure ? 'reconfig-node' : ''}`;
+      let classStr = "node-rectangle "+ TopologyUtils.getNodeRectClass(d);
+      classStr += d.reconfigure ?  ' reconfig-node ' : '' ;
+      if(thisGraph.testRunActivated && thisGraph.props.eventLogData.length && d.containingSelectedEvent){
+        classStr += ' selected-event ';
+      }
       return classStr;
     }).attr("filter", function(d) {
       if (!d.isConfigured) {

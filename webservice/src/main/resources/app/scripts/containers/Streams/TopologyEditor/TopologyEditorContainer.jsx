@@ -1535,6 +1535,7 @@ class TopologyEditorContainer extends Component {
           const eventGroupKey = eventLogObj.componentGroupedEvents[node.uiname];
           const type = node.parentType === "SOURCE" ? 'output' : 'input';
           node.eventLogData = this.getEventLogData(eventGroupKey,eventLogObj.allEvents,type);
+          node.containingSelectedEvent = eventLogObj.componentGroupedEvents[node.uiname].containingSelectedEvent;
         } else if(subTree === null || subTree === undefined) {
           node.eventLogData = [];
         }
@@ -1561,22 +1562,6 @@ class TopologyEditorContainer extends Component {
     this.refs.EditorGraph.child.decoratedComponentInstance.refs.TopologyGraph.decoratedComponentInstance.updateGraph();
   }
 
-  handleEventPaginationClick = (eventNode) => {
-    // const {testHistory,activePage,activePageList} = this.state;
-    // const rootId = activePageList[(activePage-1)];
-    // if(!_.isEmpty(eventNode)){
-    //   TestRunREST.getSubEventTree(this.topologyId,testHistory.id,rootId,eventNode.eventId).then((result) => {
-    //     if(result.responseMessage !== undefined){
-    //       FSReactToastr.error(
-    //         <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
-    //     } else {
-    //       const oldData = _.filter(this.graphData.nodes,(n) => {return n.uiname === result.eventInformation.targetComponentName;});
-    //       this.syncNodeDataAndEventLogData(result,oldData[0].eventLogData,'subTree');
-    //     }
-    //   });
-    // }
-  }
-
   render() {
     const {progressCount, progressBarColor, fetchLoader, mapTopologyConfig,deployStatus,testRunActivated,testCaseList,selectedTestObj,testCaseLoader,testRunCurrentEdges,testResult,nodeData,testName,showError,testSinkConfigure,nodeListArr,hideEventLog,eventLogData,testHistory,testCompleted,deployFlag,testRunningMode,abortTestCase,notifyCheck,activePage,activePageList} = this.state;
     let nodeType = this.node
@@ -1591,7 +1576,7 @@ class TopologyEditorContainer extends Component {
               ? [<div key={"1"} className="loader-overlay"></div>,<CommonLoaderSign key={"2"} imgName={"viewMode"}/>]
               : <div className="graph-region">
                 <ZoomPanelComponent testCompleted={testCompleted}  lastUpdatedTime={this.lastUpdatedTime} versionName={this.versionName} zoomInAction={this.graphZoomAction.bind(this, 'zoom_in')} zoomOutAction={this.graphZoomAction.bind(this, 'zoom_out')} showConfig={this.showConfig.bind(this)} confirmMode={this.confirmMode.bind(this)} testRunActivated={testRunActivated}/>
-                <EditorGraph handleEventPaginationClick={this.handleEventPaginationClick.bind(this)} testRunningMode={testRunningMode} hideEventLog={hideEventLog} ref="EditorGraph" eventLogData={eventLogData || []} addTestCase={this.addTestCaseHandler} selectedTestObj={selectedTestObj || {}} testItemSelected={this.testCaseListChange} testCaseList={testCaseList} graphData={this.graphData} viewMode={this.viewMode} topologyId={this.topologyId} versionId={this.versionId} versionsArr={this.state.versionsArr} getModalScope={this.getModalScope.bind(this)} setModalContent={this.setModalContent.bind(this)} customProcessors={this.customProcessors} bundleArr={this.state.bundleArr} getEdgeConfigModal={this.showEdgeConfigModal.bind(this)} setLastChange={this.setLastChange.bind(this)} topologyConfigMessageCB={this.topologyConfigMessageCB.bind(this)} showComponentNodeContainer={state.showComponentNodeContainer} testRunActivated={this.state.testRunActivated}/>
+                <EditorGraph testRunningMode={testRunningMode} hideEventLog={hideEventLog} ref="EditorGraph" eventLogData={eventLogData || []} addTestCase={this.addTestCaseHandler} selectedTestObj={selectedTestObj || {}} testItemSelected={this.testCaseListChange} testCaseList={testCaseList} graphData={this.graphData} viewMode={this.viewMode} topologyId={this.topologyId} versionId={this.versionId} versionsArr={this.state.versionsArr} getModalScope={this.getModalScope.bind(this)} setModalContent={this.setModalContent.bind(this)} customProcessors={this.customProcessors} bundleArr={this.state.bundleArr} getEdgeConfigModal={this.showEdgeConfigModal.bind(this)} setLastChange={this.setLastChange.bind(this)} topologyConfigMessageCB={this.topologyConfigMessageCB.bind(this)} showComponentNodeContainer={state.showComponentNodeContainer} testRunActivated={this.state.testRunActivated}/>
                 <div className="topology-footer">
                   {testRunActivated
                   ? <OverlayTrigger key={4} placement="top" overlay={<Tooltip id = "tooltip"> {testRunningMode ?  'Kill Test' : 'Run Test'}  </Tooltip>}>
