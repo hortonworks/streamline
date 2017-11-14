@@ -17,7 +17,7 @@ package com.hortonworks.streamline.registries.dashboard.service;
 
 import com.hortonworks.streamline.registries.dashboard.entites.WidgetDatasourceMap;
 import com.hortonworks.registries.common.QueryParam;
-import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.registries.common.util.FileStorage;
 import com.hortonworks.streamline.registries.dashboard.entites.Dashboard;
 import com.hortonworks.streamline.registries.dashboard.entites.Datasource;
 import com.hortonworks.streamline.registries.dashboard.entites.Widget;

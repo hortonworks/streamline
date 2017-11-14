@@ -48,7 +48,7 @@ export default class FSModal extends Component {
   }
   header() {
     return (
-      <Modal.Header closeButton>
+      <Modal.Header closeButton={!this.props.hideCloseBtn}>
         <Modal.Title>
           {this.props["data-title"]}
         </Modal.Title>
@@ -65,18 +65,26 @@ export default class FSModal extends Component {
   footer() {
     return (
       <Modal.Footer>
-        <Button bsStyle='default' onClick={this.cancel.bind(this)} data-stest="cancelbtn">
-          {this.state.btnCancelText || 'Cancel'}
-        </Button>
-        <Button bsStyle='success' onClick={this.sure.bind(this)}  data-stest="okbtn" disabled={this.props.btnOkDisabled}>
-          {this.state.btnOkText || 'Ok'}
-        </Button>
+        {
+          this.props.hideCloseBtn
+          ? null
+          : <Button bsStyle='default' onClick={this.cancel.bind(this)} data-stest="cancelbtn">
+              {this.state.btnCancelText || 'Cancel'}
+            </Button>
+        }
+        {
+          this.props.hideOkBtn
+          ? null
+          : <Button bsStyle='success' onClick={this.sure.bind(this)}  data-stest="okbtn" disabled={this.props.btnOkDisabled}>
+              {this.state.btnOkText || 'Ok'}
+            </Button>
+        }
       </Modal.Footer>
     );
   }
   render() {
     return (
-      <Modal aria-labelledby='contained-modal-title' backdrop="static" keyboard={true} onHide={this.cancel.bind(this)} show={this.state.show} {...this.props}>
+      <Modal aria-labelledby='contained-modal-title' backdrop="static" keyboard={this.props.closeOnEsc} onHide={this.cancel.bind(this)} show={this.state.show} {...this.props}>
         {this.props.hideHeader
           ? ''
           : this.header()}
@@ -112,7 +120,7 @@ export class Confirm extends FSModal {
   }
   header() {
     return (
-      <Modal.Header closeButton>
+      <Modal.Header closeButton={!this.props.hideCloseBtn}>
         <Modal.Title>
           {this.state.title}
         </Modal.Title>
@@ -125,13 +133,24 @@ export class Confirm extends FSModal {
   footer() {
     return (
       <Modal.Footer>
-        <Button bsStyle='danger' onClick={this.cancel.bind(this)} data-stest="confirmBoxCancelBtn">
-          {this.state.btnCancelText || 'No'}
-        </Button>
-        <Button bsStyle='success' onClick={this.sure.bind(this)} data-stest="confirmBoxOkBtn">
-          {this.state.btnOkText || 'Yes'}
-        </Button>
+        {
+          this.props.hideCloseBtn
+          ? null
+          : <Button bsStyle='danger' onClick={this.cancel.bind(this)} data-stest="confirmBoxCancelBtn">
+              {this.state.btnCancelText || 'No'}
+            </Button>
+        }
+        {
+          this.props.hideOkBtn
+          ? null
+          : <Button bsStyle='success' onClick={this.sure.bind(this)} data-stest="confirmBoxOkBtn">
+              {this.state.btnOkText || 'Yes'}
+            </Button>
+        }
       </Modal.Footer>
     );
   }
 }
+FSModal.defaultProps = {
+  closeOnEsc: true
+};

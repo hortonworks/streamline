@@ -76,4 +76,52 @@ public class EventInformation {
     public Map<String, Object> getFieldsAndValues() {
         return fieldsAndValues;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof EventInformation)) return false;
+
+        EventInformation that = (EventInformation) o;
+
+        if (getTimestamp() != that.getTimestamp()) return false;
+        if (getComponentName() != null ? !getComponentName().equals(that.getComponentName()) : that.getComponentName() != null)
+            return false;
+        if (getStreamId() != null ? !getStreamId().equals(that.getStreamId()) : that.getStreamId() != null)
+            return false;
+        if (getTargetComponentName() != null ? !getTargetComponentName().equals(that.getTargetComponentName()) : that.getTargetComponentName() != null)
+            return false;
+        if (getEventId() != null ? !getEventId().equals(that.getEventId()) : that.getEventId() != null) return false;
+        if (getRootIds() != null ? !getRootIds().equals(that.getRootIds()) : that.getRootIds() != null) return false;
+        if (getParentIds() != null ? !getParentIds().equals(that.getParentIds()) : that.getParentIds() != null)
+            return false;
+        return getFieldsAndValues() != null ? getFieldsAndValues().equals(that.getFieldsAndValues()) : that.getFieldsAndValues() == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (getTimestamp() ^ (getTimestamp() >>> 32));
+        result = 31 * result + (getComponentName() != null ? getComponentName().hashCode() : 0);
+        result = 31 * result + (getStreamId() != null ? getStreamId().hashCode() : 0);
+        result = 31 * result + (getTargetComponentName() != null ? getTargetComponentName().hashCode() : 0);
+        result = 31 * result + (getEventId() != null ? getEventId().hashCode() : 0);
+        result = 31 * result + (getRootIds() != null ? getRootIds().hashCode() : 0);
+        result = 31 * result + (getParentIds() != null ? getParentIds().hashCode() : 0);
+        result = 31 * result + (getFieldsAndValues() != null ? getFieldsAndValues().hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "EventInformation{" +
+                "timestamp=" + timestamp +
+                ", componentName='" + componentName + '\'' +
+                ", streamId='" + streamId + '\'' +
+                ", targetComponentName='" + targetComponentName + '\'' +
+                ", eventId='" + eventId + '\'' +
+                ", rootIds=" + rootIds +
+                ", parentIds=" + parentIds +
+                ", fieldsAndValues=" + fieldsAndValues +
+                '}';
+    }
 }

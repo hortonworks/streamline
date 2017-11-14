@@ -242,8 +242,10 @@ class TopologyEditorContainer extends Component {
             unknown,
             mapTopologyConfig: this.topologyConfig,
             topologyTimeSec: this.topologyTimeSec,
-            defaultTimeSec : defaultTimeSecVal
+            defaultTimeSec : defaultTimeSecVal,
+            topologyNameValid: !Utils.checkWhiteSpace(this.topologyName)
           });
+          this.validateTopologyName();
           this.customProcessors = this.getCustomProcessors();
           this.processorSlideInterval(processorsNode);
         });
@@ -267,6 +269,12 @@ class TopologyEditorContainer extends Component {
         }
       }
     };
+  }
+
+  validateTopologyName(){
+    if(Utils.checkWhiteSpace(this.topologyName)){
+      this.refs.TopologyNameSpace.show();
+    }
   }
   //To check if a user is deploying the topology
   getDeploymentState(topology) {
@@ -489,15 +497,23 @@ class TopologyEditorContainer extends Component {
   validateName(name) {
     if (name.trim === '') {
       this.refs.topologyNameEditable.setState({errorMsg: "Topology name cannot be blank"});
+      this.setState({topologyNameValid: false});
       return false;
     } else if (/[^A-Za-z0-9_\-\s]/g.test(name)) { //matches any character that is not a alphanumeric, underscore or hyphen
       this.refs.topologyNameEditable.setState({errorMsg: "Topology name contains invalid characters"});
+      this.setState({topologyNameValid: false});
       return false;
     } else if (!/[A-Za-z0-9]/g.test(name)) { //to check if name contains only special characters
       this.refs.topologyNameEditable.setState({errorMsg: "Topology name is not valid"});
+      this.setState({topologyNameValid: false});
+      return false;
+    } else if(Utils.checkWhiteSpace(name)){
+      this.refs.topologyNameEditable.setState({errorMsg: "Space is not allowed in topology name"});
+      this.setState({topologyNameValid: false});
       return false;
     } else {
       this.refs.topologyNameEditable.setState({errorMsg: ""});
+      this.setState({topologyNameValid: true});
       return true;
     }
   }
@@ -524,7 +540,11 @@ class TopologyEditorContainer extends Component {
           this.topologyConfig = JSON.parse(topology.config);
           this.setState({mapTopologyConfig: this.topologyConfig});
         }
-        this.refs.topologyNameEditable.hideEditor();
+        if(this.refs.TopologyNameSpace.state.show){
+          this.refs.TopologyNameSpace.hide();
+        } else {
+          this.refs.topologyNameEditable.hideEditor();
+        }
       });
     }
   }
@@ -1535,6 +1555,7 @@ class TopologyEditorContainer extends Component {
           const eventGroupKey = eventLogObj.componentGroupedEvents[node.uiname];
           const type = node.parentType === "SOURCE" ? 'output' : 'input';
           node.eventLogData = this.getEventLogData(eventGroupKey,eventLogObj.allEvents,type);
+          node.containingSelectedEvent = eventLogObj.componentGroupedEvents[node.uiname].containingSelectedEvent;
         } else if(subTree === null || subTree === undefined) {
           node.eventLogData = [];
         }
@@ -1561,22 +1582,6 @@ class TopologyEditorContainer extends Component {
     this.refs.EditorGraph.child.decoratedComponentInstance.refs.TopologyGraph.decoratedComponentInstance.updateGraph();
   }
 
-  handleEventPaginationClick = (eventNode) => {
-    // const {testHistory,activePage,activePageList} = this.state;
-    // const rootId = activePageList[(activePage-1)];
-    // if(!_.isEmpty(eventNode)){
-    //   TestRunREST.getSubEventTree(this.topologyId,testHistory.id,rootId,eventNode.eventId).then((result) => {
-    //     if(result.responseMessage !== undefined){
-    //       FSReactToastr.error(
-    //         <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
-    //     } else {
-    //       const oldData = _.filter(this.graphData.nodes,(n) => {return n.uiname === result.eventInformation.targetComponentName;});
-    //       this.syncNodeDataAndEventLogData(result,oldData[0].eventLogData,'subTree');
-    //     }
-    //   });
-    // }
-  }
-
   render() {
     const {progressCount, progressBarColor, fetchLoader, mapTopologyConfig,deployStatus,testRunActivated,testCaseList,selectedTestObj,testCaseLoader,testRunCurrentEdges,testResult,nodeData,testName,showError,testSinkConfigure,nodeListArr,hideEventLog,eventLogData,testHistory,testCompleted,deployFlag,testRunningMode,abortTestCase,notifyCheck,activePage,activePageList} = this.state;
     let nodeType = this.node
@@ -1591,7 +1596,7 @@ class TopologyEditorContainer extends Component {
               ? [<div key={"1"} className="loader-overlay"></div>,<CommonLoaderSign key={"2"} imgName={"viewMode"}/>]
               : <div className="graph-region">
                 <ZoomPanelComponent testCompleted={testCompleted}  lastUpdatedTime={this.lastUpdatedTime} versionName={this.versionName} zoomInAction={this.graphZoomAction.bind(this, 'zoom_in')} zoomOutAction={this.graphZoomAction.bind(this, 'zoom_out')} showConfig={this.showConfig.bind(this)} confirmMode={this.confirmMode.bind(this)} testRunActivated={testRunActivated}/>
-                <EditorGraph handleEventPaginationClick={this.handleEventPaginationClick.bind(this)} testRunningMode={testRunningMode} hideEventLog={hideEventLog} ref="EditorGraph" eventLogData={eventLogData || []} addTestCase={this.addTestCaseHandler} selectedTestObj={selectedTestObj || {}} testItemSelected={this.testCaseListChange} testCaseList={testCaseList} graphData={this.graphData} viewMode={this.viewMode} topologyId={this.topologyId} versionId={this.versionId} versionsArr={this.state.versionsArr} getModalScope={this.getModalScope.bind(this)} setModalContent={this.setModalContent.bind(this)} customProcessors={this.customProcessors} bundleArr={this.state.bundleArr} getEdgeConfigModal={this.showEdgeConfigModal.bind(this)} setLastChange={this.setLastChange.bind(this)} topologyConfigMessageCB={this.topologyConfigMessageCB.bind(this)} showComponentNodeContainer={state.showComponentNodeContainer} testRunActivated={this.state.testRunActivated}/>
+                <EditorGraph testRunningMode={testRunningMode} hideEventLog={hideEventLog} ref="EditorGraph" eventLogData={eventLogData || []} addTestCase={this.addTestCaseHandler} selectedTestObj={selectedTestObj || {}} testItemSelected={this.testCaseListChange} testCaseList={testCaseList} graphData={this.graphData} viewMode={this.viewMode} topologyId={this.topologyId} versionId={this.versionId} versionsArr={this.state.versionsArr} getModalScope={this.getModalScope.bind(this)} setModalContent={this.setModalContent.bind(this)} customProcessors={this.customProcessors} bundleArr={this.state.bundleArr} getEdgeConfigModal={this.showEdgeConfigModal.bind(this)} setLastChange={this.setLastChange.bind(this)} topologyConfigMessageCB={this.topologyConfigMessageCB.bind(this)} showComponentNodeContainer={state.showComponentNodeContainer} testRunActivated={this.state.testRunActivated}/>
                 <div className="topology-footer">
                   {testRunActivated
                   ? <OverlayTrigger key={4} placement="top" overlay={<Tooltip id = "tooltip"> {testRunningMode ?  'Kill Test' : 'Run Test'}  </Tooltip>}>
@@ -1723,6 +1728,29 @@ class TopologyEditorContainer extends Component {
         </Modal>
         <Modal ref="deployLoadingModal" hideHeader={true} hideFooter={true}>
           <AnimatedLoader progressBar={progressCount} progressBarColor={progressBarColor} deployStatus={deployStatus}/>
+        </Modal>
+        <Modal
+          ref="TopologyNameSpace"
+          data-title={"Rename this application without spaces"}
+          data-resolve={this.saveTopologyName.bind(this)}
+          hideCloseBtn={true}
+          closeOnEsc={false}
+        >
+            <div className="config-modal-form">
+              <div className="form-group">
+                <label>Application Name: <span className="text-danger">*</span></label>
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Application name"
+                    required
+                    className={this.state.topologyNameValid ? "form-control" : "form-control invalidInput"}
+                    value={this.state.topologyName}
+                    onChange={this.handleNameChange.bind(this)}
+                  />
+                </div>
+              </div>
+            </div>
         </Modal>
         <a className="btn-download" ref="downloadTest" hidden download href=""></a>
       </BaseContainer>

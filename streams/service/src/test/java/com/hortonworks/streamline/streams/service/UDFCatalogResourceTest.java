@@ -15,8 +15,8 @@
  **/
 package com.hortonworks.streamline.streams.service;
 
-import com.hortonworks.streamline.common.util.FileStorage;
-import com.hortonworks.streamline.common.util.LocalFileSystemStorage;
+import com.hortonworks.registries.common.util.FileStorage;
+import com.hortonworks.registries.common.util.LocalFileSystemStorage;
 import com.hortonworks.streamline.streams.catalog.UDF;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
