@@ -242,8 +242,10 @@ class TopologyEditorContainer extends Component {
             unknown,
             mapTopologyConfig: this.topologyConfig,
             topologyTimeSec: this.topologyTimeSec,
-            defaultTimeSec : defaultTimeSecVal
+            defaultTimeSec : defaultTimeSecVal,
+            topologyNameValid: !Utils.checkWhiteSpace(this.topologyName)
           });
+          this.validateTopologyName();
           this.customProcessors = this.getCustomProcessors();
           this.processorSlideInterval(processorsNode);
         });
@@ -267,6 +269,12 @@ class TopologyEditorContainer extends Component {
         }
       }
     };
+  }
+
+  validateTopologyName(){
+    if(Utils.checkWhiteSpace(this.topologyName)){
+      this.refs.TopologyNameSpace.show();
+    }
   }
   //To check if a user is deploying the topology
   getDeploymentState(topology) {
@@ -489,15 +497,23 @@ class TopologyEditorContainer extends Component {
   validateName(name) {
     if (name.trim === '') {
       this.refs.topologyNameEditable.setState({errorMsg: "Topology name cannot be blank"});
+      this.setState({topologyNameValid: false});
       return false;
     } else if (/[^A-Za-z0-9_\-\s]/g.test(name)) { //matches any character that is not a alphanumeric, underscore or hyphen
       this.refs.topologyNameEditable.setState({errorMsg: "Topology name contains invalid characters"});
+      this.setState({topologyNameValid: false});
       return false;
     } else if (!/[A-Za-z0-9]/g.test(name)) { //to check if name contains only special characters
       this.refs.topologyNameEditable.setState({errorMsg: "Topology name is not valid"});
+      this.setState({topologyNameValid: false});
+      return false;
+    } else if(Utils.checkWhiteSpace(name)){
+      this.refs.topologyNameEditable.setState({errorMsg: "Space is not allowed in topology name"});
+      this.setState({topologyNameValid: false});
       return false;
     } else {
       this.refs.topologyNameEditable.setState({errorMsg: ""});
+      this.setState({topologyNameValid: true});
       return true;
     }
   }
@@ -524,7 +540,11 @@ class TopologyEditorContainer extends Component {
           this.topologyConfig = JSON.parse(topology.config);
           this.setState({mapTopologyConfig: this.topologyConfig});
         }
-        this.refs.topologyNameEditable.hideEditor();
+        if(this.refs.TopologyNameSpace.state.show){
+          this.refs.TopologyNameSpace.hide();
+        } else {
+          this.refs.topologyNameEditable.hideEditor();
+        }
       });
     }
   }
@@ -1708,6 +1728,29 @@ class TopologyEditorContainer extends Component {
         </Modal>
         <Modal ref="deployLoadingModal" hideHeader={true} hideFooter={true}>
           <AnimatedLoader progressBar={progressCount} progressBarColor={progressBarColor} deployStatus={deployStatus}/>
+        </Modal>
+        <Modal
+          ref="TopologyNameSpace"
+          data-title={"Rename this application without spaces"}
+          data-resolve={this.saveTopologyName.bind(this)}
+          hideCloseBtn={true}
+          closeOnEsc={false}
+        >
+            <div className="config-modal-form">
+              <div className="form-group">
+                <label>Application Name: <span className="text-danger">*</span></label>
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Application name"
+                    required
+                    className={this.state.topologyNameValid ? "form-control" : "form-control invalidInput"}
+                    value={this.state.topologyName}
+                    onChange={this.handleNameChange.bind(this)}
+                  />
+                </div>
+              </div>
+            </div>
         </Modal>
         <a className="btn-download" ref="downloadTest" hidden download href=""></a>
       </BaseContainer>
