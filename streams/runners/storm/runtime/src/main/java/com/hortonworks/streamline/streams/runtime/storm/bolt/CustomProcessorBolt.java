@@ -49,7 +49,6 @@ public class CustomProcessorBolt extends AbstractProcessorBolt {
     private CustomProcessorRuntime customProcessorRuntime;
     private String customProcessorImpl;
     private Map<String, Object> config;
-    private Schema inputSchema;
     // this map is used for mapping field names from input schema registered by CP to field names in the input schema from component connected to CP
     // Use case is, if kafka source has output schema with field name driver and CP operates on driverId then we provide a way to map those so CP can be used
     // in different contexts in SAM application. Assumption is that the type of both the fields will be same. Also the map is per input stream. For now UI
@@ -108,33 +107,11 @@ public class CustomProcessorBolt extends AbstractProcessorBolt {
     }
 
     /**
-     * Associate input schema that is a json string
-     * @param inputSchemaJson
-     * @return
-     */
-    public CustomProcessorBolt inputSchema (String inputSchemaJson) {
-        ObjectMapper mapper = new ObjectMapper();
-        Schema inputSchema;
-        try {
-            inputSchema = mapper.readValue(inputSchemaJson, Schema.class);
-        } catch (IOException e) {
-            LOG.error("Error during deserialization of input schema JSON string: {}", inputSchemaJson, e);
-            throw new RuntimeException(e);
-        }
-        return inputSchema(inputSchema);
-    }
-
-    /**
      * Associcate input schema mapping. e.g. driverId in input schema maps to driver. Hence The mapping will look like {'inputStream': {'driverId': 'driver'}}
      * @param inputSchemaMap
      * @return
      */
     public CustomProcessorBolt inputSchemaMap (Map<String, Map<String, String>> inputSchemaMap) {
-        if (inputSchemaMap == null || inputSchemaMap.isEmpty()) {
-            String msg = "Input schema map for custom processor is not defined. This should have been defined by user in UI and passed here";
-            LOG.error(msg);
-            throw new RuntimeException(msg);
-        }
         this.inputSchemaMap = inputSchemaMap;
         return this;
     }
@@ -154,16 +131,6 @@ public class CustomProcessorBolt extends AbstractProcessorBolt {
             throw new RuntimeException(e);
         }
         return inputSchemaMap(inputSchemaMap);
-    }
-
-    /**
-     * Associcate input schema
-     * @param inputSchema
-     * @return
-     */
-    public CustomProcessorBolt inputSchema (Schema inputSchema) {
-        this.inputSchema = inputSchema;
-        return this;
     }
 
     /**
@@ -203,39 +170,42 @@ public class CustomProcessorBolt extends AbstractProcessorBolt {
     @Override
     protected void process (Tuple input, StreamlineEvent event) {
         try {
-            Map<String, Object> mappedEventMap = new HashMap<>();
-            if (!inputSchemaMap.containsKey(input.getSourceStreamId()))
-                throw new RuntimeException("Received an event on an input stream that does not have mapping for input schema fields");
-            // Create a new mapped event based on mapping to pass it to CP implementation
-            for (Map.Entry<String, String> entry: inputSchemaMap.get(input.getSourceStreamId()).entrySet()) {
-                if (event.get(entry.getValue()) != null) {
-                    mappedEventMap.put(entry.getKey(), event.get(entry.getValue()));
+            StreamlineEvent toProcess = null;
+            if (inputSchemaMap == null || inputSchemaMap.isEmpty() || !inputSchemaMap.containsKey(input.getSourceStreamId())) {
+                toProcess = event;
+            } else {
+                // Create a new mapped event based on mapping to pass it to CP implementation
+                Map<String, Object> mappedEventMap = new HashMap<>();
+                for (Map.Entry<String, String> entry: inputSchemaMap.get(input.getSourceStreamId()).entrySet()) {
+                    if (event.get(entry.getValue()) != null) {
+                        mappedEventMap.put(entry.getKey(), event.get(entry.getValue()));
+                    }
                 }
+                toProcess = StreamlineEventImpl.builder()
+                        .from(event)
+                        .sourceStream(input.getSourceStreamId())
+                        .fieldsAndValues(mappedEventMap)
+                        .build();
             }
 
-            StreamlineEvent mappedEvent = StreamlineEventImpl.builder()
-                    .from(event)
-                    .sourceStream(input.getSourceStreamId())
-                    .fieldsAndValues(mappedEventMap)
-                    .build();
-
-            List<StreamlineEvent> results = customProcessorRuntime.process(mappedEvent);
+            List<StreamlineEvent> results = customProcessorRuntime.process(toProcess);
             if (results != null) {
+                Schema schema = outputSchema.values().iterator().next();
+                String outputStream = outputSchema.keySet().iterator().next();
                 for (StreamlineEvent e : results) {
                     Map<String, Object> newFieldsAndValues = new HashMap<>();
                     // below output schema is at SAM application level. Fields in the schema are a union of subsets of original input schema of incoming
                     // event and CP defined output schema. UI will make sure that the fields are from one of the two sets.
-                    Schema schema = outputSchema.values().iterator().next();
                     for (Schema.Field field: schema.getFields()) {
                         //value has to be present either in the input event
                         newFieldsAndValues.put(field.getName(), e.containsKey(field.getName()) ? e.get(field.getName()) : event.get(field.getName()));
                     }
-
                     StreamlineEvent toEmit = StreamlineEventImpl.builder()
                             .from(e)
+                            .sourceStream(outputStream)
                             .fieldsAndValues(newFieldsAndValues)
                             .build();
-                    collector.emit(outputSchema.keySet().iterator().next(), input, new Values(toEmit));
+                    collector.emit(outputStream, input, new Values(toEmit));
                 }
             }
         } catch (ProcessingException e) {

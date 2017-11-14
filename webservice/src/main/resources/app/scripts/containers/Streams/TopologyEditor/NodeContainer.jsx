@@ -178,7 +178,13 @@ export default class NodeContainer extends Component {
           </div>
         </OverlayTrigger>
         }
-        {name}
+        {
+          viewType === 'folder'
+          ? name
+          : <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">{name}</Popover>}>
+              <span>{name}</span>
+            </OverlayTrigger>
+        }
       </li>
     ));
   }

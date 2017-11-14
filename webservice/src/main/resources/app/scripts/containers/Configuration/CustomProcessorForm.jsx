@@ -126,11 +126,13 @@ class CustomProcessorForm extends Component {
           outputSchema,
           topologyComponentUISpecification
         } = processor.entities[0];
-        inputSchema = JSON.stringify(inputSchema.fields, null, "  ");
-        outputSchema = JSON.stringify(outputSchema.fields, null, "  ");
-        topologyComponentUISpecification.fields.map((o) => {
-          o.id = this.idCount++;
-        });
+        inputSchema = inputSchema ? JSON.stringify(inputSchema.fields, null, "  ") : '';
+        outputSchema = outputSchema ? JSON.stringify(outputSchema.fields, null, "  ") : '';
+        if(topologyComponentUISpecification) {
+          topologyComponentUISpecification.fields.map((o) => {
+            o.id = this.idCount++;
+          });
+        }
         let obj = {
           streamingEngine,
           name,
@@ -144,7 +146,7 @@ class CustomProcessorForm extends Component {
           showCodeMirrorOutput : true,
           expandCodemirrorOutput : false
         };
-        obj.topologyComponentUISpecification = topologyComponentUISpecification.fields;
+        obj.topologyComponentUISpecification = topologyComponentUISpecification ? topologyComponentUISpecification.fields : [];
         CustomProcessorREST.getCustomProcessorFile(jarFileName)
           .then((response)=>{
             // https://stackoverflow.com/questions/40911927/instantiate-file-object-in-microsoft-edge
@@ -323,7 +325,7 @@ class CustomProcessorForm extends Component {
       }
     }
 
-    if (streamingEngine === '' || name === '' || description === '' || customProcessorImpl === '' || jarFileName === '' || inputSchema === '' || outputSchema === '' || Utils.checkWhiteSpace(name)) {
+    if (streamingEngine === '' || name === '' || description === '' || customProcessorImpl === '' || jarFileName === '' || Utils.checkWhiteSpace(name)) {
       name === '' ? fieldsError.pName = true : ''  ;
       description === '' ? fieldsError.desc = true :  '';
       customProcessorImpl === '' ? fieldsError.classNameType = true : '' ;
@@ -331,7 +333,10 @@ class CustomProcessorForm extends Component {
       validDataFlag = false;
     }
 
-    if(!Utils.validateJSON(inputSchema)|| !Utils.validateJSON(outputSchema)) {
+    if(inputSchema.length && !Utils.validateJSON(inputSchema)) {
+      validDataFlag = false;
+    }
+    if(outputSchema.length && !Utils.validateJSON(outputSchema)) {
       validDataFlag = false;
     }
     return validDataFlag;
@@ -355,7 +360,7 @@ class CustomProcessorForm extends Component {
       jarFileName,
       inputSchema
     ];
-    if (streamingEngine === '' || name === '' || description === '' || customProcessorImpl === '' || jarFileName === '' || inputSchema === '' || outputSchema === '' ) {
+    if (streamingEngine === '' || name === '' || description === '' || customProcessorImpl === '' || jarFileName === '') {
       if (fieldsChk) {
         let filterVal = emptyVal.filter(val => {
           return val.length !== 0;
@@ -383,12 +388,12 @@ class CustomProcessorForm extends Component {
         jarFileName,
         topologyComponentUISpecification
       } = this.state;
-      let inputSchema = {
+      let inputSchema = this.state.inputSchema.length ? {
         fields: JSON.parse(this.state.inputSchema)
-      };
-      let outputSchema = {
+      } : null;
+      let outputSchema = this.state.outputSchema.length ? {
         fields: JSON.parse(this.state.outputSchema)
-      };
+      } : null;
 
       let configFieldsArr = topologyComponentUISpecification.map((o) => {
         let {
@@ -416,18 +421,24 @@ class CustomProcessorForm extends Component {
         name,
         description,
         customProcessorImpl,
-        inputSchema,
-        outputSchema,
-        topologyComponentUISpecification: {
-          fields: configFieldsArr
-        },
         jarFileName: jarFileName.name
       };
+      if(inputSchema !== null) {
+        customProcessorInfo.inputSchema = inputSchema;
+      }
+      if(outputSchema !== null) {
+        customProcessorInfo.outputSchema = outputSchema;
+      }
+      if(configFieldsArr.length > 0) {
+        customProcessorInfo.topologyComponentUISpecification = {
+          fields: configFieldsArr
+        };
+      }
 
       var formData = new FormData();
       formData.append('jarFile', jarFileName);
       formData.append('customProcessorInfo', JSON.stringify(customProcessorInfo));
-
+      this.navigateFlag = true;
       if (this.props.id) {
         return CustomProcessorREST.putProcessor(this.props.id, {body: formData});
       } else {
@@ -631,7 +642,6 @@ class CustomProcessorForm extends Component {
                   </div>
                   <div className="form-group">
                     <label className="col-sm-2 control-label" data-stest="configFieldLabel">Config Fields
-                      <span className="text-danger">*</span>
                     </label>
                     <div className="col-sm-5">
                       <button type="button" className="btn btn-sm btn-primary" onClick={this.handleAddFields.bind(this)}>Add Config Fields</button>
@@ -674,7 +684,6 @@ class CustomProcessorForm extends Component {
                   </div>
                   <div className="form-group">
                     <label className="col-sm-2 control-label" data-stest="inputSchemaLable">Input Schema
-                      <span className="text-danger">*</span>
                       &nbsp;
                       <OverlayTrigger trigger={['hover']} placement="right"
                         overlay={
@@ -743,7 +752,6 @@ class CustomProcessorForm extends Component {
                   </div>
                   <div className="form-group">
                     <label className="col-sm-2 control-label" data-stest="outputSchemaLable">Output Schema
-                      <span className="text-danger">*</span>
                       &nbsp;
                       <OverlayTrigger trigger={['hover']} placement="right"
                         overlay={

@@ -295,7 +295,9 @@ export class boolean extends BaseField {
         {this.props.fieldJson.tooltip}
       </Popover>
     );
-    let disabledField = this.context.Form.props.readOnly;
+    let disabledField = this.props.fieldJson.readOnly !== undefined
+                          ? this.props.fieldJson.readOnly
+                          : this.context.Form.props.readOnly;
     if (this.props.fieldJson.isUserInput !== undefined) {
       disabledField = disabledField || !this.props.fieldJson.isUserInput;
     }
