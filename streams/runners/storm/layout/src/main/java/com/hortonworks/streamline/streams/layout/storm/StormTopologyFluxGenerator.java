@@ -44,7 +44,9 @@ import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.hortonworks.streamline.streams.layout.storm.StormTopologyLayoutConstants.YAML_KEY_FROM;
 import static com.hortonworks.streamline.streams.layout.storm.StormTopologyLayoutConstants.YAML_KEY_ID;
 import static com.hortonworks.streamline.streams.layout.storm.StormTopologyLayoutConstants.YAML_KEY_STREAMS;
 import static com.hortonworks.streamline.streams.layout.storm.StormTopologyLayoutConstants.YAML_KEY_TO;
@@ -67,6 +70,7 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
     private final TopologyDag topologyDag;
     private final Map<String, Object> config;
     private final Config topologyConfig;
+    private final Set<String> edgeAlreadyAddedComponents = new HashSet<>();
 
     public StormTopologyFluxGenerator(TopologyLayout topologyLayout, Map<String, Object> config, Path extraJarsLocation) {
         this.topologyDag = topologyLayout.getTopologyDag();
@@ -119,51 +123,70 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
             }
         }
 
+        // assert that RulesProcessor doesn't have mixed kinds of rules.
+        if (!rulesWithWindow.isEmpty() && !rulesWithoutWindow.isEmpty()) {
+            throw new IllegalStateException("RulesProcessor should have either windowed or non-windowed rules, not both.");
+        }
 
-        // handle windowed rules with WindowRuleBoltFluxComponent
+        // both of handler must add a single bolt associated to a rules processor.
+        // associating multiple bolts to a rules processor is not allowed for simplicity.
         if (!rulesWithWindow.isEmpty()) {
-            Multimap<Window, Rule> windowedRules = ArrayListMultimap.create();
-            for (Rule rule : rulesWithWindow) {
-                windowedRules.put(rule.getWindow(), rule);
-            }
-            int windowedRulesProcessorId = 0;
-            // create windowed bolt per unique window configuration
-            for (Map.Entry<Window, Collection<Rule>> entry : windowedRules.asMap().entrySet()) {
-                RulesProcessor windowedRulesProcessor = copyRulesProcessor(rulesProcessor);
-                windowedRulesProcessorId++;
-                windowedRulesProcessor.setRules(new ArrayList<>(entry.getValue()));
-                windowedRulesProcessor.setId(rulesProcessor.getId() + "." + windowedRulesProcessorId);
-                String newComponentName = StormTopologyUtil.createComponentNameWithAuxPart(rulesProcessor.getName(),
-                        "windowed-" + windowedRulesProcessorId);
-                windowedRulesProcessor.setName(newComponentName);
-                windowedRulesProcessor.getConfig().setAny(RulesProcessor.CONFIG_KEY_RULES, Collections2.transform(entry.getValue(), new Function<Rule, Long>() {
-                    @Override
-                    public Long apply(Rule input) {
-                        return input.getId();
-                    }
-                }));
-                LOG.debug("Rules processor with window {}", windowedRulesProcessor);
-                keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
-                        getYamlComponents(fluxComponentFactory.getFluxComponent(windowedRulesProcessor), windowedRulesProcessor)));
-                // Wire the windowed bolt with the appropriate edges
-                wireWindowedRulesProcessor(windowedRulesProcessor, topologyDag.getEdgesTo(rulesProcessor),
-                        topologyDag.getEdgesFrom(rulesProcessor));
-                mayBeUpdateTopologyConfig(entry.getKey());
-            }
-        }
-        if (rulesWithoutWindow.isEmpty()) {
-            removeFluxStreamsTo(getFluxId(rulesProcessor));
+            handleWindowedRules(rulesProcessor, rulesWithWindow);
         } else {
-            rulesProcessor.setRules(rulesWithoutWindow);
-            rulesProcessor.getConfig().setAny(RulesProcessor.CONFIG_KEY_RULES, Collections2.transform(rulesWithoutWindow, new Function<Rule, Long>() {
-                @Override
-                public Long apply(Rule input) {
-                    return input.getId();
-                }
-            }));
-            keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
-                    getYamlComponents(fluxComponentFactory.getFluxComponent(rulesProcessor), rulesProcessor)));
+            // !rulesWithoutWindow.isEmpty()
+            handleNonWindowedRules(rulesProcessor, rulesWithoutWindow);
         }
+    }
+
+    private void handleWindowedRules(RulesProcessor rulesProcessor, List<Rule> rulesWithWindow) {
+        // assert that RulesProcessor only has a windowed rule, not multiple rules.
+        if (rulesWithWindow.size() > 1) {
+            throw new IllegalStateException("Windowed RulesProcessor should have only one rule.");
+        }
+
+        Rule rule = rulesWithWindow.get(0);
+        Collection<Rule> rules = Collections.singletonList(rule);
+        Window window = rulesWithWindow.get(0).getWindow();
+
+        // create windowed bolt per unique window configuration
+        RulesProcessor windowedRulesProcessor = copyRulesProcessor(rulesProcessor);
+        windowedRulesProcessor.setRules(new ArrayList<>(rules));
+        windowedRulesProcessor.setId(rulesProcessor.getId());
+        windowedRulesProcessor.setName(rulesProcessor.getName());
+        windowedRulesProcessor.getConfig().setAny(RulesProcessor.CONFIG_KEY_RULES, Collections2.transform(rules, new Function<Rule, Long>() {
+            @Override
+            public Long apply(Rule input) {
+                return input.getId();
+            }
+        }));
+        LOG.debug("Rules processor with window {}", windowedRulesProcessor);
+        keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
+                getYamlComponents(fluxComponentFactory.getFluxComponent(windowedRulesProcessor), windowedRulesProcessor)));
+
+        List<Edge> originEdgesTo = topologyDag.getEdgesTo(rulesProcessor);
+        List<Edge> originEdgesFrom = topologyDag.getEdgesFrom(rulesProcessor);
+
+        // remove streams before wiring
+        removeFluxStreamsTo(getFluxId(rulesProcessor));
+        removeFluxStreamsFrom(getFluxId(rulesProcessor));
+
+        // Wire the windowed bolt with the appropriate edges
+        wireWindowedRulesProcessor(windowedRulesProcessor, originEdgesTo, originEdgesFrom);
+        mayBeUpdateTopologyConfig(window);
+
+        edgeAlreadyAddedComponents.add(getFluxId(rulesProcessor));
+    }
+
+    private void handleNonWindowedRules(RulesProcessor rulesProcessor, List<Rule> rulesWithoutWindow) {
+        rulesProcessor.setRules(rulesWithoutWindow);
+        rulesProcessor.getConfig().setAny(RulesProcessor.CONFIG_KEY_RULES, Collections2.transform(rulesWithoutWindow, new Function<Rule, Long>() {
+            @Override
+            public Long apply(Rule input) {
+                return input.getId();
+            }
+        }));
+        keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_BOLTS,
+                getYamlComponents(fluxComponentFactory.getFluxComponent(rulesProcessor), rulesProcessor)));
     }
 
     private RulesProcessor copyRulesProcessor(RulesProcessor rulesProcessor) {
@@ -209,6 +232,18 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
         }
     }
 
+    private void removeFluxStreamsFrom(String componentId) {
+        Iterator<Map.Entry<String, Map<String, Object>>> it = keysAndComponents.iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, Map<String, Object>> entry = it.next();
+            if (entry.getKey().equals(YAML_KEY_STREAMS)
+                    && entry.getValue().get(YAML_KEY_FROM).equals(componentId)) {
+                LOG.debug("Removing entry {} from yaml keys and components", entry);
+                it.remove();
+            }
+        }
+    }
+
     private void removeFluxStreamsTo(String componentId) {
         Iterator<Map.Entry<String, Map<String, Object>>> it = keysAndComponents.iterator();
         while (it.hasNext()) {
@@ -245,7 +280,7 @@ public class StormTopologyFluxGenerator extends TopologyDagVisitor {
 
     @Override
     public void visit(Edge edge) {
-        if (sourceYamlComponentExists(edge)) {
+        if (sourceYamlComponentExists(edge) && !edgeAlreadyAddedComponents.contains(getFluxId(edge.getFrom()))) {
             for (StreamGrouping streamGrouping : edge.getStreamGroupings()) {
                 addEdge(edge.getFrom(),
                         edge.getTo(),
