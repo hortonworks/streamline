@@ -21,20 +21,14 @@ package com.hortonworks.streamline.streams.layout.storm;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.hortonworks.streamline.streams.layout.component.rule.expression.Window;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 
-/* ---- Sample Json of whats expected from UI  ---
+/* ---- Json samples of whats expected from UI  ---
+
+          Ex.1 ---- for counted windows  ---
 {
 "from" : {"stream": "s1", "key": "k1"},
 "joins" :
@@ -43,8 +37,44 @@ import java.util.Map;
     {"type" : "left",  "stream": "s3", "key":"k3", "with": "s1"},
     {"type" : "inner", "stream": "s4", "key":"k4", "with": "s2"}
   ],
-  "outputKeys" : [ "k1", "stream1:k2 as key2" ],
-  "window" : {"windowLength" : {"class":".Window$Count", "count":100}, "slidingInterval":{"class":".Window$Count", "count":100}, "tsField":null, "lagMs":0},
+  "outputKeys" : [ "k1", "stream1:k2 as k2" ],
+  "window" : {"windowLength" : {"class":".Window$Count", "count":100}, "slidingInterval":{"class":".Window$Count", "count":100} },
+  "outputStream" : "joinedStream1"
+}
+
+
+         Ex.2 ---- for event time driven windows  ---
+
+{
+"from" : {"stream": "s1", "key": "k1"},
+"joins" :
+  [
+    {"type" : "left",  "stream": "s2", "key":"k2", "with": "s1"},
+    {"type" : "left",  "stream": "s3", "key":"k3", "with": "s1"},
+  ],
+  "outputKeys" : [ "k1", "stream1:k2.inner as k2_inner" ],
+  "window" : {"windowLength" : {"class":".Window$Duration", "durationMs":1000},
+              "slidingInterval":{"class":".Window$Duration", "durationMs":1000},
+              "tsFields": ["s1:tsField1" , "s2:tsField2", "s3:field3.innerTsField"],  # enables event time windowing
+              "lagMs": 10,
+              "lateStream": "optionalLateStream"},
+  "outputStream" : "joinedStream1"
+}
+
+
+         Ex.3 ---- for processing time driven windows  ---
+
+{
+"from" : {"stream": "s1", "key": "k1"},
+"joins" :
+  [
+    {"type" : "left",  "stream": "s2", "key":"k2", "with": "s1"},
+    {"type" : "left",  "stream": "s3", "key":"k3", "with": "s1"},
+  ],
+  "outputKeys" : [ "k1", "stream1:k2.inner as k2_inner" ],
+  "window" : {"windowLength" : {"class":".Window$Duration", "durationMs":1000},
+              "slidingInterval":{"class":".Window$Duration", "durationMs":1000},
+              },
   "outputStream" : "joinedStream1"
 }
  */

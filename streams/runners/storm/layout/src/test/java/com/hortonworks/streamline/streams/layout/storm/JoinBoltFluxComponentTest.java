@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 
 public class JoinBoltFluxComponentTest {
@@ -39,11 +40,21 @@ public class JoinBoltFluxComponentTest {
     @Test
     public void testFluxGen() throws Exception {
         JoinBoltFluxComponent me = new JoinBoltFluxComponent();
-        List<Map.Entry<String, Map<String, Object>>> map = getYamlComponents(me);
+        List<Map.Entry<String, Map<String, Object>>> map = getYamlMap_CountedWindow(me);
         String yamlStr = makeYaml(map);
         System.out.println(yamlStr);
 
     }
+
+    @Test
+    public void testFluxGen_EventTime() throws Exception {
+        JoinBoltFluxComponent me = new JoinBoltFluxComponent();
+        List<Map.Entry<String, Map<String, Object>>> map = getYamlMap_EventTimeWindow(me);
+        String yamlStr = makeYaml(map);
+        System.out.println(yamlStr);
+
+    }
+
 
     @Test
     public void testMakeWindowFromJson() throws IOException {
@@ -51,26 +62,58 @@ public class JoinBoltFluxComponentTest {
         Window w = new Window(wjson);  // should not throw an exception
     }
 
+    @Test
+    public void testMakeEventTimeWindowFromJson() throws IOException {
+        String json = "{\"windowLength\" : {\"class\":\".Window$Count\", \"count\":100}, \"slidingInterval\":{\"class\":\".Window$Count\", \"count\":100}, " +
+                           "\"tsFields\": [\"stream1:tsField1\" , \"stream2:tsField2\"], \"lagMs\":10 , \"lateStream\": \"optionalLateStream\"} }" ;  // event time window related settings
+        Window w = new Window(json);  // should not throw an exception
+    }
 
-    public static List<Map.Entry<String, Map<String, Object>>> getYamlComponents(FluxComponent fluxComponent) throws IOException {
+    public static List<Map.Entry<String, Map<String, Object>>> getYamlMap_CountedWindow(FluxComponent fluxComponent) throws IOException {
         String json = "{\n" +
-                "\"from\" : {\"stream\": \"stream1\", \"key\": \"k1\"},\n" +
-                "\"joins\" :\n" +
-                "  [\n" +
-                "    {\"type\" : \"left\",  \"stream\": \"s2\", \"key\":\"k2\", \"with\": \"s1\"},\n" +
-                "    {\"type\" : \"left\",  \"stream\": \"s3\", \"key\":\"k3\", \"with\": \"s1\"},\n" +
-                "    {\"type\" : \"inner\", \"stream\": \"s4\", \"key\":\"k4\", \"with\": \"s2\"}\n" +
-                "  ],\n" +
-                "  \"outputKeys\" : [ \"k1\", \"k2\" ],\n" +
-                "  \"window\" : {\"windowLength\":{\"class\":\".Window$Count\",\"count\":100},\"slidingInterval\":{\"class\":\".Window$Count\",\"count\":100},\"tsField\":null,\"lagMs\":0},\n" +
-                "  \"outputStream\" : \"outStream1\"}\n" +
-                "}";
+            "\"from\" : {\"stream\": \"stream1\", \"key\": \"k1\"},\n" +
+            "\"joins\" :\n" +
+            "  [\n" +
+            "    {\"type\" : \"left\",  \"stream\": \"s2\", \"key\":\"k2\", \"with\": \"s1\"},\n" +
+            "    {\"type\" : \"left\",  \"stream\": \"s3\", \"key\":\"k3\", \"with\": \"s1\"},\n" +
+            "    {\"type\" : \"inner\", \"stream\": \"s4\", \"key\":\"k4\", \"with\": \"s2\"}\n" +
+            "  ],\n" +
+            "  \"outputKeys\" : [ \"k1\", \"k2\" ],\n" +
+            "  \"window\" : {\"windowLength\":{\"class\":\".Window$Count\",\"count\":100},\"slidingInterval\":{\"class\":\".Window$Count\",\"count\":100},\"tsField\":null,\"lagMs\":null},\n" +
+            "  \"outputStream\" : \"outStream1\"}\n" +
+            "}";
 
+        return getYamlComponents(fluxComponent, json);
+    }
+
+
+    public static List<Map.Entry<String, Map<String, Object>>> getYamlMap_EventTimeWindow(FluxComponent fluxComponent) throws IOException {
+        String json = "{\n" +
+            "\"from\" : {\"stream\": \"s1\", \"key\": \"k1\"},\n" +
+            "\"joins\" :\n" +
+            "  [" +
+               " {\"type\" : \"left\",  \"stream\": \"s2\", \"key\":\"k2\", \"with\": \"s1\"},\n" +
+            "    {\"type\" : \"inner\",  \"stream\": \"s3\", \"key\":\"k3\", \"with\": \"s1\"}\n" +
+            "  ],\n" +
+            "\"outputKeys\" : [ \"k1\", \"k2\" ],\n" +
+            "\"window\":{ \"windowLength\":{\"class\":\".Window$Duration\", \"durationMs\":2000 },\n" +
+                         "     \"slidingInterval\":{\"class\":\".Window$Duration\", \"durationMs\":2000},\n" +
+                         "     \"tsFields\": [\"s1:tsField\", \"s2:field2.innerTsField\", \"s3:tsField3\"], \n" +
+                         "     \"lagMs\":1000, \n" +
+                         "     \"lateStream\": \"optionalLateStream\"\n" +
+                         "     },\n" +
+            "  \"outputStream\" : \"outStream1\"}\n" +
+            " }";
+
+        return getYamlComponents(fluxComponent, json);
+    }
+
+    private static List<Entry<String, Map<String, Object>>> getYamlComponents(FluxComponent fluxComponent, String json) throws IOException {
         Map<String, Object> props = new ObjectMapper().readValue(json, new TypeReference<HashMap<String, Object>>(){});
 
         fluxComponent.withConfig(props);
 
-        List<Map.Entry<String, Map<String, Object>>> keysAndComponents = new ArrayList<>();
+        List<Entry<String, Map<String, Object>>> keysAndComponents = new ArrayList<>();
 
         for (Map<String, Object> referencedComponent : fluxComponent.getReferencedComponents()) {
             keysAndComponents.add(makeEntry(StormTopologyLayoutConstants.YAML_KEY_COMPONENTS, referencedComponent));
