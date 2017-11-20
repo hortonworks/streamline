@@ -290,6 +290,10 @@
                             <pattern>com.fasterxml.jackson.databind</pattern>
                                 <shadedPattern>com.fasterxml.jackson.streamline.databind</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>com.fasterxml.jackson.annotation</pattern>
+                                <shadedPattern>com.fasterxml.jackson.streamline.annotation</shadedPattern>
+                        </relocation>
                     </relocations>
                 </configuration>
                 <executions>
