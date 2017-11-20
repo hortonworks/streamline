@@ -19,7 +19,8 @@ package com.hortonworks.streamline.streams.service;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
-import com.hortonworks.registries.storage.transaction.TransactionManager;
+import com.hortonworks.registries.common.transaction.TransactionIsolation;
+import com.hortonworks.registries.storage.TransactionManager;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.exception.service.exception.request.TopologyAlreadyExistsOnCluster;
@@ -709,7 +710,7 @@ public class TopologyCatalogResource {
                     topologies.parallelStream()
                             .map(t -> {
                                 try {
-                                    transactionManager.beginTransaction();
+                                    transactionManager.beginTransaction(TransactionIsolation.SERIALIZABLE);
                                     CatalogResourceUtil.TopologyDetailedResponse topologyDetailedResponse = CatalogResourceUtil.enrichTopology(t, asUser, latencyTopN,
                                             environmentService, actionsService, metricsService, catalogService);
                                     transactionManager.commitTransaction();

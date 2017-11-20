@@ -15,9 +15,11 @@
  **/
 package com.hortonworks.streamline.streams.service;
 
+import com.hortonworks.registries.common.transaction.TransactionIsolation;
 import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
+import com.hortonworks.registries.storage.StorageManagerAware;
+import com.hortonworks.registries.storage.TransactionManager;
 import com.hortonworks.registries.storage.TransactionManagerAware;
-import com.hortonworks.registries.storage.transaction.TransactionManager;
 import com.hortonworks.streamline.common.Constants;
 import com.hortonworks.streamline.common.FileEventHandler;
 import com.hortonworks.streamline.common.FileWatcher;
@@ -57,7 +59,7 @@ import javax.security.auth.Subject;
 /**
  * Implementation for the streams module for registration with web service module
  */
-public class StreamsModule implements ModuleRegistration, TransactionManagerAware {
+public class StreamsModule implements ModuleRegistration, StorageManagerAware, TransactionManagerAware {
     private FileStorage fileStorage;
     private Map<String, Object> config;
     private StorageManager storageManager;
@@ -76,7 +78,7 @@ public class StreamsModule implements ModuleRegistration, TransactionManagerAwar
         final Subject subject = (Subject) config.get(Constants.CONFIG_SUBJECT);  // Authorized subject
         MLModelRegistryClient modelRegistryClient = new MLModelRegistryClient(catalogRootUrl, subject);
         final StreamCatalogService streamcatalogService = new StreamCatalogService(storageManager, fileStorage, modelRegistryClient);
-        final EnvironmentService environmentService = new EnvironmentService(transactionManager);
+        final EnvironmentService environmentService = new EnvironmentService(storageManager, transactionManager);
         TagClient tagClient = new TagClient(catalogRootUrl);
         final CatalogService catalogService = new CatalogService(storageManager, fileStorage, tagClient);
         final TopologyActionsService topologyActionsService = new TopologyActionsService(streamcatalogService,
@@ -204,7 +206,7 @@ public class StreamsModule implements ModuleRegistration, TransactionManagerAwar
         if (transactionManager == null)
             throw new RuntimeException("TransactionManager is not initialized");
         try {
-            transactionManager.beginTransaction();
+            transactionManager.beginTransaction(TransactionIsolation.SERIALIZABLE);
             TopologyVersion versionInfo = catalogService.getTopologyVersionInfo(StreamCatalogService.PLACEHOLDER_ID);
             if (versionInfo == null) {
                 TopologyVersion topologyVersion = new TopologyVersion();
@@ -225,6 +227,10 @@ public class StreamsModule implements ModuleRegistration, TransactionManagerAwar
     @Override
     public void setTransactionManager(TransactionManager transactionManager) {
         this.transactionManager = transactionManager;
-        this.storageManager = transactionManager.getStorageManager();
+    }
+
+    @Override
+    public void setStorageManager(StorageManager storageManager) {
+        this.storageManager = storageManager;
     }
 }

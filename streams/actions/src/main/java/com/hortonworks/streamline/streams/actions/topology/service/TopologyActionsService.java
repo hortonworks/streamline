@@ -17,8 +17,9 @@ package com.hortonworks.streamline.streams.actions.topology.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.registries.common.transaction.TransactionIsolation;
 import com.hortonworks.registries.common.util.FileStorage;
-import com.hortonworks.registries.storage.transaction.TransactionManager;
+import com.hortonworks.registries.storage.TransactionManager;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
 import com.hortonworks.streamline.streams.actions.TopologyActions;
 import com.hortonworks.streamline.streams.actions.container.TopologyActionsContainer;
@@ -114,7 +115,7 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
     public Void deployTopology(Topology topology, String asUser) throws Exception {
         TopologyContext ctx;
         try {
-            transactionManager.beginTransaction();
+            transactionManager.beginTransaction(TransactionIsolation.SERIALIZABLE);
             ctx = getTopologyContext(topology, asUser);
             transactionManager.commitTransaction();
         } catch (Exception e){
@@ -124,7 +125,7 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
         LOG.debug("Deploying topology {}", topology);
         while (ctx.getState() != TopologyStates.TOPOLOGY_STATE_DEPLOYED) {
             try {
-                transactionManager.beginTransaction();
+                transactionManager.beginTransaction(TransactionIsolation.SERIALIZABLE);
                 LOG.debug("Current state {}", ctx.getStateName());
                 ctx.deploy();
                 transactionManager.commitTransaction();

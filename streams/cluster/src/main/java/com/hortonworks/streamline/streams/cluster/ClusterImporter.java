@@ -16,7 +16,9 @@
 package com.hortonworks.streamline.streams.cluster;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hortonworks.registries.storage.transaction.TransactionManager;
+import com.hortonworks.registries.common.transaction.TransactionIsolation;
+import com.hortonworks.registries.storage.StorageManager;
+import com.hortonworks.registries.storage.TransactionManager;
 import com.hortonworks.streamline.common.util.ParallelStreamUtil;
 import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
 import com.hortonworks.streamline.streams.cluster.catalog.Component;
@@ -71,7 +73,7 @@ public class ClusterImporter {
                 .filter(ServiceConfigurations::contains)
                 .forEach(serviceName -> {
                     try {
-                        transactionManager.beginTransaction();
+                        transactionManager.beginTransaction(TransactionIsolation.SERIALIZABLE);
                         LOG.debug("service start {}", serviceName);
 
                         Service service = addService(cluster, serviceName);

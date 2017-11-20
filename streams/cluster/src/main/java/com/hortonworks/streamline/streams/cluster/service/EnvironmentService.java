@@ -19,7 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.hortonworks.registries.common.QueryParam;
-import com.hortonworks.registries.storage.transaction.TransactionManager;
+import com.hortonworks.registries.storage.TransactionManager;
 import com.hortonworks.streamline.common.exception.ComponentConfigException;
 import com.hortonworks.registries.storage.StorableKey;
 import com.hortonworks.registries.storage.StorageManager;
@@ -68,8 +68,8 @@ public class EnvironmentService {
     private final List<ContainingNamespaceAwareContainer> containers;
     private final ObjectMapper objectMapper;
 
-    public EnvironmentService(TransactionManager transactionManager) {
-        this.dao = transactionManager.getStorageManager();
+    public EnvironmentService(StorageManager storageManager, TransactionManager transactionManager) {
+        this.dao = storageManager;
         this.clusterImporter = new ClusterImporter(this, transactionManager);
         this.containers = new ArrayList<>();
         this.objectMapper = new ObjectMapper();

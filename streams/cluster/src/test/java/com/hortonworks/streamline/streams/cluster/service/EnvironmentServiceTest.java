@@ -18,7 +18,7 @@ package com.hortonworks.streamline.streams.cluster.service;
 import com.google.common.collect.Lists;
 import com.hortonworks.registries.common.QueryParam;
 import com.hortonworks.registries.storage.StorageManager;
-import com.hortonworks.registries.storage.transaction.TransactionManager;
+import com.hortonworks.registries.storage.TransactionManager;
 import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
 import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMap;
 import com.hortonworks.streamline.streams.cluster.ClusterImporter;

@@ -21,8 +21,9 @@ import com.google.common.cache.CacheBuilder;
 import com.hortonworks.registries.auth.Login;
 import com.hortonworks.registries.common.ServletFilterConfiguration;
 import com.hortonworks.registries.cache.Cache;
+import com.hortonworks.registries.storage.NOOPTransactionManager;
+import com.hortonworks.registries.storage.TransactionManager;
 import com.hortonworks.registries.storage.TransactionManagerAware;
-import com.hortonworks.registries.storage.transaction.TransactionManager;
 import com.hortonworks.streamline.common.Constants;
 import com.hortonworks.streamline.common.ModuleRegistration;
 import com.hortonworks.registries.common.util.FileStorage;
@@ -239,7 +240,13 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
     private void registerResources(StreamlineConfiguration configuration, Environment environment, Subject subject) throws ConfigException,
             ClassNotFoundException, IllegalAccessException, InstantiationException {
         StorageManager storageManager = getCacheBackedDao(configuration);
-        TransactionManager transactionManager = new TransactionManager(storageManager);
+        StorageManager effectiveStorageManager = storageManager instanceof CacheBackedStorageManager ?
+                ((CacheBackedStorageManager) storageManager).getStorageManager() : storageManager;
+        TransactionManager transactionManager;
+        if (effectiveStorageManager instanceof TransactionManager)
+            transactionManager = (TransactionManager) effectiveStorageManager;
+        else
+            transactionManager = new NOOPTransactionManager();
         environment.jersey().register(new TransactionEventListener(transactionManager));
         Collection<Class<? extends Storable>> streamlineEntities = getStorableEntities();
         storageManager.registerStorables(streamlineEntities);

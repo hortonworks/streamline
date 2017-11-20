@@ -16,8 +16,9 @@
 
 package com.hortonworks.streamline.webservice.listeners;
 
+import com.hortonworks.registries.common.transaction.TransactionIsolation;
 import com.hortonworks.registries.common.transaction.UnitOfWork;
-import com.hortonworks.registries.storage.transaction.TransactionManager;
+import com.hortonworks.registries.storage.TransactionManager;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
@@ -54,28 +55,30 @@ public class TransactionEventListener implements ApplicationEventListener {
                 Optional<UnitOfWork> unitOfWork = methodMap.computeIfAbsent(event.getUriInfo()
                         .getMatchedResourceMethod(), UnitOfWorkEventListener::registerUnitOfWorkAnnotations);
                 useTransactionForUnitOfWork = unitOfWork.isPresent() ? unitOfWork.get().transactional() : true;
+                TransactionIsolation transactionIsolation = unitOfWork.isPresent() ? unitOfWork.get().transactionIsolation() : TransactionIsolation.SERIALIZABLE;
                 if (useTransactionForUnitOfWork)
-                    transactionManager.beginTransaction();
+                    transactionManager.beginTransaction(transactionIsolation);
             } else if (eventType == RequestEvent.Type.RESP_FILTERS_START) {
                 // not supporting transactions to filters
             } else if (eventType == RequestEvent.Type.ON_EXCEPTION) {
-                transactionManager.rollbackTransaction();
+                if (useTransactionForUnitOfWork)
+                    transactionManager.rollbackTransaction();
             } else if (eventType == RequestEvent.Type.FINISHED) {
-                if (useTransactionForUnitOfWork && event.isSuccess()) {
+                if (useTransactionForUnitOfWork && event.isSuccess())
                     transactionManager.commitTransaction();
-                }
+                else if (useTransactionForUnitOfWork && !event.isSuccess())
+                    transactionManager.rollbackTransaction();
             }
-    }
-
-    private static Optional<UnitOfWork> registerUnitOfWorkAnnotations(ResourceMethod method) {
-        UnitOfWork annotation = method.getInvocable().getDefinitionMethod().getAnnotation(UnitOfWork.class);
-        if (annotation == null) {
-            annotation = method.getInvocable().getHandlingMethod().getAnnotation(UnitOfWork.class);
         }
-        return Optional.ofNullable(annotation);
-    }
 
-}
+        private static Optional<UnitOfWork> registerUnitOfWorkAnnotations(ResourceMethod method) {
+            UnitOfWork annotation = method.getInvocable().getDefinitionMethod().getAnnotation(UnitOfWork.class);
+            if (annotation == null) {
+                annotation = method.getInvocable().getHandlingMethod().getAnnotation(UnitOfWork.class);
+            }
+            return Optional.ofNullable(annotation);
+        }
+    }
 
     @Override
     public void onEvent(ApplicationEvent applicationEvent) {
