@@ -1,0 +1,122 @@
+{
+  "type": "SINK",
+  "name": "HIVE",
+  "subType": "HIVE",
+  "builtin": true,
+  "streamingEngine": "STORM",
+  "transformationClass": "com.hortonworks.streamline.streams.layout.storm.HiveBoltFluxComponent",
+  "mavenDeps": "org.apache.storm:storm-hive:STORM_VERSION^org.slf4j:slf4j-log4j12^org.apache.curator:curator-client^org.apache.curator:curator-framework",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "Metastore URI",
+        "fieldName": "metaStoreURI",
+        "isOptional": false,
+        "tooltip": "URI of the metastore to connect to eg: thrift://localhost:9083",
+        "type": "string"
+      },
+      {
+        "uiName": "Database Name",
+        "fieldName": "databaseName",
+        "isOptional": false,
+        "tooltip": "Name of the Hive database",
+        "type": "string"
+      },
+      {
+        "uiName": "Table Name",
+        "fieldName": "tableName",
+        "isOptional": false,
+        "tooltip": "Name of table to stream to",
+        "type": "string"
+      },
+      {
+        "uiName":"Fields",
+        "fieldName": "fields",
+        "tooltip": "The event fields to stream to hive",
+        "isOptional": false,
+        "type": "array.enumstring",
+        "options": [],
+        "hint": "inputFields"
+      },
+      {
+        "uiName": "Partition Fields",
+        "fieldName": "partitionFields",
+        "isOptional": false,
+        "tooltip": "The event fields on which to partition the data",
+        "type": "array.enumstring",
+        "options": [],
+        "hint": "inputFields"
+      },
+      {
+        "uiName": "Flush Interval",
+        "fieldName": "tickTupleInterval",
+        "isOptional": true,
+        "tooltip": "The interval (in seconds) at which a transaction batch is committed",
+        "type": "number"
+      },
+      {
+        "uiName": "Transactions per batch",
+        "fieldName": "txnsPerBatch",
+        "isOptional": true,
+        "tooltip": "The number of transactions per batch",
+        "type": "number"
+      },
+      {
+        "uiName":"Max open connections",
+        "fieldName": "maxOpenConnections",
+        "tooltip": "The maximum number of open connections to Hive",
+        "isOptional": true,
+        "type": "number"
+      },
+      {
+        "uiName":"Batch size",
+        "fieldName": "batchSize",
+        "tooltip": "The number of events per batch",
+        "isOptional": true,
+        "type": "number"
+      },
+      {
+        "uiName":"Idle timeout",
+        "fieldName": "idleTimeout",
+        "tooltip": "The idle timeout",
+        "isOptional": true,
+        "type": "number"
+      },
+      {
+        "uiName":"Call timeout",
+        "fieldName": "callTimeout",
+        "tooltip": "The call timeout",
+        "isOptional": true,
+        "type": "number"
+      },
+      {
+        "uiName":"Heartbeat Interval",
+        "fieldName": "heartBeatInterval",
+        "tooltip": "The heart beat interval",
+        "isOptional": true,
+        "type": "number"
+      },
+      {
+        "uiName":"Auto create partitions",
+        "fieldName": "autoCreatePartitions",
+        "tooltip": "If true, the partition specified in the endpoint will be auto created if it does not exist",
+        "isOptional": true,
+        "type": "boolean"
+      },
+      {
+        "uiName":"Kerberos keytab",
+        "fieldName": "kerberosKeytab",
+        "tooltip": "The Kerberos keytab",
+        "isOptional": true,
+        "type": "string"
+      },
+      {
+        "uiName":"Kerberos principal",
+        "fieldName": "kerberosPrincipal",
+        "tooltip": "The Kerberos principal",
+        "isOptional": true,
+        "type": "string"
+      }
+    ]
+  }
+}

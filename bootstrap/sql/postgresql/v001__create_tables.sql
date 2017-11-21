@@ -1,23 +1,23 @@
--- Copyright 2017 Hortonworks.
---
+-- Copyright 2017 Hortonworks.;
+-- ;
 -- Licensed under the Apache License, Version 2.0 (the "License");
--- you may not use this file except in compliance with the License.
--- You may obtain a copy of the License at
---
---    http://www.apache.org/licenses/LICENSE-2.0
---
--- Unless required by applicable law or agreed to in writing, software
--- distributed under the License is distributed on an "AS IS" BASIS,
--- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
--- See the License for the specific language governing permissions and
--- limitations under the License.
+-- you may not use this file except in compliance with the License;
+-- You may obtain a copy of the License at;
+-- ;
+--    http://www.apache.org/licenses/LICENSE-2.0;
+-- ;
+-- Unless required by applicable law or agreed to in writing, software;
+-- distributed under the License is distributed on an "AS IS" BASIS,;
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.;
+-- See the License for the specific language governing permissions and;
+-- limitations under the License.;
 
 -- THE NAMES OF THE TABLE COLUMNS MUST MATCH THE NAMES OF THE CORRESPONDING CLASS MODEL FIELDS;
 
 CREATE TABLE IF NOT EXISTS dashboard (
   "id" SERIAL PRIMARY KEY,
   "name" VARCHAR(255) NOT NULL,
-  "description" VARCHAR(255) NOT NULL,
+  "description" VARCHAR(256) NOT NULL,
   "data" TEXT NOT NULL,
   "timestamp"  BIGINT,
   CONSTRAINT dashboard_uk_name UNIQUE ("name")
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS dashboard (
 CREATE TABLE IF NOT EXISTS ml_model (
   "id" SERIAL PRIMARY KEY,
   "name" VARCHAR(255) NOT NULL,
-  "uploadedFileName" VARCHAR(255) NOT NULL,
+  "uploadedFileName" VARCHAR(256) NOT NULL,
   "pmml" TEXT NOT NULL,
   "timestamp"  BIGINT,
   CONSTRAINT ml_models_uk_name UNIQUE ("name")
@@ -35,8 +35,8 @@ CREATE TABLE IF NOT EXISTS ml_model (
 CREATE TABLE IF NOT EXISTS widget (
   "id" SERIAL PRIMARY KEY,
   "name" VARCHAR(255) NOT NULL,
-  "description" VARCHAR(255) NOT NULL,
-  "type" VARCHAR(255) NOT NULL,
+  "description" VARCHAR(256) NOT NULL,
+  "type" VARCHAR(256) NOT NULL,
   "data" TEXT NOT NULL,
   "timestamp"  BIGINT,
   CONSTRAINT widget_uk_name UNIQUE ("name"),
@@ -46,9 +46,9 @@ CREATE TABLE IF NOT EXISTS widget (
 CREATE TABLE IF NOT EXISTS datasource (
   "id" SERIAL PRIMARY KEY,
   "name" VARCHAR(255) NOT NULL,
-  "description" VARCHAR(255) NOT NULL,
-  "type" VARCHAR(255) NOT NULL,
-  "url" VARCHAR(255) NOT NULL,
+  "description" VARCHAR(256) NOT NULL,
+  "type" VARCHAR(256) NOT NULL,
+  "url" VARCHAR(256) NOT NULL,
   "data" TEXT NOT NULL,
   "timestamp"  BIGINT,
   "dashboardId"  INTEGER REFERENCES  dashboard,
@@ -71,20 +71,12 @@ CREATE TABLE IF NOT EXISTS file (
     UNIQUE ("name", "version")
 );
 
-
-CREATE TABLE IF NOT EXISTS fileblob (
-  "name" VARCHAR(255) PRIMARY KEY,
-  "version" BIGINT NOT NULL,
-  "data" BYTEA NOT NULL,
-  "timestamp" BIGINT
-);
-
 CREATE TABLE IF NOT EXISTS namespace (
      "id" SERIAL PRIMARY KEY ,
-     "name" VARCHAR(255) NOT NULL,
-     "streamingEngine" VARCHAR(255) NOT NULL,
-     "timeSeriesDB" VARCHAR(255) NULL,
-     "description" VARCHAR(255),
+     "name" VARCHAR(256) NOT NULL,
+     "streamingEngine" VARCHAR(256) NOT NULL,
+     "timeSeriesDB" VARCHAR(256) NULL,
+     "description" VARCHAR(256),
      "timestamp" BIGINT
 );
 
@@ -98,7 +90,7 @@ CREATE TABLE IF NOT EXISTS namespace_service_cluster_mapping (
 CREATE TABLE IF NOT EXISTS topology_version (
   "id" SERIAL PRIMARY KEY,
   "topologyId" BIGINT NOT NULL,
-  "name" VARCHAR(255) NOT NULL,
+  "name" VARCHAR(256) NOT NULL,
   "description" TEXT NOT NULL,
   "timestamp"  BIGINT
 );
@@ -106,7 +98,7 @@ CREATE TABLE IF NOT EXISTS topology_version (
 CREATE TABLE IF NOT EXISTS topology (
     "id" SERIAL NOT NULL,
     "versionId" BIGINT REFERENCES topology_version,
-    "name" VARCHAR(255) NOT NULL,
+    "name" VARCHAR(256) NOT NULL,
     "description" TEXT,
     "namespaceId" BIGINT REFERENCES namespace,
     "config" TEXT NOT NULL,
@@ -115,7 +107,7 @@ CREATE TABLE IF NOT EXISTS topology (
 
 CREATE TABLE IF NOT EXISTS topology_component_bundle (
     "id" SERIAL PRIMARY KEY ,
-    "name" VARCHAR(255) NOT NULL,
+    "name" VARCHAR(256) NOT NULL,
     "type" TEXT NOT NULL,
     "subType" TEXT NOT NULL,
     "streamingEngine" TEXT NOT NULL,
@@ -164,7 +156,7 @@ CREATE TABLE IF NOT EXISTS topology_stream (
 
 CREATE TABLE IF NOT EXISTS notifier (
      "id" SERIAL PRIMARY KEY ,
-     "name" VARCHAR(255) NOT NULL,
+     "name" VARCHAR(256) NOT NULL,
      "description" TEXT NOT NULL,
      "jarFileName" TEXT NOT NULL,
      "className" TEXT NOT NULL,
@@ -179,7 +171,7 @@ CREATE TABLE IF NOT EXISTS topology_component (
     "versionId" BIGINT NOT NULL,
     "topologyId" BIGINT,
     "topologyComponentBundleId" BIGINT,
-    "name" VARCHAR(255),
+    "name" VARCHAR(256),
     "description" TEXT,
     "configData" TEXT,
     PRIMARY KEY ("id", "versionId")
@@ -190,7 +182,7 @@ CREATE TABLE IF NOT EXISTS topology_source (
     "versionId" BIGINT REFERENCES topology_version,
     "topologyId" BIGINT NOT NULL,
     "topologyComponentBundleId" BIGINT NOT NULL,
-    "name" VARCHAR(255) NOT NULL,
+    "name" VARCHAR(256) NOT NULL,
     "description" TEXT,
     "configData" TEXT NOT NULL,
     PRIMARY KEY ("id", "versionId")
@@ -201,7 +193,7 @@ CREATE TABLE IF NOT EXISTS topology_sink (
   "versionId" BIGINT REFERENCES topology_version,
   "topologyId" BIGINT NOT NULL,
   "topologyComponentBundleId" BIGINT NOT NULL,
-  "name" VARCHAR(255) NOT NULL,
+  "name" VARCHAR(256) NOT NULL,
   "description" TEXT,
   "configData" TEXT NOT NULL,
   PRIMARY KEY ("id", "versionId")
@@ -216,12 +208,14 @@ CREATE TABLE IF NOT EXISTS topology_source_stream_mapping (
     FOREIGN KEY ("streamId", "versionId") REFERENCES topology_stream("id", "versionId")
 );
 
+
+
 CREATE TABLE IF NOT EXISTS topology_processor (
     "id" SERIAL NOT NULL,
     "versionId" BIGINT NOT NULL,
     "topologyId" BIGINT NOT NULL,
     "topologyComponentBundleId" BIGINT NOT NULL,
-    "name" VARCHAR(255) NOT NULL,
+    "name" VARCHAR(256) NOT NULL,
     "description" TEXT,
     "configData" TEXT NOT NULL,
     PRIMARY KEY ("id", "versionId"),
@@ -252,7 +246,7 @@ CREATE TABLE IF NOT EXISTS topology_rule (
     "id" SERIAL NOT NULL,
     "versionId" BIGINT NOT NULL,
     "topologyId" BIGINT NOT NULL,
-    "name" VARCHAR(255) NOT NULL,
+    "name" VARCHAR(256) NOT NULL,
     "description" TEXT NOT NULL,
     "streams" TEXT NULL,
     "outputStreams" TEXT NULL,
@@ -270,7 +264,7 @@ CREATE TABLE IF NOT EXISTS topology_branchrule (
     "id" SERIAL NOT NULL,
     "versionId" BIGINT NOT NULL,
     "topologyId" BIGINT NOT NULL,
-    "name" VARCHAR(255) NOT NULL,
+    "name" VARCHAR(256) NOT NULL,
     "description" TEXT NOT NULL,
     "stream" TEXT NOT NULL,
     "outputStreams" TEXT NULL,
@@ -285,7 +279,7 @@ CREATE TABLE IF NOT EXISTS topology_window (
     "id" SERIAL NOT NULL,
     "versionId" BIGINT NOT NULL,
     "topologyId" BIGINT NOT NULL,
-    "name" VARCHAR(255) NOT NULL,
+    "name" VARCHAR(256) NOT NULL,
     "description" TEXT NOT NULL,
     "streams" TEXT NULL,
     "outputStreams" TEXT NULL,
@@ -301,22 +295,22 @@ CREATE TABLE IF NOT EXISTS topology_window (
 
 CREATE TABLE IF NOT EXISTS udf (
     "id" SERIAL NOT NULL,
-    "name" VARCHAR(255) NOT NULL,
-    "displayName" VARCHAR(255) NOT NULL,
+    "name" VARCHAR(256) NOT NULL,
+    "displayName" VARCHAR(256) NOT NULL,
     "description" TEXT NOT NULL,
-    "type"  VARCHAR(255) NOT NULL,
-    "className"  VARCHAR(255) NOT NULL,
-    "jarStoragePath"  VARCHAR(255) NOT NULL,
-    "digest" VARCHAR(255) NOT NULL,
-    "argTypes" VARCHAR(255) NOT NULL,
-    "returnType" VARCHAR(255) NOT NULL,
+    "type"  VARCHAR(256) NOT NULL,
+    "className"  VARCHAR(256) NOT NULL,
+    "jarStoragePath"  VARCHAR(256) NOT NULL,
+    "digest" VARCHAR(256) NOT NULL,
+    "argTypes" VARCHAR(256) NOT NULL,
+    "returnType" VARCHAR(256) NOT NULL,
     "builtin" CHAR(5),
     PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS cluster (
   "id" SERIAL NOT NULL,
-  "name" VARCHAR(255) NOT NULL,
+  "name" VARCHAR(256) NOT NULL,
   "ambariImportUrl" TEXT,
   "description" TEXT,
   "timestamp" BIGINT,
@@ -326,43 +320,32 @@ CREATE TABLE IF NOT EXISTS cluster (
 CREATE TABLE IF NOT EXISTS service (
   "id" SERIAL NOT NULL,
   "clusterId" BIGINT NOT NULL,
-  "name" VARCHAR(255) NOT NULL,
+  "name" VARCHAR(256) NOT NULL,
   "description" TEXT,
   "timestamp" BIGINT,
-  PRIMARY KEY (id),
-  FOREIGN KEY ("clusterId") REFERENCES cluster(id)
+  PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS service_configuration (
   "id" SERIAL NOT NULL,
   "serviceId" BIGINT NOT NULL,
-  "name" VARCHAR(255) NOT NULL,
+  "name" VARCHAR(256) NOT NULL,
   "configuration" TEXT NOT NULL,
   "description" TEXT,
-  "filename" VARCHAR(255),
+  "filename" VARCHAR(256),
   "timestamp" BIGINT,
-  PRIMARY KEY (id),
-  FOREIGN KEY ("serviceId") REFERENCES service(id)
+  PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS component (
   "id" SERIAL NOT NULL,
   "serviceId" BIGINT NOT NULL,
-  "name" VARCHAR(255) NOT NULL,
-  "timestamp" BIGINT,
-  PRIMARY KEY (id),
-  FOREIGN KEY ("serviceId") REFERENCES service(id)
-);
-
-CREATE TABLE IF NOT EXISTS component_process (
-  "id" SERIAL NOT NULL,
-  "componentId" BIGINT NOT NULL,
-  "host" VARCHAR(256) NOT NULL,
+  "name" VARCHAR(256) NOT NULL,
+  "hosts" TEXT NOT NULL,
   "protocol" VARCHAR(256),
   "port" INTEGER,
   "timestamp" BIGINT,
-  PRIMARY KEY (id),
-  FOREIGN KEY ("componentId") REFERENCES component (id)
+  PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_state (
@@ -374,7 +357,7 @@ CREATE TABLE IF NOT EXISTS topology_state (
 
 CREATE TABLE IF NOT EXISTS service_bundle (
   "id" SERIAL NOT NULL,
-  "name" VARCHAR(255) NOT NULL,
+  "name" VARCHAR(256) NOT NULL,
   "serviceUISpecification" TEXT NOT NULL,
   "registerClass" TEXT,
   "timestamp" BIGINT,
@@ -397,7 +380,7 @@ CREATE TABLE IF NOT EXISTS acl_entry (
 CREATE TABLE IF NOT EXISTS role (
   "id"        SERIAL       NOT NULL,
   "name"      VARCHAR(255) NOT NULL,
-  "displayName" VARCHAR(255) NOT NULL,
+  "displayName" VARCHAR(256) NOT NULL,
   "description" TEXT,
   "system" BOOLEAN NOT NULL,
   "metadata" TEXT,
@@ -441,7 +424,7 @@ CREATE TABLE IF NOT EXISTS topology_editor_toolbar (
 
 CREATE TABLE IF NOT EXISTS topology_test_run_case (
   "id" SERIAL NOT NULL,
-  "name" VARCHAR(255) NOT NULL,
+  "name" VARCHAR(256) NOT NULL,
   "topologyId" BIGINT NOT NULL,
   "versionId" BIGINT NOT NULL,
   "timestamp" BIGINT,
@@ -486,7 +469,7 @@ CREATE TABLE IF NOT EXISTS topology_test_run_histories (
   "expectedOutputRecords" TEXT,
   "actualOutputRecords" TEXT,
   "matched" CHAR(5),
-  "eventLogFilePath" VARCHAR(255) NOT NULL,
+  "eventLogFilePath" VARCHAR(256) NOT NULL,
   "startTime" BIGINT,
   "finishTime" BIGINT,
   "timestamp" BIGINT,
@@ -494,3 +477,83 @@ CREATE TABLE IF NOT EXISTS topology_test_run_histories (
   FOREIGN KEY ("topologyId", "versionId") REFERENCES topology("id", "versionId"),
   FOREIGN KEY ("testCaseId") REFERENCES topology_test_run_case("id")
 );
+
+-- Drop primary key from all tables whose table name is greater than 30 characters
+
+CREATE OR REPLACE FUNCTION drop_primary_keys_from_table (param_table_name VARCHAR(255))
+  RETURNS void AS $$
+  DECLARE
+    table_exist INT;
+  BEGIN
+    SELECT COUNT(*) INTO table_exist FROM information_schema."tables" WHERE table_schema = current_schema() and table_name = param_table_name;
+    IF table_exist = 1 THEN
+        EXECUTE CONCAT('ALTER TABLE "' || param_table_name || '" DROP CONSTRAINT "' || param_table_name ||'_pkey"');
+    END IF;
+  END;
+$$ LANGUAGE plpgsql;
+
+SELECT drop_primary_keys_from_table ('widget_datasource_mapping');
+SELECT drop_primary_keys_from_table ('namespace_service_cluster_mapping');
+SELECT drop_primary_keys_from_table ('tag_storable_mapping');
+SELECT drop_primary_keys_from_table ('topology_source_stream_mapping');
+SELECT drop_primary_keys_from_table ('topology_processor_stream_mapping');
+
+-- Rename table whose table name is greater than 30 characters
+
+CREATE OR REPLACE FUNCTION rename_table_if_exists (current_table_name VARCHAR(255), new_table_name VARCHAR(255))
+  RETURNS void AS $$
+  DECLARE
+    cur_table_count INT;
+    new_table_count INT;
+  BEGIN
+    SELECT COUNT(*) INTO cur_table_count FROM information_schema."tables" WHERE table_schema = current_schema() and table_name = current_table_name;
+    SELECT COUNT(*) INTO new_table_count FROM information_schema."tables" WHERE table_schema = current_schema() and table_name = new_table_name;
+    IF cur_table_count = 1 AND new_table_count = 0 THEN
+      EXECUTE CONCAT('ALTER TABLE "'||current_table_name||'" RENAME TO "'||new_table_name||'"');
+    ELSIF cur_table_count = 1 AND new_table_count = 1 THEN
+      EXECUTE 'DROP TABLE "' || current_table_name || '" CASCADE';
+    END IF;
+  END;
+$$ LANGUAGE plpgsql;
+
+SELECT rename_table_if_exists ('widget_datasource_mapping','widget_datasource_map');
+SELECT rename_table_if_exists ('namespace_service_cluster_mapping', 'namespace_service_cluster_map');
+SELECT rename_table_if_exists ('tag_storable_mapping','tag_storable_map');
+SELECT rename_table_if_exists ('topology_source_stream_mapping','topology_source_stream_map');
+SELECT rename_table_if_exists ('topology_processor_stream_mapping','topology_processor_stream_map');
+
+-- Add all the dropped primary key from table which have been renamed in previous step
+
+CREATE OR REPLACE FUNCTION add_primary_key_if_not_exist (param_table_name VARCHAR(255), primary_keys VARCHAR(255))
+  RETURNS void AS $$
+  DECLARE
+    pk_count INT;
+  BEGIN
+    SELECT COUNT(*) INTO pk_count FROM information_schema."table_constraints" WHERE table_schema = current_schema() and table_name = param_table_name and constraint_type='PRIMARY KEY';
+    IF pk_count = 0 THEN
+      EXECUTE 'ALTER TABLE IF EXISTS "' || param_table_name || '" ADD PRIMARY KEY ( ' || primary_keys || ')';
+    END IF;
+  END;
+$$ LANGUAGE plpgsql;
+
+SELECT add_primary_key_if_not_exist ('widget_datasource_map','"widgetId", "datasourceId"');
+SELECT add_primary_key_if_not_exist ('namespace_service_cluster_map','"namespaceId", "serviceName", "clusterId"');
+SELECT add_primary_key_if_not_exist ('tag_storable_map','"tagId", "storableNamespace", "storableId"');
+SELECT add_primary_key_if_not_exist ('topology_source_stream_map','"sourceId", "versionId", "streamId"');
+SELECT add_primary_key_if_not_exist ('topology_processor_stream_map','"processorId", "versionId", "streamId"');
+
+-- Rename columns of table whose length is greater that 30 characters
+
+CREATE OR REPLACE FUNCTION rename_if_exist(param_table_name VARCHAR, current_col VARCHAR, new_column VARCHAR)
+  RETURNS void AS $$
+  DECLARE
+    col_count INT;
+  BEGIN
+    SELECT COUNT(*) INTO col_count FROM information_schema."columns" WHERE table_schema = current_schema() and table_name = param_table_name and column_name = current_col;
+    IF col_count = 1 THEN
+      EXECUTE 'ALTER TABLE IF EXISTS "' || param_table_name || '" RENAME COLUMN "' || current_col ||'" TO "' || new_column || '"';
+    END IF;
+  END;
+$$ LANGUAGE plpgsql;
+
+SELECT rename_if_exist('topology_component_bundle','topologyComponentUISpecification','topologyComponentUISpec');

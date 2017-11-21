@@ -34,6 +34,7 @@ import com.hortonworks.streamline.streams.cluster.container.ContainingNamespaceA
 import com.hortonworks.streamline.streams.cluster.ClusterImporter;
 import com.hortonworks.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
+import com.hortonworks.streamline.streams.cluster.exception.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -585,6 +586,17 @@ public class EnvironmentService {
         }
         this.dao.add(serviceBundle);
         return serviceBundle;
+    }
+
+    public ServiceBundle updateServiceBundle(String serviceName, ServiceBundle serviceBundle) throws EntityNotFoundException {
+        ServiceBundle persistentServiceBundle = getServiceBundleByName(serviceName);
+        if (persistentServiceBundle == null)
+            throw new EntityNotFoundException(String.format("Unable to find a service bundle of name : \"%s\"",serviceName));
+        persistentServiceBundle.setRegisterClass(serviceBundle.getRegisterClass());
+        persistentServiceBundle.setServiceUISpecification(serviceBundle.getServiceUISpecification());
+        persistentServiceBundle.setTimestamp(System.currentTimeMillis());
+        dao.update(persistentServiceBundle);
+        return persistentServiceBundle;
     }
 
     public ServiceBundle removeServiceBundle(Long id) throws IOException {

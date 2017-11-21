@@ -80,7 +80,7 @@ done
 # Get catalogRootUrl from configuration file
 #---------------------------------------------
 
-CONF_READER_MAIN_CLASS=com.hortonworks.registries.storage.tool.PropertiesReader
+CONF_READER_MAIN_CLASS=com.hortonworks.registries.storage.tool.sql.PropertiesReader
 
 for file in "${bootstrap_dir}"/lib/*.jar;
 do
@@ -104,30 +104,30 @@ echo $component_dir
 
 function update_all_bundles {
     # === Source ===
-    update_bundle /streams/componentbundles/SOURCE $component_dir/sources/kafka-source-topology-component.json
-    update_bundle /streams/componentbundles/SOURCE $component_dir/sources/hdfs-source-topology-component.json
+    update_bundle /streams/componentbundles/SOURCE $component_dir/sources/v001__kafka-source-topology-component.json
+    update_bundle /streams/componentbundles/SOURCE $component_dir/sources/v001__hdfs-source-topology-component.json
     # === Processor ===
-    update_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/rule-topology-component.json
-    update_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/window-topology-component.json
-    update_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/branch-topology-component.json
-    update_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/join-bolt-topology-component.json
-    update_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/model-topology-component.json
+    update_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/v001__rule-topology-component.json
+    update_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/v001__window-topology-component.json
+    update_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/v001__branch-topology-component.json
+    update_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/v001__join-bolt-topology-component.json
+    update_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/v001__model-topology-component.json
     # === Sink ===
-    update_bundle /streams/componentbundles/SINK $component_dir/sinks/hdfs-sink-topology-component.json
-    update_bundle /streams/componentbundles/SINK $component_dir/sinks/hbase-sink-topology-component.json
-    update_bundle /streams/componentbundles/SINK $component_dir/sinks/notification-sink-topology-component.json
-    update_bundle /streams/componentbundles/SINK $component_dir/sinks/opentsdb-sink-topology-component.json
-    update_bundle /streams/componentbundles/SINK $component_dir/sinks/jdbc-sink-topology-component.json
-    update_bundle /streams/componentbundles/SINK $component_dir/sinks/cassandra-sink-topology-component.json
-    update_bundle /streams/componentbundles/SINK $component_dir/sinks/druid-sink-topology-component.json
-    update_bundle /streams/componentbundles/SINK $component_dir/sinks/solr-sink-topology-component.json
-    update_bundle /streams/componentbundles/SINK $component_dir/sinks/kafka-sink-topology-component.json
+    update_bundle /streams/componentbundles/SINK $component_dir/sinks/v001__hdfs-sink-topology-component.json
+    update_bundle /streams/componentbundles/SINK $component_dir/sinks/v001__hbase-sink-topology-component.json
+    update_bundle /streams/componentbundles/SINK $component_dir/sinks/v001__notification-sink-topology-component.json
+    update_bundle /streams/componentbundles/SINK $component_dir/sinks/v001__opentsdb-sink-topology-component.json
+    update_bundle /streams/componentbundles/SINK $component_dir/sinks/v001__jdbc-sink-topology-component.json
+    update_bundle /streams/componentbundles/SINK $component_dir/sinks/v001__cassandra-sink-topology-component.json
+    update_bundle /streams/componentbundles/SINK $component_dir/sinks/v001__druid-sink-topology-component.json
+    update_bundle /streams/componentbundles/SINK $component_dir/sinks/v001__solr-sink-topology-component.json
+    update_bundle /streams/componentbundles/SINK $component_dir/sinks/v001__kafka-sink-topology-component.json
     # === Topology ===
-    update_bundle /streams/componentbundles/TOPOLOGY $component_dir/topology/storm-topology-component.json
+    update_bundle /streams/componentbundles/TOPOLOGY $component_dir/topology/v001__storm-topology-component.json
 
-    #update_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/split-topology-component
-    #update_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/normalization-processor-topology-component.json
-    #update_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/multilang-topology-component.json
+    #update_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/v001__split-topology-component
+    #update_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/v001__normalization-processor-topology-component.json
+    #update_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/v001__multilang-topology-component.json
 }
 
 function main {
