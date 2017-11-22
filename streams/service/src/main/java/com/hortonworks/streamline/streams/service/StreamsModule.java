@@ -136,6 +136,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware, T
                 new TopologyActionResource(authorizer, streamcatalogService, actionsService),
                 new TopologyDashboardResource(authorizer, streamcatalogService, environmentService, actionsService,
                         metricsService, transactionManager),
+                new TopologyViewModeResource(authorizer, streamcatalogService, metricsService),
                 new TopologyComponentBundleResource(authorizer, streamcatalogService, environmentService, subject),
                 new TopologyStreamCatalogResource(authorizer, streamcatalogService),
                 new TopologyEditorMetadataResource(authorizer, streamcatalogService),

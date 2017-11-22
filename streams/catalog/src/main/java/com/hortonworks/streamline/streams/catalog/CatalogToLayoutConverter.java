@@ -17,12 +17,10 @@ package com.hortonworks.streamline.streams.catalog;
 
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyComponent;
-import com.hortonworks.streamline.streams.layout.component.StreamlineComponent;
-import com.hortonworks.streamline.streams.layout.component.TopologyDag;
-import com.hortonworks.streamline.streams.layout.component.TopologyDagVisitor;
-import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
+import com.hortonworks.streamline.streams.layout.component.*;
 
 import java.io.IOException;
+import java.util.HashSet;
 
 public final class CatalogToLayoutConverter {
     private CatalogToLayoutConverter() {
@@ -39,12 +37,37 @@ public final class CatalogToLayoutConverter {
     }
 
     public static com.hortonworks.streamline.streams.layout.component.Component getComponentLayout(TopologyComponent component) {
-        StreamlineComponent componentLayout = new StreamlineComponent() {
-            @Override
-            public void accept(TopologyDagVisitor visitor) {
-                throw new UnsupportedOperationException("Not intended to be called here.");
-            }
-        };
+        StreamlineComponent componentLayout;
+        if (component instanceof TopologySource) {
+            componentLayout = new StreamlineSource() {
+                @Override
+                public void accept(TopologyDagVisitor visitor) {
+                    throw new UnsupportedOperationException("Not intended to be called here.");
+                }
+            };
+        } else if (component instanceof TopologyProcessor) {
+            componentLayout = new StreamlineProcessor() {
+                @Override
+                public void accept(TopologyDagVisitor visitor) {
+                    throw new UnsupportedOperationException("Not intended to be called here.");
+                }
+            };
+        } else if (component instanceof TopologySink) {
+            componentLayout = new StreamlineSink() {
+                @Override
+                public void accept(TopologyDagVisitor visitor) {
+                    throw new UnsupportedOperationException("Not intended to be called here.");
+                }
+            };
+        } else {
+            componentLayout = new StreamlineComponent() {
+                @Override
+                public void accept(TopologyDagVisitor visitor) {
+                    throw new UnsupportedOperationException("Not intended to be called here.");
+                }
+            };
+        }
+
         componentLayout.setId(component.getId().toString());
         componentLayout.setName(component.getName());
         return componentLayout;
