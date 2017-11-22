@@ -195,7 +195,7 @@ public class WindowedQueryBolt extends JoinBolt {
             withLag(new BaseWindowedBolt.Duration(windowConfig.getLagMs(), TimeUnit.MILLISECONDS));
         }
 
-        if (windowConfig.getTsFields() != null  &&  windowConfig.getTsFields().length>0) {
+        if (windowConfig.getTsFields() != null  &&  !windowConfig.getTsFields().isEmpty()) {
             withTimestampExtractor(new SLMultistreamTimestampExtractor(windowConfig.getTsFields()));
         }
 
