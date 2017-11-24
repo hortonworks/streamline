@@ -146,7 +146,7 @@ echo "Component bundle Root dir: ${component_dir}"
 echo "Service bundle Root dir: ${service_dir}"
 echo "User/Role bundle Root dir: ${user_role_dir}"
 
-function add_all_bundles {
+function update_bundles {
     # === Source ===
     # === Processor ===
     add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/v001__rtjoin-bolt-topology-component.json
@@ -256,7 +256,7 @@ function main {
     echo "===================================================================================="
     echo "Running bootstrap.sh will create streamline default components, notifiers, udfs and roles"
 
-    add_all_bundles
+    update_bundles
     add_udfs
 }
 
