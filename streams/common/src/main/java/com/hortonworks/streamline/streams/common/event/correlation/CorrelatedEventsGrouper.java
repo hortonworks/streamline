@@ -15,8 +15,11 @@
  **/
 package com.hortonworks.streamline.streams.common.event.correlation;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.hortonworks.streamline.streams.common.event.EventInformation;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -35,26 +38,26 @@ public class CorrelatedEventsGrouper {
     }
 
     /**
-     * Returns the group of correlated events per source
+     * Returns the group of correlated events per source where the group of related source events
+     * produces the same downstream events
      *
      * @param sources the set of source component names
      * @return the group of correlated events per source
      */
-    public Set<Set<String>> groupByRelatedSourceEvents(Set<String> sources) {
-        Set<Set<String>> result = new LinkedHashSet<>();
+    public List<Set<String>> groupByRelatedSourceEvents(Set<String> sources) {
+        Multimap<Set<String>, String> allEventsToSourceEvents = HashMultimap.create();
         Stream<String> rootEventIds = events.stream().filter(e -> e != null && e.getRootIds().isEmpty())
                 .map(EventInformation::getEventId);
         rootEventIds.forEach(rootEventId -> {
-            Set<String> relatedSourceEvents = new LinkedHashSet<>();
-            relatedSourceEvents.add(rootEventId);
-            Map<String, EventInformation> relatedEvents = buildRelatedEventsMap(rootEventId);
-            relatedEvents.values().forEach(e -> {
-                if (sources.contains(e.getComponentName())) {
-                    relatedSourceEvents.add(e.getEventId());
-                }
-            });
-            result.add(relatedSourceEvents);
+            Map<String, EventInformation> allRelatedEvents = buildRelatedEventsMap(rootEventId);
+            allEventsToSourceEvents.put(allRelatedEvents.keySet(), rootEventId);
         });
+
+        List<Set<String>> result = new ArrayList<>();
+        allEventsToSourceEvents.asMap().values().forEach(v ->
+                result.add(new HashSet<>(v))
+        );
+
         return result;
     }
 
