@@ -26,9 +26,9 @@ import com.hortonworks.streamline.common.exception.SchemaValidationFailedExcepti
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
-import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
 import com.hortonworks.streamline.streams.catalog.Topology;
+import com.hortonworks.streamline.streams.catalog.TopologyComponent;
 import com.hortonworks.streamline.streams.catalog.TopologySink;
 import com.hortonworks.streamline.streams.catalog.TopologySource;
 import com.hortonworks.streamline.streams.catalog.TopologyStream;
@@ -63,22 +63,19 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 
@@ -241,12 +238,14 @@ public class TopologyTestRunResource {
                                                           @PathParam("topologyId") Long topologyId,
                                                           @PathParam("historyId") Long historyId) throws Exception {
         File eventLogFile = getEventLogFile(topologyId, historyId);
-        Stream<EventInformation> eventsStream = eventLogFileReader.loadEventLogFileAsStream(eventLogFile);
-
-        Stream<EventInformation> rootEventsStream = eventsStream.filter(e -> e != null && e.getRootIds().isEmpty());
-        Stream<String> rootEventIdsStream = rootEventsStream.map(EventInformation::getEventId);
-
-        return WSUtils.respondEntities(rootEventIdsStream.collect(toList()), OK);
+        List<EventInformation> events = eventLogFileReader.loadEventLogFile(eventLogFile);
+        List<com.hortonworks.registries.common.QueryParam> qps = com.hortonworks.registries.common.QueryParam.params(
+                TopologySource.TOPOLOGYID, topologyId.toString(),
+                TopologySource.VERSIONID, catalogService.getCurrentVersionId(topologyId).toString());
+        Set<String> sourceNames = catalogService.listTopologySources(qps).stream()
+                .map(TopologyComponent::getName)
+                .collect(Collectors.toSet());
+        return WSUtils.respondEntities(new CorrelatedEventsGrouper(events).groupByRelatedSourceEvents(sourceNames), OK);
     }
 
     @GET
