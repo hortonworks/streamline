@@ -15,14 +15,13 @@
  **/
 package com.hortonworks.streamline.streams.common.event.correlation;
 
-import com.google.common.collect.HashMultimap;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.hortonworks.streamline.streams.common.event.EventInformation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,7 +44,7 @@ public class CorrelatedEventsGrouper {
      * @return the group of correlated events per source
      */
     public List<Set<String>> groupByRelatedSourceEvents(Set<String> sources) {
-        Multimap<Set<String>, String> allEventsToSourceEvents = HashMultimap.create();
+        Multimap<Set<String>, String> allEventsToSourceEvents = LinkedHashMultimap.create();
         Stream<String> rootEventIds = events.stream().filter(e -> e != null && e.getRootIds().isEmpty())
                 .map(EventInformation::getEventId);
         rootEventIds.forEach(rootEventId -> {
