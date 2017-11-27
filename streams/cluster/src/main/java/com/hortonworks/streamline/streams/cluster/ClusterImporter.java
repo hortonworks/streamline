@@ -170,6 +170,9 @@ public class ClusterImporter {
         for (Service service : services) {
             Collection<Component> components = environmentService.listComponents(service.getId());
             for (Component component : components) {
+                environmentService.listComponentProcesses(component.getId())
+                        .forEach(componentProcess -> environmentService.removeComponentProcess(componentProcess.getId()));
+
                 environmentService.removeComponent(component.getId());
             }
 
