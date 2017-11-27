@@ -128,15 +128,15 @@ public class ServiceBundleResource {
     }
 
     /**
-     * Add a new service bundle.
+     * Update an existing service bundle.
      */
     @PUT
     @Path("/servicebundles/{name}")
     @Timed
     public Response putServiceBundle(@PathParam("name") String serviceName, ServiceBundle serviceBundle) throws IOException, ComponentConfigException {
         try {
-            ServiceBundle created = environmentService.updateServiceBundle(serviceName, serviceBundle);
-            return WSUtils.respondEntity(created, CREATED);
+            ServiceBundle updatedBundle = environmentService.updateServiceBundle(serviceName, serviceBundle);
+            return WSUtils.respondEntity(updatedBundle, OK);
         } catch (ProcessingException ex) {
             throw BadRequestException.of();
         } catch (com.hortonworks.streamline.streams.cluster.exception.EntityNotFoundException e) {
