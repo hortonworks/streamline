@@ -710,7 +710,7 @@ public class TopologyCatalogResource {
                     topologies.parallelStream()
                             .map(t -> {
                                 try {
-                                    transactionManager.beginTransaction(TransactionIsolation.SERIALIZABLE);
+                                    transactionManager.beginTransaction(TransactionIsolation.DEFAULT);
                                     CatalogResourceUtil.TopologyDetailedResponse topologyDetailedResponse = CatalogResourceUtil.enrichTopology(t, asUser, latencyTopN,
                                             environmentService, actionsService, metricsService, catalogService);
                                     transactionManager.commitTransaction();

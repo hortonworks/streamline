@@ -115,7 +115,7 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
     public Void deployTopology(Topology topology, String asUser) throws Exception {
         TopologyContext ctx;
         try {
-            transactionManager.beginTransaction(TransactionIsolation.SERIALIZABLE);
+            transactionManager.beginTransaction(TransactionIsolation.DEFAULT);
             ctx = getTopologyContext(topology, asUser);
             transactionManager.commitTransaction();
         } catch (Exception e){
@@ -125,7 +125,7 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
         LOG.debug("Deploying topology {}", topology);
         while (ctx.getState() != TopologyStates.TOPOLOGY_STATE_DEPLOYED) {
             try {
-                transactionManager.beginTransaction(TransactionIsolation.SERIALIZABLE);
+                transactionManager.beginTransaction(TransactionIsolation.DEFAULT);
                 LOG.debug("Current state {}", ctx.getStateName());
                 ctx.deploy();
                 transactionManager.commitTransaction();

@@ -73,7 +73,7 @@ public class ClusterImporter {
                 .filter(ServiceConfigurations::contains)
                 .forEach(serviceName -> {
                     try {
-                        transactionManager.beginTransaction(TransactionIsolation.SERIALIZABLE);
+                        transactionManager.beginTransaction(TransactionIsolation.DEFAULT);
                         LOG.debug("service start {}", serviceName);
 
                         Service service = addService(cluster, serviceName);

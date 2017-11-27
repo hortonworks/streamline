@@ -206,7 +206,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware, T
         if (transactionManager == null)
             throw new RuntimeException("TransactionManager is not initialized");
         try {
-            transactionManager.beginTransaction(TransactionIsolation.SERIALIZABLE);
+            transactionManager.beginTransaction(TransactionIsolation.DEFAULT);
             TopologyVersion versionInfo = catalogService.getTopologyVersionInfo(StreamCatalogService.PLACEHOLDER_ID);
             if (versionInfo == null) {
                 TopologyVersion topologyVersion = new TopologyVersion();

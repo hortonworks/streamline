@@ -55,7 +55,7 @@ public class TransactionEventListener implements ApplicationEventListener {
                 Optional<UnitOfWork> unitOfWork = methodMap.computeIfAbsent(event.getUriInfo()
                         .getMatchedResourceMethod(), UnitOfWorkEventListener::registerUnitOfWorkAnnotations);
                 useTransactionForUnitOfWork = unitOfWork.isPresent() ? unitOfWork.get().transactional() : true;
-                TransactionIsolation transactionIsolation = unitOfWork.isPresent() ? unitOfWork.get().transactionIsolation() : TransactionIsolation.SERIALIZABLE;
+                TransactionIsolation transactionIsolation = unitOfWork.isPresent() ? unitOfWork.get().transactionIsolation() : TransactionIsolation.DEFAULT;
                 if (useTransactionForUnitOfWork)
                     transactionManager.beginTransaction(transactionIsolation);
             } else if (eventType == RequestEvent.Type.RESP_FILTERS_START) {
@@ -66,8 +66,6 @@ public class TransactionEventListener implements ApplicationEventListener {
             } else if (eventType == RequestEvent.Type.FINISHED) {
                 if (useTransactionForUnitOfWork && event.isSuccess())
                     transactionManager.commitTransaction();
-                else if (useTransactionForUnitOfWork && !event.isSuccess())
-                    transactionManager.rollbackTransaction();
             }
         }
 
