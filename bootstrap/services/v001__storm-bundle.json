@@ -1,0 +1,37 @@
+{
+  "name": "STORM",
+  "registerClass": "com.hortonworks.streamline.streams.cluster.register.impl.StormServiceRegistrar",
+  "serviceUISpecification": {
+    "fields": [
+      {
+        "uiName": "UI server hostname",
+        "fieldName": "uiServerHostname",
+        "isOptional": false,
+        "tooltip": "Hostname of Storm UI server",
+        "type": "string"
+      },
+      {
+        "uiName": "Nimbuses hostnames",
+        "fieldName": "nimbusesHostnames",
+        "isOptional": false,
+        "tooltip": "Hostnames of Nimbuses",
+        "type": "array.string"
+      },
+      {
+        "uiName": "Nimbus Principal",
+        "fieldName": "nimbusPrincipalName",
+        "isOptional": true,
+        "tooltip": "The principal of Nimbus (only for secured cluster)",
+        "type": "string"
+      },
+      {
+        "uiName": "Storm config file (storm.yaml)",
+        "fieldName": "storm.yaml",
+        "hint" : "yaml",
+        "isOptional": false,
+        "tooltip": "Upload storm.yaml file used by Storm cluster",
+        "type": "file"
+      }
+    ]
+  }
+}

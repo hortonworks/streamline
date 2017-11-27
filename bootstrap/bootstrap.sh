@@ -17,9 +17,9 @@
 
 
 # defaults
-verbose=false
 bootstrap_dir=$(dirname $0)
 CONFIG_FILE_PATH=${bootstrap_dir}/../conf/streamline.yaml
+MIGRATION_SCRIPT_PATH=${bootstrap_dir}/shell
 
 # Which java to use
 if [ -z "${JAVA_HOME}" ]; then
@@ -28,215 +28,43 @@ else
   JAVA="${JAVA_HOME}/bin/java"
 fi
 
-function run_cmd {
-  cmd=$*
-  if [[ $verbose == "true" ]]
-  then
-    echo $cmd
-  fi
-  response=$(eval $cmd)
-  if [[ $verbose == "true" ]]
-  then
-    echo $response
-  else
-    echo $response | grep -o '"responseMessage":[^"]*"[^"]*"'
-  fi
-  echo "--------------------------------------"
-}
-
-function getId {
-  str=$1
-  echo $str | grep -o -E "\"id\":[0-9]+" | head -n1 | cut -d : -f2
-}
-
-function getAdminRoleId {
-  cmd="curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -sS -X GET ${CATALOG_ROOT_URL}/roles?name=ROLE_ADMIN -H 'Content-Type: application/json'"
-  response=$(eval $cmd)
-  getId "$response"
-}
-
-function put {
-  uri=$1/$2
-  data=$3
-  cmd="curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -sS -X PUT ${CATALOG_ROOT_URL}$uri --data @$data -H 'Content-Type: application/json'"
-  echo "PUT $data"
-  run_cmd $cmd
-}
-
-function post {
-  uri=$1
-  data=$2
-  cmd="curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -sS -X POST ${CATALOG_ROOT_URL}$uri --data @$data -H 'Content-Type: application/json'"
-  echo "POST $data"
-  run_cmd $cmd
-}
-
-function add_sample_topology_component_bundle {
-  echo "POST sample_bundle"
-  cmd="curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -sS -X POST -i -F topologyComponentBundle=@$bootstrap_dir/kafka-topology-bundle ${CATALOG_ROOT_URL}/streams/componentbundles/SOURCE/"
-  run_cmd $cmd
-}
-
-function add_topology_component_bundle {
-  uri=$1
-  data=$2
-  cmd="curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -sS -X POST -i -F topologyComponentBundle=@$data ${CATALOG_ROOT_URL}$uri"
-  echo "POST $data"
-  run_cmd $cmd
-}
-
-function usage {
-  cat <<-EOF
-$0 [-vh] [-d bootstrap_dir]
-   -v               verbose
-   -h               help
-   -d bootstrap_dir specify the bootstrap directory
-   -s server        the catalog server host
-   -p port          the catalog server port
-EOF
-  exit 0
-}
-
-while getopts 'hvd:s:p:' flag; do
-  case "${flag}" in
-    h) usage ;;
-    v) verbose='true' ;;
-    d) bootstrap_dir=$OPTARG ;;
-    s) host=$OPTARG ;;
-    p) port=$OPTARG ;;
-    *) error "Unexpected option ${flag}" ;;
-  esac
-done
-
-#Below command to update storm version will be called by RE script. Need to remove later. Adding now for convenience
-update_storm_version_command="$bootstrap_dir/update-storm-version.sh 1.1.0.3.0.0.0-453"
-run_cmd $update_storm_version_command
-
-#---------------------------------------------
-# Get catalogRootUrl from configuration file
-#---------------------------------------------
-
-CONF_READER_MAIN_CLASS=com.hortonworks.registries.storage.tool.PropertiesReader
-
+SHELL_MIGRATION_INITIALIZER_MAIN_CLASS=com.hortonworks.registries.storage.tool.shell.ShellMigrationInitializer
 for file in "${bootstrap_dir}"/lib/*.jar;
 do
     CLASSPATH="$CLASSPATH":"$file"
 done
 
-CATALOG_ROOT_URL_PROPERTY_KEY=catalogRootUrl
-component_dir=${bootstrap_dir}/components
-service_dir=${bootstrap_dir}/services
-user_role_dir=${bootstrap_dir}/users_roles
+function execute {
+    echo "Using Configuration file: ${CONFIG_FILE_PATH}"
+    ${JAVA} -cp ${CLASSPATH} ${SHELL_MIGRATION_INITIALIZER_MAIN_CLASS} -c ${CONFIG_FILE_PATH} -s ${MIGRATION_SCRIPT_PATH} --${1}
+}
 
-echo "Configuration file: ${CONFIG_FILE_PATH}"
+function printUsage {
+    cat <<-EOF
+USAGE: $0 [migrate|info|validate|repair]
+   migrate          : Applies all the pending migrations. Use "info" to see the current version and the pending migrations
+   info             : Shows the list of migrations applied and the pending migration waiting to be applied on the target database
+   validate         : Checks if the all the migrations haven been applied on the target database
+   repair           : Repairs the SCRIPT_CHANGE_LOG table which is used to track all the migrations on the target database.
+                      This involves removing entries for the failed migrations and update the checksum of migrations already applied on the target databsase.
+EOF
+}
 
-CATALOG_ROOT_URL=`exec ${JAVA} -cp ${CLASSPATH} ${CONF_READER_MAIN_CLASS} ${CONFIG_FILE_PATH} ${CATALOG_ROOT_URL_PROPERTY_KEY}`
-
-# if it doesn't exit with code 0, just give up
-if [ $? -ne 0 ]; then
-  exit 1
+if [ $# -gt 1 ]
+then
+    echo "More than one argument specified, please use only one of the below options"
+    printUsage
+    exit 1
 fi
 
-echo "Catalog Root URL: ${CATALOG_ROOT_URL}"
-echo "Component bundle Root dir: ${component_dir}"
-echo "Service bundle Root dir: ${service_dir}"
-echo "User/Role bundle Root dir: ${user_role_dir}"
+opt="$1"
 
-function add_all_bundles {
-    # === Source ===
-    add_topology_component_bundle /streams/componentbundles/SOURCE ${component_dir}/sources/kafka-source-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SOURCE ${component_dir}/sources/hdfs-source-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SOURCE ${component_dir}/sources/eventhubs-source-topology-component.json
-    # === Processor ===
-    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/rule-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/window-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/branch-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/join-bolt-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/rtjoin-bolt-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/model-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/projection-topology-component.json
-    # === Sink ===
-    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/hdfs-sink-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/hbase-sink-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/notification-sink-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/opentsdb-sink-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/jdbc-sink-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/cassandra-sink-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/druid-sink-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/solr-sink-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/kafka-sink-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/hive-sink-topology-component.json
-    # === Topology ===
-    add_topology_component_bundle /streams/componentbundles/TOPOLOGY ${component_dir}/topology/storm-topology-component.json
-
-    #add_topology_component_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/split-topology-component
-    #add_topology_component_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/normalization-processor-topology-component.json
-    #add_topology_component_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/multilang-topology-component.json
-    #post /streams/componentbundles/PROCESSOR $component_dir/sinks/stage-topology-component
-    #post /streams/componentbundles/ACTION $component_dir/sinks/transform-action-topology-component
-    #post /streams/componentbundles/TRANSFORM $component_dir/sinks/projection-transform-topology-component
-    #post /streams/componentbundles/TRANSFORM $component_dir/sinks/enrichment-transform-topology-component
-    #note that the below is just a sample for ui to work with. Once UI is ready, all above will be replaced with new bundle components
-    #add_sample_bundle
-
-    # === service bundles ===
-    post /servicebundles ${service_dir}/zookeeper-bundle.json
-    post /servicebundles ${service_dir}/storm-bundle.json
-    post /servicebundles ${service_dir}/kafka-bundle.json
-    post /servicebundles ${service_dir}/hdfs-bundle.json
-    post /servicebundles ${service_dir}/hbase-bundle.json
-    post /servicebundles ${service_dir}/hive-bundle.json
-    post /servicebundles ${service_dir}/druid-bundle.json
-    post /servicebundles ${service_dir}/email-bundle.json
-}
-
-function add_roles_and_users {
-    # === anonymous user ===
-    post /users ${user_role_dir}/user_anon.json
-
-    # === system roles ===
-    for i in ${user_role_dir}/role_*
-    do
-     if echo $i | grep -E "role_admin$"
-     then
-        adminId=$(getAdminRoleId)
-        if [ -n "$adminId" ]
-        then
-          echo "Updating admin role, id: $adminId"
-          put /roles $adminId $i
-          continue
-        fi
-     fi
-
-     echo "Adding $(basename $i)"
-     post /roles $i
-    done
-
-    # === role hierarchy  ===
-    for i in ${user_role_dir}/children_*
-    do
-     role_name=$(basename $i | cut -d'_' -f2-)
-     echo "Adding child roles for $role_name"
-     post /roles/$role_name/children $i
-    done
-}
-
-function main {
-    echo ""
-    echo "===================================================================================="
-    echo "Running bootstrap.sh will create streamline default components, notifiers, udfs and roles"
-    add_all_bundles
-    add_roles_and_users
-
-    #----------------------------------
-    # Execute other bootstrap scripts
-    #----------------------------------
-    script_dir=$(dirname $0)
-    echo "Executing ${script_dir}/bootstrap-udf.sh ${CATALOG_ROOT_URL}"
-    ${script_dir}/bootstrap-udf.sh ${CATALOG_ROOT_URL}
-
-    echo "Executing ${script_dir}/bootstrap-notifiers.sh ${CATALOG_ROOT_URL}"
-    ${script_dir}/bootstrap-notifiers.sh ${CATALOG_ROOT_URL}
-}
-
-main
+case "${opt}" in
+ migrate | info | validate | repair )
+    execute "${opt}"
+    ;;
+*)
+    printUsage
+    exit 1
+    ;;
+esac

@@ -29,6 +29,7 @@ import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.ProcessingException;
@@ -125,6 +126,24 @@ public class ServiceBundleResource {
             throw BadRequestException.of();
         }
     }
+
+    /**
+     * Update an existing service bundle.
+     */
+    @PUT
+    @Path("/servicebundles/{name}")
+    @Timed
+    public Response putServiceBundle(@PathParam("name") String serviceName, ServiceBundle serviceBundle) throws IOException, ComponentConfigException {
+        try {
+            ServiceBundle updatedBundle = environmentService.updateServiceBundle(serviceName, serviceBundle);
+            return WSUtils.respondEntity(updatedBundle, OK);
+        } catch (ProcessingException ex) {
+            throw BadRequestException.of();
+        } catch (com.hortonworks.streamline.streams.cluster.exception.EntityNotFoundException e) {
+            throw EntityNotFoundException.byMessage(e.getMessage());
+        }
+    }
+
 
     /**
      * Delete a service bundle.
