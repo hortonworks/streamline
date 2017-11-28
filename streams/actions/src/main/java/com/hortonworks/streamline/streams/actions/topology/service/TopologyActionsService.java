@@ -17,7 +17,9 @@ package com.hortonworks.streamline.streams.actions.topology.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.registries.common.transaction.TransactionIsolation;
 import com.hortonworks.registries.common.util.FileStorage;
+import com.hortonworks.registries.storage.TransactionManager;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
 import com.hortonworks.streamline.streams.actions.TopologyActions;
 import com.hortonworks.streamline.streams.actions.container.TopologyActionsContainer;
@@ -78,10 +80,11 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
     private final TopologyActionsContainer topologyActionsContainer;
     private final TopologyStateFactory stateFactory;
     private final TopologyTestRunner topologyTestRunner;
+    private final TransactionManager transactionManager;
 
     public TopologyActionsService(StreamCatalogService catalogService, EnvironmentService environmentService,
                                   FileStorage fileStorage, MLModelRegistryClient modelRegistryClient,
-                                  Map<String, Object> configuration, Subject subject) {
+                                  Map<String, Object> configuration, Subject subject, TransactionManager transactionManager) {
         this.catalogService = catalogService;
         this.environmentService = environmentService;
         this.fileStorage = fileStorage;
@@ -106,14 +109,30 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
         this.topologyActionsContainer = new TopologyActionsContainer(environmentService, conf, subject);
         this.stateFactory = TopologyStateFactory.getInstance();
         this.topologyTestRunner = new TopologyTestRunner(catalogService, this, topologyTestRunResultDir);
+        this.transactionManager = transactionManager;
     }
 
     public Void deployTopology(Topology topology, String asUser) throws Exception {
-        TopologyContext ctx = getTopologyContext(topology, asUser);
+        TopologyContext ctx;
+        try {
+            transactionManager.beginTransaction(TransactionIsolation.DEFAULT);
+            ctx = getTopologyContext(topology, asUser);
+            transactionManager.commitTransaction();
+        } catch (Exception e){
+            transactionManager.rollbackTransaction();
+            throw e;
+        }
         LOG.debug("Deploying topology {}", topology);
         while (ctx.getState() != TopologyStates.TOPOLOGY_STATE_DEPLOYED) {
-            LOG.debug("Current state {}", ctx.getStateName());
-            ctx.deploy();
+            try {
+                transactionManager.beginTransaction(TransactionIsolation.DEFAULT);
+                LOG.debug("Current state {}", ctx.getStateName());
+                ctx.deploy();
+                transactionManager.commitTransaction();
+            } catch (Exception e){
+                transactionManager.rollbackTransaction();
+                throw e;
+            }
         }
         return null;
     }
