@@ -379,36 +379,3 @@ svg>foreignObject>p {
   stroke : rgba(255,165,0,1);
   stroke-width :2px;
 }
-.selected-event{
-  stroke : rgba(62,174,72,1);
-  stroke-width :3px;
-  -webkit-animation: event 1s linear normal;
-  -moz-animation: event 1s linear normal;
-  -ms-animation: vent 1s linear normal;
-  animation: event 1s linear normal;
-}
-
-@keyframes event {
-  from {
-    stroke-width: 0;
-  }
-  to {
-    stroke-width: 3px;
-  }
-}
-@-moz-keyframes event {
-  from {
-    stroke-width: 0;
-  }
-  to {
-    stroke-width: 3px;
-  }
-}
-@-webkit-keyframes event {
-  from {
-    stroke-width: 0;
-  }
-  to {
-    stroke-width: 3px;
-  }
-}

@@ -41,7 +41,7 @@ import ZoomPanelComponent from '../../../components/ZoomPanelComponent';
 import EditorGraph from '../../../components/EditorGraph';
 import TestRunREST from '../../../rest/TestRunREST';
 import Select,{Creatable} from 'react-select';
-import CommonPagination from '../../../components/CommonPagination';
+import EventGroupPagination from '../../../components/EventGroupPagination';
 
 @observer
 class TopologyEditorContainer extends Component {
@@ -1348,10 +1348,10 @@ class TopologyEditorContainer extends Component {
             <CommonNotification flag="error" content={msg}/>, '', toastOpt);
           this.setState({testRunningMode : false});
         } else {
-          this.interval = setInterval(() => {
+          const recursiveFunction = () => {
             TestRunREST.runTestCaseHistory(this.topologyId,testResult.id).then((testHistory) => {
               if(testHistory.responseMessage !== undefined){
-                clearInterval(this.interval);
+                clearTimeout(this.eventLogTimer);
                 this.setState({hideEventLog : true,testRunningMode : false,activePage : 1,activePageList : []});
                 FSReactToastr.info(
                   <CommonNotification flag="error" content={testHistory.responseMessage}/>, '', toastOpt);
@@ -1362,7 +1362,7 @@ class TopologyEditorContainer extends Component {
                 this.setState({testHistory : testHistory}, () => {
                   TestRunREST.getTestCaseEventLog(this.topologyId,testHistory.id).then((events) => {
                     if(events.responseMessage !== undefined){
-                      clearInterval(this.interval);
+                      clearTimeout(this.eventLogTimer);
                       FSReactToastr.info(
                         <CommonNotification flag="error" content={events.responseMessage}/>, '', toastOpt);
                       this.setState({eventLogData : [] ,hideEventLog :true,testCompleted : true,testRunningMode : false,activePage : 1,activePageList : []}, () => {
@@ -1379,7 +1379,7 @@ class TopologyEditorContainer extends Component {
                         }
                         if(testHistory.finished){
                           this.setState({testRunningMode : false,hideEventLog :true}, () => {
-                            clearInterval(this.interval);
+                            clearTimeout(this.eventLogTimer);
                             const msg =  this.state.abortTestCase
                                           ? "Test Run aborted successfully"
                                           : testHistory.success
@@ -1389,6 +1389,11 @@ class TopologyEditorContainer extends Component {
                                             : 'Test Run has No Record';
                             FSReactToastr.success(<strong>{msg}</strong>);
                           });
+                        } else {
+                          clearTimeout(this.eventLogTimer);
+                          this.eventLogTimer = setTimeout(() => {
+                            recursiveFunction();
+                          },3000);
                         }
                       });
                     }
@@ -1396,7 +1401,8 @@ class TopologyEditorContainer extends Component {
                 });
               }
             });
-          },3000);
+          };
+          recursiveFunction();
         }
       });
     } else {
@@ -1505,7 +1511,8 @@ class TopologyEditorContainer extends Component {
   paginationCallBack = (eventKey) => {
     const {testHistory} = this.state;
     this.setState({activePage : eventKey}, () => {
-      this.fetchSingleEventLogData(this.state.activePageList[(eventKey-1)]);
+      // Always call the eventGroup[0] for fetching event log data
+      this.fetchSingleEventLogData(this.state.activePageList[(eventKey-1)][eventKey].eventGroup[0]);
     });
   }
 
@@ -1517,11 +1524,36 @@ class TopologyEditorContainer extends Component {
             <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
         });
       } else {
-        this.setState({activePageList : result.entities},() => {
-          this.fetchSingleEventLogData(this.state.activePageList[(this.state.activePage-1)]);
+        const groupingEvent = this.populatePaginationData(result.entities);
+        this.setState({activePageList : groupingEvent},() => {
+          this.fetchSingleEventLogData(this.state.activePageList[(this.state.activePage-1)][this.state.activePage].eventGroup[0]);
         });
       }
     });
+  }
+
+  populatePaginationData = (rootArr) => {
+    let tempRootArr=[],sPoint=1,ePoint=0;
+    _.map(rootArr, (arr,i) => {
+      if(_.isArray(arr)){
+        // let point=0;
+        // if(i === 0){
+        //   sPoint = sPoint+i;
+        //   ePoint = ePoint+arr.length;
+        // } else {
+        //   point = ePoint+arr.length;
+        //   sPoint = ePoint+1;
+        //   ePoint = point;
+        // }
+        let obj={};
+        obj[(i+1)]={};
+        // obj[(i+1)].eventKey = arr.length > 1 ? `${sPoint}-${i > 0 ? point : ePoint}` : `${ePoint}`;
+        obj[(i+1)].eventKey = (i+1);
+        obj[(i+1)].eventGroup = arr;
+        tempRootArr.push(obj);
+      }
+    });
+    return tempRootArr;
   }
 
   fetchSingleEventLogData = (eventId) => {
@@ -1555,7 +1587,6 @@ class TopologyEditorContainer extends Component {
           const eventGroupKey = eventLogObj.componentGroupedEvents[node.uiname];
           const type = node.parentType === "SOURCE" ? 'output' : 'input';
           node.eventLogData = this.getEventLogData(eventGroupKey,eventLogObj.allEvents,type);
-          node.containingSelectedEvent = eventLogObj.componentGroupedEvents[node.uiname].containingSelectedEvent;
         } else if(subTree === null || subTree === undefined) {
           node.eventLogData = [];
         }
@@ -1654,7 +1685,7 @@ class TopologyEditorContainer extends Component {
                 </div>
                 {
                   eventLogData.length && testRunActivated
-                  ? <CommonPagination entities={activePageList} activePage={activePage} pageSize={pageSize} callBackFunction={this.paginationCallBack.bind(this)}/>
+                  ? <EventGroupPagination entities={activePageList} pageSize={pageSize} pageActive={activePage} callBackFunction={this.paginationCallBack.bind(this)} maxButtons={5}/>
                 : null
                 }
               </div>

@@ -3617,13 +3617,15 @@ a.formatterFont:hover{
 .eventlog-inner-content{
   width: 97%;
   height: auto;
-  display: inline-block;
+  display: block;
+  float: left;
   overflow: hidden;
   padding-left: 5px;
 }
 ul.eventList{
   margin: 0;
   -webkit-padding-start : 0;
+  -moz-padding-start : 0;
   list-style-type: none;
   width: 100%;
 }
@@ -3658,7 +3660,7 @@ ul.eventList{
 }
 .scrollBtn{
   margin-top:0;
-  width:100%;
+  width:6px;
   height:10px;
   background-color: #808080;
   border-radius: 5px;
@@ -3800,11 +3802,38 @@ ul.eventList{
   border-radius: 5px;
   cursor:move;
 }
-/*.scrollable-containor:hover .event-hScrollDiv,
-.scrollable-containor:hover .scrollDiv{
-  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
-  filter: alpha(opacity=100);
-  -moz-opacity: 1;
-  -khtml-opacity: 1;
-  opacity: 1;
-}*/
+ul.custom-pagination{
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+ul.custom-pagination li {
+  display: inline-block;
+  min-width: 40px;
+  max-width: 100px;
+  height: 35px;
+  padding: 0 5px;
+  line-height: 35px;
+  background-color: #fff;
+  color: #808080;
+  border-bottom: 1px solid #d6d6d6;
+  border-top:1px solid #d6d6d6;
+  cursor: pointer;
+}
+
+ul.custom-pagination li:not(first-child){
+  border-left: 1px solid #efefef;
+}
+ul.custom-pagination li:not(last-child){
+  border-right: 1px solid #efefef;
+}
+ul.custom-pagination li:first-child{
+  border-left: 1px solid #d6d6d6;
+}
+ul.custom-pagination li:last-child{
+  border-right: 1px solid #d6d6d6;
+}
+ul.custom-pagination li.active{
+  color: #fff;
+  background-color: #808080;
+}

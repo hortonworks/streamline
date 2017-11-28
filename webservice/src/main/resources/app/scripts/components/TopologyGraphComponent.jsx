@@ -890,9 +890,6 @@ export default class TopologyGraphComponent extends Component {
     thisGraph.rectangles.selectAll('rect').attr('class', function(d){
       let classStr = "node-rectangle "+ TopologyUtils.getNodeRectClass(d);
       classStr += d.reconfigure ?  ' reconfig-node ' : '' ;
-      if(thisGraph.testRunActivated && thisGraph.props.eventLogData.length && d.containingSelectedEvent){
-        classStr += ' selected-event ';
-      }
       return classStr;
     }).attr("filter", function(d) {
       if (!d.isConfigured) {
@@ -969,9 +966,6 @@ export default class TopologyGraphComponent extends Component {
     .attr("class", function(d) {
       let classStr = "node-rectangle "+ TopologyUtils.getNodeRectClass(d);
       classStr += d.reconfigure ?  ' reconfig-node ' : '' ;
-      if(thisGraph.testRunActivated && thisGraph.props.eventLogData.length && d.containingSelectedEvent){
-        classStr += ' selected-event ';
-      }
       return classStr;
     }).attr("filter", function(d) {
       if (!d.isConfigured) {
@@ -1149,7 +1143,7 @@ export default class TopologyGraphComponent extends Component {
           .attr("class", "test-eventlog")
           .style("display" , "block")
           .attr("width" , thisGraph.constants.rectangleWidth + 40 )
-          .attr("height", 150)
+          .attr("height", 200)
           .attr('x', function(d){return 0;})
           .attr('y', function(d){return 40;});
           // ReactDOM render methods
@@ -1317,8 +1311,6 @@ export default class TopologyGraphComponent extends Component {
       this.dragSvg.translate(this.graphTransforms.dragCoords);
       this.dragSvg.scale(this.graphTransforms.zoomScale);
       this.dragSvg.event(this.svg);
-
-      this.updateGraph();
     }
     return connectDropTarget(
       <svg className="topology-graph" onDragOver={(event) => {

@@ -68,23 +68,24 @@ class EventLogComponent extends Component {
       fontSize : '14px',
       margin : ' -2px 5px 0px 5px'
     };
+    const index = (eventData.length-1) > activeIndex ? activeIndex : (eventData.length-1);
     return(
       <div>
         <hr className="m-t-xs m-b-xs"></hr>
         <ContentScrollableComponent contentHeight={135}>
           {eventData.length
-            ? this.renderFields(eventData[activeIndex].eventInformation)
+            ? this.renderFields(eventData[index].eventInformation)
             : 'No Records'
           }
         </ContentScrollableComponent>
         {
           eventData.length > 1
           ? <div className="event-pagination-count">
-              <span style={{marginTop : "-2px"}} title="first" className="event-link pull-left" onClick={activeIndex !== 0 ? this.paginationAction.bind(this,"first") : ''}><i className="fa fa-angle-double-left"></i></span>
-              <span style={singleArrow} title="prev" className="event-link pull-left" onClick={activeIndex !== 0 ? this.paginationAction.bind(this,"prev") : ''}><i className="fa fa-angle-left"></i></span>
-              <span>{(activeIndex)+1} Of {eventData.length}</span>
-              <span style={{marginTop : "-2px"}} title="last" className="event-link pull-right" onClick={activeIndex === (eventData.length-1) ? "" : this.paginationAction.bind(this,"last")}><i className="fa fa-angle-double-right"></i></span>
-              <span style={singleArrow} title="next" className="event-link pull-right" onClick={activeIndex === (eventData.length-1) ? "" : this.paginationAction.bind(this,"next")}><i className="fa fa-angle-right"></i></span>
+              <span style={{marginTop : "-2px"}} title="first" className="event-link pull-left" onClick={index !== 0 ? this.paginationAction.bind(this,"first") : ''}><i className="fa fa-angle-double-left"></i></span>
+              <span style={singleArrow} title="prev" className="event-link pull-left" onClick={index !== 0 ? this.paginationAction.bind(this,"prev") : ''}><i className="fa fa-angle-left"></i></span>
+              <span>{(index)+1} Of {eventData.length}</span>
+              <span style={{marginTop : "-2px"}} title="last" className="event-link pull-right" onClick={index === (eventData.length-1) ? "" : this.paginationAction.bind(this,"last")}><i className="fa fa-angle-double-right"></i></span>
+              <span style={singleArrow} title="next" className="event-link pull-right" onClick={index === (eventData.length-1) ? "" : this.paginationAction.bind(this,"next")}><i className="fa fa-angle-right"></i></span>
             </div>
           : null
         }
