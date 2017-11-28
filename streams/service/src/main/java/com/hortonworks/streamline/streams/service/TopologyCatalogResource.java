@@ -19,6 +19,8 @@ package com.hortonworks.streamline.streams.service;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
+import com.hortonworks.registries.common.transaction.TransactionIsolation;
+import com.hortonworks.registries.storage.TransactionManager;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.exception.service.exception.request.TopologyAlreadyExistsOnCluster;
@@ -101,15 +103,17 @@ public class TopologyCatalogResource {
     private final EnvironmentService environmentService;
     private final TopologyActionsService actionsService;
     private final TopologyMetricsService metricsService;
+    private final TransactionManager transactionManager;
 
     public TopologyCatalogResource(StreamlineAuthorizer authorizer, StreamCatalogService catalogService,
                                    EnvironmentService environmentService, TopologyActionsService actionsService,
-                                   TopologyMetricsService metricsService) {
+                                   TopologyMetricsService metricsService, TransactionManager transactionManager) {
         this.authorizer = authorizer;
         this.catalogService = catalogService;
         this.environmentService = environmentService;
         this.actionsService = actionsService;
         this.metricsService = metricsService;
+        this.transactionManager = transactionManager;
     }
 
     @GET
@@ -704,8 +708,18 @@ public class TopologyCatalogResource {
         try {
             List<CatalogResourceUtil.TopologyDetailedResponse> responses = ParallelStreamUtil.execute(() ->
                     topologies.parallelStream()
-                            .map(t -> CatalogResourceUtil.enrichTopology(t, asUser, latencyTopN,
-                                    environmentService, actionsService, metricsService, catalogService))
+                            .map(t -> {
+                                try {
+                                    transactionManager.beginTransaction(TransactionIsolation.DEFAULT);
+                                    CatalogResourceUtil.TopologyDetailedResponse topologyDetailedResponse = CatalogResourceUtil.enrichTopology(t, asUser, latencyTopN,
+                                            environmentService, actionsService, metricsService, catalogService);
+                                    transactionManager.commitTransaction();
+                                    return topologyDetailedResponse;
+                                } catch (Exception e) {
+                                    transactionManager.rollbackTransaction();
+                                    throw e;
+                                }
+                            })
                             .sorted((c1, c2) -> {
                                 int compared;
 
