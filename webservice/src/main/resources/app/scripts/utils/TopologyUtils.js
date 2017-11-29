@@ -952,7 +952,6 @@ const generateNodeData = function(nodes, componentBundle, metadata, resultArr) {
     }
 
     if(!_.isEmpty(componentObj.eventLogData) && componentObj.eventLogData !== undefined){
-      obj.containingSelectedEvent = componentObj.containingSelectedEvent;
       obj.eventLogData =  componentObj.eventLogData;
     }
     resultArr.push(obj);
