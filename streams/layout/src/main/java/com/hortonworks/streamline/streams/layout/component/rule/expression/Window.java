@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * Captures the windowing parameters. Internally this implies the rule has to be evaluated as an
@@ -108,7 +109,9 @@ public class Window implements Serializable {
     private WindowParam windowLength;
     private WindowParam slidingInterval;
     private String tsField;
+    private String[] tsFields;
     private int lagMs;
+    private String lateStream;
 
     // for jackson
     private Window() {
@@ -124,7 +127,9 @@ public class Window implements Serializable {
         this.windowLength = other.getWindowLength();
         this.slidingInterval = other.getSlidingInterval();
         this.tsField = other.getTsField();
+        this.tsFields = other.tsFields;
         this.lagMs = other.getLagMs();
+        this.lateStream = other.lateStream;
     }
 
     public WindowParam getWindowLength() {
@@ -151,12 +156,28 @@ public class Window implements Serializable {
         this.tsField = tsField;
     }
 
+    public String[] getTsFields() {
+        return tsFields.clone();
+    }
+
+    public void setTsFields(String[] tsFields) {
+        this.tsFields = tsFields.clone();
+    }
+
     public int getLagMs() {
         return lagMs;
     }
 
     public void setLagMs(int lagMs) {
         this.lagMs = lagMs;
+    }
+
+    public void setLateStream(String stream) {
+        lateStream = stream;
+    }
+
+    public String getLateStream() {
+        return lateStream;
     }
 
     @Override
@@ -190,7 +211,9 @@ public class Window implements Serializable {
                 "windowLength=" + windowLength +
                 ", slidingInterval=" + slidingInterval +
                 ", tsField='" + tsField + '\'' +
+                ", tsFields='[" + Arrays.toString(tsFields) + "\']" +
                 ", lagMs=" + lagMs +
+                ", lateStream=" + lateStream +
                 '}';
     }
 }

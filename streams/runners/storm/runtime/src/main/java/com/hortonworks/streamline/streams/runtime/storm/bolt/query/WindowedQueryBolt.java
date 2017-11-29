@@ -20,6 +20,7 @@ package com.hortonworks.streamline.streams.runtime.storm.bolt.query;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.Window;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.topology.base.BaseWindowedBolt;
 import org.apache.storm.tuple.Fields;
@@ -88,7 +89,7 @@ public class WindowedQueryBolt extends JoinBolt {
     // Prefixes each key with 'streamline-event.' and strips out aliases. Example:
     //   arg = "stream1:key1 as k1, key2 as k2, stream2:key3.key4, key5"
     //   result  = "stream1:streamline-event.key1, streamline-event.key2, stream2:streamline-event.key3.key4, streamline-event.key5"
-    private String convertToStreamLineKeys(String commaSeparatedKeys) {
+    static String convertToStreamLineKeys(String commaSeparatedKeys) {
         String[] keyNames = commaSeparatedKeys.replaceAll("\\s+","").split(",");
 
         String[] prefixedKeys = new String[keyNames.length];
@@ -145,10 +146,6 @@ public class WindowedQueryBolt extends JoinBolt {
      * @param keySpec  a field selector
      * @return
      */
-
-
-
-
     private static String getAliasOrKeyName(String keySpec) {
         Pattern pattern =  Pattern.compile(" +as +(\\w+)");
         Matcher result = pattern.matcher(keySpec);
@@ -198,8 +195,12 @@ public class WindowedQueryBolt extends JoinBolt {
             withLag(new BaseWindowedBolt.Duration(windowConfig.getLagMs(), TimeUnit.MILLISECONDS));
         }
 
-        if (windowConfig.getTsField() != null) {
-            withTimestampField(windowConfig.getTsField());
+        if (windowConfig.getTsFields() != null  &&  windowConfig.getTsFields().length>0) {
+            withTimestampExtractor(new SLMultistreamTimestampExtractor(windowConfig.getTsFields()));
+        }
+
+        if (!StringUtils.isEmpty(windowConfig.getLateStream()) ) {
+            withLateTupleStream(windowConfig.getLateStream());
         }
     }
 }
