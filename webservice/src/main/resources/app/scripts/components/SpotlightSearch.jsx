@@ -144,7 +144,24 @@ export default class SpotlightSearch extends Component {
     update the entity list with matching components
   */
   handleValueChange = (e) => {
-    let filteredEntities = Utils.filterByName(this.state.entities, e.target.value.trim());
+    const {entities} = this.state;
+    const filterValue = e.target.value.trim();
+    let filteredEntities = Utils.filterByName(entities, filterValue);
+    const customProcessors = _.filter(entities, {'subType' : 'CUSTOM'});
+    /* when the normal search return empty we again run search on
+      custom processors "topologyComponentUISpecification.fields" filter by name
+      to get the custom processors default name while it was created..
+    */
+    if(customProcessors.length){
+      const tempEntities = _.filter(customProcessors, (cp) => {
+        let config = cp.topologyComponentUISpecification.fields,
+          obj = _.find(config, {fieldName: "name"});
+        const defaultString = obj ? obj.defaultValue : 'CUSTOM';
+        let matchFilter = new RegExp(filterValue, 'i');
+        return matchFilter.test(defaultString) === true;
+      });
+      filteredEntities = _.uniq(filteredEntities, tempEntities);
+    }
     this.setState({filterValue: e.target.value.trim(), filteredEntities: filteredEntities, activeComponentId: '', activeComponentName: ''});
   }
   /*

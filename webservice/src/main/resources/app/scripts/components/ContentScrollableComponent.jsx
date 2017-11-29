@@ -91,15 +91,16 @@ export default class ContentScrollableComponent extends Component {
   */
   animateScrollDiv = (e) => {
     e.stopPropagation();
-    const {deltaY,currentTarget} = e;
+    const {currentTarget} = e;
     const elChild = currentTarget.nextSibling;
+    const deltaY = this.calculateDistance(e.deltaY);
     currentTarget.scrollTop = (currentTarget.scrollTop+(deltaY));
     if(!!elChild){
       const handleTop = elChild.scrollHeight*deltaY/currentTarget.scrollHeight;
       const firstChild = elChild.children[0];
       const marginTop = parseFloat(firstChild.style.marginTop) || 0;
       // Y scroll
-      if(e.deltaY > 0){
+      if(deltaY > 0){
         const maxMarginTop = elChild.scrollHeight-parseFloat(firstChild.style.height || 0);
         const newMarginTop = marginTop+handleTop;
         const topMargin = (newMarginTop > maxMarginTop) ? maxMarginTop : newMarginTop;
@@ -112,7 +113,8 @@ export default class ContentScrollableComponent extends Component {
     // X scroll
     const xScrollDiv = this.getNestedElement(elChild);
     if(!!xScrollDiv){
-      this.slideXScroll(currentTarget,xScrollDiv,xScrollDiv.children[0],e.deltaX);
+      const deltaX = this.calculateDistance(e.deltaX,'X');
+      this.slideXScroll(currentTarget,xScrollDiv,xScrollDiv.children[0],deltaX);
     }
   }
   /*
@@ -146,13 +148,21 @@ export default class ContentScrollableComponent extends Component {
       target.style.marginLeft = leftMargin+'px';
       container.children[0].style.marginLeft = '-'+leftMargin+'px';
     } else {
-      if(val !== 0){
-        const tempMargin = (marginLeft+gapHandler) < 0 ? 0 : (marginLeft+gapHandler)  +'px';
-        target.style.marginLeft = tempMargin;
-        const gMargin = (marginLeft+gapHandler) < '-'+maxMarginLeft ? 3+'px' : '-'+(marginLeft+gapHandler)  +'px';
-        container.children[0].style.marginLeft = gMargin;
-      }
+      const tempMargin = (marginLeft+gapHandler) < 0 ? 0 : (marginLeft+gapHandler)  +'px';
+      target.style.marginLeft = tempMargin;
+      const gMargin = (marginLeft+gapHandler) < '-'+maxMarginLeft ? 3+'px' : '-'+(marginLeft+gapHandler)  +'px';
+      container.children[0].style.marginLeft = gMargin;
+      // if(val !== 0){
+      //   const tempMargin = (marginLeft+gapHandler) < 0 ? 0 : (marginLeft+gapHandler)  +'px';
+      //   target.style.marginLeft = tempMargin;
+      //   const gMargin = (marginLeft+gapHandler) < '-'+maxMarginLeft ? 3+'px' : '-'+(marginLeft+gapHandler)  +'px';
+      //   container.children[0].style.marginLeft = gMargin;
+      // }
     }
+  }
+
+  calculateDistance = (delta,xAxis) => {
+    return !!xAxis ? delta > 0 ? 5 : -5 : delta > 0 ? 30 : -30;
   }
 
   handleMouseAction = (action) => {

@@ -15,9 +15,16 @@
  **/
 package com.hortonworks.streamline.streams.common.event.correlation;
 
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
 import com.hortonworks.streamline.streams.common.event.EventInformation;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toMap;
@@ -29,7 +36,35 @@ public class CorrelatedEventsGrouper {
         this.events = events;
     }
 
+    /**
+     * Returns the group of correlated events per source where the group of related source events
+     * produces the same downstream events
+     *
+     * @param sources the set of source component names
+     * @return the group of correlated events per source
+     */
+    public List<Set<String>> groupByRelatedSourceEvents(Set<String> sources) {
+        Multimap<Set<String>, String> allEventsToSourceEvents = LinkedHashMultimap.create();
+        Stream<String> rootEventIds = events.stream().filter(e -> e != null && e.getRootIds().isEmpty())
+                .map(EventInformation::getEventId);
+        rootEventIds.forEach(rootEventId -> {
+            Map<String, EventInformation> allRelatedEvents = buildRelatedEventsMap(rootEventId);
+            allEventsToSourceEvents.put(allRelatedEvents.keySet(), rootEventId);
+        });
+
+        List<Set<String>> result = new ArrayList<>();
+        allEventsToSourceEvents.asMap().values().forEach(v ->
+                result.add(new HashSet<>(v))
+        );
+
+        return result;
+    }
+
     public GroupedCorrelationEvents groupByComponent(String rootEventId) {
+        return new GroupedCorrelationEvents(buildRelatedEventsMap(rootEventId), rootEventId);
+    }
+
+    private Map<String, EventInformation> buildRelatedEventsMap(String rootEventId) {
         Map<String, EventInformation> allEventsMap = events.stream()
                 .collect(toMap(EventInformation::getEventId, e -> e));
 
@@ -44,7 +79,7 @@ public class CorrelatedEventsGrouper {
 
         addNonExistingParents(allEventsMap, relatedEventsMap);
 
-        return new GroupedCorrelationEvents(relatedEventsMap, rootEventId);
+        return relatedEventsMap;
     }
 
     private void addNonExistingParents(Map<String, EventInformation> allEventsMap,

@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.hortonworks.registries.common.QueryParam;
+import com.hortonworks.registries.storage.TransactionManager;
 import com.hortonworks.streamline.common.exception.ComponentConfigException;
 import com.hortonworks.registries.storage.StorableKey;
 import com.hortonworks.registries.storage.StorageManager;
@@ -34,6 +35,7 @@ import com.hortonworks.streamline.streams.cluster.container.ContainingNamespaceA
 import com.hortonworks.streamline.streams.cluster.ClusterImporter;
 import com.hortonworks.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
+import com.hortonworks.streamline.streams.cluster.exception.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,9 +69,9 @@ public class EnvironmentService {
     private final List<ContainingNamespaceAwareContainer> containers;
     private final ObjectMapper objectMapper;
 
-    public EnvironmentService(StorageManager dao) {
-        this.dao = dao;
-        this.clusterImporter = new ClusterImporter(this);
+    public EnvironmentService(StorageManager storageManager, TransactionManager transactionManager) {
+        this.dao = storageManager;
+        this.clusterImporter = new ClusterImporter(this, transactionManager);
         this.containers = new ArrayList<>();
         this.objectMapper = new ObjectMapper();
     }
@@ -585,6 +587,17 @@ public class EnvironmentService {
         }
         this.dao.add(serviceBundle);
         return serviceBundle;
+    }
+
+    public ServiceBundle updateServiceBundle(String serviceName, ServiceBundle serviceBundle) throws EntityNotFoundException {
+        ServiceBundle persistentServiceBundle = getServiceBundleByName(serviceName);
+        if (persistentServiceBundle == null)
+            throw new EntityNotFoundException(String.format("Unable to find a service bundle of name : \"%s\"",serviceName));
+        persistentServiceBundle.setRegisterClass(serviceBundle.getRegisterClass());
+        persistentServiceBundle.setServiceUISpecification(serviceBundle.getServiceUISpecification());
+        persistentServiceBundle.setTimestamp(System.currentTimeMillis());
+        dao.update(persistentServiceBundle);
+        return persistentServiceBundle;
     }
 
     public ServiceBundle removeServiceBundle(Long id) throws IOException {

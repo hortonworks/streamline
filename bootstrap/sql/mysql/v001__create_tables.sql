@@ -20,7 +20,7 @@
 CREATE TABLE IF NOT EXISTS dashboard (
   id BIGINT AUTO_INCREMENT NOT NULL,
   name VARCHAR(255) NOT NULL,
-  description VARCHAR(255) NOT NULL,
+  description VARCHAR(256) NOT NULL,
   data TEXT NOT NULL,
   timestamp  BIGINT,
   UNIQUE KEY `UK_name` (name),
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS dashboard (
 CREATE TABLE IF NOT EXISTS ml_model (
   id BIGINT AUTO_INCREMENT NOT NULL,
   name VARCHAR(255) NOT NULL,
-  uploadedFileName VARCHAR(255) NOT NULL,
+  uploadedFileName VARCHAR(256) NOT NULL,
   pmml TEXT NOT NULL,
   timestamp  BIGINT,
   UNIQUE KEY `UK_name` (name),
@@ -40,8 +40,8 @@ CREATE TABLE IF NOT EXISTS ml_model (
 CREATE TABLE IF NOT EXISTS widget (
   id BIGINT AUTO_INCREMENT NOT NULL,
   name VARCHAR(255) NOT NULL,
-  description VARCHAR(255) NOT NULL,
-  type VARCHAR(255) NOT NULL,
+  description VARCHAR(256) NOT NULL,
+  type VARCHAR(256) NOT NULL,
   data TEXT NOT NULL,
   timestamp  BIGINT,
   dashboardId  BIGINT NOT NULL,
@@ -53,9 +53,9 @@ CREATE TABLE IF NOT EXISTS widget (
 CREATE TABLE IF NOT EXISTS datasource (
   id BIGINT AUTO_INCREMENT NOT NULL,
   name VARCHAR(255) NOT NULL,
-  description VARCHAR(255) NOT NULL,
-  type VARCHAR(255) NOT NULL,
-  url VARCHAR(255) NOT NULL,
+  description VARCHAR(256) NOT NULL,
+  type VARCHAR(256) NOT NULL,
+  url VARCHAR(256) NOT NULL,
   data TEXT NOT NULL,
   timestamp  BIGINT,
   dashboardId  BIGINT NOT NULL,
@@ -83,20 +83,12 @@ CREATE TABLE IF NOT EXISTS file (
     UNIQUE KEY `jars_UK_name_version` (name, version)
 );
 
-CREATE TABLE IF NOT EXISTS fileblob (
-    name VARCHAR(255) NOT NULL,
-    version BIGINT NOT NULL,
-    data LONGBLOB NOT NULL,
-    timestamp BIGINT,
-    PRIMARY KEY (name)
-);
-
 CREATE TABLE IF NOT EXISTS namespace (
        id BIGINT AUTO_INCREMENT NOT NULL,
-       name VARCHAR(255) NOT NULL,
-       streamingEngine VARCHAR(255) NOT NULL,
-       timeSeriesDB VARCHAR(255) NULL,
-       description VARCHAR(255),
+       name VARCHAR(256) NOT NULL,
+       streamingEngine VARCHAR(256) NOT NULL,
+       timeSeriesDB VARCHAR(256) NULL,
+       description VARCHAR(256),
        timestamp BIGINT,
        PRIMARY KEY (id)
 );
@@ -111,7 +103,7 @@ CREATE TABLE IF NOT EXISTS namespace_service_cluster_mapping (
 CREATE TABLE IF NOT EXISTS topology_version (
   id BIGINT AUTO_INCREMENT NOT NULL,
   topologyId BIGINT NOT NULL,
-  name VARCHAR(255) NOT NULL,
+  name VARCHAR(256) NOT NULL,
   description TEXT NOT NULL,
   timestamp  BIGINT,
   PRIMARY KEY (id)
@@ -120,7 +112,7 @@ CREATE TABLE IF NOT EXISTS topology_version (
 CREATE TABLE IF NOT EXISTS topology (
     id BIGINT AUTO_INCREMENT NOT NULL,
     versionId BIGINT NOT NULL,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(256) NOT NULL,
     description TEXT,
     namespaceId BIGINT NOT NULL,
     config TEXT NOT NULL,
@@ -131,7 +123,7 @@ CREATE TABLE IF NOT EXISTS topology (
 
 CREATE TABLE IF NOT EXISTS topology_component_bundle (
     id BIGINT AUTO_INCREMENT NOT NULL,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(256) NOT NULL,
     type TEXT NOT NULL,
     subType TEXT NOT NULL,
     streamingEngine TEXT NOT NULL,
@@ -184,7 +176,7 @@ CREATE TABLE IF NOT EXISTS topology_stream (
 
 CREATE TABLE IF NOT EXISTS notifier (
      id BIGINT AUTO_INCREMENT NOT NULL,
-     name VARCHAR(255) NOT NULL,
+     name VARCHAR(256) NOT NULL,
      description TEXT NOT NULL,
      jarFileName TEXT NOT NULL,
      className TEXT NOT NULL,
@@ -200,7 +192,7 @@ CREATE TABLE IF NOT EXISTS topology_component (
     versionId BIGINT NOT NULL,
     topologyId BIGINT,
     topologyComponentBundleId BIGINT,
-    name VARCHAR(255),
+    name VARCHAR(256),
     description TEXT,
     configData TEXT,
     PRIMARY KEY (id, versionId)
@@ -211,7 +203,7 @@ CREATE TABLE IF NOT EXISTS topology_source (
     versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
     topologyComponentBundleId BIGINT NOT NULL,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(256) NOT NULL,
     description TEXT,
     configData TEXT NOT NULL,
     PRIMARY KEY (id, versionId),
@@ -232,7 +224,7 @@ CREATE TABLE IF NOT EXISTS topology_sink (
     versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
     topologyComponentBundleId BIGINT NOT NULL,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(256) NOT NULL,
     description TEXT,
     configData TEXT NOT NULL,
     PRIMARY KEY (id, versionId),
@@ -244,7 +236,7 @@ CREATE TABLE IF NOT EXISTS topology_processor (
     versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
     topologyComponentBundleId BIGINT NOT NULL,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(256) NOT NULL,
     description TEXT,
     configData TEXT NOT NULL,
     PRIMARY KEY (id, versionId),
@@ -275,7 +267,7 @@ CREATE TABLE IF NOT EXISTS topology_rule (
     id BIGINT AUTO_INCREMENT NOT NULL,
     versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(256) NOT NULL,
     description TEXT NOT NULL,
     streams TEXT NULL,
     outputStreams TEXT NULL,
@@ -293,7 +285,7 @@ CREATE TABLE IF NOT EXISTS topology_branchrule (
     id BIGINT AUTO_INCREMENT NOT NULL,
     versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(256) NOT NULL,
     description TEXT NOT NULL,
     stream TEXT NOT NULL,
     outputStreams TEXT NULL,
@@ -308,7 +300,7 @@ CREATE TABLE IF NOT EXISTS topology_window (
     id BIGINT AUTO_INCREMENT NOT NULL,
     versionId BIGINT NOT NULL,
     topologyId BIGINT NOT NULL,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(256) NOT NULL,
     description TEXT NOT NULL,
     streams TEXT NULL,
     outputStreams TEXT NULL,
@@ -324,22 +316,22 @@ CREATE TABLE IF NOT EXISTS topology_window (
 
 CREATE TABLE IF NOT EXISTS udf (
     id BIGINT AUTO_INCREMENT NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    displayName VARCHAR(255) NOT NULL,
+    name VARCHAR(256) NOT NULL,
+    displayName VARCHAR(256) NOT NULL,
     description TEXT NOT NULL,
-    type  VARCHAR(255) NOT NULL,
-    className  VARCHAR(255) NOT NULL,
-    jarStoragePath  VARCHAR(255) NOT NULL,
-    digest VARCHAR(255) NOT NULL,
-    argTypes VARCHAR(255) NOT NULL,
-    returnType VARCHAR(255) NOT NULL,
+    type  VARCHAR(256) NOT NULL,
+    className  VARCHAR(256) NOT NULL,
+    jarStoragePath  VARCHAR(256) NOT NULL,
+    digest VARCHAR(256) NOT NULL,
+    argTypes VARCHAR(256) NOT NULL,
+    returnType VARCHAR(256) NOT NULL,
     builtin CHAR(5),
     PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS cluster (
   id BIGINT AUTO_INCREMENT NOT NULL,
-  name VARCHAR(255) NOT NULL,
+  name VARCHAR(256) NOT NULL,
   ambariImportUrl TEXT,
   description TEXT,
   timestamp BIGINT,
@@ -349,43 +341,32 @@ CREATE TABLE IF NOT EXISTS cluster (
 CREATE TABLE IF NOT EXISTS service (
   id BIGINT AUTO_INCREMENT NOT NULL,
   clusterId BIGINT NOT NULL,
-  name VARCHAR(255) NOT NULL,
+  name VARCHAR(256) NOT NULL,
   description TEXT,
   timestamp BIGINT,
-  PRIMARY KEY (id),
-  FOREIGN KEY (clusterId) REFERENCES cluster (id)
+  PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS service_configuration (
   id BIGINT AUTO_INCREMENT NOT NULL,
   serviceId BIGINT NOT NULL,
-  name VARCHAR(255) NOT NULL,
+  name VARCHAR(256) NOT NULL,
   configuration TEXT NOT NULL,
   description TEXT,
-  filename VARCHAR(255),
+  filename VARCHAR(256),
   timestamp BIGINT,
-  PRIMARY KEY (id),
-  FOREIGN KEY (serviceId) REFERENCES service (id)
+  PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS component (
   id BIGINT AUTO_INCREMENT NOT NULL,
   serviceId BIGINT NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  timestamp BIGINT,
-  PRIMARY KEY (id),
-  FOREIGN KEY (serviceId) REFERENCES service (id)
-);
-
-CREATE TABLE IF NOT EXISTS component_process (
-  id BIGINT AUTO_INCREMENT NOT NULL,
-  componentId BIGINT NOT NULL,
-  host VARCHAR(255) NOT NULL,
-  protocol VARCHAR(255),
+  name VARCHAR(256) NOT NULL,
+  hosts TEXT NOT NULL,
+  protocol VARCHAR(256),
   port INTEGER,
   timestamp BIGINT,
-  PRIMARY KEY (id),
-  FOREIGN KEY (componentId) REFERENCES component (id)
+  PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_state (
@@ -397,7 +378,7 @@ CREATE TABLE IF NOT EXISTS topology_state (
 
 CREATE TABLE IF NOT EXISTS service_bundle (
   id BIGINT AUTO_INCREMENT NOT NULL,
-  name VARCHAR(255) NOT NULL,
+  name VARCHAR(256) NOT NULL,
   serviceUISpecification TEXT NOT NULL,
   registerClass TEXT,
   timestamp BIGINT,
@@ -465,7 +446,7 @@ CREATE TABLE IF NOT EXISTS topology_editor_toolbar (
 
 CREATE TABLE IF NOT EXISTS topology_test_run_case (
   id BIGINT AUTO_INCREMENT NOT NULL,
-  name VARCHAR(255) NOT NULL,
+  name VARCHAR(256) NOT NULL,
   topologyId BIGINT NOT NULL,
   versionId BIGINT NOT NULL,
   timestamp BIGINT,
@@ -478,7 +459,7 @@ CREATE TABLE IF NOT EXISTS topology_test_run_case_source (
   testCaseId BIGINT NOT NULL,
   sourceId BIGINT NOT NULL,
   versionId BIGINT NOT NULL,
-  records MEDIUMTEXT NOT NULL,
+  records TEXT NOT NULL,
   occurrence INTEGER NOT NULL,
   timestamp BIGINT,
   PRIMARY KEY (id),
@@ -492,7 +473,7 @@ CREATE TABLE IF NOT EXISTS topology_test_run_case_sink (
   testCaseId BIGINT NOT NULL,
   sinkId BIGINT NOT NULL,
   versionId BIGINT NOT NULL,
-  records MEDIUMTEXT NOT NULL,
+  records TEXT NOT NULL,
   timestamp BIGINT,
   PRIMARY KEY (id),
   FOREIGN KEY (testCaseId) REFERENCES topology_test_run_case(id),
@@ -507,10 +488,10 @@ CREATE TABLE IF NOT EXISTS topology_test_run_histories (
   testCaseId BIGINT NOT NULL,
   finished CHAR(5) NOT NULL,
   success CHAR(5) NOT NULL,
-  expectedOutputRecords MEDIUMTEXT,
-  actualOutputRecords MEDIUMTEXT,
+  expectedOutputRecords TEXT,
+  actualOutputRecords TEXT,
   matched CHAR(5),
-  eventLogFilePath VARCHAR(255) NOT NULL,
+  eventLogFilePath VARCHAR(256) NOT NULL,
   startTime BIGINT,
   finishTime BIGINT,
   timestamp BIGINT,
@@ -518,3 +499,59 @@ CREATE TABLE IF NOT EXISTS topology_test_run_histories (
   FOREIGN KEY (topologyId, versionId) REFERENCES topology(id, versionId),
   FOREIGN KEY (testCaseId) REFERENCES topology_test_run_case(id)
 );
+
+-- Rename all table whose table name is greater than 30 characters
+
+DROP PROCEDURE IF EXISTS rename_table_if_exists;
+
+DELIMITER ///
+
+CREATE PROCEDURE rename_table_if_exists (IN current_table_name VARCHAR(255), IN new_table_name VARCHAR(255))
+BEGIN
+    SELECT COUNT(*) INTO @current_table_count FROM information_schema.tables WHERE table_schema IN (SELECT DATABASE() FROM DUAL) AND table_type = 'BASE TABLE'  AND table_name = current_table_name;
+    SELECT COUNT(*) INTO @new_table_count FROM information_schema.tables WHERE table_schema IN (SELECT DATABASE() FROM DUAL) AND table_type = 'BASE TABLE'  AND table_name = new_table_name;
+    IF @current_table_count = 1 THEN
+       IF @new_table_count = 0 THEN
+          SET @str = CONCAT('RENAME TABLE `',current_table_name,'` TO `',new_table_name,'`');
+          PREPARE stmt FROM @str;
+          EXECUTE stmt;
+          DEALLOCATE PREPARE stmt;
+       ELSEIF @new_table_count = 1 THEN
+          SET @str = CONCAT('DROP TABLE `',current_table_name,'`');
+          PREPARE stmt FROM @str;
+          EXECUTE stmt;
+          DEALLOCATE PREPARE stmt;
+       END IF;
+    END IF;
+END ///
+
+DELIMITER ;
+
+
+CALL rename_table_if_exists('widget_datasource_mapping', 'widget_datasource_map');
+CALL rename_table_if_exists('namespace_service_cluster_mapping','namespace_service_cluster_map');
+CALL rename_table_if_exists('tag_storable_mapping','tag_storable_map');
+CALL rename_table_if_exists('topology_source_stream_mapping','topology_source_stream_map');
+CALL rename_table_if_exists('topology_processor_stream_mapping','topology_processor_stream_map');
+
+-- Rename all columns whose column name is greater than 30 characters
+
+
+DROP PROCEDURE IF EXISTS alter_column_if_exists;
+
+DELIMITER ///
+
+CREATE PROCEDURE alter_column_if_exists (IN param_table_name VARCHAR(255), IN current_col_name VARCHAR(225), IN new_col_name VARCHAR(255), IN col_details VARCHAR(225))
+BEGIN
+    SELECT COUNT(*) INTO @col_exists FROM information_schema.columns WHERE table_schema IN (SELECT DATABASE() FROM DUAL) AND table_name = param_table_name AND column_name = current_col_name;
+    IF @col_exists = 1 THEN
+        SET @str = CONCAT('ALTER TABLE `',param_table_name,'` CHANGE COLUMN `',current_col_name,'` `', new_col_name, '`', col_details);
+        PREPARE stmt FROM @str;
+        EXECUTE stmt;
+        DEALLOCATE PREPARE stmt;
+    END IF;
+END ///
+
+DELIMITER ;
+
+CALL alter_column_if_exists ('topology_component_bundle', 'topologyComponentUISpecification', 'topologyComponentUISpec', 'TEXT NOT NULL');

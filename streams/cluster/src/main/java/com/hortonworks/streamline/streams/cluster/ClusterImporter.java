@@ -16,6 +16,9 @@
 package com.hortonworks.streamline.streams.cluster;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.hortonworks.registries.common.transaction.TransactionIsolation;
+import com.hortonworks.registries.storage.StorageManager;
+import com.hortonworks.registries.storage.TransactionManager;
 import com.hortonworks.streamline.common.util.ParallelStreamUtil;
 import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
 import com.hortonworks.streamline.streams.cluster.catalog.Component;
@@ -43,10 +46,12 @@ public class ClusterImporter {
     private static final int FORK_JOIN_POOL_PARALLELISM = 20;
 
     private final EnvironmentService environmentService;
+    private final TransactionManager transactionManager;
     private final ForkJoinPool forkJoinPool;
 
-    public ClusterImporter(EnvironmentService environmentService) {
+    public ClusterImporter(EnvironmentService environmentService, TransactionManager transactionManager) {
         this.environmentService = environmentService;
+        this.transactionManager = transactionManager;
         this.forkJoinPool = new ForkJoinPool(FORK_JOIN_POOL_PARALLELISM);
     }
 
@@ -67,23 +72,30 @@ public class ClusterImporter {
         availableServices.parallelStream()
                 .filter(ServiceConfigurations::contains)
                 .forEach(serviceName -> {
-                    LOG.debug("service start {}", serviceName);
+                    try {
+                        transactionManager.beginTransaction(TransactionIsolation.DEFAULT);
+                        LOG.debug("service start {}", serviceName);
 
-                    Service service = addService(cluster, serviceName);
+                        Service service = addService(cluster, serviceName);
 
-                    Map<String, String> flattenConfigurations = new ConcurrentHashMap<>();
-                    Map<String, Map<String, String>> configurations = serviceNodeDiscoverer.getConfigurations(serviceName);
-                    handleConfigurations(serviceNodeDiscoverer, flattenConfigurations, configurations, service);
+                        Map<String, String> flattenConfigurations = new ConcurrentHashMap<>();
+                        Map<String, Map<String, String>> configurations = serviceNodeDiscoverer.getConfigurations(serviceName);
+                        handleConfigurations(serviceNodeDiscoverer, flattenConfigurations, configurations, service);
 
-                    List<String> components = serviceNodeDiscoverer.getComponents(serviceName);
-                    handleComponents(serviceNodeDiscoverer, serviceName, flattenConfigurations, service, components);
+                        List<String> components = serviceNodeDiscoverer.getComponents(serviceName);
+                        handleComponents(serviceNodeDiscoverer, serviceName, flattenConfigurations, service, components);
+                        transactionManager.commitTransaction();
+                    } catch (Exception e) {
+                        transactionManager.rollbackTransaction();
+                        throw e;
+                    }
                 });
 
         return null;
     }
 
     private void handleComponents(ServiceNodeDiscoverer serviceNodeDiscoverer, String serviceName, Map<String, String> flattenConfigurations, Service service, List<String> components) {
-        components.parallelStream().forEach(componentName -> {
+        components.stream().forEach(componentName -> {
             LOG.debug("component start {}", componentName);
 
             List<String> hosts = serviceNodeDiscoverer.getComponentNodes(serviceName, componentName);
@@ -94,7 +106,7 @@ public class ClusterImporter {
     }
 
     private void handleConfigurations(ServiceNodeDiscoverer serviceNodeDiscoverer, Map<String, String> flattenConfigurations, Map<String, Map<String, String>> configurations, Service service) {
-        configurations.entrySet().parallelStream()
+        configurations.entrySet().stream()
                 .forEach(entry -> {
                     try {
                         String confType = entry.getKey();
@@ -170,6 +182,9 @@ public class ClusterImporter {
         for (Service service : services) {
             Collection<Component> components = environmentService.listComponents(service.getId());
             for (Component component : components) {
+                environmentService.listComponentProcesses(component.getId())
+                        .forEach(componentProcess -> environmentService.removeComponentProcess(componentProcess.getId()));
+
                 environmentService.removeComponent(component.getId());
             }
 
