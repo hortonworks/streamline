@@ -20,7 +20,7 @@ package com.hortonworks.streamline.streams.sql.runtime;
 public class Channels {
   private static final ChannelContext VOID_CTX = new ChannelContext() {
     @Override
-    public void emit(Values data) {}
+    public void emit(CorrelatedEventsAwareValues data) {}
 
     @Override
     public void fireChannelInactive() {}
@@ -47,7 +47,7 @@ public class Channels {
     }
 
     @Override
-    public void emit(Values data) {
+    public void emit(CorrelatedEventsAwareValues data) {
       handler.dataReceived(next, data);
     }
 
@@ -76,7 +76,7 @@ public class Channels {
     }
 
     @Override
-    public void emit(Values data) {
+    public void emit(CorrelatedEventsAwareValues data) {
       next.emit(data);
     }
 

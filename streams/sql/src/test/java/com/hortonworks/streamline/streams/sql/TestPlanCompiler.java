@@ -19,10 +19,7 @@ package com.hortonworks.streamline.streams.sql;
 
 import com.google.common.collect.ImmutableMap;
 import com.hortonworks.streamline.streams.sql.compiler.PlanCompiler;
-import com.hortonworks.streamline.streams.sql.runtime.AbstractValuesProcessor;
-import com.hortonworks.streamline.streams.sql.runtime.ChannelHandler;
-import com.hortonworks.streamline.streams.sql.runtime.DataSource;
-import com.hortonworks.streamline.streams.sql.runtime.Values;
+import com.hortonworks.streamline.streams.sql.runtime.*;
 import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
@@ -47,11 +44,15 @@ public class TestPlanCompiler {
     AbstractValuesProcessor proc = compiler.compile(state.tree());
     Map<String, DataSource> data = new HashMap<>();
     data.put("FOO", new TestUtils.MockDataSource());
-    List<Values> values = new ArrayList<>();
+    List<CorrelatedEventsAwareValues> values = new ArrayList<>();
     ChannelHandler h = new TestUtils.CollectDataChannelHandler(values);
     proc.initialize(data, h);
-    Assert.assertArrayEquals(new Values[] { new Values(4), new Values(5)},
-                             values.toArray());
+
+    Assert.assertEquals(2, values.size());
+    Assert.assertEquals(1, values.get(0).size());
+    Assert.assertEquals(4, values.get(0).get(0));
+    Assert.assertEquals(1, values.get(1).size());
+    Assert.assertEquals(5, values.get(1).get(0));
   }
 
   @Test
@@ -62,10 +63,15 @@ public class TestPlanCompiler {
     AbstractValuesProcessor proc = compiler.compile(state.tree());
     Map<String, DataSource> data = new HashMap<>();
     data.put("FOO", new TestUtils.MockDataSource());
-    List<Values> values = new ArrayList<>();
+    List<CorrelatedEventsAwareValues> values = new ArrayList<>();
     ChannelHandler h = new TestUtils.CollectDataChannelHandler(values);
     proc.initialize(data, h);
-    Assert.assertEquals(new Values(true, false, true), values.get(0));
+
+    Assert.assertEquals(1, values.size());
+    Assert.assertEquals(3, values.get(0).size());
+    Assert.assertEquals(true, values.get(0).get(0));
+    Assert.assertEquals(false, values.get(0).get(1));
+    Assert.assertEquals(true, values.get(0).get(2));
   }
 
   @Test
@@ -78,12 +84,19 @@ public class TestPlanCompiler {
     AbstractValuesProcessor proc = compiler.compile(state.tree());
     Map<String, DataSource> data = new HashMap<>();
     data.put("FOO", new TestUtils.MockNestedDataSource());
-    List<Values> values = new ArrayList<>();
+    List<CorrelatedEventsAwareValues> values = new ArrayList<>();
     ChannelHandler h = new TestUtils.CollectDataChannelHandler(values);
     proc.initialize(data, h);
+
     Map<String, Integer> map = ImmutableMap.of("b", 2, "c", 4);
     Map<String, Map<String, Integer>> nestedMap = ImmutableMap.of("a", map);
-    Assert.assertEquals(new Values(2, 4, nestedMap, Arrays.asList(100, 200, 300)), values.get(0));
+
+    Assert.assertEquals(1, values.size());
+    Assert.assertEquals(4, values.get(0).size());
+    Assert.assertEquals(2, values.get(0).get(0));
+    Assert.assertEquals(4, values.get(0).get(1));
+    Assert.assertEquals(nestedMap, values.get(0).get(2));
+    Assert.assertEquals(Arrays.asList(100, 200, 300), values.get(0).get(3));
   }
 
   @Test
@@ -96,9 +109,12 @@ public class TestPlanCompiler {
     AbstractValuesProcessor proc = compiler.compile(state.tree());
     Map<String, DataSource> data = new HashMap<>();
     data.put("FOO", new TestUtils.MockDataSource());
-    List<Values> values = new ArrayList<>();
+    List<CorrelatedEventsAwareValues> values = new ArrayList<>();
     ChannelHandler h = new TestUtils.CollectDataChannelHandler(values);
     proc.initialize(data, h);
-    Assert.assertEquals(new Values(5), values.get(0));
+
+    Assert.assertEquals(1, values.size());
+    Assert.assertEquals(1, values.get(0).size());
+    Assert.assertEquals(5, values.get(0).get(0));
   }
 }

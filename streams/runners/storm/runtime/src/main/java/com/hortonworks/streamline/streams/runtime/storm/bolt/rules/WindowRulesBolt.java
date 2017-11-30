@@ -18,7 +18,9 @@ package com.hortonworks.streamline.streams.runtime.storm.bolt.rules;
 import com.hortonworks.streamline.common.util.Utils;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.Result;
+import com.hortonworks.streamline.streams.common.IdPreservedStreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.common.event.correlation.EventCorrelationInjector;
 import com.hortonworks.streamline.streams.exception.ProcessingException;
 import com.hortonworks.streamline.streams.layout.component.Stream;
 import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
@@ -35,13 +37,8 @@ import com.hortonworks.streamline.streams.runtime.storm.bolt.StreamlineWindowedB
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.hortonworks.streamline.streams.common.StreamlineEventImpl.GROUP_BY_TRIGGER_EVENT;
 import static com.hortonworks.streamline.streams.runtime.transform.AddHeaderTransformRuntime.HEADER_FIELD_DATASOURCE_IDS;
@@ -87,35 +84,53 @@ public class WindowRulesBolt extends StreamlineWindowedBolt {
     public void execute(TupleWindow inputWindow) {
         ++windowId;
         LOG.debug("Window activated, window id {}, number of tuples in window {}", windowId, inputWindow.get().size());
-        List<Tuple> curGroup = new ArrayList<>();
+
+        Map<String, Tuple> eventIdToTupleMap = new HashMap<>();
         try {
             StreamlineEvent event;
             for (Tuple input : inputWindow.get()) {
                 if ((event = getStreamlineEventFromTuple(input)) != null) {
                     LOG.debug("++++++++ Executing tuple [{}] which contains StreamlineEvent [{}]", input, event);
-                    processAndEmit(event, curGroup);
-                    curGroup.add(input);
+                    eventIdToTupleMap.put(event.getId(), input);
+                    processAndEmit(event, eventIdToTupleMap);
                 }
             }
             // force evaluation of the last group by
-            processAndEmit(GROUP_BY_TRIGGER_EVENT, curGroup);
+            processAndEmit(GROUP_BY_TRIGGER_EVENT, eventIdToTupleMap);
+
+            // current group is processed and result emitted
+            eventIdToTupleMap.clear();
         } catch (Exception e) {
             collector.reportError(e);
-            LOG.debug("", e);                        // useful to debug unit tests
+            LOG.error("", e);
         }
     }
 
-    private void processAndEmit(StreamlineEvent event, List<Tuple> curGroup) throws ProcessingException {
-        for (Result result : ruleProcessorRuntime.process(eventWithWindowId(event))) {
+    private void processAndEmit(StreamlineEvent event, Map<String, Tuple> curGroup) throws ProcessingException {
+        List<Result> results = ruleProcessorRuntime.process(eventWithWindowId(event));
+        for (Result result : results) {
             for (StreamlineEvent e : result.events) {
                 // TODO: updateHeaders can be handled at ruleProcessorRuntime.process stage passing context info.
-                collector.emit(result.stream, new Values(updateHeaders(e, curGroup)));
+
+                // anchor parent events if such information is available
+                if (EventCorrelationInjector.containsParentIds(e)) {
+                    Set<String> parentIds = EventCorrelationInjector.getParentIds(e);
+
+                    List<Tuple> parents = parentIds.stream().map(pid -> {
+                        if (!curGroup.containsKey(pid)) {
+                            throw new IllegalStateException("parents should be in grouped tuples");
+                        }
+                        return curGroup.get(pid);
+                    }).collect(Collectors.toList());
+                    collector.emit(result.stream, parents, new Values(updateHeaders(e, parents)));
+                } else {
+                    collector.emit(result.stream, new Values(updateHeaders(e, curGroup.values())));
+                }
             }
-            curGroup.clear(); // current group is processed and result emitted
         }
     }
 
-    private StreamlineEvent updateHeaders(StreamlineEvent event, List<Tuple> tuples) {
+    private StreamlineEvent updateHeaders(StreamlineEvent event, Collection<Tuple> tuples) {
         Map<String, Object> headers = new HashMap<>();
         headers.put(HEADER_FIELD_EVENT_IDS, getEventIds(tuples));
         headers.put(HEADER_FIELD_DATASOURCE_IDS, getDataSourceIds(tuples));
@@ -123,7 +138,7 @@ public class WindowRulesBolt extends StreamlineWindowedBolt {
         return event;
     }
 
-    private List<String> getEventIds(List<Tuple> tuples) {
+    private List<String> getEventIds(Collection<Tuple> tuples) {
         Set<String> res = new HashSet<>();
         StreamlineEvent event;
         for (Tuple tuple : tuples) {
@@ -134,7 +149,7 @@ public class WindowRulesBolt extends StreamlineWindowedBolt {
         return new ArrayList<>(res);
     }
 
-    private List<String> getDataSourceIds(List<Tuple> tuples) {
+    private List<String> getDataSourceIds(Collection<Tuple> tuples) {
         Set<String> res = new HashSet<>();
         StreamlineEvent event;
         for (Tuple tuple : tuples) {
@@ -157,7 +172,8 @@ public class WindowRulesBolt extends StreamlineWindowedBolt {
     }
 
     private StreamlineEvent getStreamlineEventWithStream(StreamlineEvent event, Tuple tuple) {
-        return StreamlineEventImpl.builder().from(event).sourceStream(tuple.getSourceStreamId()).build();
+        StreamlineEventImpl newEvent = StreamlineEventImpl.builder().from(event).sourceStream(tuple.getSourceStreamId()).build();
+        return new IdPreservedStreamlineEvent(newEvent, event.getId());
     }
 
     @Override
@@ -175,6 +191,7 @@ public class WindowRulesBolt extends StreamlineWindowedBolt {
         if (event == GROUP_BY_TRIGGER_EVENT) {
             return event;
         }
-        return event.addFieldsAndValues(Collections.<String, Object>singletonMap(Window.WINDOW_ID, windowId));
+        StreamlineEvent newEvent = event.addFieldsAndValues(Collections.<String, Object>singletonMap(Window.WINDOW_ID, windowId));
+        return new IdPreservedStreamlineEvent(newEvent, event.getId());
     }
 }

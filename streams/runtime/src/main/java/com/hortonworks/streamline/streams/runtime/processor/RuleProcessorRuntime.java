@@ -244,7 +244,8 @@ public class RuleProcessorRuntime implements Serializable, ProcessorRuntime {
         StormSqlExpression stormSqlExpression = createSqlExpression(rule);
         SqlScript sqlScript = new SqlScript(stormSqlExpression, sqlEngine);
         LOG.info("Built SqlScript {}", sqlScript);
-        SqlScript.ValuesToStreamlineEventConverter valuesConverter = new SqlScript.ValuesToStreamlineEventConverter(sqlScript.getOutputFields());
+        SqlScript.CorrelatedValuesToStreamlineEventConverter valuesConverter =
+                new SqlScript.CorrelatedValuesToStreamlineEventConverter(sqlScript.getOutputFields());
         sqlScript.setValuesConverter(valuesConverter);
         LOG.info("valuesConverter {}", valuesConverter);
         return sqlScript;

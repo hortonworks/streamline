@@ -42,10 +42,7 @@ import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Compile RelNodes into individual functions.
@@ -61,17 +58,18 @@ public class RelNodeCompiler extends PostOrderRelNodeVisitor<Void> {
     "  private static final ChannelHandler %1$s = ",
     "    new AbstractChannelHandler() {",
     "    @Override",
-    "    public void dataReceived(ChannelContext ctx, Values _data) {",
+    "    public void dataReceived(ChannelContext ctx, CorrelatedEventsAwareValues _data) {",
     ""
   );
 
   private static final String AGGREGATE_STAGE_PROLOGUE = NEW_LINE_JOINER.join(
           "  private static final ChannelHandler %1$s = ",
           "    new AbstractChannelHandler() {",
-          "    private final Values EMPTY_VALUES = new Values();",
+          "    private final CorrelatedEventsAwareValues EMPTY_VALUES = new CorrelatedEventsAwareValues(Collections.emptyList());",
+          "    private final Map<List<Object>, List<CorrelatedEventsAwareValues>> correlatedGroupedValues = new LinkedHashMap<>();",
           "    private final Map<List<Object>, Map<String, Object>> state = new LinkedHashMap<>();",
           "    private final int[] groupIndices = new int[] {%2$s};",
-          "    private List<Object> getGroupValues(Values _data) {",
+          "    private List<Object> getGroupValues(CorrelatedEventsAwareValues _data) {",
           "      List<Object> res = new ArrayList<>();",
           "      for (int i: groupIndices) {",
           "        res.add(_data.get(i));",
@@ -89,13 +87,19 @@ public class RelNodeCompiler extends PostOrderRelNodeVisitor<Void> {
           "    private void emitAggregateResults(ChannelContext ctx) {",
           "        for (Map.Entry<List<Object>, Map<String, Object>> entry: state.entrySet()) {",
           "          List<Object> groupValues = entry.getKey();",
+          "          List<CorrelatedEventsAwareValues> correlatedValues = correlatedGroupedValues.get(groupValues);",
+          "          Set<StreamlineEvent> correlatedEventSet = new HashSet<>();",
+          "          for (CorrelatedEventsAwareValues correlatedValue : correlatedValues) {",
+          "              correlatedEventSet.addAll(correlatedValue.getCorrelated());",
+          "          }",
+          "          List<StreamlineEvent> correlatedEvents = new ArrayList<>(correlatedEventSet);",
           "          Map<String, Object> accumulators = entry.getValue();",
           "          %3$s",
           "        }",
           "    }",
           "",
           "    @Override",
-          "    public void dataReceived(ChannelContext ctx, Values _data) {",
+          "    public void dataReceived(ChannelContext ctx, CorrelatedEventsAwareValues _data) {",
           ""
   );
 
@@ -105,26 +109,29 @@ public class RelNodeCompiler extends PostOrderRelNodeVisitor<Void> {
           "      Object left = %2$s;",
           "      Object right = %3$s;",
           "      Object source = null;",
-          "      List<Values> leftRows = new ArrayList<>();",
-          "      List<Values> rightRows = new ArrayList<>();",
+          "      List<CorrelatedEventsAwareValues> leftRows = new ArrayList<>();",
+          "      List<CorrelatedEventsAwareValues> rightRows = new ArrayList<>();",
           "      boolean leftDone = false;",
           "      boolean rightDone = false;",
           "      int[] ordinals = new int[] {%4$s, %5$s};",
           "",
-          "      Multimap<Object, Values> getJoinTable(List<Values> rows, int joinIndex) {",
-          "         Multimap<Object, Values> m = ArrayListMultimap.create();",
-          "         for(Values v: rows) {",
+          "      Multimap<Object, CorrelatedEventsAwareValues> getJoinTable(List<CorrelatedEventsAwareValues> rows, int joinIndex) {",
+          "         Multimap<Object, CorrelatedEventsAwareValues> m = ArrayListMultimap.create();",
+          "         for(CorrelatedEventsAwareValues v: rows) {",
           "           m.put(v.get(joinIndex), v);",
           "         }",
           "         return m;",
           "      }",
           "",
-          "      List<Values> join(Multimap<Object, Values> tab, List<Values> rows, int rowIdx, boolean rev) {",
-          "         List<Values> res = new ArrayList<>();",
-          "         for (Values row: rows) {",
-          "           for (Values mapValue: tab.get(row.get(rowIdx))) {",
+          "      List<CorrelatedEventsAwareValues> join(Multimap<Object, CorrelatedEventsAwareValues> tab, List<CorrelatedEventsAwareValues> rows, int rowIdx, boolean rev) {",
+          "         List<CorrelatedEventsAwareValues> res = new ArrayList<>();",
+          "         for (CorrelatedEventsAwareValues row: rows) {",
+          "           for (CorrelatedEventsAwareValues mapValue: tab.get(row.get(rowIdx))) {",
           "             if (mapValue != null) {",
-          "               Values joinedRow = new Values();",
+          "               Set<CorrelatedEventsAwareValues> correlated = new HashSet<>();",
+          "               correlated.addAll(row.getCorrelated());",
+          "               correlated.addAll(mapValue.getCorrelated());",
+          "               CorrelatedEventsAwareValues joinedRow = new CorrelatedEventsAwareValues(new ArrayList<>(correlated));",
           "               if(rev) {",
           "                 joinedRow.addAll(row);",
           "                 joinedRow.addAll(mapValue);",
@@ -153,11 +160,11 @@ public class RelNodeCompiler extends PostOrderRelNodeVisitor<Void> {
           "        }",
           "        if (leftDone && rightDone) {",
           "          if (leftRows.size() <= rightRows.size()) {",
-          "            for(Values res: join(getJoinTable(leftRows, ordinals[0]), rightRows, ordinals[1], false)) {",
+          "            for(CorrelatedEventsAwareValues res: join(getJoinTable(leftRows, ordinals[0]), rightRows, ordinals[1], false)) {",
           "              ctx.emit(res);",
           "            }",
           "          } else {",
-          "            for(Values res: join(getJoinTable(rightRows, ordinals[1]), leftRows, ordinals[0], true)) {",
+          "            for(CorrelatedEventsAwareValues res: join(getJoinTable(rightRows, ordinals[1]), leftRows, ordinals[0], true)) {",
           "              ctx.emit(res);",
           "            }",
           "          }",
@@ -169,7 +176,7 @@ public class RelNodeCompiler extends PostOrderRelNodeVisitor<Void> {
           "    }",
           "",
           "    @Override",
-          "    public void dataReceived(ChannelContext ctx, Values _data) {",
+          "    public void dataReceived(ChannelContext ctx, CorrelatedEventsAwareValues _data) {",
           ""
   );
 
@@ -186,7 +193,7 @@ public class RelNodeCompiler extends PostOrderRelNodeVisitor<Void> {
           "    }",
           "",
           "    @Override",
-          "    public void dataReceived(ChannelContext ctx, Values _data) {",
+          "    public void dataReceived(ChannelContext ctx, CorrelatedEventsAwareValues _data) {",
           "      ctx.setSource(this);",
           "      ctx.emit(_data);",
           "    }",
@@ -245,7 +252,7 @@ public class RelNodeCompiler extends PostOrderRelNodeVisitor<Void> {
 
     pw.write(rexCompiler.compileToBlock(childExps, inputRowType).toString());
 
-    pw.print("    ctx.emit(new Values(outputValues));\n");
+    pw.print("    ctx.emit(new CorrelatedEventsAwareValues(_data.getCorrelated(), outputValues));\n");
     endStage();
     return null;
   }
@@ -266,6 +273,10 @@ public class RelNodeCompiler extends PostOrderRelNodeVisitor<Void> {
     beginAggregateStage(aggregate);
     pw.println("        if (_data != null) {");
     pw.println("        List<Object> curGroupValues = getGroupValues(_data);");
+    pw.println("        if (!correlatedGroupedValues.containsKey(curGroupValues)) {");
+    pw.println("          correlatedGroupedValues.put(curGroupValues, new ArrayList<CorrelatedEventsAwareValues>());");
+    pw.println("        }");
+    pw.println("        correlatedGroupedValues.get(curGroupValues).add(_data);");
     pw.println("        if (!state.containsKey(curGroupValues)) {");
     pw.println("          state.put(curGroupValues, new HashMap<String, Object>());");
     pw.println("        }");
@@ -309,7 +320,7 @@ public class RelNodeCompiler extends PostOrderRelNodeVisitor<Void> {
       res.add(aggregateResult(call, new PrintWriter(sw)));
     }
     return NEW_LINE_JOINER.join(sw.toString(),
-                                String.format("          ctx.emit(new Values(%s, %s));",
+                                String.format("          ctx.emit(new CorrelatedEventsAwareValues(correlatedEvents, %s, %s));",
                                               groupValueEmitStr("groupValues", aggregate.getGroupSet().cardinality()),
                                               Joiner.on(", ").join(res)));
   }
