@@ -685,7 +685,7 @@ const noSpecialCharString = function(string){
   if(string === ''){
     return;
   }
-  return /^[a-zA-Z0-9/_//-]+$/.test(string);
+  return /^[a-zA-Z0-9_-]+$/.test(string);
 };
 
 export default {
