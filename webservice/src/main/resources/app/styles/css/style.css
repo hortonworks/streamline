@@ -402,6 +402,44 @@ label {
   padding-top: 5px !important;
 }
 
+#tsFieldDropdown{
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 2px 10px;
+  line-height: 28px;
+}
+
+.timestamp-container .dropdown.btn-group, #tsFieldDropdown{
+  width:100%;
+  display: table;
+  white-space: normal;
+  min-height: 35px;
+}
+.timestamp-container .caret,.timestamp-container .timeStamp-value{
+  display: table-cell;
+}
+.timestamp-container .caret{
+  position: absolute;
+  top: 15px;
+  right: 5px;
+}
+
+.tsField-placeholder{
+  line-height: 30px;
+  color: #aaa;
+}
+
+.timestamp-val{
+  background: #676767;
+  color: white;
+  padding: 0px 7px;
+  border-radius: 2px;
+  font-size: 12px;
+  display: inline-block;
+  float: left;
+  margin: 1px 3px;
+}
+
 .sink-modal-form {
   margin-left: 200px;
   /*margin-right: 10px;*/
@@ -3836,4 +3874,13 @@ ul.custom-pagination li:last-child{
 ul.custom-pagination li.active{
   color: #fff;
   background-color: #808080;
+}
+.timestamp-container > .dropdown > ul {
+  width: 100%;
+  max-height: 300px;
+  overflow: auto;
+}
+.tsField-dropdown input{
+  margin: -2px 4px 0 0;
+  vertical-align: middle;
 }
