@@ -17,6 +17,7 @@
 
 package com.hortonworks.streamline.streams.runtime.storm.bolt.query;
 
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Window;
 import org.apache.storm.task.GeneralTopologyContext;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -30,6 +31,7 @@ import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.*;
 
 public class TestWindowedQueryBolt {
@@ -93,13 +95,73 @@ public class TestWindowedQueryBolt {
         Assert.assertEquals( cityStream.size(), collector.actualResults.size() );
     }
 
+    @Test
+    public void testTimeStampExtraction() throws Exception {
+        ArrayList<Tuple> usersAndCities  = makeStreamLineEventStream("users", userFields, users);
+        usersAndCities.addAll( makeStreamLineEventStream("cities", cityFields, cities) );
+
+        // treating 'userId' & 'cityId' as timestamp fields
+        SLMultistreamTimestampExtractor tsExtractor = new SLMultistreamTimestampExtractor("users:userId", "cities:cityId");
+
+        for (Tuple userOrCity : usersAndCities) {
+            long l = tsExtractor.extractTimestamp( userOrCity );
+            Assert.assertTrue( l > 0 && l <= 10 );
+        }
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testTimeStampExtraction_ValidationFailure() throws Exception {
+        ArrayList<Tuple> usersAndCities  = makeStreamLineEventStream("users", userFields, users);
+        usersAndCities.addAll( makeStreamLineEventStream("cities", cityFields, cities) );
+
+        SLMultistreamTimestampExtractor tsExtractor = new SLMultistreamTimestampExtractor("users:userId"); // missing info on city stream
+
+        for (Tuple userOrCity : usersAndCities) {
+            long l = tsExtractor.extractTimestamp( userOrCity ); // should throw IllegalArgumentException
+            Assert.assertTrue( l > 0 && l <= 10 );
+        }
+    }
+
+
+    @Test
+    public void testJsonWindowConfig_EventTimeWindow() throws IOException {
+        String windowConfigJson =
+            "{\"windowLength\" : {\"class\":\".Window$Duration\", \"durationMs\":2000},\n" +
+            " \"slidingInterval\":{\"class\":\".Window$Duration\", \"durationMs\":2000},\n" +
+            " \"tsFields\": [\"s1:tsField1\" , \"s2:tsField2\", \"s3:field3.innerTsField\"],\n" +
+            " \"lagMs\": 1000 ,\n" +
+            " \"lateStream\": \"optionalLateStream\"}";
+
+        WindowedQueryBolt bolt = new WindowedQueryBolt("users", "city")
+            .join("cities", "cityName", "users")
+            .selectStreamLine("name, users:city as city, cities:country");
+
+        bolt.withWindowConfig( new Window(windowConfigJson));
+    }
+
+    @Test
+    public void testJsonWindowConfig_CountedWindow() throws IOException {
+        String windowConfigJson =
+            "{\"windowLength\" : {\"class\":\".Window$Count\", \"count\":2000},\n" +
+                " \"slidingInterval\":{\"class\":\".Window$Count\", \"count\":2000},\n" +
+                " \"tsFields\": [\"s1:tsField1\" , \"s2:tsField2\", \"s3:field3.innerTsField\"]\n" +
+             "}";
+
+        WindowedQueryBolt bolt = new WindowedQueryBolt("users", "city")
+            .join("cities", "cityName", "users")
+            .selectStreamLine("name, users:city as city, cities:country");
+
+        bolt.withWindowConfig( new Window(windowConfigJson));
+    }
+
+
     private static void printResults_StreamLine(MockCollector collector) {
         int counter=0;
         for (List<Object> rec : collector.actualResults) {
             System.out.print(++counter +  ") ");
             for (Object field : rec) {
                 Map<String, Object> data = ((StreamlineEvent)field);
-                data.forEach((k,v)-> {
+                data.forEach((k,v) -> {
                     System.out.print(k + "=" + v + ", ");
                 } );
                 System.out.println();

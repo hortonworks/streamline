@@ -16,9 +16,10 @@
 package com.hortonworks.streamline.streams.runtime.storm.bolt;
 
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.storm.topology.base.BaseWindowedBolt;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.Window;
+import com.hortonworks.streamline.streams.runtime.storm.bolt.query.SLMultistreamTimestampExtractor;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
