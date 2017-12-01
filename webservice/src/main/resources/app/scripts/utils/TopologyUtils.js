@@ -862,6 +862,30 @@ const MouseUpAction = function(topologyId, versionId, d3node, d, metaInfo, inter
   return;
 };
 
+const rectangleMouseUpActionViewMode = function(d3node, d, internalFlags, constants, rectangles, elementType) {
+  internalFlags.shiftNodeDrag = false;
+  d3node.classed(constants.connectClass, false);
+  var mouseDownNode = internalFlags.mouseDownNode;
+  if (mouseDownNode && mouseDownNode === d) {
+    if (elementType === 'rectangle') {
+      if (!internalFlags.justDragged) {
+        if (d3.event && d3.event.type !== 'dblclick') {
+          var prevNode = internalFlags.selectedNode;
+          if (!prevNode || prevNode.nodeId !== d.nodeId) {
+            if (internalFlags.selectedNode) {
+              this.removeSelectFromNode(rectangles, constants, internalFlags);
+            }
+            d3node.classed(constants.selectedClass, true);
+            internalFlags.selectedNode = d;
+          } else {
+            this.removeSelectFromNode(rectangles, constants, internalFlags);
+          }
+        }
+      }
+    }
+  }
+};
+
 const KeyDownAction = function(d, internalFlags, allNodes, edges, linkShuffleOptions, updateGraphMethod, getModalScope, setModalContent, rectangles, constants) {
 
   var keyDownNode = internalFlags.keyDownNode;
@@ -1124,6 +1148,7 @@ export default {
   showNodeModal,
   getConfigContainer,
   MouseUpAction,
+  rectangleMouseUpActionViewMode,
   KeyDownAction,
   setShuffleOptions,
   syncNodeData,
