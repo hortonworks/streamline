@@ -57,6 +57,7 @@ import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jetty.servlet.ErrorPageErrorHandler;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.slf4j.Logger;
@@ -74,6 +75,8 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.ws.rs.core.Response;
+
 
 import static com.hortonworks.registries.storage.util.StorageUtils.getStorableEntities;
 
@@ -321,5 +324,9 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
             environment.jersey().register(resource);
         }
         environment.jersey().register(MultiPartFeature.class);
+
+        final ErrorPageErrorHandler errorPageErrorHandler = new ErrorPageErrorHandler();
+        errorPageErrorHandler.addErrorPage(Response.Status.UNAUTHORIZED.getStatusCode(), "/401.html");
+        environment.getApplicationContext().setErrorHandler(errorPageErrorHandler);
     }
 }
