@@ -17,7 +17,7 @@ import ManualClusterREST from '../../rest/ManualClusterREST';
 import FSReactToastr from '../../components/FSReactToastr';
 import CommonNotification from '../../utils/CommonNotification';
 import {toastOpt} from '../../utils/Constants';
-import Select from 'react-select';
+import {Select2 as Select} from '../../utils/SelectUtils';
 import Form from '../../libs/form';
 import Utils from '../../utils/Utils';
 import _ from 'lodash';

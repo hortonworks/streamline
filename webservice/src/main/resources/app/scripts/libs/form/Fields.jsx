@@ -27,7 +27,7 @@ import {
   InputGroup,
   OverlayTrigger
 } from 'react-bootstrap';
-import Select, {Creatable} from 'react-select';
+import {Select2 as Select,Creatable} from '../../utils/SelectUtils';
 import validation from './ValidationRules';
 import _ from 'lodash';
 import Utils from '../../utils/Utils';

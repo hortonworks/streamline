@@ -13,7 +13,7 @@
 **/
 
 import React, {Component} from 'react';
-import Select, {Creatable} from 'react-select';
+import {Select2 as Select,Creatable} from '../../../utils/SelectUtils';
 import {Radio, OverlayTrigger, Popover} from 'react-bootstrap';
 import TopologyREST from '../../../rest/TopologyREST';
 import FSReactToastr from '../../../components/FSReactToastr';

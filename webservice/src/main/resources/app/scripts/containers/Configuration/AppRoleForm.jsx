@@ -15,7 +15,7 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
-import Select from 'react-select';
+import {Select2 as Select} from '../../utils/SelectUtils';
 import FSReactToastr from '../../components/FSReactToastr';
 import CommonNotification from '../../utils/CommonNotification';
 import {toastOpt} from '../../utils/Constants';

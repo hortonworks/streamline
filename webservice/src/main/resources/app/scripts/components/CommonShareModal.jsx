@@ -17,7 +17,7 @@ import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import {OverlayTrigger, Popover,DropdownButton,MenuItem} from 'react-bootstrap';
 import {observer} from 'mobx-react';
-import Select from 'react-select';
+import {Select2 as Select} from '../utils/SelectUtils';
 import UserRoleREST from '../rest/UserRoleREST';
 import FSReactToastr from './FSReactToastr';
 import {toastOpt} from '../utils/Constants';

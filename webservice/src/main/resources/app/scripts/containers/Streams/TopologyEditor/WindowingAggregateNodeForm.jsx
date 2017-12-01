@@ -16,7 +16,7 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
-import Select from 'react-select';
+import {Select2 as Select} from '../../../utils/SelectUtils';
 import {Tabs, Tab, OverlayTrigger, Popover} from 'react-bootstrap';
 import FSReactToastr from '../../../components/FSReactToastr';
 import TopologyREST from '../../../rest/TopologyREST';
