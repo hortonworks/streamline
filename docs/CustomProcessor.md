@@ -19,7 +19,6 @@ Field| Type | Comment
 streamingEngine| String| Streaming Engine for this custom processor - e.g. STORM
 name| String| Name of the custom processor. This should uniquely identify the custom processor 
 description| String| Description of the custom processor
-jarFileName| String| Unique name of the jar file that will be used to upload/download the jar
 customProcessorImpl| String| Fully qualified class name implementing the interface
 inputSchema| Schema| Input schema that this custom processor expects
 outputSchema| Schema| Output schema that it emits
@@ -46,7 +45,6 @@ topologyComponentUISpecification|TopologyComponentUISpecification| List of field
             "streamingEngine":"STORM",
             "name":"Console Custom Processor",
             "description":"Console Custom Processor",
-            "jarFileName":"streamline-core.jar",
             "inputSchema":{
                 "fields":[
                     {
@@ -143,10 +141,10 @@ operation. The property entity is the object added, updated or deleted.
 ### Get jar file
 
 To download the jar file associated with the custom processor use the GET requests below.
-Note that the get URL ends with the name of the file. This has to be the same name that
-was used to assign the property jarFileName in custom processor post/put.
+Note that the get URL ends with the name of the custom processor. This has to be the same name that
+was used to create or update the custom processor using post/put.
 
-`GET /api/v1/catalog/streams/componentbundles/PROCESSOR/custom/streamline-core.jar`
+`GET /api/v1/catalog/streams/componentbundles/PROCESSOR/custom/Console_Custom_Processor`
 
 ## Auto upload for Custom Processors
 
@@ -169,15 +167,13 @@ The tar file is expected to have 2 files in it. The main file is info.json. This
 containing json representing CustomProcessorInfo. A sample json is shown below. The name of the file
 has to be info.json. Otherwise it will fail to upload. The other file is the jar file.
 As mentioned above jar file should contain the class implementing the CustomProcessorRuntime interface. Name of
-the class should be the same as the value of the property customProcessorImpl in info.json. The jar
-file in the tar should have the same name as the jarFileName property in info.json
+the class should be the same as the value of the property customProcessorImpl in info.json. 
 
 ```json
 {
   "streamingEngine": "STORM",
   "name": "Console Custom Processor",
   "description": "Console Custom Processor",
-  "jarFileName": "streamline-core.jar",
   "topologyComponentUISpecification": {"fields": []},
   "inputSchema": {"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]},
   "outputSchema": {"fields":[{"name":"childField1","type":"INTEGER"},{"name":"childField2","type":"BOOLEAN"},{"name":"topLevelStringField","type":"STRING"}]},
