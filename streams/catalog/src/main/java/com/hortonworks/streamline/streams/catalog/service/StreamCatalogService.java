@@ -1106,9 +1106,8 @@ public class StreamCatalogService {
                 }
             }
         }
-        CustomProcessorInfo customProcessorInfo = new CustomProcessorInfo();
         this.removeTopologyComponentBundle(customProcessorBundle.getId());
-        return customProcessorInfo.fromTopologyComponentBundle(customProcessorBundle);
+        return new CustomProcessorInfo().fromTopologyComponentBundle(customProcessorBundle);
     }
 
     public Optional<TopologyEditorToolbar> getTopologyEditorToolbar(long userId) {
