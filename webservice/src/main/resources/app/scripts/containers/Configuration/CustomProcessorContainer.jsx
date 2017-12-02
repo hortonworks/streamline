@@ -250,7 +250,6 @@ export default class CustomProcessorContainer extends Component {
                     <Thead>
                       <Th column="name">Name</Th>
                       <Th column="description">Description</Th>
-                      <Th column="jarFileName">Jar File Name</Th>
                       <Th column="action">Actions</Th>
                     </Thead>
                     {filteredEntities.map((obj, i) => {
@@ -258,7 +257,6 @@ export default class CustomProcessorContainer extends Component {
                         <Tr key={`${obj.name}${i}`}>
                           <Td column="name">{obj.name}</Td>
                           <Td column="description">{obj.description}</Td>
-                          <Td column="jarFileName">{obj.jarFileName}</Td>
                           <Td column="action">
                             <ActionButtonGroup processor="custom" key={i} type="Custom Processor" allACL={allACL} udfObj={obj} handleEdit={this.handleEditCP.bind(this)} handleDelete={this.handleDeleteCP.bind(this)}/>
                           </Td>

@@ -17,12 +17,9 @@ package com.hortonworks.streamline.streams.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.common.FileEventHandler;
-import com.hortonworks.streamline.common.util.FileUtil;
-import com.hortonworks.streamline.common.util.ProxyUtil;
 import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.common.exception.ComponentConfigException;
-import com.hortonworks.streamline.streams.runtime.CustomProcessorRuntime;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.FileUtils;
@@ -37,6 +34,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
+import java.util.function.Function;
 
 /**
  * Class implementing uploading of custom processor logic.
@@ -81,15 +80,11 @@ public class CustomProcessorUploadHandler implements FileEventHandler {
                     LOG.warn("No information found for CustomProcessorRuntime in " + createdFile);
                     return;
                 }
-                InputStream jarFile = this.getJarFile(customProcessorInfo, createdFile);
+                InputStream jarFile = this.getJarFile(createdFile);
                 if (jarFile == null) {
                     LOG.warn("No jar file found for CustomProcessorRuntime in " + createdFile);
                     return;
                 }
-                File tempJarFile = FileUtil.writeInputStreamToTempFile(jarFile, ".jar");
-                ProxyUtil<CustomProcessorRuntime> customProcessorProxyUtil = new ProxyUtil<>(CustomProcessorRuntime.class);
-                customProcessorProxyUtil.loadClassFromJar(tempJarFile.getAbsolutePath(), customProcessorInfo.getCustomProcessorImpl());
-                jarFile.reset();
                 this.catalogService.addCustomProcessorInfoAsBundle(customProcessorInfo, jarFile);
                 succeeded = true;
             } else {
@@ -97,10 +92,10 @@ public class CustomProcessorUploadHandler implements FileEventHandler {
             }
         } catch (IOException e) {
             LOG.warn("Exception occured while processing tar file: " + createdFile, e);
-        } catch (ClassNotFoundException|InstantiationException|IllegalAccessException e) {
-            LOG.warn("Could not load a class from jar file implementing CustomProcessorRuntime interface from " + createdFile, e);
         } catch (ComponentConfigException e) {
             LOG.warn("UI specification for custom processor incorrect for custom processor file: " + createdFile, e);
+        } catch (NoSuchAlgorithmException e) {
+            LOG.warn("Got NoSuchAlgorithmException while calculating digest for jar: " + createdFile, e);
         } finally {
             try {
                 if (succeeded) {
@@ -142,32 +137,40 @@ public class CustomProcessorUploadHandler implements FileEventHandler {
         return customProcessorInfo;
     }
 
-    private InputStream getJarFile (CustomProcessorInfo customProcessorInfo, File tarFile) {
+    private InputStream getJarFile (File tarFile) {
         InputStream is = null;
-        byte[] jarFileBytes = getFileAsByteArray(tarFile, customProcessorInfo.getJarFileName());
+        byte[] jarFileBytes = getJarFileAsByteArray(tarFile);
         if (jarFileBytes != null && jarFileBytes.length > 0) {
             is = new ByteArrayInputStream(jarFileBytes);
         } else {
-            LOG.warn(customProcessorInfo.getJarFileName() + " not present in tar file: " + tarFile);
+            LOG.warn("Custom processor jar file not present in tar file: " + tarFile);
         }
         return is;
     }
 
+    private byte[] getJarFileAsByteArray (File tarFile) {
+        return getFileAsByteArray(tarFile, x -> x.endsWith(".jar"));
+    }
+
     private byte[] getFileAsByteArray (File tarFile, String fileName) {
+        return getFileAsByteArray(tarFile, x -> x.equals(fileName));
+    }
+
+    private byte[] getFileAsByteArray (File tarFile, Function<String, Boolean> filterFunc) {
         byte[] data = null;
-        LOG.info("Getting file {} from {}", fileName, tarFile);
+        LOG.info("Looking in to file {} ", tarFile);
         try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(tarFile));
              TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(bis)) {
             TarArchiveEntry tarArchiveEntry = tarArchiveInputStream.getNextTarEntry();
             while (tarArchiveEntry != null) {
-                if (tarArchiveEntry.getName().equals(fileName)) {
+                if (filterFunc.apply(tarArchiveEntry.getName())) {
                     data = IOUtils.toByteArray(tarArchiveInputStream);
                     break;
                 }
                 tarArchiveEntry = tarArchiveInputStream.getNextTarEntry();
             }
         } catch (IOException e) {
-            LOG.warn("Exception occured while getting file: " + fileName + " from " + tarFile, e);
+            LOG.warn("Exception occured while looking in to tar file [] ", filterFunc, tarFile, e);
         }
         return data;
     }
