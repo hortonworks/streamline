@@ -155,6 +155,7 @@ echo "User/Role bundle Root dir: ${user_role_dir}"
 
 function update_bundles {
     # === Source ===
+    put_topology_component_bundle /streams/componentbundles/SOURCE ${component_dir}/sources/v002__kafka-source-topology-component.json KAFKA
     # === Processor ===
     add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/v001__rtjoin-bolt-topology-component.json
     # === Sink ===
