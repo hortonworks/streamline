@@ -265,9 +265,6 @@ function main {
 
     update_bundles
     add_udfs
-    #For HDf-3.0.x line we have don't store digest for custom processor jars.
-    #This can be removed once we reach a point where we dont have a user on
-    #HDF-3.0.x versions
     update_custom_processors_with_digest
 }
 

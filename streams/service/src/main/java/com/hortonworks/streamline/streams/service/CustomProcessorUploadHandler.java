@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
+import java.util.function.Function;
 
 /**
  * Class implementing uploading of custom processor logic.
@@ -148,39 +149,28 @@ public class CustomProcessorUploadHandler implements FileEventHandler {
     }
 
     private byte[] getJarFileAsByteArray (File tarFile) {
-        byte[] data = null;
-        LOG.info("Getting jar file from {}", tarFile);
-        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(tarFile));
-             TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(bis)) {
-            TarArchiveEntry tarArchiveEntry = tarArchiveInputStream.getNextTarEntry();
-            while (tarArchiveEntry != null) {
-                if (tarArchiveEntry.getName().endsWith(".jar")) {
-                    data = IOUtils.toByteArray(tarArchiveInputStream);
-                    break;
-                }
-                tarArchiveEntry = tarArchiveInputStream.getNextTarEntry();
-            }
-        } catch (IOException e) {
-            LOG.warn("Exception occured while getting jar file:  from " + tarFile, e);
-        }
-        return data;
+        return getFileAsByteArray(tarFile, x -> x.endsWith(".jar"));
     }
 
     private byte[] getFileAsByteArray (File tarFile, String fileName) {
+        return getFileAsByteArray(tarFile, x -> x.equals(fileName));
+    }
+
+    private byte[] getFileAsByteArray (File tarFile, Function<String, Boolean> filterFunc) {
         byte[] data = null;
-        LOG.info("Getting file {} from {}", fileName, tarFile);
+        LOG.info("Looking in to file {} ", tarFile);
         try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(tarFile));
              TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(bis)) {
             TarArchiveEntry tarArchiveEntry = tarArchiveInputStream.getNextTarEntry();
             while (tarArchiveEntry != null) {
-                if (tarArchiveEntry.getName().equals(fileName)) {
+                if (filterFunc.apply(tarArchiveEntry.getName())) {
                     data = IOUtils.toByteArray(tarArchiveInputStream);
                     break;
                 }
                 tarArchiveEntry = tarArchiveInputStream.getNextTarEntry();
             }
         } catch (IOException e) {
-            LOG.warn("Exception occured while getting file: " + fileName + " from " + tarFile, e);
+            LOG.warn("Exception occured while looking in to tar file [] ", filterFunc, tarFile, e);
         }
         return data;
     }
