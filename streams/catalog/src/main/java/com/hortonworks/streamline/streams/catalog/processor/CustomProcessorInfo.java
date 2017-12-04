@@ -17,19 +17,15 @@ package com.hortonworks.streamline.streams.catalog.processor;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Preconditions;
 import com.hortonworks.registries.common.Schema;
+import com.hortonworks.streamline.common.ComponentUISpecification;
 import com.hortonworks.streamline.common.util.Utils;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
-import com.hortonworks.streamline.common.ComponentUISpecification;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Class representing information about a custom processor helping in the registration process
@@ -43,6 +39,19 @@ public class CustomProcessorInfo {
     public static final String CUSTOM_PROCESSOR_IMPL = "customProcessorImpl";
     public static final String DIGEST = "digest";
 
+    private static final Set<String> PROPERTY_KEYS;
+    static {
+        HashSet<String> result = new HashSet<>();
+        result.add(NAME);
+        result.add(DESCRIPTION);
+        result.add(JAR_FILE_NAME);
+        result.add(INPUT_SCHEMA);
+        result.add(OUTPUT_SCHEMA);
+        result.add(CUSTOM_PROCESSOR_IMPL);
+        result.add(DIGEST);
+        PROPERTY_KEYS = result;
+    }
+
     private String streamingEngine;
     private String name;
     private String description;
@@ -51,6 +60,7 @@ public class CustomProcessorInfo {
     private Schema inputSchema;
     private Schema outputSchema;
     private String customProcessorImpl;
+
     /**
      * The jar file digest which can be used to de-dup jar files.
      * If a newly submitted jar's digest matches with that of an already
@@ -58,54 +68,28 @@ public class CustomProcessorInfo {
      */
     private String digest;
 
-    @Override
-    public String toString() {
-        return "CustomProcessorInfo{" +
-                "streamingEngine='" + streamingEngine + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", jarFileName='" + jarFileName + '\'' +
-                ", topologyComponentUISpecification='" + topologyComponentUISpecification+ '\'' +
-                ", inputSchema=" + inputSchema +
-                ", outputSchema=" + outputSchema +
-                ", digest=" + digest +
-                ", customProcessorImpl='" + customProcessorImpl + '\'' +
-                '}';
+    /* jackson needs a default non args constructor*/
+    private CustomProcessorInfo() {
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        CustomProcessorInfo that = (CustomProcessorInfo) o;
-
-        if (streamingEngine != null ? !streamingEngine.equals(that.streamingEngine) : that.streamingEngine != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (description != null ? !description.equals(that.description) : that.description != null) return false;
-        if (jarFileName != null ? !jarFileName.equals(that.jarFileName) : that.jarFileName != null) return false;
-        if (topologyComponentUISpecification != null ? !topologyComponentUISpecification.equals(that.topologyComponentUISpecification) : that
-                .topologyComponentUISpecification != null)
-            return false;
-        if (inputSchema != null ? !inputSchema.equals(that.inputSchema) : that.inputSchema != null) return false;
-        if (outputSchema != null ? !outputSchema.equals(that.outputSchema) : that.outputSchema != null) return false;
-        if (digest != null ? !digest.equals(that.digest) : that.digest != null) return false;
-        return !(customProcessorImpl != null ? !customProcessorImpl.equals(that.customProcessorImpl) : that.customProcessorImpl != null);
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = streamingEngine != null ? streamingEngine.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (jarFileName != null ? jarFileName.hashCode() : 0);
-        result = 31 * result + (topologyComponentUISpecification != null ? topologyComponentUISpecification.hashCode() : 0);
-        result = 31 * result + (inputSchema != null ? inputSchema.hashCode() : 0);
-        result = 31 * result + (outputSchema != null ? outputSchema.hashCode() : 0);
-        result = 31 * result + (digest != null ? digest.hashCode() : 0);
-        result = 31 * result + (customProcessorImpl != null ? customProcessorImpl.hashCode() : 0);
-        return result;
+    public CustomProcessorInfo(String name,
+                               String description,
+                               String streamingEngine,
+                               String jarFileName,
+                               String customProcessorImpl,
+                               Schema inputSchema,
+                               Schema outputSchema,
+                               ComponentUISpecification topologyComponentUISpecification,
+                               String digest) {
+        this.name = name;
+        this.description = description;
+        this.streamingEngine = streamingEngine;
+        this.jarFileName = jarFileName;
+        this.customProcessorImpl = customProcessorImpl;
+        this.inputSchema = inputSchema;
+        this.outputSchema = outputSchema;
+        this.topologyComponentUISpecification = topologyComponentUISpecification;
+        this.digest = digest;
     }
 
     public Schema getOutputSchema() {
@@ -184,22 +168,74 @@ public class CustomProcessorInfo {
         this.digest = digest;
     }
 
-    public CustomProcessorInfo fromTopologyComponentBundle (TopologyComponentBundle topologyComponentBundle) throws IOException {
-        if (topologyComponentBundle != null) {
-            this.setStreamingEngine(topologyComponentBundle.getStreamingEngine());
-            ComponentUISpecification componentUISpecification = topologyComponentBundle.getTopologyComponentUISpecification();
-            List<ComponentUISpecification.UIField> uiFields = componentUISpecification.getFields();
-            Map<String, String> config = this.getPropertiesFromUIFields(uiFields);
-            this.setName(config.get(NAME));
-            this.setDescription(config.get(DESCRIPTION));
-            this.setJarFileName(config.get(JAR_FILE_NAME));
-            this.setCustomProcessorImpl(config.get(CUSTOM_PROCESSOR_IMPL));
-            this.setInputSchema(Utils.getSchemaFromConfig(config.get(INPUT_SCHEMA)));
-            this.setOutputSchema(Utils.getSchemaFromConfig(config.get(OUTPUT_SCHEMA)));
-            this.setTopologyComponentUISpecification(getCustomProcessorUISpecification(componentUISpecification));
-            this.setDigest(config.get(DIGEST));
-        }
-        return this;
+    public static CustomProcessorInfo fromTopologyComponentBundle(TopologyComponentBundle topologyComponentBundle) throws IOException {
+
+        Preconditions.checkNotNull(topologyComponentBundle, "topologyComponentBundle can not bre null");
+
+        ComponentUISpecification topologyComponentUISpecification = topologyComponentBundle.getTopologyComponentUISpecification();
+        List<ComponentUISpecification.UIField> uiFields = topologyComponentUISpecification.getFields();
+        Map<String, String> config = getPropertiesFromUIFields(uiFields);
+
+        return new CustomProcessorInfo(config.get(NAME),
+                config.get(DESCRIPTION),
+                topologyComponentBundle.getStreamingEngine(),
+                config.get(JAR_FILE_NAME),
+                config.get(CUSTOM_PROCESSOR_IMPL),
+                Utils.getSchemaFromConfig(config.get(INPUT_SCHEMA)),
+                Utils.getSchemaFromConfig(config.get(OUTPUT_SCHEMA)),
+                getCustomProcessorUISpecification(topologyComponentUISpecification),
+                config.get(DIGEST));
+    }
+
+
+    @Override
+    public String toString() {
+        return "CustomProcessorInfo{" +
+                "streamingEngine='" + streamingEngine + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", jarFileName='" + jarFileName + '\'' +
+                ", topologyComponentUISpecification='" + topologyComponentUISpecification+ '\'' +
+                ", inputSchema=" + inputSchema +
+                ", outputSchema=" + outputSchema +
+                ", digest=" + digest +
+                ", customProcessorImpl='" + customProcessorImpl + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CustomProcessorInfo that = (CustomProcessorInfo) o;
+
+        if (streamingEngine != null ? !streamingEngine.equals(that.streamingEngine) : that.streamingEngine != null) return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (description != null ? !description.equals(that.description) : that.description != null) return false;
+        if (jarFileName != null ? !jarFileName.equals(that.jarFileName) : that.jarFileName != null) return false;
+        if (topologyComponentUISpecification != null ? !topologyComponentUISpecification.equals(that.topologyComponentUISpecification) : that
+                .topologyComponentUISpecification != null)
+            return false;
+        if (inputSchema != null ? !inputSchema.equals(that.inputSchema) : that.inputSchema != null) return false;
+        if (outputSchema != null ? !outputSchema.equals(that.outputSchema) : that.outputSchema != null) return false;
+        if (digest != null ? !digest.equals(that.digest) : that.digest != null) return false;
+        return !(customProcessorImpl != null ? !customProcessorImpl.equals(that.customProcessorImpl) : that.customProcessorImpl != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = streamingEngine != null ? streamingEngine.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (jarFileName != null ? jarFileName.hashCode() : 0);
+        result = 31 * result + (topologyComponentUISpecification != null ? topologyComponentUISpecification.hashCode() : 0);
+        result = 31 * result + (inputSchema != null ? inputSchema.hashCode() : 0);
+        result = 31 * result + (outputSchema != null ? outputSchema.hashCode() : 0);
+        result = 31 * result + (digest != null ? digest.hashCode() : 0);
+        result = 31 * result + (customProcessorImpl != null ? customProcessorImpl.hashCode() : 0);
+        return result;
     }
 
     public TopologyComponentBundle toTopologyComponentBundle () throws IOException {
@@ -237,7 +273,7 @@ public class CustomProcessorInfo {
         return result;
     }
 
-    private ComponentUISpecification getCustomProcessorUISpecification (ComponentUISpecification componentUISpecification) {
+    private static ComponentUISpecification getCustomProcessorUISpecification (ComponentUISpecification componentUISpecification) {
         ComponentUISpecification result = new ComponentUISpecification();
         List<ComponentUISpecification.UIField> fields = new ArrayList<>();
         for (ComponentUISpecification.UIField uiField: componentUISpecification.getFields()) {
@@ -264,31 +300,23 @@ public class CustomProcessorInfo {
     }
 
 
-    private Map<String, String> getPropertiesFromUIFields (List<ComponentUISpecification.UIField> uiFields) {
+    private static Map<String, String> getPropertiesFromUIFields (List<ComponentUISpecification.UIField> uiFields) {
         Map<String, String> result = new HashMap<>();
-        Set<String> propertyKeys = this.getPropertyKeys();
         for (ComponentUISpecification.UIField uiField: uiFields) {
-            if (propertyKeys.contains(uiField.getFieldName())) {
+            if (PROPERTY_KEYS.contains(uiField.getFieldName())) {
                 result.put(uiField.getFieldName(), (String) uiField.getDefaultValue());
             }
         }
         return result;
     }
 
-    private Set<String> getPropertyKeys () {
-        Set<String> result = new HashSet<>();
-        result.add(NAME);
-        result.add(DESCRIPTION);
-        result.add(JAR_FILE_NAME);
-        result.add(INPUT_SCHEMA);
-        result.add(OUTPUT_SCHEMA);
-        result.add(CUSTOM_PROCESSOR_IMPL);
-        result.add(DIGEST);
-        return result;
-    }
-
-    private ComponentUISpecification.UIField createUIField (String fieldName, String uiName, boolean isOptional, boolean isUserInput, String tooltip,
-                                                            ComponentUISpecification.UIFieldType type, Object defaultValue) {
+    private ComponentUISpecification.UIField createUIField (String fieldName,
+                                                            String uiName,
+                                                            boolean isOptional,
+                                                            boolean isUserInput,
+                                                            String tooltip,
+                                                            ComponentUISpecification.UIFieldType type,
+                                                            Object defaultValue) {
         ComponentUISpecification.UIField uiField = new ComponentUISpecification.UIField();
         uiField.setFieldName(fieldName);
         uiField.setUiName(uiName);
