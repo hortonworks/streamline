@@ -44,7 +44,7 @@ export default class SinkNodeForm extends Component {
     super(props);
     this.sourceNodesId = [];
     this.sourceChildNodeType = [];
-    this.tempStreamFieldArr = [];
+    // this.tempStreamFieldArr = [];
     props.sourceNodes.map((node) => {
       this.sourceNodesId.push(node.nodeId);
     });
@@ -107,9 +107,9 @@ export default class SinkNodeForm extends Component {
             //TODO - Once we support multiple input streams, need to fix this.
             TopologyREST.getNode(topologyId, versionId, 'streams', edge.streamGroupings[0].streamId).then(streamResult => {
               tempStreamArr.push(streamResult);
-              _.map(tempStreamArr, (stream) => {
+              /*_.map(tempStreamArr, (stream) => {
                 this.tempStreamFieldArr.push(_.flattenDeep(stream.fields));
-              });
+              });*/
               this.setState({inputStreamArr: tempStreamArr, streamObj :tempStreamArr[0],streamObjArr : tempStreamArr.length > 1 ? tempStreamArr : []});
             });
           }
@@ -466,10 +466,11 @@ export default class SinkNodeForm extends Component {
       securityType,
       hasSecurity,
       activeTabKey,
-      formErrors
+      formErrors,
+      inputStreamArr
     } = this.state;
 
-    let fields = Utils.genFields(uiSpecification, [], formData, _.uniqBy(_.flattenDeep(this.tempStreamFieldArr),'name'), securityType, hasSecurity);
+    let fields = Utils.genFields(uiSpecification, [], formData, inputStreamArr, securityType, hasSecurity);
     const disabledFields = this.props.testRunActivated ? true : !this.props.editMode;
     const form = fetchLoader
       ? <div className="col-sm-12">
