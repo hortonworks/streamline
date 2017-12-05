@@ -56,8 +56,8 @@ should_include_file() {
     if [ "$INCLUDE_TEST_JARS" = true ]; then
         return 0
     fi
-    file=$1
-    if [ -z "$(echo "$file" | egrep "$regex")" ] ; then
+    testfile=$1
+    if [ -z "$(echo "$testfile" | egrep "$regex")" ] ; then
         return 0
     else
         return 1
@@ -65,9 +65,11 @@ should_include_file() {
 }
 
 # classpath addition for release
+shopt -s nullglob
+
 for file in "$base_dir"/libs/*.jar;
 do
-    if should_include_file "$file"; then
+    if should_include_file "$(basename $file)"; then
         CLASSPATH="$CLASSPATH":"$file"
     fi
 done
