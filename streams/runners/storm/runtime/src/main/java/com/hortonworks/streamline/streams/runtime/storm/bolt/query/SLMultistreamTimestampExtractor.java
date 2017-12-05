@@ -23,6 +23,7 @@ import org.apache.storm.tuple.Tuple;
 import org.apache.storm.windowing.TimestampExtractor;
 
 import java.util.HashMap;
+import java.util.List;
 
 
 public class SLMultistreamTimestampExtractor implements TimestampExtractor {
@@ -32,15 +33,15 @@ public class SLMultistreamTimestampExtractor implements TimestampExtractor {
      *     Ex: "stream1:tsField"  or  "stream1:outerField.TsField"
      *  'streamline-event.' prefix will be added to the events automatically
      */
-    public SLMultistreamTimestampExtractor(String... fieldSelectors) {
-        for (int i = 0; i < fieldSelectors.length; i++) {
-            String fieldSel = WindowedQueryBolt.convertToStreamLineKeys(fieldSelectors[i]); // Strip any alias & prefix field with 'streamline-event.'
+    public SLMultistreamTimestampExtractor(List<String> fieldSelectors) {
+            fieldSelectors.forEach(field -> {
+            String fieldSel = WindowedQueryBolt.convertToStreamLineKeys(field); // Strip any alias & prefix field with 'streamline-event.'
             FieldSelector fs = new FieldSelector(fieldSel, StreamKind.STREAM);
             if ( tsFields.containsKey(fs.streamName) ) {
                 throw new IllegalArgumentException("Only one timestamp field allowed per stream");
             }
             tsFields.put(fs.streamName, fs);
-        }
+        });
     }
 
     @Override

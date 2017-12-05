@@ -101,7 +101,7 @@ public class TestWindowedQueryBolt {
         usersAndCities.addAll( makeStreamLineEventStream("cities", cityFields, cities) );
 
         // treating 'userId' & 'cityId' as timestamp fields
-        SLMultistreamTimestampExtractor tsExtractor = new SLMultistreamTimestampExtractor("users:userId", "cities:cityId");
+        SLMultistreamTimestampExtractor tsExtractor = new SLMultistreamTimestampExtractor(Arrays.asList("users:userId", "cities:cityId"));
 
         for (Tuple userOrCity : usersAndCities) {
             long l = tsExtractor.extractTimestamp( userOrCity );
@@ -114,7 +114,7 @@ public class TestWindowedQueryBolt {
         ArrayList<Tuple> usersAndCities  = makeStreamLineEventStream("users", userFields, users);
         usersAndCities.addAll( makeStreamLineEventStream("cities", cityFields, cities) );
 
-        SLMultistreamTimestampExtractor tsExtractor = new SLMultistreamTimestampExtractor("users:userId"); // missing info on city stream
+        SLMultistreamTimestampExtractor tsExtractor = new SLMultistreamTimestampExtractor(Collections.singletonList("users:userId")); // missing info on city stream
 
         for (Tuple userOrCity : usersAndCities) {
             long l = tsExtractor.extractTimestamp( userOrCity ); // should throw IllegalArgumentException
