@@ -87,17 +87,6 @@ public class StormTopologyTimeSeriesMetricsImplTest {
             }.getMockInstance();
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testWithoutAssigningTimeSeriesQuerier() throws IOException {
-        stormTopologyTimeSeriesMetrics.setTimeSeriesQuerier(null);
-
-        final long from = 1L;
-        final long to = 3L;
-
-        stormTopologyTimeSeriesMetrics.getCompleteLatency(topology, component, from, to, null);
-        fail("It should throw Exception!");
-    }
-
     @Test
     public void testGetCompleteLatency() throws Exception {
         final long from = 1L;
@@ -120,6 +109,17 @@ public class StormTopologyTimeSeriesMetricsImplTest {
 
         Map<Long, Double> actual = stormTopologyTimeSeriesMetrics.getCompleteLatency(topology, component, from, to, null);
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testGetCompleteLatencyWithoutAssigningTimeSeriesQuerier() throws IOException {
+        stormTopologyTimeSeriesMetrics.setTimeSeriesQuerier(null);
+
+        final long from = 1L;
+        final long to = 3L;
+
+        Map<Long, Double> completeLatency = stormTopologyTimeSeriesMetrics.getCompleteLatency(topology, component, from, to, null);
+        assertEquals(Collections.emptyMap(), completeLatency);
     }
 
     @Test
@@ -168,6 +168,20 @@ public class StormTopologyTimeSeriesMetricsImplTest {
 
         Map<String, Map<Long, Double>> actual = stormTopologyTimeSeriesMetrics.getkafkaTopicOffsets(topology, component, from, to, null);
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testGetKafkaTopicOffsetsWithoutAssigningTimeSeriesQuerier() throws IOException {
+        stormTopologyTimeSeriesMetrics.setTimeSeriesQuerier(null);
+
+        final long from = 1L;
+        final long to = 3L;
+
+        Map<String, Map<Long, Double>> kafkaOffsets = stormTopologyTimeSeriesMetrics.getkafkaTopicOffsets(topology, component, from, to, null);
+        assertEquals(3, kafkaOffsets.size());
+        assertEquals(Collections.emptyMap(), kafkaOffsets.get("lag"));
+        assertEquals(Collections.emptyMap(), kafkaOffsets.get("offset"));
+        assertEquals(Collections.emptyMap(), kafkaOffsets.get("logsize"));
     }
 
     @Test
@@ -262,6 +276,25 @@ public class StormTopologyTimeSeriesMetricsImplTest {
         TopologyTimeSeriesMetrics.TimeSeriesComponentMetric actual =
                 stormTopologyTimeSeriesMetrics.getComponentStats(topology, component, from, to, null);
         assertEquals(expectedMetric, actual);
+    }
+
+    @Test
+    public void testGetComponentStatsWithoutAssigningTimeSeriesQuerier() throws Exception {
+        stormTopologyTimeSeriesMetrics.setTimeSeriesQuerier(null);
+
+        final TopologyLayout topology = getTopologyLayoutForTest();
+
+        final long from = 1L;
+        final long to = 3L;
+
+        TopologyTimeSeriesMetrics.TimeSeriesComponentMetric actual =
+                stormTopologyTimeSeriesMetrics.getComponentStats(topology, component, from, to, null);
+        assertEquals(Collections.emptyMap(), actual.getInputRecords());
+        assertEquals(Collections.emptyMap(), actual.getOutputRecords());
+        assertEquals(Collections.emptyMap(), actual.getFailedRecords());
+        assertEquals(Collections.emptyMap(), actual.getRecordsInWaitQueue());
+        assertEquals(Collections.emptyMap(), actual.getProcessedTime());
+        assertEquals(Collections.singletonMap(StormMappedMetric.ackedRecords.name(), Collections.emptyMap()), actual.getMisc());
     }
 
     private TopologyLayout getTopologyLayoutForTest() throws IOException {
