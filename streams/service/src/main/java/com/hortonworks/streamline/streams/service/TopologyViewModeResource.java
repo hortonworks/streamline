@@ -13,13 +13,21 @@ import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import org.jooq.lambda.Unchecked;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
-
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static com.hortonworks.streamline.streams.security.Permission.READ;
 import static java.util.stream.Collectors.toList;
@@ -29,6 +37,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologyViewModeResource {
 
+    public static final int THRESHOLD_VALID_MINIMUM_METRICS_POINTS = 3;
     private final StreamlineAuthorizer authorizer;
     private final StreamCatalogService catalogService;
     private final TopologyMetricsService metricsService;
@@ -58,8 +67,14 @@ public class TopologyViewModeResource {
             TopologyTimeSeriesMetrics.TimeSeriesComponentMetric topologyMetrics =
                     metricsService.getTopologyStats(topology, from, to, asUser);
 
+            long prevFrom = from - (to - from);
+            long prevTo = from - 1;
             TopologyTimeSeriesMetrics.TimeSeriesComponentMetric prevTopologyMetrics =
-                    metricsService.getTopologyStats(topology, from - (to - from), from - 1, asUser);
+                    metricsService.getTopologyStats(topology, prevFrom, prevTo, asUser);
+
+            if (!checkMetricsResponseHasFullRangeOfTime(prevTopologyMetrics, prevFrom, prevTo)) {
+                prevTopologyMetrics = null;
+            }
 
             ComponentMetricSummary viewModeComponentMetric = ComponentMetricSummary.convertSourceMetric(
                     topologyMetrics, prevTopologyMetrics);
@@ -69,6 +84,50 @@ public class TopologyViewModeResource {
         }
 
         throw EntityNotFoundException.byId(topologyId.toString());
+    }
+
+    private boolean checkMetricsResponseHasFullRangeOfTime(TopologyTimeSeriesMetrics.TimeSeriesComponentMetric metrics,
+                                                           long from, long to) {
+        if (metrics == null) {
+            return false;
+        }
+
+        Map<Long, Double> target = metrics.getProcessedTime();
+        if (target == null || target.size() == 0) {
+            // fail back to see output records
+            target = metrics.getOutputRecords();
+
+            if (target == null || target.size() == 0) {
+                return false;
+            }
+        }
+
+        List<Long> sortedTimestamp = target.keySet().stream().sorted().collect(toList());
+        if (sortedTimestamp.size() < THRESHOLD_VALID_MINIMUM_METRICS_POINTS) {
+            // no granularity to check, or not enough values to use
+            return false;
+        }
+
+        Long firstTimestamp = sortedTimestamp.get(0);
+        Long secondTimestamp = sortedTimestamp.get(1);
+        Long lastTimestamp = sortedTimestamp.get(sortedTimestamp.size() - 1);
+
+        long granularity = secondTimestamp - firstTimestamp;
+
+        // assuming that time-series DB will provide the self-aggregated metrics points
+        // only with ranges which raw points are available
+
+        // this means time-series DB doesn't have metric points in earlier part of time range
+        if (firstTimestamp - from > granularity) {
+            return false;
+        }
+
+        // this means time-series DB doesn't have metric points in later part of time range
+        if (to - lastTimestamp > granularity) {
+            return false;
+        }
+
+        return true;
     }
 
     @GET
@@ -315,10 +374,18 @@ public class TopologyViewModeResource {
             Double latency = aggregateCompleteLatency(metrics);
             Long failed = aggregateFailed(metrics);
 
-            Long prevEmitted = aggregateEmitted(prevMetrics);
-            Long prevAcked = aggregatedAcked(prevMetrics);
-            Double prevLatency = aggregateCompleteLatency(prevMetrics);
-            Long prevFailed = aggregateFailed(prevMetrics);
+            Long prevEmitted = null;
+            Long prevAcked = null;
+            Double prevLatency = null;
+            Long prevFailed = null;
+
+            // aggregate the value only if it is available
+            if (prevMetrics != null) {
+                prevEmitted = aggregateEmitted(prevMetrics);
+                prevAcked = aggregatedAcked(prevMetrics);
+                prevLatency = aggregateCompleteLatency(prevMetrics);
+                prevFailed = aggregateFailed(prevMetrics);
+            }
 
             return new ComponentMetricSummary(emitted, acked, failed, latency, prevEmitted, prevAcked,
                     prevFailed, prevLatency);
@@ -331,10 +398,19 @@ public class TopologyViewModeResource {
             Double latency = aggregateProcessLatency(metrics);
             Long failed = aggregateFailed(metrics);
 
-            Long prevEmitted = aggregateEmitted(prevMetrics);
-            Long prevAcked = aggregatedAcked(prevMetrics);
-            Double prevLatency = aggregateProcessLatency(prevMetrics);
-            Long prevFailed = aggregateFailed(prevMetrics);
+
+            Long prevEmitted = null;
+            Long prevAcked = null;
+            Double prevLatency = null;
+            Long prevFailed = null;
+
+            // aggregate the value only if it is available
+            if (prevMetrics != null) {
+                prevEmitted = aggregateEmitted(prevMetrics);
+                prevAcked = aggregatedAcked(prevMetrics);
+                prevLatency = aggregateProcessLatency(prevMetrics);
+                prevFailed = aggregateFailed(prevMetrics);
+            }
 
             return new ComponentMetricSummary(emitted, acked, failed, latency, prevEmitted, prevAcked,
                     prevFailed, prevLatency);

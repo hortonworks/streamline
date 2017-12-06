@@ -15,12 +15,15 @@
  **/
 package com.hortonworks.streamline.streams.catalog;
 
-import com.hortonworks.streamline.streams.catalog.Topology;
-import com.hortonworks.streamline.streams.catalog.TopologyComponent;
-import com.hortonworks.streamline.streams.layout.component.*;
+import com.hortonworks.streamline.streams.layout.component.StreamlineComponent;
+import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
+import com.hortonworks.streamline.streams.layout.component.StreamlineSink;
+import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
+import com.hortonworks.streamline.streams.layout.component.TopologyDag;
+import com.hortonworks.streamline.streams.layout.component.TopologyDagVisitor;
+import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 
 import java.io.IOException;
-import java.util.HashSet;
 
 public final class CatalogToLayoutConverter {
     private CatalogToLayoutConverter() {
