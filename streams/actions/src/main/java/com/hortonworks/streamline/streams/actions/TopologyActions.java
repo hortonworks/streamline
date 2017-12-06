@@ -74,6 +74,12 @@ public interface TopologyActions {
     // return topology status
     Status status(TopologyLayout topology, String asUser) throws Exception;
 
+    // change log level of topology with duration
+    LogLevelInformation configureLogLevel(TopologyLayout topology, LogLevel targetLogLevel, int durationSecs, String asUser) throws Exception;
+
+    // get current log level of topology
+    LogLevelInformation getLogLevel(TopologyLayout topology, String asUser) throws Exception;
+
     /**
      * the Path where topology specific artifacts are kept
      */
@@ -93,5 +99,27 @@ public interface TopologyActions {
         String STATUS_UNKNOWN = "Unknown";
         String getStatus();
         Map<String, String> getExtra();
+    }
+
+    enum LogLevel {
+        TRACE, DEBUG, INFO, WARN, ERROR
+    }
+
+    class LogLevelInformation {
+        private LogLevel logLevel;
+        private long epoch;
+
+        public LogLevelInformation(LogLevel logLevel, long epoch) {
+            this.logLevel = logLevel;
+            this.epoch = epoch;
+        }
+
+        public LogLevel getLogLevel() {
+            return logLevel;
+        }
+
+        public long getEpoch() {
+            return epoch;
+        }
     }
 }

@@ -173,6 +173,18 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
         return topologyActions.getRuntimeTopologyId(CatalogToLayoutConverter.getTopologyLayout(topology), asUser);
     }
 
+    public TopologyActions.LogLevelInformation configureLogLevel(Topology topology, TopologyActions.LogLevel targetLogLevel, int durationSecs,
+                                  String asUser) throws Exception {
+        TopologyActions topologyActions = getTopologyActionsInstance(topology);
+        return topologyActions.configureLogLevel(CatalogToLayoutConverter.getTopologyLayout(topology), targetLogLevel,
+                durationSecs, asUser);
+    }
+
+    public TopologyActions.LogLevelInformation getLogLevel(Topology topology, String asUser) throws Exception {
+        TopologyActions topologyActions = getTopologyActionsInstance(topology);
+        return topologyActions.getLogLevel(CatalogToLayoutConverter.getTopologyLayout(topology), asUser);
+    }
+
     @Override
     public void invalidateInstance(Long namespaceId) {
         try {
@@ -342,4 +354,5 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
     public StreamCatalogService getCatalogService() {
         return catalogService;
     }
+
 }

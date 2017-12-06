@@ -22,6 +22,7 @@ import com.hortonworks.streamline.common.exception.service.exception.request.Bad
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.exception.service.exception.server.StreamingEngineNotReachableException;
 import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.streams.actions.TopologyActions;
 import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyVersion;
@@ -421,6 +422,45 @@ public class TopologyCatalogResource {
         Topology topology = catalogService.getTopology(topologyId);
         if (topology != null) {
             return WSUtils.respondEntity(catalogService.getComponentsToReconfigure(topology), OK);
+        }
+        throw EntityNotFoundException.byId(topologyId.toString());
+    }
+
+    @POST
+    @Path("/topologies/{topologyId}/logconfig")
+    @Timed
+    public Response configureLogLevel(@PathParam("topologyId") Long topologyId,
+                                      @QueryParam("targetLogLevel") TopologyActions.LogLevel targetLogLevel,
+                                      @QueryParam("durationSecs") int durationSecs,
+                                      @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                NAMESPACE, topologyId, READ);
+
+        Topology topology = catalogService.getTopology(topologyId);
+        if (topology != null) {
+            TopologyActions.LogLevelInformation logInfo = actionsService.configureLogLevel(topology, targetLogLevel,
+                    durationSecs, WSUtils.getUserFromSecurityContext(securityContext));
+            return WSUtils.respondEntity(logInfo, OK);
+        }
+        throw EntityNotFoundException.byId(topologyId.toString());
+    }
+
+    @GET
+    @Path("/topologies/{topologyId}/logconfig")
+    @Timed
+    public Response getLogLevel(@PathParam("topologyId") Long topologyId,
+                                @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                NAMESPACE, topologyId, READ);
+
+        Topology topology = catalogService.getTopology(topologyId);
+        if (topology != null) {
+            TopologyActions.LogLevelInformation logInfo = actionsService.getLogLevel(topology, WSUtils.getUserFromSecurityContext(securityContext));
+            if (logInfo == null) {
+                return WSUtils.respondEntity(Collections.emptyMap(), OK);
+            } else {
+                return WSUtils.respondEntity(logInfo, OK);
+            }
         }
         throw EntityNotFoundException.byId(topologyId.toString());
     }
