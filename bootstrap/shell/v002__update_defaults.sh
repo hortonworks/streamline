@@ -162,6 +162,7 @@ function update_bundles {
     put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v002__hdfs-sink-topology-component.json HDFS
     put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v002__jdbc-sink-topology-component.json JDBC
     put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v002__hive-sink-topology-component.json HIVE
+    put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v002__druid-sink-topology-component.json DRUID
     # === Topology ===
     # === Service Bundle ===
     put_service_bundle /servicebundles/KAFKA ${service_dir}/v002__kafka-bundle.json
