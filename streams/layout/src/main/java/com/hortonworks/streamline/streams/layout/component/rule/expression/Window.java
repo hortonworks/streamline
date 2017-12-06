@@ -165,8 +165,9 @@ public class Window implements Serializable {
     }
 
     public void setTsFields(List<String> tsFields) {
-        Objects.requireNonNull(tsFields, "null tsFields");
-        this.tsFields = new ArrayList<>(tsFields);
+        if (tsFields != null) {
+            this.tsFields = new ArrayList<>(tsFields);
+        }
     }
 
     public int getLagMs() {
