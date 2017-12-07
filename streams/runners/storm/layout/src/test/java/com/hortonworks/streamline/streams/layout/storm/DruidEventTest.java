@@ -29,9 +29,7 @@ public class DruidEventTest {
             StreamlineEventImpl.Builder eventBuilder = StreamlineEventImpl.builder()
                 .put("a", "a.value")
                 .put("b", ImmutableMap.of("b1", "b.value"))
-                .put("c", ImmutableMap.of("c1", ImmutableMap.of("c2", "c.value")))
-                .put("d.e", "d.e.value")
-                .put("e", ImmutableMap.of("e1",  Collections.EMPTY_SET));
+                .put("c", ImmutableMap.of("c1", ImmutableMap.of("c2", "c.value")));
 
         DruidEventMapper.DruidEvent druidEvent = new DruidEventMapper.DruidEvent(eventBuilder.build());
 
@@ -44,17 +42,12 @@ public class DruidEventTest {
         //test two level nested get
         Assert.assertEquals("c.value", druidEvent.get("c.c1.c2"));
 
-        //test a key with dots
-        Assert.assertEquals("d.e.value", druidEvent.get("d.e"));
-
         //test non-existing key
         Assert.assertNull(druidEvent.get("non existing"));
 
         //test non-existing nested key
         Assert.assertNull(druidEvent.get("non.existing.key"));
 
-        //test unsupported value formats
-        Assert.assertNull(druidEvent.get("e.e1.e3"));
     }
 
 }

@@ -18,6 +18,7 @@ package com.hortonworks.streamline.streams.layout.storm;
 
 import com.google.common.collect.ForwardingMap;
 import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.common.StreamlineEventUtils;
 import org.apache.storm.druid.bolt.ITupleDruidEventMapper;
 import org.apache.storm.tuple.ITuple;
 
@@ -63,36 +64,7 @@ public final class DruidEventMapper implements ITupleDruidEventMapper<Map<String
 
         @Override
         public Object get(@Nullable Object key) {
-            Object value = super.get(key);
-
-            if (value != null)
-                return value;
-
-            String nestedKey = (String) key;
-            
-            if (!nestedKey.contains("."))
-                return null;
-
-            String[] keys = nestedKey.split("\\.");
-            if (keys.length == 0)
-                return null;
-
-            Object level1Map = super.get(keys[0]);
-            if (!isMap(level1Map))
-                return null;
-
-            Map subMap = (Map) level1Map;
-            int i;
-            for(i = 1; i < keys.length -1; i++)
-            {
-                Object subValue = subMap.get(keys[i]);
-                if (isMap(subValue))
-                    subMap = (Map) subMap.get(keys[i]);
-                else
-                    return null;
-            }
-
-            return subMap.get(keys[i]);
+            return StreamlineEventUtils.getFieldValue(event, (String)key);
         }
     }
 }
