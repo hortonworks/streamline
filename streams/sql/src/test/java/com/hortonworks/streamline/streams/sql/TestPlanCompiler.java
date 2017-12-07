@@ -19,7 +19,10 @@ package com.hortonworks.streamline.streams.sql;
 
 import com.google.common.collect.ImmutableMap;
 import com.hortonworks.streamline.streams.sql.compiler.PlanCompiler;
-import com.hortonworks.streamline.streams.sql.runtime.*;
+import com.hortonworks.streamline.streams.sql.runtime.AbstractValuesProcessor;
+import com.hortonworks.streamline.streams.sql.runtime.ChannelHandler;
+import com.hortonworks.streamline.streams.sql.runtime.CorrelatedValues;
+import com.hortonworks.streamline.streams.sql.runtime.DataSource;
 import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
@@ -44,7 +47,7 @@ public class TestPlanCompiler {
     AbstractValuesProcessor proc = compiler.compile(state.tree());
     Map<String, DataSource> data = new HashMap<>();
     data.put("FOO", new TestUtils.MockDataSource());
-    List<CorrelatedEventsAwareValues> values = new ArrayList<>();
+    List<CorrelatedValues> values = new ArrayList<>();
     ChannelHandler h = new TestUtils.CollectDataChannelHandler(values);
     proc.initialize(data, h);
 
@@ -63,7 +66,7 @@ public class TestPlanCompiler {
     AbstractValuesProcessor proc = compiler.compile(state.tree());
     Map<String, DataSource> data = new HashMap<>();
     data.put("FOO", new TestUtils.MockDataSource());
-    List<CorrelatedEventsAwareValues> values = new ArrayList<>();
+    List<CorrelatedValues> values = new ArrayList<>();
     ChannelHandler h = new TestUtils.CollectDataChannelHandler(values);
     proc.initialize(data, h);
 
@@ -84,7 +87,7 @@ public class TestPlanCompiler {
     AbstractValuesProcessor proc = compiler.compile(state.tree());
     Map<String, DataSource> data = new HashMap<>();
     data.put("FOO", new TestUtils.MockNestedDataSource());
-    List<CorrelatedEventsAwareValues> values = new ArrayList<>();
+    List<CorrelatedValues> values = new ArrayList<>();
     ChannelHandler h = new TestUtils.CollectDataChannelHandler(values);
     proc.initialize(data, h);
 
@@ -109,7 +112,7 @@ public class TestPlanCompiler {
     AbstractValuesProcessor proc = compiler.compile(state.tree());
     Map<String, DataSource> data = new HashMap<>();
     data.put("FOO", new TestUtils.MockDataSource());
-    List<CorrelatedEventsAwareValues> values = new ArrayList<>();
+    List<CorrelatedValues> values = new ArrayList<>();
     ChannelHandler h = new TestUtils.CollectDataChannelHandler(values);
     proc.initialize(data, h);
 

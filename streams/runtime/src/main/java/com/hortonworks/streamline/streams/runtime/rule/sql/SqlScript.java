@@ -28,7 +28,7 @@ import com.hortonworks.streamline.streams.runtime.rule.condition.expression.Expr
 import com.hortonworks.streamline.streams.runtime.rule.condition.expression.StormSqlExpression;
 import com.hortonworks.streamline.streams.runtime.script.Script;
 import com.hortonworks.streamline.streams.runtime.script.engine.ScriptEngine;
-import com.hortonworks.streamline.streams.sql.runtime.CorrelatedEventsAwareValues;
+import com.hortonworks.streamline.streams.sql.runtime.CorrelatedValues;
 import com.hortonworks.streamline.streams.sql.runtime.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,7 +106,7 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
     @Override
     public Collection<StreamlineEvent> evaluate(StreamlineEvent event) throws ScriptException {
         LOG.debug("Evaluating [{}] with script engine [{}]", event, scriptEngine);
-        List<CorrelatedEventsAwareValues> result = null;
+        List<CorrelatedValues> result = null;
         if (stormSqlFields == null || stormSqlFields.isEmpty()) {
             if (event == GROUP_BY_TRIGGER_EVENT) {
                 return Collections.emptyList();
@@ -129,7 +129,7 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
         return convert(result, event);
     }
 
-    private CorrelatedEventsAwareValues createValues(StreamlineEvent event) {
+    private CorrelatedValues createValues(StreamlineEvent event) {
         Values values = new Values();
         for (Schema.Field field : stormSqlFields) {
             Object value;
@@ -143,17 +143,17 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
             }
             values.add(value);
         }
-        return CorrelatedEventsAwareValues.of(Collections.singletonList(event), values);
+        return CorrelatedValues.of(Collections.singletonList(event), values);
     }
 
-    private Collection<StreamlineEvent> convert(List<CorrelatedEventsAwareValues> result,
+    private Collection<StreamlineEvent> convert(List<CorrelatedValues> result,
                                                 final StreamlineEvent inputEvent) {
         Collection<StreamlineEvent> output = Collections.emptyList();
         if (result != null) {
             if (valuesConverter != null) {
-                output = Collections2.transform(result, new Function<CorrelatedEventsAwareValues, StreamlineEvent>() {
+                output = Collections2.transform(result, new Function<CorrelatedValues, StreamlineEvent>() {
                     @Override
-                    public StreamlineEvent apply(CorrelatedEventsAwareValues values) {
+                    public StreamlineEvent apply(CorrelatedValues values) {
                         return valuesConverter.convert(values, inputEvent);
                     }
                 });
@@ -173,7 +173,7 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
         /**
          * Converts the input Values to the specified output object
          */
-        O convert(CorrelatedEventsAwareValues input, StreamlineEvent inputEvent);
+        O convert(CorrelatedValues input, StreamlineEvent inputEvent);
     }
 
     public static class CorrelatedValuesToStreamlineEventConverter implements ValuesConverter<StreamlineEvent> {
@@ -185,7 +185,7 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
         }
 
         @Override
-        public StreamlineEvent convert(CorrelatedEventsAwareValues input, StreamlineEvent inputEvent) {
+        public StreamlineEvent convert(CorrelatedValues input, StreamlineEvent inputEvent) {
             if (this.eventCorrelationInjector == null) {
                 this.eventCorrelationInjector = new EventCorrelationInjector();
             }

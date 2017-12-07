@@ -25,17 +25,17 @@ import java.util.*;
 
 public class TestUtils {
   public static class MockDataSource implements DataSource {
-    private final ArrayList<CorrelatedEventsAwareValues> RECORDS = new ArrayList<>();
+    private final ArrayList<CorrelatedValues> RECORDS = new ArrayList<>();
 
     public MockDataSource() {
       for (int i = 0; i < 5; ++i) {
-        RECORDS.add(new CorrelatedEventsAwareValues(Collections.emptyList(), i, "x", null));
+        RECORDS.add(new CorrelatedValues(Collections.emptyList(), i, "x", null));
       }
     }
 
     @Override
     public void open(ChannelContext ctx) {
-      for (CorrelatedEventsAwareValues v : RECORDS) {
+      for (CorrelatedValues v : RECORDS) {
         ctx.emit(v);
       }
       ctx.fireChannelInactive();
@@ -43,7 +43,7 @@ public class TestUtils {
   }
 
   public static class MockNestedDataSource implements DataSource {
-    private final ArrayList<CorrelatedEventsAwareValues> RECORDS = new ArrayList<>();
+    private final ArrayList<CorrelatedValues> RECORDS = new ArrayList<>();
 
     public MockNestedDataSource() {
       List<Integer> ints = Arrays.asList(100, 200, 300);
@@ -53,13 +53,13 @@ public class TestUtils {
         map.put("c", i*i);
         Map<String, Map<String, Integer>> mm = new HashMap<>();
         mm.put("a", map);
-        RECORDS.add(new CorrelatedEventsAwareValues(Collections.emptyList(), i, map, mm, ints));
+        RECORDS.add(new CorrelatedValues(Collections.emptyList(), i, map, mm, ints));
       }
     }
 
     @Override
     public void open(ChannelContext ctx) {
-      for (CorrelatedEventsAwareValues v : RECORDS) {
+      for (CorrelatedValues v : RECORDS) {
         ctx.emit(v);
       }
       ctx.fireChannelInactive();
@@ -67,14 +67,14 @@ public class TestUtils {
   }
 
   public static class CollectDataChannelHandler implements ChannelHandler {
-    private final List<CorrelatedEventsAwareValues> values;
+    private final List<CorrelatedValues> values;
 
-    public CollectDataChannelHandler(List<CorrelatedEventsAwareValues> values) {
+    public CollectDataChannelHandler(List<CorrelatedValues> values) {
       this.values = values;
     }
 
     @Override
-    public void dataReceived(ChannelContext ctx, CorrelatedEventsAwareValues data) {
+    public void dataReceived(ChannelContext ctx, CorrelatedValues data) {
       values.add(data);
     }
 

@@ -22,7 +22,7 @@ package com.hortonworks.streamline.streams.sql.runtime;
  * series of events.
  */
 public interface ChannelHandler {
-  void dataReceived(ChannelContext ctx, CorrelatedEventsAwareValues data);
+  void dataReceived(ChannelContext ctx, CorrelatedValues data);
 
   /**
    * The producer of the data has indicated that the channel is no longer

@@ -37,7 +37,14 @@ import com.hortonworks.streamline.streams.runtime.storm.bolt.StreamlineWindowedB
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.hortonworks.streamline.streams.common.StreamlineEventImpl.GROUP_BY_TRIGGER_EVENT;
@@ -64,6 +71,7 @@ public class WindowRulesBolt extends StreamlineWindowedBolt {
     public WindowRulesBolt(String rulesProcessorJson, RuleProcessorRuntime.ScriptType scriptType) {
         this(Utils.createObjectFromJson(rulesProcessorJson, RulesProcessor.class), scriptType);
     }
+
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         if (this.rulesProcessor == null) {

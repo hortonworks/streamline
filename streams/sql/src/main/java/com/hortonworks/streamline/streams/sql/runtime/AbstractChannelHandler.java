@@ -19,7 +19,7 @@ package com.hortonworks.streamline.streams.sql.runtime;
 
 public abstract class AbstractChannelHandler implements ChannelHandler {
   @Override
-  public abstract void dataReceived(ChannelContext ctx, CorrelatedEventsAwareValues data);
+  public abstract void dataReceived(ChannelContext ctx, CorrelatedValues data);
 
   @Override
   public void channelInactive(ChannelContext ctx) {
@@ -43,7 +43,7 @@ public abstract class AbstractChannelHandler implements ChannelHandler {
 
   public static final AbstractChannelHandler PASS_THROUGH = new AbstractChannelHandler() {
     @Override
-    public void dataReceived(ChannelContext ctx, CorrelatedEventsAwareValues data) {
+    public void dataReceived(ChannelContext ctx, CorrelatedValues data) {
       ctx.emit(data);
     }
   };

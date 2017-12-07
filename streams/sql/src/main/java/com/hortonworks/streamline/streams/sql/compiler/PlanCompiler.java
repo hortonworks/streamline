@@ -49,7 +49,7 @@ public class PlanCompiler {
       "import com.hortonworks.streamline.streams.sql.runtime.ChannelHandler;",
       "import com.hortonworks.streamline.streams.sql.runtime.DataSource;",
       "import com.hortonworks.streamline.streams.sql.runtime.AbstractValuesProcessor;",
-      "import com.hortonworks.streamline.streams.sql.runtime.CorrelatedEventsAwareValues;",
+      "import com.hortonworks.streamline.streams.sql.runtime.CorrelatedValues;",
       "import com.hortonworks.streamline.streams.sql.runtime.StreamlineDataContext;",
       "import com.google.common.collect.ArrayListMultimap;",
       "import com.google.common.collect.Multimap;",

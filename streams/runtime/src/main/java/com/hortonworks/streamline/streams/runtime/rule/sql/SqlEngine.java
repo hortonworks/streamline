@@ -21,8 +21,7 @@ package com.hortonworks.streamline.streams.runtime.rule.sql;
 import com.hortonworks.streamline.streams.runtime.script.engine.ScriptEngine;
 import com.hortonworks.streamline.streams.sql.StreamlineSql;
 import com.hortonworks.streamline.streams.sql.runtime.ChannelContext;
-import com.hortonworks.streamline.streams.sql.runtime.CorrelatedEventsAwareValues;
-import com.hortonworks.streamline.streams.sql.runtime.Values;
+import com.hortonworks.streamline.streams.sql.runtime.CorrelatedValues;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,9 +57,9 @@ public class SqlEngine implements ScriptEngine<SqlEngine> {
         }
     }
 
-    public List<CorrelatedEventsAwareValues> eval(CorrelatedEventsAwareValues input) {
+    public List<CorrelatedValues> eval(CorrelatedValues input) {
         channelContext.emit(input);
-        List<CorrelatedEventsAwareValues> res = channelHandler.getResult();
+        List<CorrelatedValues> res = channelHandler.getResult();
         channelHandler.clearResult();
         return res;
     }
@@ -68,9 +67,9 @@ public class SqlEngine implements ScriptEngine<SqlEngine> {
     /*
      * force evaluation of pending results, for e.g. evaluate last group in case of group-by
      */
-    public List<CorrelatedEventsAwareValues> flush() {
+    public List<CorrelatedValues> flush() {
         channelContext.flush();
-        List<CorrelatedEventsAwareValues> res = channelHandler.getResult();
+        List<CorrelatedValues> res = channelHandler.getResult();
         channelHandler.clearResult();
         return res;
     }

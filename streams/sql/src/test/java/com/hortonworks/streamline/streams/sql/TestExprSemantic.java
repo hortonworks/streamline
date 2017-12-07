@@ -396,7 +396,7 @@ public class TestExprSemantic {
     AbstractValuesProcessor proc = compiler.compile(state.tree());
     Map<String, DataSource> data = new HashMap<>();
     data.put("FOO", new TestUtils.MockDataSource());
-    List<CorrelatedEventsAwareValues> values = new ArrayList<>();
+    List<CorrelatedValues> values = new ArrayList<>();
     ChannelHandler h = new TestUtils.CollectDataChannelHandler(values);
     proc.initialize(data, h);
     return values.get(0);
