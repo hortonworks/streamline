@@ -14,7 +14,7 @@
 
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
-import Select from 'react-select';
+import {Select2 as Select} from '../../utils/SelectUtils';
 import Form from '../../libs/form';
 import * as Fields from '../../libs/form/Fields';
 

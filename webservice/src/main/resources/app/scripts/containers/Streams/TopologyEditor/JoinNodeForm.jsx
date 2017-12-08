@@ -16,7 +16,7 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
-import Select from 'react-select';
+import {Select2 as Select} from '../../../utils/SelectUtils';
 import {OverlayTrigger, Popover} from 'react-bootstrap';
 import Utils from '../../../utils/Utils';
 import FSReactToastr from '../../../components/FSReactToastr';
@@ -359,6 +359,9 @@ export default class JoinNodeForm extends Component {
       stateObj.outputStreamFields = _.concat(stateObj.outputStreamFields, o.fields ? o.fields : o);
     });
 
+    // disabled the selected output fields in UI on prefetch data
+    this.disableSelectedOptionFields(outputKeysObjArr, outputFieldsList);
+
     ProcessorUtils.addChildren(outputKeysObjArr, outputFieldsList);
 
     this.streamData = {
@@ -453,6 +456,7 @@ export default class JoinNodeForm extends Component {
       this.setState({outputKeysObjArr : arr, outputKeys: [], outputStreamFields: [],outputGroupByDotKeys : []}, () => {
         this.validateField('outputKeysObjArr');
       });
+      this.disableSelectedOptionFields(arr,this.state.outputFieldsList);
       this.context.ParentForm.setState({outputStreamObj: this.streamData});
     }
   }
@@ -469,7 +473,8 @@ export default class JoinNodeForm extends Component {
   setOutputFields = (arr) => {
     let {outputFieldsList} = this.state;
     arr = JSON.parse(JSON.stringify(arr));
-    ProcessorUtils.removeChildren(arr);
+    // ProcessorUtils.removeChildren(arr);
+    this.disableSelectedOptionFields(arr,outputFieldsList);
     ProcessorUtils.addChildren(arr, outputFieldsList);
 
 
@@ -483,6 +488,21 @@ export default class JoinNodeForm extends Component {
       this.validateField('outputKeysObjArr');
     });
     this.context.ParentForm.setState({outputStreamObj: this.streamData});
+  }
+
+  disableSelectedOptionFields = (arr,outputFieldsList) => {
+    _.map(outputFieldsList, (output) => {
+      if(arr.length){
+        const index = _.findIndex(arr,(a) => a.keyPath === output.keyPath && a.name === output.name);
+        if(index !== -1){
+          output.disabled = true;
+        } else {
+          output.keyPath !== '' ? output.disabled = false : output.disabled = true;
+        }
+      } else {
+        output.keyPath !== '' ? output.disabled = false : output.disabled = true;
+      }
+    });
   }
 
   validateField(fieldName, _value){
@@ -1234,7 +1254,7 @@ export default class JoinNodeForm extends Component {
                 </div>
                 <div className="row">
                   <div className="col-sm-12">
-                    <Select className={"menu-outer-top " + (!!validationErrors.outputKeysObjArr ? 'invalidSelect' : '')} value={outputKeysObjArr} options={ProcessorUtils.filterOptions(outputKeysObjArr, outputFieldsList)} onChange={this.handleFieldsChange.bind(this)} multi={true} required={true} disabled={disabledFields} valueKey="uniqueID" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)} valueRenderer={this.renderValueComponent.bind(this)} backspaceRemoves={false} deleteRemoves={false}/>
+                    <Select className={"menu-outer-top " + (!!validationErrors.outputKeysObjArr ? 'invalidSelect' : '')}  value={outputKeysObjArr} options={outputFieldsList} onChange={this.handleFieldsChange.bind(this)} multi={true} required={true} disabled={disabledFields} valueKey="uniqueID" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)} valueRenderer={this.renderValueComponent.bind(this)} backspaceRemoves={false} deleteRemoves={false} removeSelected={false}/>
                     <p className="text-danger">{validationErrors.outputKeysObjArr}</p>
                   </div>
                 </div>

@@ -25,7 +25,7 @@ import CommonNotification from '../../../utils/CommonNotification';
 import {toastOpt} from '../../../utils/Constants';
 import d3 from 'd3';
 import moment from 'moment';
-import Select from 'react-select';
+import {Select2 as Select} from '../../../utils/SelectUtils';
 
 export default class MetricsContainer extends Component {
   constructor(props) {

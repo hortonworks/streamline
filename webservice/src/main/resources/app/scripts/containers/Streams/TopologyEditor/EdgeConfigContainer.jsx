@@ -15,7 +15,7 @@
 import React, {Component} from 'react';
 import ReactDOM, {findDOMNode} from 'react-dom';
 import _ from 'lodash';
-import Select from 'react-select';
+import {Select2 as Select} from '../../../utils/SelectUtils';
 import TopologyREST from '../../../rest/TopologyREST';
 import TopologyUtils from '../../../utils/TopologyUtils';
 import FSReactToastr from '../../../components/FSReactToastr';

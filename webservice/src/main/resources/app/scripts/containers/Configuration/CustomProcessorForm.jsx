@@ -99,7 +99,7 @@ class CustomProcessorForm extends Component {
     this.navigateFlag = false;
   }
 
-  setDefaultValues() {
+  setDefaultValues = () => {
     this.extendObj = Object.assign({}, this.defaultObj, {fieldsChk: true});
     this.setState(JSON.parse(JSON.stringify(this.extendObj)));
   }
@@ -164,10 +164,12 @@ class CustomProcessorForm extends Component {
   }
 
   componentDidMount() {
+    this.props.onRef(this);
     this.props.router.setRouteLeaveHook(this.props.route, this.routerWillLeave);
   }
   componentWillUnmount() {
     this.props.popUpFlag(false);
+    this.props.onRef(null);
     this.unmounted = true;
   }
 

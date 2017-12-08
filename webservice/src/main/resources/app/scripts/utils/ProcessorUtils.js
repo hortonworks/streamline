@@ -355,7 +355,7 @@ const selectAllOutputFields = function(tempFields,string){
       let data = null;
       string === 'joinForm'
         ? data = -1
-        : data = _.findIndex(tempAllFields, (temp) => {return temp.name === field.name;});
+        : data = _.findIndex(tempAllFields, (temp) => {return (temp.name ||  temp.value) === (field.name || field.value);});
       if(data === -1){
         tempAllFields = _.concat(tempAllFields ,field);
       }
