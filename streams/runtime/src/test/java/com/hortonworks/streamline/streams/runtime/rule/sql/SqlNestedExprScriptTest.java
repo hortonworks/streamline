@@ -58,7 +58,7 @@ public class SqlNestedExprScriptTest {
         Expression x = new FieldExpression(Schema.Field.of("x", Schema.Type.INTEGER));
         condition.setExpression(new BinaryExpression(Operator.NOT_EQUAL, x, new Literal("100")));
         sqlScript = new SqlScript(new StormSqlExpression(condition), new SqlEngine(),
-                                                     new SqlScript.ValuesToStreamlineEventConverter(Collections.singletonList("x")));
+                                                     new SqlScript.CorrelatedValuesToStreamlineEventConverter(Collections.singletonList("x")));
 
         Map<String, Object> kv = new HashMap<>();
         kv.put("x", 100);
@@ -75,7 +75,7 @@ public class SqlNestedExprScriptTest {
                 new FieldExpression(Schema.Field.of("y", Schema.Type.NESTED)), "b");
         condition.setExpression(new BinaryExpression(Operator.LESS_THAN, y_b, new Literal("100")));
         sqlScript = new SqlScript(new StormSqlExpression(condition), new SqlEngine(),
-                                                     new SqlScript.ValuesToStreamlineEventConverter(Collections.singletonList("y")));
+                                                     new SqlScript.CorrelatedValuesToStreamlineEventConverter(Collections.singletonList("y")));
 
         Map<String, Object> nested = new HashMap<>();
         nested.put("a", 5);
@@ -96,7 +96,7 @@ public class SqlNestedExprScriptTest {
                 new FieldExpression(Schema.Field.of("y", Schema.Type.NESTED)), "a"), 0);
         condition.setExpression(new BinaryExpression(Operator.LESS_THAN, y_a_0, new Literal("100")));
         sqlScript = new SqlScript(new StormSqlExpression(condition), new SqlEngine(),
-                                                     new SqlScript.ValuesToStreamlineEventConverter(Collections.singletonList("y")));
+                                                     new SqlScript.CorrelatedValuesToStreamlineEventConverter(Collections.singletonList("y")));
         List<Integer> nestedList = new ArrayList<>();
         nestedList.add(500);
         nestedList.add(1);

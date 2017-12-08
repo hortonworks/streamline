@@ -21,7 +21,7 @@ public interface ChannelContext {
   /**
    * Emit data to the next stage of the data pipeline.
    */
-  void emit(Values data);
+  void emit(CorrelatedValues data);
   void fireChannelInactive();
   void flush();
   void setSource(Object source);

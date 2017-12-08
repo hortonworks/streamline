@@ -17,7 +17,7 @@ package com.hortonworks.streamline.streams.runtime.rule.sql;
 
 import com.hortonworks.streamline.streams.sql.runtime.ChannelContext;
 import com.hortonworks.streamline.streams.sql.runtime.ChannelHandler;
-import com.hortonworks.streamline.streams.sql.runtime.Values;
+import com.hortonworks.streamline.streams.sql.runtime.CorrelatedValues;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,10 +26,10 @@ import java.util.List;
 
 public class RulesChannelHandler implements ChannelHandler {
     protected static final Logger LOG = LoggerFactory.getLogger(RulesChannelHandler.class);
-    private List<Values> result = new ArrayList<>();
+    private List<CorrelatedValues> result = new ArrayList<>();
 
     @Override
-    public void dataReceived(ChannelContext ctx, Values data) {
+    public void dataReceived(ChannelContext ctx, CorrelatedValues data) {
         LOG.debug("SQL query result set {}", data);
         result.add(data);
     }
@@ -50,7 +50,7 @@ public class RulesChannelHandler implements ChannelHandler {
     public void setSource(ChannelContext channelContext, Object o) {
     }
 
-    public List<Values> getResult() {
+    public List<CorrelatedValues> getResult() {
         return new ArrayList<>(result);
     }
 
