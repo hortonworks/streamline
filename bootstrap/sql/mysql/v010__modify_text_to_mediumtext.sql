@@ -22,6 +22,15 @@ ALTER TABLE `topology_source` MODIFY `configData` MEDIUMTEXT NOT NULL;
 ALTER TABLE `topology_sink` MODIFY `configData` MEDIUMTEXT NOT NULL;
 ALTER TABLE `topology_processor` MODIFY `configData` MEDIUMTEXT NOT NULL;
 ALTER TABLE `topology_edge` MODIFY `streamGroupingsData` MEDIUMTEXT NOT NULL;
+ALTER TABLE `service_configuration` MODIFY `configuration` MEDIUMTEXT NOT NULL;
+ALTER TABLE `topology_editor_toolbar` MODIFY `data` MEDIUMTEXT NOT NULL;
+ALTER TABLE `service_bundle` MODIFY `serviceUISpecification` MEDIUMTEXT NOT NULL;
+ALTER TABLE `ml_model` MODIFY `pmml` MEDIUMTEXT NOT NULL;
+ALTER TABLE `dashboard` MODIFY `data` MEDIUMTEXT NOT NULL;
+ALTER TABLE `widget` MODIFY `data` MEDIUMTEXT NOT NULL;
+ALTER TABLE `datasource` MODIFY `data` MEDIUMTEXT NOT NULL;
+ALTER TABLE `topology` MODIFY `config` MEDIUMTEXT NOT NULL;
+ALTER TABLE `topology_editor_metadata` MODIFY `data` MEDIUMTEXT NOT NULL;
 
 ALTER TABLE `topology_rule`
 MODIFY `streams` MEDIUMTEXT NULL,
@@ -50,4 +59,8 @@ MODIFY `actions` MEDIUMTEXT NOT NULL,
 MODIFY `projections` MEDIUMTEXT NULL,
 MODIFY `groupbykeys` MEDIUMTEXT NULL;
 
-ALTER TABLE `service_bundle` MODIFY `serviceUISpecification` MEDIUMTEXT NOT NULL;
+
+ALTER TABLE `notifier`
+MODIFY `properties` MEDIUMTEXT,
+MODIFY `fieldValues` MEDIUMTEXT;
+
