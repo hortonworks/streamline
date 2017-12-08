@@ -118,4 +118,8 @@ public class JsonClientUtil {
     public static <T> T postForm(WebTarget target, MultivaluedMap<String, String> form, MediaType mediaType, Class<T> clazz) {
         return target.request(mediaType).post(Entity.form(form), clazz);
     }
+
+    public static <T> T postEntity(WebTarget target, Object entity, MediaType mediaType, Class<T> clazz) {
+        return target.request(mediaType).post(Entity.json(entity), clazz);
+    }
 }
