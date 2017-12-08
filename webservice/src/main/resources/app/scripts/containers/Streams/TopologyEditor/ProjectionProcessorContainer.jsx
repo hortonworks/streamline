@@ -19,7 +19,7 @@ import ReactDOM, {
   findDOMNode
 } from 'react-dom';
 import PropTypes from 'prop-types';
-import Select from 'react-select';
+import {Select2 as Select} from '../../../utils/SelectUtils';
 import {OverlayTrigger, Popover} from 'react-bootstrap';
 import TopologyREST from '../../../rest/TopologyREST';
 import AggregateUdfREST from '../../../rest/AggregateUdfREST';

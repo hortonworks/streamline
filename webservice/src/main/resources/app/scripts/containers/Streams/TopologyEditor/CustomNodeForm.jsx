@@ -16,7 +16,7 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
-import Select from 'react-select';
+import {Select2 as Select} from '../../../utils/SelectUtils';
 import {Table, Thead, Th, Tr, Td, unsafe} from 'reactable';
 import {Tabs, Tab, Radio, OverlayTrigger, Popover} from 'react-bootstrap';
 import {BtnDelete, BtnEdit} from '../../../components/ActionButtons';
@@ -172,10 +172,11 @@ export default class CustomNodeForm extends Component {
       });
     }
 
-    stateObj.fieldList = _.unionBy(keysList.fields,'name');
+    stateObj.fieldList =  _.unionBy(keysList.fields,'name');
     stateObj.showLoading = false;
     this.setState(stateObj);
   }
+
   saveStreams = () => {
     let self = this;
     let {topologyId, nodeType, versionId,nodeData} = this.props;
