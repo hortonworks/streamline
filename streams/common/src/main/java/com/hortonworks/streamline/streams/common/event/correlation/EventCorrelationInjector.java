@@ -15,9 +15,9 @@
  **/
 package com.hortonworks.streamline.streams.common.event.correlation;
 
-import com.google.common.collect.ImmutableMap;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,16 +32,26 @@ public class EventCorrelationInjector {
     public static final String HEADER_KEY_SOURCE_COMPONENT_NAME = "sourceComponentName";
 
     public StreamlineEvent injectCorrelationInformation(StreamlineEvent event,
+                                                        List<StreamlineEvent> parentEvents) {
+        return injectCorrelationInformation(event, parentEvents, null);
+    }
+
+    public StreamlineEvent injectCorrelationInformation(StreamlineEvent event,
                                                         List<StreamlineEvent> parentEvents, String componentName) {
         Set<String> rootIds = new HashSet<>();
         Set<String> parentIds = new HashSet<>();
 
         if (!parentEvents.isEmpty()) {
             parentEvents.forEach(parentEvent -> {
-                Set<String> rootIdsForParent = EventCorrelationInjector.getRootIds(parentEvent);
-                if (rootIdsForParent != null && !rootIdsForParent.isEmpty()) {
-                    rootIds.addAll(rootIdsForParent);
+                if (EventCorrelationInjector.containsRootIds(parentEvent)) {
+                    Set<String> rootIdsForParent = EventCorrelationInjector.getRootIds(parentEvent);
+                    if (rootIdsForParent != null && !rootIdsForParent.isEmpty()) {
+                        rootIds.addAll(rootIdsForParent);
+                    } else {
+                        rootIds.add(parentEvent.getId());
+                    }
                 } else {
+                    // assume parent event is the root event if it doesn't have correlation information
                     rootIds.add(parentEvent.getId());
                 }
 
@@ -54,12 +64,18 @@ public class EventCorrelationInjector {
         header.putAll(event.getHeader());
         header.put(HEADER_KEY_ROOT_IDS, rootIds);
         header.put(HEADER_KEY_PARENT_IDS, parentIds);
-        header.put(HEADER_KEY_SOURCE_COMPONENT_NAME, componentName);
+        if (StringUtils.isNotEmpty(componentName)) {
+            header.put(HEADER_KEY_SOURCE_COMPONENT_NAME, componentName);
+        }
 
         return StreamlineEventImpl.builder()
                 .from(event)
                 .header(header)
                 .build();
+    }
+
+    public static boolean containsRootIds(StreamlineEvent event) {
+        return event.getHeader().containsKey(HEADER_KEY_ROOT_IDS);
     }
 
     public static Set<String> getRootIds(StreamlineEvent event) {
@@ -69,11 +85,19 @@ public class EventCorrelationInjector {
         return (Set<String>) event.getHeader().get(HEADER_KEY_ROOT_IDS);
     }
 
+    public static boolean containsParentIds(StreamlineEvent event) {
+        return event.getHeader().containsKey(HEADER_KEY_PARENT_IDS);
+    }
+
     public static Set<String> getParentIds(StreamlineEvent event) {
         if (!event.getHeader().containsKey(HEADER_KEY_PARENT_IDS)) {
             throw new IllegalArgumentException("Parent ID list is not in header.");
         }
         return (Set<String>) event.getHeader().get(HEADER_KEY_PARENT_IDS);
+    }
+
+    public static boolean containsSourceComponentName(StreamlineEvent event) {
+        return event.getHeader().containsKey(HEADER_KEY_SOURCE_COMPONENT_NAME);
     }
 
     public static String getSourceComponentName(StreamlineEvent event) {

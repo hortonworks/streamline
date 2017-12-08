@@ -25,6 +25,7 @@ import java.util.List;
 public class Result {
     public final String stream;
     public final List<StreamlineEvent> events;
+
     /**
      * Create a new Result
      *

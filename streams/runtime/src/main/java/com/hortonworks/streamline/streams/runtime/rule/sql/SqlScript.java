@@ -22,11 +22,13 @@ import com.google.common.collect.Collections2;
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.common.event.correlation.EventCorrelationInjector;
 import com.hortonworks.streamline.streams.layout.component.rule.exception.ConditionEvaluationException;
 import com.hortonworks.streamline.streams.runtime.rule.condition.expression.ExpressionRuntime;
 import com.hortonworks.streamline.streams.runtime.rule.condition.expression.StormSqlExpression;
 import com.hortonworks.streamline.streams.runtime.script.Script;
 import com.hortonworks.streamline.streams.runtime.script.engine.ScriptEngine;
+import com.hortonworks.streamline.streams.sql.runtime.CorrelatedValues;
 import com.hortonworks.streamline.streams.sql.runtime.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,7 +106,7 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
     @Override
     public Collection<StreamlineEvent> evaluate(StreamlineEvent event) throws ScriptException {
         LOG.debug("Evaluating [{}] with script engine [{}]", event, scriptEngine);
-        List<Values> result = null;
+        List<CorrelatedValues> result = null;
         if (stormSqlFields == null || stormSqlFields.isEmpty()) {
             if (event == GROUP_BY_TRIGGER_EVENT) {
                 return Collections.emptyList();
@@ -127,7 +129,7 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
         return convert(result, event);
     }
 
-    private Values createValues(StreamlineEvent event) {
+    private CorrelatedValues createValues(StreamlineEvent event) {
         Values values = new Values();
         for (Schema.Field field : stormSqlFields) {
             Object value;
@@ -141,23 +143,22 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
             }
             values.add(value);
         }
-        return values;
+        return CorrelatedValues.of(Collections.singletonList(event), values);
     }
 
-    private Collection<StreamlineEvent> convert(List<Values> result, final StreamlineEvent inputEvent) {
+    private Collection<StreamlineEvent> convert(List<CorrelatedValues> result,
+                                                final StreamlineEvent inputEvent) {
         Collection<StreamlineEvent> output = Collections.emptyList();
         if (result != null) {
             if (valuesConverter != null) {
-                output = Collections2.transform(result, new Function<Values, StreamlineEvent>() {
+                output = Collections2.transform(result, new Function<CorrelatedValues, StreamlineEvent>() {
                     @Override
-                    public StreamlineEvent apply(Values values) {
+                    public StreamlineEvent apply(CorrelatedValues values) {
                         return valuesConverter.convert(values, inputEvent);
                     }
                 });
-            } else if (result instanceof StreamlineEvent) {
-                output = Collections.singletonList((StreamlineEvent) result);
             } else {
-                throw new IllegalArgumentException("valueConverter is null and result is not an instance of StreamlineEvent");
+                throw new IllegalArgumentException("valueConverter is null");
             }
         }
         LOG.debug("Expression evaluation result [{}] converted to [{}]", result, output);
@@ -172,21 +173,26 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
         /**
          * Converts the input Values to the specified output object
          */
-        O convert(Values input, StreamlineEvent inputEvent);
+        O convert(CorrelatedValues input, StreamlineEvent inputEvent);
     }
 
-    public static class ValuesToStreamlineEventConverter implements ValuesConverter<StreamlineEvent> {
+    public static class CorrelatedValuesToStreamlineEventConverter implements ValuesConverter<StreamlineEvent> {
         private final List<String> outputFields;
+        private transient EventCorrelationInjector eventCorrelationInjector;
 
-        public ValuesToStreamlineEventConverter(List<String> projectedFields) {
+        public CorrelatedValuesToStreamlineEventConverter(List<String> projectedFields) {
             this.outputFields = projectedFields;
         }
 
         @Override
-        public StreamlineEvent convert(Values input, StreamlineEvent inputEvent) {
+        public StreamlineEvent convert(CorrelatedValues input, StreamlineEvent inputEvent) {
+            if (this.eventCorrelationInjector == null) {
+                this.eventCorrelationInjector = new EventCorrelationInjector();
+            }
+
             StreamlineEvent result;
             if (input == null) {
-                result = null;
+                return null;
             } else if (outputFields != null && !outputFields.isEmpty()) {
                 StreamlineEventImpl.Builder builder = StreamlineEventImpl.builder();
                 for (int i = 0; i < outputFields.size(); i++) {
@@ -203,7 +209,8 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
             } else {
                 result = inputEvent;
             }
-            return result;
+
+            return eventCorrelationInjector.injectCorrelationInformation(result, input.getCorrelated());
         }
 
         @Override
