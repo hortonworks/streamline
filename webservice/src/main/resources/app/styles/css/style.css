@@ -36,7 +36,7 @@ body {
   /*padding-bottom: 30px;*/
 }
 
-#viewMode.graph-bg, body.graph-bg {
+.view-mode-wrapper, body.graph-bg {
   background: #eef0ef url('/styles/img/graph-bg.png') repeat;
 }
 
@@ -149,6 +149,11 @@ footer {
   -moz-transition: -moz-transform .3s ease-in-out, margin .3s ease-in-out;
   -o-transition: -o-transform .3s ease-in-out, margin .3s ease-in-out;
   transition: transform .3s ease-in-out, margin .3s ease-in-out;
+}
+
+.content-wrapper.view-mode-wrapper {
+  padding-left: 0px;
+  padding-right: 0px;
 }
 
 .main-header a:hover, .main-header a:focus, .main-sidebar a:hover, .main-sidebar a:focus {
@@ -903,9 +908,49 @@ label {
   border-right: 1px solid #1290c0;
 }
 
+.hb.default-blue, .hb.default-blue:before, .hb.default-blue:after {
+  background-color: #1290c0;
+  color: #fff;
+  border-left: 1px solid #1290c0;
+  border-right: 1px solid #1290c0;
+}
+
+.hb.default-blue, .hb.default-blue:before, .hb.default-blue:after {
+  background-color: #1290c0;
+  color: #fff;
+  border-left: 1px solid #1290c0;
+  border-right: 1px solid #1290c0;
+}
+
+.hb.default-blue:hover, .hb.default-blue:hover:before, .hb.default-blue:hover:after{
+  background: #1290c0;
+  color: #fff;
+  border-left: 1px solid #1290c0;
+  border-right: 1px solid #1290c0;
+}
+
+.hb.default-blue:hover, .hb.default-blue:hover:before, .hb.default-blue:hover:after{
+  background: #1290c0;
+  color: #fff;
+  border-left: 1px solid #1290c0;
+  border-right: 1px solid #1290c0;
+}
+
 .hb.xl, .hb.xl:before, .hb.xl:after {
   height: 31px;
   width: 55px;
+}
+
+.hb.sm {
+  line-height: 26px;
+}
+.hb.sm, .hb.sm:before, .hb.sm:after {
+  height: 22px;
+  width: 39px;
+}
+
+.hb.sm i {
+  font-size: 20px;
 }
 
 .hb.xl i {
@@ -927,6 +972,18 @@ label {
 }
 
 .hb.lg i {
+  font-size: 20px;
+}
+
+.hb.sm {
+  line-height: 26px;
+}
+.hb.sm, .hb.sm:before, .hb.sm:after {
+  height: 22px;
+  width: 39px;
+}
+
+.hb.sm i {
   font-size: 20px;
 }
 
@@ -1717,8 +1774,8 @@ label {
   padding-left: 2px;
 }
 
-#viewMode.graph-bg {
-  border: 2px solid #ffffff;
+.topology-view-mode-container {
+  padding: 10px;
 }
 
 .static-label {
@@ -1933,12 +1990,6 @@ h5.environment-title span, .service-box .service-head h4 span {
   background-color: #fafafa;
 }
 
-.filter-label {
-  display: inline-block;
-  color: #676767;
-  margin: 7px 21px 0px 0px;
-}
-
 .common-overflow::-webkit-scrollbar {
   width: 2px;
 }
@@ -1999,11 +2050,11 @@ h5.environment-title span, .service-box .service-head h4 span {
   margin-top: 10px;
 }
 
-.filter-label {
+/*.filter-label {
   display: inline-block;
   color: #676767;
   margin: 7px 21px 0px 0px;
-}
+}*/
 
 .axis>path {
   fill: none;
@@ -3894,4 +3945,273 @@ ul.custom-pagination li.active{
 .tsField-dropdown input{
   margin: -2px 4px 0 0;
   vertical-align: middle;
+}
+/*Topology View Mode*/
+.topology-foot-top > div {
+  position: relative;
+  float: left;
+}
+.topology-foot-top > div:last-child {
+  margin-right: 20px;
+  float: right;
+}
+.topology-foot-component {
+  padding-right: 20px;
+}
+.topology-foot-component .btn {
+  padding-top: 0px;
+  border: none;
+  background-color: #6d6e72;
+  font-size: 20px;
+  color: #94d2e7;
+}
+#component-dropdown {
+  background-color: #6d6e72;
+  color: #94d2e7;
+  padding: 0;
+  margin: 5px 5px 0 10px;
+}
+.topology-foot-component h6 {
+  margin: 0px;
+  padding-left: 10px;
+}
+.topology-foot-widget {
+  display: table;
+  padding: 2px 10px;
+}
+.topology-foot-widget div {
+  text-align: left;
+}
+.topology-foot-widget h6 {
+  color: #fff;
+  margin: 0;
+  font-size: 13px;
+}
+.topology-foot-widget h6 big {
+  margin-left: 5px;
+  color: #ceeaf5;
+  font-size: 18px;
+}
+.topology-foot-widget h6 big i.fa-arrow-up {
+  transform: rotate(45deg);
+}
+.topology-foot-widget h6 big i.fa-arrow-down {
+  transform: rotate(-45deg);
+}
+.topology-foot-widget h4 {
+  color: #fff;
+  margin: 0;
+  font-size: 18px;
+}
+.topology-foot-widget h4 small {
+  margin-left: 5px;
+  color: #ceeaf5;
+}
+.topology-foot-action {
+  display: inline-block;
+  color: #95d6ec;
+  font-size: 18px;
+  line-height: 42px;
+  text-decoration: none;
+}
+.topology-foot-graphs {
+  margin: 10px 0;
+  background-color: #fff;
+  color: #666;
+}
+.topology-metrics-container {
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  left: 0px;
+  padding: 0 0 0 50px;
+  background-color: #6d6e72;
+}
+.topology-metrics-container .panel-default .panel-heading {
+  background-color: #6d6e72;
+  color: #fff;
+  position: relative;
+  border-bottom: none;
+  padding: 0;
+  margin: 0px;
+}
+.topology-metrics-container .panel-default {
+  margin-bottom: 0;
+  border: none;
+}
+.topology-metrics-container .panel-default .panel-heading .panel-section {
+  display: inline;
+}
+.topology-metrics-container .panel-default .panel-heading .panel-section > div {
+  vertical-align: middle;
+  display: table-cell;
+  padding: 10px 15px;
+}
+.topology-metrics-container .panel-body {
+  background-color: #6d6e72;
+}
+#log-duration-dropdown {
+  border-radius: 4px;
+  right: -86px;
+}
+#log-duration-dropdown + .dropdown-menu {
+  right: -86px;
+  width: 376px;
+  padding: 12px;
+}
+#log-duration-dropdown + .dropdown-menu > label:first-child {
+  margin-top: 0;
+}
+#log-duration-dropdown + .dropdown-menu > label {
+  margin-top: 15px;
+  display: block;
+}
+#datepicker-dropdown {
+  border-radius: 4px;
+}
+#datepicker-dropdown + .dropdown-menu {
+  width: 765px;
+  padding: 15px;
+}
+#datepicker-dropdown + .dropdown-menu .sub-heading{
+  font-size: 16px;
+  padding-bottom: 10px;
+}
+.daterangepicker .ranges {
+  float: none !important;
+}
+.selected-date-range-btn,.selected-date-range-btn .btn {
+  width: 100%;
+  text-align: left;
+}
+.mode-select-btn {
+  font-size: 12px;
+  padding: 8px;
+}
+.duration-btn {
+  text-transform: none;
+}
+.mode-select-btn.left, .log-level-btn.left, .duration-btn.left, .sampling-btn.left {
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+.mode-select-btn.right, .log-level-btn.right, .duration-btn.right, .sampling-btn.right {
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+.mode-select-btn:hover, .mode-select-btn:active,
+.log-level-btn:hover, .log-level-btn:active,
+.duration-btn:hover, .duration-btn:active,
+.sampling-btn:hover, .sampling-btn:active {
+  background-color: #0a698c !important;
+  color: #fff !important;
+  border: 1px solid #0a698c !important;
+}
+.mode-select-btn.active, .mode-select-btn:focus,
+.log-level-btn.active, .log-level-btn:focus,
+.duration-btn.active, .duration-btn:focus,
+.sampling-btn.active, .sampling-btn:focus {
+  background-color: #1290c0;
+  color: #fff;
+  border: 1px solid #1290c0;
+}
+.quick-ranges ul {
+  list-style-type: none;
+  padding: 0;
+  display: inline-block;
+  vertical-align: top;
+  font-size: 12px;
+}
+.quick-ranges ul > li > a {
+  cursor: pointer;
+  text-decoration: none;
+}
+.quick-ranges ul > li:hover > a, .quick-ranges ul > li.active > a {
+  color: #ffffff;
+  background: #3490c4;
+}
+/*View Mode Component Metrics*/
+.component-metrics {
+  line-height: 1;
+}
+.component-metric-top {
+  padding: 5px 0px 5px 0px;
+  display: inline-block;
+  margin-left: 10px;
+}
+.component-metric-top > div {
+  float: left;
+  font-size: 12px;
+  margin: 0 3px 0 3px;
+}
+.component-metric-widget div {
+  text-align: left;
+}
+.component-metric-widget h6 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 400;
+  color: #a9a9a9;
+}
+.component-metric-widget h4 {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+.component-metric-widget h4 small{
+  font-size: 10px;
+  color: #a9a9a9;
+}
+.metric-bg {
+  background-color: #f2f3f2;
+}
+.metric-bg.top {
+  height: 3px;
+}
+.metric-bg.bottom {
+  height: 18px;
+  font-size: 10px;
+  padding: 3px 3px 3px 5px;
+  margin: 0 1px;
+}
+.component-metric-graph {
+  font-size: 8px;
+  color: #666;
+  margin: 10px 10px 10px 10px;
+}
+.metric-graphs-container {
+  height: 125px;
+}
+.component-log-actions-container {
+  background-color: #fff;
+  border: 1px solid #00000026;
+  border-radius: 5px;
++  font-size: 14px;
+  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.25);
+}
+.component-log-actions-container > div {
+  display: inline-block;
+}
+.component-log-actions-container .sampling-buttons {
+  width: 100%;
+  padding: 10px;
+  vertical-align: top;
+}
+.component-log-actions-container .btn,.component-log-actions-container .btn-group {
+  position: static;
+}
+.zoom-btn-group {
+  position: absolute;
+  background-color: #fff;
+  color: #666;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  right: 20px;
+  margin-top: 20px;
+  font-size: 16px;
+}
+.zoom-btn-group i {
+  display: block;
+  padding: 10px;
+  cursor: pointer;
 }

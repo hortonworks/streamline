@@ -14,7 +14,6 @@
 import React from 'react';
 import { Router, Route, hashHistory, browserHistory, IndexRoute } from 'react-router';
 
-import MetricsContainer from '../containers/Streams/Metrics/MetricsContainer';
 import TopologyListContainer from '../containers/Streams/TopologyListing/TopologyListingContainer';
 import TopologyViewContainer from '../containers/Streams/TopologyEditor/TopologyViewContainer';
 import TopologyEditorContainer from '../containers/Streams/TopologyEditor/TopologyEditorContainer';
@@ -64,7 +63,6 @@ export default (
 
   <Route path="/" component={null} name="Home" onEnter={onEnter}>
     <IndexRoute name="My Applications" accessMenuName={menuName.APPLICATION} component={TopologyListContainer} onEnter={onEnter} />
-    {/* <Route path="metrics" name="Metrics" component={MetricsContainer} onEnter={onEnter}/> */}
     <Route path="applications" name="My Applications" onEnter={onEnter}>
       <IndexRoute name="My Applications" component={TopologyListContainer} onEnter={onEnter} />
       <Route path=":id/view" name="Application Editor" accessMenuName={menuName.APPLICATION} accessAction="VIEW" component={TopologyViewContainer} onEnter={onEnter}/>
