@@ -19,7 +19,7 @@ package com.hortonworks.streamline.streams.runtime.storm.bolt.kafka;
 import org.apache.storm.kafka.bolt.mapper.TupleToKafkaMapper;
 import org.apache.storm.tuple.Tuple;
 import com.hortonworks.streamline.streams.StreamlineEvent;
-import com.hortonworks.streamline.streams.runtime.storm.StreamlineRuntimeUtil;
+import com.hortonworks.streamline.streams.common.StreamlineEventUtils;
 
 public class StreamlineEventToKafkaMapper implements TupleToKafkaMapper {
     private final String keyName;
@@ -34,7 +34,7 @@ public class StreamlineEventToKafkaMapper implements TupleToKafkaMapper {
             return null;
         }
         StreamlineEvent streamlineEvent = (StreamlineEvent) tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
-        return StreamlineRuntimeUtil.getFieldValue(streamlineEvent, keyName);
+        return StreamlineEventUtils.getFieldValue(streamlineEvent, keyName);
     }
 
     @Override

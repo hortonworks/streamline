@@ -13,13 +13,13 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
  **/
-package com.hortonworks.streamline.streams.runtime.storm;
+package com.hortonworks.streamline.streams.common;
 
 import com.hortonworks.streamline.streams.StreamlineEvent;
 
 import java.util.Map;
 
-public class StreamlineRuntimeUtil {
+public class StreamlineEventUtils {
 
     public static Object getFieldValue (StreamlineEvent streamlineEvent, String fieldName) {
         Map fieldValues = streamlineEvent;

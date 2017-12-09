@@ -37,6 +37,7 @@ import io.druid.query.aggregation.DoubleSumAggregatorFactory;
 import io.druid.query.aggregation.LongMaxAggregatorFactory;
 import io.druid.query.aggregation.LongMinAggregatorFactory;
 import io.druid.query.aggregation.LongSumAggregatorFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
@@ -53,6 +54,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Druid bolt must be supplied with a BeamFactory. You can implement one of these using the
@@ -111,7 +113,7 @@ public class DruidBeamFactoryImpl implements DruidBeamFactory<Map<String, Object
                 .discoveryPath(discoveryPath)
                 .location(DruidLocation.create(indexService, dataSource))
                 .timestampSpec(timestampSpec)
-                .rollup(DruidRollup.create(DruidDimensions.specific(dimensions), aggregator, getQueryGranularity()))
+                .rollup(DruidRollup.create(DruidDimensions.specific(getTrimmedDimensions(dimensions)), aggregator, getQueryGranularity()))
                 .tuning(
                         ClusteredBeamTuning
                                 .builder()
@@ -129,6 +131,14 @@ public class DruidBeamFactoryImpl implements DruidBeamFactory<Map<String, Object
                 .buildBeam();
 
         return beam;
+    }
+
+    private List<String> getTrimmedDimensions(List<String> dimensions) {
+        return dimensions.stream()
+            // trim stream name from the beginning of the name
+            .map(str -> str.substring(str.indexOf(":") + 1, str.length()))
+            .filter(StringUtils::isNotBlank)
+            .collect(Collectors.toList());
     }
 
     public String getAggregatorJson() {
