@@ -1973,6 +1973,17 @@ h5.environment-title span, .service-box .service-head h4 span {
   background-color: rgba(0, 0, 0, 0.2);
 }
 
+.center-box{
+  height: 100%;
+  width: 100%;
+  display: table;
+  text-align: center;
+}
+.centered{
+  display: table-cell;
+  vertical-align: middle;
+}
+
 .loaderWrap {
   position: absolute;
   top: 50%;

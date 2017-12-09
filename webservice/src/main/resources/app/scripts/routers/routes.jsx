@@ -28,6 +28,7 @@ import ModelRegistryContainer from '../containers/ModelRegistry/ModelRegistryCon
 import ComponentDefinition from '../containers/Configuration/ComponentDefinition';
 import AppResourcesContainer from '../containers/Configuration/AppResourcesContainer';
 import UserRolesContainer from '../containers/Configuration/UserRolesContainer';
+import LogSearch from '../containers/LogSearch/LogSearch';
 import {menuName} from '../utils/Constants';
 import {hasModuleAccess} from '../utils/ACLUtils';
 
@@ -78,6 +79,7 @@ export default (
     <Route path="component-definition" name="Component Definition" component={ComponentDefinition} onEnter={onEnter}/>
     <Route path="application-resources" name="Application Resources" component={AppResourcesContainer} onEnter={onEnter}/>
     <Route path="authorizer" name="Authorizer" accessMenuName={menuName.AUTHORIZER} component={UserRolesContainer} onEnter={onEnter}/>
+    <Route path="logsearch/:id" name="Log Search" component={LogSearch} onEnter={onEnter}/>
   </Route>
 
 );
