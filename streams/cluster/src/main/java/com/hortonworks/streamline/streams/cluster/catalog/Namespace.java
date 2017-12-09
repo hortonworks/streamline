@@ -38,6 +38,7 @@ public class Namespace extends AbstractStorable {
   @SearchableField
   private String streamingEngine;
   private String timeSeriesDB;
+  private String logSearchService;
   @SearchableField
   private String description = "";
   private Long timestamp;
@@ -103,6 +104,17 @@ public class Namespace extends AbstractStorable {
   }
 
   /**
+   * The selected Log Search Service of the namespace
+   */
+  public String getLogSearchService() {
+    return logSearchService;
+  }
+
+  public void setLogSearchService(String logSearchService) {
+    this.logSearchService = logSearchService;
+  }
+
+  /**
    * The namespace description (optional)
    */
   public String getDescription() {
@@ -134,10 +146,11 @@ public class Namespace extends AbstractStorable {
       return false;
     if (getTimeSeriesDB() != null ? !getTimeSeriesDB().equals(namespace.getTimeSeriesDB()) : namespace.getTimeSeriesDB() != null)
       return false;
+    if (getLogSearchService() != null ? !getLogSearchService().equals(namespace.getLogSearchService()) : namespace.getLogSearchService() != null)
+      return false;
     if (getDescription() != null ? !getDescription().equals(namespace.getDescription()) : namespace.getDescription() != null)
       return false;
     return getTimestamp() != null ? getTimestamp().equals(namespace.getTimestamp()) : namespace.getTimestamp() == null;
-
   }
 
   @Override
@@ -146,6 +159,7 @@ public class Namespace extends AbstractStorable {
     result = 31 * result + (getName() != null ? getName().hashCode() : 0);
     result = 31 * result + (getStreamingEngine() != null ? getStreamingEngine().hashCode() : 0);
     result = 31 * result + (getTimeSeriesDB() != null ? getTimeSeriesDB().hashCode() : 0);
+    result = 31 * result + (getLogSearchService() != null ? getLogSearchService().hashCode() : 0);
     result = 31 * result + (getDescription() != null ? getDescription().hashCode() : 0);
     result = 31 * result + (getTimestamp() != null ? getTimestamp().hashCode() : 0);
     return result;
@@ -158,6 +172,7 @@ public class Namespace extends AbstractStorable {
             ", name='" + name + '\'' +
             ", streamingEngine='" + streamingEngine + '\'' +
             ", timeSeriesDB='" + timeSeriesDB + '\'' +
+            ", logSearchService='" + logSearchService + '\'' +
             ", description='" + description + '\'' +
             ", timestamp=" + timestamp +
             '}';
