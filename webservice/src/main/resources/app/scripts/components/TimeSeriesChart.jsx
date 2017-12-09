@@ -28,8 +28,8 @@ export default class TimeSeriesChart extends Component {
   componentDidMount() {
     this.initGraph();
     this.drawChart();
-    this.props.drawXAxis.call(this);
-    this.props.drawYAxis.call(this);
+    // this.props.drawXAxis.call(this);
+    // this.props.drawYAxis.call(this);
     this.props.drawBrush.call(this);
 
     this.props.initTooltip.call(this);
@@ -52,7 +52,7 @@ export default class TimeSeriesChart extends Component {
     this.width = this.props.width || this.refs.svg.parentElement.clientWidth || this.width || 0;
     this.height = this.props.height || this.refs.svg.parentElement.clientHeight || this.width || 0;
 
-    this.svg.attr("viewBox", "-46 -6 " + (this.width + 82) + " " + (this.height + 27)).attr("preserveAspectRatio", "xMidYMid");
+    //this.svg.attr("viewBox", "-46 -6 " + (this.width + 82) + " " + (this.height + 27)).attr("preserveAspectRatio", "xMidYMid");
 
     this.pathGrp.attr('width', this.width).attr('height', this.height);
 
@@ -117,7 +117,7 @@ TimeSeriesChart.defaultProps = {
   },
   getSvgArea() {
     const self = this;
-    return d3.svg.area().x(function(d) {
+    return d3.svg.area().interpolate(self.props.interpolation).x(function(d) {
       return self.x(d[self.props.xAttr]);
     }).y0(this.height).y1(function(d) {
       return self.y(d.value);
@@ -125,7 +125,7 @@ TimeSeriesChart.defaultProps = {
   },
   getSvgLines() {
     const self = this;
-    return d3.svg.line().x(function(d) {
+    return d3.svg.line().interpolate(self.props.interpolation).x(function(d) {
       return self.x(d[self.props.xAttr]);
     }).y(function(d) {
       return self.y(d.value);
@@ -261,7 +261,10 @@ TimeSeriesChart.defaultProps = {
     if (this.brush) {
       this.toolTipRect = this.container.select('.brush rect.background');
     } else {
-      this.toolTipRect = this.container.append('rect');
+      this.toolTipRect = this.container.append('rect')
+        .classed('tooltip-container', true)
+        .attr({width: this.width, height: this.height})
+        .style({fill: 'transparent'});
     }
     this.toolTipRect.on('mousemove', function(und, i, j) {
       const data = self.props.getTipData.call(self, und, i, j, this);
@@ -290,8 +293,8 @@ TimeSeriesChart.defaultProps = {
     this.props.addTooltipContent.call(this, data);
 
     this.tooltip.style({
-      top: (lineRect.top + targetTopDiff + 10) + "px",
-      left: (lineRect.left) + "px",
+      top: (lineRect.top + targetTopDiff) + "px",
+      left: (lineRect.left + 10) + "px",
       visibility: 'visible'
     });
   },

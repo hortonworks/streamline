@@ -21,6 +21,7 @@ import {ItemTypes, Components, toastOpt} from '../../../utils/Constants';
 import BaseContainer from '../../BaseContainer';
 import {Link, withRouter} from 'react-router';
 import TopologyREST from '../../../rest/TopologyREST';
+import ViewModeREST from '../../../rest/ViewModeREST';
 import EnvironmentREST from '../../../rest/EnvironmentREST';
 import {OverlayTrigger, Tooltip, Accordion, Panel} from 'react-bootstrap';
 import TopologyGraphComponent from '../../../components/TopologyGraphComponent';
@@ -28,16 +29,17 @@ import FSReactToastr from '../../../components/FSReactToastr';
 import {observer} from 'mobx-react';
 import {observable} from 'mobx';
 import _ from 'lodash';
+import moment from 'moment';
 import Utils from '../../../utils/Utils';
 import TopologyUtils from '../../../utils/TopologyUtils';
 import Modal from '../../../components/FSModal';
 import CommonNotification from '../../../utils/CommonNotification';
 import TopologyViewMode from './TopologyViewMode';
-import MetricsContainer from '../Metrics/MetricsContainer';
 import CommonLoaderSign from '../../../components/CommonLoaderSign';
 import ErrorStatus from '../../../components/ErrorStatus';
 import app_state from '../../../app_state';
 import UserRoleREST from '../../../rest/UserRoleREST';
+import TopologyViewModeMetrics from './TopologyViewModeMetrics';
 
 function collect(connect, monitor) {
   return {connectDropTarget: connect.dropTarget()};
@@ -55,7 +57,7 @@ class EditorGraph extends Component {
     let left = window.innerWidth - 300;
   }
   render() {
-    const actualHeight = '270px';
+    const actualHeight = '470px';
     const {
       versionsArr,
       connectDropTarget,
@@ -64,14 +66,30 @@ class EditorGraph extends Component {
       versionId,
       graphData,
       getModalScope,
-      setModalContent
+      setModalContent,
+      isAppRunning,
+      viewModeData,
+      startDate,
+      endDate,
+      compSelectCallback
     } = this.props;
     return connectDropTarget(
       <div>
         <div className="" style={{
           height: actualHeight
         }}>
-          <TopologyGraphComponent ref="TopologyGraph" height={parseInt(actualHeight, 10)} data={graphData} topologyId={topologyId} versionId={versionId} versionsArr={versionsArr} viewMode={viewMode} getModalScope={getModalScope} setModalContent={setModalContent}/>
+          <TopologyGraphComponent ref="TopologyGraph" height={parseInt(actualHeight, 10)} data={graphData}
+            topologyId={topologyId}
+            versionId={versionId}
+            versionsArr={versionsArr}
+            viewMode={viewMode}
+            getModalScope={getModalScope}
+            setModalContent={setModalContent}
+            viewModeData={viewModeData}
+            startDate={startDate}
+            endDate={endDate}
+            compSelectCallback={compSelectCallback}
+            isAppRunning={isAppRunning} />
         </div>
       </div>
     );
@@ -107,7 +125,20 @@ class TopologyViewContainer extends Component {
     unknown: '',
     bundleArr: null,
     availableTimeSeriesDb: false,
-    fetchLoader: true
+    fetchLoader: true,
+    fetchMetrics: true,
+    startDate: moment().subtract(30, 'minutes'),
+    endDate: moment(),
+    viewModeData: {
+      topologyMetrics: {},
+      sourceMetrics: [],
+      processorMetrics: [],
+      sinkMetrics: [],
+      selectedMode: 'Overview',
+      selectedComponentId: '',
+      overviewMetrics: {},
+      timeSeriesMetrics: {}
+    }
   };
 
   fetchData(versionId) {
@@ -238,6 +269,7 @@ class TopologyViewContainer extends Component {
           });
           this.customProcessors = this.getCustomProcessors();
         });
+        this.fetchCatalogInfoAndMetrics(this.state.startDate.toDate().getTime(), this.state.endDate.toDate().getTime());
       }
     });
 
@@ -259,8 +291,83 @@ class TopologyViewContainer extends Component {
       }
     };
   }
+  fetchCatalogInfoAndMetrics(fromTime, toTime) {
+    let promiseArr = [
+      ViewModeREST.getTopologyMetrics(this.topologyId, fromTime, toTime),
+      ViewModeREST.getComponentMetrics(this.topologyId, 'sources', fromTime, toTime),
+      ViewModeREST.getComponentMetrics(this.topologyId, 'processors', fromTime, toTime),
+      ViewModeREST.getComponentMetrics(this.topologyId, 'sinks', fromTime, toTime)
+    ];
+    this.setState({fetchMetrics: true});
+    Promise.all(promiseArr).then((responseArr)=>{
+      let {viewModeData} = this.state;
+      viewModeData.topologyMetrics = responseArr[0];
+      viewModeData.sourceMetrics = responseArr[1].entities;
+      viewModeData.processorMetrics = responseArr[2].entities;
+      viewModeData.sinkMetrics = responseArr[3].entities;
+      this.setState({viewModeData: viewModeData, fetchMetrics: false}, ()=>{this.syncComponentData();});
+      this.refs.metricsPanelRef.setState({loadingRecord: false});
+    });
+  }
+  syncComponentData() {
+    let {viewModeData, fetchMetrics} = this.state;
+    let {selectedComponentId, selectedComponent} = viewModeData;
+    let overviewMetrics, timeSeriesMetrics;
+
+    if(fetchMetrics) {
+      return;
+    }
+    if(selectedComponent) {
+      let compObj;
+      if (selectedComponent.parentType == 'SOURCE') {
+        compObj = viewModeData.sourceMetrics.find((entity)=>{
+          return entity.component.id === selectedComponentId;
+        });
+      } else if (selectedComponent.parentType == 'PROCESSOR') {
+        compObj = viewModeData.processorMetrics.find((entity)=>{
+          return entity.component.id === selectedComponentId;
+        });
+      } else if (selectedComponent.parentType == 'SINK') {
+        compObj = viewModeData.sinkMetrics.find((entity)=>{
+          return entity.component.id === selectedComponentId;
+        });
+      }
+      overviewMetrics = compObj.overviewMetrics;
+      timeSeriesMetrics = compObj.timeSeriesMetrics;
+    } else {
+      overviewMetrics = viewModeData.topologyMetrics.overviewMetrics;
+      timeSeriesMetrics = viewModeData.topologyMetrics.timeSeriesMetrics;
+    }
+    viewModeData.overviewMetrics = overviewMetrics;
+    viewModeData.timeSeriesMetrics = timeSeriesMetrics;
+    this.setState({viewModeData: viewModeData});
+  }
+  compSelectCallback = (id, obj) => {
+    let {viewModeData} = this.state;
+    viewModeData.selectedComponentId = id;
+    viewModeData.selectedComponent = obj;
+    this.setState({
+      viewModeData: viewModeData
+    }, ()=>{this.syncComponentData();});
+  }
   handleVersionChange(value) {
     this.fetchData(value);
+  }
+  datePickerCallback = (startDate, endDate) => {
+    this.refs.metricsPanelRef.setState({loadingRecord: true});
+    this.setState({
+      startDate: startDate,
+      endDate: endDate
+    }, ()=>{
+      this.fetchCatalogInfoAndMetrics(startDate.toDate().getTime(), endDate.toDate().getTime());
+    });
+  }
+  modeSelectCallback = (selectedMode) => {
+    let {viewModeData} = this.state;
+    viewModeData.selectedMode = selectedMode;
+    this.setState({
+      viewModeData: viewModeData
+    });
   }
   getModalScope(node) {
     let obj = {
@@ -409,22 +516,51 @@ class TopologyViewContainer extends Component {
       return '';
     }
   }
+  zoomAction(zoomType) {
+    this.refs.EditorGraph.child.decoratedComponentInstance.refs.TopologyGraph.decoratedComponentInstance.zoomAction(zoomType);
+  }
   render() {
-    const {fetchLoader,allACL} = this.state;
+    const {fetchLoader,allACL, viewModeData, startDate, endDate} = this.state;
     let nodeType = this.node
       ? this.node.currentType
       : '';
     return (
       <BaseContainer ref="BaseContainer" routes={this.props.routes} onLandingPage="false" headerContent={this.getTopologyHeader()}>
-        <div>
+        <div className="topology-view-mode-container">
           {fetchLoader
             ? [<div key={"1"} className="loader-overlay"></div>,<CommonLoaderSign key={"2"} imgName={"viewMode"}/>]
             : <div>
               {
                 this.checkAuth
-                ? [<TopologyViewMode allACL={allACL} key={"1"} {...this.state} topologyId={this.topologyId} killTopology={this.killTopology.bind(this)} handleVersionChange={this.handleVersionChange.bind(this)} setCurrentVersion={this.setCurrentVersion.bind(this)} stormClusterId={this.state.stormClusterId} nameSpaceName={this.nameSpace} namespaceId={this.namespaceId}/>,
+                ? [<TopologyViewMode
+                    allACL={allACL} key={"1"} {...this.state}
+                    topologyId={this.topologyId}
+                    killTopology={this.killTopology.bind(this)}
+                    handleVersionChange={this.handleVersionChange.bind(this)}
+                    setCurrentVersion={this.setCurrentVersion.bind(this)}
+                    datePickerCallback={this.datePickerCallback}
+                    modeSelectCallback={this.modeSelectCallback}
+                    stormClusterId={this.state.stormClusterId}
+                    nameSpaceName={this.nameSpace}
+                    namespaceId={this.namespaceId} />,
                   <div id="viewMode" className="graph-bg" key={"2"}>
-                    <EditorGraph ref="EditorGraph" graphData={this.graphData} viewMode={this.viewMode} topologyId={this.topologyId} versionId={this.versionId} versionsArr={this.state.versionsArr} getModalScope={this.getModalScope.bind(this)} setModalContent={this.setModalContent.bind(this)}/>
+                    <div className="zoom-btn-group">
+                      <i className="fa fa-search-plus" onClick={this.zoomAction.bind(this, "zoom_in")}></i>
+                      <i className="fa fa-search-minus" onClick={this.zoomAction.bind(this, "zoom_out")}></i>
+                    </div>
+                    <EditorGraph ref="EditorGraph"
+                      graphData={this.graphData}
+                      viewMode={this.viewMode}
+                      topologyId={this.topologyId}
+                      versionId={this.versionId}
+                      versionsArr={this.state.versionsArr}
+                      getModalScope={this.getModalScope.bind(this)}
+                      setModalContent={this.setModalContent.bind(this)}
+                      viewModeData={viewModeData}
+                      startDate={startDate}
+                      endDate={endDate}
+                      compSelectCallback={this.compSelectCallback}
+                      isAppRunning={this.state.isAppRunning} />
                   </div>]
                 : <ErrorStatus imgName={"viewMode"} />
               }
@@ -438,9 +574,16 @@ class TopologyViewContainer extends Component {
           : "modal-fixed-height"} data-title={this.modalTitle} data-resolve={this.handleSaveNodeModal.bind(this)}>
           {this.modalContent()}
         </Modal>
-        {this.state.isAppRunning && this.graphData.nodes.length > 0 && this.versionName.toLowerCase() == 'current' && this.state.availableTimeSeriesDb
-          ? <MetricsContainer topologyId={this.topologyId} topologyName={this.state.topologyName} components={this.graphData.nodes}/>
-          : null}
+        {this.state.isAppRunning && this.graphData.nodes.length > 0 && this.versionName.toLowerCase() == 'current' && this.state.availableTimeSeriesDb ?
+        <TopologyViewModeMetrics
+          ref="metricsPanelRef"
+          {...this.state}
+          topologyId={this.topologyId}
+          topologyName={this.state.topologyName}
+          components={this.graphData.nodes}
+          compSelectCallback={this.compSelectCallback}
+          datePickerCallback={this.datePickerCallback} />
+        : null}
       </BaseContainer>
     );
   }
