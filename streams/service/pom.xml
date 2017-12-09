@@ -42,6 +42,10 @@
         </dependency>
         <dependency>
             <groupId>com.hortonworks.streamline</groupId>
+            <artifactId>streamline-logsearch-storm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hortonworks.streamline</groupId>
             <artifactId>streamline-notification</artifactId>
         </dependency>
         <dependency>
@@ -79,6 +83,10 @@
             <version>${project.parent.version}</version>
             <type>jar</type>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hortonworks.streamline</groupId>
+            <artifactId>streamline-logsearch</artifactId>
         </dependency>
     </dependencies>
 
