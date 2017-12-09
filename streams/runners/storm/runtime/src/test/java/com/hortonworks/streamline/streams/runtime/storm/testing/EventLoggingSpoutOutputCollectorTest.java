@@ -17,6 +17,7 @@
 package com.hortonworks.streamline.streams.runtime.storm.testing;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import mockit.Expectations;
@@ -29,8 +30,11 @@ import org.apache.storm.utils.Utils;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -70,6 +74,8 @@ public class EventLoggingSpoutOutputCollectorTest {
         final Values tuple = new Values(INPUT_STREAMLINE_EVENT);
         String messageId = "testMessageId";
         List<Integer> expectedTasks = Lists.newArrayList(TASK_1, TASK_2);
+        Set<String> expectedStormComponents = Sets.newHashSet(TEST_TARGET_COMPONENT_FOR_TASK_1,
+                TEST_TARGET_COMPONENT_FOR_TASK_2);
 
         setupExpectationsForTopologyContextEmit();
         sut = new EventLoggingSpoutOutputCollector(mockedTopologyContext, mockedOutputCollector, mockedEventLogger);
@@ -87,7 +93,7 @@ public class EventLoggingSpoutOutputCollectorTest {
             mockedOutputCollector.emit(testStreamId, tuple);
         }};
 
-        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, expectedTasks.size());
+        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, expectedStormComponents);
 
         // List<Object> tuple
         new Expectations() {{
@@ -102,7 +108,7 @@ public class EventLoggingSpoutOutputCollectorTest {
             mockedOutputCollector.emit(tuple);
         }};
 
-        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, expectedTasks.size());
+        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, expectedStormComponents);
 
         // String streamId, List<Object> tuple, Object messageId
         new Expectations() {{
@@ -117,7 +123,7 @@ public class EventLoggingSpoutOutputCollectorTest {
             mockedOutputCollector.emit(testStreamId, tuple, messageId);
         }};
 
-        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, expectedTasks.size());
+        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, expectedStormComponents);
 
         // List<Object> tuple, Object messageId
         new Expectations() {{
@@ -132,7 +138,7 @@ public class EventLoggingSpoutOutputCollectorTest {
             mockedOutputCollector.emit(tuple, messageId);
         }};
 
-        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, expectedTasks.size());
+        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, expectedStormComponents);
     }
 
     @Test
@@ -155,7 +161,7 @@ public class EventLoggingSpoutOutputCollectorTest {
             mockedOutputCollector.emitDirect(TASK_1, testStreamId, tuple);
         }};
 
-        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, 1);
+        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, Collections.singleton(TEST_TARGET_COMPONENT_FOR_TASK_1));
 
         // int taskId, List<Object> tuple
         new Expectations() {{
@@ -168,7 +174,7 @@ public class EventLoggingSpoutOutputCollectorTest {
             mockedOutputCollector.emitDirect(TASK_1, tuple);
         }};
 
-        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, 1);
+        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, Collections.singleton(TEST_TARGET_COMPONENT_FOR_TASK_1));
 
         // int taskId, String streamId, List<Object> tuple, Object messageId
         new Expectations() {{
@@ -181,7 +187,7 @@ public class EventLoggingSpoutOutputCollectorTest {
             mockedOutputCollector.emitDirect(TASK_1, testStreamId, tuple, messageId);
         }};
 
-        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, 1);
+        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, Collections.singleton(TEST_TARGET_COMPONENT_FOR_TASK_1));
 
         // int taskId, List<Object> tuple, Object messageId
         new Expectations() {{
@@ -194,7 +200,7 @@ public class EventLoggingSpoutOutputCollectorTest {
             mockedOutputCollector.emitDirect(TASK_1, tuple, messageId);
         }};
 
-        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, 1);
+        verifyEventsAreWrittenProperly(INPUT_STREAMLINE_EVENT, Collections.singleton(TEST_TARGET_COMPONENT_FOR_TASK_1));
     }
 
     @Test
@@ -206,7 +212,8 @@ public class EventLoggingSpoutOutputCollectorTest {
         sut.reportError(throwable);
 
         new Verifications() {{
-            mockedOutputCollector.reportError(throwable); times = 1;
+            mockedOutputCollector.reportError(throwable);
+            times = 1;
         }};
     }
 
@@ -218,7 +225,8 @@ public class EventLoggingSpoutOutputCollectorTest {
         sut.getPendingCount();
 
         new Verifications() {{
-            mockedOutputCollector.getPendingCount(); times = 1;
+            mockedOutputCollector.getPendingCount();
+            times = 1;
         }};
     }
 
@@ -252,21 +260,16 @@ public class EventLoggingSpoutOutputCollectorTest {
         }};
     }
 
-    private void verifyEventsAreWrittenProperly(StreamlineEvent event, int numTargets) {
+    private void verifyEventsAreWrittenProperly(StreamlineEvent event, Set<String> targetComponents) {
         new Verifications() {{
             List<StreamlineEvent> events = new ArrayList<>();
-            mockedEventLogger.writeEvent(anyLong, anyString, anyString, anyString, withCapture(events));
-            assertEquals(numTargets, events.size());
-            assertEquals(createExpectingList(event, numTargets), events);
+            List<Set<String>> targetComponentsList = new ArrayList<>();
+            mockedEventLogger.writeEvent(anyLong, anyString, anyString, withCapture(targetComponentsList), withCapture(events));
+            assertEquals(1, events.size());
+            assertEquals(1, targetComponentsList.size());
+            assertEquals(events.get(0), event);
+            assertEquals(targetComponentsList.get(0), targetComponents);
         }};
     }
 
-
-    private List<StreamlineEvent> createExpectingList(StreamlineEvent event, int numOccurences) {
-        List<StreamlineEvent> events = new ArrayList<>();
-        for (int i = 0 ; i < numOccurences ; i++) {
-            events.add(event);
-        }
-        return events;
-    }
 }
