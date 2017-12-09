@@ -362,6 +362,9 @@ const selectAllOutputFields = function(tempFields,string){
     }
   });
   if(string === 'sinkForm'){
+    tempAllFields = _.filter(tempFields, (t) => {
+      return (!_.has(t, 'streamId') && t.type !== "NESTED");
+    });
     tempAllFields = tempAllFields.map((field)=>{return field.value;});
   }
   return tempAllFields;
@@ -439,7 +442,7 @@ export class Streams {
     });
   }
   cloneStreams(streams){
-    return JSON.parse(JSON.stringify(streams));
+    return JSON.parse(JSON.stringify(streams || this.streams));
   }
   filterByType(type){
     const streams = this.cloneStreams(this.streams);
@@ -506,9 +509,28 @@ export class Streams {
         }
       });
     };
-    pushOptions(streams, 0);
+    pushOptions(streams || this.cloneStreams(), 0);
 
     return options;
+  }
+  toNoNestedSelectOption(streams){
+    const _streams = streams || this.cloneStreams();
+    _streams.forEach((stream) => {
+      /*stream.fields.forEach((childField) => {
+        if(childField.fields){
+          delete childField.fields;
+        }
+      });*/
+      for(let i = 0; i< stream.fields.length;){
+        const childField = stream.fields[i];
+        if(childField.fields){
+          stream.fields.splice(i,1);
+        }else{
+          i++;
+        }
+      }
+    });
+    return this.toSelectOption(_streams);
   }
 }
 
