@@ -16,6 +16,7 @@ import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
 import * as Fields from '../libs/form/Fields';
+import { Streams } from './ProcessorUtils';
 
 const sortArray = function(sortingArr, keyName, ascendingFlag) {
   if (ascendingFlag) {
@@ -217,7 +218,7 @@ const abbreviateNumber = function(value) {
 
 const eventTimeData = function(inputFields) {
   const eventTimeArr = inputFields.filter((k, i) => {
-    return k.type.toLowerCase() === "long";
+    return k.type && k.type.toLowerCase() === "long";
   }).map((v) => {
     return {fieldName: v.name, uiName: v.name};
   });
@@ -230,11 +231,25 @@ const getTimeDiffInMinutes = function(end, start) {
   return  moment.duration(end.diff(start, 'minutes')).asMinutes();
 };
 
-const inputFieldsData = function(inputFields) {
-  const inputFieldsArr = inputFields.map(v => {
+const inputFieldsData = function(inputFields, noNestedFields) {
+  /*const inputFieldsArr = inputFields.map(v => {
     return {fieldName: v.name, uiName: v.name, fieldType: v.type};
   });
-  return inputFieldsArr;
+  return inputFieldsArr;*/
+  let options = [];
+  const streams = new Streams(inputFields);
+  const streamsArr = streams.cloneStreams();
+  if(noNestedFields){
+    options = streams.toNoNestedSelectOption(streamsArr);
+  }else{
+    options = streams.toSelectOption(streamsArr);
+  }
+  options.forEach((opt) => {
+    opt.fieldName = opt.uniqueID;
+    opt.uiName = opt.name;
+    opt.fieldType = opt.type;
+  });
+  return options;
 };
 
 const checkNestedInputFields = function(inputObj, fieldsData, securityType, hasSecurity) {
@@ -257,7 +272,11 @@ const checkNestedInputFields = function(inputObj, fieldsData, securityType, hasS
       //those fields are mapped by inputFieldsData function
       if (obj.options && obj.hint !== undefined) {
         if (obj.hint.toLowerCase().indexOf("inputfields") !== -1 && !obj.options.length) {
-          obj.options = inputFieldsData(fieldsData);
+          if(obj.hint.toLowerCase().indexOf("nonestedfields") !== -1){
+            obj.options = inputFieldsData(fieldsData, true);
+          }else{
+            obj.options = inputFieldsData(fieldsData, false);
+          }
         } else if (obj.hint.toLowerCase().indexOf("eventtime") !== -1 && (obj.options.length === 0 || obj.options[0].uiName === "processingTime")) {
           obj.options = eventTimeData(fieldsData);
         } else if (obj.hint.toLowerCase().indexOf("override") !== -1 && obj.type === "enumstring") {
@@ -315,7 +334,7 @@ const genFields = function(fieldsJSON, _fieldName = [], FormData = {}, inputFiel
           if (!_.isObject(d)) {
             options.push({value: d, label: d});
           } else {
-            options.push({value: d.fieldName, label: d.uiName, type: d.fieldType});
+            options.push({...d, value: d.fieldName, label: d.uiName, type: d.fieldType});
           }
         });
       }
