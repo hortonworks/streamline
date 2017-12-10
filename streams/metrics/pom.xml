@@ -27,9 +27,5 @@
             <groupId>com.hortonworks.streamline</groupId>
             <artifactId>streamline-cluster</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.hortonworks.registries</groupId>
-            <artifactId>storage-core</artifactId>
-        </dependency>
     </dependencies>
 </project>

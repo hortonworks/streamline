@@ -46,7 +46,7 @@ public final class StreamlineEventImpl extends ForwardingMap<String, Object> imp
     // special event to trigger evaluation of group by
     public static final StreamlineEvent GROUP_BY_TRIGGER_EVENT = StreamlineEventImpl.builder().build();
 
-    public static final String TO_STRING_PREFIX = "StreamlineEventImpl";
+    public static final String TO_STRING_PREFIX = "StreamlineEvent";
 
     private final ImmutableMap<String, Object> header;
     private final String sourceStream;

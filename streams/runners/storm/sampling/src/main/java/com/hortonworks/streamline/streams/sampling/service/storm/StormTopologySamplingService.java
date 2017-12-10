@@ -11,6 +11,10 @@ import com.hortonworks.streamline.streams.storm.common.StormTopologyUtil;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.client.ClientConfig;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,9 +35,8 @@ import static com.hortonworks.streamline.streams.common.StreamlineEventImpl.TO_S
 public class StormTopologySamplingService implements TopologySampling {
     private static final Logger LOG = LoggerFactory.getLogger(StormTopologySamplingService.class);
 
-    private static final Pattern LOG_CONTENT_REGEX = Pattern.compile("<pre id=\"logContent\">(.*)</pre>", Pattern.DOTALL);
-    private static final Pattern PREV_START_REGEX = Pattern.compile("<a class=\"btn btn-default enabled\"[^<]*start=(\\d+)[^<]*Prev</a>", Pattern.DOTALL);
-    private static final Pattern NEXT_START_REGEX = Pattern.compile("<a class=\"btn btn-default enabled\"[^<]*start=(\\d+)[^<]*Next</a>", Pattern.DOTALL);
+    private static final String LOG_CONTENT = "logContent";
+    private static final Pattern START_REGEX = Pattern.compile("start=(\\d+)", Pattern.DOTALL);
     public static final int BYTES_TO_FETCH = 51200;
 
     private StormRestAPIClient client;
@@ -94,61 +97,88 @@ public class StormTopologySamplingService implements TopologySampling {
         List<SampledEvent> events = new ArrayList<>(qps.count());
         String topologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId(), asUser);
         String componentId = component.getId() + "-" + component.getName();
-        Long cur;
+        Long cur = null;
+        Long next;
         if (qps.desc()) {
-            cur = qps.start();
+            next = qps.start();
         } else {
-            cur = qps.start() == null ? Long.valueOf(0) : qps.start();
+            next = qps.start() == null ? Long.valueOf(0) : qps.start();
         }
-        Long nextOffset;
+        Long nextOffset = null;
         Long prevOffset = null;
-        do {
+        while (events.size() < qps.count()) {
+            cur = next;
             String res = client.getSampledEvents(topologyId, componentId, asUser, cur, qps.length());
-            Matcher match = LOG_CONTENT_REGEX.matcher(res);
-            if (!match.find()) {
+            Document doc = Jsoup.parse(res);
+            Element logContent = doc.getElementById(LOG_CONTENT);
+            if (logContent == null) {
                 break;
             }
-            String lines = match.group(1);
+            String lines = logContent.text();
             if (!StringUtils.isEmpty(lines)) {
-                addSampledEvents(lines, componentId, events);
+                List<SampledEvent> curEvents = new ArrayList<>();
+                addSampledEvents(lines, componentId, curEvents);
+                if (qps.desc()) {
+                    Collections.reverse(curEvents);
+                }
+                events.addAll(curEvents);
             }
-            match = PREV_START_REGEX.matcher(res);
-            prevOffset = match.find() ? Long.parseLong(match.group(1)) : null;
-            match = NEXT_START_REGEX.matcher(res);
-            nextOffset = match.find() ? Long.parseLong(match.group(1)) : null;
-            cur = qps.desc() ? prevOffset : nextOffset;
-        } while (events.size() < qps.count() && cur != null);
+            Element prevElement = getFirstMatch(doc.getElementsByClass("btn btn-default enabled"), "Prev");
+            if (prevElement != null) {
+                Matcher match = START_REGEX.matcher(prevElement.attributes().get("href"));
+                if (match.find()) {
+                    prevOffset = Long.parseLong(match.group(1));
+                }
+            }
+            Element nextElement = getFirstMatch(doc.getElementsByClass("btn btn-default enabled"), "Next");
+            if (nextElement != null) {
+                Matcher match = START_REGEX.matcher(nextElement.attributes().get("href"));
+                if (match.find()) {
+                    nextOffset = Long.parseLong(match.group(1));
+                }
+            }
+            if (qps.desc()) {
+                if (prevOffset == null) {
+                    break;
+                } else {
+                    next = prevOffset;
+                }
+            } else {
+                if (nextOffset == null) {
+                    break;
+                } else {
+                    next = nextOffset;
+                }
+            }
+        }
 
-        long next = 0;
+        long nextStart = 0;
         Integer length = null;
         if (!events.isEmpty()) {
             if (events.size() > qps.count()) {
-                int i = qps.desc() ? events.size() - qps.count() : 0;
-                int j = qps.desc() ? events.size() : qps.count();
-                events = events.subList(i, j);
+                events = events.subList(0, qps.count());
             }
+            SampledEvent lastEvent = events.get(events.size() - 1);
             if (qps.desc()) {
-                if (qps.start() != null) {
-                    next = qps.start() + events.get(0).getStartOffset() - qps.length() + 1;
+                if (cur != null) {
+                    nextStart = cur + lastEvent.getStartOffset() - qps.length() + 1;
                 } else if (prevOffset != null) {
-                    next = prevOffset + events.get(0).getStartOffset() + 1;
+                    nextStart = prevOffset + lastEvent.getStartOffset() + 1;
                 }
-                if (next >= 0) {
+                if (nextStart >= 0) {
                     length = qps.length();
-                } else if (qps.start() > 0 && qps.start() < qps.length()){
-                    length = events.get(0).getStartOffset() + qps.start().intValue() + 1;
+                } else if (cur != null && cur > 0 && cur < qps.length()){
+                    length = lastEvent.getStartOffset() + cur.intValue() + 1;
                 } else {
-                    length = events.get(0).getStartOffset() + 1;
+                    length = lastEvent.getStartOffset() + 1;
                 }
-                next = Math.max(next, 0);
-                Collections.reverse(events);
+                nextStart = Math.max(nextStart, 0);
             } else {
-                SampledEvent lastEvent = events.get(events.size() - 1);
-                next = (qps.start() == null ? 0 : qps.start()) + lastEvent.getStartOffset() + lastEvent.getLength() - 1;
+                nextStart = (cur == null ? 0 : cur) + lastEvent.getStartOffset() + lastEvent.getLength() - 1;
                 length = qps.length() == null ? Integer.valueOf(BYTES_TO_FETCH) : qps.length();
             }
         }
-        return buildSampledEvents(next, length, events);
+        return buildSampledEvents(nextStart, length, events);
     }
 
     private SampledEvents buildSampledEvents(Long next, Integer length, List<SampledEvent> events) {
@@ -176,15 +206,21 @@ public class StormTopologySamplingService implements TopologySampling {
         for (String line : lines.split("\n")) {
             line = StringEscapeUtils.unescapeHtml(line);
             int componentStart = line.indexOf(',') + 1;
-            if (componentStart != -1) {
+            if (componentStart != 0) {
                 int componentEnd = line.indexOf(',', componentStart);
                 if (componentEnd != -1) {
                     String componentName = line.substring(componentStart, componentEnd);
                     try {
                         if (componentName.equals(queriedComponentId)) {
                             long time = Date.parse(line.substring(0, componentStart - 1));
-                            String eventStr = line.substring(line.indexOf(TO_STRING_PREFIX) + TO_STRING_PREFIX.length(), line.lastIndexOf("]"));
-                            events.add(buildSampledEvent(time, eventStr, offset, line.length()));
+                            int start = line.indexOf(TO_STRING_PREFIX) + TO_STRING_PREFIX.length();
+                            if (start >= TO_STRING_PREFIX.length()) {
+                                int end = line.lastIndexOf("]");
+                                if (end > start) {
+                                    String eventStr = line.substring(start, end);
+                                    events.add(buildSampledEvent(time, eventStr, offset, line.length()));
+                                }
+                            }
                         } else {
                             LOG.trace("Skipping sampled event for component {}", componentName);
                         }
@@ -211,6 +247,15 @@ public class StormTopologySamplingService implements TopologySampling {
                 return samplingPct != null && samplingPct instanceof Number ? ((Number) samplingPct).intValue() : 0;
             }
         };
+    }
+
+    private Element getFirstMatch(Elements elements, String match) {
+        for (Element element : elements) {
+            if (element.text().equals(match)) {
+                return element;
+            }
+        }
+        return null;
     }
 
     private SampledEvent buildSampledEvent(long ts, String event, int startOffset, int length) {
