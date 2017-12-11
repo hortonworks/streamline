@@ -40,7 +40,7 @@ import {toastOpt} from '../../utils/Constants';
 import LogSearchREST from '../../rest/LogSearchREST';
 import moment from 'moment';
 import DatetimeRangePicker from 'react-bootstrap-datetimerangepicker';
-import Select from 'react-select';
+import {Select2 as Select} from '../../utils/SelectUtils';
 import TopologyREST from '../../rest/TopologyREST';
 
 class LogSearch extends Component {
@@ -285,12 +285,12 @@ class LogSearch extends Component {
   getTableHeaderContent(){
     const {showColumn} = this.state;
     const content = [];
-    showColumn.timestamp ? content.push(<Th column="timestamp" style={{minWidth: '90px'}}>DateTime</Th>) : null;
-    showColumn.logLevel ? content.push(<Th column="logLevel">Log Level</Th>) : null;
-    showColumn.componentName ? content.push(<Th column="componentName">Component Name</Th>) : null;
-    showColumn.host ? content.push(<Th column="host">Host</Th>) : null;
-    showColumn.port ? content.push(<Th column="port">Port</Th>) : null;
-    showColumn.logMessage ? content.push(<Th column="logMessage">Log Message</Th>) : null;
+    showColumn.timestamp ? content.push(<Th key="timestamp" column="timestamp" style={{minWidth: '90px'}}>DateTime</Th>) : null;
+    showColumn.logLevel ? content.push(<Th key="logLevel" column="logLevel">Log Level</Th>) : null;
+    showColumn.componentName ? content.push(<Th key="componentName" column="componentName">Component Name</Th>) : null;
+    showColumn.host ? content.push(<Th key="host" column="host">Host</Th>) : null;
+    showColumn.port ? content.push(<Th key="port" column="port">Port</Th>) : null;
+    showColumn.logMessage ? content.push(<Th key="logMessage" column="logMessage">Log Message</Th>) : null;
     return content;
   }
   getRowContent(log){
@@ -391,7 +391,7 @@ class LogSearch extends Component {
                     <label>Range :</label>
                     <DatetimeRangePicker timePicker timePicker24Hour showDropdowns timePickerSeconds locale={locale} startDate={startDate} endDate={endDate} ranges={ranges} onApply={this.handleEvent} opens="left">
                       <div className="input-group">
-                        <input type="text" className="form-control" value={label}/>
+                        <input type="text" className="form-control" defaultValue={label}/>
                         <span className="input-group-btn">
                           <Button className="default date-range-toggle">
                             <i className="fa fa-calendar"/>
@@ -410,32 +410,32 @@ class LogSearch extends Component {
                   onSelect={this.onColumnSelect}
                 >
                   <MenuItem eventKey="timestamp">
-                    {showColumn.timestamp ? 
+                    {showColumn.timestamp ?
                       <i className="fa fa-check-square-o" aria-hidden="true"></i>
                       : <i className="fa fa-square-o" aria-hidden="true"></i>} DateTime
                   </MenuItem>
                   <MenuItem eventKey="logLevel">
-                    {showColumn.logLevel ? 
+                    {showColumn.logLevel ?
                       <i className="fa fa-check-square-o" aria-hidden="true"></i>
                       : <i className="fa fa-square-o" aria-hidden="true"></i>} Log Level
                   </MenuItem>
                   <MenuItem eventKey="componentName">
-                    {showColumn.componentName ? 
+                    {showColumn.componentName ?
                       <i className="fa fa-check-square-o" aria-hidden="true"></i>
                       : <i className="fa fa-square-o" aria-hidden="true"></i>} Component Name
                   </MenuItem>
                   <MenuItem eventKey="host">
-                    {showColumn.host ? 
+                    {showColumn.host ?
                       <i className="fa fa-check-square-o" aria-hidden="true"></i>
                       : <i className="fa fa-square-o" aria-hidden="true"></i>} Host
                   </MenuItem>
                   <MenuItem eventKey="port">
-                    {showColumn.port ? 
+                    {showColumn.port ?
                       <i className="fa fa-check-square-o" aria-hidden="true"></i>
                       : <i className="fa fa-square-o" aria-hidden="true"></i>} Port
                   </MenuItem>
                   {/*<MenuItem eventKey="logMessage">
-                    {showColumn.logMessage ? 
+                    {showColumn.logMessage ?
                       <i className="fa fa-check-square-o" aria-hidden="true"></i>
                       : <i className="fa fa-square-o" aria-hidden="true"></i>} Log Message
                   </MenuItem>*/}
