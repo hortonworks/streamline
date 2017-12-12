@@ -137,8 +137,13 @@ export default class BranchNodeForm extends Component {
         : false
     };
 
-    if (this.nodeData.outputStreams.length > 0) {
-      this.streamData = this.context.ParentForm.state.inputStreamOptions[0];
+    if (this.nodeData.outputStreams.length) {
+      const contextInputStream = this.context.ParentForm.state.inputStreamOptions;
+      this.streamData = this.nodeData.outputStreams[0];
+      this.streamData.fields = contextInputStream[0].fields;
+      _.map(this.nodeData.outputStreams,(stream) => {
+        stream.fields = contextInputStream[0].fields;
+      });
       this.context.ParentForm.setState({outputStreamObj: this.streamData});
     } else {
       this.context.ParentForm.setState({outputStreamObj: {}});
@@ -154,17 +159,13 @@ export default class BranchNodeForm extends Component {
 
   handleSave(name, description) {
     let {topologyId, versionId, nodeType} = this.props;
-    let promiseArr = [TopologyREST.getNode(topologyId, versionId, nodeType, this.nodeData.id)];
-    return Promise.all(promiseArr).then(results => {
-      this.nodeData = results[0];
-      this.nodeData.name = name;
-      this.nodeData.description = description;
-      this.nodeData.config.properties.processAll = this.state.processAll;
-      //Update branch
-      return TopologyREST.updateNode(topologyId, versionId, nodeType, this.nodeData.id, {
-        body: JSON.stringify(this.nodeData)
-      });
-    });
+    this.nodeData.name = name;
+    this.nodeData.description = description;
+    this.nodeData.config.properties.processAll = this.state.processAll;
+    let promiseArr = [
+      TopologyREST.updateNode(topologyId, versionId, nodeType, this.nodeData.id, {body: JSON.stringify(this.nodeData)})
+    ];
+    return Promise.all(promiseArr);
   }
 
   handleAddRule(id) {
