@@ -104,6 +104,7 @@ class TopologyViewContainer extends Component {
     this.versionId = 1;
     this.versionName = '';
     this.customProcessors = [];
+    this.showLogSearch = false;
     this.fetchData();
     this.checkAuth = true;
   }
@@ -221,6 +222,12 @@ class TopologyViewContainer extends Component {
               if (mapObj) {
                 this.stormClusterId = mapObj.clusterId;
               }
+              let infraObj = namespaceData.mappings.find((m) => {
+                return m.serviceName.toLowerCase() === 'ambari_infra';
+              });
+              if (infraObj) {
+                this.showLogSearch = true;
+              }
             }
           }
 
@@ -306,7 +313,9 @@ class TopologyViewContainer extends Component {
       viewModeData.processorMetrics = responseArr[2].entities;
       viewModeData.sinkMetrics = responseArr[3].entities;
       this.setState({viewModeData: viewModeData, fetchMetrics: false}, ()=>{this.syncComponentData();});
-      this.refs.metricsPanelRef.setState({loadingRecord: false});
+      if(this.refs.metricsPanelRef){
+        this.refs.metricsPanelRef.setState({loadingRecord: false});
+      }
     });
   }
   syncComponentData() {
@@ -542,7 +551,9 @@ class TopologyViewContainer extends Component {
                     modeSelectCallback={this.modeSelectCallback}
                     stormClusterId={this.state.stormClusterId}
                     nameSpaceName={this.nameSpace}
-                    namespaceId={this.namespaceId} />,
+                    namespaceId={this.namespaceId}
+                    showLogSearchBtn={this.showLogSearch}
+                   />,
                   <div id="viewMode" className="graph-bg" key={"2"}>
                     <div className="zoom-btn-group">
                       <i className="fa fa-search-plus" onClick={this.zoomAction.bind(this, "zoom_in")}></i>

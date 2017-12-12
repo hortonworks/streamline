@@ -43,6 +43,7 @@ class TopologyViewMode extends Component {
       showDateRangeSection: false,
       startDate: props.startDate,
       endDate: props.endDate,
+      showLogSearchBtn: props.showLogSearchBtn,
       rangesInHoursMins: {
         'Last 5 Minutes': [
           moment().subtract(5, 'minutes'),
@@ -184,7 +185,7 @@ class TopologyViewMode extends Component {
     if (props.stormClusterId) {
       this.fetchData(props.stormClusterId);
     }
-    this.setState({startDate: props.startDate, endDate: props.endDate});
+    this.setState({startDate: props.startDate, endDate: props.endDate, showLogSearchBtn: props.showLogSearchBtn});
   }
   fetchData(stormClusterId) {
     ClusterREST.getStormViewUrl(stormClusterId).then((obj) => {
@@ -286,7 +287,7 @@ class TopologyViewMode extends Component {
   }
 
   render() {
-    let {stormViewUrl, startDate, endDate, ranges, rangesInHoursMins, rangesInDaysToYears, rangesPrevious, displayTime} = this.state;
+    let {stormViewUrl, startDate, endDate, ranges, rangesInHoursMins, rangesInDaysToYears, rangesPrevious, displayTime, showLogSearchBtn} = this.state;
     const {
       topologyId,
       topologyName,
@@ -432,14 +433,16 @@ class TopologyViewMode extends Component {
                 </div>
               </OverlayTrigger>}
           </div>
-          <div className="pull-right">
-            <Link style={{marginLeft: '10px', top: '5px'}} key={3}
-              className="hb sm default-blue"
-              to={`logsearch/${topologyId}`}
-            >
-              <i className="fa fa-book"></i>
-            </Link>
-          </div>
+          {showLogSearchBtn ?
+            <div className="pull-right">
+              <Link style={{marginLeft: '10px', top: '5px'}} key={3}
+                className="hb sm default-blue"
+                to={`logsearch/${topologyId}`}
+              >
+                <i className="fa fa-book"></i>
+              </Link>
+            </div>
+          : null}
           <div className="pull-right" style={{marginLeft: '10px'}}>
           <DropdownButton rootCloseEvent={null} title={datePickerTitleContent} id="datepicker-dropdown" pullRight open={this.state.showDateRangeSection} onToggle={this.showHideDateRangePicker} disabled={!isAppRunning}>
             <div className="row">

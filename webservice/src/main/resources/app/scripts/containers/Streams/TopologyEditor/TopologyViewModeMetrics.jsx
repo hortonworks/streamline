@@ -24,7 +24,7 @@ import {toastOpt} from '../../../utils/Constants';
 import app_state from '../../../app_state';
 import Utils from '../../../utils/Utils';
 import d3 from 'd3';
-import Select from 'react-select';
+import {Select2 as Select} from '../../../utils/SelectUtils';
 import _ from 'lodash';
 import moment from 'moment';
 
