@@ -18,18 +18,14 @@ package com.hortonworks.streamline.streams.runtime.storm.testing;
 
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.storm.common.StormTopologyUtil;
-import org.apache.storm.generated.GlobalStreamId;
-import org.apache.storm.generated.Grouping;
 import org.apache.storm.task.TopologyContext;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class OutputCollectorStreamlineEventLogger {
     private final TopologyContext topologyContext;
@@ -56,11 +52,13 @@ public class OutputCollectorStreamlineEventLogger {
     private void logEvent(String streamId, List<Integer> taskIds, List<Object> tuple) {
         long now = System.currentTimeMillis();
         StreamlineEvent streamlineEvent = (StreamlineEvent) tuple.get(0);
-        for (int taskId : taskIds) {
-            String targetComponentId = topologyContext.getComponentId(taskId);
-            String targetStreamlineComponentName = StormTopologyUtil.extractStreamlineComponentName(targetComponentId);
-            eventLogger.writeEvent(now, componentName,
-                    streamId, targetStreamlineComponentName, streamlineEvent);
-        }
+
+        // will be more efficient if we split this to two streams, but it shouldn't be a big deal anyway
+        Set<String> targetComponentIds = taskIds.stream()
+                .map(topologyContext::getComponentId)
+                .map(StormTopologyUtil::extractStreamlineComponentName)
+                .collect(Collectors.toSet());
+
+        eventLogger.writeEvent(now, componentName, streamId, targetComponentIds, streamlineEvent);
     }
 }

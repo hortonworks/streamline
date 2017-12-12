@@ -25,36 +25,44 @@ public class CorrelatedEventsGrouperTest {
 
            .... and more
         */
-        EventInformation event1 = new EventInformation(timestamp, "SOURCE1", "default", "AGGREGATION", "1",
+        EventInformation event1 = new EventInformation(timestamp, "SOURCE1", "default",
+                Collections.singleton("AGGREGATION"), "1",
                 Collections.emptySet(), Collections.emptySet(), TEST_FIELDS_AND_VALUES);
         testEvents.add(event1);
 
-        EventInformation event2 = new EventInformation(timestamp, "SOURCE1", "default", "AGGREGATION", "2",
+        EventInformation event2 = new EventInformation(timestamp, "SOURCE1", "default",
+                Collections.singleton("AGGREGATION"), "2",
                 Collections.emptySet(), Collections.emptySet(), TEST_FIELDS_AND_VALUES);
         testEvents.add(event2);
 
-        EventInformation event3 = new EventInformation(timestamp, "SOURCE2", "default", "JOIN", "3",
+        EventInformation event3 = new EventInformation(timestamp, "SOURCE2", "default",
+                Collections.singleton("JOIN"), "3",
                 Collections.emptySet(), Collections.emptySet(), TEST_FIELDS_AND_VALUES);
         testEvents.add(event3);
 
-        EventInformation event4 = new EventInformation(timestamp, "AGGREGATION", "default", "JOIN", "4",
+        EventInformation event4 = new EventInformation(timestamp, "AGGREGATION", "default",
+                Collections.singleton("JOIN"), "4",
                 Sets.newHashSet("1", "2"), Sets.newHashSet("1", "2"), TEST_FIELDS_AND_VALUES);
         testEvents.add(event4);
 
-        EventInformation event5 = new EventInformation(timestamp, "JOIN", "default", "PROJECTION", "5",
+        EventInformation event5 = new EventInformation(timestamp, "JOIN", "default",
+                Collections.singleton("PROJECTION"), "5",
                 Sets.newHashSet("1", "2", "3"), Sets.newHashSet("4", "3"), TEST_FIELDS_AND_VALUES);
         testEvents.add(event5);
 
-        EventInformation event6 = new EventInformation(timestamp, "PROJECTION", "default", "SINK", "6",
+        EventInformation event6 = new EventInformation(timestamp, "PROJECTION", "default",
+                Collections.singleton("SINK"), "6",
                 Sets.newHashSet("1", "2", "3"), Sets.newHashSet("5"), TEST_FIELDS_AND_VALUES);
         testEvents.add(event6);
 
         // below two events are not correlated to root event
-        EventInformation event7 = new EventInformation(timestamp, "SOURCE1", "default", "AGGREGATION", "7",
+        EventInformation event7 = new EventInformation(timestamp, "SOURCE1", "default",
+                Collections.singleton("AGGREGATION"), "7",
                 Collections.emptySet(), Collections.emptySet(), TEST_FIELDS_AND_VALUES);
         testEvents.add(event7);
 
-        EventInformation event8 = new EventInformation(timestamp, "SOURCE2", "default", "JOIN", "8",
+        EventInformation event8 = new EventInformation(timestamp, "SOURCE2", "default",
+                Collections.singleton("JOIN"), "8",
                 Collections.emptySet(), Collections.emptySet(), TEST_FIELDS_AND_VALUES);
         testEvents.add(event8);
 
@@ -104,6 +112,105 @@ public class CorrelatedEventsGrouperTest {
         Assert.assertFalse(sink.isContainingSelectedEvent());
         Assert.assertEquals(Sets.newHashSet("6"), new HashSet<>(sink.getInputEventIds()));
         Assert.assertTrue(sink.getOutputEventIds().isEmpty());
+
+    }
+
+    @Test
+    public void testGroupEventsWithSplitProcessor() throws Exception {
+        long timestamp = System.currentTimeMillis();
+
+        List<EventInformation> testEvents = new ArrayList<>();
+
+        /*
+         <SOURCE>    <SPLIT>       <PROJECTION1>        <SINK1>
+           e1     ->     e2     ->      e3         ->
+
+                                \   <PROJECTION2>
+                                        e4         ->
+
+                                \   <PROJECTION3>
+                                        e5         ->
+        */
+        EventInformation event1 = new EventInformation(timestamp, "SOURCE", "default",
+                Collections.singleton("SPLIT"), "1",
+                Collections.emptySet(), Collections.emptySet(), TEST_FIELDS_AND_VALUES);
+        testEvents.add(event1);
+
+        EventInformation event2 = new EventInformation(timestamp, "SPLIT", "stream1",
+                Sets.newHashSet("PROJECTION1", "PROJECTION2", "PROJECTION3"), "2",
+                Sets.newHashSet("1"), Sets.newHashSet("1"), TEST_FIELDS_AND_VALUES);
+        testEvents.add(event2);
+
+        EventInformation event3 = new EventInformation(timestamp, "PROJECTION1", "default",
+                Collections.singleton("SINK1"), "3",
+                Sets.newHashSet("1"), Sets.newHashSet("2"), TEST_FIELDS_AND_VALUES);
+        testEvents.add(event3);
+
+        EventInformation event4 = new EventInformation(timestamp, "PROJECTION2", "default",
+                Collections.singleton("SINK2"), "4",
+                Sets.newHashSet("1"), Sets.newHashSet("2"), TEST_FIELDS_AND_VALUES);
+        testEvents.add(event4);
+
+        EventInformation event5 = new EventInformation(timestamp, "PROJECTION3", "default",
+                Collections.singleton("SINK3"), "5",
+                Sets.newHashSet("1"), Sets.newHashSet("2"), TEST_FIELDS_AND_VALUES);
+        testEvents.add(event5);
+
+        CorrelatedEventsGrouper eventsGrouper = new CorrelatedEventsGrouper(testEvents);
+        GroupedCorrelationEvents groupedEvents = eventsGrouper.groupByComponent(event1.getEventId());
+
+        Map<String, EventInformation> allEvents = groupedEvents.getAllEvents();
+        Assert.assertEquals(5, allEvents.size());
+
+        Map<String, GroupedCorrelationEvents.SortedComponentGroupedEvents> componentGroupedEvents =
+                groupedEvents.getComponentGroupedEvents();
+        GroupedCorrelationEvents.SortedComponentGroupedEvents source = componentGroupedEvents.get("SOURCE");
+        Assert.assertEquals("SOURCE", source.getComponentName());
+        Assert.assertTrue(source.isContainingSelectedEvent());
+        Assert.assertTrue(source.getInputEventIds().isEmpty());
+        Assert.assertEquals(Sets.newHashSet("1"), new HashSet<>(source.getOutputEventIds()));
+
+        GroupedCorrelationEvents.SortedComponentGroupedEvents split = componentGroupedEvents.get("SPLIT");
+        Assert.assertEquals("SPLIT", split.getComponentName());
+        Assert.assertFalse(split.isContainingSelectedEvent());
+        Assert.assertEquals(Collections.singletonList("1"), split.getInputEventIds());
+        Assert.assertEquals(Collections.singletonList("2"), split.getOutputEventIds());
+
+        GroupedCorrelationEvents.SortedComponentGroupedEvents projection1 = componentGroupedEvents.get("PROJECTION1");
+        Assert.assertEquals("PROJECTION1", projection1.getComponentName());
+        Assert.assertFalse(projection1.isContainingSelectedEvent());
+        Assert.assertEquals(Collections.singletonList("2"), projection1.getInputEventIds());
+        Assert.assertEquals(Collections.singletonList("3"), projection1.getOutputEventIds());
+
+        GroupedCorrelationEvents.SortedComponentGroupedEvents projection2 = componentGroupedEvents.get("PROJECTION2");
+        Assert.assertEquals("PROJECTION2", projection2.getComponentName());
+        Assert.assertFalse(projection2.isContainingSelectedEvent());
+        Assert.assertEquals(Collections.singletonList("2"), projection2.getInputEventIds());
+        Assert.assertEquals(Collections.singletonList("4"), projection2.getOutputEventIds());
+
+        GroupedCorrelationEvents.SortedComponentGroupedEvents projection3 = componentGroupedEvents.get("PROJECTION3");
+        Assert.assertEquals("PROJECTION3", projection3.getComponentName());
+        Assert.assertFalse(projection3.isContainingSelectedEvent());
+        Assert.assertEquals(Collections.singletonList("2"), projection3.getInputEventIds());
+        Assert.assertEquals(Collections.singletonList("5"), projection3.getOutputEventIds());
+
+        GroupedCorrelationEvents.SortedComponentGroupedEvents sink1 = componentGroupedEvents.get("SINK1");
+        Assert.assertEquals("SINK1", sink1.getComponentName());
+        Assert.assertFalse(sink1.isContainingSelectedEvent());
+        Assert.assertEquals(Collections.singletonList("3"), sink1.getInputEventIds());
+        Assert.assertTrue(sink1.getOutputEventIds().isEmpty());
+
+        GroupedCorrelationEvents.SortedComponentGroupedEvents sink2 = componentGroupedEvents.get("SINK2");
+        Assert.assertEquals("SINK2", sink2.getComponentName());
+        Assert.assertFalse(sink2.isContainingSelectedEvent());
+        Assert.assertEquals(Collections.singletonList("4"), sink2.getInputEventIds());
+        Assert.assertTrue(sink2.getOutputEventIds().isEmpty());
+
+        GroupedCorrelationEvents.SortedComponentGroupedEvents sink3 = componentGroupedEvents.get("SINK3");
+        Assert.assertEquals("SINK3", sink3.getComponentName());
+        Assert.assertFalse(sink3.isContainingSelectedEvent());
+        Assert.assertEquals(Collections.singletonList("5"), sink3.getInputEventIds());
+        Assert.assertTrue(sink3.getOutputEventIds().isEmpty());
 
     }
 }
