@@ -1,5 +1,6 @@
 package com.hortonworks.streamline.streams.logsearch.storm.ambari;
 
+import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.exception.ConfigException;
 import com.hortonworks.streamline.streams.logsearch.LogSearchCriteria;
 import com.hortonworks.streamline.streams.logsearch.LogSearchResult;
@@ -44,6 +45,9 @@ public class AmbariInfraWithStormLogSearch implements TopologyLogSearch {
     public static final String COLUMN_NAME_LOG_MESSAGE = "log_message";
 
     public static final String DEFAULT_COLLECTION_NAME = "hadoop_logs";
+
+    static final List<String> DEFAULT_LOG_LEVELS = Lists.newArrayList("INFO", "WARN", "ERROR");
+
     private HttpSolrClient solr;
 
     public AmbariInfraWithStormLogSearch() {
@@ -91,9 +95,10 @@ public class AmbariInfraWithStormLogSearch implements TopologyLogSearch {
         }
 
         List<String> logLevels = logSearchCriteria.getLogLevels();
-        if (logLevels != null && !logLevels.isEmpty()) {
-            query.addFilterQuery(buildColumnAndValue(COLUMN_NAME_LOG_LEVEL, buildORValues(logSearchCriteria.getLogLevels())));
+        if (logLevels == null || logLevels.isEmpty()) {
+            logLevels = DEFAULT_LOG_LEVELS;
         }
+        query.addFilterQuery(buildColumnAndValue(COLUMN_NAME_LOG_LEVEL, buildORValues(logLevels)));
 
         query.addSort(COLUMN_NAME_LOG_TIME, SolrQuery.ORDER.asc);
 
