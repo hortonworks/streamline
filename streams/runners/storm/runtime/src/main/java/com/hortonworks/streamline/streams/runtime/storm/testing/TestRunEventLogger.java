@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,13 +64,13 @@ public class TestRunEventLogger {
     // Writing event to file should be mutually exclusive.
     // We don't need to worry about performance since it's just for testing topology locally.
     public synchronized void writeEvent(long timestamp, String componentName,
-                                        String streamId, String targetComponentName, StreamlineEvent event) {
+                                        String streamId, Set<String> targetComponents, StreamlineEvent event) {
         try (FileWriter fw = new FileWriter(eventLogFilePath, true)) {
             LOG.debug("writing event to file " + eventLogFilePath);
 
             EventInformationBuilder informationBuilder = new EventInformationBuilder();
             EventInformation eventInfo = informationBuilder.build(timestamp, componentName, streamId,
-                    targetComponentName, event);
+                    targetComponents, event);
             fw.write(objectMapper.writeValueAsString(eventInfo) + "\n");
             fw.flush();
         } catch (FileNotFoundException e) {

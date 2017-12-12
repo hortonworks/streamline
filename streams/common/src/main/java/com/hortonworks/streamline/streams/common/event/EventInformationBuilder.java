@@ -18,13 +18,16 @@ package com.hortonworks.streamline.streams.common.event;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.event.correlation.EventCorrelationInjector;
 
+import java.util.Set;
+
 public class EventInformationBuilder {
-    public EventInformation build(long timestamp, String componentName, String streamId, String targetComponentName, StreamlineEvent event) {
+    public EventInformation build(long timestamp, String componentName, String streamId, Set<String> targetComponents,
+                                  StreamlineEvent event) {
         String sourceComponentName = EventCorrelationInjector.getSourceComponentName(event);
         if (!componentName.equals(sourceComponentName)) {
             throw new IllegalStateException("component name in event correlation is different from provided component name");
         }
-        return new EventInformation(timestamp, componentName, streamId, targetComponentName, event.getId(),
+        return new EventInformation(timestamp, componentName, streamId, targetComponents, event.getId(),
                 EventCorrelationInjector.getRootIds(event), EventCorrelationInjector.getParentIds(event),
                 event);
     }

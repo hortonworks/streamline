@@ -15,6 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.common.event;
 
+import com.google.common.collect.Sets;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import com.hortonworks.streamline.streams.common.event.correlation.EventCorrelationInjector;
@@ -29,6 +30,7 @@ import static org.junit.Assert.*;
 public class EventInformationBuilderTest {
     private static final String TEST_COMPONENT_NAME = "testComponent";
     public static final String TEST_TARGET_COMPONENT_NAME = "targetComponentName";
+    public static final String TEST_TARGET_COMPONENT_NAME_2 = "targetComponentName2";
     public static final String TEST_STREAM_ID = "streamId";
 
     private EventInformationBuilder sut;
@@ -65,7 +67,7 @@ public class EventInformationBuilderTest {
                 INPUT_STREAMLINE_EVENT, Collections.singletonList(parentEvent), TEST_COMPONENT_NAME);
 
         EventInformation information = sut.build(timestamp, TEST_COMPONENT_NAME, TEST_STREAM_ID,
-                TEST_TARGET_COMPONENT_NAME, injectedEvent);
+                Sets.newHashSet(TEST_TARGET_COMPONENT_NAME, TEST_TARGET_COMPONENT_NAME_2), injectedEvent);
         assertEquals(timestamp, information.getTimestamp());
         assertEquals(injectedEvent.getId(), information.getEventId());
         assertEquals(EventCorrelationInjector.getRootIds(injectedEvent), information.getRootIds());
@@ -73,7 +75,8 @@ public class EventInformationBuilderTest {
         assertEquals(EventCorrelationInjector.getSourceComponentName(injectedEvent), information.getComponentName());
         assertEquals(TEST_COMPONENT_NAME, information.getComponentName());
         assertEquals(TEST_STREAM_ID, information.getStreamId());
-        assertEquals(TEST_TARGET_COMPONENT_NAME, information.getTargetComponentName());
+        assertEquals(Sets.newHashSet(TEST_TARGET_COMPONENT_NAME, TEST_TARGET_COMPONENT_NAME_2),
+                information.getTargetComponents());
     }
 
     private StreamlineEventImpl copyEventWithNewID() {

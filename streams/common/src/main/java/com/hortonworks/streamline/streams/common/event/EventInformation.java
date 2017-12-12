@@ -15,6 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.common.event;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,7 +23,7 @@ public class EventInformation {
     private long timestamp;
     private String componentName;
     private String streamId;
-    private String targetComponentName;
+    private Set<String> targetComponents;
     private String eventId;
     private Set<String> rootIds;
     private Set<String> parentIds;
@@ -32,13 +33,13 @@ public class EventInformation {
     public EventInformation() {
     }
 
-    public EventInformation(long timestamp, String componentName, String streamId, String targetComponentName,
+    public EventInformation(long timestamp, String componentName, String streamId, Set<String> targetComponents,
                             String eventId, Set<String> rootIds,
                             Set<String> parentIds, Map<String, Object> fieldsAndValues) {
         this.timestamp = timestamp;
         this.componentName = componentName;
         this.streamId = streamId;
-        this.targetComponentName = targetComponentName;
+        this.targetComponents = targetComponents;
         this.eventId = eventId;
         this.rootIds = rootIds;
         this.parentIds = parentIds;
@@ -57,8 +58,8 @@ public class EventInformation {
         return streamId;
     }
 
-    public String getTargetComponentName() {
-        return targetComponentName;
+    public Set<String> getTargetComponents() {
+        return targetComponents;
     }
 
     public String getEventId() {
@@ -89,7 +90,7 @@ public class EventInformation {
             return false;
         if (getStreamId() != null ? !getStreamId().equals(that.getStreamId()) : that.getStreamId() != null)
             return false;
-        if (getTargetComponentName() != null ? !getTargetComponentName().equals(that.getTargetComponentName()) : that.getTargetComponentName() != null)
+        if (getTargetComponents() != null ? !getTargetComponents().equals(that.getTargetComponents()) : that.getTargetComponents() != null)
             return false;
         if (getEventId() != null ? !getEventId().equals(that.getEventId()) : that.getEventId() != null) return false;
         if (getRootIds() != null ? !getRootIds().equals(that.getRootIds()) : that.getRootIds() != null) return false;
@@ -103,7 +104,7 @@ public class EventInformation {
         int result = (int) (getTimestamp() ^ (getTimestamp() >>> 32));
         result = 31 * result + (getComponentName() != null ? getComponentName().hashCode() : 0);
         result = 31 * result + (getStreamId() != null ? getStreamId().hashCode() : 0);
-        result = 31 * result + (getTargetComponentName() != null ? getTargetComponentName().hashCode() : 0);
+        result = 31 * result + (getTargetComponents() != null ? getTargetComponents().hashCode() : 0);
         result = 31 * result + (getEventId() != null ? getEventId().hashCode() : 0);
         result = 31 * result + (getRootIds() != null ? getRootIds().hashCode() : 0);
         result = 31 * result + (getParentIds() != null ? getParentIds().hashCode() : 0);
@@ -117,7 +118,7 @@ public class EventInformation {
                 "timestamp=" + timestamp +
                 ", componentName='" + componentName + '\'' +
                 ", streamId='" + streamId + '\'' +
-                ", targetComponentName='" + targetComponentName + '\'' +
+                ", targetComponents='" + targetComponents + '\'' +
                 ", eventId='" + eventId + '\'' +
                 ", rootIds=" + rootIds +
                 ", parentIds=" + parentIds +
