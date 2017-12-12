@@ -90,6 +90,8 @@ public class AmbariInfraWithStormLogSearchTest {
 
         dateRangeValue = String.format(dateRangeValue, COLUMN_NAME_LOG_TIME, fromInstant.toString(), toInstant.toString());
 
+        String expectedLogLevels = "(" + String.join("+OR+", AmbariInfraWithStormLogSearch.DEFAULT_LOG_LEVELS) + ")";
+
         List<LoggedRequest> requests = wireMockRule.findAll(getRequestedFor(urlPathEqualTo(STUB_REQUEST_API_PATH)));
         assertEquals(1, requests.size());
 
@@ -101,7 +103,7 @@ public class AmbariInfraWithStormLogSearchTest {
         QueryParameter fqParam = request.queryParameter("fq");
         assertTrue(fqParam.containsValue(COLUMN_NAME_STREAMLINE_TOPOLOGY_ID + ":" + TEST_APP_ID));
         assertTrue(fqParam.containsValue(dateRangeValue));
-        assertFalse(fqParam.hasValueMatching(ValuePattern.containing(COLUMN_NAME_LOG_LEVEL)));
+        assertTrue(fqParam.containsValue(COLUMN_NAME_LOG_LEVEL + ":" + expectedLogLevels));
         assertFalse(fqParam.hasValueMatching(ValuePattern.containing(COLUMN_NAME_STREAMLINE_COMPONENT_NAME)));
 
         QueryParameter sortParam = request.queryParameter("sort");
