@@ -27,7 +27,7 @@ import {
   InputGroup,
   OverlayTrigger
 } from 'react-bootstrap';
-import Select, {Creatable} from 'react-select';
+import {Select2 as Select,Creatable} from '../../utils/SelectUtils';
 import validation from './ValidationRules';
 import _ from 'lodash';
 import Utils from '../../utils/Utils';
@@ -574,10 +574,10 @@ export class arrayenumstring extends BaseField {
   }
   handleSelectAll = () => {
     const optVal = this.props.fieldAttr.options;
-    this.props.data[this.props.value] = ProcessorUtils.selectAllOutputFields(optVal,'sinkForm');
+    const val = this.props.data[this.props.value] = ProcessorUtils.selectAllOutputFields(optVal,'sinkForm');
     const {Form} = this.context;
     Form.setState(Form.state);
-    this.validate(optVal);
+    this.validate(val);
   }
   validate(val) {
     if(val && this.props.fieldJson.hint && this.props.fieldJson.hint.indexOf("noNestedFields") !== -1) {
@@ -606,6 +606,17 @@ export class arrayenumstring extends BaseField {
               <a className="pull-right" href="javascript:void(0)" onClick={this.handleSelectAll}>Select All</a>
             </span> ;
   }
+  renderFieldOption(node) {
+    let styleObj = {
+      paddingLeft: (10 * node.level) + "px"
+    };
+    if (node.disabled) {
+      styleObj.fontWeight = "bold";
+    }
+    return (
+      <span style={styleObj}>{node.name}</span>
+    );
+  }
   getField = () => {
     const arrayEnumHint = this.props.fieldJson.hint || null;
     const fieldsShown = _.filter(this.context.Form.props.children, (x) => {
@@ -616,6 +627,10 @@ export class arrayenumstring extends BaseField {
     if (this.props.fieldJson.isUserInput !== undefined) {
       disabledField = disabledField || !this.props.fieldJson.isUserInput;
     }
+    const tempAttrObj = {};
+    if(this.props.fieldJson.hint && this.props.fieldJson.hint.indexOf("inputFields") !== -1){
+      tempAttrObj.optionRenderer = this.renderFieldOption;
+    }
     return (arrayEnumHint !== null && arrayEnumHint.toLowerCase().indexOf("hidden") !== -1
       ? ''
       : <div>
@@ -623,7 +638,7 @@ export class arrayenumstring extends BaseField {
         ? "menu-outer-top"
         : ''}${this.context.Form.state.Errors[this.props.valuePath]
           ? "invalidSelect"
-          : ""}`}/>
+          : ""}`} {...tempAttrObj}/>
         </div>);
   }
 }

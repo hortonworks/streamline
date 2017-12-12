@@ -32,7 +32,6 @@ import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBund
 import com.hortonworks.streamline.streams.cluster.bundle.ComponentBundleHintProvider;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.common.exception.ComponentConfigException;
-import com.hortonworks.streamline.streams.runtime.CustomProcessorRuntime;
 import com.hortonworks.streamline.streams.security.Roles;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
@@ -59,8 +58,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -364,24 +361,41 @@ public class TopologyComponentBundleResource {
         throw EntityNotFoundException.byId(id.toString());
     }
 
+    //One time upgrade in HDF-3.1.0.0 or higher for any CPs registered in HDF-3.0.x versions since older versions did not store digest, called from bootstrap.
+    @PUT
+    @Path("/componentbundles/{processor}/custom/upgrade")
+    @Timed
+    public Response upgradeCustomProcessorsWithDigest (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType,
+                                           @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN);
+        if (!TopologyComponentBundle.TopologyComponentType.PROCESSOR.equals(componentType)) {
+            throw new CustomProcessorOnlyException();
+        }
+        return WSUtils.respondEntity(catalogService.upgradeCustomProcessorsWithDigest(), OK);
+    }
+
     @Timed
     @GET
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    @Path("/componentbundles/{processor}/custom/{fileName}")
+    @Path("/componentbundles/{processor}/custom/{name}")
     public Response downloadCustomProcessorFile (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType,
-                                                 @PathParam("fileName") String fileName,
+                                                 @PathParam("name") String name,
                                                  @Context SecurityContext securityContext) throws IOException {
         SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_USER);
         if (!TopologyComponentBundle.TopologyComponentType.PROCESSOR.equals(componentType)) {
             throw new CustomProcessorOnlyException();
         }
-        final InputStream inputStream = catalogService.getFileFromJarStorage(fileName);
-        if (inputStream != null) {
+
+        List<QueryParam> queryParams = new ArrayList<>();
+        queryParams.add(new QueryParam(CustomProcessorInfo.NAME, name));
+        Collection<CustomProcessorInfo> customProcessorInfos = catalogService.listCustomProcessorsFromBundleWithFilter(queryParams);
+        if (!customProcessorInfos.isEmpty()) {
+            final InputStream inputStream = catalogService.getFileFromJarStorage(customProcessorInfos.iterator().next().getJarFileName());
             StreamingOutput streamOutput = WSUtils.wrapWithStreamingOutput(inputStream);
             return Response.ok(streamOutput).build();
         }
 
-        throw EntityNotFoundException.byId(fileName);
+        throw EntityNotFoundException.byId(name);
     }
 
     /**
@@ -414,40 +428,21 @@ public class TopologyComponentBundleResource {
     @Timed
     public Response addCustomProcessor (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType,
                                         FormDataMultiPart form,
-                                        @Context SecurityContext securityContext) throws IOException, ComponentConfigException {
+                                        @Context SecurityContext securityContext) throws Exception {
         SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN);
         if (!TopologyComponentBundle.TopologyComponentType.PROCESSOR.equals(componentType)) {
             throw new CustomProcessorOnlyException();
         }
-        InputStream jarFile = null;
-        try {
-            jarFile = this.getFormDataFromMultiPartRequestAs(InputStream.class, form, JAR_FILE_PARAM_NAME);
-            byte[] jarBytes = getBytesForInputStream(jarFile);
+        try (InputStream jarFile = this.getFormDataFromMultiPartRequestAs(InputStream.class, form, JAR_FILE_PARAM_NAME)) {
             String customProcessorInfoStr = this.getFormDataFromMultiPartRequestAs(String.class, form, CP_INFO_PARAM_NAME);
-            String missingParam = (jarBytes == null ? JAR_FILE_PARAM_NAME : (customProcessorInfoStr == null ? CP_INFO_PARAM_NAME : null));
+            String missingParam = (jarFile == null ? JAR_FILE_PARAM_NAME : (customProcessorInfoStr == null ? CP_INFO_PARAM_NAME : null));
             if (missingParam != null) {
                 LOG.debug(missingParam + " is missing or invalid while adding custom processor");
                 throw BadRequestException.missingParameter(missingParam);
             }
             CustomProcessorInfo customProcessorInfo = new ObjectMapper().readValue(customProcessorInfoStr, CustomProcessorInfo.class);
-            if (!verifyCustomProcessorImplFromJar(new ByteArrayInputStream(jarBytes), customProcessorInfo)) {
-                String message = "Custom Processor jar file is missing customProcessorImpl class " + customProcessorInfo.getCustomProcessorImpl();
-                LOG.debug(message);
-                throw BadRequestException.message(message);
-            }
-            CustomProcessorInfo createdCustomProcessor = catalogService.addCustomProcessorInfoAsBundle(customProcessorInfo, new ByteArrayInputStream(jarBytes));
+            CustomProcessorInfo createdCustomProcessor = catalogService.addCustomProcessorInfoAsBundle(customProcessorInfo, jarFile);
             return WSUtils.respondEntity(createdCustomProcessor, CREATED);
-        } catch (RuntimeException e) {
-            LOG.debug("Exception thrown while trying to add a custom processor", e);
-            throw e;
-        } finally {
-            try {
-                if (jarFile != null) {
-                    jarFile.close();
-                }
-            } catch (IOException e) {
-                LOG.debug("Error while closing jar file stream", e);
-            }
         }
     }
 
@@ -457,40 +452,21 @@ public class TopologyComponentBundleResource {
     @Timed
     public Response updateCustomProcessor (@PathParam("processor") TopologyComponentBundle.TopologyComponentType componentType,
                                            FormDataMultiPart form,
-                                           @Context SecurityContext securityContext) throws IOException, ComponentConfigException {
+                                           @Context SecurityContext securityContext) throws Exception {
         SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_COMPONENT_BUNDLE_ADMIN);
         if (!TopologyComponentBundle.TopologyComponentType.PROCESSOR.equals(componentType)) {
             throw new CustomProcessorOnlyException();
         }
-        InputStream jarFile = null;
-        try {
-            jarFile = this.getFormDataFromMultiPartRequestAs(InputStream.class, form, JAR_FILE_PARAM_NAME);
-            byte[] jarBytes = getBytesForInputStream(jarFile);
+        try (InputStream jarFile = this.getFormDataFromMultiPartRequestAs(InputStream.class, form, JAR_FILE_PARAM_NAME)) {
             String customProcessorInfoStr = this.getFormDataFromMultiPartRequestAs(String.class, form, CP_INFO_PARAM_NAME);
-            String missingParam = (jarBytes == null ? JAR_FILE_PARAM_NAME : (customProcessorInfoStr == null ? CP_INFO_PARAM_NAME : null));
+            String missingParam = (jarFile == null ? JAR_FILE_PARAM_NAME : (customProcessorInfoStr == null ? CP_INFO_PARAM_NAME : null));
             if (missingParam != null) {
                 LOG.debug(missingParam + " is missing or invalid while adding/updating custom processor");
                 throw BadRequestException.missingParameter(missingParam);
             }
             CustomProcessorInfo customProcessorInfo = new ObjectMapper().readValue(customProcessorInfoStr, CustomProcessorInfo.class);
-            if (!verifyCustomProcessorImplFromJar(new ByteArrayInputStream(jarBytes), customProcessorInfo)) {
-                String message = "Custom Processor jar file is missing customProcessorImpl class " + customProcessorInfo.getCustomProcessorImpl();
-                LOG.debug(message);
-                throw BadRequestException.message(message);
-            }
-            CustomProcessorInfo updatedCustomProcessor = catalogService.updateCustomProcessorInfoAsBundle(customProcessorInfo, new ByteArrayInputStream(jarBytes));
+            CustomProcessorInfo updatedCustomProcessor = catalogService.updateCustomProcessorInfoAsBundle(customProcessorInfo, jarFile, true);
             return WSUtils.respondEntity(updatedCustomProcessor, OK);
-        } catch (RuntimeException e) {
-            LOG.debug("Exception thrown while trying to add/update a custom processor", e);
-            throw e;
-        } finally {
-            try {
-                if (jarFile != null) {
-                    jarFile.close();
-                }
-            } catch (IOException e) {
-                LOG.debug("Error while closing jar file stream", e);
-            }
         }
     }
 
@@ -581,37 +557,6 @@ public class TopologyComponentBundleResource {
             }
         } catch (Exception e) {
             LOG.debug("Cannot get param " + paramName + " as" + clazz + " from multipart form" );
-        }
-        return result;
-    }
-
-    private boolean verifyCustomProcessorImplFromJar (InputStream inputStream, CustomProcessorInfo customProcessorInfo) {
-        final File tmpFile;
-        boolean result = false;
-        try {
-            tmpFile = FileUtil.writeInputStreamToTempFile(inputStream, ".jar");
-            Collection<String> impls = ProxyUtil.canonicalNames(ProxyUtil.loadAllClassesFromJar(tmpFile, CustomProcessorRuntime.class));
-            if ((impls != null) && impls.contains(customProcessorInfo.getCustomProcessorImpl())) {
-                result = true;
-            }
-        } catch (IOException e) {
-            //swallow to return false
-        }
-        return result;
-    }
-
-    private byte[] getBytesForInputStream (InputStream inputStream) {
-        byte[] result = null;
-        if (inputStream != null) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try {
-                org.apache.commons.io.IOUtils.copy(inputStream, baos);
-                result = baos.toByteArray();
-            } catch (IOException e) {
-                // print, swallow and return null
-                LOG.info("Error reading CP jar file", e);
-            }
-
         }
         return result;
     }

@@ -19,7 +19,7 @@ import ReactDOM, {
   findDOMNode
 } from 'react-dom';
 import PropTypes from 'prop-types';
-import Select from 'react-select';
+import {Select2 as Select} from '../../../utils/SelectUtils';
 import {OverlayTrigger, Popover} from 'react-bootstrap';
 import TopologyREST from '../../../rest/TopologyREST';
 import AggregateUdfREST from '../../../rest/AggregateUdfREST';
@@ -532,6 +532,11 @@ export default class ProjectionProcessorContainer extends Component {
       name: (outputFieldsArr[index].outputFieldName !== undefined && outputFieldsArr[index].outputFieldName !== "") ? outputFieldsArr[index].outputFieldName : "",
       type:  funcReturnType ? funcReturnType : ""
     };
+    // b_Index is used to restrict the empty fields in streamObj.
+    const b_Index = _.findIndex(outputFieldsArr, (field) => { return field.functionName === '' && field.outputFieldName === '' && field.args.length === 0;});
+    if(b_Index !== -1){
+      mainObj.splice(b_Index,1);
+    }
     // create this.tempStreamContextData obj to save in ParentForm context
     const tempStreamData = _.concat(projectionSelectedKey,mainObj);
     this.tempStreamContextData = {fields : tempStreamData  , streamId : this.streamIdList[0]};
@@ -611,7 +616,7 @@ export default class ProjectionProcessorContainer extends Component {
                     <a href="javascript:void(0)" onClick={this.handleSelectAllOutputFields}>Select All</a>
                   </OverlayTrigger>
                 </label>
-                  <Select  value={projectionKeys} options={fieldList} onChange={this.handleProjectionKeysChange.bind(this)} clearable={false} multi={true} required={true} disabled={disabledFields} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+                  <Select  value={projectionKeys} options={fieldList} onChange={this.handleProjectionKeysChange.bind(this)} multi={true} required={true} disabled={disabledFields} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
               </div>
               <div className="form-group">
                 <div className="row">
@@ -661,10 +666,10 @@ export default class ProjectionProcessorContainer extends Component {
                   return (
                     <div key={i} className="row form-group">
                       <div className="col-sm-3">
-                        <Select className={functionClass.join(' ')} value={obj.functionName} options={functionListArr} onChange={this.handleFieldChange.bind(this, i)} required={true} disabled={disabledFields} valueKey="name" labelKey="displayName"/>
+                        <Select className={functionClass.join(' ')} value={obj.functionName} options={functionListArr} onChange={this.handleFieldChange.bind(this, i)} required={true} disabled={disabledFields} valueKey="name" labelKey="displayName"  clearable={false}/>
                       </div>
                       <div className="col-sm-4">
-                        <Select className={argumentsClass.join(' ')} value={obj.args} options={fieldList} onChange={this.handleFieldsKeyChange.bind(this, i)} clearable={false} multi={true} required={true} disabled={disabledFields} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+                        <Select className={argumentsClass.join(' ')} value={obj.args} options={fieldList} onChange={this.handleFieldsKeyChange.bind(this, i)} multi={true} required={true} disabled={disabledFields} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
                       </div>
                       <div className="col-sm-3">
                         <input name="outputFieldName" className={nameClass.join(' ')} value={obj.outputFieldName} ref="outputFieldName" onChange={this.handleFieldNameChange.bind(this, i)} type="text" required={true} disabled={disabledFields}/>

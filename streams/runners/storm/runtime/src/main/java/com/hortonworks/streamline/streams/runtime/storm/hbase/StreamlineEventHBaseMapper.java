@@ -17,13 +17,10 @@ package com.hortonworks.streamline.streams.runtime.storm.hbase;
 
 import com.google.common.base.Charsets;
 import com.hortonworks.streamline.streams.StreamlineEvent;
-import com.hortonworks.streamline.streams.runtime.storm.StreamlineRuntimeUtil;
+import com.hortonworks.streamline.streams.common.StreamlineEventUtils;
 import org.apache.storm.hbase.bolt.mapper.HBaseMapper;
 import org.apache.storm.hbase.common.ColumnList;
 import org.apache.storm.tuple.Tuple;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
 
 import static org.apache.storm.hbase.common.Utils.toBytes;
 
@@ -43,7 +40,7 @@ public class StreamlineEventHBaseMapper implements HBaseMapper {
     @Override
     public byte[] rowKey(Tuple tuple) {
         StreamlineEvent event = (StreamlineEvent) tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
-        return toBytes((rowKeyField != null && !rowKeyField.isEmpty()) ? StreamlineRuntimeUtil.getFieldValue(event, rowKeyField) : event.getId());
+        return toBytes((rowKeyField != null && !rowKeyField.isEmpty()) ? StreamlineEventUtils.getFieldValue(event, rowKeyField) : event.getId());
     }
 
     @Override

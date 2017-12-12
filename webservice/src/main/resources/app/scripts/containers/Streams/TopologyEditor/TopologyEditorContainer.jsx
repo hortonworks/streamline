@@ -40,7 +40,7 @@ import TestSinkNodeModal from '../TestRunComponents/TestSinkNodeModel';
 import ZoomPanelComponent from '../../../components/ZoomPanelComponent';
 import EditorGraph from '../../../components/EditorGraph';
 import TestRunREST from '../../../rest/TestRunREST';
-import Select,{Creatable} from 'react-select';
+import {Select2 as Select,Creatable} from '../../../utils/SelectUtils';
 import EventGroupPagination from '../../../components/EventGroupPagination';
 
 @observer

@@ -112,6 +112,13 @@ function put_service_bundle {
 
 }
 
+function update_custom_processors_with_digest {
+  echo "Running update script to update all custom processors with digests"
+  cp_upgrade_uri_suffix="/streams/componentbundles/PROCESSOR/custom/upgrade"
+  cmd="curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -sS -X PUT ${CATALOG_ROOT_URL}$cp_upgrade_uri_suffix -H 'Content-Type: application/json'"
+  run_cmd $cmd
+}
+
 #Below command to update storm version will be called by RE script. Need to remove later. Adding now for convenience
 update_storm_version_command="$bootstrap_dir/update-storm-version.sh 1.1.0.3.0.0.0-453"
 run_cmd $update_storm_version_command
@@ -148,12 +155,14 @@ echo "User/Role bundle Root dir: ${user_role_dir}"
 
 function update_bundles {
     # === Source ===
+    put_topology_component_bundle /streams/componentbundles/SOURCE ${component_dir}/sources/v002__kafka-source-topology-component.json KAFKA
     # === Processor ===
     add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/v001__rtjoin-bolt-topology-component.json
     # === Sink ===
     put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v002__hdfs-sink-topology-component.json HDFS
     put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v002__jdbc-sink-topology-component.json JDBC
     put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v002__hive-sink-topology-component.json HIVE
+    put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v002__druid-sink-topology-component.json DRUID
     # === Topology ===
     # === Service Bundle ===
     put_service_bundle /servicebundles/KAFKA ${service_dir}/v002__kafka-bundle.json
@@ -258,6 +267,7 @@ function main {
 
     update_bundles
     add_udfs
+    update_custom_processors_with_digest
 }
 
 main

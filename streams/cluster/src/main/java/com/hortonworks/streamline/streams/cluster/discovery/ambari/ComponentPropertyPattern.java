@@ -51,7 +51,10 @@ public enum ComponentPropertyPattern {
   KAFKA_BROKER("listeners", Pattern.compile("([a-zA-Z]+)://[a-zA-Z0-9_\\-\\\\.]*:([0-9]+)")),
 
   // AMBARI_METRICS
-  METRICS_COLLECTOR("timeline.metrics.service.webapp.address", Pattern.compile("()[a-zA-Z0-9_\\-\\\\.]*:([0-9]+)"));
+  METRICS_COLLECTOR("timeline.metrics.service.webapp.address", Pattern.compile("()[a-zA-Z0-9_\\-\\\\.]*:([0-9]+)")),
+
+  // AMBARI_INFRA
+  INFRA_SOLR("infra_solr_port");
 
   private final String connectionConfName;
   private final Pattern parsePattern;

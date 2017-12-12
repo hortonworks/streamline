@@ -14,7 +14,6 @@
 import React from 'react';
 import { Router, Route, hashHistory, browserHistory, IndexRoute } from 'react-router';
 
-import MetricsContainer from '../containers/Streams/Metrics/MetricsContainer';
 import TopologyListContainer from '../containers/Streams/TopologyListing/TopologyListingContainer';
 import TopologyViewContainer from '../containers/Streams/TopologyEditor/TopologyViewContainer';
 import TopologyEditorContainer from '../containers/Streams/TopologyEditor/TopologyEditorContainer';
@@ -28,6 +27,7 @@ import ModelRegistryContainer from '../containers/ModelRegistry/ModelRegistryCon
 import ComponentDefinition from '../containers/Configuration/ComponentDefinition';
 import AppResourcesContainer from '../containers/Configuration/AppResourcesContainer';
 import UserRolesContainer from '../containers/Configuration/UserRolesContainer';
+import LogSearch from '../containers/LogSearch/LogSearch';
 import {menuName} from '../utils/Constants';
 import {hasModuleAccess} from '../utils/ACLUtils';
 
@@ -63,7 +63,6 @@ export default (
 
   <Route path="/" component={null} name="Home" onEnter={onEnter}>
     <IndexRoute name="My Applications" accessMenuName={menuName.APPLICATION} component={TopologyListContainer} onEnter={onEnter} />
-    {/* <Route path="metrics" name="Metrics" component={MetricsContainer} onEnter={onEnter}/> */}
     <Route path="applications" name="My Applications" onEnter={onEnter}>
       <IndexRoute name="My Applications" component={TopologyListContainer} onEnter={onEnter} />
       <Route path=":id/view" name="Application Editor" accessMenuName={menuName.APPLICATION} accessAction="VIEW" component={TopologyViewContainer} onEnter={onEnter}/>
@@ -78,6 +77,7 @@ export default (
     <Route path="component-definition" name="Component Definition" component={ComponentDefinition} onEnter={onEnter}/>
     <Route path="application-resources" name="Application Resources" component={AppResourcesContainer} onEnter={onEnter}/>
     <Route path="authorizer" name="Authorizer" accessMenuName={menuName.AUTHORIZER} component={UserRolesContainer} onEnter={onEnter}/>
+    <Route path="logsearch/:id" name="Log Search" component={LogSearch} onEnter={onEnter}/>
   </Route>
 
 );

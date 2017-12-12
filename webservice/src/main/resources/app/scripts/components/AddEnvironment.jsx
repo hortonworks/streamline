@@ -218,6 +218,11 @@ class AddEnvironment extends Component {
       })) {
         obj['timeSeriesDB'] = 'AMBARI_METRICS';
       }
+      if (tempData.find((o) => {
+        return o.serviceName.toLowerCase() == 'ambari_infra';
+      })) {
+        obj['logSearchService'] = 'AMBARI_INFRA';
+      }
       return {obj, tempData};
     }
   }

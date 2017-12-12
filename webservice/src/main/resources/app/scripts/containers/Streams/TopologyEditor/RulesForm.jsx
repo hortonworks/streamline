@@ -16,7 +16,7 @@ import React, {Component} from 'react';
 import ReactCodemirror from 'react-codemirror';
 import CodeMirror from 'codemirror';
 import 'codemirror/mode/sql/sql';
-import Select, {Creatable} from 'react-select';
+import {Select2 as Select,Creatable} from '../../../utils/SelectUtils';
 import {Panel, Radio, OverlayTrigger, Popover} from 'react-bootstrap';
 import TopologyREST from '../../../rest/TopologyREST';
 import FSReactToastr from '../../../components/FSReactToastr';

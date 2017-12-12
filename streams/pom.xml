@@ -30,6 +30,7 @@
         <module>sql</module>
         <!-- test jar builders -->
         <module>test-support</module>
+        <module>logsearch</module>
     </modules>
 
 </project>

@@ -42,6 +42,10 @@
         </dependency>
         <dependency>
             <groupId>com.hortonworks.streamline</groupId>
+            <artifactId>streamline-logsearch-storm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hortonworks.streamline</groupId>
             <artifactId>streamline-notification</artifactId>
         </dependency>
         <dependency>
@@ -55,6 +59,11 @@
         <dependency>
             <groupId>com.hortonworks.streamline</groupId>
             <artifactId>streamline-authorizer</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jool</artifactId>
+            <version>0.9.12</version>
         </dependency>
 
         <!-- test dependency -->
@@ -74,6 +83,10 @@
             <version>${project.parent.version}</version>
             <type>jar</type>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hortonworks.streamline</groupId>
+            <artifactId>streamline-logsearch</artifactId>
         </dependency>
     </dependencies>
 

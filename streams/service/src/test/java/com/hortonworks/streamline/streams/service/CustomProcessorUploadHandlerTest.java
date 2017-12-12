@@ -27,7 +27,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -37,10 +36,9 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 
-// TODO fix this test
-@Ignore
 public class CustomProcessorUploadHandlerTest {
     private final String uuid = UUID.randomUUID().toString();
     private final String uploadWatchDirectory = System.getProperty("java.io.tmpdir") + File.separator + uuid;
@@ -102,7 +100,7 @@ public class CustomProcessorUploadHandlerTest {
     }
 
     @Test
-    public void testSuccessfulUpload () throws IOException, ComponentConfigException {
+    public void testSuccessfulUpload () throws IOException, ComponentConfigException, NoSuchAlgorithmException {
         String fileName = "consolecustomprocessor.tar";
         URL url  = classLoader.getResource(resourceDirectoryPrefix + fileName);
         String consoleCustomProcessorTarString = url.getFile();
@@ -111,8 +109,10 @@ public class CustomProcessorUploadHandlerTest {
         this.customProcessorUploadHandler.created(Paths.get(uploadWatchDirectory).resolve(fileName));
         new VerificationsInOrder() {{
             InputStream jarFileActual;
-            catalogService.addCustomProcessorInfoAsBundle(withEqual(customProcessorInfo), jarFileActual = withCapture());
+            CustomProcessorInfo actual;
+            catalogService.addCustomProcessorInfoAsBundle(actual = withCapture(), jarFileActual = withCapture());
             times = 1;
+            Assert.assertTrue(actual.getName().equals(customProcessorInfo.getName()));
             Assert.assertTrue(IOUtils.contentEquals(jarFileActual, jarFile));
         }};
     }

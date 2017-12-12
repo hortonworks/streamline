@@ -99,7 +99,7 @@ class CustomProcessorForm extends Component {
     this.navigateFlag = false;
   }
 
-  setDefaultValues() {
+  setDefaultValues = () => {
     this.extendObj = Object.assign({}, this.defaultObj, {fieldsChk: true});
     this.setState(JSON.parse(JSON.stringify(this.extendObj)));
   }
@@ -116,12 +116,12 @@ class CustomProcessorForm extends Component {
         FSReactToastr.error(
           <CommonNotification flag="error" content={processor.responseMessage}/>, '', toastOpt);
       } else {
+        let jarFileName = 'CustomProcessor.jar';
         let {
           streamingEngine,
           name,
           description,
           customProcessorImpl,
-          jarFileName,
           inputSchema,
           outputSchema,
           topologyComponentUISpecification
@@ -147,7 +147,7 @@ class CustomProcessorForm extends Component {
           expandCodemirrorOutput : false
         };
         obj.topologyComponentUISpecification = topologyComponentUISpecification ? topologyComponentUISpecification.fields : [];
-        CustomProcessorREST.getCustomProcessorFile(jarFileName)
+        CustomProcessorREST.getCustomProcessorFile(name)
           .then((response)=>{
             // https://stackoverflow.com/questions/40911927/instantiate-file-object-in-microsoft-edge
             // work around for edge browser
@@ -164,10 +164,12 @@ class CustomProcessorForm extends Component {
   }
 
   componentDidMount() {
+    this.props.onRef(this);
     this.props.router.setRouteLeaveHook(this.props.route, this.routerWillLeave);
   }
   componentWillUnmount() {
     this.props.popUpFlag(false);
+    this.props.onRef(null);
     this.unmounted = true;
   }
 
@@ -420,8 +422,7 @@ class CustomProcessorForm extends Component {
         streamingEngine,
         name,
         description,
-        customProcessorImpl,
-        jarFileName: jarFileName.name
+        customProcessorImpl
       };
       if(inputSchema !== null) {
         customProcessorInfo.inputSchema = inputSchema;

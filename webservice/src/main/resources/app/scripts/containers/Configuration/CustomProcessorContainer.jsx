@@ -84,7 +84,7 @@ export default class CustomProcessorContainer extends Component {
   }
 
   handleAdd(e) {
-    this.refs.CustomProcessorForm.getWrappedInstance().setDefaultValues();
+    this.CustomProcessorForm.setDefaultValues();
     this.setState({showListing: false, processorId: null});
   }
 
@@ -95,9 +95,9 @@ export default class CustomProcessorContainer extends Component {
   }
 
   handleSave() {
-    if (this.refs.CustomProcessorForm.getWrappedInstance().validateData()) {
+    if (this.CustomProcessorForm.validateData()) {
       this.setState({fetchLoader: true, uploadingData: true});
-      this.refs.CustomProcessorForm.getWrappedInstance().handleSave().then((processor) => {
+      this.CustomProcessorForm.handleSave().then((processor) => {
         this.setState({fetchLoader: false, uploadingData: false});
         if (processor.responseMessage !== undefined) {
           let errorMsg = processor.responseMessage.indexOf('already exists') !== -1
@@ -147,7 +147,7 @@ export default class CustomProcessorContainer extends Component {
   }
 
   handleEditCP(id) {
-    this.refs.CustomProcessorForm.getWrappedInstance().setDefaultValues();
+    this.CustomProcessorForm.setDefaultValues();
     this.setState({showListing: false, processorId: id});
   }
 
@@ -192,7 +192,7 @@ export default class CustomProcessorContainer extends Component {
     window.removeEventListener('keyup', this.handleKeyPress.bind(this), false);
   }
   handleKeyPress(event) {
-    if (!this.state.childPopUpFlag && this.refs.CustomProcessorForm) {
+    if (!this.state.childPopUpFlag && this.CustomProcessorForm) {
       if (event.key === "Enter" && event.target.nodeName.toLowerCase() != "textarea") {
         this.handleSave();
       }
@@ -250,7 +250,6 @@ export default class CustomProcessorContainer extends Component {
                     <Thead>
                       <Th column="name">Name</Th>
                       <Th column="description">Description</Th>
-                      <Th column="jarFileName">Jar File Name</Th>
                       <Th column="action">Actions</Th>
                     </Thead>
                     {filteredEntities.map((obj, i) => {
@@ -258,7 +257,6 @@ export default class CustomProcessorContainer extends Component {
                         <Tr key={`${obj.name}${i}`}>
                           <Td column="name">{obj.name}</Td>
                           <Td column="description">{obj.description}</Td>
-                          <Td column="jarFileName">{obj.jarFileName}</Td>
                           <Td column="action">
                             <ActionButtonGroup processor="custom" key={i} type="Custom Processor" allACL={allACL} udfObj={obj} handleEdit={this.handleEditCP.bind(this)} handleDelete={this.handleDeleteCP.bind(this)}/>
                           </Td>
@@ -272,7 +270,7 @@ export default class CustomProcessorContainer extends Component {
             }
           </div>
         <div className={this.state.fetchLoader ? "displayNone" : (this.state.showListing ? "displayNone" : "")}>
-          <CustomProcessorForm ref="CustomProcessorForm" onCancel={this.handleCancel.bind(this)} onSave={this.handleSave.bind(this)} id={this.state.processorId} route={this.props.route} processors={this.state.entities} popUpFlag={this.childPopUpFlag}/>
+          <CustomProcessorForm onRef={ref => (this.CustomProcessorForm = ref)} onCancel={this.handleCancel.bind(this)} onSave={this.handleSave.bind(this)} id={this.state.processorId} route={this.props.route} processors={this.state.entities} popUpFlag={this.childPopUpFlag}/>
         </div>
         </div>
       </div>

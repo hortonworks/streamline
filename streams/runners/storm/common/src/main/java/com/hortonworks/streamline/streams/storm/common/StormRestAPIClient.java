@@ -18,6 +18,9 @@ package com.hortonworks.streamline.streams.storm.common;
 import com.hortonworks.streamline.common.JsonClientUtil;
 import com.hortonworks.streamline.common.exception.WrappedWebApplicationException;
 import com.hortonworks.streamline.common.util.WSUtils;
+import com.hortonworks.streamline.streams.storm.common.logger.LogLevelLoggerResponse;
+import com.hortonworks.streamline.streams.storm.common.logger.LogLevelRequest;
+import com.hortonworks.streamline.streams.storm.common.logger.LogLevelResponse;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,6 +82,35 @@ public class StormRestAPIClient {
         return isPostOperationSuccess(result);
     }
 
+    public LogLevelResponse configureLog(String stormTopologyId, String targetPackage, String targetLogLevel,
+                                int durationSecs, String asUser) {
+        LogLevelRequest request = new LogLevelRequest();
+        request.addLoggerRequest(targetPackage, targetLogLevel, durationSecs);
+
+        Map result = doPostRequest(generateTopologyLogConfigUrl(stormTopologyId, asUser), request);
+        return buildLogLevelResponse(result);
+    }
+
+    public LogLevelResponse getLogLevel(String stormTopologyId, String asUser) {
+        Map<String, Object> logLevelResponseMap = doGetRequest(generateTopologyLogConfigUrl(stormTopologyId, asUser));
+        return buildLogLevelResponse(logLevelResponseMap);
+    }
+
+    private LogLevelResponse buildLogLevelResponse(Map<String, Object> logLevelResponseMap) {
+        Map<String, Object> loggerToLevel = (Map<String, Object>) logLevelResponseMap.get("namedLoggerLevels");
+        if (loggerToLevel == null) {
+            return new LogLevelResponse();
+        }
+
+        LogLevelResponse response = new LogLevelResponse();
+        loggerToLevel.forEach((logger, level) -> {
+            LogLevelLoggerResponse loggerResponse = LogLevelLoggerResponse.of((Map<String, Object>) level);
+            response.addLoggerResponse(logger, loggerResponse);
+        });
+
+        return response;
+    }
+
     private Map doGetRequest(String requestUrl) {
         try {
             LOG.debug("GET request to Storm cluster: " + requestUrl);
@@ -124,6 +156,27 @@ public class StormRestAPIClient {
         }
     }
 
+    private Map doPostRequest(String requestUrl, Object bodyObject) {
+        try {
+            LOG.debug("POST request to Storm cluster: " + requestUrl);
+            return Subject.doAs(subject, new PrivilegedAction<Map>() {
+                @Override
+                public Map run() {
+                    return JsonClientUtil.postEntity(client.target(requestUrl), bodyObject,
+                            STORM_REST_API_MEDIA_TYPE, Map.class);
+                }
+            });
+        } catch (javax.ws.rs.ProcessingException e) {
+            if (e.getCause() instanceof IOException) {
+                throw new StormNotReachableException("Exception while requesting " + requestUrl, e);
+            }
+
+            throw e;
+        } catch (WebApplicationException e) {
+            throw WrappedWebApplicationException.of(e);
+        }
+    }
+
     private String generateTopologyUrl(String topologyId, String asUser, String operation) {
         String baseUrl = stormApiRootUrl + "/topology";
 
@@ -141,6 +194,23 @@ public class StormRestAPIClient {
 
         return baseUrl;
     }
+
+    private String generateTopologyLogConfigUrl(String topologyId, String asUser) {
+        String baseUrl = stormApiRootUrl + "/topology";
+
+        if(StringUtils.isNotEmpty(topologyId)) {
+            baseUrl += "/" + WSUtils.encode(topologyId);
+        }
+
+        baseUrl += "/logconfig";
+
+        if (StringUtils.isNotEmpty(asUser)) {
+            baseUrl += "?doAsUser=" + WSUtils.encode(asUser);
+        }
+
+        return baseUrl;
+    }
+
 
     private boolean isPostOperationSuccess(Map result) {
         return result != null && result.get("status").equals("success");

@@ -45,6 +45,8 @@ import com.hortonworks.streamline.streams.layout.storm.StormTopologyValidator;
 import com.hortonworks.streamline.streams.storm.common.StormJaasCreator;
 import com.hortonworks.streamline.streams.storm.common.StormRestAPIClient;
 import com.hortonworks.streamline.streams.storm.common.StormTopologyUtil;
+import com.hortonworks.streamline.streams.storm.common.logger.LogLevelLoggerResponse;
+import com.hortonworks.streamline.streams.storm.common.logger.LogLevelResponse;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -91,6 +93,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
     private static final Logger LOG = LoggerFactory.getLogger(StormTopologyActionsImpl.class);
     public static final int DEFAULT_WAIT_TIME_SEC = 30;
     public static final int TEST_RUN_TOPOLOGY_DEFAULT_WAIT_MILLIS_FOR_SHUTDOWN = 30_000;
+    public static final String ROOT_LOGGER_NAME = "ROOT";
 
     private static final String DEFAULT_THRIFT_TRANSPORT_PLUGIN = "org.apache.storm.security.auth.SimpleTransportPlugin";
     private static final String DEFAULT_PRINCIPAL_TO_LOCAL = "org.apache.storm.security.auth.DefaultPrincipalToLocal";
@@ -384,6 +387,21 @@ public class StormTopologyActionsImpl implements TopologyActions {
         status.putExtra("Num_workers", String.valueOf(topologyStatus.get("tasksTotal")));
         status.putExtra("Uptime_secs", String.valueOf(topologyStatus.get("uptimeSeconds")));
         return status;
+    }
+
+    @Override
+    public LogLevelInformation configureLogLevel(TopologyLayout topology, LogLevel targetLogLevel, int durationSecs, String asUser) throws Exception {
+        String stormTopologyId = getRuntimeTopologyId(topology, asUser);
+        LogLevelResponse response = client.configureLog(stormTopologyId, ROOT_LOGGER_NAME, targetLogLevel.name(),
+                durationSecs, asUser);
+        return convertLogLevelResponseToLogLevelInformation(response);
+    }
+
+    @Override
+    public LogLevelInformation getLogLevel(TopologyLayout topology, String asUser) throws Exception {
+        String stormTopologyId = getRuntimeTopologyId(topology, asUser);
+        LogLevelResponse response = client.getLogLevel(stormTopologyId, asUser);
+        return convertLogLevelResponseToLogLevelInformation(response);
     }
 
     /**
@@ -854,6 +872,16 @@ public class StormTopologyActionsImpl implements TopologyActions {
             this.exitValue = exitValue;
             this.stdout = stdout;
         }
+    }
+
+    private LogLevelInformation convertLogLevelResponseToLogLevelInformation(LogLevelResponse response) {
+        Map<String, LogLevelLoggerResponse> namedLoggerLevels = response.getNamedLoggerLevels();
+        LogLevelLoggerResponse resp = namedLoggerLevels.get(ROOT_LOGGER_NAME);
+        if (resp == null) {
+            return null;
+        }
+
+        return new LogLevelInformation(LogLevel.valueOf(resp.getTargetLevel()), resp.getTimeoutEpoch());
     }
 
 }

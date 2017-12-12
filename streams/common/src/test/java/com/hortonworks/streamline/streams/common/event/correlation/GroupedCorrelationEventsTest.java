@@ -26,27 +26,33 @@ public class GroupedCorrelationEventsTest {
          <SOURCE2>
            e2, e3       /
         */
-        EventInformation event1 = new EventInformation(timestamp, "SOURCE1", "default", "JOIN", "1",
+        EventInformation event1 = new EventInformation(timestamp, "SOURCE1", "default",
+                Collections.singleton("JOIN"), "1",
                 Collections.emptySet(), Collections.emptySet(), TEST_FIELDS_AND_VALUES);
         testEventsMap.put(event1.getEventId(), event1);
 
-        EventInformation event2 = new EventInformation(timestamp, "SOURCE2", "default", "JOIN", "2",
+        EventInformation event2 = new EventInformation(timestamp, "SOURCE2", "default",
+                Collections.singleton("JOIN"), "2",
                 Collections.emptySet(), Collections.emptySet(), TEST_FIELDS_AND_VALUES);
         testEventsMap.put(event2.getEventId(), event2);
 
-        EventInformation event3 = new EventInformation(timestamp, "SOURCE2", "default", "JOIN", "3",
+        EventInformation event3 = new EventInformation(timestamp, "SOURCE2", "default",
+                Collections.singleton("JOIN"), "3",
                 Collections.emptySet(), Collections.emptySet(), TEST_FIELDS_AND_VALUES);
         testEventsMap.put(event3.getEventId(), event3);
 
-        EventInformation event4 = new EventInformation(timestamp, "JOIN", "default", "AGGREGATION", "4",
+        EventInformation event4 = new EventInformation(timestamp, "JOIN", "default",
+                Collections.singleton("AGGREGATION"), "4",
                 Sets.newHashSet("1", "2"), Sets.newHashSet("1", "2"), TEST_FIELDS_AND_VALUES);
         testEventsMap.put(event4.getEventId(), event4);
 
-        EventInformation event5 = new EventInformation(timestamp, "JOIN", "default", "AGGREGATION", "5",
+        EventInformation event5 = new EventInformation(timestamp, "JOIN", "default",
+                Collections.singleton("AGGREGATION"), "5",
                 Sets.newHashSet("1", "3"), Sets.newHashSet("1", "3"), TEST_FIELDS_AND_VALUES);
         testEventsMap.put(event5.getEventId(), event5);
 
-        EventInformation event6 = new EventInformation(timestamp, "AGGREGATION", "default", "SINK", "6",
+        EventInformation event6 = new EventInformation(timestamp, "AGGREGATION", "default",
+                Collections.singleton("SINK"), "6",
                 Sets.newHashSet("1", "2", "3"), Sets.newHashSet("5", "6"), TEST_FIELDS_AND_VALUES);
         testEventsMap.put(event6.getEventId(), event6);
 
@@ -142,31 +148,38 @@ public class GroupedCorrelationEventsTest {
          <SOURCE2>
              e3                                              /
         */
-        EventInformation event1 = new EventInformation(timestamp, "SOURCE1", "default", "PROJECTION", "1",
+        EventInformation event1 = new EventInformation(timestamp, "SOURCE1", "default",
+                Collections.singleton("PROJECTION"), "1",
                 Collections.emptySet(), Collections.emptySet(), TEST_FIELDS_AND_VALUES);
         testEventsMap.put(event1.getEventId(), event1);
 
-        EventInformation event2 = new EventInformation(timestamp, "SOURCE1", "default", "PROJECTION", "2",
+        EventInformation event2 = new EventInformation(timestamp, "SOURCE1", "default",
+                Collections.singleton("PROJECTION"), "2",
                 Collections.emptySet(), Collections.emptySet(), TEST_FIELDS_AND_VALUES);
         testEventsMap.put(event2.getEventId(), event2);
 
-        EventInformation event3 = new EventInformation(timestamp, "SOURCE2", "default", "JOIN", "3",
+        EventInformation event3 = new EventInformation(timestamp, "SOURCE2", "default",
+                Collections.singleton("JOIN"), "3",
                 Collections.emptySet(), Collections.emptySet(), TEST_FIELDS_AND_VALUES);
         testEventsMap.put(event3.getEventId(), event3);
 
-        EventInformation event4 = new EventInformation(timestamp, "PROJECTION", "default", "AGGREGATION", "4",
+        EventInformation event4 = new EventInformation(timestamp, "PROJECTION", "default",
+                Collections.singleton("AGGREGATION"), "4",
                 Sets.newHashSet("1"), Sets.newHashSet("1"), TEST_FIELDS_AND_VALUES);
         testEventsMap.put(event4.getEventId(), event4);
 
-        EventInformation event5 = new EventInformation(timestamp, "PROJECTION", "default", "AGGREGATION", "5",
+        EventInformation event5 = new EventInformation(timestamp, "PROJECTION", "default",
+                Collections.singleton("AGGREGATION"), "5",
                 Sets.newHashSet("2"), Sets.newHashSet("2"), TEST_FIELDS_AND_VALUES);
         testEventsMap.put(event5.getEventId(), event5);
 
-        EventInformation event6 = new EventInformation(timestamp, "AGGREGATION", "default", "JOIN", "6",
+        EventInformation event6 = new EventInformation(timestamp, "AGGREGATION", "default",
+                Collections.singleton("JOIN"), "6",
                 Sets.newHashSet("1", "2"), Sets.newHashSet("4", "5"), TEST_FIELDS_AND_VALUES);
         testEventsMap.put(event6.getEventId(), event6);
 
-        EventInformation event7 = new EventInformation(timestamp, "JOIN", "default", "SINK", "7",
+        EventInformation event7 = new EventInformation(timestamp, "JOIN", "default",
+                Collections.singleton("SINK"), "7",
                 Sets.newHashSet("1", "2", "3"), Sets.newHashSet("6", "3"), TEST_FIELDS_AND_VALUES);
         testEventsMap.put(event7.getEventId(), event7);
 

@@ -228,7 +228,7 @@ public class MetricsResource {
         }
     }
 
-    private void assertTimeRange(@QueryParam("from") Long from, @QueryParam("to") Long to) {
+    private void assertTimeRange(Long from, Long to) {
         if (from == null) {
             throw BadRequestException.missingParameter("from");
         }

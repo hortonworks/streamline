@@ -14,7 +14,7 @@
 
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import Select from 'react-select';
+import {Select2 as Select} from '../utils/SelectUtils';
 import {Scrollbars} from 'react-custom-scrollbars';
 import _ from 'lodash';
 
@@ -50,6 +50,10 @@ export default class StreamSidebar extends Component {
         level: level,
         keyPath : field.keyPath
       };
+      if(field.alias !== undefined){
+        obj.alias = field.alias;
+      }
+
 
       if (field.type === 'NESTED' && field.fields) {
         this.fieldsArr.push(obj);
@@ -96,8 +100,8 @@ export default class StreamSidebar extends Component {
                 <li key={i} style={styleObj}>
                   {
                     streamKind === "output"
-                    ? <span title={field.keyPath}>{field.name}</span>
-                    : field.name
+                    ? <span title={field.keyPath}>{field.alias !== undefined ? field.alias : field.name}</span>
+                    : field.alias !== undefined ? field.alias : field.name
                   }
                   {!field.optional && field.type !== "NESTED"
                     ? <span className="text-danger">*</span>

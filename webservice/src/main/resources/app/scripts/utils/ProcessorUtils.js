@@ -29,7 +29,7 @@ import moment from 'moment';
   else
   it will return only tempFieldsArr = nested fields
 */
-const getSchemaFields = function(fields, level, initialFetch, keyPath = []) {
+const getSchemaFields = function(fields, level, initialFetch, keyPath = [], disabled = true) {
   let fieldTempArr = [] , tempFieldsArr = [];
   const getSchemaNestedFields = (fields, level, keyPath) => {
     fields.map((field) => {
@@ -42,7 +42,9 @@ const getSchemaFields = function(fields, level, initialFetch, keyPath = []) {
       };
 
       if (field.type === 'NESTED') {
-        obj.disabled = true;
+        if(level == 0 || disabled){
+          obj.disabled = true;
+        }
         let _keypath = keyPath.slice();
         _keypath.push(field.name);
         // level === 1 ? obj.keyPath = _keypath[0] : '';
@@ -346,20 +348,23 @@ const createOutputFieldsObjArr=  function(outputFieldsArr,outputFieldsList){
   selectAllOutputFields accept the array of outputFieldsList
   and return array of unique fields
 */
-const selectAllOutputFields = function(tempFields,sinkForm){
+const selectAllOutputFields = function(tempFields,string){
   let tempAllFields = [];
   _.map(tempFields, (field, i ) => {
     if(field.type !== 'NESTED'){
       let data = null;
-      !!sinkForm
-        ?  data = _.findIndex(tempAllFields, (temp) => {return temp.value === field.value;})
-        : data = _.findIndex(tempAllFields, (temp) => {return temp.name === field.name;});
+      string === 'joinForm'
+        ? data = -1
+        : data = _.findIndex(tempAllFields, (temp) => {return (temp.name ||  temp.value) === (field.name || field.value);});
       if(data === -1){
         tempAllFields = _.concat(tempAllFields ,field);
       }
     }
   });
-  if(!!sinkForm){
+  if(string === 'sinkForm'){
+    tempAllFields = _.filter(tempFields, (t) => {
+      return (!_.has(t, 'streamId') && t.type !== "NESTED");
+    });
     tempAllFields = tempAllFields.map((field)=>{return field.value;});
   }
   return tempAllFields;
@@ -389,22 +394,22 @@ const splitNestedKey = function(key) {
 
   return streamObjArr {name : "UI", type : "String", optional : false}
 */
-const generateOutputStreamsArr = function(fieldList,_level){
-  const generateOutputStreams = function(fields,level){
+const generateOutputStreamsArr = function(fieldList,_level,alias){
+  const generateOutputStreams = function(fields,level,alias){
     return fields.map((field) => {
       let obj = {
-        name: field.name,
+        name: !!alias ? field.alias : field.name ,
         type: field.type ,
         optional : false
       };
 
       if (field.type === 'NESTED' && field.fields) {
-        obj.fields = generateOutputStreams(field.fields, level + 1);
+        obj.fields = generateOutputStreams(field.fields, level + 1,alias);
       }
       return obj;
     });
   };
-  return generateOutputStreams(fieldList,_level);
+  return generateOutputStreams(fieldList,_level,alias);
 };
 
 const getNestedKeyFromGroup = function(str){
@@ -437,32 +442,34 @@ export class Streams {
     });
   }
   cloneStreams(streams){
-    return JSON.parse(JSON.stringify(streams));
+    return JSON.parse(JSON.stringify(streams || this.streams));
   }
   filterByType(type){
     const streams = this.cloneStreams(this.streams);
     this.setParent(streams);
 
+    const remove = (stream, arr) => {
+      const i = arr.indexOf(stream);
+      arr.splice(i,1);
+      return true;
+    };
+
     const filter = (stream, arr) => {
       if(stream.fields && stream.fields.length){
-        /*stream.fields.forEach((s) => {
-          filter(s, stream.fields);
-        });*/
         for(let i = 0; i< stream.fields.length;){
           const removed = filter(stream.fields[i], stream.fields);
           if(!removed){
             i++;
           }
         }
+        if(!stream.fields.length){
+          return remove(stream, arr);
+        }
       } else if(stream.type != type) {
-        const i = arr.indexOf(stream);
-        arr.splice(i,1);
-        return true;
+        return remove(stream, arr);
       }
     };
-    /*streams.forEach((s) => {
-      filter(s, streams);
-    });*/
+
     for(let i = 0; i< streams.length;){
       const removed = filter(streams[i], streams);
       if(removed !== true){
@@ -502,11 +509,75 @@ export class Streams {
         }
       });
     };
-    pushOptions(streams, 0);
+    pushOptions(streams || this.cloneStreams(), 0);
 
     return options;
   }
+  toNoNestedSelectOption(streams){
+    const _streams = streams || this.cloneStreams();
+    _streams.forEach((stream) => {
+      /*stream.fields.forEach((childField) => {
+        if(childField.fields){
+          delete childField.fields;
+        }
+      });*/
+      for(let i = 0; i< stream.fields.length;){
+        const childField = stream.fields[i];
+        if(childField.fields){
+          stream.fields.splice(i,1);
+        }else{
+          i++;
+        }
+      }
+    });
+    return this.toSelectOption(_streams);
+  }
 }
+
+const removeChildren = function (arr){ //Remove children from top level if parent is selected
+  for(let i = 0; i < arr.length;){
+    let removed = false;
+    const field = arr[i];
+    const hasParent = arr.find((f) => {
+      return (f.keyPath+'.'+f.name) == field.keyPath;
+    });
+    if(hasParent){
+      arr.splice(i,1);
+      removed = true;
+    }
+    if(!removed){
+      i++;
+    }
+  }
+};
+
+const addChildren = function(arr, outputFieldsList){ //Add children of selected parent
+  for(let i = 0; i < arr.length;i++){
+    const field = arr[i];
+    if(field.type == 'NESTED'){
+      const subFields = field.fields = [];
+      outputFieldsList.forEach((ofld) => {
+        if(ofld.keyPath == (field.keyPath+'.'+field.name)){
+          subFields.push(ofld);
+        }
+      });
+      addChildren(subFields,outputFieldsList);
+    }
+  }
+};
+
+const filterOptions = function(selected, outputFieldsList){ //Filter out children from select options if parent is selected
+  const options = [];
+  outputFieldsList.forEach((f) => {
+    const isParentSelected = selected.find((sf) => {
+      return (sf.keyPath+'.'+sf.name) == f.keyPath;
+    });
+    if(!isParentSelected){
+      options.push(f);
+    }
+  });
+  return options;
+};
 
 export default {
   getSchemaFields,
@@ -522,5 +593,8 @@ export default {
   selectAllOutputFields,
   splitNestedKey,
   generateOutputStreamsArr,
-  getNestedKeyFromGroup
+  getNestedKeyFromGroup,
+  removeChildren,
+  addChildren,
+  filterOptions
 };

@@ -15,7 +15,6 @@
  **/
 package com.hortonworks.streamline.streams.common.event.correlation;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.hortonworks.streamline.streams.common.event.EventInformation;
 
 import java.util.*;
@@ -33,7 +32,7 @@ public class GroupedCorrelationEvents {
 
         correlatedEvents.values().forEach(event -> {
             String sourceComponentName = event.getComponentName();
-            String targetComponentName = event.getTargetComponentName();
+            Set<String> targetComponents = event.getTargetComponents();
 
             ComponentGroupedEvents groupedEvents = unsortedComponentGroupedEvents.get(sourceComponentName);
             if (groupedEvents == null) {
@@ -42,12 +41,14 @@ public class GroupedCorrelationEvents {
             }
             groupedEvents.addOutputEventId(event.getEventId());
 
-            groupedEvents = unsortedComponentGroupedEvents.get(targetComponentName);
-            if (groupedEvents == null) {
-                groupedEvents = new ComponentGroupedEvents(targetComponentName);
-                unsortedComponentGroupedEvents.put(targetComponentName, groupedEvents);
+            for (String component : targetComponents) {
+                groupedEvents = unsortedComponentGroupedEvents.get(component);
+                if (groupedEvents == null) {
+                    groupedEvents = new ComponentGroupedEvents(component);
+                    unsortedComponentGroupedEvents.put(component, groupedEvents);
+                }
+                groupedEvents.addInputEventId(event.getEventId());
             }
-            groupedEvents.addInputEventId(event.getEventId());
         });
 
         componentGroupedEvents = unsortedComponentGroupedEvents.entrySet()

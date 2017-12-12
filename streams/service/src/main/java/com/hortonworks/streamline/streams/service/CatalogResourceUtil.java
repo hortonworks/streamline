@@ -47,13 +47,13 @@ public final class CatalogResourceUtil {
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    static class TopologyDetailedResponse {
+    static class TopologyDashboardResponse {
         private final Topology topology;
         private final TopologyRunningStatus running;
         private final String namespaceName;
         private TopologyRuntimeResponse runtime;
 
-        public TopologyDetailedResponse(Topology topology, TopologyRunningStatus running, String namespaceName) {
+        public TopologyDashboardResponse(Topology topology, TopologyRunningStatus running, String namespaceName) {
             this.topology = topology;
             this.running = running;
             this.namespaceName = namespaceName;
@@ -109,13 +109,13 @@ public final class CatalogResourceUtil {
         RUNNING, NOT_RUNNING, UNKNOWN
     }
 
-    static TopologyDetailedResponse enrichTopology(Topology topology,
-                                                   String asUser,
-                                                   Integer latencyTopN,
-                                                   EnvironmentService environmentService,
-                                                   TopologyActionsService actionsService,
-                                                   TopologyMetricsService metricsService,
-                                                   StreamCatalogService catalogService) {
+    static TopologyDashboardResponse enrichTopology(Topology topology,
+                                                    String asUser,
+                                                    Integer latencyTopN,
+                                                    EnvironmentService environmentService,
+                                                    TopologyActionsService actionsService,
+                                                    TopologyMetricsService metricsService,
+                                                    StreamCatalogService catalogService) {
         LOG.debug("[START] enrichTopology - topology id: {}", topology.getId());
         Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -124,7 +124,7 @@ public final class CatalogResourceUtil {
                 latencyTopN = DEFAULT_N_OF_TOP_N_LATENCY;
             }
 
-            TopologyDetailedResponse detailedResponse;
+            TopologyDashboardResponse detailedResponse;
 
             String namespaceName = null;
             Namespace namespace = environmentService.getNamespace(topology.getNamespaceId());
@@ -137,11 +137,11 @@ public final class CatalogResourceUtil {
                 TopologyMetrics.TopologyMetric topologyMetric = metricsService.getTopologyMetric(topology, asUser);
                 List<Pair<String, Double>> latenciesTopN = metricsService.getTopNAndOtherComponentsLatency(topology, asUser, latencyTopN);
 
-                detailedResponse = new TopologyDetailedResponse(topology, TopologyRunningStatus.RUNNING, namespaceName);
+                detailedResponse = new TopologyDashboardResponse(topology, TopologyRunningStatus.RUNNING, namespaceName);
                 detailedResponse.setRuntime(new TopologyRuntimeResponse(runtimeTopologyId, topologyMetric, latenciesTopN));
             } catch (TopologyNotAliveException e) {
                 LOG.debug("Topology {} is not alive", topology.getId());
-                detailedResponse = new TopologyDetailedResponse(topology, TopologyRunningStatus.NOT_RUNNING, namespaceName);
+                detailedResponse = new TopologyDashboardResponse(topology, TopologyRunningStatus.NOT_RUNNING, namespaceName);
                 catalogService.getTopologyState(topology.getId())
                         .ifPresent(state -> {
                             if (TopologyStateFactory.getInstance().getTopologyState(state.getName()) == TopologyStates.TOPOLOGY_STATE_DEPLOYED) {
@@ -156,10 +156,10 @@ public final class CatalogResourceUtil {
                         });
             } catch (StormNotReachableException | IOException e) {
                 LOG.error("Storm is not reachable or fail to operate", e);
-                detailedResponse = new TopologyDetailedResponse(topology, TopologyRunningStatus.UNKNOWN, namespaceName);
+                detailedResponse = new TopologyDashboardResponse(topology, TopologyRunningStatus.UNKNOWN, namespaceName);
             } catch (Exception e) {
                 LOG.error("Unhandled exception occurs while operate with Storm", e);
-                detailedResponse = new TopologyDetailedResponse(topology, TopologyRunningStatus.UNKNOWN, namespaceName);
+                detailedResponse = new TopologyDashboardResponse(topology, TopologyRunningStatus.UNKNOWN, namespaceName);
             }
 
             LOG.debug("[END] enrichTopology - topology id: {}, elapsed: {} ms", topology.getId(),

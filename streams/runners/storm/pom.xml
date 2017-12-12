@@ -17,6 +17,7 @@
         <module>metrics</module>
         <module>common</module>
         <module>actions</module>
+        <module>logsearch</module>
     </modules>
 
 

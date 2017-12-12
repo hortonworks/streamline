@@ -16,6 +16,7 @@ import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
 import * as Fields from '../libs/form/Fields';
+import { Streams } from './ProcessorUtils';
 
 const sortArray = function(sortingArr, keyName, ascendingFlag) {
   if (ascendingFlag) {
@@ -190,14 +191,34 @@ const kFormatter = function(num) {
   num = (!num)
     ? 0
     : num;
-  return num > 999
+  return num > 999 || num < -999
     ? (num / 1000).toFixed(1) + 'k'
-    : num;
+    : num.toFixed(1);
+};
+
+const abbreviateNumber = function(value) {
+  var newValue = value || 0;var suffix = "";
+  if (newValue >= 1000 || newValue <= -1000) {
+    var suffixes = ["", "k", "m", "b","t"];
+    var suffixNum = Math.floor( (""+newValue).length/3 );
+    var shortValue = '';
+    for (var precision = 2; precision >= 1; precision--) {
+      shortValue = parseFloat( (suffixNum != 0 ? (newValue / Math.pow(1000,suffixNum) ) : newValue).toPrecision(precision));
+      var dotLessShortValue = (shortValue + '').replace(/[^a-zA-Z 0-9]+/g,'');
+      if (dotLessShortValue.length <= 2) { break; }
+    }
+    if (shortValue % 1 != 0)  {shortValue = shortValue.toFixed(1);}
+    newValue = shortValue;
+    suffix = suffixes[suffixNum];
+  } else {
+    newValue = newValue.toFixed(1);
+  }
+  return {value: newValue, suffix: suffix};
 };
 
 const eventTimeData = function(inputFields) {
   const eventTimeArr = inputFields.filter((k, i) => {
-    return k.type.toLowerCase() === "long";
+    return k.type && k.type.toLowerCase() === "long";
   }).map((v) => {
     return {fieldName: v.name, uiName: v.name};
   });
@@ -205,11 +226,30 @@ const eventTimeData = function(inputFields) {
   return eventTimeArr;
 };
 
-const inputFieldsData = function(inputFields) {
-  const inputFieldsArr = inputFields.map(v => {
+// gets difference of minutes between two dates excluding the seconds
+const getTimeDiffInMinutes = function(end, start) {
+  return  moment.duration(end.diff(start, 'minutes')).asMinutes();
+};
+
+const inputFieldsData = function(inputFields, noNestedFields) {
+  /*const inputFieldsArr = inputFields.map(v => {
     return {fieldName: v.name, uiName: v.name, fieldType: v.type};
   });
-  return inputFieldsArr;
+  return inputFieldsArr;*/
+  let options = [];
+  const streams = new Streams(inputFields);
+  const streamsArr = streams.cloneStreams();
+  if(noNestedFields){
+    options = streams.toNoNestedSelectOption(streamsArr);
+  }else{
+    options = streams.toSelectOption(streamsArr);
+  }
+  options.forEach((opt) => {
+    opt.fieldName = opt.uniqueID;
+    opt.uiName = opt.name;
+    opt.fieldType = opt.type;
+  });
+  return options;
 };
 
 const checkNestedInputFields = function(inputObj, fieldsData, securityType, hasSecurity) {
@@ -232,7 +272,11 @@ const checkNestedInputFields = function(inputObj, fieldsData, securityType, hasS
       //those fields are mapped by inputFieldsData function
       if (obj.options && obj.hint !== undefined) {
         if (obj.hint.toLowerCase().indexOf("inputfields") !== -1 && !obj.options.length) {
-          obj.options = inputFieldsData(fieldsData);
+          if(obj.hint.toLowerCase().indexOf("nonestedfields") !== -1){
+            obj.options = inputFieldsData(fieldsData, true);
+          }else{
+            obj.options = inputFieldsData(fieldsData, false);
+          }
         } else if (obj.hint.toLowerCase().indexOf("eventtime") !== -1 && (obj.options.length === 0 || obj.options[0].uiName === "processingTime")) {
           obj.options = eventTimeData(fieldsData);
         } else if (obj.hint.toLowerCase().indexOf("override") !== -1 && obj.type === "enumstring") {
@@ -290,7 +334,7 @@ const genFields = function(fieldsJSON, _fieldName = [], FormData = {}, inputFiel
           if (!_.isObject(d)) {
             options.push({value: d, label: d});
           } else {
-            options.push({value: d.fieldName, label: d.uiName, type: d.fieldType});
+            options.push({...d, value: d.fieldName, label: d.uiName, type: d.fieldType});
           }
         });
       }
@@ -343,6 +387,23 @@ const validateURL = function(url) {
 
 const convertMillsecondsToSecond = function(milliSec) {
   return Math.round(milliSec / 1000);
+};
+
+const formatLatency = function (milliSec) {
+  var val = milliSec || 0, suffix = 'ms';
+  if(val >= 1000) {
+    val = val / 1000;
+    suffix = 'sec';
+    if(val >= 60) {
+      val = val / 60;
+      suffix = 'min';
+      if(val >= 60) {
+        val = val / 60;
+        suffix = 'h';
+      }
+    }
+  }
+  return {value: val.toFixed(1), suffix: suffix};
 };
 
 const validateJSON = function(json){
@@ -685,7 +746,7 @@ const noSpecialCharString = function(string){
   if(string === ''){
     return;
   }
-  return /^[a-zA-Z0-9/_//-]+$/.test(string);
+  return /^[a-zA-Z0-9_-]+$/.test(string);
 };
 
 export default {
@@ -726,5 +787,8 @@ export default {
   matchStringInArr,
   populateSchemaVersionOptions,
   validateReconfigFlag,
-  noSpecialCharString
+  noSpecialCharString,
+  getTimeDiffInMinutes,
+  abbreviateNumber,
+  formatLatency
 };
