@@ -105,13 +105,13 @@ public class StreamsShellBoltTest {
             mockContext.getComponentOutputFields(anyString, anyString);
             result = new Fields(StreamlineEvent.STREAMLINE_EVENT);
             mockContext.getComponentId(anyInt);
-            result = "componentid";
+            result = "1-componentid";
             mockContext.getPIDDir();
             result = "/tmp";
             mockContext.getCodeDir();
             result = "/tmp";
             mockContext.getThisComponentId();
-            result = "dsrid"; minTimes = 0;
+            result = "1-componentid"; minTimes = 0;
         }};
     }
 

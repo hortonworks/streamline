@@ -18,14 +18,10 @@
 
 package com.hortonworks.streamline.streams.runtime.storm.bolt.query;
 
-import clojure.lang.Atom;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import com.hortonworks.streamline.streams.runtime.storm.bolt.query.RealtimeJoinBolt.StreamKind;
 import org.apache.storm.Constants;
-import org.apache.storm.generated.StormTopology;
-import org.apache.storm.metric.api.IMetric;
-import org.apache.storm.task.GeneralTopologyContext;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.base.BaseWindowedBolt;
@@ -441,13 +437,13 @@ public class TestRealtimeJoinBolt {
         @Override
         public List<Integer> emit(Collection<Tuple> anchors, List<Object> tuple) {
             actualResults.add(tuple);
-            return null;
+            return Collections.singletonList(1);
         }
 
         @Override
         public List<Integer> emit(Tuple anchor, List<Object> tuple) {
             actualResults.add(tuple);
-            return null;
+            return Collections.singletonList(1);
         }
 
         @Override
@@ -459,7 +455,7 @@ public class TestRealtimeJoinBolt {
     static class MockTopologyContext extends TopologyContext {
 
         private final Fields fields;
-        private String srcComponentId = "component";
+        private String srcComponentId = "1-component";
 
         public MockTopologyContext(String[] fieldNames) {
             super(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);

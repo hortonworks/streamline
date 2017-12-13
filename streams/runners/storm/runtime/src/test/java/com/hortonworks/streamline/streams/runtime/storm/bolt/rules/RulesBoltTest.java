@@ -105,7 +105,7 @@ public abstract class RulesBoltTest extends RulesTopologyTest {
 
     private void createAndPrepareRulesBolt(RulesProcessor rulesProcessor, RuleProcessorRuntime.ScriptType scriptType) {
         rulesBolt = (RulesBolt)createRulesBolt(rulesProcessor, scriptType);
-        rulesBolt.prepare(null, null, mockOutputCollector);
+        rulesBolt.prepare(null, mockContext, mockOutputCollector);
     }
 
     //@Test

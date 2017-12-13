@@ -26,6 +26,7 @@ import com.hortonworks.streamline.streams.layout.component.Stream;
 import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.Window;
 import com.hortonworks.streamline.streams.runtime.processor.RuleProcessorRuntime;
+import com.hortonworks.streamline.streams.runtime.storm.bolt.AbstractWindowedProcessorBolt;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -54,13 +55,12 @@ import static com.hortonworks.streamline.streams.runtime.transform.AddHeaderTran
 /**
  * A windowed rules bolt
  */
-public class WindowRulesBolt extends StreamlineWindowedBolt {
+public class WindowRulesBolt extends AbstractWindowedProcessorBolt {
     private static final Logger LOG = LoggerFactory.getLogger(WindowRulesBolt.class);
 
     private RuleProcessorRuntime ruleProcessorRuntime;
     private final RulesProcessor rulesProcessor;
     private final RuleProcessorRuntime.ScriptType scriptType;
-    private OutputCollector collector;
     private long windowId;
 
     public WindowRulesBolt(RulesProcessor rulesProcessor, RuleProcessorRuntime.ScriptType scriptType) {
@@ -74,10 +74,11 @@ public class WindowRulesBolt extends StreamlineWindowedBolt {
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
+        super.prepare(stormConf, context, collector);
+
         if (this.rulesProcessor == null) {
             throw new RuntimeException("rulesProcessor cannot be null");
         }
-        this.collector = collector;
         ruleProcessorRuntime = new RuleProcessorRuntime(rulesProcessor, scriptType);
         Map<String, Object> config = Collections.emptyMap();
         ruleProcessorRuntime.initialize(config);
@@ -132,7 +133,8 @@ public class WindowRulesBolt extends StreamlineWindowedBolt {
                     }).collect(Collectors.toList());
                     collector.emit(result.stream, parents, new Values(updateHeaders(e, parents)));
                 } else {
-                    collector.emit(result.stream, new Values(updateHeaders(e, curGroup.values())));
+                    // put all events in current group if there's no information
+                    collector.emit(result.stream, curGroup.values(), new Values(updateHeaders(e, curGroup.values())));
                 }
             }
         }

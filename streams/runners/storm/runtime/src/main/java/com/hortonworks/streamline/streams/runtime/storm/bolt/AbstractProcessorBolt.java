@@ -17,6 +17,7 @@
 package com.hortonworks.streamline.streams.runtime.storm.bolt;
 
 import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.runtime.storm.event.correlation.EventCorrelatingOutputCollector;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.base.BaseRichBolt;
@@ -41,7 +42,7 @@ public abstract class AbstractProcessorBolt extends BaseTickTupleAwareRichBolt {
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         this.stormConf = stormConf;
         this.context = context;
-        this.collector = collector;
+        this.collector = new EventCorrelatingOutputCollector(context, collector);
     }
 
     @Override
