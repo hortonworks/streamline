@@ -23,11 +23,9 @@ import org.apache.storm.topology.base.BaseWindowedBolt;
 import org.apache.storm.windowing.TimestampExtractor;
 import org.apache.storm.windowing.TupleWindow;
 
-import java.lang.reflect.Field;
 import java.util.Map;
 
 public class TestRunWindowProcessorBolt extends BaseWindowedBolt {
-    public static final String OUTPUT_COLLECTOR_FIELD_NAME_DELEGATE = "_delegate";
     private final BaseWindowedBolt processorBolt;
     private final String eventLogFilePath;
 
@@ -43,27 +41,9 @@ public class TestRunWindowProcessorBolt extends BaseWindowedBolt {
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
-        // we're going with hack
-        wrapEventCorrelatingOutputCollectorIntoDelegateCollector(context, collector);
-        processorBolt.prepare(stormConf, context, collector);
-    }
-
-    private void wrapEventCorrelatingOutputCollectorIntoDelegateCollector(TopologyContext context,
-        OutputCollector collector) {
-        try {
-            Field delegateField = OutputCollector.class.getDeclaredField(OUTPUT_COLLECTOR_FIELD_NAME_DELEGATE);
-            delegateField.setAccessible(true);
-            OutputCollector delegateCollector = (OutputCollector) delegateField.get(collector);
-
-            EventCorrelatingOutputCollector newCollector = new EventCorrelatingOutputCollector(context,
-                new EventLoggingOutputCollector(context, delegateCollector,
-                    TestRunEventLogger.getEventLogger(eventLogFilePath))
-            );
-
-            delegateField.set(collector, newCollector);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+        EventLoggingOutputCollector outputCollector = new EventLoggingOutputCollector(context, collector,
+                TestRunEventLogger.getEventLogger(eventLogFilePath));
+        processorBolt.prepare(stormConf, context, outputCollector);
     }
 
     @Override

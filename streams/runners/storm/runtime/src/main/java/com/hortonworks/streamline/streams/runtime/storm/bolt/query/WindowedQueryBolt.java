@@ -20,7 +20,10 @@ package com.hortonworks.streamline.streams.runtime.storm.bolt.query;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.Window;
+import com.hortonworks.streamline.streams.runtime.storm.event.correlation.EventCorrelatingWindowedOutputCollector;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.storm.task.OutputCollector;
+import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.topology.base.BaseWindowedBolt;
 import org.apache.storm.tuple.Fields;
@@ -29,6 +32,7 @@ import org.apache.storm.bolt.JoinBolt;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,6 +43,10 @@ import java.util.regex.Pattern;
  *     - Only allows joins based on stream names (not component names, etc)
  *     - Fields names provided to join(), leftJoin() & selectStreamLine() are auto prefixed with 'streamline-event.'
  *     - The 'streamline-event.' prefix is hidden from appearing in names of output fields (of projection)
+ *
+ * All processors need to extend either AbstractProcessorBolt or AbstractWindowedProcessorBolt to support
+ * event correlation, but the class already extends Storm's JoinBolt, hence we can't extend the class.
+ * Instead, we override prepare() method and wrap collector directly.
  */
 public class WindowedQueryBolt extends JoinBolt {
     protected String[] aliasedOutputFieldNames;
@@ -48,6 +56,11 @@ public class WindowedQueryBolt extends JoinBolt {
 
     public WindowedQueryBolt(String streamId, String key) {
         super(Selector.STREAM, streamId, EVENT_PREFIX + key);
+    }
+
+    @Override
+    public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
+        super.prepare(stormConf, context, new EventCorrelatingWindowedOutputCollector(context, collector));
     }
 
     @Override

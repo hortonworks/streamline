@@ -23,6 +23,7 @@ import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import com.hortonworks.streamline.streams.layout.component.Stream;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
+import com.hortonworks.streamline.streams.runtime.storm.event.correlation.EventCorrelatingSpoutOutputCollector;
 import org.apache.storm.spout.SpoutOutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -78,6 +79,7 @@ public class TestRunSourceSpout extends BaseRichSpout {
             throw new RuntimeException("testRunSource cannot be null");
         }
 
+        // it should build the chain of output collector because we are not manipulating chaining of output collector for spouts
         this.collector = new EventCorrelatingSpoutOutputCollector(context,
                 new EventLoggingSpoutOutputCollector(context, collector,
                         TestRunEventLogger.getEventLogger(testRunSource.getEventLogFilePath()))

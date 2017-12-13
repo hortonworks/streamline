@@ -1,4 +1,4 @@
-package com.hortonworks.streamline.streams.runtime.storm.testing;
+package com.hortonworks.streamline.streams.runtime.storm.event.correlation;
 
 import com.google.common.collect.Lists;
 import com.hortonworks.streamline.streams.StreamlineEvent;
@@ -28,23 +28,21 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(JMockit.class)
 public class EventCorrelatingOutputCollectorTest {
-    private static final String TEST_COMPONENT_NAME_FOR_STORM = "1-testComponent";
-    private static final String TEST_TARGET_COMPONENT_FOR_TASK_0_FOR_STORM = "0-testTargetComponent0";
-    private static final int TASK_0 = 0;
-    private static final int TASK_1 = 1;
-    private static final int TASK_2 = 2;
+    protected static final String TEST_COMPONENT_NAME_FOR_STORM = "1-testComponent";
+    protected static final String TEST_TARGET_COMPONENT_FOR_TASK_0_FOR_STORM = "0-testTargetComponent0";
+    protected static final int TASK_0 = 0;
+    protected static final int TASK_1 = 1;
+    protected static final int TASK_2 = 2;
 
     @Injectable
-    private TopologyContext mockedTopologyContext;
+    protected TopologyContext mockedTopologyContext;
 
     @Injectable
-    private OutputCollector mockedOutputCollector;
+    protected OutputCollector mockedOutputCollector;
 
-    private StormEventCorrelationInjector mockStormEventCorrelationInjector = new StormEventCorrelationInjector();
+    protected StormEventCorrelationInjector mockStormEventCorrelationInjector = new StormEventCorrelationInjector();
 
-    private EventCorrelationInjector eventCorrelationInjector = new EventCorrelationInjector();
-
-    private EventCorrelatingOutputCollector sut;
+    protected EventCorrelationInjector eventCorrelationInjector = new EventCorrelationInjector();
 
     public static final StreamlineEventImpl INPUT_STREAMLINE_EVENT = StreamlineEventImpl.builder()
             .fieldsAndValues(new HashMap<String, Object>() {{
@@ -60,13 +58,71 @@ public class EventCorrelatingOutputCollectorTest {
             .from(INPUT_STREAMLINE_EVENT)
             .build();
 
+    protected EventCorrelatingOutputCollector getSystemUnderTest() {
+        EventCorrelatingOutputCollector sut = new EventCorrelatingOutputCollector(mockedTopologyContext, mockedOutputCollector);
+        Deencapsulation.setField(sut, "eventCorrelationInjector", mockStormEventCorrelationInjector);
+        return sut;
+    }
+
     @Test
-    public void emit() throws Exception {
+    public void emitWithoutAnchor() throws Exception {
+        setupExpectationsForTopologyContextEmit();
+        setupExpectationsForEventCorrelationInjector();
+
+        EventCorrelatingOutputCollector sut = getSystemUnderTest();
+
+        String testStreamId = "testStreamId";
+        List<Integer> expectedTasks = Lists.newArrayList(TASK_1, TASK_2);
+        final Values tuple = new Values(INPUT_STREAMLINE_EVENT);
+
+        // String streamId, List<Object> tuple
+        new Expectations() {{
+            mockedOutputCollector.emit(testStreamId, withAny(tuple));
+            result = expectedTasks;
+        }};
+
+        List<Integer> tasks = sut.emit(testStreamId, tuple);
+        assertEquals(expectedTasks, tasks);
+
+        new Verifications() {{
+            List<Object> capturedValues;
+            mockedOutputCollector.emit(testStreamId, capturedValues = withCapture());
+            StreamlineEventTestUtil.assertEventIsProperlyCopied((StreamlineEvent) capturedValues.get(0), INPUT_STREAMLINE_EVENT);
+
+            List<Tuple> capturedParents;
+            mockStormEventCorrelationInjector.injectCorrelationInformation(tuple,
+                    capturedParents = withCapture(), TEST_COMPONENT_NAME_FOR_STORM);
+            assertEquals(0, capturedParents.size());
+        }};
+
+        // List<Object> tuple
+        new Expectations() {{
+            mockedOutputCollector.emit(withAny(tuple));
+            result = expectedTasks;
+        }};
+
+        tasks = sut.emit(tuple);
+        assertEquals(expectedTasks, tasks);
+
+        new Verifications() {{
+            List<Object> capturedValues;
+            mockedOutputCollector.emit(capturedValues = withCapture());
+            StreamlineEventTestUtil.assertEventIsProperlyCopied((StreamlineEvent) capturedValues.get(0), INPUT_STREAMLINE_EVENT);
+
+            List<Tuple> capturedParents;
+            mockStormEventCorrelationInjector.injectCorrelationInformation(tuple,
+                    capturedParents = withCapture(), TEST_COMPONENT_NAME_FOR_STORM);
+            assertEquals(0, capturedParents.size());
+        }};
+    }
+
+    @Test
+    public void emitWithAnchor() throws Exception {
         setupExpectationsForTuple();
         setupExpectationsForTopologyContextEmit();
         setupExpectationsForEventCorrelationInjector();
 
-        sut = new EventCorrelatingOutputCollector(mockedTopologyContext, mockedOutputCollector);
+        EventCorrelatingOutputCollector sut = new EventCorrelatingOutputCollector(mockedTopologyContext, mockedOutputCollector);
         Deencapsulation.setField(sut, "eventCorrelationInjector", mockStormEventCorrelationInjector);
 
         StreamlineEvent parentEvent = eventCorrelationInjector.injectCorrelationInformation(
@@ -98,26 +154,6 @@ public class EventCorrelatingOutputCollectorTest {
                     capturedParents = withCapture(), TEST_COMPONENT_NAME_FOR_STORM);
             assertEquals(1, capturedParents.size());
             assertEquals(anchor, capturedParents.get(0));
-        }};
-
-        // String streamId, List<Object> tuple
-        new Expectations() {{
-            mockedOutputCollector.emit(testStreamId, withAny(tuple));
-            result = expectedTasks;
-        }};
-
-        tasks = sut.emit(testStreamId, tuple);
-        assertEquals(expectedTasks, tasks);
-
-        new Verifications() {{
-            List<Object> capturedValues;
-            mockedOutputCollector.emit(testStreamId, capturedValues = withCapture());
-            StreamlineEventTestUtil.assertEventIsProperlyCopied((StreamlineEvent) capturedValues.get(0), INPUT_STREAMLINE_EVENT);
-
-            List<Tuple> capturedParents;
-            mockStormEventCorrelationInjector.injectCorrelationInformation(tuple,
-                    capturedParents = withCapture(), TEST_COMPONENT_NAME_FOR_STORM);
-            assertEquals(0, capturedParents.size());
         }};
 
         // Collection<Tuple> anchors, List<Object> tuple
@@ -162,26 +198,6 @@ public class EventCorrelatingOutputCollectorTest {
             assertEquals(anchor, capturedParents.get(0));
         }};
 
-        // List<Object> tuple
-        new Expectations() {{
-            mockedOutputCollector.emit(withAny(tuple));
-            result = expectedTasks;
-        }};
-
-        tasks = sut.emit(tuple);
-        assertEquals(expectedTasks, tasks);
-
-        new Verifications() {{
-            List<Object> capturedValues;
-            mockedOutputCollector.emit(capturedValues = withCapture());
-            StreamlineEventTestUtil.assertEventIsProperlyCopied((StreamlineEvent) capturedValues.get(0), INPUT_STREAMLINE_EVENT);
-
-            List<Tuple> capturedParents;
-            mockStormEventCorrelationInjector.injectCorrelationInformation(tuple,
-                    capturedParents = withCapture(), TEST_COMPONENT_NAME_FOR_STORM);
-            assertEquals(0, capturedParents.size());
-        }};
-
         // String streamId, Collection<Tuple> anchors, List<Object> tuple
         new Expectations() {{
             mockedOutputCollector.emit(testStreamId, anchors, withAny(tuple));
@@ -206,13 +222,60 @@ public class EventCorrelatingOutputCollectorTest {
     }
 
     @Test
-    public void emitDirect() throws Exception {
+    public void emitDirectWithoutAnchor() throws Exception {
+        setupExpectationsForTopologyContextEmit();
+        setupExpectationsForEventCorrelationInjector();
+
+        EventCorrelatingOutputCollector sut = getSystemUnderTest();
+
+        int testTaskId = TASK_1;
+        String testStreamId = "testStreamId";
+        final Values tuple = new Values(INPUT_STREAMLINE_EVENT);
+
+        // int taskId, String streamId, List<Object> tuple
+        new Expectations() {{
+            mockedOutputCollector.emitDirect(testTaskId, testStreamId, withAny(tuple));
+        }};
+
+        sut.emitDirect(testTaskId, testStreamId, tuple);
+
+        new Verifications() {{
+            List<Object> capturedValues;
+            mockedOutputCollector.emitDirect(testTaskId, testStreamId, capturedValues = withCapture());
+            StreamlineEventTestUtil.assertEventIsProperlyCopied((StreamlineEvent) capturedValues.get(0), INPUT_STREAMLINE_EVENT);
+
+            List<Tuple> capturedParents;
+            mockStormEventCorrelationInjector.injectCorrelationInformation(tuple,
+                    capturedParents = withCapture(), TEST_COMPONENT_NAME_FOR_STORM);
+            assertEquals(0, capturedParents.size());
+        }};
+
+        // int taskId, List<Object> tuple
+        new Expectations() {{
+            mockedOutputCollector.emitDirect(testTaskId, withAny(tuple));
+        }};
+
+        sut.emitDirect(testTaskId, tuple);
+
+        new Verifications() {{
+            List<Object> capturedValues;
+            mockedOutputCollector.emitDirect(testTaskId, capturedValues = withCapture());
+            StreamlineEventTestUtil.assertEventIsProperlyCopied((StreamlineEvent) capturedValues.get(0), INPUT_STREAMLINE_EVENT);
+
+            List<Tuple> capturedParents;
+            mockStormEventCorrelationInjector.injectCorrelationInformation(tuple,
+                    capturedParents = withCapture(), TEST_COMPONENT_NAME_FOR_STORM);
+            assertEquals(0, capturedParents.size());
+        }};
+    }
+
+    @Test
+    public void emitDirectWithAnchor() throws Exception {
         setupExpectationsForTuple();
         setupExpectationsForTopologyContextEmit();
         setupExpectationsForEventCorrelationInjector();
 
-        sut = new EventCorrelatingOutputCollector(mockedTopologyContext, mockedOutputCollector);
-        Deencapsulation.setField(sut, "eventCorrelationInjector", mockStormEventCorrelationInjector);
+        EventCorrelatingOutputCollector sut = getSystemUnderTest();
 
         StreamlineEvent parentEvent = eventCorrelationInjector.injectCorrelationInformation(
                 PARENT_STREAMLINE_EVENT, Collections.emptyList(), TEST_COMPONENT_NAME_FOR_STORM);
@@ -241,24 +304,6 @@ public class EventCorrelatingOutputCollectorTest {
                     capturedParents = withCapture(), TEST_COMPONENT_NAME_FOR_STORM);
             assertEquals(1, capturedParents.size());
             assertEquals(anchor, capturedParents.get(0));
-        }};
-
-        // int taskId, String streamId, List<Object> tuple
-        new Expectations() {{
-            mockedOutputCollector.emitDirect(testTaskId, testStreamId, withAny(tuple));
-        }};
-
-        sut.emitDirect(testTaskId, testStreamId, tuple);
-
-        new Verifications() {{
-            List<Object> capturedValues;
-            mockedOutputCollector.emitDirect(testTaskId, testStreamId, capturedValues = withCapture());
-            StreamlineEventTestUtil.assertEventIsProperlyCopied((StreamlineEvent) capturedValues.get(0), INPUT_STREAMLINE_EVENT);
-
-            List<Tuple> capturedParents;
-            mockStormEventCorrelationInjector.injectCorrelationInformation(tuple,
-                    capturedParents = withCapture(), TEST_COMPONENT_NAME_FOR_STORM);
-            assertEquals(0, capturedParents.size());
         }};
 
         // int taskId, Collection<Tuple> anchors, List<Object> tuple
@@ -299,24 +344,6 @@ public class EventCorrelatingOutputCollectorTest {
             assertEquals(anchor, capturedParents.get(0));
         }};
 
-        // int taskId, List<Object> tuple
-        new Expectations() {{
-            mockedOutputCollector.emitDirect(testTaskId, withAny(tuple));
-        }};
-
-        sut.emitDirect(testTaskId, tuple);
-
-        new Verifications() {{
-            List<Object> capturedValues;
-            mockedOutputCollector.emitDirect(testTaskId, capturedValues = withCapture());
-            StreamlineEventTestUtil.assertEventIsProperlyCopied((StreamlineEvent) capturedValues.get(0), INPUT_STREAMLINE_EVENT);
-
-            List<Tuple> capturedParents;
-            mockStormEventCorrelationInjector.injectCorrelationInformation(tuple,
-                    capturedParents = withCapture(), TEST_COMPONENT_NAME_FOR_STORM);
-            assertEquals(0, capturedParents.size());
-        }};
-
         // int taskId, String streamId, Collection<Tuple> anchors, List<Object> tuple
         new Expectations() {{
             mockedOutputCollector.emitDirect(testTaskId, testStreamId, anchors, withAny(tuple));
@@ -342,7 +369,8 @@ public class EventCorrelatingOutputCollectorTest {
     public void testAck() throws Exception {
         setupExpectationsForTuple();
         setupExpectationsForTopologyContextNoEmit();
-        sut = new EventCorrelatingOutputCollector(mockedTopologyContext, mockedOutputCollector);
+
+        EventCorrelatingOutputCollector sut = getSystemUnderTest();
 
         Tuple anchor = new TupleImpl(mockedTopologyContext, new Values(PARENT_STREAMLINE_EVENT), TASK_0,
                 Utils.DEFAULT_STREAM_ID);
@@ -358,7 +386,8 @@ public class EventCorrelatingOutputCollectorTest {
     public void testFail() throws Exception {
         setupExpectationsForTuple();
         setupExpectationsForTopologyContextNoEmit();
-        sut = new EventCorrelatingOutputCollector(mockedTopologyContext, mockedOutputCollector);
+
+        EventCorrelatingOutputCollector sut = getSystemUnderTest();
 
         Tuple anchor = new TupleImpl(mockedTopologyContext, new Values(PARENT_STREAMLINE_EVENT), TASK_0,
                 Utils.DEFAULT_STREAM_ID);
@@ -374,7 +403,8 @@ public class EventCorrelatingOutputCollectorTest {
     public void testResetTimeout() throws Exception {
         setupExpectationsForTuple();
         setupExpectationsForTopologyContextNoEmit();
-        sut = new EventCorrelatingOutputCollector(mockedTopologyContext, mockedOutputCollector);
+
+        EventCorrelatingOutputCollector sut = getSystemUnderTest();
 
         Tuple anchor = new TupleImpl(mockedTopologyContext, new Values(PARENT_STREAMLINE_EVENT), TASK_0,
                 Utils.DEFAULT_STREAM_ID);
@@ -389,7 +419,8 @@ public class EventCorrelatingOutputCollectorTest {
     @Test
     public void testReportError() throws Exception {
         setupExpectationsForTopologyContextNoEmit();
-        sut = new EventCorrelatingOutputCollector(mockedTopologyContext, mockedOutputCollector);
+
+        EventCorrelatingOutputCollector sut = getSystemUnderTest();
 
         Throwable throwable = new RuntimeException("error");
         sut.reportError(throwable);
@@ -399,7 +430,7 @@ public class EventCorrelatingOutputCollectorTest {
         }};
     }
 
-    private void setupExpectationsForTuple() {
+    protected void setupExpectationsForTuple() {
         new Expectations() {{
             mockedTopologyContext.getComponentId(TASK_0);
             result = TEST_TARGET_COMPONENT_FOR_TASK_0_FOR_STORM;
@@ -409,19 +440,19 @@ public class EventCorrelatingOutputCollectorTest {
         }};
     }
 
-    private void setupExpectationsForTopologyContextEmit() {
+    protected void setupExpectationsForTopologyContextEmit() {
         new Expectations() {{
             mockedTopologyContext.getThisComponentId();
             result = TEST_COMPONENT_NAME_FOR_STORM;
         }};
     }
 
-    private void setupExpectationsForTopologyContextNoEmit() {
+    protected void setupExpectationsForTopologyContextNoEmit() {
         new Expectations() {{
         }};
     }
 
-    private void setupExpectationsForEventCorrelationInjector() {
+    protected void setupExpectationsForEventCorrelationInjector() {
         new Expectations(mockStormEventCorrelationInjector) {{
         }};
     }

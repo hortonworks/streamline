@@ -237,7 +237,7 @@ public class TestWindowedQueryBolt {
     static class MockTopologyContext extends TopologyContext {
 
         private final Fields fields;
-        private String srcComponentId = "component";
+        private String srcComponentId = "1-component";
 
         public MockTopologyContext(String[] fieldNames) {
             super(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);

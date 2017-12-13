@@ -69,7 +69,7 @@ public class RulesBoltSqlTest extends RulesBoltTest {
             mockTuple.getSourceStreamId();
             result = "default";
             mockContext.getThisComponentId();
-            result = "componentid"; minTimes = 0;
+            result = "1-componentid"; minTimes = 0;
         }};
 
         rulesBolt.execute(mockTuple);

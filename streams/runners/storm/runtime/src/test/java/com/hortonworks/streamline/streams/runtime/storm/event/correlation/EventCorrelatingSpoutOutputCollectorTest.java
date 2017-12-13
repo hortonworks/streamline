@@ -14,7 +14,7 @@
  * limitations under the License.
  **/
 
-package com.hortonworks.streamline.streams.runtime.storm.testing;
+package com.hortonworks.streamline.streams.runtime.storm.event.correlation;
 
 import com.google.common.collect.Lists;
 import com.hortonworks.streamline.streams.StreamlineEvent;

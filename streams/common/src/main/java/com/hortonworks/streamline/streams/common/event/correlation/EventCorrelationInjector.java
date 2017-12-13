@@ -15,6 +15,8 @@
  **/
 package com.hortonworks.streamline.streams.common.event.correlation;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import org.apache.commons.lang.StringUtils;
@@ -30,6 +32,8 @@ public class EventCorrelationInjector {
     public static final String HEADER_KEY_ROOT_IDS = "rootIds";
     public static final String HEADER_KEY_PARENT_IDS = "parentIds";
     public static final String HEADER_KEY_SOURCE_COMPONENT_NAME = "sourceComponentName";
+    public static final Set<String> EVENT_CORRELATION_HEADER_KEYS =
+            ImmutableSet.of(HEADER_KEY_ROOT_IDS, HEADER_KEY_PARENT_IDS, HEADER_KEY_SOURCE_COMPONENT_NAME);
 
     public StreamlineEvent injectCorrelationInformation(StreamlineEvent event,
                                                         List<StreamlineEvent> parentEvents) {
@@ -105,5 +109,9 @@ public class EventCorrelationInjector {
             throw new IllegalArgumentException("Source component name is not in header.");
         }
         return (String) event.getHeader().get(HEADER_KEY_SOURCE_COMPONENT_NAME);
+    }
+
+    public static Set<String> getHeaderKeys() {
+        return EVENT_CORRELATION_HEADER_KEYS;
     }
 }
