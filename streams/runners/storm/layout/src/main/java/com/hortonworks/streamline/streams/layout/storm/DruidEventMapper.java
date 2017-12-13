@@ -21,6 +21,8 @@ import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventUtils;
 import org.apache.storm.druid.bolt.ITupleDruidEventMapper;
 import org.apache.storm.tuple.ITuple;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -31,6 +33,7 @@ import java.util.Map;
 public final class DruidEventMapper implements ITupleDruidEventMapper<Map<String, Object>> {
 
     public static final String DEFAULT_FIELD_NAME = "event";
+    private static final Logger LOG = LoggerFactory.getLogger(DruidEventMapper.class);
 
     private final String eventFiledName;
 
@@ -40,7 +43,6 @@ public final class DruidEventMapper implements ITupleDruidEventMapper<Map<String
 
     @Override
     public Map<String, Object> getEvent(ITuple tuple) {
-
         StreamlineEvent event = (StreamlineEvent) tuple.getValueByField(eventFiledName);
         return new DruidEvent(event.addFieldAndValue(DruidBeamFactoryImpl.PROCESSING_TIME, System.currentTimeMillis()));
     }
@@ -64,7 +66,9 @@ public final class DruidEventMapper implements ITupleDruidEventMapper<Map<String
 
         @Override
         public Object get(@Nullable Object key) {
-            return StreamlineEventUtils.getFieldValue(event, (String)key);
+            Object value = StreamlineEventUtils.getFieldValue(event, (String)key);
+            LOG.debug("called for key: {}, value: {}", key, value);
+            return value;
         }
     }
 }
