@@ -35,10 +35,8 @@ public class TestRunProcessorBolt extends BaseRichBolt {
 
     @Override
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
-        EventCorrelatingOutputCollector collector = new EventCorrelatingOutputCollector(topologyContext,
-                new EventLoggingOutputCollector(topologyContext, outputCollector,
-                        TestRunEventLogger.getEventLogger(eventLogFilePath))
-        );
+        EventLoggingOutputCollector collector = new EventLoggingOutputCollector(topologyContext, outputCollector,
+                TestRunEventLogger.getEventLogger(eventLogFilePath));
         processorBolt.prepare(map, topologyContext, collector);
     }
 

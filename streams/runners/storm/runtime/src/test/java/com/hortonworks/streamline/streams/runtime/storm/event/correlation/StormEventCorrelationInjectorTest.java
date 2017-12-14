@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
-package com.hortonworks.streamline.streams.runtime.storm.testing;
+package com.hortonworks.streamline.streams.runtime.storm.event.correlation;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import com.hortonworks.streamline.streams.common.event.correlation.EventCorrelationInjector;
+import com.hortonworks.streamline.streams.runtime.storm.event.correlation.StormEventCorrelationInjector;
 import com.hortonworks.streamline.streams.runtime.utils.StreamlineEventTestUtil;
 import com.hortonworks.streamline.streams.storm.common.StormTopologyUtil;
 import mockit.Expectations;

@@ -1,6 +1,7 @@
 package com.hortonworks.streamline.streams.runtime.utils;
 
 import com.hortonworks.streamline.streams.StreamlineEvent;
+import com.hortonworks.streamline.streams.common.event.correlation.EventCorrelationInjector;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -14,8 +15,12 @@ public final class StreamlineEventTestUtil {
 
         // header
         sourceEvent.getHeader().forEach((k, v) -> {
-            assertTrue(newEvent.getHeader().containsKey(k));
-            assertEquals(v, newEvent.getHeader().get(k));
+            // if the key is related to event correlation, skip checking.
+            // information for event correlation may be different based on the context
+            if (!EventCorrelationInjector.getHeaderKeys().contains(k)) {
+                assertTrue(newEvent.getHeader().containsKey(k));
+                assertEquals(v, newEvent.getHeader().get(k));
+            }
         });
 
         // other fields
