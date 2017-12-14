@@ -44,9 +44,9 @@ public class FunctionsTest {
             mockContext.getComponentOutputFields(anyString, anyString);
             result = new Fields(StreamlineEvent.STREAMLINE_EVENT);
             mockContext.getComponentId(anyInt);
-            result = "componentid";
+            result = "1-componentid";
             mockContext.getThisComponentId();
-            result = "componentid"; minTimes = 0;
+            result = "1-componentid"; minTimes = 0;
         }};
     }
 

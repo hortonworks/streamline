@@ -20,6 +20,9 @@ package com.hortonworks.streamline.streams.runtime.storm.bolt.query;
 
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
+import com.hortonworks.streamline.streams.runtime.storm.event.correlation.EventCorrelatingOutputCollector;
+import org.apache.storm.task.OutputCollector;
+import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.topology.base.BaseWindowedBolt;
 import org.apache.storm.tuple.Fields;
@@ -28,6 +31,7 @@ import org.apache.storm.tuple.Tuple;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class derives from RealtimeBolt to customize the handling of 'streamline-event' prefix
@@ -63,6 +67,11 @@ public class SLRealtimeJoinBolt extends RealtimeJoinBolt {
      */
     public SLRealtimeJoinBolt() {
         super(StreamKind.STREAM);
+    }
+
+    @Override
+    public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
+        super.prepare(stormConf, context, new EventCorrelatingOutputCollector(context, collector));
     }
 
     @Override

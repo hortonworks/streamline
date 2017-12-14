@@ -139,6 +139,9 @@ public class NormalizationBoltTest {
 
             tuple.getSourceStreamId();
             returns(INPUT_STREAM_ID);
+
+            topologyContext.getThisComponentId();
+            result = "1-componentid"; minTimes = 0;
         }};
 
         normalizationBolt.execute(tuple);

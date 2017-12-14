@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
-package com.hortonworks.streamline.streams.runtime.storm.testing;
+package com.hortonworks.streamline.streams.runtime.storm.event.correlation;
 
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.event.correlation.EventCorrelationInjector;
