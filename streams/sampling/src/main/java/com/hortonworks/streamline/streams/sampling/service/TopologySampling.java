@@ -33,20 +33,14 @@ public interface TopologySampling {
 
     interface SampledEvents {
         Collection<SampledEvent> getEvents();
-        Long getNext();
-        Integer getLength();
     }
 
     interface SampledEvent {
         long getTime();
         String getEvent();
-        int getStartOffset();
-        int getLength();
     }
 
     interface EventQueryParams {
-        Long start();
-        Integer length();
         int count();
         boolean desc();
     }

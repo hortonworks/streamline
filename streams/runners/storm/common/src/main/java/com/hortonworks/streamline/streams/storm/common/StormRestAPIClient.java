@@ -155,25 +155,6 @@ public class StormRestAPIClient {
         return doGetRequest(generateTopologyUrl(stormTopologyId, asUser, "component/" + componentId));
     }
 
-    public String getSampledEvents(String stormTopologyId, String componentId, String asUser, Long start, Integer length) {
-        String result = "";
-        Map componentPage = doGetRequest(generateTopologyUrl(stormTopologyId, asUser, "component/" + componentId));
-        if (componentPage != null) {
-            String eventLogLink = (String) componentPage.get("eventLogLink");
-            if (eventLogLink != null) {
-                if (start != null) {
-                    eventLogLink += "&start=" + start;
-                }
-                if (length != null) {
-                    eventLogLink += "&length=" + length;
-                }
-                LOG.debug("GET request to Storm cluster: {}", eventLogLink);
-                result = client.target(eventLogLink).request().get(String.class);
-            }
-        }
-        return result;
-    }
-
     private Map doGetRequest(String requestUrl) {
         try {
             LOG.debug("GET request to Storm cluster: " + requestUrl);

@@ -25,9 +25,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import java.util.List;
 
-import static com.hortonworks.streamline.streams.sampling.service.storm.StormTopologySamplingService.BYTES_TO_FETCH;
 import static com.hortonworks.streamline.streams.security.Permission.EXECUTE;
 import static com.hortonworks.streamline.streams.security.Permission.READ;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -194,31 +192,11 @@ public class TopologyEventSamplingResource {
         throw EntityNotFoundException.byId(buildTopologyComponentId(topologyId, componentId));
     }
 
-    /*
-       if desc == false start = 0, count =x
-
-       start = null, count = 10, desc = true
-
-       10 --
-       15 --
-       ..
-  --?  85
-       95
-       ..
-      100 --
-      110 --
-      ..
-      ..
-      200 --
-     */
-
     @GET
     @Path("/topologies/{topologyId}/component/{componentId}/events")
     @Timed
     public Response getSampledEvents(@PathParam("topologyId") Long topologyId,
                                      @PathParam("componentId") Long componentId,
-                                     @QueryParam("start") Long start,
-                                     @QueryParam("length") Integer length,
                                      @QueryParam("count") Integer count,
                                      @QueryParam("desc") Boolean desc,
                                    @Context SecurityContext securityContext) throws Exception {
@@ -228,7 +206,7 @@ public class TopologyEventSamplingResource {
         TopologyComponent topologyComponent = catalogService.getTopologyComponent(topologyId, componentId);
         if (topology != null && topologyComponent != null) {
             String asUser = WSUtils.getUserFromSecurityContext(securityContext);
-            TopologySampling.EventQueryParams qps = buildEventQueryParams(start, length, count, desc);
+            TopologySampling.EventQueryParams qps = buildEventQueryParams(count, desc);
             TopologySampling.SampledEvents sampledEvents = samplingService.getSampledEvents(topology, topologyComponent, qps, asUser);
             SamplingResponse response = SamplingResponse.of(topologyId)
                     .componentId(componentId)
@@ -241,13 +219,8 @@ public class TopologyEventSamplingResource {
         throw EntityNotFoundException.byId(buildTopologyComponentId(topologyId, componentId));
     }
 
-    private TopologySampling.EventQueryParams buildEventQueryParams(Long start, Integer length, Integer count, Boolean desc) {
+    private TopologySampling.EventQueryParams buildEventQueryParams(Integer count, Boolean desc) {
         return new TopologySampling.EventQueryParams() {
-            @Override
-            public Long start() {
-                return start;
-            }
-
             @Override
             public int count() {
                 return count == null ? 10 : count;
@@ -258,10 +231,6 @@ public class TopologyEventSamplingResource {
                 return desc == null ? true : desc;
             }
 
-            @Override
-            public Integer length() {
-                return length == null ? Integer.valueOf(BYTES_TO_FETCH) : length;
-            }
         };
     }
 
