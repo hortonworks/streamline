@@ -18,13 +18,12 @@ package com.hortonworks.streamline.streams.layout.storm;
 
 import com.google.common.collect.ForwardingMap;
 import com.hortonworks.streamline.streams.StreamlineEvent;
-import com.hortonworks.streamline.streams.common.StreamlineEventUtils;
 import org.apache.storm.druid.bolt.ITupleDruidEventMapper;
 import org.apache.storm.tuple.ITuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -49,26 +48,31 @@ public final class DruidEventMapper implements ITupleDruidEventMapper<Map<String
 
     public static class DruidEvent extends ForwardingMap<String, Object> {
 
-        private final StreamlineEvent event;
+        private final Map<String, Object> event;
 
         public DruidEvent(StreamlineEvent event) {
-            this.event = event;
-        }
-
-        public static boolean isMap(Object map) {
-            return map instanceof Map;
+            Map<String, Object> updatedEvent = new HashMap<>();
+            event.forEach((key, value) -> {
+                flattenNestedFields(key, value, updatedEvent);
+            });
+            LOG.debug("updated DruidEvent: {}", updatedEvent );
+            this.event = updatedEvent;
         }
 
         @Override
         protected Map<String, Object> delegate() {
-            return event;
+           return event;
         }
 
-        @Override
-        public Object get(@Nullable Object key) {
-            Object value = StreamlineEventUtils.getFieldValue(event, (String)key);
-            LOG.debug("called for key: {}, value: {}", key, value);
-            return value;
+        private void flattenNestedFields(String parentKey, Object value, Map<String, Object> updatedEvent) {
+            if (value instanceof  Map) {
+                Map<String, Object> subMap = (Map<String, Object>) value;
+                subMap.forEach((childKey, childValue) -> {
+                    flattenNestedFields(parentKey + "." + childKey, childValue, updatedEvent);
+                });
+            } else {
+                updatedEvent.put(parentKey, value);
+            }
         }
     }
 }
