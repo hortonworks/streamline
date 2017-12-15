@@ -71,6 +71,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -124,6 +125,9 @@ public class StormTopologyActionsImpl implements TopologyActions {
     public static final String TOPOLOGY_AUTO_CREDENTIAL_CLASSNAME_HIVE = "org.apache.storm.hive.security.AutoHive";
 
     private static final Long DEFAULT_NIMBUS_THRIFT_MAX_BUFFER_SIZE = 1048576L;
+
+    public static final String TOPOLOGY_EVENTLOGGER_REGISTER = "topology.event.logger.register";
+    public static final String TOPOLOGY_EVENTLOGGER_CLASSNAME_STREAMLINE = "com.hortonworks.streamline.streams.runtime.storm.event.sample.StreamlineEventLogger";
 
     private String stormArtifactsLocation = "/tmp/storm-artifacts/";
     private String stormCliPath = "storm";
@@ -600,6 +604,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
             }
             Config topologyConfig = fluxGenerator.getTopologyConfig();
             putAutoTokenDelegationConfig(topologyConfig, topologyDag);
+            registerEventLogger(topologyConfig);
 
             LOG.debug("Final Topology config {}", topologyConfig);
             addTopologyConfig(yamlMap, topologyConfig.getProperties());
@@ -616,6 +621,13 @@ public class StormTopologyActionsImpl implements TopologyActions {
                 fileWriter.close();
             }
         }
+    }
+
+    private void registerEventLogger(Config topologyConfig) {
+        topologyConfig.put(TOPOLOGY_EVENTLOGGER_REGISTER,
+                Collections.singletonList(
+                        Collections.singletonMap("class", TOPOLOGY_EVENTLOGGER_CLASSNAME_STREAMLINE))
+        );
     }
 
     private void putAutoTokenDelegationConfig(Config topologyConfig, TopologyDag topologyDag) {
