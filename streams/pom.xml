@@ -21,6 +21,7 @@
         <module>notifier</module>
         <module>runtime</module>
         <module>service</module>
+        <module>sampling</module>
         <module>runners</module>
         <module>functions</module>
         <module>cluster</module>

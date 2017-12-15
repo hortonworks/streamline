@@ -41,6 +41,7 @@ import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.logsearch.topology.service.TopologyLogSearchService;
 import com.hortonworks.streamline.streams.metrics.topology.service.TopologyMetricsService;
 import com.hortonworks.streamline.streams.notification.service.NotificationServiceImpl;
+import com.hortonworks.streamline.streams.sampling.service.TopologySamplingService;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import com.hortonworks.streamline.streams.security.service.SecurityCatalogResource;
 import com.hortonworks.streamline.streams.security.service.SecurityCatalogService;
@@ -152,7 +153,9 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware, T
                 new BranchRuleCatalogResource(authorizer, streamcatalogService),
                 new WindowCatalogResource(authorizer, streamcatalogService),
                 new TopologyEditorToolbarResource(authorizer, streamcatalogService, securityCatalogService),
-                new TopologyTestRunResource(streamcatalogService, actionsService)
+                new TopologyTestRunResource(streamcatalogService, actionsService),
+                new TopologyEventSamplingResource(authorizer,
+                        new TopologySamplingService(environmentService, subject), streamcatalogService)
         );
     }
 

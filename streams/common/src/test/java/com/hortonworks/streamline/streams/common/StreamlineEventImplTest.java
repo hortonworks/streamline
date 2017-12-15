@@ -159,4 +159,20 @@ public class StreamlineEventImplTest {
         assertTrue(event.delegate() == event2.delegate());
 
     }
+
+    @Test
+    public void testToFromString() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("a", "aval");
+        map.put("b", "bval");
+
+        StreamlineEventImpl se1 = StreamlineEventImpl.builder().putAll(map)
+                .build();
+        String s = se1.toString();
+        StreamlineEvent se2 = StreamlineEventImpl.fromString(s);
+        assertEquals("aval", se2.get("a"));
+        assertEquals("bval", se2.get("b"));
+
+    }
+
 }
