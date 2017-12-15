@@ -23,10 +23,7 @@ import org.apache.storm.tuple.ITuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -51,32 +48,30 @@ public final class DruidEventMapper implements ITupleDruidEventMapper<Map<String
 
     public static class DruidEvent extends ForwardingMap<String, Object> {
 
-        private final StreamlineEvent event;
+        private final Map<String, Object> event;
 
         public DruidEvent(StreamlineEvent event) {
-            this.event = event;
+            Map<String, Object> updatedEvent = new HashMap<>();
+            event.forEach((key, value) -> {
+                flattenNestedFields(key, value, updatedEvent);
+            });
+            LOG.debug("updated DruidEvent: {}", updatedEvent );
+            this.event = updatedEvent;
         }
 
         @Override
         protected Map<String, Object> delegate() {
-            Map<String, Object> updatedEvent = new LinkedHashMap<>();
-            event.forEach((key, value) -> {
-                flattenNestedFields(key, value, updatedEvent, new LinkedList<>(Arrays.asList(key)));
-            });
-            LOG.debug("updated DruidEvent: {}", updatedEvent );
-            return updatedEvent;
+           return event;
         }
 
-        private void flattenNestedFields(String key, Object value, Map<String, Object> updatedEvent, List<String> parentKeyList) {
+        private void flattenNestedFields(String parentKey, Object value, Map<String, Object> updatedEvent) {
             if (value instanceof  Map) {
                 Map<String, Object> subMap = (Map<String, Object>) value;
                 subMap.forEach((childKey, childValue) -> {
-                    List<String> updatedParentKeyList = new LinkedList<>(parentKeyList);
-                    updatedParentKeyList.add(childKey);
-                    flattenNestedFields(childKey, childValue, updatedEvent, updatedParentKeyList);
+                    flattenNestedFields(parentKey + "." + childKey, childValue, updatedEvent);
                 });
             } else {
-                updatedEvent.put(String.join(".", parentKeyList), value);
+                updatedEvent.put(parentKey, value);
             }
         }
     }
