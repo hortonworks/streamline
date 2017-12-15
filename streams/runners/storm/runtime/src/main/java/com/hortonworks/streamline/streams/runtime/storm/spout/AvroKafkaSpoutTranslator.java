@@ -105,7 +105,7 @@ public class AvroKafkaSpoutTranslator implements RecordTranslator<Object, ByteBu
 
         public int read (byte[] bytes, int off, int len) throws IOException {
             Preconditions.checkNotNull(bytes, "Given byte array can not be null");
-            Preconditions.checkPositionIndexes(off, len, bytes.length);
+            Preconditions.checkPositionIndexes(off, off + len, bytes.length);
 
             if (!buf.hasRemaining()) {
                 return -1;
