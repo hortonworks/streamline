@@ -36,7 +36,6 @@ import java.util.Map;
 
 public class TopologyMetricsContainer extends NamespaceAwareContainer<TopologyMetrics> {
 
-    public static final String COMPONENT_NAME_STORM_UI_SERVER = ComponentPropertyPattern.STORM_UI_SERVER.name();
     public static final String COMPONENT_NAME_METRICS_COLLECTOR = ComponentPropertyPattern.METRICS_COLLECTOR.name();
     public static final String COLLECTOR_API_URL_KEY = "collectorApiUrl";
 
@@ -111,29 +110,8 @@ public class TopologyMetricsContainer extends NamespaceAwareContainer<TopologyMe
     }
 
     private Map<String, Object> buildStormTopologyMetricsConfigMap(Namespace namespace, String streamingEngine, Subject subject) {
-        // Assuming that a namespace has one mapping of streaming engine
-        Service streamingEngineService = getFirstOccurenceServiceForNamespace(namespace, streamingEngine);
-        if (streamingEngineService == null) {
-            throw new RuntimeException("Streaming Engine " + streamingEngine + " is not associated to the namespace " +
-                    namespace.getName() + "(" + namespace.getId() + ")");
-        }
-
-        Component uiServer = getComponent(streamingEngineService, COMPONENT_NAME_STORM_UI_SERVER)
-                .orElseThrow(() -> new RuntimeException(streamingEngine + " doesn't have " + COMPONENT_NAME_STORM_UI_SERVER + " as component"));
-
-        Collection<ComponentProcess> uiServerProcesses = environmentService.listComponentProcesses(uiServer.getId());
-        if (uiServerProcesses.isEmpty()) {
-            throw new RuntimeException(streamingEngine + " doesn't have any process for " + COMPONENT_NAME_STORM_UI_SERVER + " as component");
-        }
-
-        ComponentProcess uiServerProcess = uiServerProcesses.iterator().next();
-        String uiHost = uiServerProcess.getHost();
-        Integer uiPort = uiServerProcess.getPort();
-
-        assertHostAndPort(uiServer.getName(), uiHost, uiPort);
-
         Map<String, Object> conf = new HashMap<>();
-        conf.put(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY, buildStormRestApiRootUrl(uiHost, uiPort));
+        conf.put(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY, buildStormRestApiRootUrl(namespace, streamingEngine));
         conf.put(TopologyLayoutConstants.SUBJECT_OBJECT, subject);
         return conf;
     }
@@ -165,9 +143,6 @@ public class TopologyMetricsContainer extends NamespaceAwareContainer<TopologyMe
         return confForTimeSeriesQuerier;
     }
 
-    private String buildStormRestApiRootUrl(String host, Integer port) {
-        return "http://" + host + ":" + port + "/api/v1";
-    }
 
     private String buildAMSCollectorRestApiRootUrl(String host, Integer port) {
         return "http://" + host + ":" + port + "/ws/v1/timeline/metrics";

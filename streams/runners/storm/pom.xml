@@ -18,6 +18,7 @@
         <module>common</module>
         <module>actions</module>
         <module>logsearch</module>
+        <module>sampling</module>
     </modules>
 
 

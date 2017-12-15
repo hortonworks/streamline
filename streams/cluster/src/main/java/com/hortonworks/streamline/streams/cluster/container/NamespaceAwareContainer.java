@@ -15,12 +15,14 @@
  **/
 package com.hortonworks.streamline.streams.cluster.container;
 
+import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
 import com.hortonworks.streamline.streams.cluster.catalog.Component;
+import com.hortonworks.streamline.streams.cluster.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
 import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMap;
 import com.hortonworks.streamline.streams.cluster.catalog.Service;
 import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
-import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 
 import java.util.ArrayList;
@@ -37,6 +39,8 @@ import static java.util.stream.Collectors.toList;
  * This only provides container functionality, and implementations should provide the way to initialize element (instance).
  */
 public abstract class NamespaceAwareContainer<T> {
+    public static final String COMPONENT_NAME_STORM_UI_SERVER = ComponentPropertyPattern.STORM_UI_SERVER.name();
+
     private Map<Long, T> namespaceToInstance;
     protected final EnvironmentService environmentService;
 
@@ -139,4 +143,25 @@ public abstract class NamespaceAwareContainer<T> {
                     " / port: " + port);
         }
     }
+
+    protected String buildStormRestApiRootUrl(Namespace namespace, String streamingEngine) {
+        // Assuming that a namespace has one mapping of streaming engine
+        Service streamingEngineService = getFirstOccurenceServiceForNamespace(namespace, streamingEngine);
+        if (streamingEngineService == null) {
+            throw new RuntimeException("Streaming Engine " + streamingEngine + " is not associated to the namespace " +
+                    namespace.getName() + "(" + namespace.getId() + ")");
+        }
+        Component uiServer = getComponent(streamingEngineService, COMPONENT_NAME_STORM_UI_SERVER)
+                .orElseThrow(() -> new RuntimeException(streamingEngine + " doesn't have " + COMPONENT_NAME_STORM_UI_SERVER + " as component"));
+        Collection<ComponentProcess> uiServerProcesses = environmentService.listComponentProcesses(uiServer.getId());
+        if (uiServerProcesses.isEmpty()) {
+            throw new RuntimeException(streamingEngine + " doesn't have any process for " + COMPONENT_NAME_STORM_UI_SERVER + " as component");
+        }
+        ComponentProcess uiServerProcess = uiServerProcesses.iterator().next();
+        String uiHost = uiServerProcess.getHost();
+        Integer uiPort = uiServerProcess.getPort();
+        assertHostAndPort(uiServer.getName(), uiHost, uiPort);
+        return "http://" + uiHost + ":" + uiPort + "/api/v1";
+    }
+
 }

@@ -15,6 +15,10 @@
  **/
 package com.hortonworks.streamline.streams.common;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -22,6 +26,7 @@ import com.google.common.collect.ForwardingMap;
 import com.google.common.collect.ImmutableMap;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,11 +39,14 @@ import java.util.UUID;
 /**
  * A default implementation of StreamlineEvent.
  */
+@JsonSerialize(as=StreamlineEventImpl.class)
 public final class StreamlineEventImpl extends ForwardingMap<String, Object> implements StreamlineEvent {
     // Default value chosen to be blank and not the default used in storm since wanted to keep it independent of storm.
     public final static String DEFAULT_SOURCE_STREAM = "default";
     // special event to trigger evaluation of group by
     public static final StreamlineEvent GROUP_BY_TRIGGER_EVENT = StreamlineEventImpl.builder().build();
+
+    public static final String TO_STRING_PREFIX = "StreamlineEvent";
 
     private final ImmutableMap<String, Object> header;
     private final String sourceStream;
@@ -50,6 +58,14 @@ public final class StreamlineEventImpl extends ForwardingMap<String, Object> imp
     @Override
     protected Map<String, Object> delegate() {
         return delegate;
+    }
+
+    private StreamlineEventImpl() {
+        header = null;
+        sourceStream = null;
+        auxiliaryFieldsAndValues = null;
+        dataSourceId = null;
+        delegate = null;
     }
 
     /**
@@ -310,15 +326,38 @@ public final class StreamlineEventImpl extends ForwardingMap<String, Object> imp
         throw new UnsupportedOperationException();
     }
 
+    public static StreamlineEvent fromString(String s) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            Map<String, Object> event = mapper.readValue(
+                    s.substring(s.indexOf(TO_STRING_PREFIX) + TO_STRING_PREFIX.length()),
+                    new TypeReference<Map<String, Object>>() {});
+            return StreamlineEventImpl.builder()
+                    .header((Map<String, Object>) event.get("header"))
+                    .sourceStream((String) event.get("sourceStream"))
+                    .auxiliaryFieldsAndValues((Map<String, Object>) event.get("auxiliaryFieldsAndValues"))
+                    .dataSourceId((String) event.get("dataSourceId"))
+                    .putAll((Map<String, Object>) event.get("fieldsAndValues"))
+                    .build();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public String toString() {
-        return "StreamlineEventImpl{" +
-                "header=" + header +
-                ", sourceStream='" + sourceStream + '\'' +
-                ", fieldsAndValues=" + super.toString() +
-                ", auxiliaryFieldsAndValues=" + auxiliaryFieldsAndValues +
-                ", dataSourceId='" + dataSourceId + '\'' +
-                ", id='" + id + '\'' +
-                '}';
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            Map<String, Object> event = new HashMap<>();
+            event.put("header", header);
+            event.put("sourceStream", sourceStream);
+            event.put("auxiliaryFieldsAndValues", auxiliaryFieldsAndValues);
+            event.put("dataSourceId", dataSourceId);
+            event.put("id", id);
+            event.put("fieldsAndValues", delegate);
+            return  TO_STRING_PREFIX + mapper.writeValueAsString(event);
+        } catch (JsonProcessingException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }

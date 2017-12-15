@@ -1,0 +1,92 @@
+{
+  "type": "TOPOLOGY",
+  "name": "Storm topology",
+  "subType": "TOPOLOGY",
+  "streamingEngine": "STORM",
+  "builtin": true,
+  "transformationClass": "dummy",
+  "topologyComponentUISpecification": {
+    "fields": [
+      {
+        "uiName": "Number of workers",
+        "fieldName": "topology.workers",
+        "isOptional": true,
+        "tooltip": "How many processes should be spawned around the cluster to execute this topology",
+        "type": "number",
+        "defaultValue": 1
+      },
+      {
+        "uiName": "Number of ackers",
+        "fieldName": "topology.acker.executors",
+        "isOptional": true,
+        "tooltip": "The number of executors to spawn for ackers",
+        "type": "number",
+        "defaultValue": 1
+      },
+      {
+        "uiName": "Topology message timeout (seconds)",
+        "fieldName": "topology.message.timeout.secs",
+        "isOptional": true,
+        "tooltip": "The maximum amount of time given to the topology to fully process a message emitted by a spout",
+        "type": "number",
+        "defaultValue": 30
+      },
+      {
+        "uiName": "Topology Worker JVM options",
+        "fieldName": "topology.worker.childopts",
+        "isOptional": true,
+        "tooltip": "The jvm options provided to workers in topology. The value will be appended to the cluster's worker.childopts.",
+        "type": "string"
+      },
+      {
+        "uiName": "Number of event sampling tasks",
+        "fieldName": "topology.eventlogger.executors",
+        "isOptional": true,
+        "tooltip": "The number of event sampling tasks to create.",
+        "type": "number",
+        "defaultValue": 1
+      },
+      {
+        "uiName": "Clusters Security Config",
+        "fieldName": "clustersSecurityConfig",
+        "tooltip": "Clusters Security Configuration",
+        "isOptional": true,
+        "type": "array.object",
+        "defaultValue": null,
+        "hint": "security_",
+        "fields": [
+          {
+            "uiName": "Cluster Name",
+            "fieldName": "clusterId",
+            "tooltip": "Name of the cluster (same as service pool)",
+            "isOptional": false,
+            "type": "enumstring",
+            "defaultValue": null,
+            "options": [],
+            "hint": "security_"
+          },
+          {
+            "uiName": "Principal",
+            "fieldName": "principal",
+            "tooltip": "The principal for auto delegation token",
+            "isOptional": false,
+            "type": "enumstring",
+            "defaultValue": null,
+            "options": [],
+            "hint": "override,security_"
+          },
+          {
+            "uiName": "Keytab Path",
+            "fieldName": "keytabPath",
+            "tooltip": "The path of keytab file in Nimbus node to log in with provided principal",
+            "isOptional": false,
+            "type": "enumstring",
+            "defaultValue": null,
+            "options": [],
+            "hint": "override,security_"
+          }
+        ]
+      }
+    ]
+  }
+}

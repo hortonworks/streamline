@@ -164,6 +164,7 @@ function update_bundles {
     put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v002__hive-sink-topology-component.json HIVE
     put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v002__druid-sink-topology-component.json DRUID
     # === Topology ===
+    put_topology_component_bundle /streams/componentbundles/TOPOLOGY ${component_dir}/topology/v002__storm-topology-component.json TOPOLOGY
     # === Service Bundle ===
     put_service_bundle /servicebundles/KAFKA ${service_dir}/v002__kafka-bundle.json
     put_service_bundle /servicebundles/STORM ${service_dir}/v002__storm-bundle.json
