@@ -70,7 +70,7 @@
         "isOptional": false,
         "type": "array.enumstring",
         "options": [],
-        "hint": "inputFields"
+        "hint": "inputFields,noNestedFields"
       },
       {
         "uiName": "Parallelism",

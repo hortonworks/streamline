@@ -128,48 +128,48 @@ echo "User/Role bundle Root dir: ${user_role_dir}"
 
 function add_all_bundles {
     # === Source ===
-    add_topology_component_bundle /streams/componentbundles/SOURCE ${component_dir}/sources/v001__kafka-source-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SOURCE ${component_dir}/sources/v001__hdfs-source-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SOURCE ${component_dir}/sources/v001__eventhubs-source-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SOURCE ${component_dir}/sources/kafka-source-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SOURCE ${component_dir}/sources/hdfs-source-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SOURCE ${component_dir}/sources/eventhubs-source-topology-component.json
     # === Processor ===
-    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/v001__rule-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/v001__window-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/v001__branch-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/v001__join-bolt-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/v001__model-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/v001__projection-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/rule-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/window-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/branch-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/join-bolt-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/model-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/projection-topology-component.json
     # === Sink ===
-    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v001__hdfs-sink-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v001__hbase-sink-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v001__notification-sink-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v001__opentsdb-sink-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v001__jdbc-sink-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v001__cassandra-sink-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v001__druid-sink-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v001__solr-sink-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v001__kafka-sink-topology-component.json
-    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v001__hive-sink-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/hdfs-sink-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/hbase-sink-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/notification-sink-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/opentsdb-sink-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/jdbc-sink-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/cassandra-sink-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/druid-sink-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/solr-sink-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/kafka-sink-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/hive-sink-topology-component.json
     # === Topology ===
-    add_topology_component_bundle /streams/componentbundles/TOPOLOGY ${component_dir}/topology/v001__storm-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/TOPOLOGY ${component_dir}/topology/storm-topology-component.json
 
-    #add_topology_component_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/v001__split-topology-component
-    #add_topology_component_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/v001__normalization-processor-topology-component.json
-    #add_topology_component_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/v001__multilang-topology-component.json
-    #post /streams/componentbundles/PROCESSOR $component_dir/sinks/v001__stage-topology-component
-    #post /streams/componentbundles/ACTION $component_dir/sinks/v001__transform-action-topology-component
-    #post /streams/componentbundles/TRANSFORM $component_dir/sinks/v001__projection-transform-topology-component
-    #post /streams/componentbundles/TRANSFORM $component_dir/sinks/v001__enrichment-transform-topology-component
+    #add_topology_component_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/split-topology-component
+    #add_topology_component_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/normalization-processor-topology-component.json
+    #add_topology_component_bundle /streams/componentbundles/PROCESSOR $component_dir/processors/multilang-topology-component.json
+    #post /streams/componentbundles/PROCESSOR $component_dir/sinks/stage-topology-component
+    #post /streams/componentbundles/ACTION $component_dir/sinks/transform-action-topology-component
+    #post /streams/componentbundles/TRANSFORM $component_dir/sinks/projection-transform-topology-component
+    #post /streams/componentbundles/TRANSFORM $component_dir/sinks/enrichment-transform-topology-component
     #note that the below is just a sample for ui to work with. Once UI is ready, all above will be replaced with new bundle components
     #add_sample_bundle
 
     # === service bundles ===
-    post /servicebundles ${service_dir}/v001__zookeeper-bundle.json
-    post /servicebundles ${service_dir}/v001__storm-bundle.json
-    post /servicebundles ${service_dir}/v001__kafka-bundle.json
-    post /servicebundles ${service_dir}/v001__hdfs-bundle.json
-    post /servicebundles ${service_dir}/v001__hbase-bundle.json
-    post /servicebundles ${service_dir}/v001__hive-bundle.json
-    post /servicebundles ${service_dir}/v001__email-bundle.json
+    post /servicebundles ${service_dir}/zookeeper-bundle.json
+    post /servicebundles ${service_dir}/storm-bundle.json
+    post /servicebundles ${service_dir}/kafka-bundle.json
+    post /servicebundles ${service_dir}/hdfs-bundle.json
+    post /servicebundles ${service_dir}/hbase-bundle.json
+    post /servicebundles ${service_dir}/hive-bundle.json
+    post /servicebundles ${service_dir}/email-bundle.json
 }
 
 function add_roles_and_users {
