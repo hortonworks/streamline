@@ -1,0 +1,13 @@
+ Bootstrap script
+-----------------------
+A new configuration can be ingest to streamline with help of bootstrap.sh script in following two ways:
+
+1) If its a new configuration
+    a) Add a new shell script or modify the latest shell script under bootstrap/shell directory following v[0-9][0-9][0-9] prefix.
+    b) Add the JSON configuration under bootstrap/* directory
+    c) Ingest this configuration as a POST call from the shell script in step a)
+
+2) If existing configuration has to be modified
+    a) Add a new shell script or modify the latest shell script under bootstrap/shell directory following v[0-9][0-9][0-9] prefix.
+    b) Modify the existing JSON configuration under bootstrap/* directory
+    c) Ingest the latest configuration as a PUT call from the shell script in step a)
