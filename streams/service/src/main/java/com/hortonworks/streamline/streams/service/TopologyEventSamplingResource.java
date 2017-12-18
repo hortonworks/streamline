@@ -2,11 +2,15 @@ package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyComponent;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.logsearch.EventSearchCriteria;
+import com.hortonworks.streamline.streams.logsearch.LogSearchCriteria;
+import com.hortonworks.streamline.streams.logsearch.topology.service.TopologyLogSearchService;
 import com.hortonworks.streamline.streams.sampling.service.TopologySampling;
 import com.hortonworks.streamline.streams.sampling.service.TopologySamplingService;
 import com.hortonworks.streamline.streams.security.Roles;
@@ -26,6 +30,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import java.util.List;
+
+import static com.hortonworks.streamline.streams.catalog.Topology.NAMESPACE;
 import static com.hortonworks.streamline.streams.security.Permission.EXECUTE;
 import static com.hortonworks.streamline.streams.security.Permission.READ;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -40,13 +47,16 @@ public class TopologyEventSamplingResource {
 
     private final StreamlineAuthorizer authorizer;
     private final StreamCatalogService catalogService;
+    private final TopologyLogSearchService logSearchService;
     private TopologySamplingService samplingService;
 
     public TopologyEventSamplingResource(StreamlineAuthorizer authorizer,
                                          TopologySamplingService samplingService,
+                                         TopologyLogSearchService logSearchService,
                                          StreamCatalogService catalogService) {
         this.authorizer = authorizer;
         this.samplingService = samplingService;
+        this.logSearchService = logSearchService;
         this.catalogService = catalogService;
     }
 
@@ -193,45 +203,36 @@ public class TopologyEventSamplingResource {
     }
 
     @GET
-    @Path("/topologies/{topologyId}/component/{componentId}/events")
+    @Path("/topologies/{topologyId}/events")
     @Timed
-    public Response getSampledEvents(@PathParam("topologyId") Long topologyId,
-                                     @PathParam("componentId") Long componentId,
-                                     @QueryParam("count") Integer count,
-                                     @QueryParam("desc") Boolean desc,
-                                   @Context SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
-                Topology.NAMESPACE, topologyId, READ, EXECUTE);
+    public Response searchEvents(@PathParam("topologyId") Long topologyId,
+                                 @QueryParam("componentName") List<String> componentNames,
+                                 @QueryParam("searchString") String searchString,
+                                 @QueryParam("searchEventId") String searchEventId,
+                                 @QueryParam("from") Long from,
+                                 @QueryParam("to") Long to,
+                                 @QueryParam("start") Integer start,
+                                 @QueryParam("limit") Integer limit,
+                                 @QueryParam("ascending") Boolean ascending,
+                                 @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                NAMESPACE, topologyId, READ);
         Topology topology = catalogService.getTopology(topologyId);
-        TopologyComponent topologyComponent = catalogService.getTopologyComponent(topologyId, componentId);
-        if (topology != null && topologyComponent != null) {
-            String asUser = WSUtils.getUserFromSecurityContext(securityContext);
-            TopologySampling.EventQueryParams qps = buildEventQueryParams(count, desc);
-            TopologySampling.SampledEvents sampledEvents = samplingService.getSampledEvents(topology, topologyComponent, qps, asUser);
-            SamplingResponse response = SamplingResponse.of(topologyId)
-                    .componentId(componentId)
-                    .success(true)
-                    .events(sampledEvents)
-                    .build();
-            return WSUtils.respondEntity(response, OK);
+        if (topology != null) {
+            if (from == null) {
+                throw BadRequestException.missingParameter("from");
+            }
+            if (to == null) {
+                throw BadRequestException.missingParameter("to");
+            }
+
+            EventSearchCriteria criteria = new EventSearchCriteria(String.valueOf(topologyId),
+                    componentNames, searchString, searchEventId, from, to, start, limit, ascending);
+
+            return WSUtils.respondEntity(logSearchService.searchEvent(topology, criteria), OK);
         }
 
-        throw EntityNotFoundException.byId(buildTopologyComponentId(topologyId, componentId));
-    }
-
-    private TopologySampling.EventQueryParams buildEventQueryParams(Integer count, Boolean desc) {
-        return new TopologySampling.EventQueryParams() {
-            @Override
-            public int count() {
-                return count == null ? 10 : count;
-            }
-
-            @Override
-            public boolean desc() {
-                return desc == null ? true : desc;
-            }
-
-        };
+        throw EntityNotFoundException.byId(topologyId.toString());
     }
 
     private void ensureValidSamplingPct(Integer pct) {

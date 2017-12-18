@@ -17,7 +17,6 @@ package com.hortonworks.streamline.streams.logsearch;
 
 import com.hortonworks.streamline.common.exception.ConfigException;
 
-import java.util.List;
 import java.util.Map;
 
 public interface TopologyLogSearch {
@@ -25,4 +24,6 @@ public interface TopologyLogSearch {
     void init (Map<String, Object> conf) throws ConfigException;
 
     LogSearchResult search(LogSearchCriteria criteria);
+
+    EventSearchResult searchEvent(EventSearchCriteria criteria);
 }
