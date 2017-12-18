@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+
+    <lst name="responseHeader">
+        <int name="status">0</int>
+        <int name="QTime">9</int>
+        <lst name="params">
+            <str name="q">*:*</str>
+            <str name="indent">on</str>
+            <arr name="fq">
+                <str>type:storm_worker_event</str>
+                <str>sdi_streamline_topology_id:11</str>
+            </arr>
+            <str name="sort">logtime desc</str>
+            <str name="rows">1</str>
+            <str name="wt">xml</str>
+            <str name="_">1511508905220</str>
+        </lst>
+    </lst>
+    <result name="response" numFound="1450" start="0">
+        <doc>
+            <str name="cluster">cl1</str>
+            <str name="sdi_storm_worker_port">6700</str>
+            <str name="level">INFO</str>
+            <long name="event_count">1</long>
+            <str name="ip">8.8.8.8</str>
+            <str name="sdi_storm_topology_id">streamline-11-Simple-YelpReview-11-1513052565</str>
+            <str name="type">storm_worker_event</str>
+            <str name="sdi_streamline_component_name">RULE</str>
+            <long name="seq_num">23076</long>
+            <str name="path">/var/log/storm/workers-artifacts/streamline-11-Simple-YelpReview-11-1513052565/6700/events.log</str>
+            <str name="sdi_streamline_topology_id">11</str>
+            <str name="host">host1</str>
+            <str name="sdi_streamline_topology_name">SimpleTopology</str>
+            <str name="sdi_streamline_event_id">b7715c60-74ad-43dd-814a-8a40403a31bc</str>
+            <str name="sdi_streamline_root_ids">[8e1bd283-1146-43c9-b7d0-16884beb2011]</str>
+            <str name="sdi_streamline_parent_ids">[8e1bd283-1146-43c9-b7d0-16884beb2011]</str>
+            <str name="sdi_streamline_event_fields_and_values">{user_id=Sjb5e5-gKoLXueFDMc2R8Q, review_id=2_Ru_ASf75kU303rdQjFfQ, stars=4, date=2013-04-25, business_id=KayYbHCt-RkbGcPdGOThNg, type=review, votes={funny=0, useful=0, cool=0}}</str>
+            <str name="sdi_streamline_event_headers">{rootIds=[8e1bd283-1146-43c9-b7d0-16884beb2011], parentIds=[8e1bd283-1146-43c9-b7d0-16884beb2011], sourceComponentName=RULE}</str>
+            <str name="id">f2410216-accc-4b20-bd86-fd329a1c0b88</str>
+            <date name="logtime">2017-12-15T16:46:35.229Z</date>
+            <str name="event_md5">1513356395229-1538509141836586162</str>
+            <int name="logfile_line_number">5197</int>
+            <str name="_ttl_">+7DAYS</str>
+            <date name="_expire_at_">2017-12-24T07:09:56.774Z</date>
+            <long name="_version_">1587014110358274051</long></doc>
+    </result>
+</response>

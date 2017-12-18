@@ -19,6 +19,8 @@ import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
 import com.hortonworks.streamline.streams.cluster.container.ContainingNamespaceAwareContainer;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+import com.hortonworks.streamline.streams.logsearch.EventSearchCriteria;
+import com.hortonworks.streamline.streams.logsearch.EventSearchResult;
 import com.hortonworks.streamline.streams.logsearch.LogSearchCriteria;
 import com.hortonworks.streamline.streams.logsearch.LogSearchResult;
 import com.hortonworks.streamline.streams.logsearch.TopologyLogSearch;
@@ -39,6 +41,11 @@ public class TopologyLogSearchService implements ContainingNamespaceAwareContain
   public LogSearchResult search(Topology topology, LogSearchCriteria criteria) {
     TopologyLogSearch topologyLogSearch = getTopologyLogSearchInstance(topology);
     return topologyLogSearch.search(criteria);
+  }
+
+  public EventSearchResult searchEvent(Topology topology, EventSearchCriteria criteria) {
+    TopologyLogSearch topologyLogSearch = getTopologyLogSearchInstance(topology);
+    return topologyLogSearch.searchEvent(criteria);
   }
 
   @Override

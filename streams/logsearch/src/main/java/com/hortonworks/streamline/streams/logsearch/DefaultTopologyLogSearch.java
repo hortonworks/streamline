@@ -32,4 +32,10 @@ public class DefaultTopologyLogSearch implements TopologyLogSearch {
     // no-op. just returning empty result
     return new LogSearchResult(0L, Collections.emptyList());
   }
+
+  @Override
+  public EventSearchResult searchEvent(EventSearchCriteria criteria) {
+    // no-op. just returning empty result
+    return new EventSearchResult(0L, Collections.emptyList());
+  }
 }
