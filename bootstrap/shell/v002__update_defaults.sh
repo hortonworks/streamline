@@ -155,21 +155,21 @@ echo "User/Role bundle Root dir: ${user_role_dir}"
 
 function update_bundles {
     # === Source ===
-    put_topology_component_bundle /streams/componentbundles/SOURCE ${component_dir}/sources/v002__kafka-source-topology-component.json KAFKA
+    put_topology_component_bundle /streams/componentbundles/SOURCE ${component_dir}/sources/kafka-source-topology-component.json KAFKA
     # === Processor ===
-    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/v001__rtjoin-bolt-topology-component.json
+    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/rtjoin-bolt-topology-component.json
     # === Sink ===
-    put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v002__hdfs-sink-topology-component.json HDFS
-    put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v002__jdbc-sink-topology-component.json JDBC
-    put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v002__hive-sink-topology-component.json HIVE
-    put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/v002__druid-sink-topology-component.json DRUID
+    put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/hdfs-sink-topology-component.json HDFS
+    put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/jdbc-sink-topology-component.json JDBC
+    put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/hive-sink-topology-component.json HIVE
+    put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/druid-sink-topology-component.json DRUID
     # === Topology ===
-    put_topology_component_bundle /streams/componentbundles/TOPOLOGY ${component_dir}/topology/v002__storm-topology-component.json TOPOLOGY
+    put_topology_component_bundle /streams/componentbundles/TOPOLOGY ${component_dir}/topology/storm-topology-component.json TOPOLOGY
     # === Service Bundle ===
-    put_service_bundle /servicebundles/KAFKA ${service_dir}/v002__kafka-bundle.json
-    put_service_bundle /servicebundles/STORM ${service_dir}/v002__storm-bundle.json
-    put_service_bundle /servicebundles/ZOOKEEPER ${service_dir}/v002__zookeeper-bundle.json
-    post /servicebundles ${service_dir}/v001__druid-bundle.json
+    put_service_bundle /servicebundles/KAFKA ${service_dir}/kafka-bundle.json
+    put_service_bundle /servicebundles/STORM ${service_dir}/storm-bundle.json
+    put_service_bundle /servicebundles/ZOOKEEPER ${service_dir}/zookeeper-bundle.json
+    post /servicebundles ${service_dir}/druid-bundle.json
 }
 
 function add_udfs {
