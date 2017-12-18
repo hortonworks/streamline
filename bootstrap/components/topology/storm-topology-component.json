@@ -39,6 +39,14 @@
         "type": "string"
       },
       {
+        "uiName": "Number of event sampling tasks",
+        "fieldName": "topology.eventlogger.executors",
+        "isOptional": true,
+        "tooltip": "The number of event sampling tasks to create.",
+        "type": "number",
+        "defaultValue": 1
+      },
+      {
         "uiName": "Clusters Security Config",
         "fieldName": "clustersSecurityConfig",
         "tooltip": "Clusters Security Configuration",

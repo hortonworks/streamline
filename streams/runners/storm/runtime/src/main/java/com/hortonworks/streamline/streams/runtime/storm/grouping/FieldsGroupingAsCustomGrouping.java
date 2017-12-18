@@ -19,7 +19,7 @@ import org.apache.storm.generated.GlobalStreamId;
 import org.apache.storm.grouping.CustomStreamGrouping;
 import org.apache.storm.task.WorkerTopologyContext;
 import com.hortonworks.streamline.streams.StreamlineEvent;
-import com.hortonworks.streamline.streams.common.StreamlineEventUtils;
+import com.hortonworks.streamline.streams.runtime.storm.StreamlineRuntimeUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,7 +50,7 @@ public class FieldsGroupingAsCustomGrouping implements CustomStreamGrouping {
         StreamlineEvent streamlineEvent = (StreamlineEvent) values.get(0);
         List<Object> groupByObjects = new ArrayList<>(groupingFields.size());
         for (String groupingField: groupingFields) {
-            groupByObjects.add(StreamlineEventUtils.getFieldValue(streamlineEvent, groupingField));
+            groupByObjects.add(StreamlineRuntimeUtil.getFieldValue(streamlineEvent, groupingField));
         }
         int taskIndex = (Arrays.deepHashCode(groupByObjects.toArray()) & 0x7FFFFFFF) % targetTasks.size();
         result.add(targetTasks.get(taskIndex));
