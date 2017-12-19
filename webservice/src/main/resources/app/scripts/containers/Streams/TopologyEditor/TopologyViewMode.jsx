@@ -17,7 +17,7 @@ import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import {Link} from 'react-router';
 import moment from 'moment';
-import DatetimeRangePicker from 'react-bootstrap-datetimerangepicker';
+import DateTimePickerDropdown from '../../../components/DateTimePickerDropdown';
 import {DropdownButton, MenuItem, InputGroup, OverlayTrigger, Tooltip, Button, ButtonGroup, ToggleButtonGroup,
   ToggleButton, Panel} from 'react-bootstrap';
 import Utils from '../../../utils/Utils';
@@ -40,130 +40,9 @@ class TopologyViewMode extends Component {
       displayTime: '0:0',
       sampling: 0,
       selectedMode: props.viewModeData.selectedMode,
-      showDateRangeSection: false,
       startDate: props.startDate,
       endDate: props.endDate,
-      showLogSearchBtn: props.showLogSearchBtn,
-      rangesInHoursMins: {
-        'Last 5 Minutes': [
-          moment().subtract(5, 'minutes'),
-          moment()
-        ],
-        'Last 10 Minutes': [
-          moment().subtract(10, 'minutes'),
-          moment()
-        ],
-        'Last 30 Minutes': [
-          moment().subtract(30, 'minutes'),
-          moment()
-        ],
-        'Last 1 Hour': [
-          moment().subtract(1, 'hours'),
-          moment()
-        ],
-        'Last 3 Hours': [
-          moment().subtract(3, 'hours'),
-          moment()
-        ],
-        'Last 6 Hours': [
-          moment().subtract(6, 'hours'),
-          moment()
-        ],
-        'Last 12 Hours': [
-          moment().subtract(12, 'hours'),
-          moment()
-        ],
-        'Last 24 Hours': [
-          moment().subtract(1, 'days'),
-          moment()
-        ]
-      },
-      rangesInDaysToYears: {
-        'Last 7 Days': [
-          moment().subtract(6, 'days'),
-          moment()
-        ],
-        'Last 30 Days': [
-          moment().subtract(29, 'days'),
-          moment()
-        ],
-        'Last 60 Days': [
-          moment().subtract(59, 'days'),
-          moment()
-        ],
-        'Last 90 Days': [
-          moment().subtract(89, 'days'),
-          moment()
-        ],
-        'Last 6 months': [
-          moment().subtract(5, 'month'),
-          moment()
-        ],
-        'Last 1 year': [
-          moment().subtract(12, 'month'),
-          moment()
-        ],
-        'Last 2 years': [
-          moment().subtract(24, 'month'),
-          moment()
-        ],
-        'Last 5 years': [
-          moment().subtract(60, 'month'),
-          moment()
-        ]
-      },
-      rangesPrevious: {
-        'Yesterday': [
-          moment().startOf('day').subtract(1, 'days'),
-          moment().endOf('day').subtract(1, 'days')
-        ],
-        'Day before yesterday': [
-          moment().startOf('day').subtract(2, 'days'),
-          moment().endOf('day').subtract(2, 'days')
-        ],
-        'This day last week': [
-          moment().subtract(7, 'days').startOf('day'),
-          moment().subtract(7, 'days').endOf('day')
-        ],
-        'Previous week': [
-          moment().subtract(1, 'week').startOf('week'),
-          moment().subtract(1, 'week').endOf('week')
-        ],
-        'Previous month': [
-          moment().subtract(1, 'month').startOf('month'),
-          moment().subtract(1, 'month').endOf('month')
-        ],
-        'Previous year': [
-          moment().subtract(1, 'year').startOf('year'),
-          moment().subtract(1, 'year').endOf('year')
-        ]
-      },
-      ranges: {
-        'Today': [
-          moment().startOf('day'),
-          moment().endOf('day')
-        ],
-        'Today so far': [
-          moment().startOf('day'),
-          moment()
-        ],
-        'This week': [
-          moment().startOf('week'),
-          moment().endOf('week')
-        ],
-        'This week so far': [
-          moment().startOf('week'),
-          moment()
-        ],
-        'This month': [
-          moment().startOf('month'),
-          moment().endOf('month')
-        ],
-        'This year': [
-          moment().startOf('year'),
-          moment().endOf('year')
-        ]
-      }
+      showLogSearchBtn: props.showLogSearchBtn
     };
     this.stormClusterChkID(props.stormClusterId);
   }
@@ -250,29 +129,6 @@ class TopologyViewMode extends Component {
     let versionId = event.target.dataset.versionId;
     this.props.handleVersionChange(versionId);
   }
-  showHideDateRangePicker = (isOpen, e, source) => {
-    this.setState({showDateRangeSection: !this.state.showDateRangeSection});
-  }
-  handleEvent(dateLabel, e, datePicker) {
-    let obj = {};
-    obj[dateLabel] = datePicker.startDate;
-    this.setState(obj);
-  }
-  handleApplyBtnClick = () => {
-    this.props.datePickerCallback(this.state.startDate, this.state.endDate);
-    this.setState({showDateRangeSection: !this.state.showDateRangeSection});
-  }
-  handleSelectQuickRange (rangesObj, e) {
-    if(e.target.nodeName == 'A' || e.target.nodeName == 'LI') {
-      let currentRange = rangesObj[e.target.textContent];
-      this.setState({
-        startDate: currentRange[0], endDate: currentRange[1]
-      }, () => {
-        this.props.datePickerCallback(this.state.startDate, this.state.endDate);
-      });
-    }
-  }
-
   getTitleFromId(id) {
     if (id && this.props.versionsArr != undefined) {
       let obj = this.props.versionsArr.find((o) => {
@@ -444,92 +300,13 @@ class TopologyViewMode extends Component {
             </div>
           : null}
           <div className="pull-right" style={{marginLeft: '10px'}}>
-          <DropdownButton rootCloseEvent={null} title={datePickerTitleContent} id="datepicker-dropdown" pullRight open={this.state.showDateRangeSection} onToggle={this.showHideDateRangePicker} disabled={!isAppRunning}>
-            <div className="row">
-              <div className="col-sm-4">
-                <div className="sub-heading">Time Range</div>
-                <label>FROM</label>
-                <DatetimeRangePicker
-                  singleDatePicker
-                  timePicker timePicker24Hour timePickerSeconds autoUpdateInput={true}
-                  showDropdowns
-                  locale={locale}
-                  startDate={this.state.startDate}
-                  onApply={this.handleEvent.bind(this, 'startDate')}
-                >
-                  <InputGroup className="selected-date-range-btn">
-                    <Button>
-                      <div className="pull-right">
-                        <i className="fa fa-calendar"/>
-                      </div>
-                      <span className="pull-left">{labelStart}</span>&nbsp;
-                    </Button>
-                  </InputGroup>
-                </DatetimeRangePicker>
-                <label>TO</label>
-                <DatetimeRangePicker
-                  singleDatePicker
-                  timePicker timePicker24Hour timePickerSeconds
-                  showDropdowns
-                  locale={locale}
-                  startDate={this.state.endDate}
-                  autoUpdateInput={true}
-                  onApply={this.handleEvent.bind(this, 'endDate')}
-                >
-                  <InputGroup className="selected-date-range-btn">
-                    <Button>
-                      <div className="pull-right">
-                        <i className="fa fa-calendar"/>
-                      </div>
-                      <span className="pull-left">{labelEnd}</span>&nbsp;
-                    </Button>
-                  </InputGroup>
-                </DatetimeRangePicker>
-                <Button type="button" className="btn-success pull-right row-margin-top" onClick={this.handleApplyBtnClick}>APPLY</Button>
-              </div>
-              <div className="quick-ranges col-sm-8">
-                <div className="sub-heading">Quick Ranges</div>
-                <div className="row">
-                  <div className="col-sm-3">
-                    <ul onClick={this.handleSelectQuickRange.bind(this, rangesInDaysToYears)}>
-                      {
-                        _.keys(rangesInDaysToYears).map((r, i)=>{
-                          return <li key={i} className={Utils.getTimeDiffInMinutes(rangesInDaysToYears[r][0], startDate) == 0 && Utils.getTimeDiffInMinutes(rangesInDaysToYears[r][1], endDate) == 0 ? 'active' : ''}><a>{r}</a></li>;
-                        })
-                      }
-                    </ul>
-                  </div>
-                  <div className="col-sm-3">
-                    <ul onClick={this.handleSelectQuickRange.bind(this, rangesPrevious)}>
-                      {
-                        _.keys(rangesPrevious).map((r, i)=>{
-                          return <li key={i} className={Utils.getTimeDiffInMinutes(rangesPrevious[r][0], startDate) == 0 && Utils.getTimeDiffInMinutes(rangesPrevious[r][1], endDate) == 0 ? 'active' : ''}><a>{r}</a></li>;
-                        })
-                      }
-                    </ul>
-                  </div>
-                  <div className="col-sm-3">
-                    <ul onClick={this.handleSelectQuickRange.bind(this, ranges)}>
-                      {
-                        _.keys(ranges).map((r, i)=>{
-                          return <li key={i} className={Utils.getTimeDiffInMinutes(ranges[r][0], startDate) == 0 && Utils.getTimeDiffInMinutes(ranges[r][1], endDate) == 0 ? 'active' : ''}><a>{r}</a></li>;
-                        })
-                      }
-                    </ul>
-                  </div>
-                  <div className="col-sm-3">
-                    <ul onClick={this.handleSelectQuickRange.bind(this, rangesInHoursMins)}>
-                      {
-                        _.keys(rangesInHoursMins).map((r, i)=>{
-                          return <li key={i} className={Utils.getTimeDiffInMinutes(rangesInHoursMins[r][0], startDate) == 0 && Utils.getTimeDiffInMinutes(rangesInHoursMins[r][1], endDate) == 0 ? 'active' : ''}><a>{r}</a></li>;
-                        })
-                      }
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              </div>
-          </DropdownButton>
+            <DateTimePickerDropdown
+              dropdownId="datepicker-dropdown"
+              startDate={startDate}
+              endDate={endDate}
+              locale={locale}
+              isDisabled={!isAppRunning}
+              datePickerCallback={this.props.datePickerCallback} />
           </div>
           <div className="pull-right">
             {stormViewUrl.length
