@@ -1,6 +1,6 @@
 {
   "type": "PROCESSOR",
-  "name": "Realtime Join",
+  "name": "Rolling Window Join",
   "subType": "RT-JOIN",
   "builtin": true,
   "streamingEngine": "STORM",
@@ -36,6 +36,7 @@
         "isUserInput": false,
         "type": "enumstring",
         "options": [
+          "count",
           "milliseconds",
           "seconds",
           "minutes",
