@@ -39,7 +39,7 @@ class FieldSelector implements Serializable {
 
     String streamName;     // can be null;. StreamKind name can have '-' & '_'
     String[] field;        // nested field "x.y.z"  becomes => String["x","y","z"]. Field names can contain '-' & '_'
-    private String alias;  // can be null. In 'strm:x.y.z as z', here z is the alias (alias can contain '-', '_' &'.')
+    String alias;          // can be null. In 'strm:x.y.z as z', here z is the alias (alias can contain '-', '_' &'.')
     String outputName;     // either "stream1:x.y.z" or "x.y.z" (if stream unspecified) or just alias.
 
     public FieldSelector(String fieldDescriptor, RealtimeJoinBolt.StreamKind streamKind)  {

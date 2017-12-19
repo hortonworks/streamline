@@ -37,7 +37,7 @@ public class SLRealtimeJoinBoltFluxComponentTest {
                 "\"from\" : {\"stream\": \"orders\", \"seconds\" : 10, \"unique\" : false },\n" +
                 "\n" +
                 "\"joins\" : [\n" +
-                "    { \"type\":\"inner\",  \"stream\":\"adImpressions\",  \"seconds\":20,  \"unique\":true,\n" +
+                "    { \"type\":\"inner\",  \"stream\":\"adImpressions\",  \"milliseconds\":20,  \"unique\":true,\n" +
                 "               \"conditions\" : [\n" +
                 "                  [ \"equal\",  \"adImpressions:userID\",  \"orders:userId\" ],\n" +
                 "                  [ \"ignoreCase\", \"product\", \"orders:product\"]\n" +

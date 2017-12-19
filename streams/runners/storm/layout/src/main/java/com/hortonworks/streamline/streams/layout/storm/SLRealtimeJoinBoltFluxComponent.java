@@ -18,6 +18,7 @@
 
 package com.hortonworks.streamline.streams.layout.storm;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,10 +29,10 @@ import java.util.stream.Stream;
 
 /* ---- Sample Json of whats expected from UI  ---
 {
-"from" : {"stream": "orders", "seconds/minutes/hours" : 10, "unique" : false },
+"from" : {"stream": "orders", "milliseconds/seconds/minutes/hours" : 10, "unique" : false },
 
 "joins" : [
-    { "type":"inner/left/right/outer",  "stream":"adImpressions",  "count/seconds/minutes/hours":10,  "unique":false,
+    { "type":"inner/left/right/outer",  "stream":"adImpressions",  "count/milliseconds/seconds/minutes/hours":10,  "unique":false,
                "conditions" : [
                   [ "equal",  "adImpressions:userID",  "orders:userId" ],
                   [ "ignoreCase", "product", "orders:product"]
@@ -49,7 +50,7 @@ public class SLRealtimeJoinBoltFluxComponent extends AbstractFluxComponent {
     @Override
     protected void generateComponent()  {
         String boltId        = "rt_joinBolt_" + UUID_FOR_COMPONENTS;
-        String boltClassName = "com.hortonworks.streamline.streams.runtime.storm.bolt.query.RealtimeJoinBolt";
+        String boltClassName = "com.hortonworks.streamline.streams.runtime.storm.bolt.query.SLRealtimeJoinBolt";
 
         List<String> boltConstructorArgs = new ArrayList<>();
 
@@ -120,8 +121,8 @@ public class SLRealtimeJoinBoltFluxComponent extends AbstractFluxComponent {
             if( count != null ) {
                 result.add(new Object[]{fromStream, count, unique});
             } else {
-                String durationId = addDurationToComponents(fromConf);
-                result.add(new Object[]{fromStream, getRefYaml(durationId), unique});
+                Long durationMs = getDurationInMillis(fromConf);
+                result.add(new Object[]{fromStream, durationMs, unique});
             }
         }
         {  // *Join()
@@ -130,16 +131,18 @@ public class SLRealtimeJoinBoltFluxComponent extends AbstractFluxComponent {
                 String stream = joinConf.get("stream").toString();
                 Boolean unique = (Boolean) joinConf.get("unique");
 
-                ArrayList<Map<String, String> > comparators = new ArrayList<>();
+                ArrayList<String> comparatorsRefs = new ArrayList<>();
                 for (ArrayList<String> condition : (ArrayList<ArrayList<String> >) joinConf.get("conditions")) {
-                    comparators.add( getRefYaml( addComparatorToComponents(condition) ) );
+                    comparatorsRefs.add( addComparatorToComponents(condition) );
                 }
+                Map<String, List<String> > comparators =  getRefListYaml(comparatorsRefs);
+
                 Integer count = (Integer) joinConf.get("count");
                 if (count!=null) {
-                    result.add(new Object[]{stream, count, unique, comparators.toArray()});
+                    result.add(new Object[]{stream, count, unique, comparators});
                 } else {
-                    String durationId = addDurationToComponents(joinConf);
-                    result.add(new Object[]{stream, getRefYaml(durationId), unique, comparators.toArray()});
+                    Long durationMs = getDurationInMillis(joinConf);
+                    result.add(new Object[]{stream, durationMs, unique, comparators});
                 }
             }
         }
@@ -163,9 +166,9 @@ public class SLRealtimeJoinBoltFluxComponent extends AbstractFluxComponent {
         String className = null;
         String methodName = condition.get(0);
         if (methodName.equalsIgnoreCase("equal"))
-             className = "com.hortonworks.streamline.streams.runtime.storm.bolt.query.SLCmp.Equal";
+             className = "com.hortonworks.streamline.streams.runtime.storm.bolt.query.SLCmp$Equal";
         else if (methodName.equalsIgnoreCase("ignoreCase"))
-             className = "com.hortonworks.streamline.streams.runtime.storm.bolt.query.SLCmp.IgnoreCase";
+             className = "com.hortonworks.streamline.streams.runtime.storm.bolt.query.SLCmp$IgnoreCase";
 
         List<String> constructorArgs = new ArrayList<>();
         for (int i = 1; i < condition.size(); i++) {
@@ -178,21 +181,35 @@ public class SLRealtimeJoinBoltFluxComponent extends AbstractFluxComponent {
 
     // Creates component for the Duration object and adds it to the components list
     // returns the component ID
-    private String addDurationToComponents(Map<String, Object> joinArgs) {
-        String componentId = "duration_" + UUID.randomUUID();
-        String className = "org.apache.storm.topology.base.BaseWindowedBolt.Duration";
+    private Long getDurationInMillis(Map<String, Object> joinArgs) {
+//        String componentId = "duration_" + UUID.randomUUID();
+//        String className = "org.apache.storm.topology.base.BaseWindowedBolt$Duration";
 
         // Find the TimeUnit.enums key in joinArgs .... secs/mins/millis/days/etc
         String units = Stream.of(TimeUnit.values()).map(TimeUnit::name).filter(
                 k -> joinArgs.containsKey(k.toLowerCase())
         ).findFirst().get();
+
         Integer duration = (Integer) joinArgs.get(units.toLowerCase());
 
-        List<String> constructorArgs = new ArrayList<>();
-        String json = "[" + duration + ", " + TimeUnit.valueOf(units) + "]";
-        constructorArgs.add(json);
-        this.addToComponents(this.createComponent(componentId, className, null, constructorArgs, null));
-        return componentId;
+        Long durationMs = null;
+        switch (TimeUnit.valueOf(units)) {
+            case HOURS:
+                durationMs = Duration.ofHours(duration).toMillis();
+                break;
+            case MINUTES:
+                durationMs = Duration.ofMinutes(duration).toMillis();
+                break;
+            case SECONDS:
+                durationMs = Duration.ofSeconds(duration).toMillis();
+                break;
+            case MILLISECONDS:
+                durationMs = Duration.ofMillis(duration).toMillis();
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported Unit : " + units);
+        }
+        return durationMs;
     }
 
 

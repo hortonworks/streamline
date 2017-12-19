@@ -24,14 +24,12 @@ import com.hortonworks.streamline.streams.runtime.storm.bolt.query.RealtimeJoinB
 import org.apache.storm.Constants;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
-import org.apache.storm.topology.base.BaseWindowedBolt;
 import org.apache.storm.tuple.*;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 public class TestRealtimeJoinBolt {
 
@@ -327,13 +325,13 @@ public class TestRealtimeJoinBolt {
     }
 
     @Test
-    public void testStreamlineMultiKey_InnerJoin_TimeRetention() throws Exception {
+    public void testStreamlineMultiKey_InnerJoin_TimeRetention_NoAlias() throws Exception {
         ArrayList<Tuple> orderStream = makeStreamLineEventStream("orders", orderFields, orders);
         ArrayList<Tuple> adImpressionStream = makeStreamLineEventStream("ads", adImpressionFields, adImpressions);
 
         SLRealtimeJoinBolt bolt = new SLRealtimeJoinBolt()
-                .from("orders", new BaseWindowedBolt.Duration(2, TimeUnit.SECONDS), false)
-                .innerJoin("ads", new BaseWindowedBolt.Duration(2, TimeUnit.SECONDS), false,  SLCmp.equal("orders:userId", "ads:userId")
+                .from("orders", 2000, false)
+                .innerJoin("ads", 2000, false,  SLCmp.equal("orders:userId", "ads:userId")
                                                               , SLCmp.ignoreCase("ads:product","orders:product") )
                 .select("orders:id,ads:userId,product,price");
 
@@ -354,6 +352,33 @@ public class TestRealtimeJoinBolt {
         Assert.assertEquals( 3, collector.actualResults.size() );
     }
 
+    @Test
+    public void testStreamlineMultiKey_InnerJoin_TimeRetention_WithAliases() throws Exception {
+        ArrayList<Tuple> orderStream = makeStreamLineEventStream("orders", orderFields, orders);
+        ArrayList<Tuple> adImpressionStream = makeStreamLineEventStream("ads", adImpressionFields, adImpressions);
+
+        SLRealtimeJoinBolt bolt = new SLRealtimeJoinBolt()
+            .from("orders", 2000, false)
+            .innerJoin("ads", 2000, false,  SLCmp.equal("orders:userId", "ads:userId")
+                , SLCmp.ignoreCase("ads:product","orders:product") )
+            .select("orders:id as orderid,ads:userId as userid,product as prodid,price");
+
+        MockTopologyContext context = new MockTopologyContext(bolt.getOutputFields());
+        MockCollector collector = new MockCollector(bolt.getOutputFields());
+        bolt.prepare(null, context, collector);
+
+        for (Tuple tuple : adImpressionStream) {
+            bolt.execute(tuple);
+        }
+        for (Tuple tuple : orderStream) {
+            bolt.execute(tuple);
+        }
+        Thread.sleep( Duration.ofSeconds(2).toMillis() );
+        bolt.execute(makeTickTuple());
+
+        printResults_StreamLine(collector);
+        Assert.assertEquals( 3, collector.actualResults.size() );
+    }
 
     private static ArrayList<Tuple> makeStream(String streamName, String[] fieldNames, Object[][] data) {
         ArrayList<Tuple> result = new ArrayList<>();
@@ -423,7 +448,7 @@ public class TestRealtimeJoinBolt {
         }
     }
 
-    static class MockCollector extends OutputCollector {
+    private static class MockCollector extends OutputCollector {
         private final String[] outputFields;
 
         public ArrayList<List<Object>> actualResults = new ArrayList<>();
