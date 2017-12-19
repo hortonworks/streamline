@@ -62,7 +62,9 @@ class TopologyComponentMetrics extends Component {
 
   render () {
     let {viewModeData, compData} = this.props;
-    let overviewMetrics = {}, timeSeriesMetrics = {};
+    const {componentLevelActionDetails} = viewModeData;
+    let overviewMetrics = {}, timeSeriesMetrics = {},samplingVal= 0,
+      logLevels = viewModeData.logTopologyLevel;
     let compObj = {};
     if (compData.parentType == 'SOURCE') {
       compObj = viewModeData.sourceMetrics.find((entity)=>{
@@ -143,7 +145,10 @@ class TopologyComponentMetrics extends Component {
       width: "20px",
       marginTop: "0px"
     }}/>;
-
+    if(!_.isEmpty(componentLevelActionDetails)){
+      const sampleObj =  _.find(componentLevelActionDetails.samplings, (sample) => sample.componentId === compData.nodeId);
+      samplingVal = sampleObj !== undefined && sampleObj.enabled ? sampleObj.duration : 0;
+    }
     return (
       <div>
       <div className="metric-bg top"></div>
@@ -205,7 +210,8 @@ class TopologyComponentMetrics extends Component {
       : ''
       }
       <div className="metric-bg bottom">
-        <span className="pull-right">Sampling: <span style={{color: '#2787ad'}}>None</span></span>
+        <span className="pull-left">Log: <span style={{color: '#2787ad'}}>{logLevels}</span></span>
+        <span className="pull-right">Sampling: <span style={{color: '#2787ad'}}>{samplingVal}%</span></span>
       </div>
       </div>
     );

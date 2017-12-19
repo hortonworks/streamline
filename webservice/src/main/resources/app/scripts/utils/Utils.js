@@ -749,6 +749,28 @@ const noSpecialCharString = function(string){
   return /^[a-zA-Z0-9_-]+$/.test(string);
 };
 
+const setTimoutFunc = function(callBack,timer){
+  return setTimeout(() => {
+    callBack();
+  },!!timer ? timer : 3000);
+};
+
+const populateEventFields = (data) => {
+  let list = [];
+  const nestedFields =  function(fieldObj,level){
+    _.map(_.keys(fieldObj), (key, i) => {
+      if(fieldObj[key].toString() === "[object Object]"){
+        const levelTemp = level > 0 ? level+1 : 1;
+        nestedFields(fieldObj[key], levelTemp);
+      } else {
+        list.push(<li key={key+i} style={{paddingLeft : level > 0 ? (10*level)+'px' : level+'px'}} className={level > 0 ? 'demo': ''}><span className='event-type' title={key}> {key}*</span> <span className='event-value' title={fieldObj[key]}>{fieldObj[key]}</span> </li>);
+      }
+    });
+  };
+  nestedFields(data.fieldsAndValues,0);
+  return list;
+};
+
 export default {
   sortArray,
   numberToMilliseconds,
@@ -790,5 +812,7 @@ export default {
   noSpecialCharString,
   getTimeDiffInMinutes,
   abbreviateNumber,
-  formatLatency
+  formatLatency,
+  setTimoutFunc,
+  populateEventFields
 };

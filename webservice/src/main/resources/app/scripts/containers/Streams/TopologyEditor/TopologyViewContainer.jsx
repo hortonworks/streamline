@@ -40,61 +40,7 @@ import ErrorStatus from '../../../components/ErrorStatus';
 import app_state from '../../../app_state';
 import UserRoleREST from '../../../rest/UserRoleREST';
 import TopologyViewModeMetrics from './TopologyViewModeMetrics';
-
-function collect(connect, monitor) {
-  return {connectDropTarget: connect.dropTarget()};
-}
-
-@DragDropContext(HTML5Backend)
-@DropTarget(ItemTypes.ComponentNodes, {}, collect)
-@observer
-class EditorGraph extends Component {
-  static propTypes = {
-    connectDropTarget: PropTypes.func.isRequired
-  };
-  constructor(props) {
-    super(props);
-    let left = window.innerWidth - 300;
-  }
-  render() {
-    const actualHeight = '470px';
-    const {
-      versionsArr,
-      connectDropTarget,
-      viewMode,
-      topologyId,
-      versionId,
-      graphData,
-      getModalScope,
-      setModalContent,
-      isAppRunning,
-      viewModeData,
-      startDate,
-      endDate,
-      compSelectCallback
-    } = this.props;
-    return connectDropTarget(
-      <div>
-        <div className="" style={{
-          height: actualHeight
-        }}>
-          <TopologyGraphComponent ref="TopologyGraph" height={parseInt(actualHeight, 10)} data={graphData}
-            topologyId={topologyId}
-            versionId={versionId}
-            versionsArr={versionsArr}
-            viewMode={viewMode}
-            getModalScope={getModalScope}
-            setModalContent={setModalContent}
-            viewModeData={viewModeData}
-            startDate={startDate}
-            endDate={endDate}
-            compSelectCallback={compSelectCallback}
-            isAppRunning={isAppRunning} />
-        </div>
-      </div>
-    );
-  }
-}
+import EditorGraph from '../../../components/EditorGraph';
 
 @observer
 class TopologyViewContainer extends Component {
@@ -138,7 +84,11 @@ class TopologyViewContainer extends Component {
       selectedMode: 'Overview',
       selectedComponentId: '',
       overviewMetrics: {},
-      timeSeriesMetrics: {}
+      timeSeriesMetrics: {},
+      componentLevelActionDetails:{},
+      sampleTopologyLevel : '',
+      logTopologyLevel : 'None',
+      durationTopologyLevel :  0
     }
   };
 
@@ -237,6 +187,7 @@ class TopologyViewContainer extends Component {
           }
 
           this.graphData.nodes = TopologyUtils.syncNodeData(sourcesNode, processorsNode, sinksNode, this.graphData.metaInfo, this.sourceConfigArr, this.processorConfigArr, this.sinkConfigArr);
+          this.fetchComponentLevelDetails(this.graphData.nodes);
 
           this.graphData.uinamesList = [];
           this.graphData.nodes.map(node => {
@@ -276,6 +227,7 @@ class TopologyViewContainer extends Component {
           });
           this.customProcessors = this.getCustomProcessors();
         });
+        this.fetchTopologyLevelSampling();
         this.fetchCatalogInfoAndMetrics(this.state.startDate.toDate().getTime(), this.state.endDate.toDate().getTime());
       }
     });
@@ -298,6 +250,114 @@ class TopologyViewContainer extends Component {
       }
     };
   }
+
+  fetchTopologyLevelSampling(){
+    const {viewModeData} = this.state;
+    ViewModeREST.getTopologySamplingStatus(this.topologyId).then((result)=>{
+      if(result.responseMessage !== undefined){
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
+      } else {
+        viewModeData.sampleTopologyLevel = result.enabled ? Number(result.pct) : 0;
+        this.setState({viewModeData});
+      }
+    });
+  }
+
+  handleTopologyLevelDetails = (type,value) => {
+    switch(type){
+    case 'LOGS' : this.handleTopologyLevelLogs(value);
+      break;
+    case 'SAMPLE' : this.topologyLevelInputSampleChange(value);
+      break;
+    case 'DURATIONS' : this.handleTopologyLevelDurations(value);
+      break;
+    default : break;
+    }
+  }
+
+  handleTopologyLevelLogs = (value) => {
+    let tempViewModeData = JSON.parse(JSON.stringify(this.state.viewModeData));
+    tempViewModeData.logTopologyLevel = value;
+    this.setState({viewModeData : tempViewModeData},() => {
+      this.triggerUpdateGraph();
+    });
+  }
+
+  handleTopologyLevelDurations = (value) => {
+    let tempViewModeData = JSON.parse(JSON.stringify(this.state.viewModeData));
+    tempViewModeData.durationTopologyLevel = value;
+    this.setState({viewModeData : tempViewModeData}, () => {
+      this.triggerUpdateGraph();
+    });
+  }
+
+  topologyLevelInputSampleChange = (value) => {
+    let tempViewModeData = _.cloneDeep(this.state.viewModeData);
+    if(value !== 'disable' && value !== 'enable'){
+      tempViewModeData.sampleTopologyLevel = value;
+      this.setState({viewModeData : tempViewModeData});
+    } else if(value === 'enable' || value === 'disable'){
+      this.handleTopologyLevelSample(value);
+    }
+  }
+
+  handleTopologyLevelSample = (value) => {
+    const {viewModeData} = this.state;
+    const {sampleTopologyLevel} = viewModeData;
+    const val = value !== 'disable' ? sampleTopologyLevel : '';
+    const status = value === 'disable' ? 'disable' : 'enable';
+    ViewModeREST.postTopologySamplingStatus(this.topologyId,status,val)
+    .then((res)=>{
+      if(res.responseMessage !== undefined){
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={res.responseMessage}/>, '', toastOpt);
+      } else {
+        viewModeData.sampleTopologyLevel = res.pct !== undefined ? res.pct : 0;
+        this.setState({viewModeData}, () => {
+          const msg = <strong>Sampling {status} successfully</strong>;
+          FSReactToastr.success(msg);
+          this.fetchComponentLevelDetails(this.graphData.nodes);
+        });
+      }
+    });
+  }
+
+  fetchComponentLevelDetails = (allGraphNodes) => {
+    let promiseArr=[],that=this;
+    _.map(allGraphNodes, (node) => {
+      promiseArr.push(ViewModeREST.getComponentSamplingStatus(this.topologyId,node.nodeId));
+    });
+
+    Promise.all(promiseArr).then((results) => {
+      let errorMsg='';
+      _.map(results, (result) => {
+        if(result.responseMessage !== undefined){
+          errorMsg = result.responseMessage;
+        }
+      });
+      if(!!errorMsg){
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={errorMsg}/>, '', toastOpt);
+      }
+      let compSampling=[];
+      _.map(results, (result) => {
+        // This is to Identify the Samplings API, Which response contains of percentage 'pct'
+        if(result.pct){
+          const val = result.enable ? result.pct : that.state.viewModeData.sampleTopologyLevel ;
+          compSampling.push(this.populateComponentLevelSample(result));
+        }
+        const viewDataObj =  JSON.parse(JSON.stringify(that.state.viewModeData));
+        viewDataObj.componentLevelActionDetails.samplings = compSampling;
+        viewDataObj.componentLevelActionDetails.logs = [];
+        viewDataObj.componentLevelActionDetails.durations = [];
+        that.setState({viewModeData : viewDataObj},() => {
+          this.triggerUpdateGraph();
+        });
+      });
+    });
+  }
+
   fetchCatalogInfoAndMetrics(fromTime, toTime) {
     let promiseArr = [
       ViewModeREST.getTopologyMetrics(this.topologyId, fromTime, toTime),
@@ -376,6 +436,18 @@ class TopologyViewContainer extends Component {
     viewModeData.selectedMode = selectedMode;
     this.setState({
       viewModeData: viewModeData
+    }, () => {
+      if(viewModeData.selectedMode === "Sample"){
+        this.context.router.push({
+          pathname : 'sampling/'+this.topologyId,
+          state : {
+            graphData : this.graphData,
+            selectedComponentId : this.state.viewModeData.selectedComponentId,
+            topologyId : this.topologyId,
+            topologyName : this.state.topologyName
+          }
+        });
+      }
     });
   }
   getModalScope(node) {
@@ -528,6 +600,46 @@ class TopologyViewContainer extends Component {
   zoomAction(zoomType) {
     this.refs.EditorGraph.child.decoratedComponentInstance.refs.TopologyGraph.decoratedComponentInstance.zoomAction(zoomType);
   }
+
+  componentLevelAction = (type,componentId,value) => {
+    if(type === "SAMPLE"){
+      this.postComponentLevelSample(this.topologyId,componentId,value);
+    }
+  }
+
+  postComponentLevelSample = (topologyId,componentId,value) => {
+    const val = value === 'disable' ? '' : value;
+    const status = value === 'disable' ? 'disable' : 'enable';
+    ViewModeREST.postComponentSamplingStatus(topologyId,componentId,status,val).then((result) => {
+      if(result.responseMessage !== undefined){
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
+      } else {
+        const tempViewMode = JSON.parse(JSON.stringify(this.state.viewModeData));
+        result.enabled = status === "disable" ? false : true;
+        const newObj = this.populateComponentLevelSample(result);
+        const index = _.findIndex(tempViewMode.componentLevelActionDetails.samplings, (old) => old.componentId === newObj.componentId);
+        if(index !== -1){
+          tempViewMode.componentLevelActionDetails.samplings[index] = newObj;
+        }
+        this.setState({viewModeData : tempViewMode}, () => {
+          const msg = <strong>Component sampling {status} successfully</strong>;
+          FSReactToastr.success(msg);
+          this.triggerUpdateGraph();
+        });
+      }
+    });
+  }
+
+  populateComponentLevelSample = (sampleObj) => {
+    const val = sampleObj.enabled ? sampleObj.pct : 0 ;
+    return {componentId : sampleObj.componentId, duration : val,enabled : sampleObj.enabled };
+  }
+
+  triggerUpdateGraph = () => {
+    this.refs.EditorGraph.child.decoratedComponentInstance.refs.TopologyGraph.decoratedComponentInstance.updateGraph();
+  }
+
   render() {
     const {fetchLoader,allACL, viewModeData, startDate, endDate} = this.state;
     let nodeType = this.node
@@ -553,6 +665,7 @@ class TopologyViewContainer extends Component {
                     nameSpaceName={this.nameSpace}
                     namespaceId={this.namespaceId}
                     showLogSearchBtn={this.showLogSearch}
+                    topologyLevelDetailsFunc={this.handleTopologyLevelDetails}
                    />,
                   <div id="viewMode" className="graph-bg" key={"2"}>
                     <div className="zoom-btn-group">
@@ -571,7 +684,10 @@ class TopologyViewContainer extends Component {
                       startDate={startDate}
                       endDate={endDate}
                       compSelectCallback={this.compSelectCallback}
-                      isAppRunning={this.state.isAppRunning} />
+                      isAppRunning={this.state.isAppRunning}
+                      componentLevelAction={this.componentLevelAction}
+                      testRunningMode={false}
+                      contextRouter={this.context.router}/>
                   </div>]
                 : <ErrorStatus imgName={"viewMode"} />
               }
@@ -599,5 +715,9 @@ class TopologyViewContainer extends Component {
     );
   }
 }
+
+TopologyViewContainer.contextTypes = {
+  router: PropTypes.object.isRequired
+};
 
 export default withRouter(TopologyViewContainer);

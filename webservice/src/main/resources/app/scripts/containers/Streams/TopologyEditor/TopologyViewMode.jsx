@@ -14,6 +14,7 @@
 
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
 import _ from 'lodash';
 import {Link} from 'react-router';
 import moment from 'moment';
@@ -28,6 +29,10 @@ import TopologyUtils from '../../../utils/TopologyUtils';
 import app_state from '../../../app_state';
 import {hasEditCapability, hasViewCapability,findSingleAclObj,handleSecurePermission} from '../../../utils/ACLUtils';
 import {observer} from 'mobx-react';
+import FSReactToastr from '../../../components/FSReactToastr';
+import CommonNotification from '../../../utils/CommonNotification';
+import {toastOpt} from '../../../utils/Constants';
+import ComponentLogActions from '../../../containers/Streams/Metrics/ComponentLogActions';
 
 @observer
 class TopologyViewMode extends Component {
@@ -35,14 +40,13 @@ class TopologyViewMode extends Component {
     super(props);
     this.state = {
       stormViewUrl: '',
-      logLevel: 'None',
-      durationSecs: 0,
       displayTime: '0:0',
       sampling: 0,
       selectedMode: props.viewModeData.selectedMode,
       startDate: props.startDate,
       endDate: props.endDate,
-      showLogSearchBtn: props.showLogSearchBtn
+      showLogSearchBtn: props.showLogSearchBtn,
+      loading : true
     };
     this.stormClusterChkID(props.stormClusterId);
   }
@@ -54,7 +58,9 @@ class TopologyViewMode extends Component {
   componentDidMount() {
     const container = document.querySelector('.content-wrapper');
     container.setAttribute("class", "content-wrapper view-mode-wrapper");
-    this.getLogLevel();
+    if(this.props.isAppRunning){
+      this.getLogLevel();
+    }
   }
   componentWillUnmount() {
     const container = document.querySelector('.content-wrapper');
@@ -77,37 +83,53 @@ class TopologyViewMode extends Component {
     ViewModeREST.getTopologyLogConfig(this.props.topologyId).then((result)=>{
       if(result.responseMessage == undefined){
         if(moment(result.epoch).diff(moment()) >= 0) {
-          this.setState({logLevel: result.logLevel});
+          this.props.topologyLevelDetailsFunc('LOGS',result.logLevel);
           this.setTimer(result.epoch);
         }
+        this.setState({loading:false});
       }
     });
   }
   changeLogLevel = (value) => {
-    this.setState({logLevel: value});
+    this.props.topologyLevelDetailsFunc('LOGS',value);
   }
   changeLogDuration = (value) => {
-    this.setState({durationSecs: value});
+    this.props.topologyLevelDetailsFunc('DURATIONS',value);
   }
   changeSampling = (value) => {
-    this.setState({sampling: value});
+    this.props.topologyLevelDetailsFunc('SAMPLE',value);
   }
   toggleLogLevelDropdown = (isOpen) => {
-    let {logLevel, durationSecs} = this.state;
-    if(!isOpen && logLevel !== 'None' && durationSecs > 0) {
-      ViewModeREST.postTopologyLogConfig(this.props.topologyId, logLevel, durationSecs)
-      .then((res)=>{
-        if(res.epoch) {
-          clearInterval(this.intervalId);
-          this.setTimer(res.epoch);
-        }
-      });
-    }
+    let {logTopologyLevel, durationTopologyLevel,sampleTopologyLevel} = this.props.viewModeData;
+    if(!isOpen && logTopologyLevel !== 'None' && durationTopologyLevel > 0) {
+      this.topologySampleLavelCallBack(sampleTopologyLevel);
+      this.postTopologyLogConfigCallBack(logTopologyLevel,durationTopologyLevel);
+    } else if(!isOpen && logTopologyLevel === 'None' && durationTopologyLevel <= 0){
+      this.topologySampleLavelCallBack(sampleTopologyLevel);
+    } //else if(!isOpen && logTopologyLevel !== 'None' && durationTopologyLevel > 0){
+    //   this.postTopologyLogConfigCallBack(logTopologyLevel,durationTopologyLevel);
+    //   const msg = <strong>Log enabled successfully</strong>;
+    //   FSReactToastr.success(msg);
+    // }
   }
+
+  topologySampleLavelCallBack = (sampleTopologyLevel) => {
+    const flag = sampleTopologyLevel > 0 ? 'enable' : 'disable' ;
+    this.props.topologyLevelDetailsFunc('SAMPLE',flag);
+  }
+
+  postTopologyLogConfigCallBack = (logTopologyLevel,durationTopologyLevel) => {
+    ViewModeREST.postTopologyLogConfig(this.props.topologyId, logTopologyLevel, durationTopologyLevel)
+    .then((res)=>{
+      if(res.epoch) {
+        clearInterval(this.intervalId);
+        this.setTimer(res.epoch);
+      }
+    });
+  }
+
   setTimer(epochTime) {
     var interval = 1000;
-    var logLevel = this.state.logLevel;
-    var durationSecs = this.state.durationSecs;
     this.intervalId = setInterval(function(){
       var currentTime = moment();
       var leftTime = moment.duration(moment(epochTime).diff(currentTime));
@@ -115,14 +137,13 @@ class TopologyViewMode extends Component {
       var seconds = leftTime.seconds();
       if(minutes == 0 && seconds == 0) {
         clearInterval(this.intervalId);
-        logLevel = 'None';
-        durationSecs = 0;
+        this.props.topologyLevelDetailsFunc('LOGS','None');
+        this.props.topologyLevelDetailsFunc('DURATIONS',0);
       }
-      this.setState({displayTime: minutes+':'+seconds, logLevel: logLevel, durationSecs: durationSecs});
+      this.setState({displayTime: minutes+':'+seconds});
     }.bind(this), interval);
   }
   changeMode = (value) => {
-    this.setState({selectedMode: value});
     this.props.modeSelectCallback(value);
   }
   handleSelectVersion(eventKey, event) {
@@ -142,8 +163,18 @@ class TopologyViewMode extends Component {
     }
   }
 
+  navigateToLogSearch = () => {
+    const {viewModeData,topologyId} = this.props;
+    this.context.router.push({
+      pathname : 'logsearch/'+topologyId,
+      state : {
+        componentId : viewModeData.selectedComponentId
+      }
+    });
+  }
+
   render() {
-    let {stormViewUrl, startDate, endDate, ranges, rangesInHoursMins, rangesInDaysToYears, rangesPrevious, displayTime, showLogSearchBtn} = this.state;
+    let {stormViewUrl, startDate, endDate, ranges, rangesInHoursMins, rangesInDaysToYears, rangesPrevious, displayTime, showLogSearchBtn,loading} = this.state;
     const {
       topologyId,
       topologyName,
@@ -155,7 +186,8 @@ class TopologyViewMode extends Component {
       timestamp,
       topologyVersion,
       versionsArr = [],
-      allACL
+      allACL,
+      viewModeData
     } = this.props;
 
     const {metric} = topologyMetric || {
@@ -204,12 +236,11 @@ class TopologyViewMode extends Component {
     let labelEnd = this.state.endDate.format('YYYY-MM-DD HH:mm:ss');
 
     const titleContent = (
-      <span>All Components &emsp; {displayTime == '0:0' ? '' : (<span>Timer: <span style={{color: '#d06831'}}>{displayTime}</span> &emsp; </span>)}Log: <span style={{color: '#2787ad'}}>{_.capitalize(this.state.logLevel)}</span> &emsp; {/*Sampling: <span style={{color: '#2787ad'}}>{this.state.sampling}%</span>*/}</span>
+      <span>All Components &emsp; {displayTime == '0:0' ? '' : (<span>Timer: <span style={{color: '#d06831'}}>{displayTime}</span> &emsp; </span>)}Log: <span style={{color: '#2787ad'}}>{_.capitalize(viewModeData.logTopologyLevel)}</span> &emsp; Sampling: <span style={{color: '#2787ad'}}>{viewModeData.sampleTopologyLevel}%</span></span>
     );
     const datePickerTitleContent = (
       <span><i className="fa fa-clock-o"></i> {moment.duration(startDate.diff(endDate)).humanize()}</span>
     );
-
     return (
       <div>
         <div className="view-mode-title-box row">
@@ -220,34 +251,17 @@ class TopologyViewMode extends Component {
               onToggle={this.toggleLogLevelDropdown}
               pullRight
             >
-              <label>Log Level</label>
-              <ToggleButtonGroup type="radio" name="log-level-options" value={this.state.logLevel} onChange={this.changeLogLevel}>
-                <ToggleButton className="log-level-btn left" value="TRACE">TRACE</ToggleButton>
-                <ToggleButton className="log-level-btn" value="DEBUG">DEBUG</ToggleButton>
-                <ToggleButton className="log-level-btn" value="INFO">INFO</ToggleButton>
-                <ToggleButton className="log-level-btn" value="WARN">WARN</ToggleButton>
-                <ToggleButton className="log-level-btn right" value="ERROR">ERROR</ToggleButton>
-              </ToggleButtonGroup>
-              <label>Duration</label>
-              <ToggleButtonGroup type="radio" name="duration-options" value={this.state.durationSecs} onChange={this.changeLogDuration}>
-                <ToggleButton className="duration-btn left" value={5}>5s</ToggleButton>
-                <ToggleButton className="duration-btn" value={10}>10s</ToggleButton>
-                <ToggleButton className="duration-btn" value={15}>15s</ToggleButton>
-                <ToggleButton className="duration-btn" value={30}>30s</ToggleButton>
-                <ToggleButton className="duration-btn" value={60}>1m</ToggleButton>
-                <ToggleButton className="duration-btn" value={600}>10m</ToggleButton>
-                <ToggleButton className="duration-btn right" value={3600}>1h</ToggleButton>
-              </ToggleButtonGroup>
-              {/*<label>Sampling Percentage</label>
-              <ToggleButtonGroup type="radio" name="sampling-options" value={this.state.sampling} onChange={this.changeSampling}>
-              <ToggleButton className="sampling-btn left" value={0}>0</ToggleButton>
-              <ToggleButton className="sampling-btn" value={1}>1</ToggleButton>
-              <ToggleButton className="sampling-btn" value={5}>5</ToggleButton>
-              <ToggleButton className="sampling-btn" value={10}>10</ToggleButton>
-              <ToggleButton className="sampling-btn" value={15}>15</ToggleButton>
-              <ToggleButton className="sampling-btn" value={20}>20</ToggleButton>
-              <ToggleButton className="sampling-btn right" value={30}>30</ToggleButton>
-              </ToggleButtonGroup>*/}
+              <ComponentLogActions
+                logLevelValue={viewModeData.logTopologyLevel}
+                logLevelChangeFunc={this.changeLogLevel}
+                durationValue={viewModeData.durationTopologyLevel}
+                durationChangeFunc={this.changeLogDuration}
+                samlpingValue={viewModeData.sampleTopologyLevel}
+                samplingChangeFunc={this.changeSampling}
+                allComponentLevelAction={viewModeData.allComponentLevelAction}
+                topologyId={topologyId}
+                refType="view-container"
+              />
             </DropdownButton>
           </div>
           {/*<div className="col-sm-3">
@@ -264,10 +278,10 @@ class TopologyViewMode extends Component {
           <div className="col-sm-4 text-right">
             <div>
               <span className="text-muted">Mode: </span>
-                <ToggleButtonGroup type="radio" name="mode-select-options" defaultValue={this.state.selectedMode} onChange={this.changeMode}>
-                  <ToggleButton className="mode-select-btn left" disabled={!isAppRunning} value="Overview">OVERVIEW</ToggleButton>
-                  <ToggleButton className="mode-select-btn right" disabled={!isAppRunning} value="Metrics">METRICS</ToggleButton>
-                  {/*<ToggleButton className="mode-select-btn right" disabled={!isAppRunning} value="Sample">SAMPLE</ToggleButton>*/}
+                <ToggleButtonGroup type="radio" name="mode-select-options" defaultValue={viewModeData.selectedMode} onChange={this.changeMode}>
+                  <ToggleButton className="mode-select-btn left" disabled={!isAppRunning || loading} value="Overview">OVERVIEW</ToggleButton>
+                  <ToggleButton className="mode-select-btn right" disabled={!isAppRunning || loading} value="Metrics">METRICS</ToggleButton>
+                  <ToggleButton className="mode-select-btn right" disabled={!isAppRunning || loading} value="Sample">SAMPLE</ToggleButton>
               </ToggleButtonGroup>
             </div>
           </div>
@@ -291,12 +305,12 @@ class TopologyViewMode extends Component {
           </div>
           {showLogSearchBtn ?
             <div className="pull-right">
-              <Link style={{marginLeft: '10px', top: '5px'}} key={3}
+              <a href="javascript:void(0)" style={{marginLeft: '10px', top: '5px'}} key={3}
                 className="hb sm default-blue"
-                to={`logsearch/${topologyId}`}
+                onClick={this.navigateToLogSearch}
               >
                 <i className="fa fa-book"></i>
-              </Link>
+              </a>
             </div>
           : null}
           <div className="pull-right" style={{marginLeft: '10px'}}>
@@ -318,5 +332,9 @@ class TopologyViewMode extends Component {
     );
   }
 }
+
+TopologyViewMode.contextTypes = {
+  router: PropTypes.object.isRequired
+};
 
 export default TopologyViewMode;

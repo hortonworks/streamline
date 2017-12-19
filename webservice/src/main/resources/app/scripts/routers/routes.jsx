@@ -30,6 +30,7 @@ import UserRolesContainer from '../containers/Configuration/UserRolesContainer';
 import LogSearch from '../containers/LogSearch/LogSearch';
 import {menuName} from '../utils/Constants';
 import {hasModuleAccess} from '../utils/ACLUtils';
+import SamplingsComponent from '../containers/Samplings/SamplingsComponent';
 
 const onEnter = (nextState, replace, callback) => {
   var sidebarRoute = nextState.routes[1];
@@ -78,6 +79,7 @@ export default (
     <Route path="application-resources" name="Application Resources" component={AppResourcesContainer} onEnter={onEnter}/>
     <Route path="authorizer" name="Authorizer" accessMenuName={menuName.AUTHORIZER} component={UserRolesContainer} onEnter={onEnter}/>
     <Route path="logsearch/:id" name="Log Search" component={LogSearch} onEnter={onEnter}/>
+    <Route path="sampling/:id" name="Samplings" component={SamplingsComponent} onEnter={onEnter}/>
   </Route>
 
 );
