@@ -244,6 +244,12 @@ public abstract class AbstractFluxComponent implements FluxComponent {
         return ref;
     }
 
+    protected Map<String, List<String>> getRefListYaml (ArrayList<String> refIds) {
+        Map<String, List<String>> ref = new LinkedHashMap<>();
+        ref.put(StormTopologyLayoutConstants.YAML_KEY_REF_LIST, refIds);
+        return ref;
+    }
+
     protected Map<String, Object> getConfigMethodWithRefArgs(String configMethodName, List<String> refIds) {
         Map<String, Object> configMethod = new LinkedHashMap<>();
         configMethod.put(StormTopologyLayoutConstants.YAML_KEY_NAME, configMethodName);

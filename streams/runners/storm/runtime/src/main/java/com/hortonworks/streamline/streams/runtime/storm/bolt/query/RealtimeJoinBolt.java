@@ -284,7 +284,7 @@ public class RealtimeJoinBolt extends BaseRichBolt  {
      * Nested Key names are supported for nested types:
      *      e.g: .select("outerKey1.innerKey1, outerKey1.innerKey2, stream3:outerKey2.innerKey3)"
      * Inner types (non leaf) must be Map<> in order to support nested lookup using this dot notation
-     * This selected fields implicitly declare the output fieldNames for the bolt based.
+     * The selected fields implicitly declare the output fieldNames for the bolt based.
      * @param commaSeparatedKeys
      * @return
      */
