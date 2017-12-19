@@ -18,7 +18,7 @@ import _ from 'lodash';
 import {Select2 as Select} from '../../../utils/SelectUtils';
 import {OverlayTrigger, Popover,Checkbox} from 'react-bootstrap';
 import Utils from '../../../utils/Utils';
-import ProcessorUtils  from '../../../utils/ProcessorUtils';
+import ProcessorUtils, {Streams}  from '../../../utils/ProcessorUtils';
 
 class RealTimeJoinStreamComponent extends Component{
   constructor(props){
@@ -67,12 +67,12 @@ class RealTimeJoinStreamComponent extends Component{
       styleObj.fontWeight = "bold";
     }
     return (
-      <span style={styleObj}>{node.name}</span>
+      <span style={styleObj}>{node.name} <br /><span className="output-type" style={{fontSize: '9px', paddingLeft: (10 * node.level) + "px"}}>{node.type}</span></span>
     );
   }
 
   render(){
-    const {rtJoinStream,disabledFields,pIndex,rtJoinTypes,inputStreamsArr,bufferTypeArr,editMode} = this.props;
+    const {rtJoinStream,disabledFields,pIndex,rtJoinTypes,inputStreamsArr,bufferTypeArr,editMode,validationErrors} = this.props;
     const {rtJoinTypeSelected,rtJoinTypeStreamObj,bufferType,showInputError,conditions,bufferSize,unique} = rtJoinStream;
     return(
       <div>
@@ -92,15 +92,15 @@ class RealTimeJoinStreamComponent extends Component{
             </OverlayTrigger>
           </div>
           <div className="col-sm-3">
-            <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Buffer Type</Popover>}>
-              <label>Buffer Type Interval
+            <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Window Size Type</Popover>}>
+              <label>Window Size Type
                 <span className="text-danger">*</span>
               </label>
             </OverlayTrigger>
           </div>
           <div className="col-sm-2">
-            <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Buffer Size</Popover>}>
-              <label>Buffer Size
+            <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Window Size</Popover>}>
+              <label>Window Size
                 <span className="text-danger">*</span>
               </label>
             </OverlayTrigger>
@@ -108,23 +108,32 @@ class RealTimeJoinStreamComponent extends Component{
           <div className="col-sm-2 text-center">
             <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Drop Duplicates</Popover>}>
               <label style={{marginBottom : 0, marginTop : "3px"}}>unique
-                <span className="text-danger">*</span>
               </label>
             </OverlayTrigger>
           </div>
         </div>
         <div className="form-group row">
           <div className="col-sm-2">
-            <Select value={rtJoinTypeSelected} options={rtJoinTypes} onChange={this.joinTypeClick.bind(this,'rtJoinTypes','join',pIndex)} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false}/>
+            <Select value={rtJoinTypeSelected} options={rtJoinTypes} onChange={this.joinTypeClick.bind(this,'rtJoinTypes','join',pIndex)} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false}
+              className={!!validationErrors['joinStreams'+pIndex+'rtJoinTypes'] ? 'invalidSelect' : ''}
+            />
+            <p className="text-danger">{validationErrors['joinStreams'+pIndex+'rtJoinTypes']}</p>
           </div>
           <div className="col-sm-3">
-            <Select value={rtJoinTypeStreamObj} options={inputStreamsArr} onChange={this.joinStreamChanges.bind(this,'joinStream',pIndex)} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"/>
+            <Select value={rtJoinTypeStreamObj} options={inputStreamsArr} onChange={this.joinStreamChanges.bind(this,'joinStream',pIndex)} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false} valueKey="streamId" labelKey="streamId"
+              className={!!validationErrors['joinStreams'+pIndex+'joinStream'] ? 'invalidSelect' : ''}
+            />
+            <p className="text-danger">{validationErrors['joinStreams'+pIndex+'joinStream']}</p>
           </div>
           <div className="col-sm-3">
-            <Select value={bufferType} options={bufferTypeArr} onChange={this.joinTypeClick.bind(this,'bufferType','join',pIndex)} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false}/>
+            <Select value={bufferType} options={bufferTypeArr} onChange={this.joinTypeClick.bind(this,'bufferType','join',pIndex)} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false}
+              className={!!validationErrors['joinStreams'+pIndex+'bufferType'] ? 'invalidSelect' : ''}
+            />
+            <p className="text-danger">{validationErrors['joinStreams'+pIndex+'bufferType']}</p>
           </div>
           <div className="col-sm-2">
-            <input type="number" className={`form-control ${showInputError ? 'invalidInput' : ''}`} value={bufferSize} min={0} max={Number.MAX_SAFE_INTEGER}  onChange={this.joinBufferSizeClick.bind(this,'join',pIndex)} />
+            <input type="number" className={`form-control ${!!validationErrors['joinStreams'+pIndex+'bufferSize'] ? 'invalidInput' : ''}`} value={bufferSize} min={1} max={Number.MAX_SAFE_INTEGER}  onChange={this.joinBufferSizeClick.bind(this,'join',pIndex)} />
+            <p className="text-danger">{validationErrors['joinStreams'+pIndex+'bufferSize']}</p>
           </div>
           <div className="col-sm-2 text-center">
             <Checkbox inline checked={unique} onChange={this.joinCheckBoxChange.bind(this,'join',pIndex)}></Checkbox>
@@ -133,7 +142,7 @@ class RealTimeJoinStreamComponent extends Component{
         <div className="form-group row">
           <div className="col-sm-12" style={{marginTop : "10px"}}>
             <fieldset className="fieldset-default">
-              <legend>Conditional Fields</legend>
+              <legend>Join Criteria</legend>
                 <div className="row">
                   <div className="col-sm-4 outputCaption">
                     <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">First Key</Popover>}>
@@ -153,16 +162,69 @@ class RealTimeJoinStreamComponent extends Component{
                 </div>
                 {
                   _.map(conditions, (eq,i) => {
+                    const firstKeyStream = eq.firstKeyStream ? [eq.firstKeyStream] : [];
+                    const firstStream = new Streams(firstKeyStream);
+                    const firstKeyOptions = firstStream.streams ? firstStream.toSelectOption(firstStream.cloneStreams()) : [];
+
+                    const selectedFirstKey = firstKeyOptions.find((f) => {
+                      return f.uniqueID == (_.isObject(eq.firstKey) ? eq.firstKey.uniqueID : eq.firstKey);
+                    });
+
+                    const secondKeyStream = eq.secondKeyStream ? [eq.secondKeyStream] : [];
+                    const secondStream = new Streams(secondKeyStream);
+
+                    let secondKeyOptions = [];
+                    if(selectedFirstKey){
+                      const filteredStreams = secondStream.filterByType(selectedFirstKey.type);
+                      secondKeyOptions = secondStream.toSelectOption(filteredStreams);
+                    } else {
+                      secondKeyOptions = secondStream.streams ? secondStream.toSelectOption(secondStream.cloneStreams()) : [];
+                    }
+
+                    const selectedSecondKey = secondStream.toSelectOption(secondStream.cloneStreams()).find((f) => {
+                      return f.uniqueID == (_.isObject(eq.secondKey) ? eq.secondKey.uniqueID : eq.secondKey); ;
+                    });
+
+                    if(selectedSecondKey && selectedFirstKey && selectedSecondKey.type !== selectedFirstKey.type){
+                      eq.secondKey = "";
+                    }
+
                     return(
                       <div key={i} className="row form-group">
                         <div className="col-sm-4">
-                          <Select value={eq.firstKey} options={eq.firstKeyOptions} onChange={this.conditionalFieldClick.bind(this,'firstKey',pIndex,i)} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+                          <Select
+                            value={eq.firstKey}
+                            options={firstKeyOptions}
+                            labelKey="name"
+                            valueKey="uniqueID"
+                            onChange={this.conditionalFieldClick.bind(this,'firstKey',pIndex,i)}
+                            required={true}
+                            disabled={disabledFields}
+                            clearable={false}
+                            backspaceRemoves={false}
+                            optionRenderer={this.renderFieldOption.bind(this)}
+                            className={!!validationErrors['joinStreams'+pIndex+''+i+'firstKey'] ? 'invalidSelect' : ''}
+                          />
+                          <p className="text-danger">{validationErrors['joinStreams'+pIndex+''+i+'firstKey']}</p>
                         </div>
                         <div className="col-sm-1 text-center" style={{lineHeight : '30px'}}>
                           <strong>==</strong>
                         </div>
                         <div className="col-sm-4">
-                          <Select value={eq.secondKey} options={eq.secondKeyOptions} onChange={this.conditionalFieldClick.bind(this,'secondKey',pIndex,i)} required={true} disabled={disabledFields} clearable={false} backspaceRemoves={false} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+                          <Select
+                            value={eq.secondKey}
+                            options={secondKeyOptions}
+                            onChange={this.conditionalFieldClick.bind(this,'secondKey',pIndex,i)}
+                            required={true}
+                            disabled={disabledFields}
+                            clearable={false}
+                            backspaceRemoves={false}
+                            labelKey="name"
+                            valueKey="uniqueID"
+                            optionRenderer={this.renderFieldOption.bind(this)}
+                            className={!!validationErrors['joinStreams'+pIndex+''+i+'secondKey'] ? 'invalidSelect' : ''}
+                          />
+                          <p className="text-danger">{validationErrors['joinStreams'+pIndex+''+i+'secondKey']}</p>
                         </div>
                         {editMode
                           ? <div className="col-sm-2 col-sm-offset-1">
