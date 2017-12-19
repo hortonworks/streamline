@@ -4215,3 +4215,67 @@ ul.custom-pagination li.active{
   padding: 10px;
   cursor: pointer;
 }
+#search-term.form-control {
+  border-color: #ccc;
+}
+.log-search-table {
+  margin-bottom: 10px;
+}
+.log-search-table #column-select {
+  color: #666;
+}
+.log-search-table .dropdown{
+  position: absolute;
+  right: 21px;
+}
+.log-search-table >tbody>tr>td.wordBreak {
+  word-break: break-all;
+  white-space: normal;
+}
+.log-search-table > thead > tr {
+  background-color: #fff;
+  color: #999;
+}
+.log-search-table tr th {
+  white-space: nowrap;
+  font-weight: 400;
+  font-size: 12px;
+}
+.log-search-table > tbody >tr > td {
+  color: #666;
+  font-size: 12px;
+}
+.log-search-table > tbody {
+  border-bottom: 2px solid #ddd;
+}
+.log-search-table .btn-link {
+  padding: 0;
+  line-height: 1;
+  text-decoration: none;
+}
+#log-search-datepicker-dropdown + .dropdown-menu {
+  width: 765px;
+  padding: 15px;
+}
+#log-search-datepicker-dropdown + .dropdown-menu .sub-heading{
+  font-size: 16px;
+  padding-bottom: 10px;
+}
+.log-search-btn {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+.table-pagination-container {
+  color: #666;
+  font-size: 14px;
+}
+.table-pagination-container a{
+  color: #666;
+  cursor: pointer;
+}
+.table-pagination-container a.disabled  {
+  color: #ccc;
+}
+.table-pagination-container span {
+  margin: 5px;
+}
