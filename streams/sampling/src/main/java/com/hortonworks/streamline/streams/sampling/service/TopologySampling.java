@@ -1,12 +1,8 @@
 package com.hortonworks.streamline.streams.sampling.service;
 
-import com.fasterxml.jackson.annotation.JsonRawValue;
-import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyComponent;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 public interface TopologySampling {
@@ -24,24 +20,8 @@ public interface TopologySampling {
 
     SamplingStatus getSamplingStatus(Topology topology, TopologyComponent component, String asUser);
 
-    SampledEvents getSampledEvents(Topology topology, TopologyComponent component, EventQueryParams qps, String asUser);
-
     interface SamplingStatus {
         Boolean getEnabled();
         Integer getPct();
-    }
-
-    interface SampledEvents {
-        Collection<SampledEvent> getEvents();
-    }
-
-    interface SampledEvent {
-        long getTime();
-        String getEvent();
-    }
-
-    interface EventQueryParams {
-        int count();
-        boolean desc();
     }
 }

@@ -63,19 +63,19 @@ public class StormTopologySamplingService implements TopologySampling {
     @Override
     public SamplingStatus getSamplingStatus(Topology topology, String asUser) {
         String topologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId(), asUser);
+        if (topologyId == null) {
+            return null;
+        }
         return buildSamplingStatus(client.getSamplingStatus(topologyId, asUser));
     }
 
     @Override
     public SamplingStatus getSamplingStatus(Topology topology, TopologyComponent component, String asUser) {
         String topologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId(), asUser);
+        if (topologyId == null) {
+            return null;
+        }
         return buildSamplingStatus(client.getSamplingStatus(topologyId, asUser));
-    }
-
-    @Override
-    public SampledEvents getSampledEvents(Topology topology, TopologyComponent component, EventQueryParams qps, String asUser) {
-        // TODO: implement this based on logsearch
-        return null;
     }
 
     private SamplingStatus buildSamplingStatus(Map result) {

@@ -137,7 +137,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware, T
                                                      SecurityCatalogService securityCatalogService,
                                                      Subject subject) {
         return Arrays.asList(
-                new TopologyCatalogResource(authorizer, streamcatalogService, actionsService, logSearchService),
+                new TopologyCatalogResource(authorizer, streamcatalogService, actionsService),
                 new TopologyActionResource(authorizer, streamcatalogService, actionsService),
                 new TopologyDashboardResource(authorizer, streamcatalogService, environmentService, actionsService,
                         metricsService, transactionManager),
@@ -155,7 +155,8 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware, T
                 new TopologyEditorToolbarResource(authorizer, streamcatalogService, securityCatalogService),
                 new TopologyTestRunResource(streamcatalogService, actionsService),
                 new TopologyEventSamplingResource(authorizer,
-                        new TopologySamplingService(environmentService, subject), logSearchService, streamcatalogService)
+                        new TopologySamplingService(environmentService, subject), streamcatalogService),
+                new TopologyLoggingResource(authorizer, streamcatalogService, actionsService, logSearchService)
         );
     }
 
