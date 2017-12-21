@@ -107,18 +107,32 @@ public interface TopologyActions {
 
     class LogLevelInformation {
         private LogLevel logLevel;
-        private long epoch;
+        private Long epoch;
+        private boolean enabled;
 
-        public LogLevelInformation(LogLevel logLevel, long epoch) {
+        private LogLevelInformation(boolean enabled, LogLevel logLevel, Long epoch) {
+            this.enabled = enabled;
             this.logLevel = logLevel;
             this.epoch = epoch;
+        }
+
+        public static LogLevelInformation enabled(LogLevel logLevel, Long epoch) {
+            return new LogLevelInformation(true, logLevel, epoch);
+        }
+
+        public static LogLevelInformation disabled() {
+            return new LogLevelInformation(false, null, null);
+        }
+
+        public boolean isEnabled() {
+            return enabled;
         }
 
         public LogLevel getLogLevel() {
             return logLevel;
         }
 
-        public long getEpoch() {
+        public Long getEpoch() {
             return epoch;
         }
     }

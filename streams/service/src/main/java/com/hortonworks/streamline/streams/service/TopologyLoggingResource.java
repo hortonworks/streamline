@@ -16,6 +16,7 @@
 package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
@@ -81,7 +82,14 @@ public class TopologyLoggingResource {
         if (topology != null) {
             TopologyActions.LogLevelInformation logInfo = actionsService.configureLogLevel(topology, targetLogLevel,
                     durationSecs, WSUtils.getUserFromSecurityContext(securityContext));
-            return WSUtils.respondEntity(logInfo, OK);
+
+            LogLevelResponse response;
+            if (logInfo != null) {
+                response = LogLevelResponse.succeed().of(logInfo).build();
+            } else {
+                response = LogLevelResponse.fail().build();
+            }
+            return WSUtils.respondEntity(response, OK);
         }
         throw EntityNotFoundException.byId(topologyId.toString());
     }
@@ -96,12 +104,15 @@ public class TopologyLoggingResource {
 
         Topology topology = catalogService.getTopology(topologyId);
         if (topology != null) {
-            TopologyActions.LogLevelInformation logInfo = actionsService.getLogLevel(topology, WSUtils.getUserFromSecurityContext(securityContext));
-            if (logInfo == null) {
-                return WSUtils.respondEntity(Collections.emptyMap(), OK);
+            TopologyActions.LogLevelInformation logInfo = actionsService.getLogLevel(topology,
+                    WSUtils.getUserFromSecurityContext(securityContext));
+            LogLevelResponse response;
+            if (logInfo != null) {
+                response = LogLevelResponse.succeed().of(logInfo).build();
             } else {
-                return WSUtils.respondEntity(logInfo, OK);
+                response = LogLevelResponse.fail().build();
             }
+            return WSUtils.respondEntity(response, OK);
         }
         throw EntityNotFoundException.byId(topologyId.toString());
     }
@@ -172,4 +183,83 @@ public class TopologyLoggingResource {
         throw EntityNotFoundException.byId(topologyId.toString());
     }
 
+    private static class LogLevelResponse {
+        private TopologyActions.LogLevel logLevel;
+        private Long epoch;
+        private Boolean enabled;
+        private Boolean success;
+
+        private LogLevelResponse() {
+        }
+
+        public static Builder succeed() {
+            return new Builder(true);
+        }
+
+        public static Builder fail() {
+            return new Builder(false);
+        }
+
+        public static class Builder {
+            private TopologyActions.LogLevel logLevel;
+            private Long epoch;
+            private Boolean enabled;
+            private Boolean success;
+
+            public Builder(boolean success) {
+                this.success = success;
+            }
+
+            public Builder of(TopologyActions.LogLevelInformation logLevelInformation) {
+                this.logLevel = logLevelInformation.getLogLevel();
+                this.epoch = logLevelInformation.getEpoch();
+                this.enabled = logLevelInformation.isEnabled();
+                return this;
+            }
+
+            public Builder logLevel(TopologyActions.LogLevel logLevel) {
+                this.logLevel = logLevel;
+                return this;
+            }
+
+            public Builder epoch(long epoch) {
+                this.epoch = epoch;
+                return this;
+            }
+
+            public Builder enabled(boolean enabled) {
+                this.enabled = enabled;
+                return this;
+            }
+
+            public LogLevelResponse build() {
+                LogLevelResponse response = new LogLevelResponse();
+                response.success = this.success;
+                response.enabled = this.enabled;
+                response.logLevel = this.logLevel;
+                response.epoch = this.epoch;
+                return response;
+            }
+        }
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        public TopologyActions.LogLevel getLogLevel() {
+            return logLevel;
+        }
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        public Long getEpoch() {
+            return epoch;
+        }
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        public Boolean getEnabled() {
+            return enabled;
+        }
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        public Boolean getSuccess() {
+            return success;
+        }
+    }
 }
