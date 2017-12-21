@@ -14,7 +14,6 @@ import javax.security.auth.Subject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 public class StormTopologySamplingService implements TopologySampling {
     private static final Logger LOG = LoggerFactory.getLogger(StormTopologySamplingService.class);
@@ -45,7 +44,8 @@ public class StormTopologySamplingService implements TopologySampling {
     @Override
     public boolean enableSampling(Topology topology, TopologyComponent component, int pct, String asUser) {
         String topologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId(), asUser);
-        return client.enableSampling(topologyId, component.getId() + "-" + component.getName(), pct, asUser);
+        String stormComponentId = StormTopologyUtil.generateStormComponentId(component.getId(), component.getName());
+        return client.enableSampling(topologyId, stormComponentId, pct, asUser);
     }
 
     @Override
@@ -57,25 +57,27 @@ public class StormTopologySamplingService implements TopologySampling {
     @Override
     public boolean disableSampling(Topology topology, TopologyComponent component, String asUser) {
         String topologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId(), asUser);
-        return client.disableSampling(topologyId, component.getId() + "-" + component.getName(), asUser);
+        String stormComponentId = StormTopologyUtil.generateStormComponentId(component.getId(), component.getName());
+        return client.disableSampling(topologyId, stormComponentId, asUser);
     }
 
     @Override
     public SamplingStatus getSamplingStatus(Topology topology, String asUser) {
         String topologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId(), asUser);
+        if (topologyId == null) {
+            return null;
+        }
         return buildSamplingStatus(client.getSamplingStatus(topologyId, asUser));
     }
 
     @Override
     public SamplingStatus getSamplingStatus(Topology topology, TopologyComponent component, String asUser) {
         String topologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId(), asUser);
-        return buildSamplingStatus(client.getSamplingStatus(topologyId, asUser));
-    }
-
-    @Override
-    public SampledEvents getSampledEvents(Topology topology, TopologyComponent component, EventQueryParams qps, String asUser) {
-        // TODO: implement this based on logsearch
-        return null;
+        if (topologyId == null) {
+            return null;
+        }
+        String stormComponentId = StormTopologyUtil.generateStormComponentId(component.getId(), component.getName());
+        return buildSamplingStatus(client.getSamplingStatus(topologyId, stormComponentId, asUser));
     }
 
     private SamplingStatus buildSamplingStatus(Map result) {
