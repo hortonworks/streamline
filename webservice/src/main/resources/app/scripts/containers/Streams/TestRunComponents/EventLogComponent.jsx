@@ -14,6 +14,7 @@
 
 import React,{Component} from 'react';
 import _ from 'lodash';
+import Utils from '../../../utils/Utils';
 
 import ContentScrollableComponent from '../../../components/ContentScrollableComponent';
 
@@ -27,19 +28,7 @@ class EventLogComponent extends Component {
   }
 
   renderFields = (data) => {
-    let list = [];
-    const nestedFields =  function(fieldObj,level){
-      _.map(_.keys(fieldObj), (key, i) => {
-        if(fieldObj[key].toString() === "[object Object]"){
-          const levelTemp = level > 0 ? level+1 : 1;
-          nestedFields(fieldObj[key], levelTemp);
-        } else {
-          list.push(<li key={key+i} style={{paddingLeft : level > 0 ? (10*level)+'px' : level+'px'}} className={level > 0 ? 'demo': ''}><span className='event-type' title={key}> {key}*</span> <span className='event-value' title={fieldObj[key]}>{fieldObj[key]}</span> </li>);
-        }
-      });
-    };
-    nestedFields(data.fieldsAndValues,0);
-    return <ul className="eventList">{list}</ul>;
+    return <ul className="eventList">{Utils.populateEventFields(data)}</ul>;
   }
 
   paginationAction = (action) => {

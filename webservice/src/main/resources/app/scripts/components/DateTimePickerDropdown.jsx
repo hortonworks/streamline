@@ -30,125 +30,126 @@ class DateTimePickerDropdown extends Component {
       showDateRangeSection: false,
       startDate: props.startDate,
       endDate: props.endDate,
+      activeDate : 'Last 30 Minutes',
       rangesInHoursMins: {
-        'Last 5 Minutes': [
+        'Last 5 Minutes':() => {return [
           moment().subtract(5, 'minutes'),
           moment()
-        ],
-        'Last 10 Minutes': [
+        ];},
+        'Last 10 Minutes':() => {return [
           moment().subtract(10, 'minutes'),
           moment()
-        ],
-        'Last 30 Minutes': [
+        ];},
+        'Last 30 Minutes':() => {return [
           moment().subtract(30, 'minutes'),
           moment()
-        ],
-        'Last 1 Hour': [
+        ];},
+        'Last 1 Hour': () => {return[
           moment().subtract(1, 'hours'),
           moment()
-        ],
-        'Last 3 Hours': [
+        ];},
+        'Last 3 Hours':() => {return [
           moment().subtract(3, 'hours'),
           moment()
-        ],
-        'Last 6 Hours': [
+        ];},
+        'Last 6 Hours': () => {return[
           moment().subtract(6, 'hours'),
           moment()
-        ],
-        'Last 12 Hours': [
+        ];},
+        'Last 12 Hours':() => {return [
           moment().subtract(12, 'hours'),
           moment()
-        ],
-        'Last 24 Hours': [
+        ];},
+        'Last 24 Hours':() => {return [
           moment().subtract(1, 'days'),
           moment()
-        ]
+        ];}
       },
       rangesInDaysToYears: {
-        'Last 7 Days': [
+        'Last 7 Days':() => {return [
           moment().subtract(6, 'days'),
           moment()
-        ],
-        'Last 30 Days': [
+        ];},
+        'Last 30 Days':() => {return [
           moment().subtract(29, 'days'),
           moment()
-        ],
-        'Last 60 Days': [
+        ];},
+        'Last 60 Days': () => {return[
           moment().subtract(59, 'days'),
           moment()
-        ],
-        'Last 90 Days': [
+        ];},
+        'Last 90 Days':() => {return [
           moment().subtract(89, 'days'),
           moment()
-        ],
-        'Last 6 months': [
+        ];},
+        'Last 6 months':() => {return [
           moment().subtract(5, 'month'),
           moment()
-        ],
-        'Last 1 year': [
+        ];},
+        'Last 1 year':() => {return [
           moment().subtract(12, 'month'),
           moment()
-        ],
-        'Last 2 years': [
+        ];},
+        'Last 2 years':() => {return [
           moment().subtract(24, 'month'),
           moment()
-        ],
-        'Last 5 years': [
+        ];},
+        'Last 5 years':() => {return [
           moment().subtract(60, 'month'),
           moment()
-        ]
+        ];}
       },
       rangesPrevious: {
-        'Yesterday': [
+        'Yesterday': () => {return [
           moment().startOf('day').subtract(1, 'days'),
           moment().endOf('day').subtract(1, 'days')
-        ],
-        'Day before yesterday': [
+        ];},
+        'Day before yesterday':() => {return  [
           moment().startOf('day').subtract(2, 'days'),
           moment().endOf('day').subtract(2, 'days')
-        ],
-        'This day last week': [
+        ];},
+        'This day last week': () => {return [
           moment().subtract(7, 'days').startOf('day'),
           moment().subtract(7, 'days').endOf('day')
-        ],
-        'Previous week': [
+        ];},
+        'Previous week': () => {return [
           moment().subtract(1, 'week').startOf('week'),
           moment().subtract(1, 'week').endOf('week')
-        ],
-        'Previous month': [
+        ];},
+        'Previous month':() => {return  [
           moment().subtract(1, 'month').startOf('month'),
           moment().subtract(1, 'month').endOf('month')
-        ],
-        'Previous year': [
+        ];},
+        'Previous year': () => {return [
           moment().subtract(1, 'year').startOf('year'),
           moment().subtract(1, 'year').endOf('year')
-        ]
+        ];}
       },
       ranges: {
-        'Today': [
+        'Today':() => {return [
           moment().startOf('day'),
           moment().endOf('day')
-        ],
-        'Today so far': [
+        ];},
+        'Today so far':() => {return [
           moment().startOf('day'),
           moment()
-        ],
-        'This week': [
+        ];},
+        'This week':() => {return [
           moment().startOf('week'),
           moment().endOf('week')
-        ],
-        'This week so far': [
+        ];},
+        'This week so far': () => {return [
           moment().startOf('week'),
           moment()
-        ],
-        'This month': [
+        ];},
+        'This month': () => {return [
           moment().startOf('month'),
           moment().endOf('month')
-        ],
-        'This year': [
+        ];},
+        'This year': () => {return [
           moment().startOf('year'),
           moment().endOf('year')
-        ]
+        ];}
       }
     };
   }
@@ -166,17 +167,19 @@ class DateTimePickerDropdown extends Component {
   }
   handleSelectQuickRange (rangesObj, e) {
     if(e.target.nodeName == 'A' || e.target.nodeName == 'LI') {
-      let currentRange = rangesObj[e.target.textContent];
+      let currentRange = rangesObj[e.target.textContent]();
       this.setState({
-        startDate: currentRange[0], endDate: currentRange[1]
+        startDate: currentRange[0], endDate: currentRange[1],
+        activeDate : e.target.textContent
       }, () => {
         this.props.datePickerCallback(this.state.startDate, this.state.endDate);
+        this.setState({showDateRangeSection: !this.state.showDateRangeSection});
       });
     }
   }
 
   render() {
-    let {startDate, endDate, ranges, rangesInHoursMins, rangesInDaysToYears, rangesPrevious} = this.state;
+    let {startDate, endDate, ranges, rangesInHoursMins, rangesInDaysToYears, rangesPrevious,activeDate} = this.state;
     let labelStart = this.state.startDate.format('YYYY-MM-DD HH:mm:ss');
     let labelEnd = this.state.endDate.format('YYYY-MM-DD HH:mm:ss');
     const datePickerTitleContent = (
@@ -241,7 +244,7 @@ class DateTimePickerDropdown extends Component {
                 <ul onClick={this.handleSelectQuickRange.bind(this, rangesInDaysToYears)}>
                   {
                     _.keys(rangesInDaysToYears).map((r, i)=>{
-                      return <li key={i} className={Utils.getTimeDiffInMinutes(rangesInDaysToYears[r][0], startDate) == 0 && Utils.getTimeDiffInMinutes(rangesInDaysToYears[r][1], endDate) == 0 ? 'active' : ''}><a>{r}</a></li>;
+                      return <li key={i} className={activeDate === r ? 'active' : ''}><a>{r}</a></li>;
                     })
                   }
                 </ul>
@@ -250,7 +253,7 @@ class DateTimePickerDropdown extends Component {
                 <ul onClick={this.handleSelectQuickRange.bind(this, rangesPrevious)}>
                   {
                     _.keys(rangesPrevious).map((r, i)=>{
-                      return <li key={i} className={Utils.getTimeDiffInMinutes(rangesPrevious[r][0], startDate) == 0 && Utils.getTimeDiffInMinutes(rangesPrevious[r][1], endDate) == 0 ? 'active' : ''}><a>{r}</a></li>;
+                      return <li key={i} className={activeDate === r ? 'active' : ''}><a>{r}</a></li>;
                     })
                   }
                 </ul>
@@ -259,7 +262,7 @@ class DateTimePickerDropdown extends Component {
                 <ul onClick={this.handleSelectQuickRange.bind(this, ranges)}>
                   {
                     _.keys(ranges).map((r, i)=>{
-                      return <li key={i} className={Utils.getTimeDiffInMinutes(ranges[r][0], startDate) == 0 && Utils.getTimeDiffInMinutes(ranges[r][1], endDate) == 0 ? 'active' : ''}><a>{r}</a></li>;
+                      return <li key={i} className={activeDate === r ? 'active' : ''}><a>{r}</a></li>;
                     })
                   }
                 </ul>
@@ -268,7 +271,7 @@ class DateTimePickerDropdown extends Component {
                 <ul onClick={this.handleSelectQuickRange.bind(this, rangesInHoursMins)}>
                   {
                     _.keys(rangesInHoursMins).map((r, i)=>{
-                      return <li key={i} className={Utils.getTimeDiffInMinutes(rangesInHoursMins[r][0], startDate) == 0 && Utils.getTimeDiffInMinutes(rangesInHoursMins[r][1], endDate) == 0 ? 'active' : ''}><a>{r}</a></li>;
+                      return <li key={i} className={activeDate === r ? 'active' : ''}><a>{r}</a></li>;
                     })
                   }
                 </ul>

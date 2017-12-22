@@ -100,7 +100,7 @@ class EditorGraph extends Component {
 
   render() {
     const actualHeight = (window.innerHeight - (this.props.viewMode
-      ? 360
+      ? 175
       : 100)) + 'px';
     const {
       versionsArr,
@@ -121,21 +121,62 @@ class EditorGraph extends Component {
       addTestCase,
       eventLogData,
       hideEventLog,
-      testRunningMode
+      testRunningMode,
+      isAppRunning,
+      viewModeData,
+      startDate,
+      endDate,
+      compSelectCallback,
+      componentLevelAction,
+      contextRouter
     } = this.props;
     const {boxes, bundleArr} = this.state;
-    const componentsBundle = [...bundleArr.sourceBundle, ...bundleArr.processorsBundle, ...bundleArr.sinksBundle];
+    const componentsBundle =  !viewMode ? [...bundleArr.sourceBundle, ...bundleArr.processorsBundle, ...bundleArr.sinksBundle] : [];
     return connectDropTarget(
       <div>
         <div className="" style={{
           height: actualHeight
         }}>
-          <TopologyGraphComponent ref="TopologyGraph" height={parseInt(actualHeight, 10)} data={graphData} topologyId={topologyId} versionId={versionId} versionsArr={versionsArr} viewMode={viewMode} getModalScope={getModalScope} setModalContent={setModalContent} getEdgeConfigModal={getEdgeConfigModal} setLastChange={setLastChange} topologyConfigMessageCB={topologyConfigMessageCB} testRunActivated={testRunActivated} eventLogData={eventLogData}  hideEventLog={hideEventLog}/>
-          {state.showComponentNodeContainer
-            ? <ComponentNodeContainer testRunningMode={testRunningMode} left={boxes.left} top={boxes.top} hideSourceOnDrag={true} viewMode={viewMode} customProcessors={this.props.customProcessors} bundleArr={bundleArr} testRunActivated={testRunActivated} testItemSelected={testItemSelected} testCaseList={testCaseList} selectedTestObj={selectedTestObj} addTestCase={addTestCase} eventLogData={eventLogData} />
+          <TopologyGraphComponent ref="TopologyGraph"
+            height={parseInt(actualHeight, 10)}
+            data={graphData}
+            topologyId={topologyId}
+            versionId={versionId}
+            versionsArr={versionsArr}
+            viewMode={viewMode}
+            getModalScope={getModalScope}
+            setModalContent={setModalContent}
+            getEdgeConfigModal={getEdgeConfigModal}
+            setLastChange={setLastChange}
+            topologyConfigMessageCB={topologyConfigMessageCB}
+            testRunActivated={testRunActivated}
+            eventLogData={eventLogData}
+            hideEventLog={hideEventLog}
+            viewModeData={viewModeData}
+            startDate={startDate}
+            endDate={endDate}
+            compSelectCallback={compSelectCallback}
+            isAppRunning={isAppRunning}
+            componentLevelAction={componentLevelAction}
+            viewModeContextRouter={contextRouter}/>
+          {state.showComponentNodeContainer && !viewMode
+            ? <ComponentNodeContainer
+              testRunningMode={testRunningMode}
+              left={boxes.left}
+              top={boxes.top}
+              hideSourceOnDrag={true}
+              viewMode={viewMode}
+              customProcessors={this.props.customProcessors}
+              bundleArr={bundleArr}
+              testRunActivated={testRunActivated}
+              testItemSelected={testItemSelected}
+              testCaseList={testCaseList}
+              selectedTestObj={selectedTestObj}
+              addTestCase={addTestCase}
+              eventLogData={eventLogData} />
             : null
           }
-          {state.showSpotlightSearch ? <SpotlightSearch viewMode={viewMode} componentsList={Utils.sortArray(componentsBundle, 'name', true)} addComponentCallback={this.addComponent.bind(this)}/> : ''}
+          {state.showSpotlightSearch && !viewMode ? <SpotlightSearch viewMode={viewMode} componentsList={Utils.sortArray(componentsBundle, 'name', true)} addComponentCallback={this.addComponent.bind(this)}/> : ''}
         </div>
       </div>
     );

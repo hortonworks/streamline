@@ -3722,7 +3722,7 @@ a.formatterFont:hover{
   overflow: hidden;
   padding-left: 5px;
 }
-ul.eventList{
+ul.eventList,ul.sampling-eventList, div.actions-list > div > ul{
   margin: 0;
   -webkit-padding-start : 0;
   -moz-padding-start : 0;
@@ -4193,10 +4193,19 @@ ul.custom-pagination li.active{
   display: inline-block;
 }
 .component-log-actions-container .sampling-buttons {
-  width: 100%;
+  width: 75%;
   padding: 10px;
   vertical-align: top;
+  display:inline-block;
 }
+.component-log-actions-container .actions-list {
+  width: 25%;
+  padding: 10px;
+  vertical-align: top;
+  display:inline-block;
+  background-color: #efefef;
+  height: 90px;
+ }
 .component-log-actions-container .btn,.component-log-actions-container .btn-group {
   position: static;
 }
@@ -4278,4 +4287,53 @@ ul.custom-pagination li.active{
 }
 .table-pagination-container span {
   margin: 5px;
+}
+/* Sampling */
+.content-wrapper.sampling-wrapper {
+  padding-left: 50px;
+  padding-right: 50px;
+}
+.sampling-card {
+  background-color: #fff;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.25);
+  padding: 10px;
+  margin-bottom: 20px;
+}
+ul.sampling-eventList > li {
+  font-weight: normal;
+  padding: 4px;
+}
+ul.sampling-eventList > li > span.event-type,
+ul.sampling-eventList > li > span.event-value{
+  font-size: 13px;
+}
+ul.sampling-eventList > li > span.event-type {
+  color: #909090;
+}
+ul.sampling-eventList > li > span.event-value {
+  color: #555;
+}
+.eventDivGroup{
+  overflow: auto;
+}
+div.actions-list > div > ul > li {
+  cursor: pointer;
+}
+div.actions-list > div > ul > li > span.logsearchLink{
+  color: #288fc0;
+}
+.d3-tip.w:after {
+  left: 100%;
+  top: 50%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+  border-color: rgba(120, 120, 120, 0);
+  border-right-color: rgba(120, 120, 120, 0.95);
+  border-width: 15px;
+  margin-top: -15px;
+  transform: rotate(180deg);
 }
