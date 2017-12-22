@@ -72,6 +72,7 @@ export default class TopologyGraphComponent extends Component {
     this.renderFlag = false;
     this.testRunActivated = props.testRunActivated;
     this.hideEventLog = props.hideEventLog;
+    this.componentLevelActionObj={};
   }
 
   componentWillReceiveProps(nextProps,previousProps){
@@ -513,6 +514,7 @@ export default class TopologyGraphComponent extends Component {
     } else {
       this.props.compSelectCallback('', null);
       this.viewModeNodeClickFlag = false;
+      this.triggerComponentLevelCallBack();
     }
   }
 
@@ -620,8 +622,17 @@ export default class TopologyGraphComponent extends Component {
       this.edgeStream.style('display', 'none');
       this.main_edgestream.style('display', 'none');
     }
+    this.triggerComponentLevelCallBack();
     state.showSpotlightSearch = false;
     this.viewModeNodeClickFlag = false;
+  }
+
+  triggerComponentLevelCallBack = () => {
+    if(!_.isEmpty(this.componentLevelActionObj)){
+      const {type,nodeId,value} = this.componentLevelActionObj;
+      this.props.componentLevelAction(type,nodeId,value);
+      this.componentLevelActionObj={};
+    }
   }
 
   // mouseup on main svg
@@ -887,6 +898,12 @@ export default class TopologyGraphComponent extends Component {
       obj.rectangleHeight -= 17;// to align along the rectangle partition.
     }
     return obj;
+  }
+
+  componentLevelActionHandler = (type,nodeId,value) => {
+    this.componentLevelActionObj["type"] = type;
+    this.componentLevelActionObj["nodeId"] = nodeId;
+    this.componentLevelActionObj["value"] = value;
   }
 
   updateGraph() {
@@ -1216,7 +1233,7 @@ export default class TopologyGraphComponent extends Component {
           .attr('y', 0)
           .style("display", "none");
       }
-      render(<ComponentLogActions topologyId={thisGraph.topologyId} viewModeContextRouter={thisGraph.props.viewModeContextRouter}  componentLevelAction={thisGraph.props.componentLevelAction} selectedNodeId={selectedNodeId} allComponentLevelAction={allComponentLevelAction} sampleTopologyLevel={sampleTopologyLevel}/>, this.logActions.node());
+      render(<ComponentLogActions topologyId={thisGraph.topologyId} viewModeContextRouter={thisGraph.props.viewModeContextRouter}  componentLevelAction={thisGraph.componentLevelActionHandler} selectedNodeId={selectedNodeId} allComponentLevelAction={allComponentLevelAction} sampleTopologyLevel={sampleTopologyLevel}/>, this.logActions.node());
     }
     //RHS Circle
     newGs.append("circle").attr("cx", function(d) {

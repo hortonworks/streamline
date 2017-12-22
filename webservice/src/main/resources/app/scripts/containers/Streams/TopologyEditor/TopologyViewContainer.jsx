@@ -53,6 +53,7 @@ class TopologyViewContainer extends Component {
     this.showLogSearch = false;
     this.fetchData();
     this.checkAuth = true;
+    this.sampleInputNotify = false;
   }
 
   componentWillUnmount() {
@@ -296,10 +297,17 @@ class TopologyViewContainer extends Component {
     let tempViewModeData = _.cloneDeep(this.state.viewModeData);
     if(value !== 'disable' && value !== 'enable'){
       tempViewModeData.sampleTopologyLevel = value;
+      this.sampleInputNotify = true;
       this.setState({viewModeData : tempViewModeData});
     } else if(value === 'enable' || value === 'disable'){
-      this.handleTopologyLevelSample(value);
+      if(this.sampleInputNotify){
+        this.handleTopologyLevelSample(value);
+      }
     }
+  }
+
+  disabledTopologyLevelSampling = () => {
+    this.topologyLevelInputSampleChange(0);
   }
 
   handleTopologyLevelSample = (value) => {
@@ -315,7 +323,9 @@ class TopologyViewContainer extends Component {
       } else {
         viewModeData.sampleTopologyLevel = res.pct !== undefined ? res.pct : 0;
         this.setState({viewModeData}, () => {
-          const msg = <strong>Sampling {status} successfully</strong>;
+          this.sampleInputNotify = false;
+          const statusText = status === 'disable' ? 'disabled' : 'enabled';
+          const msg = <strong>Sampling {statusText} successfully</strong>;
           FSReactToastr.success(msg);
           this.fetchComponentLevelDetails(this.graphData.nodes);
         });
@@ -608,8 +618,8 @@ class TopologyViewContainer extends Component {
   }
 
   postComponentLevelSample = (topologyId,componentId,value) => {
-    const val = value === 'disable' ? '' : value;
-    const status = value === 'disable' ? 'disable' : 'enable';
+    const val = value === 0 ? '' : value;
+    const status = value === 0 ? 'disable' : 'enable';
     ViewModeREST.postComponentSamplingStatus(topologyId,componentId,status,val).then((result) => {
       if(result.responseMessage !== undefined){
         FSReactToastr.error(
@@ -623,7 +633,8 @@ class TopologyViewContainer extends Component {
           tempViewMode.componentLevelActionDetails.samplings[index] = newObj;
         }
         this.setState({viewModeData : tempViewMode}, () => {
-          const msg = <strong>Component sampling {status} successfully</strong>;
+          const statusText = status === 'disable' ? 'disabled' : 'enabled';
+          const msg = <strong>Component sampling {statusText} successfully</strong>;
           FSReactToastr.success(msg);
           this.triggerUpdateGraph();
         });
@@ -666,6 +677,7 @@ class TopologyViewContainer extends Component {
                     namespaceId={this.namespaceId}
                     showLogSearchBtn={this.showLogSearch}
                     topologyLevelDetailsFunc={this.handleTopologyLevelDetails}
+                    disabledTopologyLevelSampling={this.disabledTopologyLevelSampling}
                    />,
                   <div id="viewMode" className="graph-bg" key={"2"}>
                     <div className="zoom-btn-group">

@@ -34,19 +34,15 @@ class ComponentLogActions extends Component {
   }
 
   handleCallBackAction = (type,nodeId,value) => {
-    const {refType,samplingChangeFunc,durationChangeFunc,logLevelChangeFunc,componentLevelAction,topologyId} = this.props;
-    if(refType === undefined){
-      componentLevelAction(type,nodeId,value);
-    } else {
-      switch(type){
-      case 'LOG' : logLevelChangeFunc(value);
-        break;
-      case 'DURATION' : durationChangeFunc(value);
-        break;
-      case 'SAMPLE' : samplingChangeFunc(value);
-        break;
-      default:break;
-      }
+    const {refType,samplingChangeFunc,durationChangeFunc,logLevelChangeFunc,componentLevelAction,topologyId,disabledTopologyLevelSampling} = this.props;
+    switch(type){
+    case 'LOG' : logLevelChangeFunc(value);
+      break;
+    case 'DURATION' : durationChangeFunc(value);
+      break;
+    case 'SAMPLE' : value === 'disable' ? disabledTopologyLevelSampling() : samplingChangeFunc(value);
+      break;
+    default:break;
     }
     this.inputFlag = true;
   }
@@ -61,24 +57,19 @@ class ComponentLogActions extends Component {
     });
   }
 
-  handleInputChange = (e) => {
+  handleInputChange = (nodeId,disableRef,e) => {
     const {refType} = this.props;
-    this.showError = Number(e.target.value) < 0 || Number(e.target.value) > 101 ? true : false;
+    const val = disableRef === null ?  Number(e.target.value) : 0;
+    this.showError = val < 0 || val > 101 ? true : false;
     if(refType !== undefined){
       this.inputFlag = true;
-      this.handleCallBackAction('SAMPLE',null,Number(e.target.value));
+      this.handleCallBackAction('SAMPLE',null,val);
     } else {
       this.inputFlag = false;
-      this.setState({customVal : e.target.value});
-    }
-  }
-
-  handleKeyPress = (nodeId,e) => {
-    const {refType} = this.props;
-    if(e.keyCode === 13 && !this.showError && refType === undefined){
-      const val = Number(e.target.value) >= 1 ? Number(e.target.value) : 'disable';
-      this.handleCallBackAction('SAMPLE',nodeId,val);
-      this.inputFlag = true;
+      this.setState({customVal : val}, () => {
+        this.props.componentLevelAction('SAMPLE',nodeId,Number(this.state.customVal));
+        this.inputFlag = true;
+      });
     }
   }
 
@@ -89,7 +80,7 @@ class ComponentLogActions extends Component {
       const samplingObj = _.find(allComponentLevelAction.samplings, (sample) => sample.componentId === selectedNodeId);
       sampleVal = refType === undefined ? samplingObj !== undefined && samplingObj.enabled ?  samplingObj.duration : 0 : samlpingValue;
     }
-    const sampleCustomVal = this.inputFlag ? sampleVal :  customVal;
+    const sampleCustomVal = this.inputFlag ? sampleVal :  this.state.customVal;
     return (
       <div ref="logActionContainer"  className={`${refType !== "" && refType !== undefined ? '' : 'component-log-actions-container'}`}>
         <div className={`${refType !== "" && refType !== undefined ? '' : 'sampling-buttons'}`}>
@@ -118,12 +109,12 @@ class ComponentLogActions extends Component {
           <div>
             <label style={{marginLeft:'7px'}}>Sampling Percentage<small className="text-info" style={{fontSize : 9,marginLeft : 10}}>Between 0 to 100 only</small></label>
             <div style={{width : '70%',float : 'left'}}>
-              <input value={sampleCustomVal} ref="customSample" onChange={this.handleInputChange} onKeyUp={this.handleKeyPress.bind(this,selectedNodeId)} placeholder="Between 0 to 100 only"  className={`form-control ${this.showError ? 'invalidInput' : '' }`} name="customSample" type="number" min={0} max={100} />
+              <input value={sampleCustomVal} ref="customSample" onChange={this.handleInputChange.bind(this,selectedNodeId,null)} placeholder="Between 0 to 100 only"  className={`form-control ${this.showError ? 'invalidInput' : '' }`} name="customSample" type="number" min={0} max={100} />
             </div>
             {
               sampleCustomVal > 0
               ? <div style={{width : '25%',float : 'left',marginLeft : '5%'}}>
-                  <button className="btn btn-default" onClick={this.handleCallBackAction.bind(this,'SAMPLE',selectedNodeId,'disable')}>Disable</button>
+                  <button className="btn btn-default" onClick={ refType !== undefined ? this.handleCallBackAction.bind(this,'SAMPLE',selectedNodeId,'disable') : this.handleInputChange.bind(this,selectedNodeId,'disable') }>Disable</button>
                 </div>
               : null
             }
