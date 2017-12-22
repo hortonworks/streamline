@@ -49,6 +49,7 @@ class TopologyViewMode extends Component {
       loading : true
     };
     this.stormClusterChkID(props.stormClusterId);
+    this.logInputNotify = false;
   }
   stormClusterChkID = (id) => {
     if (id) {
@@ -69,6 +70,9 @@ class TopologyViewMode extends Component {
   componentWillReceiveProps(props) {
     if (props.stormClusterId) {
       this.fetchData(props.stormClusterId);
+    }
+    if(this.props.viewModeData.logTopologyLevel !== props.viewModeData.logTopologyLevel || this.props.viewModeData.durationTopologyLevel !== props.viewModeData.durationTopologyLevel){
+      this.logInputNotify = true;
     }
     this.setState({startDate: props.startDate, endDate: props.endDate, showLogSearchBtn: props.showLogSearchBtn});
   }
@@ -101,16 +105,16 @@ class TopologyViewMode extends Component {
   }
   toggleLogLevelDropdown = (isOpen) => {
     let {logTopologyLevel, durationTopologyLevel,sampleTopologyLevel} = this.props.viewModeData;
-    if(!isOpen && logTopologyLevel !== 'None' && durationTopologyLevel > 0) {
+    if(!isOpen && logTopologyLevel !== 'None' && durationTopologyLevel > 0 ) {
       this.topologySampleLavelCallBack(sampleTopologyLevel);
       this.postTopologyLogConfigCallBack(logTopologyLevel,durationTopologyLevel);
+      if(this.logInputNotify){
+        FSReactToastr.success(<strong>Changing log level successfully</strong>);
+        this.logInputNotify = false;
+      }
     } else if(!isOpen && logTopologyLevel === 'None' && durationTopologyLevel <= 0){
       this.topologySampleLavelCallBack(sampleTopologyLevel);
-    } //else if(!isOpen && logTopologyLevel !== 'None' && durationTopologyLevel > 0){
-    //   this.postTopologyLogConfigCallBack(logTopologyLevel,durationTopologyLevel);
-    //   const msg = <strong>Log enabled successfully</strong>;
-    //   FSReactToastr.success(msg);
-    // }
+    }
   }
 
   topologySampleLavelCallBack = (sampleTopologyLevel) => {
@@ -187,7 +191,8 @@ class TopologyViewMode extends Component {
       topologyVersion,
       versionsArr = [],
       allACL,
-      viewModeData
+      viewModeData,
+      disabledTopologyLevelSampling
     } = this.props;
 
     const {metric} = topologyMetric || {
@@ -261,6 +266,7 @@ class TopologyViewMode extends Component {
                 allComponentLevelAction={viewModeData.allComponentLevelAction}
                 topologyId={topologyId}
                 refType="view-container"
+                disabledTopologyLevelSampling={disabledTopologyLevelSampling}
               />
             </DropdownButton>
           </div>
