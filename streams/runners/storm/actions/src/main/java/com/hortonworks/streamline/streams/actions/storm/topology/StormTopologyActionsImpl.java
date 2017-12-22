@@ -395,7 +395,10 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public LogLevelInformation configureLogLevel(TopologyLayout topology, LogLevel targetLogLevel, int durationSecs, String asUser) throws Exception {
-        String stormTopologyId = getRuntimeTopologyId(topology, asUser);
+        String stormTopologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId(), asUser);
+        if (StringUtils.isEmpty(stormTopologyId)) {
+            return null;
+        }
         LogLevelResponse response = client.configureLog(stormTopologyId, ROOT_LOGGER_NAME, targetLogLevel.name(),
                 durationSecs, asUser);
         return convertLogLevelResponseToLogLevelInformation(response);
@@ -403,7 +406,10 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public LogLevelInformation getLogLevel(TopologyLayout topology, String asUser) throws Exception {
-        String stormTopologyId = getRuntimeTopologyId(topology, asUser);
+        String stormTopologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId(), asUser);
+        if (StringUtils.isEmpty(stormTopologyId)) {
+            return null;
+        }
         LogLevelResponse response = client.getLogLevel(stormTopologyId, asUser);
         return convertLogLevelResponseToLogLevelInformation(response);
     }
@@ -890,10 +896,10 @@ public class StormTopologyActionsImpl implements TopologyActions {
         Map<String, LogLevelLoggerResponse> namedLoggerLevels = response.getNamedLoggerLevels();
         LogLevelLoggerResponse resp = namedLoggerLevels.get(ROOT_LOGGER_NAME);
         if (resp == null) {
-            return null;
+            return LogLevelInformation.disabled();
         }
 
-        return new LogLevelInformation(LogLevel.valueOf(resp.getTargetLevel()), resp.getTimeoutEpoch());
+        return LogLevelInformation.enabled(LogLevel.valueOf(resp.getTargetLevel()), resp.getTimeoutEpoch());
     }
 
 }
