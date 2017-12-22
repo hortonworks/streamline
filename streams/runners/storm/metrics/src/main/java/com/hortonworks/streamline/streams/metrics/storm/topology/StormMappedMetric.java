@@ -28,6 +28,7 @@ enum StormMappedMetric {
     failedRecords("__fail-count", TimeSeriesQuerier.AggregateFunction.SUM),
     processedTime("__process-latency", TimeSeriesQuerier.AggregateFunction.AVG),
     recordsInWaitQueue("__receive.population", TimeSeriesQuerier.AggregateFunction.AVG),
+    executeTime("__execute-latency", TimeSeriesQuerier.AggregateFunction.AVG),
 
     // Kafka related metrics are already partitions aggregated value so actually don't need to have aggregate function
     // but they need topic name to be queried
