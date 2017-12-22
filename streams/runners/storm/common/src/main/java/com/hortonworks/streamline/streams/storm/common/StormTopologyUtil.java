@@ -28,6 +28,10 @@ public class StormTopologyUtil {
         return "streamline-" + topologyId + "-" + topologyName;
     }
 
+    public static String generateStormComponentId(Long componentId, String componentName) {
+        return String.format("%s-%s", componentId, componentName);
+    }
+
     public static String generateUniqueStormTopologyNamePrefix(Long topologyId) {
         return "streamline-" + topologyId + "-";
     }
