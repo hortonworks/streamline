@@ -42,6 +42,19 @@ import EditorGraph from '../../../components/EditorGraph';
 import TestRunREST from '../../../rest/TestRunREST';
 import {Select2 as Select,Creatable} from '../../../utils/SelectUtils';
 import EventGroupPagination from '../../../components/EventGroupPagination';
+import {
+  getAllTestCase,
+  SaveTestSourceNodeModal,
+  deleteAllEventLogData,
+  deleteTestCase,
+  checkConfigureTestCaseType,
+  updateTestCase,
+  downloadTestFileCallBack,
+  excuteTestCase,
+  populatePaginationData,
+  syncNodeDataAndEventLogData,
+  fetchSingleEventLogData
+} from '../../../utils/TestModeUtils/TestModeUtils';
 
 @observer
 class TopologyEditorContainer extends Component {
@@ -1102,14 +1115,8 @@ class TopologyEditorContainer extends Component {
       this.refs.EdgeConfigModal.state.show
         ? this.handleSaveEdgeConfig(this)
         : '';
-      this.refs.TestCaseListModel.state.show
-        ? this.testCaseListSave()
-        : '';
       this.refs.TestSourceNodeModal.state.show
         ? this.handleSaveTestSourceNodeModal()
-        : '';
-      this.refs.TestSinkNodeModal.state.show
-        ? this.handleSaveTestSinkNodeModal()
         : '';
       this.refs.modeChangeModal.state.show
         ? this.modeChangeConfirmModal(this,true)
@@ -1124,7 +1131,8 @@ class TopologyEditorContainer extends Component {
   runTestClicked(){
     if(!this.state.testRunActivated){
       if(this.graphData.nodes.length){
-        this.getAllTestCase();
+        // getAllTestCase " Method from TestModeUtils.js "
+        getAllTestCase.call(this);
       } else {
         FSReactToastr.info(
           <CommonNotification flag="error" content={"please configure some nodes before switching to test mode"}/>, '', toastOpt);
@@ -1132,7 +1140,8 @@ class TopologyEditorContainer extends Component {
     } else {
       if(!this.state.testRunningMode){
         this.setState({testRunActivated : false ,testHistory : [] ,selectedTestObj : {}, eventLogData : [] , hideEventLog : true , testCompleted : false,activePage : 1,activePageList : []},() => {
-          this.deleteAllEventLogData();
+          // deleteAllEventLogData " Method from TestModeUtils.js "
+          deleteAllEventLogData.call(this);
         });
       } else {
         FSReactToastr.info(
@@ -1141,43 +1150,6 @@ class TopologyEditorContainer extends Component {
     }
   }
 
-  /*
-    runTestClicked fetch all the testCaseList from the server
-    And if the result is not empty then entities[0] is make selectedTestObj by default
-  */
-  getAllTestCase(invoker){
-    TestRunREST.getAllTestRun(this.topologyId).then((testList) => {
-      if(testList.responseMessage !== undefined){
-        FSReactToastr.error(
-          <CommonNotification flag="error" content={testList.responseMessage}/>, '', toastOpt);
-      } else {
-        const entities = testList.entities;
-        let stateObj = {
-          testCaseList : entities,
-          testCaseLoader : false,
-          testRunActivated : true,
-          selectedTestObj : entities.length > 0 ? entities[0] : '',
-          nodeListArr : this.graphData.nodes
-        };
-        if(stateObj.testCaseList.length === 0){
-          stateObj.nodeData = this.graphData.nodes[0].parentType.toLowerCase() === 'source' ? this.graphData.nodes[0] : '';
-          if(_.isEmpty(stateObj.nodeData)){
-            const sourceNode = _.filter(this.graphData.nodes, (node) => {
-              return node.parentType.toLowerCase() === 'source';
-            });
-            stateObj.nodeData = sourceNode[0];
-          }
-          this.modalTitle = 'TEST-'+stateObj.nodeData.parentType;
-        }
-        stateObj.eventLogData = entities.length ? this.state.eventLogData : [];
-        this.setState(stateObj, () => {
-          if(this.state.testCaseList.length === 0 && invoker === undefined){
-            this.refs.TestSourceNodeModal.show();
-          }
-        });
-      }
-    });
-  }
 
   /*
     handleSaveTestSourceNodeModal is call to save the TestSourceNodeModal
@@ -1186,83 +1158,8 @@ class TopologyEditorContainer extends Component {
     update = PUT Api call
   */
   handleSaveTestSourceNodeModal(){
-    this.refs.TestSourceNodeContentRef.validateData().then((response) => {
-      let flag = [];
-      _.map(response,(res) => {
-        if(res.responseMessage !== undefined){
-          flag.push(res.responseMessage);
-        }
-      });
-      if(flag.length){
-        FSReactToastr.error(
-          <CommonNotification flag="error" content={flag[0]}/>, '', toastOpt);
-      } else {
-        let responseValidator=[];
-        _.map(response, (r) => {
-          if(r.toString() === "Some mandatory fields are empty"){
-            responseValidator.push(false);
-          }
-        });
-        if(responseValidator.length){
-          FSReactToastr.error(
-            <CommonNotification flag="error" content={response[0]}/>, '', toastOpt);
-        } else {
-          this.refs.TestSourceNodeModal.hide();
-          this.refs.TestSourceNodeContentRef.handleSave().then((testResult) => {
-            let configSuccess = true,poolIndex = -1;
-            _.map(testResult, (result) => {
-              if(result.responseMessage !== undefined){
-                FSReactToastr.error(
-                  <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
-                configSuccess = false;
-              } else {
-                let tempSourceConfig = _.cloneDeep(this.state.testSourceConfigure);
-                poolIndex = _.findIndex(tempSourceConfig, {id : result.sourceId});
-                if(poolIndex === -1){
-                  tempSourceConfig.push({id :  result.sourceId});
-                  this.setState({testSourceConfigure :tempSourceConfig});
-                }
-              }
-            });
-            if(configSuccess) {
-              const  msg =  <strong>{`Test source ${poolIndex !== -1 ? "config update" : "configure"} successfully`}</strong>;
-              FSReactToastr.success(
-                msg
-              );
-            }
-          });
-        }
-      }
-    });
-  }
-
-  /*
-    handleSaveTestSinkNodeModal is call to save the TestSinkNodeModal
-    And add the testCase to poolIndex for notification
-    configure = GET Api call
-    update = PUT Api call
-  */
-  handleSaveTestSinkNodeModal(){
-    if(this.refs.TestSinkNodeContentRef.validateData()){
-      this.refs.TestSinkNodeModal.hide();
-      this.refs.TestSinkNodeContentRef.handleSave().then((testRun) => {
-        if(testRun.responseMessage !== undefined){
-          FSReactToastr.error(
-            <CommonNotification flag="error" content={testRun.responseMessage}/>, '', toastOpt);
-        } else {
-          let tempSinkConfig = _.cloneDeep(this.state.testSinkConfigure);
-          const poolIndex = _.findIndex(tempSinkConfig, {id : testRun.sinkId});
-          if(poolIndex === -1){
-            tempSinkConfig.push({id : testRun.sinkId});
-            this.setState({testSinkConfigure : tempSinkConfig});
-          }
-          const  msg =  <strong>{`Test sink ${poolIndex !== -1 ? "updated" : "configure"} successfully`}</strong>;
-          FSReactToastr.success(
-            msg
-          );
-        }
-      });
-    }
+    // SaveTestSourceNodeModal " Method from TestModeUtils.js "
+    SaveTestSourceNodeModal.call(this);
   }
 
   /*
@@ -1273,15 +1170,8 @@ class TopologyEditorContainer extends Component {
     if(obj){
       if(!!type){
         this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete the Test Case?'}).then((confirmBox) => {
-          TestRunREST.deleteTestCase(this.topologyId, obj.id).then((result) => {
-            if(result.responseMessage !== undefined){
-              FSReactToastr.info(
-                <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
-            } else {
-              FSReactToastr.success(<strong>Test Case deleted successfully</strong>);
-              this.getAllTestCase('delete');
-            }
-          });
+          // deleteTestCase " Method from TestModeUtils.js "
+          deleteTestCase.call(this,obj);
           confirmBox.cancel();
         }, () => {});
       } else {
@@ -1308,14 +1198,8 @@ class TopologyEditorContainer extends Component {
     And SET the tempConfig usin nodeText
   */
   checkConfigureTestCase = (Id,nodeText) => {
-    const tempConfig = _.cloneDeep(this.state[`test${nodeText}Configure`]);
-    const poolIndex = _.findIndex(tempConfig, {id : Id});
-    if(poolIndex === -1){
-      tempConfig.push({id : Id });
-    }
-    nodeText === "Source"
-    ? this.setState({testSourceConfigure : tempConfig})
-    : this.setState({testSinkConfigure : tempConfig});
+    // checkConfigureTestCaseType " Method from TestModeUtils.js "
+    checkConfigureTestCaseType.call(this,Id,nodeText);
   }
 
   /*
@@ -1336,95 +1220,16 @@ class TopologyEditorContainer extends Component {
       const {selectedTestObj} = this.state;
       this.setState({eventLogData :[] ,hideEventLog :false, testHistory : {},testCompleted : false, testRunningMode : true,abortTestCase : false,activePage : 1,activePageList : []});
       // clear all EventLogData from the graphData
-      this.deleteAllEventLogData();
+      // deleteAllEventLogData " Method from TestModeUtils.js "
+      deleteAllEventLogData.call(this);
       let testCaseData = { topologyId : this.topologyId , testCaseId : selectedTestObj.id };
       if(this.state.testRunDuration !== '') {
         testCaseData.durationSecs = parseInt(this.state.testRunDuration, 10);
       }
-      TestRunREST.runTestCase(this.topologyId,{body : JSON.stringify(testCaseData)}).then((testResult) => {
-        if(testResult.responseMessage !== undefined){
-          const msg = testResult.responseMessage.indexOf('Not every source register') !== -1 ? "please configure all test source" : testResult.responseMessage;
-          FSReactToastr.error(
-            <CommonNotification flag="error" content={msg}/>, '', toastOpt);
-          this.setState({testRunningMode : false});
-        } else {
-          const recursiveFunction = () => {
-            TestRunREST.runTestCaseHistory(this.topologyId,testResult.id).then((testHistory) => {
-              if(testHistory.responseMessage !== undefined){
-                clearTimeout(this.eventLogTimer);
-                this.setState({hideEventLog : true,testRunningMode : false,activePage : 1,activePageList : []});
-                FSReactToastr.info(
-                  <CommonNotification flag="error" content={testHistory.responseMessage}/>, '', toastOpt);
-                this.setState({hideEventLog :true,testHistory : {},testCompleted : true}, () => {
-                  this.removeEventLogOverlayDiv();
-                });
-              } else {
-                this.setState({testHistory : testHistory}, () => {
-                  TestRunREST.getTestCaseEventLog(this.topologyId,testHistory.id).then((events) => {
-                    if(events.responseMessage !== undefined){
-                      clearTimeout(this.eventLogTimer);
-                      FSReactToastr.info(
-                        <CommonNotification flag="error" content={events.responseMessage}/>, '', toastOpt);
-                      this.setState({eventLogData : [] ,hideEventLog :true,testCompleted : true,testRunningMode : false,activePage : 1,activePageList : []}, () => {
-                        this.removeEventLogOverlayDiv();
-                      });
-                    } else {
-                      _.map(events.entities,(entity , i) => {
-                        entity.id = Utils.eventLogNumberId(i+1);
-                      });
-                      this.setState({eventLogData : events.entities, testHistory : testHistory,testCompleted : true,notifyCheck:false}, () => {
-                        if(events.entities.length){
-                          this.setState({hideEventLog :true});
-                          this.activePageApiCallback(this.topologyId,testHistory.id);
-                        }
-                        if(testHistory.finished){
-                          this.setState({testRunningMode : false,hideEventLog :true}, () => {
-                            clearTimeout(this.eventLogTimer);
-                            const msg =  this.state.abortTestCase
-                                          ? "Test Run aborted successfully"
-                                          : testHistory.success
-                                            ? this.state.eventLogData.length
-                                              ? "Test Run completed successfully"
-                                              : "Test Run has No Record"
-                                            : 'Test Run has No Record';
-                            FSReactToastr.success(<strong>{msg}</strong>);
-                          });
-                        } else {
-                          clearTimeout(this.eventLogTimer);
-                          this.eventLogTimer = setTimeout(() => {
-                            recursiveFunction();
-                          },3000);
-                        }
-                      });
-                    }
-                  });
-                });
-              }
-            });
-          };
-          recursiveFunction();
-        }
-      });
+      // excuteTestCase " Method from TestModeUtils.js "
+      excuteTestCase.call(this,testCaseData);
     } else {
       this.setState({testRunDuration: 30});
-    }
-  }
-
-  removeEventLogOverlayDiv = () => {
-    const elem = document.getElementById('eventDiv');
-    if(elem !== null){
-      elem.parentNode.removeChild(elem);
-    }
-  }
-
-  /*
-    cancelTestResultApiCB is trigger from
-    TestRunResultModal if the user cancel the modal-xl
-    we clearInterval of API pool
-  */
-  cancelTestResultApiCB = (flag) =>{
-    if(flag){
-      clearInterval(this.interval);
     }
   }
 
@@ -1447,11 +1252,8 @@ class TopologyEditorContainer extends Component {
   }
 
   updateTestCaseList = (obj) => {
-    let testList = _.cloneDeep(this.state.testCaseList);
-    const _index = _.findIndex(testList, (test) => {return test.id === obj.id;});
-    _index === -1
-    ? testList.push(obj)
-    : testList[_index] = obj;
+    // updateTestCase " Method from TestModeUtils.js "
+    const testList = updateTestCase(obj,this.state.testCaseList);
     this.setState({testCaseList : testList , selectedTestObj : obj});
   }
 
@@ -1459,16 +1261,11 @@ class TopologyEditorContainer extends Component {
     const {testHistory,eventLogData} = this.state;
     if(testHistory.id && eventLogData.length){
       this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to download the Test file?'}).then((confirmBox) => {
-        this.downloadTestFileCallBack(this.topologyId,testHistory.id);
+        // downloadTestFileCallBack  " Method from TestModeUtils.js "
+        downloadTestFileCallBack.call(this,this.topologyId,testHistory.id);
         confirmBox.cancel();
       });
     }
-  }
-
-  downloadTestFileCallBack = (id,historyId) => {
-    this.refs.downloadTest.href = TestRunREST.getDownloadTestCaseUrl(id,historyId);
-    this.refs.downloadTest.click();
-    this.refs.BaseContainer.refs.Confirm.cancel();
   }
 
   handleDeployTopology = () => {
@@ -1485,11 +1282,8 @@ class TopologyEditorContainer extends Component {
   }
 
   handleTestCaseDurationChange = (e) => {
-    if(e.target.value) {
-      this.setState({testRunDuration: e.target.value});
-    } else {
-      this.setState({testRunDuration: ''});
-    }
+    const val = e.target.value.trim() !== '' ? e.target.value.trim() : '';
+    this.setState({testRunDuration: val});
   }
 
   handleKillTestRun = () => {
@@ -1512,61 +1306,8 @@ class TopologyEditorContainer extends Component {
     const {testHistory} = this.state;
     this.setState({activePage : eventKey}, () => {
       // Always call the eventGroup[0] for fetching event log data
-      this.fetchSingleEventLogData(this.state.activePageList[(eventKey-1)][eventKey].eventGroup[0]);
-    });
-  }
-
-  activePageApiCallback = (topologyId,historyId) => {
-    TestRunREST.getAllTestEventRoots(topologyId,historyId).then((result) => {
-      if(result.responseMessage !== undefined){
-        this.setState({activePage : 1,activePageList : []}, () => {
-          FSReactToastr.info(
-            <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
-        });
-      } else {
-        const groupingEvent = this.populatePaginationData(result.entities);
-        this.setState({activePageList : groupingEvent},() => {
-          this.fetchSingleEventLogData(this.state.activePageList[(this.state.activePage-1)][this.state.activePage].eventGroup[0]);
-        });
-      }
-    });
-  }
-
-  populatePaginationData = (rootArr) => {
-    let tempRootArr=[],sPoint=1,ePoint=0;
-    _.map(rootArr, (arr,i) => {
-      if(_.isArray(arr)){
-        // let point=0;
-        // if(i === 0){
-        //   sPoint = sPoint+i;
-        //   ePoint = ePoint+arr.length;
-        // } else {
-        //   point = ePoint+arr.length;
-        //   sPoint = ePoint+1;
-        //   ePoint = point;
-        // }
-        let obj={};
-        obj[(i+1)]={};
-        // obj[(i+1)].eventKey = arr.length > 1 ? `${sPoint}-${i > 0 ? point : ePoint}` : `${ePoint}`;
-        obj[(i+1)].eventKey = (i+1);
-        obj[(i+1)].eventGroup = arr;
-        tempRootArr.push(obj);
-      }
-    });
-    return tempRootArr;
-  }
-
-  fetchSingleEventLogData = (eventId) => {
-    const {testHistory} = this.state;
-    TestRunREST.getFullTestEventTree(this.topologyId,testHistory.id,eventId).then((result) => {
-      if(result.responseMessage !== undefined){
-        FSReactToastr.info(
-          <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
-      } else {
-        this.setState({allEventObj : result}, () => {
-          this.syncNodeDataAndEventLogData(result);
-        });
-      }
+      // fetchSingleEventLogData  " Method from TestModeUtils.js "
+      fetchSingleEventLogData.call(this,this.state.activePageList[(eventKey-1)][eventKey].eventGroup[0]);
     });
   }
 
@@ -1575,38 +1316,6 @@ class TopologyEditorContainer extends Component {
       delete node.eventLogData;
     });
     this.triggerGraphUpdate();
-  }
-
-  syncNodeDataAndEventLogData = (eventLogObj,oldData,subTree) => {
-    if(!_.isEmpty(eventLogObj) && this.state.testRunActivated){
-      const eventGroupKey = _.keys(eventLogObj.componentGroupedEvents);
-      // first add an empty eventLogData object to all graphData nodes
-      _.map(this.graphData.nodes, (node) => {
-        const gKeyIndex = _.findIndex(eventGroupKey, (k) => k === node.uiname);
-        if(gKeyIndex !== -1){
-          const eventGroupKey = eventLogObj.componentGroupedEvents[node.uiname];
-          const type = node.parentType === "SOURCE" ? 'output' : 'input';
-          node.eventLogData = this.getEventLogData(eventGroupKey,eventLogObj.allEvents,type);
-        } else if(subTree === null || subTree === undefined) {
-          node.eventLogData = [];
-        }
-      });
-      this.triggerGraphUpdate();
-    }
-  }
-
-  getEventLogData = (eventGroupKey,allEvent,eventType) => {
-    let arr=[];
-    _.map(eventGroupKey[eventType+'EventIds'], (eventKey) => {
-      const eventIds = _.keys(allEvent);
-      const ind = _.findIndex(eventIds, (eventId) => eventId === eventKey);
-      if(ind !== -1){
-        let obj={};
-        obj.eventInformation = allEvent[eventKey];
-        arr.push(obj);
-      }
-    });
-    return arr;
   }
 
   triggerGraphUpdate = () => {
@@ -1707,30 +1416,10 @@ class TopologyEditorContainer extends Component {
           {this.modalContent()}
         </Modal>
 
-        {/* Show TestCaseList Model to Select*/}
-        <Modal ref="TestCaseListModel" onKeyPress={this.handleKeyPress.bind(this)} dialogClassName="modal-fixed-height" data-title="Test Case List" data-resolve={this.testCaseListSave} data-reject={this.testCaseListCancel}>
-          <div className="customFormClass">
-            <div  className="form-group">
-              <div className="col-md-12"  style={{bottom : "10px"}}>
-                <label>New Test
-                  <span className="text-danger">*</span>
-                </label>
-                <input placeholder="Enter TestCase Name" value={testName} type="text" ref="testCaseName" className={`${showError ? 'invalidInput' : 'form-control'}`} onChange={this.testInputChange} />
-              </div>
-            </div>
-          </div>
-        </Modal>
-
         {/* TestNodeModel for TestRun Mode for source */}
         <Modal ref="TestSourceNodeModal" onKeyPress={this.handleKeyPress.bind(this)} dialogClassName="modal-fixed-height modal-lg" data-title={"Test Case"}
           data-resolve={this.handleSaveTestSourceNodeModal.bind(this)}>
           <TestSourceNodeModal ref="TestSourceNodeContentRef" topologyId={this.topologyId} versionId={this.versionId} nodeData={nodeData} testCaseObj={selectedTestObj || {}}  checkConfigureTestCase={this.checkConfigureTestCase} nodeListArr={nodeListArr} updateTestCaseList={this.updateTestCaseList}/>
-        </Modal>
-
-        {/* TestNodeModel for TestRun Mode for sink */}
-        <Modal ref="TestSinkNodeModal" onKeyPress={this.handleKeyPress.bind(this)} dialogClassName="modal-fixed-height modal-lg" data-title={"Test Case"}
-          data-resolve={this.handleSaveTestSinkNodeModal.bind(this)}>
-          <TestSinkNodeModal ref="TestSinkNodeContentRef" topologyId={this.topologyId} versionId={this.versionId} nodeData={nodeData} testCaseObj={selectedTestObj || {}} currentEdges={testRunCurrentEdges} checkConfigureTestCase={this.checkConfigureTestCase} nodeListArr={nodeListArr}/>
         </Modal>
 
         {/*ConfirmBox to Change Mode to Dev || Test*/}

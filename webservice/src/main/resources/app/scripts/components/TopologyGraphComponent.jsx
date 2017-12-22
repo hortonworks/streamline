@@ -89,6 +89,7 @@ export default class TopologyGraphComponent extends Component {
     }
     if((!this.testRunActivated && !this.props.viewMode) || this.hideEventLog){
       this.toolTip.hide();
+      this.viewToolTip.hide();
     }
     if(this.props.viewMode) {
       // show the selected node on graph if component is selected from footer.
@@ -114,6 +115,7 @@ export default class TopologyGraphComponent extends Component {
     d3.select('body').on("keydown", null).on("keyup", null);
     window.removeEventListener('keydown', this.handleKeyDown.bind(this), false);
     this.toolTip.hide();
+    this.viewToolTip.hide();
   }
 
   state = {
@@ -202,14 +204,16 @@ export default class TopologyGraphComponent extends Component {
     // component log actions
     this.logActions = svgG.append("foreignObject")
       .attr("class", "log-actions")
-      .attr("width", 286)
+      .attr("width", 500)
       .attr("height", 160)
       .style("display", "none")
       .attr('x', function(d){return 0;})
       .attr('y', function(d){return 100;});
 
-    this.toolTip = d3Tip().attr('class', 'd3-tip').offset([0, 10]).direction('e').html('');
+    this.toolTip = d3Tip().attr('class', 'd3-tip').offset([0, 0]).direction('e').html('');
+    this.viewToolTip = d3Tip().attr('class', 'd3-tip').offset([0, -5]).direction('w').html('');
     svgG.call(this.toolTip);
+    svgG.call(this.viewToolTip);
     $('.container.wrapper').append($('body > .d3-tip'));
     this.main_edgestream = d3.select('.edge-stream');
     this.drag = d3.behavior.drag().origin(function(d) {
@@ -256,8 +260,10 @@ export default class TopologyGraphComponent extends Component {
     });
 
     svg.on("mousemove", function(d) {
-      if (d3.event.target.nodeName === 'svg' && !thisGraph.testRunActivated)
-        {thisGraph.toolTip.hide();}
+      if (d3.event.target.nodeName === 'svg' && !thisGraph.testRunActivated){
+        thisGraph.toolTip.hide();
+        thisGraph.viewToolTip.hide();
+      }
     });
 
     // listen for dragging - also used for zoom in/out via buttons
@@ -298,7 +304,7 @@ export default class TopologyGraphComponent extends Component {
     this.renderFlag = true;
     this.evt = document.createEvent("Events");
     this.evt.initEvent("click", true, true);
-    this.eventTable = false;
+    this.viewModeNodeClickFlag = false;
   }
 
   zoomAction(zoomType) {
@@ -446,6 +452,7 @@ export default class TopologyGraphComponent extends Component {
   showNodeStreams(d, node, data) {
     if (data.inputSchema.length === 0 && data.outputSchema.length === 0) {
       this.toolTip.hide();
+      this.viewToolTip.hide();
       return;
     }
     var thisGraph = this;
@@ -461,10 +468,28 @@ export default class TopologyGraphComponent extends Component {
         ? ''
         : '<span class="text-danger">*</span>') + '<span class="output-type">' + s.type + '</span></li>');
     });
-    thisGraph.toolTip.html(function(d) {
+    inputFieldsHtml !== ''
+    ? this.showLeftToolTip.call(this,d,node,data,inputFieldsHtml)
+    : null;
+    outputFieldsHtml !== ''
+    ? this.showRightToolTip.call(this,d,node,data,outputFieldsHtml)
+    : null;
+  }
+
+  showLeftToolTip(d,node,data,inputFieldsHtml){
+    var thisGraph = this;
+    thisGraph.viewToolTip.direction('w').html(function(d) {
       return ('<div class="schema-tooltip clearfix"><h3>Schema</h3>' + (inputFieldsHtml === ''
         ? ''
-        : '<div class="input-schema"><h4>Input</h4><ul class="schema-list">' + inputFieldsHtml + '</ul></div>') + (outputFieldsHtml === ''
+        : '<div class="input-schema"><h4>Input</h4><ul class="schema-list">' + inputFieldsHtml + '</ul></div>') + '</div>');
+    });
+    thisGraph.viewToolTip.show(data, node);
+  }
+
+  showRightToolTip(d,node,data,outputFieldsHtml){
+    var thisGraph = this;
+    thisGraph.toolTip.direction('e').html(function(d) {
+      return ('<div class="schema-tooltip clearfix"><h3>Schema</h3>' + (outputFieldsHtml === ''
         ? ''
         : '<div class="output-schema"><h4>Output</h4><ul class="schema-list">' + outputFieldsHtml + '</ul></div>') + '</div>');
     });
@@ -476,6 +501,7 @@ export default class TopologyGraphComponent extends Component {
     let {internalFlags} = this;
     d3.event.stopPropagation();
     internalFlags.mouseDownNode = d;
+    this.viewModeNodeClickFlag = true;
   }
 
   // mouseup on node in view mode
@@ -486,6 +512,7 @@ export default class TopologyGraphComponent extends Component {
       this.props.compSelectCallback(d.nodeId, d);
     } else {
       this.props.compSelectCallback('', null);
+      this.viewModeNodeClickFlag = false;
     }
   }
 
@@ -594,6 +621,7 @@ export default class TopologyGraphComponent extends Component {
       this.main_edgestream.style('display', 'none');
     }
     state.showSpotlightSearch = false;
+    this.viewModeNodeClickFlag = false;
   }
 
   // mouseup on main svg
@@ -1059,6 +1087,7 @@ export default class TopologyGraphComponent extends Component {
         d3.select(this.parentElement).select('text.fa.fa-times').style('display', 'none');
       } else {
         thisGraph.toolTip.hide();
+        thisGraph.viewToolTip.hide();
       }
     }).on('mousedown', function(d) {
       if (thisGraph.editMode) {
@@ -1162,13 +1191,13 @@ export default class TopologyGraphComponent extends Component {
         render(<TopologyComponentMetrics topologyId={thisGraph.topologyId} compData={data[0]} viewModeData={thisGraph.props.viewModeData} startDate={thisGraph.props.startDate} endDate={thisGraph.props.endDate} />, compMetrics.node());
       });
 
+      let allComponentLevelAction='',selectedNodeId='',sampleTopologyLevel='';
       //component log actions
-      if(internalFlags.selectedNode) {
+      if(internalFlags.selectedNode && this.viewModeNodeClickFlag) {
         const x = internalFlags.selectedNode.x;
         const y = internalFlags.selectedNode.y;
         let selectedMode = thisGraph.props.viewModeData.selectedMode;
         // NOTE- Uncommenting the line below will show sampling box
-        /*
         this.logActions.attr('x', x - 50)
           .attr('y', function(){
             if(selectedMode === 'Overview' || selectedMode === 'Sample'){
@@ -1178,14 +1207,16 @@ export default class TopologyGraphComponent extends Component {
             }
           })
           .style("display", "block");
-        */
+        selectedNodeId = internalFlags.selectedNode.nodeId ;
+        allComponentLevelAction = thisGraph.props.viewModeData.componentLevelActionDetails;
+        sampleTopologyLevel = thisGraph.props.viewModeData.sampleTopologyLevel;
       } else {
         this.logActions
           .attr('x', 0)
           .attr('y', 0)
           .style("display", "none");
       }
-      render(<ComponentLogActions />, this.logActions.node());
+      render(<ComponentLogActions topologyId={thisGraph.topologyId} viewModeContextRouter={thisGraph.props.viewModeContextRouter}  componentLevelAction={thisGraph.props.componentLevelAction} selectedNodeId={selectedNodeId} allComponentLevelAction={allComponentLevelAction} sampleTopologyLevel={sampleTopologyLevel}/>, this.logActions.node());
     }
     //RHS Circle
     newGs.append("circle").attr("cx", function(d) {
