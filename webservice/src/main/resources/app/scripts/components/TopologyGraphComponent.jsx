@@ -149,11 +149,12 @@ export default class TopologyGraphComponent extends Component {
     TAB_KEY: 9,
     ENTER_KEY: 13,
     rectangleWidth: 184,
+    newMetricsRectangleWidth: 225,
     rectangleHeight: 40,
     testDataRectHeight: 210,
     testNoDataRectHeight: 75,
-    metricsRectHeight: 100,
-    metricsGraphRectHeight: 235
+    metricsRectHeight: 112,
+    metricsGraphRectHeight: 247
   };
 
   componentDidUpdate() {
@@ -852,6 +853,15 @@ export default class TopologyGraphComponent extends Component {
     },700);
   }
 
+  calculateWidth = (d) => {
+    const thisGraph = this;
+    let num = thisGraph.constants.rectangleWidth;
+    if(!thisGraph.editMode && thisGraph.props.isAppRunning === true && d.parentType !== 'SOURCE'){
+      num = thisGraph.constants.newMetricsRectangleWidth;
+    }
+    return num;
+  }
+
   calculateHeight = (d) => {
     const thisGraph = this;
     let num = thisGraph.constants.rectangleHeight - 1;
@@ -1059,7 +1069,7 @@ export default class TopologyGraphComponent extends Component {
 
     //Outer Rectangle
     newGs.append("rect").attr("width", function(d){
-      return constants.rectangleWidth;
+      return thisGraph.calculateWidth.call(thisGraph,d);
     })
     .attr("height", function(d){
       return thisGraph.calculateHeight.call(thisGraph,d);
@@ -1134,7 +1144,15 @@ export default class TopologyGraphComponent extends Component {
       thisGraph.updateGraph();
     }).call(thisGraph.drag);
     //Parallelism Icons
-    newGs.append("text").attr("class", "fa fa-caret-right").attr("x", "173px").attr("y", "26px").text(function(d) {
+    newGs.append("text").attr("class", "fa fa-caret-right")
+    .attr("x", function(d){
+      if(!thisGraph.editMode && thisGraph.props.isAppRunning === true && d.parentType !== 'SOURCE'){
+        return "210px";
+      } else {
+        return "173px";
+      }
+    })
+    .attr("y", "26px").text(function(d) {
       return '\uf0da';
     }).on("click", function(d) {
       if (thisGraph.editMode && !thisGraph.testRunActivated) {
@@ -1149,7 +1167,15 @@ export default class TopologyGraphComponent extends Component {
         thisGraph.updateGraph();
       }
     });
-    newGs.append("text").attr("class", "fa fa-caret-left").attr("x", "143px").attr("y", "26px").text(function(d) {
+    newGs.append("text").attr("class", "fa fa-caret-left")
+    .attr("x", function(d){
+      if(!thisGraph.editMode && thisGraph.props.isAppRunning === true && d.parentType !== 'SOURCE'){
+        return "180px";
+      } else {
+        return "143px";
+      }
+    })
+    .attr("y", "26px").text(function(d) {
       return '\uf0d9';
     }).on("click", function(d) {
       if (thisGraph.editMode && !thisGraph.testRunActivated) {
@@ -1164,7 +1190,15 @@ export default class TopologyGraphComponent extends Component {
         thisGraph.updateGraph();
       }
     });
-    newGs.append("text").attr("class", "parallelism-count").attr("x", "162px").attr("y", "24px").attr("text-anchor", "middle").text(function(d) {
+    newGs.append("text").attr("class", "parallelism-count")
+    .attr("x", function(d){
+      if(!thisGraph.editMode && thisGraph.props.isAppRunning === true && d.parentType !== 'SOURCE'){
+        return "199px";
+      } else {
+        return "162px";
+      }
+    })
+    .attr("y", "24px").attr("text-anchor", "middle").text(function(d) {
       return d.parallelismCount.toString().length < 2
         ? "0" + d.parallelismCount
         : d.parallelismCount;
@@ -1183,7 +1217,7 @@ export default class TopologyGraphComponent extends Component {
         compMetrics.enter().append("foreignObject")
           .attr("class", "component-metrics")
           .style("display", "block")
-          .attr("width", thisGraph.constants.rectangleWidth)
+          .attr("width", thisGraph.calculateWidth.call(thisGraph,data[0]))
           .attr("height", 195)
           .attr('x', function(d){return 0;})
           .attr('y', function(d){return 40;});
@@ -1201,9 +1235,9 @@ export default class TopologyGraphComponent extends Component {
         this.logActions.attr('x', x - 50)
           .attr('y', function(){
             if(selectedMode === 'Overview' || selectedMode === 'Sample'){
-              return y + 101;
+              return y + 113;
             } else {
-              return y + 238;
+              return y + 248;
             }
           })
           .style("display", "block");
@@ -1221,7 +1255,7 @@ export default class TopologyGraphComponent extends Component {
     //RHS Circle
     newGs.append("circle").attr("cx", function(d) {
       if (d.parentType !== 'SINK') {
-        return (constants.rectangleWidth);
+        return thisGraph.calculateWidth.call(thisGraph,d);
       }
     }).attr("cy", function(d) {
       if (d.parentType !== 'SINK') {
