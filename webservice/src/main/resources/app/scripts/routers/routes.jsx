@@ -35,7 +35,7 @@ import SamplingsComponent from '../containers/Samplings/SamplingsComponent';
 const onEnter = (nextState, replace, callback) => {
   var sidebarRoute = nextState.routes[1];
   if (sidebarRoute) {
-    if (sidebarRoute.name === 'My Applications') {
+    if (sidebarRoute.name === 'My Applications' || sidebarRoute.name === 'Log Search' || sidebarRoute.name === 'Samplings') {
       state.sidebar_activeKey = 1;
       state.sidebar_toggleFlag = false;
     } else if (sidebarRoute.name === 'Model Registry') {

@@ -66,12 +66,13 @@ export default class ComponentSamplings extends Component{
         timestamp: true,
         componentName: true,
         keyValues: true,
-        header : false,
-        auxKeyValues: false,
-        eventId: false,
-        rootIds: false,
-        parentIds : false
-      }
+        header : Utils.getItemFromLocalStorage("sampling:header") !== '' ? true : false,
+        auxKeyValues: Utils.getItemFromLocalStorage("sampling:auxKeyValues") !== '' ? true : false,
+        eventId: Utils.getItemFromLocalStorage("sampling:eventId") !== '' ? true : false,
+        rootIds: Utils.getItemFromLocalStorage("sampling:rootIds") !== '' ? true : false,
+        parentIds : Utils.getItemFromLocalStorage("sampling:parentIds") !== '' ? true : false
+      },
+      sort: Utils.getItemFromLocalStorage("sampling:sort") !== '' ? Utils.getItemFromLocalStorage("sampling:sort") : "asc"
     };
     this.initialFetch = true;
     this.fetchData();
@@ -119,13 +120,14 @@ export default class ComponentSamplings extends Component{
 
   fetchData(){
     const {viewModeData,graphData,topologyId,selectedComponentId} = this.props.location.state;
-    const {startDate,endDate,pageSize,activePage,componentOptions,searchString,selectedComponentArr,searchEventId} = this.state;
+    const {startDate,endDate,pageSize,activePage,componentOptions,searchString,selectedComponentArr,searchEventId, sort} = this.state;
     let componentId = selectedComponentId;
     const queryParams = {
       from : startDate.valueOf(),
       to : endDate.valueOf(),
       start: (activePage-1)*pageSize,
-      limit : pageSize
+      limit : pageSize,
+      ascending: sort === "asc" ? true : false
     };
     if(searchString !== ''){
       queryParams['searchString'] = searchString;
@@ -207,8 +209,22 @@ export default class ComponentSamplings extends Component{
   }
 
   getTableHeader = () => {
-    const {showColumn} = this.state;
+    const {showColumn, sort} = this.state;
     let content=[];
+    const sortButton = <DropdownButton
+                          id="sort-select"
+                          title={<i className={sort==="asc" ? "fa fa-sort-amount-asc" : "fa fa-sort-amount-desc"} aria-hidden="true"></i>}
+                          pullRight={true}
+                          bsStyle="link"
+                          onSelect={this.onSortSelect}
+                          style={{"marginRight": "30px"}}>
+                          <MenuItem eventKey="asc">
+                            {sort === "asc" ? <i className="fa fa-check" aria-hidden="true"></i> : <i className="fa" aria-hidden="true"></i>} Ascending
+                          </MenuItem>
+                          <MenuItem eventKey="desc">
+                            {sort === "desc" ? <i className="fa fa-check" aria-hidden="true"></i> : <i className="fa" aria-hidden="true"></i>} Descending
+                          </MenuItem>
+                        </DropdownButton>;
     const columnSelectButton = <DropdownButton
                                   id="column-select"
                                   title={<i className="fa fa-cog" aria-hidden="true"></i>}
@@ -258,7 +274,7 @@ export default class ComponentSamplings extends Component{
     showColumn.auxKeyValues ? content.push(<Th key={"auxKeyValues"} column="auxKeyValues">Aux Key Values</Th>) : null;
     showColumn.rootIds ? content.push(<Th key={"rootIds"} column="rootIds">Root Id</Th>) : null;
     showColumn.parentIds ? content.push(<Th key={"parentIds"} column="parentIds">Parent Id</Th>) : null;
-    showColumn.keyValues ? content.push(<Th key={"KeyValues"} column="keyValues">key Values<div className="pull-right">{columnSelectButton}</div></Th>) : null;
+    showColumn.keyValues ? content.push(<Th key={"KeyValues"} column="keyValues">Key Values<div className="pull-right">{sortButton}{columnSelectButton}</div></Th>) : null;
     return content;
   }
 
@@ -285,7 +301,21 @@ export default class ComponentSamplings extends Component{
   onColumnSelect = (eventKey) => {
     const {showColumn} = this.state;
     showColumn[eventKey] = !showColumn[eventKey];
+    if(eventKey !== "timestamp" && eventKey !== "componentName"){
+      if(showColumn[eventKey]){
+        localStorage.setItem("sampling:"+eventKey, true);
+      } else {
+        localStorage.removeItem("sampling:"+eventKey, null);
+      }
+    }
     this.setState({showColumn});
+  }
+
+  onSortSelect = (eventKey) => {
+    let {sort} = this.state;
+    sort = eventKey;
+    localStorage.setItem("sampling:sort", eventKey);
+    this.setState({fetchLoader : true, sort}, () => this.fetchData());
   }
 
   datePickerCallback = (startDate, endDate) => {
@@ -368,7 +398,7 @@ export default class ComponentSamplings extends Component{
                 <FormGroup className="col-sm-6">
                   <label>Search by key:</label>
                   <div className="input-group add-on"  style={{zIndex : 1}}>
-                    <input value={searchString} ref="searchString" placeholder="Search by key Values, Headers, Aux Key Values" onChange={this.handleSearchStringChange} onKeyUp={this.handleSearchStringKeyUp} className="form-control"  name="searchString" type="text" />
+                    <input value={searchString} ref="searchString" placeholder="Search by Key Values, Headers, Aux Key Values" onChange={this.handleSearchStringChange} onKeyUp={this.handleSearchStringKeyUp} className="form-control"  name="searchString" type="text" />
                     <div className="input-group-btn">
                       <button className="btn btn-default" onClick={this.onSearchBtnClick}><i className="fa fa-search"></i></button>
                     </div>

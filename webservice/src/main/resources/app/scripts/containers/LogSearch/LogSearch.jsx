@@ -44,6 +44,7 @@ import {Select2 as Select} from '../../utils/SelectUtils';
 import TopologyREST from '../../rest/TopologyREST';
 import DateTimePickerDropdown from '../../components/DateTimePickerDropdown';
 import TablePagination from '../../components/TablePagination';
+import Utils from '../../utils/Utils';
 
 class LogSearch extends Component {
   constructor(props) {
@@ -79,8 +80,8 @@ class LogSearch extends Component {
         timestamp: true,
         logLevel: true,
         componentName: true,
-        host: false,
-        port: false,
+        host: Utils.getItemFromLocalStorage("logsearch:host") !== '' ? true : false,
+        port: Utils.getItemFromLocalStorage("logsearch:port") !== '' ? true : false,
         logMessage: true
       }
     };
@@ -245,6 +246,13 @@ class LogSearch extends Component {
   onColumnSelect = (eventKey) => {
     const {showColumn} = this.state;
     showColumn[eventKey] = !showColumn[eventKey];
+    if(eventKey === "host" || eventKey === "port"){
+      if(showColumn[eventKey]){
+        localStorage.setItem("logsearch:"+eventKey, true);
+      } else {
+        localStorage.removeItem("logsearch:"+eventKey, null);
+      }
+    }
     this.setState({showColumn});
   }
   getDateTime(timestamp){

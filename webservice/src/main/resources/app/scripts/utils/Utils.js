@@ -771,6 +771,14 @@ const populateEventFields = (data) => {
   return list;
 };
 
+const getItemFromLocalStorage = (name) => {
+  let x = localStorage.getItem(name);
+  if( x === undefined || x === null ){
+    x = '';
+  }
+  return x;
+};
+
 export default {
   sortArray,
   numberToMilliseconds,
@@ -814,5 +822,6 @@ export default {
   abbreviateNumber,
   formatLatency,
   setTimoutFunc,
-  populateEventFields
+  populateEventFields,
+  getItemFromLocalStorage
 };
