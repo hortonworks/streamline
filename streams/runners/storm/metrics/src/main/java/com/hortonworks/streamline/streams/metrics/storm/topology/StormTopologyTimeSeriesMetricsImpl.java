@@ -49,6 +49,7 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
     private static final StormMappedMetric[] STATS_METRICS = new StormMappedMetric[]{
             StormMappedMetric.inputRecords, StormMappedMetric.outputRecords, StormMappedMetric.ackedRecords,
             StormMappedMetric.failedRecords, StormMappedMetric.processedTime, StormMappedMetric.recordsInWaitQueue,
+            StormMappedMetric.executeTime
     };
     private static final StormMappedMetric[] STATS_METRICS_SOURCE = new StormMappedMetric[]{
             StormMappedMetric.inputRecords, StormMappedMetric.outputRecords, StormMappedMetric.ackedRecords,
@@ -140,6 +141,9 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
         misc.put(StormMappedMetric.ackedRecords.name(), stats.get(StormMappedMetric.ackedRecords.name()));
         if (stats.containsKey(StormMappedMetric.completeLatency.name())) {
             misc.put(StormMappedMetric.completeLatency.name(), stats.get(StormMappedMetric.completeLatency.name()));
+        }
+        if (stats.containsKey(StormMappedMetric.executeTime.name())) {
+            misc.put(StormMappedMetric.executeTime.name(), stats.get(StormMappedMetric.executeTime.name()));
         }
 
         TimeSeriesComponentMetric metric = new TimeSeriesComponentMetric(name,

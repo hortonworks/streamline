@@ -16,11 +16,13 @@
 package com.hortonworks.streamline.streams.metrics.storm.topology;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
+import com.hortonworks.streamline.streams.layout.component.StreamlineSink;
+import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
 import mockit.Mock;
 import mockit.MockUp;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.streamline.streams.layout.component.Component;
-import com.hortonworks.streamline.streams.layout.component.StreamlineComponent;
 import com.hortonworks.streamline.streams.layout.component.TopologyDagVisitor;
 import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 import com.hortonworks.streamline.streams.metrics.TimeSeriesQuerier;
@@ -54,12 +56,16 @@ public class StormTopologyTimeSeriesMetricsImplTest {
     private static final String TOPIC_NAME = "topic";
 
     private TopologyLayout topology;
-    private Component component;
+    private Component source;
+    private Component processor;
+    private Component sink;
     private String mockedTopologyName;
 
     @Before
     public void setUp() throws IOException {
-        component = getComponentLayoutForTest();
+        source = getSourceLayoutForTest();
+        processor = getProcessorLayoutForTest();
+        sink = getSinkLayoutForTest();
         topology = getTopologyLayoutForTest();
 
         String generatedTopologyName = StormTopologyUtil.generateStormTopologyName(topology.getId(), topology.getName());
@@ -98,7 +104,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
         new Expectations() {{
             mockTimeSeriesQuerier.getMetrics(
                     withEqual(mockedTopologyName),
-                    withEqual(component.getId() + "-" + component.getName()),
+                    withEqual(source.getId() + "-" + source.getName()),
                     withEqual(StormMappedMetric.completeLatency.getStormMetricName()),
                     withEqual(StormMappedMetric.completeLatency.getAggregateFunction()),
                     withEqual(from), withEqual(to)
@@ -107,7 +113,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
             result = expected;
         }};
 
-        Map<Long, Double> actual = stormTopologyTimeSeriesMetrics.getCompleteLatency(topology, component, from, to, null);
+        Map<Long, Double> actual = stormTopologyTimeSeriesMetrics.getCompleteLatency(topology, source, from, to, null);
         assertEquals(expected, actual);
     }
 
@@ -118,7 +124,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
         final long from = 1L;
         final long to = 3L;
 
-        Map<Long, Double> completeLatency = stormTopologyTimeSeriesMetrics.getCompleteLatency(topology, component, from, to, null);
+        Map<Long, Double> completeLatency = stormTopologyTimeSeriesMetrics.getCompleteLatency(topology, source, from, to, null);
         assertEquals(Collections.emptyMap(), completeLatency);
     }
 
@@ -137,7 +143,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
         new Expectations() {{
             mockTimeSeriesQuerier.getMetrics(
                     withEqual(mockedTopologyName),
-                    withEqual(component.getId() + "-" + component.getName()),
+                    withEqual(source.getId() + "-" + source.getName()),
                     withEqual(String.format(StormMappedMetric.logsize.getStormMetricName(), TOPIC_NAME)),
                     withEqual(StormMappedMetric.logsize.getAggregateFunction()),
                     withEqual(from), withEqual(to)
@@ -147,7 +153,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
 
             mockTimeSeriesQuerier.getMetrics(
                     withEqual(mockedTopologyName),
-                    withEqual(component.getId() + "-" + component.getName()),
+                    withEqual(source.getId() + "-" + source.getName()),
                     withEqual(String.format(StormMappedMetric.offset.getStormMetricName(), TOPIC_NAME)),
                     withEqual(StormMappedMetric.offset.getAggregateFunction()),
                     withEqual(from), withEqual(to)
@@ -157,7 +163,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
 
             mockTimeSeriesQuerier.getMetrics(
                     withEqual(mockedTopologyName),
-                    withEqual(component.getId() + "-" + component.getName()),
+                    withEqual(source.getId() + "-" + source.getName()),
                     withEqual(String.format(StormMappedMetric.lag.getStormMetricName(), TOPIC_NAME)),
                     withEqual(StormMappedMetric.lag.getAggregateFunction()),
                     withEqual(from), withEqual(to)
@@ -166,7 +172,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
             result = expected.get(StormMappedMetric.lag.name());
         }};
 
-        Map<String, Map<Long, Double>> actual = stormTopologyTimeSeriesMetrics.getkafkaTopicOffsets(topology, component, from, to, null);
+        Map<String, Map<Long, Double>> actual = stormTopologyTimeSeriesMetrics.getkafkaTopicOffsets(topology, source, from, to, null);
         assertEquals(expected, actual);
     }
 
@@ -177,7 +183,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
         final long from = 1L;
         final long to = 3L;
 
-        Map<String, Map<Long, Double>> kafkaOffsets = stormTopologyTimeSeriesMetrics.getkafkaTopicOffsets(topology, component, from, to, null);
+        Map<String, Map<Long, Double>> kafkaOffsets = stormTopologyTimeSeriesMetrics.getkafkaTopicOffsets(topology, source, from, to, null);
         assertEquals(3, kafkaOffsets.size());
         assertEquals(Collections.emptyMap(), kafkaOffsets.get("lag"));
         assertEquals(Collections.emptyMap(), kafkaOffsets.get("offset"));
@@ -185,101 +191,53 @@ public class StormTopologyTimeSeriesMetricsImplTest {
     }
 
     @Test
-    public void getComponentStats() throws Exception {
+    public void getSourceComponentStats() throws Exception {
         final TopologyLayout topology = getTopologyLayoutForTest();
 
         final long from = 1L;
         final long to = 3L;
 
-        final Map<String, Map<Long, Double>> expected = new HashMap<>();
-
-        expected.put(StormMappedMetric.inputRecords.name(), generateTestPointsMap());
-        expected.put(StormMappedMetric.outputRecords.name(), generateTestPointsMap());
-        expected.put(StormMappedMetric.failedRecords.name(), generateTestPointsMap());
-        expected.put(StormMappedMetric.processedTime.name(), generateTestPointsMap());
-        expected.put(StormMappedMetric.recordsInWaitQueue.name(), generateTestPointsMap());
-        expected.put(StormMappedMetric.ackedRecords.name(), generateTestPointsMap());
-
         final TopologyTimeSeriesMetrics.TimeSeriesComponentMetric expectedMetric =
-                new TopologyTimeSeriesMetrics.TimeSeriesComponentMetric(component.getName(),
-                        expected.get(StormMappedMetric.inputRecords.name()),
-                        expected.get(StormMappedMetric.outputRecords.name()),
-                        expected.get(StormMappedMetric.failedRecords.name()),
-                        expected.get(StormMappedMetric.processedTime.name()),
-                        expected.get(StormMappedMetric.recordsInWaitQueue.name()),
-                        Collections.singletonMap(StormMappedMetric.ackedRecords.name(),
-                                expected.get(StormMappedMetric.ackedRecords.name()))
-                );
-
-        new Expectations() {{
-            mockTimeSeriesQuerier.getMetrics(
-                    withEqual(mockedTopologyName),
-                    withEqual(component.getId() + "-" + component.getName()),
-                    withEqual(StormMappedMetric.inputRecords.getStormMetricName()),
-                    withEqual(StormMappedMetric.inputRecords.getAggregateFunction()),
-                    withEqual(from), withEqual(to)
-            );
-
-            result = expected.get(StormMappedMetric.inputRecords.name());
-
-            mockTimeSeriesQuerier.getMetrics(
-                    withEqual(mockedTopologyName),
-                    withEqual(component.getId() + "-" + component.getName()),
-                    withEqual(StormMappedMetric.outputRecords.getStormMetricName()),
-                    withEqual(StormMappedMetric.outputRecords.getAggregateFunction()),
-                    withEqual(from), withEqual(to)
-            );
-
-            result = expected.get(StormMappedMetric.outputRecords.name());
-
-            mockTimeSeriesQuerier.getMetrics(
-                    withEqual(mockedTopologyName),
-                    withEqual(component.getId() + "-" + component.getName()),
-                    withEqual(StormMappedMetric.failedRecords.getStormMetricName()),
-                    withEqual(StormMappedMetric.failedRecords.getAggregateFunction()),
-                    withEqual(from), withEqual(to)
-            );
-
-            result = expected.get(StormMappedMetric.failedRecords.name());
-
-            mockTimeSeriesQuerier.getMetrics(
-                    withEqual(mockedTopologyName),
-                    withEqual(component.getId() + "-" + component.getName()),
-                    withEqual(StormMappedMetric.processedTime.getStormMetricName()),
-                    withEqual(StormMappedMetric.processedTime.getAggregateFunction()),
-                    withEqual(from), withEqual(to)
-            );
-
-            result = expected.get(StormMappedMetric.processedTime.name());
-
-            mockTimeSeriesQuerier.getMetrics(
-                    withEqual(mockedTopologyName),
-                    withEqual(component.getId() + "-" + component.getName()),
-                    withEqual(StormMappedMetric.recordsInWaitQueue.getStormMetricName()),
-                    withEqual(StormMappedMetric.recordsInWaitQueue.getAggregateFunction()),
-                    withEqual(from), withEqual(to)
-            );
-
-            result = expected.get(StormMappedMetric.recordsInWaitQueue.name());
-
-            mockTimeSeriesQuerier.getMetrics(
-                    withEqual(mockedTopologyName),
-                    withEqual(component.getId() + "-" + component.getName()),
-                    withEqual(StormMappedMetric.ackedRecords.getStormMetricName()),
-                    withEqual(StormMappedMetric.ackedRecords.getAggregateFunction()),
-                    withEqual(from), withEqual(to)
-            );
-
-            result = expected.get(StormMappedMetric.ackedRecords.name());
-        }};
+                setupExpectionToSpoutComponent(source, from, to);
 
         TopologyTimeSeriesMetrics.TimeSeriesComponentMetric actual =
-                stormTopologyTimeSeriesMetrics.getComponentStats(topology, component, from, to, null);
+                stormTopologyTimeSeriesMetrics.getComponentStats(topology, source, from, to, null);
         assertEquals(expectedMetric, actual);
     }
 
     @Test
-    public void testGetComponentStatsWithoutAssigningTimeSeriesQuerier() throws Exception {
+    public void getProcessorComponentStats() throws Exception {
+        final TopologyLayout topology = getTopologyLayoutForTest();
+
+        final long from = 1L;
+        final long to = 3L;
+
+        final TopologyTimeSeriesMetrics.TimeSeriesComponentMetric expectedMetric =
+                setupExpectionToBoltComponent(processor, from, to);
+
+        TopologyTimeSeriesMetrics.TimeSeriesComponentMetric actual =
+                stormTopologyTimeSeriesMetrics.getComponentStats(topology, processor, from, to, null);
+        assertEquals(expectedMetric, actual);
+    }
+
+    @Test
+    public void getSinkComponentStats() throws Exception {
+        final TopologyLayout topology = getTopologyLayoutForTest();
+
+        final long from = 1L;
+        final long to = 3L;
+
+        final TopologyTimeSeriesMetrics.TimeSeriesComponentMetric expectedMetric =
+                setupExpectionToBoltComponent(sink, from, to);
+
+        TopologyTimeSeriesMetrics.TimeSeriesComponentMetric actual =
+                stormTopologyTimeSeriesMetrics.getComponentStats(topology, sink, from, to, null);
+        assertEquals(expectedMetric, actual);
+    }
+
+
+    @Test
+    public void testGetSourceComponentStatsWithoutAssigningTimeSeriesQuerier() throws Exception {
         stormTopologyTimeSeriesMetrics.setTimeSeriesQuerier(null);
 
         final TopologyLayout topology = getTopologyLayoutForTest();
@@ -287,14 +245,64 @@ public class StormTopologyTimeSeriesMetricsImplTest {
         final long from = 1L;
         final long to = 3L;
 
+        final Map<String, Map<Long, Double>> expectedMisc = new HashMap<>();
+        expectedMisc.put(StormMappedMetric.ackedRecords.name(), Collections.emptyMap());
+        expectedMisc.put(StormMappedMetric.completeLatency.name(), Collections.emptyMap());
+
         TopologyTimeSeriesMetrics.TimeSeriesComponentMetric actual =
-                stormTopologyTimeSeriesMetrics.getComponentStats(topology, component, from, to, null);
+                stormTopologyTimeSeriesMetrics.getComponentStats(topology, source, from, to, null);
         assertEquals(Collections.emptyMap(), actual.getInputRecords());
         assertEquals(Collections.emptyMap(), actual.getOutputRecords());
         assertEquals(Collections.emptyMap(), actual.getFailedRecords());
         assertEquals(Collections.emptyMap(), actual.getRecordsInWaitQueue());
         assertEquals(Collections.emptyMap(), actual.getProcessedTime());
-        assertEquals(Collections.singletonMap(StormMappedMetric.ackedRecords.name(), Collections.emptyMap()), actual.getMisc());
+        assertEquals(expectedMisc, actual.getMisc());
+    }
+
+    @Test
+    public void testGetProcessorComponentStatsWithoutAssigningTimeSeriesQuerier() throws Exception {
+        stormTopologyTimeSeriesMetrics.setTimeSeriesQuerier(null);
+
+        final TopologyLayout topology = getTopologyLayoutForTest();
+
+        final long from = 1L;
+        final long to = 3L;
+
+        final Map<String, Map<Long, Double>> expectedMisc = new HashMap<>();
+        expectedMisc.put(StormMappedMetric.ackedRecords.name(), Collections.emptyMap());
+        expectedMisc.put(StormMappedMetric.executeTime.name(), Collections.emptyMap());
+
+        TopologyTimeSeriesMetrics.TimeSeriesComponentMetric actual =
+                stormTopologyTimeSeriesMetrics.getComponentStats(topology, processor, from, to, null);
+        assertEquals(Collections.emptyMap(), actual.getInputRecords());
+        assertEquals(Collections.emptyMap(), actual.getOutputRecords());
+        assertEquals(Collections.emptyMap(), actual.getFailedRecords());
+        assertEquals(Collections.emptyMap(), actual.getRecordsInWaitQueue());
+        assertEquals(Collections.emptyMap(), actual.getProcessedTime());
+        assertEquals(expectedMisc, actual.getMisc());
+    }
+
+    @Test
+    public void testGetSinkComponentStatsWithoutAssigningTimeSeriesQuerier() throws Exception {
+        stormTopologyTimeSeriesMetrics.setTimeSeriesQuerier(null);
+
+        final TopologyLayout topology = getTopologyLayoutForTest();
+
+        final long from = 1L;
+        final long to = 3L;
+
+        final Map<String, Map<Long, Double>> expectedMisc = new HashMap<>();
+        expectedMisc.put(StormMappedMetric.ackedRecords.name(), Collections.emptyMap());
+        expectedMisc.put(StormMappedMetric.executeTime.name(), Collections.emptyMap());
+
+        TopologyTimeSeriesMetrics.TimeSeriesComponentMetric actual =
+                stormTopologyTimeSeriesMetrics.getComponentStats(topology, sink, from, to, null);
+        assertEquals(Collections.emptyMap(), actual.getInputRecords());
+        assertEquals(Collections.emptyMap(), actual.getOutputRecords());
+        assertEquals(Collections.emptyMap(), actual.getFailedRecords());
+        assertEquals(Collections.emptyMap(), actual.getRecordsInWaitQueue());
+        assertEquals(Collections.emptyMap(), actual.getProcessedTime());
+        assertEquals(expectedMisc, actual.getMisc());
     }
 
     private TopologyLayout getTopologyLayoutForTest() throws IOException {
@@ -302,22 +310,44 @@ public class StormTopologyTimeSeriesMetricsImplTest {
         return new TopologyLayout(1L, "topology", mapper.writeValueAsString(configurations), null);
     }
 
-    private Component getComponentLayoutForTest() {
-        StreamlineComponent component = new StreamlineComponent() {
+    private Component getSourceLayoutForTest() {
+        StreamlineSource source = new StreamlineSource() {
             @Override
             public void accept(TopologyDagVisitor visitor) {
             }
         };
-        component.setId("11");
-        component.setName("device");
-        return component;
+        source.setId("11");
+        source.setName("device");
+        return source;
+    }
+
+    private Component getProcessorLayoutForTest() {
+        StreamlineProcessor processor = new StreamlineProcessor() {
+            @Override
+            public void accept(TopologyDagVisitor visitor) {
+            }
+        };
+        processor.setId("12");
+        processor.setName("rule");
+        return processor;
+    }
+
+    private Component getSinkLayoutForTest() {
+        StreamlineSink sink = new StreamlineSink() {
+            @Override
+            public void accept(TopologyDagVisitor visitor) {
+            }
+        };
+        sink.setId("13");
+        sink.setName("hdfs");
+        return sink;
     }
 
     private Map<String, Object> buildTopologyConfigWithKafkaDataSource(String topicName) {
         Map<String, Object> configurations = new HashMap<>();
 
         Map<String, Object> dataSource = new HashMap<>();
-        dataSource.put(TopologyLayoutConstants.JSON_KEY_UINAME, component.getName());
+        dataSource.put(TopologyLayoutConstants.JSON_KEY_UINAME, source.getName());
         dataSource.put(TopologyLayoutConstants.JSON_KEY_TYPE, "KAFKA");
 
         Map<String, Object> dataSourceConfig = new HashMap<>();
@@ -337,4 +367,203 @@ public class StormTopologyTimeSeriesMetricsImplTest {
 
         return ret;
     }
+
+    private TopologyTimeSeriesMetrics.TimeSeriesComponentMetric setupExpectionToSpoutComponent(Component component, long from, long to) {
+        final Map<String, Map<Long, Double>> expected = new HashMap<>();
+
+        expected.put(StormMappedMetric.inputRecords.name(), generateTestPointsMap());
+        expected.put(StormMappedMetric.outputRecords.name(), generateTestPointsMap());
+        expected.put(StormMappedMetric.failedRecords.name(), generateTestPointsMap());
+        expected.put(StormMappedMetric.processedTime.name(), generateTestPointsMap());
+        expected.put(StormMappedMetric.recordsInWaitQueue.name(), generateTestPointsMap());
+        expected.put(StormMappedMetric.ackedRecords.name(), generateTestPointsMap());
+        expected.put(StormMappedMetric.completeLatency.name(), generateTestPointsMap());
+
+        Map<String, Map<Long, Double>> miscExpected = new HashMap<>();
+        miscExpected.put(StormMappedMetric.ackedRecords.name(), expected.get(StormMappedMetric.ackedRecords.name()));
+        miscExpected.put(StormMappedMetric.completeLatency.name(), expected.get(StormMappedMetric.completeLatency.name()));
+
+        final TopologyTimeSeriesMetrics.TimeSeriesComponentMetric expectedMetric =
+                new TopologyTimeSeriesMetrics.TimeSeriesComponentMetric(component.getName(),
+                        expected.get(StormMappedMetric.inputRecords.name()),
+                        expected.get(StormMappedMetric.outputRecords.name()),
+                        expected.get(StormMappedMetric.failedRecords.name()),
+                        expected.get(StormMappedMetric.processedTime.name()),
+                        expected.get(StormMappedMetric.recordsInWaitQueue.name()),
+                        miscExpected
+                );
+
+        new Expectations() {{
+            mockTimeSeriesQuerier.getMetrics(
+                    withEqual(mockedTopologyName),
+                    withEqual(StormTopologyUtil.generateStormComponentId(Long.valueOf(component.getId()), component.getName())),
+                    withEqual(StormMappedMetric.inputRecords.getStormMetricName()),
+                    withEqual(StormMappedMetric.inputRecords.getAggregateFunction()),
+                    withEqual(from), withEqual(to)
+            );
+
+            result = expected.get(StormMappedMetric.inputRecords.name());
+
+            mockTimeSeriesQuerier.getMetrics(
+                    withEqual(mockedTopologyName),
+                    withEqual(StormTopologyUtil.generateStormComponentId(Long.valueOf(component.getId()), component.getName())),
+                    withEqual(StormMappedMetric.outputRecords.getStormMetricName()),
+                    withEqual(StormMappedMetric.outputRecords.getAggregateFunction()),
+                    withEqual(from), withEqual(to)
+            );
+
+            result = expected.get(StormMappedMetric.outputRecords.name());
+
+            mockTimeSeriesQuerier.getMetrics(
+                    withEqual(mockedTopologyName),
+                    withEqual(StormTopologyUtil.generateStormComponentId(Long.valueOf(component.getId()), component.getName())),
+                    withEqual(StormMappedMetric.failedRecords.getStormMetricName()),
+                    withEqual(StormMappedMetric.failedRecords.getAggregateFunction()),
+                    withEqual(from), withEqual(to)
+            );
+
+            result = expected.get(StormMappedMetric.failedRecords.name());
+
+            mockTimeSeriesQuerier.getMetrics(
+                    withEqual(mockedTopologyName),
+                    withEqual(StormTopologyUtil.generateStormComponentId(Long.valueOf(component.getId()), component.getName())),
+                    withEqual(StormMappedMetric.processedTime.getStormMetricName()),
+                    withEqual(StormMappedMetric.processedTime.getAggregateFunction()),
+                    withEqual(from), withEqual(to)
+            );
+
+            result = expected.get(StormMappedMetric.processedTime.name());
+
+            mockTimeSeriesQuerier.getMetrics(
+                    withEqual(mockedTopologyName),
+                    withEqual(StormTopologyUtil.generateStormComponentId(Long.valueOf(component.getId()), component.getName())),
+                    withEqual(StormMappedMetric.recordsInWaitQueue.getStormMetricName()),
+                    withEqual(StormMappedMetric.recordsInWaitQueue.getAggregateFunction()),
+                    withEqual(from), withEqual(to)
+            );
+
+            result = expected.get(StormMappedMetric.recordsInWaitQueue.name());
+
+            mockTimeSeriesQuerier.getMetrics(
+                    withEqual(mockedTopologyName),
+                    withEqual(StormTopologyUtil.generateStormComponentId(Long.valueOf(component.getId()), component.getName())),
+                    withEqual(StormMappedMetric.ackedRecords.getStormMetricName()),
+                    withEqual(StormMappedMetric.ackedRecords.getAggregateFunction()),
+                    withEqual(from), withEqual(to)
+            );
+
+            result = expected.get(StormMappedMetric.ackedRecords.name());
+
+            mockTimeSeriesQuerier.getMetrics(
+                    withEqual(mockedTopologyName),
+                    withEqual(StormTopologyUtil.generateStormComponentId(Long.valueOf(component.getId()), component.getName())),
+                    withEqual(StormMappedMetric.completeLatency.getStormMetricName()),
+                    withEqual(StormMappedMetric.completeLatency.getAggregateFunction()),
+                    withEqual(from), withEqual(to)
+            );
+
+            result = expected.get(StormMappedMetric.completeLatency.name());
+        }};
+        return expectedMetric;
+    }
+
+    private TopologyTimeSeriesMetrics.TimeSeriesComponentMetric setupExpectionToBoltComponent(Component component, long from, long to) {
+        final Map<String, Map<Long, Double>> expected = new HashMap<>();
+
+        expected.put(StormMappedMetric.inputRecords.name(), generateTestPointsMap());
+        expected.put(StormMappedMetric.outputRecords.name(), generateTestPointsMap());
+        expected.put(StormMappedMetric.failedRecords.name(), generateTestPointsMap());
+        expected.put(StormMappedMetric.processedTime.name(), generateTestPointsMap());
+        expected.put(StormMappedMetric.recordsInWaitQueue.name(), generateTestPointsMap());
+        expected.put(StormMappedMetric.ackedRecords.name(), generateTestPointsMap());
+        expected.put(StormMappedMetric.executeTime.name(), generateTestPointsMap());
+
+        Map<String, Map<Long, Double>> miscExpected = new HashMap<>();
+        miscExpected.put(StormMappedMetric.ackedRecords.name(), expected.get(StormMappedMetric.ackedRecords.name()));
+        miscExpected.put(StormMappedMetric.executeTime.name(), expected.get(StormMappedMetric.executeTime.name()));
+
+        final TopologyTimeSeriesMetrics.TimeSeriesComponentMetric expectedMetric =
+                new TopologyTimeSeriesMetrics.TimeSeriesComponentMetric(component.getName(),
+                        expected.get(StormMappedMetric.inputRecords.name()),
+                        expected.get(StormMappedMetric.outputRecords.name()),
+                        expected.get(StormMappedMetric.failedRecords.name()),
+                        expected.get(StormMappedMetric.processedTime.name()),
+                        expected.get(StormMappedMetric.recordsInWaitQueue.name()),
+                        miscExpected
+                );
+
+        new Expectations() {{
+            mockTimeSeriesQuerier.getMetrics(
+                    withEqual(mockedTopologyName),
+                    withEqual(StormTopologyUtil.generateStormComponentId(Long.valueOf(component.getId()), component.getName())),
+                    withEqual(StormMappedMetric.inputRecords.getStormMetricName()),
+                    withEqual(StormMappedMetric.inputRecords.getAggregateFunction()),
+                    withEqual(from), withEqual(to)
+            );
+
+            result = expected.get(StormMappedMetric.inputRecords.name());
+
+            mockTimeSeriesQuerier.getMetrics(
+                    withEqual(mockedTopologyName),
+                    withEqual(StormTopologyUtil.generateStormComponentId(Long.valueOf(component.getId()), component.getName())),
+                    withEqual(StormMappedMetric.outputRecords.getStormMetricName()),
+                    withEqual(StormMappedMetric.outputRecords.getAggregateFunction()),
+                    withEqual(from), withEqual(to)
+            );
+
+            result = expected.get(StormMappedMetric.outputRecords.name());
+
+            mockTimeSeriesQuerier.getMetrics(
+                    withEqual(mockedTopologyName),
+                    withEqual(StormTopologyUtil.generateStormComponentId(Long.valueOf(component.getId()), component.getName())),
+                    withEqual(StormMappedMetric.failedRecords.getStormMetricName()),
+                    withEqual(StormMappedMetric.failedRecords.getAggregateFunction()),
+                    withEqual(from), withEqual(to)
+            );
+
+            result = expected.get(StormMappedMetric.failedRecords.name());
+
+            mockTimeSeriesQuerier.getMetrics(
+                    withEqual(mockedTopologyName),
+                    withEqual(StormTopologyUtil.generateStormComponentId(Long.valueOf(component.getId()), component.getName())),
+                    withEqual(StormMappedMetric.processedTime.getStormMetricName()),
+                    withEqual(StormMappedMetric.processedTime.getAggregateFunction()),
+                    withEqual(from), withEqual(to)
+            );
+
+            result = expected.get(StormMappedMetric.processedTime.name());
+
+            mockTimeSeriesQuerier.getMetrics(
+                    withEqual(mockedTopologyName),
+                    withEqual(StormTopologyUtil.generateStormComponentId(Long.valueOf(component.getId()), component.getName())),
+                    withEqual(StormMappedMetric.recordsInWaitQueue.getStormMetricName()),
+                    withEqual(StormMappedMetric.recordsInWaitQueue.getAggregateFunction()),
+                    withEqual(from), withEqual(to)
+            );
+
+            result = expected.get(StormMappedMetric.recordsInWaitQueue.name());
+
+            mockTimeSeriesQuerier.getMetrics(
+                    withEqual(mockedTopologyName),
+                    withEqual(StormTopologyUtil.generateStormComponentId(Long.valueOf(component.getId()), component.getName())),
+                    withEqual(StormMappedMetric.ackedRecords.getStormMetricName()),
+                    withEqual(StormMappedMetric.ackedRecords.getAggregateFunction()),
+                    withEqual(from), withEqual(to)
+            );
+
+            result = expected.get(StormMappedMetric.ackedRecords.name());
+
+            mockTimeSeriesQuerier.getMetrics(
+                    withEqual(mockedTopologyName),
+                    withEqual(StormTopologyUtil.generateStormComponentId(Long.valueOf(component.getId()), component.getName())),
+                    withEqual(StormMappedMetric.executeTime.getStormMetricName()),
+                    withEqual(StormMappedMetric.executeTime.getAggregateFunction()),
+                    withEqual(from), withEqual(to)
+            );
+
+            result = expected.get(StormMappedMetric.executeTime.name());
+        }};
+        return expectedMetric;
+    }
+
 }
