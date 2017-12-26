@@ -20,7 +20,7 @@ import com.hortonworks.streamline.streams.metrics.TimeSeriesQuerier;
 /**
  * Metric name conversion table between Streamline and Storm. It also contains function information for aggregation.
  */
-enum StormMappedMetric {
+public enum StormMappedMetric {
     completeLatency("__complete-latency", TimeSeriesQuerier.AggregateFunction.AVG),
     inputRecords("__execute-count", TimeSeriesQuerier.AggregateFunction.SUM),
     outputRecords("__emit-count", TimeSeriesQuerier.AggregateFunction.SUM),
