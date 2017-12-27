@@ -238,7 +238,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
         ctx.setCurrentAction("Adding artifacts to jar");
         Path jarToDeploy = addArtifactsToJar(getArtifactsLocation(topology));
         ctx.setCurrentAction("Creating Storm topology YAML file");
-        String fileName = createYamlFile(topology);
+        String fileName = createYamlFileForDeploy(topology);
         ctx.setCurrentAction("Deploying topology via 'storm jar' command");
         List<String> commands = new ArrayList<String>();
         commands.add(stormCliPath);
@@ -290,7 +290,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
         TopologyLayout testTopology = copyTopologyLayout(topology, testTopologyDag);
 
         Path jarToDeploy = addArtifactsToJar(getArtifactsLocation(testTopology));
-        String fileName = createYamlFile(testTopology);
+        String fileName = createYamlFileForTest(testTopology);
         List<String> commands = new ArrayList<String>();
         commands.add(stormCliPath);
         commands.add("jar");
@@ -586,7 +586,15 @@ public class StormTopologyActionsImpl implements TopologyActions {
         return jarFile;
     }
 
-    private String createYamlFile (TopologyLayout topology) throws Exception {
+    private String createYamlFileForDeploy(TopologyLayout topology) throws Exception {
+        return createYamlFile(topology, true);
+    }
+
+    private String createYamlFileForTest(TopologyLayout topology) throws Exception {
+        return createYamlFile(topology, false);
+    }
+
+    private String createYamlFile (TopologyLayout topology, boolean deploy) throws Exception {
         Map<String, Object> yamlMap;
         File f;
         OutputStreamWriter fileWriter = null;
@@ -612,8 +620,15 @@ public class StormTopologyActionsImpl implements TopologyActions {
             putAutoTokenDelegationConfig(topologyConfig, topologyDag);
             registerEventLogger(topologyConfig);
 
-            LOG.debug("Final Topology config {}", topologyConfig);
-            addTopologyConfig(yamlMap, topologyConfig.getProperties());
+            Map<String, Object> properties = topologyConfig.getProperties();
+            if (!deploy) {
+                LOG.debug("Disabling topology event logger for test mode...");
+                properties.put("topology.eventlogger.executors", 0);
+            }
+
+            LOG.debug("Final Topology properties {}", properties);
+
+            addTopologyConfig(yamlMap, properties);
             DumperOptions options = new DumperOptions();
             options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
             options.setSplitLines(false);
