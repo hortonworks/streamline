@@ -28,6 +28,7 @@ import com.hortonworks.streamline.common.Constants;
 import com.hortonworks.streamline.common.ModuleRegistration;
 import com.hortonworks.registries.common.util.FileStorage;
 import com.hortonworks.streamline.common.util.ReflectionHelper;
+import com.hortonworks.registries.storage.transaction.TransactionEventListener;
 import com.hortonworks.registries.storage.CacheBackedStorageManager;
 import com.hortonworks.registries.storage.Storable;
 import com.hortonworks.registries.storage.StorableKey;
@@ -47,7 +48,6 @@ import com.hortonworks.streamline.webservice.configurations.LoginConfiguration;
 import com.hortonworks.streamline.webservice.configurations.StorageProviderConfiguration;
 import com.hortonworks.streamline.webservice.configurations.StreamlineConfiguration;
 import com.hortonworks.streamline.webservice.configurations.ModuleConfiguration;
-import com.hortonworks.streamline.webservice.listeners.TransactionEventListener;
 import com.hortonworks.streamline.webservice.resources.StreamlineConfigurationResource;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
@@ -246,11 +246,12 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
         StorageManager effectiveStorageManager = storageManager instanceof CacheBackedStorageManager ?
                 ((CacheBackedStorageManager) storageManager).getStorageManager() : storageManager;
         TransactionManager transactionManager;
-        if (effectiveStorageManager instanceof TransactionManager)
+        if (effectiveStorageManager instanceof TransactionManager) {
             transactionManager = (TransactionManager) effectiveStorageManager;
-        else
+        } else {
             transactionManager = new NOOPTransactionManager();
-        environment.jersey().register(new TransactionEventListener(transactionManager));
+        }
+        environment.jersey().register(new TransactionEventListener(transactionManager, true));
         Collection<Class<? extends Storable>> streamlineEntities = getStorableEntities();
         storageManager.registerStorables(streamlineEntities);
         LOG.info("Registered streamline entities {}", streamlineEntities);
@@ -262,7 +263,6 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
 
         // add StreamlineConfigResource
         resourcesToRegister.add(new StreamlineConfigurationResource(configuration));
-
 
         // authorizer
         StreamlineAuthorizer authorizer;
@@ -288,7 +288,7 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
             String noopAuthorizerClassName = "com.hortonworks.streamline.streams.security.impl.NoopAuthorizer";
             authorizer = ((Class<StreamlineAuthorizer>) Class.forName(noopAuthorizerClassName)).newInstance();
         }
-        //
+
         for (ModuleConfiguration moduleConfiguration: modules) {
             String moduleName = moduleConfiguration.getName();
             String moduleClassName = moduleConfiguration.getClassName();
