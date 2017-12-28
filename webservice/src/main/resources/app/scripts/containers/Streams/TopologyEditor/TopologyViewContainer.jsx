@@ -425,9 +425,7 @@ class TopologyViewContainer extends Component {
     let {viewModeData} = this.state;
     viewModeData.selectedComponentId = id;
     viewModeData.selectedComponent = obj;
-    this.setState({
-      viewModeData: viewModeData
-    }, ()=>{this.syncComponentData();});
+    this.syncComponentData();
   }
   handleVersionChange(value) {
     this.fetchData(value);

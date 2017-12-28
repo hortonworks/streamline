@@ -4052,10 +4052,10 @@ ul.custom-pagination li.active{
 }
 #log-duration-dropdown {
   border-radius: 4px;
-  right: -86px;
+  right: -20px;
 }
 #log-duration-dropdown + .dropdown-menu {
-  right: -86px;
+  right: -20px;
   width: 376px;
   padding: 12px;
 }
