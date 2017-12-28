@@ -20,7 +20,7 @@ import com.hortonworks.streamline.streams.metrics.TimeSeriesQuerier;
 /**
  * Metric name conversion table between Streamline and Storm. It also contains function information for aggregation.
  */
-enum StormMappedMetric {
+public enum StormMappedMetric {
     completeLatency("__complete-latency", TimeSeriesQuerier.AggregateFunction.AVG),
     inputRecords("__execute-count", TimeSeriesQuerier.AggregateFunction.SUM),
     outputRecords("__emit-count", TimeSeriesQuerier.AggregateFunction.SUM),
@@ -28,6 +28,7 @@ enum StormMappedMetric {
     failedRecords("__fail-count", TimeSeriesQuerier.AggregateFunction.SUM),
     processedTime("__process-latency", TimeSeriesQuerier.AggregateFunction.AVG),
     recordsInWaitQueue("__receive.population", TimeSeriesQuerier.AggregateFunction.AVG),
+    executeTime("__execute-latency", TimeSeriesQuerier.AggregateFunction.AVG),
 
     // Kafka related metrics are already partitions aggregated value so actually don't need to have aggregate function
     // but they need topic name to be queried
