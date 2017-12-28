@@ -24,7 +24,6 @@ import com.hortonworks.streamline.streams.runtime.storm.event.correlation.EventC
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
-import org.apache.storm.topology.base.BaseWindowedBolt;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 
@@ -95,8 +94,8 @@ public class SLRealtimeJoinBolt extends RealtimeJoinBolt {
     }
 
     // TODO: Eliminate this overload once Taylor fixes Flux to support static method calls like Duration.ofSeconds()
-    public SLRealtimeJoinBolt from(String stream, BaseWindowedBolt.Duration retentionTime, boolean unique) {
-        return (SLRealtimeJoinBolt) super.from(stream, Duration.ofMillis(retentionTime.value), unique);
+    public SLRealtimeJoinBolt from(String stream, long retentionTimeMs, boolean unique) {
+        return (SLRealtimeJoinBolt) super.from(stream, Duration.ofMillis(retentionTimeMs), unique);
     }
 
     @Override
@@ -109,9 +108,9 @@ public class SLRealtimeJoinBolt extends RealtimeJoinBolt {
         return (SLRealtimeJoinBolt) super.innerJoin(stream, retentionTime, unique, comparators);
     }
 
-    // TODO: Eliminate this overload once Taylor fixes Flux to support static method calls like Duration.ofSeconds()
-    public SLRealtimeJoinBolt innerJoin(String stream, BaseWindowedBolt.Duration retentionTime, boolean unique, JoinComparator... comparators) {
-        return (SLRealtimeJoinBolt) super.innerJoin(stream, Duration.ofMillis(retentionTime.value), unique, comparators);
+    // TODO: Eliminate this overload once Flux supports static method calls like Duration.ofSeconds()
+    public SLRealtimeJoinBolt innerJoin(String stream, long retentionTimeMs, boolean unique, JoinComparator... comparators) {
+        return (SLRealtimeJoinBolt) super.innerJoin(stream, Duration.ofMillis(retentionTimeMs), unique, comparators);
     }
 
     @Override
@@ -125,8 +124,8 @@ public class SLRealtimeJoinBolt extends RealtimeJoinBolt {
     }
 
     // TODO: Eliminate this overload once Taylor fixes Flux to support static method calls like Duration.ofSeconds()
-    public SLRealtimeJoinBolt leftJoin(String stream, BaseWindowedBolt.Duration retentionTime, boolean unique, JoinComparator... comparators) {
-        return (SLRealtimeJoinBolt) super.leftJoin(stream, Duration.ofMillis(retentionTime.value), unique, comparators);
+    public SLRealtimeJoinBolt leftJoin(String stream, long retentionTimeMs, boolean unique, JoinComparator... comparators) {
+        return (SLRealtimeJoinBolt) super.leftJoin(stream, Duration.ofMillis(retentionTimeMs), unique, comparators);
     }
 
     @Override
@@ -140,8 +139,8 @@ public class SLRealtimeJoinBolt extends RealtimeJoinBolt {
     }
 
     // TODO: Eliminate this overload once Taylor fixes Flux to support static method calls like Duration.ofSeconds()
-    public SLRealtimeJoinBolt rightJoin(String stream, BaseWindowedBolt.Duration retentionTime, boolean unique, JoinComparator... comparators) {
-        return (SLRealtimeJoinBolt) super.rightJoin(stream, Duration.ofMillis(retentionTime.value), unique, comparators);
+    public SLRealtimeJoinBolt rightJoin(String stream, long retentionTimeMs, boolean unique, JoinComparator... comparators) {
+        return (SLRealtimeJoinBolt) super.rightJoin(stream, Duration.ofMillis(retentionTimeMs), unique, comparators);
     }
 
     @Override
@@ -155,8 +154,8 @@ public class SLRealtimeJoinBolt extends RealtimeJoinBolt {
     }
 
     // TODO: Eliminate this overload once Taylor fixes Flux to support static method calls like Duration.ofSeconds()
-    public SLRealtimeJoinBolt outerJoin(String stream, BaseWindowedBolt.Duration retentionTime, boolean unique, JoinComparator... comparators) {
-        return (SLRealtimeJoinBolt) super.outerJoin(stream, Duration.ofMillis(retentionTime.value), unique, comparators);
+    public SLRealtimeJoinBolt outerJoin(String stream, long retentionTimeMs, boolean unique, JoinComparator... comparators) {
+        return (SLRealtimeJoinBolt) super.outerJoin(stream, Duration.ofMillis(retentionTimeMs), unique, comparators);
     }
 
     /** Convenience method for Streamline that prefixes each keyname with 'streamline-event.'
@@ -197,28 +196,32 @@ public class SLRealtimeJoinBolt extends RealtimeJoinBolt {
     //   arg = "stream1:key1, key2, stream2:key3.key4, key5"
     //   result  = "stream1:streamline-event.key1, streamline-event.key2, stream2:streamline-event.key3.key4, streamline-event.key5"
     static String convertToStreamLineKeys(String commaSeparatedKeys) {
-        String[] keyNames = commaSeparatedKeys.replaceAll("\\s+","").split(",");
+        String[] keyNames = commaSeparatedKeys.split(",");
 
         String[] prefixedKeys = new String[keyNames.length];
         for (int i = 0; i < keyNames.length; i++) {
-            prefixedKeys[i] = insertStreamlinePrefix(keyNames[i]);
+            prefixedKeys[i] = insertStreamlinePrefix(keyNames[i].trim());
         }
 
         return String.join(", ", prefixedKeys);
     }
 
+    // converts 'stream1:key' -> 'stream1:streamline-event.key'  and  'stream2:key as x' -> 'stream2:key as x'
     public static String insertStreamlinePrefix(String keyName) {
         FieldSelector fs = new FieldSelector(keyName, null); // 2nd arg here is null as we don't care about it. FieldSelector used only for parsing and not calling findField()
+        String alias = (fs.alias == null) ? "" : (" as " + fs.alias);
         if (fs.streamName==null)
-            return   EVENT_PREFIX +  fs.canonicalFieldName();
+            return   EVENT_PREFIX +  fs.canonicalFieldName() + alias;
         else
-            return   fs.streamName + ":" + EVENT_PREFIX + fs.canonicalFieldName();
+            return   fs.streamName + ":" + EVENT_PREFIX + fs.canonicalFieldName() + alias;
     }
 
     private static String dropStreamLineEventPrefix(String flattenedKey) {
         int pos = flattenedKey.indexOf(EVENT_PREFIX);
-        if(pos==0)
+        if (pos == 0)
             return flattenedKey.substring(EVENT_PREFIX.length());
+        if (pos == -1)
+            return flattenedKey;
         return flattenedKey.substring(0,pos) + flattenedKey.substring(pos+EVENT_PREFIX.length());
     }
 }

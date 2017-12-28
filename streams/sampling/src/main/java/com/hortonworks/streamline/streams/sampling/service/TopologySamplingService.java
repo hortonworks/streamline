@@ -1,13 +1,11 @@
 package com.hortonworks.streamline.streams.sampling.service;
 
-import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyComponent;
 import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 
 import javax.security.auth.Subject;
-import java.util.List;
 
 public class TopologySamplingService {
     private final EnvironmentService environmentService;
@@ -47,11 +45,6 @@ public class TopologySamplingService {
     public TopologySampling.SamplingStatus samplingStatus(Topology topology, TopologyComponent component, String asUser) {
         TopologySampling sampling = getSamplingInstance(topology);
         return sampling.getSamplingStatus(topology, component, asUser);
-    }
-
-    public TopologySampling.SampledEvents getSampledEvents(Topology topology, TopologyComponent component, TopologySampling.EventQueryParams qps, String asUser) {
-        TopologySampling sampling = getSamplingInstance(topology);
-        return sampling.getSampledEvents(topology, component, qps, asUser);
     }
 
     private TopologySampling getSamplingInstance(Topology topology) {

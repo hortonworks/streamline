@@ -82,14 +82,12 @@ public class TopologyCatalogResource {
     private final StreamlineAuthorizer authorizer;
     private final StreamCatalogService catalogService;
     private final TopologyActionsService actionsService;
-    private final TopologyLogSearchService logSearchService;
 
     public TopologyCatalogResource(StreamlineAuthorizer authorizer, StreamCatalogService catalogService,
-                                   TopologyActionsService actionsService, TopologyLogSearchService logSearchService) {
+                                   TopologyActionsService actionsService) {
         this.authorizer = authorizer;
         this.catalogService = catalogService;
         this.actionsService = actionsService;
-        this.logSearchService = logSearchService;
     }
 
     @GET
@@ -431,76 +429,5 @@ public class TopologyCatalogResource {
         throw EntityNotFoundException.byId(topologyId.toString());
     }
 
-    @POST
-    @Path("/topologies/{topologyId}/logconfig")
-    @Timed
-    public Response configureLogLevel(@PathParam("topologyId") Long topologyId,
-                                      @QueryParam("targetLogLevel") TopologyActions.LogLevel targetLogLevel,
-                                      @QueryParam("durationSecs") int durationSecs,
-                                      @Context SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
-                NAMESPACE, topologyId, READ);
-
-        Topology topology = catalogService.getTopology(topologyId);
-        if (topology != null) {
-            TopologyActions.LogLevelInformation logInfo = actionsService.configureLogLevel(topology, targetLogLevel,
-                    durationSecs, WSUtils.getUserFromSecurityContext(securityContext));
-            return WSUtils.respondEntity(logInfo, OK);
-        }
-        throw EntityNotFoundException.byId(topologyId.toString());
-    }
-
-    @GET
-    @Path("/topologies/{topologyId}/logconfig")
-    @Timed
-    public Response getLogLevel(@PathParam("topologyId") Long topologyId,
-                                @Context SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
-                NAMESPACE, topologyId, READ);
-
-        Topology topology = catalogService.getTopology(topologyId);
-        if (topology != null) {
-            TopologyActions.LogLevelInformation logInfo = actionsService.getLogLevel(topology, WSUtils.getUserFromSecurityContext(securityContext));
-            if (logInfo == null) {
-                return WSUtils.respondEntity(Collections.emptyMap(), OK);
-            } else {
-                return WSUtils.respondEntity(logInfo, OK);
-            }
-        }
-        throw EntityNotFoundException.byId(topologyId.toString());
-    }
-
-    @GET
-    @Path("/topologies/{topologyId}/logs")
-    @Timed
-    public Response searchTopologyLogs(@PathParam("topologyId") Long topologyId,
-        @QueryParam("componentName") List<String> componentNames,
-        @QueryParam("logLevel") List<String> logLevels,
-        @QueryParam("searchString") String searchString,
-        @QueryParam("from") Long from,
-        @QueryParam("to") Long to,
-        @QueryParam("start") Integer start,
-        @QueryParam("limit") Integer limit,
-        @Context SecurityContext securityContext) {
-
-        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
-            NAMESPACE, topologyId, READ);
-        Topology topology = catalogService.getTopology(topologyId);
-        if (topology != null) {
-            if (from == null) {
-                throw BadRequestException.missingParameter("from");
-            }
-            if (to == null) {
-                throw BadRequestException.missingParameter("to");
-            }
-
-            LogSearchCriteria criteria = new LogSearchCriteria(String.valueOf(topologyId),
-                componentNames, logLevels, searchString, from, to, start, limit);
-
-            return WSUtils.respondEntity(logSearchService.search(topology, criteria), OK);
-        }
-
-        throw EntityNotFoundException.byId(topologyId.toString());
-    }
 }
 

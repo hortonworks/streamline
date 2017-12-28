@@ -2,11 +2,15 @@ package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyComponent;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.logsearch.EventSearchCriteria;
+import com.hortonworks.streamline.streams.logsearch.LogSearchCriteria;
+import com.hortonworks.streamline.streams.logsearch.topology.service.TopologyLogSearchService;
 import com.hortonworks.streamline.streams.sampling.service.TopologySampling;
 import com.hortonworks.streamline.streams.sampling.service.TopologySamplingService;
 import com.hortonworks.streamline.streams.security.Roles;
@@ -26,6 +30,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import java.util.List;
+
+import static com.hortonworks.streamline.streams.catalog.Topology.NAMESPACE;
 import static com.hortonworks.streamline.streams.security.Permission.EXECUTE;
 import static com.hortonworks.streamline.streams.security.Permission.READ;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -33,7 +40,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 /**
  * Resource for event sampling requests for topology
  */
-@Path("/v1/sampling")
+@Path("/v1/catalog")
 @Produces(MediaType.APPLICATION_JSON)
 public class TopologyEventSamplingResource {
     private static final Logger LOG = LoggerFactory.getLogger(TopologyEventSamplingResource.class);
@@ -51,7 +58,7 @@ public class TopologyEventSamplingResource {
     }
 
     @POST
-    @Path("/topologies/{topologyId}/enable/{pct}")
+    @Path("/topologies/{topologyId}/sampling/enable/{pct}")
     @Timed
     public Response enableSampling(@PathParam("topologyId") Long topologyId,
                                    @PathParam("pct") Integer pct,
@@ -70,7 +77,7 @@ public class TopologyEventSamplingResource {
     }
 
     @POST
-    @Path("/topologies/{topologyId}/component/{componentId}/enable/{pct}")
+    @Path("/topologies/{topologyId}/component/{componentId}/sampling/enable/{pct}")
     @Timed
     public Response enableSampling(@PathParam("topologyId") Long topologyId,
                                    @PathParam("componentId") Long componentId,
@@ -95,7 +102,7 @@ public class TopologyEventSamplingResource {
     }
 
     @POST
-    @Path("/topologies/{topologyId}/disable")
+    @Path("/topologies/{topologyId}/sampling/disable")
     @Timed
     public Response disableSampling(@PathParam("topologyId") Long topologyId,
                                     @Context SecurityContext securityContext) throws Exception {
@@ -112,7 +119,7 @@ public class TopologyEventSamplingResource {
     }
 
     @POST
-    @Path("/topologies/{topologyId}/component/{componentId}/disable")
+    @Path("/topologies/{topologyId}/component/{componentId}/sampling/disable")
     @Timed
     public Response disableSampling(@PathParam("topologyId") Long topologyId,
                                     @PathParam("componentId") Long componentId,
@@ -134,7 +141,7 @@ public class TopologyEventSamplingResource {
     }
 
     @GET
-    @Path("/topologies/{topologyId}")
+    @Path("/topologies/{topologyId}/sampling")
     @Timed
     public Response samplingStatus(@PathParam("topologyId") Long topologyId,
                                     @Context SecurityContext securityContext) throws Exception {
@@ -162,7 +169,7 @@ public class TopologyEventSamplingResource {
     }
 
     @GET
-    @Path("/topologies/{topologyId}/component/{componentId}")
+    @Path("/topologies/{topologyId}/component/{componentId}/sampling")
     @Timed
     public Response samplingStatus(@PathParam("topologyId") Long topologyId,
                                    @PathParam("componentId") Long componentId,
@@ -192,48 +199,6 @@ public class TopologyEventSamplingResource {
         throw EntityNotFoundException.byId(buildTopologyComponentId(topologyId, componentId));
     }
 
-    @GET
-    @Path("/topologies/{topologyId}/component/{componentId}/events")
-    @Timed
-    public Response getSampledEvents(@PathParam("topologyId") Long topologyId,
-                                     @PathParam("componentId") Long componentId,
-                                     @QueryParam("count") Integer count,
-                                     @QueryParam("desc") Boolean desc,
-                                   @Context SecurityContext securityContext) throws Exception {
-        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
-                Topology.NAMESPACE, topologyId, READ, EXECUTE);
-        Topology topology = catalogService.getTopology(topologyId);
-        TopologyComponent topologyComponent = catalogService.getTopologyComponent(topologyId, componentId);
-        if (topology != null && topologyComponent != null) {
-            String asUser = WSUtils.getUserFromSecurityContext(securityContext);
-            TopologySampling.EventQueryParams qps = buildEventQueryParams(count, desc);
-            TopologySampling.SampledEvents sampledEvents = samplingService.getSampledEvents(topology, topologyComponent, qps, asUser);
-            SamplingResponse response = SamplingResponse.of(topologyId)
-                    .componentId(componentId)
-                    .success(true)
-                    .events(sampledEvents)
-                    .build();
-            return WSUtils.respondEntity(response, OK);
-        }
-
-        throw EntityNotFoundException.byId(buildTopologyComponentId(topologyId, componentId));
-    }
-
-    private TopologySampling.EventQueryParams buildEventQueryParams(Integer count, Boolean desc) {
-        return new TopologySampling.EventQueryParams() {
-            @Override
-            public int count() {
-                return count == null ? 10 : count;
-            }
-
-            @Override
-            public boolean desc() {
-                return desc == null ? true : desc;
-            }
-
-        };
-    }
-
     private void ensureValidSamplingPct(Integer pct) {
         if (pct < 0 || pct > 100) {
             throw new IllegalArgumentException("Invalid sampling percentage");
@@ -246,7 +211,6 @@ public class TopologyEventSamplingResource {
         private Integer pct;
         private Boolean enabled;
         private Boolean success;
-        private TopologySampling.SampledEvents events;
 
         private SamplingResponse() {
         }
@@ -261,7 +225,6 @@ public class TopologyEventSamplingResource {
             private Integer pct;
             private Boolean enabled;
             private Boolean success;
-            private TopologySampling.SampledEvents events;
 
 
             public Builder(Long topologyId) {
@@ -287,11 +250,6 @@ public class TopologyEventSamplingResource {
                 return this;
             }
 
-            public Builder events(TopologySampling.SampledEvents events) {
-                this.events = events;
-                return this;
-            }
-
             public SamplingResponse build() {
                 SamplingResponse response = new SamplingResponse();
                 response.topologyId = this.topologyId;
@@ -299,7 +257,6 @@ public class TopologyEventSamplingResource {
                 response.pct = this.pct;
                 response.enabled = this.enabled;
                 response.success = this.success;
-                response.events = this.events;
                 return response;
             }
         }
@@ -327,12 +284,6 @@ public class TopologyEventSamplingResource {
         @JsonInclude(JsonInclude.Include.NON_NULL)
         public Long getComponentId() {
             return componentId;
-        }
-
-
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        public TopologySampling.SampledEvents getEvents() {
-            return events;
         }
     }
 

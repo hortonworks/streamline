@@ -227,6 +227,17 @@ const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callb
         return;
       }
     }
+    if (d.currentType.toLowerCase() === 'rt-join') {
+      let filtEdges = paths.filter(function(d) {
+        return newEdge.target === d.target;
+      });
+      if (filtEdges[0].length > 1) {
+        drawLine.classed("hidden", true);
+        FSReactToastr.info(
+          <CommonNotification flag="error" content={"Cannot connect more than two edges to " + d.uiname}/>, '', toastOpt);
+        return;
+      }
+    }
 
     if (!filtRes[0].length) {
       TopologyREST.getNode(topologyId, versionId, this.getNodeType(newEdge.source.parentType), newEdge.source.nodeId).then((result) => {

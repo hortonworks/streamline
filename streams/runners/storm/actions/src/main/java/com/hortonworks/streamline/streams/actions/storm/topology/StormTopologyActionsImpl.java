@@ -71,6 +71,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -124,6 +125,9 @@ public class StormTopologyActionsImpl implements TopologyActions {
     public static final String TOPOLOGY_AUTO_CREDENTIAL_CLASSNAME_HIVE = "org.apache.storm.hive.security.AutoHive";
 
     private static final Long DEFAULT_NIMBUS_THRIFT_MAX_BUFFER_SIZE = 1048576L;
+
+    public static final String TOPOLOGY_EVENTLOGGER_REGISTER = "topology.event.logger.register";
+    public static final String TOPOLOGY_EVENTLOGGER_CLASSNAME_STREAMLINE = "com.hortonworks.streamline.streams.runtime.storm.event.sample.StreamlineEventLogger";
 
     private String stormArtifactsLocation = "/tmp/storm-artifacts/";
     private String stormCliPath = "storm";
@@ -234,7 +238,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
         ctx.setCurrentAction("Adding artifacts to jar");
         Path jarToDeploy = addArtifactsToJar(getArtifactsLocation(topology));
         ctx.setCurrentAction("Creating Storm topology YAML file");
-        String fileName = createYamlFile(topology);
+        String fileName = createYamlFileForDeploy(topology);
         ctx.setCurrentAction("Deploying topology via 'storm jar' command");
         List<String> commands = new ArrayList<String>();
         commands.add(stormCliPath);
@@ -286,7 +290,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
         TopologyLayout testTopology = copyTopologyLayout(topology, testTopologyDag);
 
         Path jarToDeploy = addArtifactsToJar(getArtifactsLocation(testTopology));
-        String fileName = createYamlFile(testTopology);
+        String fileName = createYamlFileForTest(testTopology);
         List<String> commands = new ArrayList<String>();
         commands.add(stormCliPath);
         commands.add("jar");
@@ -391,7 +395,10 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public LogLevelInformation configureLogLevel(TopologyLayout topology, LogLevel targetLogLevel, int durationSecs, String asUser) throws Exception {
-        String stormTopologyId = getRuntimeTopologyId(topology, asUser);
+        String stormTopologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId(), asUser);
+        if (StringUtils.isEmpty(stormTopologyId)) {
+            return null;
+        }
         LogLevelResponse response = client.configureLog(stormTopologyId, ROOT_LOGGER_NAME, targetLogLevel.name(),
                 durationSecs, asUser);
         return convertLogLevelResponseToLogLevelInformation(response);
@@ -399,7 +406,10 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     @Override
     public LogLevelInformation getLogLevel(TopologyLayout topology, String asUser) throws Exception {
-        String stormTopologyId = getRuntimeTopologyId(topology, asUser);
+        String stormTopologyId = StormTopologyUtil.findStormTopologyId(client, topology.getId(), asUser);
+        if (StringUtils.isEmpty(stormTopologyId)) {
+            return null;
+        }
         LogLevelResponse response = client.getLogLevel(stormTopologyId, asUser);
         return convertLogLevelResponseToLogLevelInformation(response);
     }
@@ -576,7 +586,15 @@ public class StormTopologyActionsImpl implements TopologyActions {
         return jarFile;
     }
 
-    private String createYamlFile (TopologyLayout topology) throws Exception {
+    private String createYamlFileForDeploy(TopologyLayout topology) throws Exception {
+        return createYamlFile(topology, true);
+    }
+
+    private String createYamlFileForTest(TopologyLayout topology) throws Exception {
+        return createYamlFile(topology, false);
+    }
+
+    private String createYamlFile (TopologyLayout topology, boolean deploy) throws Exception {
         Map<String, Object> yamlMap;
         File f;
         OutputStreamWriter fileWriter = null;
@@ -600,9 +618,17 @@ public class StormTopologyActionsImpl implements TopologyActions {
             }
             Config topologyConfig = fluxGenerator.getTopologyConfig();
             putAutoTokenDelegationConfig(topologyConfig, topologyDag);
+            registerEventLogger(topologyConfig);
 
-            LOG.debug("Final Topology config {}", topologyConfig);
-            addTopologyConfig(yamlMap, topologyConfig.getProperties());
+            Map<String, Object> properties = topologyConfig.getProperties();
+            if (!deploy) {
+                LOG.debug("Disabling topology event logger for test mode...");
+                properties.put("topology.eventlogger.executors", 0);
+            }
+
+            LOG.debug("Final Topology properties {}", properties);
+
+            addTopologyConfig(yamlMap, properties);
             DumperOptions options = new DumperOptions();
             options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
             options.setSplitLines(false);
@@ -616,6 +642,13 @@ public class StormTopologyActionsImpl implements TopologyActions {
                 fileWriter.close();
             }
         }
+    }
+
+    private void registerEventLogger(Config topologyConfig) {
+        topologyConfig.put(TOPOLOGY_EVENTLOGGER_REGISTER,
+                Collections.singletonList(
+                        Collections.singletonMap("class", TOPOLOGY_EVENTLOGGER_CLASSNAME_STREAMLINE))
+        );
     }
 
     private void putAutoTokenDelegationConfig(Config topologyConfig, TopologyDag topologyDag) {
@@ -878,10 +911,10 @@ public class StormTopologyActionsImpl implements TopologyActions {
         Map<String, LogLevelLoggerResponse> namedLoggerLevels = response.getNamedLoggerLevels();
         LogLevelLoggerResponse resp = namedLoggerLevels.get(ROOT_LOGGER_NAME);
         if (resp == null) {
-            return null;
+            return LogLevelInformation.disabled();
         }
 
-        return new LogLevelInformation(LogLevel.valueOf(resp.getTargetLevel()), resp.getTimeoutEpoch());
+        return LogLevelInformation.enabled(LogLevel.valueOf(resp.getTargetLevel()), resp.getTimeoutEpoch());
     }
 
 }

@@ -20,6 +20,8 @@ import {
 import {
   CustomFetch
 } from '../utils/Overrides';
+const sampleModeBaseUrl = '/api/v1/catalog/topologies';
+import Utils from '../utils/Utils';
 
 const ViewModeREST = {
   getTopologyMetrics(id, fromTime, toTime, options) {
@@ -62,6 +64,70 @@ const ViewModeREST = {
     .then((response) => {
       return response.json();
     });
+  },
+  getTopologySamplingStatus(topologyId,options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    const url = sampleModeBaseUrl+'/'+topologyId+'/sampling';
+    return fetch(url, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  postTopologySamplingStatus(topologyId,status,pct, options) {
+    options = options || {};
+    options.method = options.method || 'POST';
+    options.headers = options.headers || {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    options.credentials = 'same-origin';
+    let url = sampleModeBaseUrl+'/'+topologyId+'/sampling/'+status;
+    if(pct !== ''){
+      url += '/'+pct;
+    }
+    return fetch(url, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  getComponentSamplingStatus(topologyId,componentId,options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    const url = sampleModeBaseUrl+'/'+topologyId+'/component/'+componentId+'/sampling';
+    return fetch(url, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  postComponentSamplingStatus(topologyId,componentId,status,pct, options) {
+    options = options || {};
+    options.method = options.method || 'POST';
+    options.headers = options.headers || {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    options.credentials = 'same-origin';
+    let url = sampleModeBaseUrl+'/'+topologyId+'/component/'+componentId+'/sampling/'+status;
+    if(pct !== ''){
+      url += '/'+pct;
+    }
+    return fetch(url, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  getSamplingEvents(topologyId,params,options){
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    // const esc = encodeURIComponent;
+    // const q_params = jQuery.param(params, true);
+    const url = sampleModeBaseUrl+'/'+topologyId+'/events?'+params;
+    return fetch(url, options)
+      .then(Utils.checkStatus);
   }
 };
 export default ViewModeREST;

@@ -62,7 +62,9 @@ class TopologyComponentMetrics extends Component {
 
   render () {
     let {viewModeData, compData} = this.props;
-    let overviewMetrics = {}, timeSeriesMetrics = {};
+    const {componentLevelActionDetails} = viewModeData;
+    let overviewMetrics = {}, timeSeriesMetrics = {},samplingVal= 0,
+      logLevels = viewModeData.logTopologyLevel;
     let compObj = {};
     if (compData.parentType == 'SOURCE') {
       compObj = viewModeData.sourceMetrics.find((entity)=>{
@@ -82,9 +84,15 @@ class TopologyComponentMetrics extends Component {
       timeSeriesMetrics = compObj.timeSeriesMetrics;
     }
 
-    const latencyMetric = Utils.formatLatency(overviewMetrics.latency);
+    const latencyMetric = Utils.formatLatency(overviewMetrics.completeLatency);
     const latency = latencyMetric.value.toString();
     const latencySuffix =latencyMetric.suffix;
+    const processTimeMetric = Utils.formatLatency(overviewMetrics.processTime);
+    const processTime = processTimeMetric.value.toString();
+    const processTimeSuffix = processTimeMetric.suffix;
+    const executeTimeMetric = Utils.formatLatency(overviewMetrics.executeTime);
+    const executeTime = executeTimeMetric.value.toString();
+    const executeTimeSuffix = executeTimeMetric.suffix;
     const emittedMetric = Utils.abbreviateNumber(overviewMetrics.emitted);
     const emitted = emittedMetric.value.toString();
     const ackedMetric = Utils.abbreviateNumber(overviewMetrics.acked);
@@ -143,6 +151,10 @@ class TopologyComponentMetrics extends Component {
       width: "20px",
       marginTop: "0px"
     }}/>;
+    if(!_.isEmpty(componentLevelActionDetails)){
+      const sampleObj =  _.find(componentLevelActionDetails.samplings, (sample) => sample.componentId === compData.nodeId);
+      samplingVal = sampleObj !== undefined && sampleObj.enabled ? sampleObj.duration : 0;
+    }
 
     return (
       <div>
@@ -150,19 +162,44 @@ class TopologyComponentMetrics extends Component {
       <div className="component-metric-top">
         <div className="component-metric-widget">
             <h6>Emitted</h6>
+            <h6>&nbsp;</h6>
             <h4>{emitted}
             <small>{emittedMetric.suffix}</small></h4>
           </div>
           <div className="component-metric-widget">
-            <h6>Latency</h6>
+            {compData.parentType == 'SOURCE' ?
+            [ <h6 key={1.1}>Complete</h6>,
+              <h6 key={1.2}>Latency</h6>
+            ]
+            :
+            [ <h6 key={2.1}>Process</h6>,
+              <h6 key={2.2}>Latency</h6>
+            ]
+            }
+            {compData.parentType == 'SOURCE' ?
             <h4>{latency}<small>{latencySuffix}</small></h4>
+            : <h4>{processTime}<small>{processTimeSuffix}</small></h4>
+            }
+          </div>
+          <div className="component-metric-widget">
+            {compData.parentType != 'SOURCE' ?
+            [ <h6 key={2.1}>Execute</h6>,
+              <h6 key={2.2}>Latency</h6>
+            ] : ''
+            }
+            {compData.parentType != 'SOURCE' ?
+            <h4>{executeTime}<small>{executeTimeSuffix}</small></h4>
+            : ''
+            }
           </div>
           <div className="component-metric-widget">
             <h6>Failed</h6>
+            <h6>&nbsp;</h6>
             <h4>{failed}</h4>
           </div>
           <div className="component-metric-widget">
             <h6>Acked</h6>
+            <h6>&nbsp;</h6>
             <h4>{acked}
             <small>{ackedMetric.suffix}</small></h4>
           </div>
@@ -181,13 +218,13 @@ class TopologyComponentMetrics extends Component {
           </div>
         </div>
         <div className="component-metric-graph">
-          <div style={{textAlign: "left"}}>PROCESS TIME</div>
+          <div style={{textAlign: "left"}}>ACKED</div>
           <div style={{
             height: '25px',
             textAlign: 'center',
             backgroundColor: '#f2f3f2'
           }}>
-            {this.state.loadingRecord ? loader : this.getGraph('ProcessTime', processTimeData, 'step-before', showMetrics)}
+            {this.state.loadingRecord ? loader : this.getGraph('ackedTuples', ackedData, 'step-before', showMetrics)}
           </div>
         </div>
         <div className="component-metric-graph">
@@ -205,7 +242,8 @@ class TopologyComponentMetrics extends Component {
       : ''
       }
       <div className="metric-bg bottom">
-        <span className="pull-right">Sampling: <span style={{color: '#2787ad'}}>None</span></span>
+        <span className="pull-left">Log: <span style={{color: '#2787ad'}}>{logLevels}</span></span>
+        <span className="pull-right">Sampling: <span style={{color: '#2787ad'}}>{samplingVal}%</span></span>
       </div>
       </div>
     );
