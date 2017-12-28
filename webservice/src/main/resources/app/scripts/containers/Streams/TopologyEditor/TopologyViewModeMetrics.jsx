@@ -73,7 +73,7 @@ import moment from 'moment';
       return d3.svg.axis().orient("left").tickFormat("");
     }} showTooltip={function(d) {
       const index = this.props.data.indexOf(d);
-      const {inputOutput, ackedTuples, FailedTuples, Latency, ProcessTime, Queue} = self.refs;
+      const {inputOutput, ackedTuples, FailedTuples, Latency, ProcessTime, Queue, ExecuteTime} = self.refs;
       if (inputOutput && inputOutput.props.data[index] !== undefined && self.state.showMetrics) {
         TimeSeriesChart.defaultProps.showTooltip.call(inputOutput, inputOutput.props.data[index]);
       }
@@ -89,11 +89,14 @@ import moment from 'moment';
       if (ProcessTime && ProcessTime.props.data[index] !== undefined && self.state.showMetrics) {
         TimeSeriesChart.defaultProps.showTooltip.call(ProcessTime, ProcessTime.props.data[index]);
       }
+      if (ExecuteTime && ExecuteTime.props.data[index] !== undefined && self.state.showMetrics) {
+        TimeSeriesChart.defaultProps.showTooltip.call(ExecuteTime, ExecuteTime.props.data[index]);
+      }
       if (Queue && Queue.props.data[index] !== undefined && self.state.showMetrics) {
         TimeSeriesChart.defaultProps.showTooltip.call(Queue, Queue.props.data[index]);
       }
     }} hideTooltip={function() {
-      const {inputOutput, ackedTuples, FailedTuples, Latency, ProcessTime, Queue} = self.refs;
+      const {inputOutput, ackedTuples, FailedTuples, Latency, ProcessTime, ExecuteTime, Queue} = self.refs;
       if (inputOutput) {
         TimeSeriesChart.defaultProps.hideTooltip.call(inputOutput);
       }
@@ -108,6 +111,9 @@ import moment from 'moment';
       }
       if (ProcessTime) {
         TimeSeriesChart.defaultProps.hideTooltip.call(ProcessTime);
+      }
+      if (ExecuteTime) {
+        TimeSeriesChart.defaultProps.hideTooltip.call(ExecuteTime);
       }
       if (Queue) {
         TimeSeriesChart.defaultProps.hideTooltip.call(Queue);
@@ -151,18 +157,27 @@ import moment from 'moment';
     }
 
     const latencyMetric = Utils.formatLatency(overviewMetrics.latency);
+    const completeLatencyMetric = Utils.formatLatency(overviewMetrics.completeLatency);
+    const processTimeMetric = Utils.formatLatency(overviewMetrics.processTime);
+    const executeTimeMetric = Utils.formatLatency(overviewMetrics.executeTime);
     const emittedMetric = Utils.abbreviateNumber(overviewMetrics.emitted);
     const emitted = emittedMetric.value.toString();
     const ackedMetric = Utils.abbreviateNumber(overviewMetrics.acked);
     const acked = ackedMetric.value.toString();
     const prevEmitted = overviewMetrics.prevEmitted || null;
     const prevLatency = overviewMetrics.prevLatency || null;
+    const prevCompleteLatency = overviewMetrics.prevCompleteLatency || null;
+    const prevExecuteTime = overviewMetrics.prevExecuteTime || null;
+    const prevProcessTime = overviewMetrics.prevProcessTime || null;
     const prevAcked = overviewMetrics.prevAcked || null;
     const prevFailed = overviewMetrics.prevFailed || null;
 
     const emittedDiffMetric = Utils.abbreviateNumber(overviewMetrics.emitted - prevEmitted);
     const emittedDifference = emittedDiffMetric.value.toString();
     const latencyDiffMetric = Utils.formatLatency(overviewMetrics.latency - prevLatency);
+    const completeLatencyDiffMetric = Utils.formatLatency(overviewMetrics.completeLatency - prevCompleteLatency);
+    const executeTimeDiffMetric = Utils.formatLatency(overviewMetrics.executeTime - prevExecuteTime);
+    const processTimeDiffMetric = Utils.formatLatency(overviewMetrics.processTime - prevProcessTime);
     const ackedDiffMetric = Utils.abbreviateNumber(overviewMetrics.acked - prevAcked);
     const ackedDifference = ackedDiffMetric.value.toString();
     const failed = overviewMetrics.failed ? overviewMetrics.failed.toString() : '0';
@@ -173,6 +188,7 @@ import moment from 'moment';
     const failedData = [];
     const queueData = [];
     const processTimeData = [];
+    const executeTimeData = [];
     const completeLatency = [];
     const {
       outputRecords,
@@ -208,6 +224,12 @@ import moment from 'moment';
         completeLatency.push({
           date: new Date(parseInt(key)),
           Latency: misc.completeLatency[key] || 0
+        });
+      }
+      if(misc.executeTime) {
+        executeTimeData.push({
+          date: new Date(parseInt(key)),
+          ExecuteTime: misc.executeTime[key] || 0
         });
       }
     }
@@ -270,20 +292,69 @@ import moment from 'moment';
                 </small>
               </h4>
           </div>
-          <div className="topology-foot-widget">
-              <h6>Latency
-                <big>
-                  {prevLatency !== null ?
-                  <i className={latencyDiffMetric.value <= 0 ? "fa fa-arrow-down" : "fa fa-arrow-up"}></i>
-                  : ''}
-                </big>
-              </h6>
-              <h4>{latencyMetric.value.toString()}{latencyMetric.suffix}&nbsp;
-                <small>{latencyDiffMetric.value <= 0 || prevLatency == null ? '' : '+'}
-                  {latencyDiffMetric.value.toString()}{latencyDiffMetric.suffix}
-                </small>
-              </h4>
-          </div>
+          {selectedComponent && selectedComponent.parentType === undefined ?
+            <div className="topology-foot-widget">
+                <h6>Latency
+                  <big>
+                    {prevLatency !== null ?
+                    <i className={latencyDiffMetric.value <= 0 ? "fa fa-arrow-down" : "fa fa-arrow-up"}></i>
+                    : ''}
+                  </big>
+                </h6>
+                <h4>{latencyMetric.value.toString()}{latencyMetric.suffix}&nbsp;
+                  <small>{latencyDiffMetric.value <= 0 || prevLatency == null ? '' : '+'}
+                    {latencyDiffMetric.value.toString()}{latencyDiffMetric.suffix}
+                  </small>
+                </h4>
+            </div>
+            : null
+          }
+          {selectedComponent && selectedComponent.parentType === "SOURCE" ?
+            <div className="topology-foot-widget">
+                <h6>Complete Latency
+                  <big>
+                    {prevCompleteLatency !== null ?
+                    <i className={completeLatencyDiffMetric.value <= 0 ? "fa fa-arrow-down" : "fa fa-arrow-up"}></i>
+                    : ''}
+                  </big>
+                </h6>
+                <h4>{completeLatencyMetric.value.toString()}{completeLatencyMetric.suffix}&nbsp;
+                  <small>{completeLatencyDiffMetric.value <= 0 || prevCompleteLatency == null ? '' : '+'}
+                    {completeLatencyDiffMetric.value.toString()}{completeLatencyDiffMetric.suffix}
+                  </small>
+                </h4>
+            </div>
+          : null}
+          {selectedComponent && (selectedComponent.parentType === "PROCESSOR" || selectedComponent.parentType === "SINK")
+            ? [<div className="topology-foot-widget">
+                  <h6>Process Latency
+                    <big>
+                      {prevProcessTime !== null ?
+                      <i className={processTimeDiffMetric.value <= 0 ? "fa fa-arrow-down" : "fa fa-arrow-up"}></i>
+                      : ''}
+                    </big>
+                  </h6>
+                  <h4>{processTimeMetric.value.toString()}{processTimeMetric.suffix}&nbsp;
+                    <small>{processTimeDiffMetric.value <= 0 || prevProcessTime == null ? '' : '+'}
+                      {processTimeDiffMetric.value.toString()}{processTimeDiffMetric.suffix}
+                    </small>
+                  </h4>
+              </div>,
+              <div className="topology-foot-widget">
+                  <h6>Execute Latency
+                    <big>
+                      {prevExecuteTime !== null ?
+                      <i className={executeTimeDiffMetric.value <= 0 ? "fa fa-arrow-down" : "fa fa-arrow-up"}></i>
+                      : ''}
+                    </big>
+                  </h6>
+                  <h4>{executeTimeMetric.value.toString()}{executeTimeMetric.suffix}&nbsp;
+                    <small>{executeTimeDiffMetric.value <= 0 || prevExecuteTime == null ? '' : '+'}
+                      {executeTimeDiffMetric.value.toString()}{executeTimeDiffMetric.suffix}
+                    </small>
+                  </h4>
+              </div>]
+          : null}
           <div className="topology-foot-widget">
               <h6>Failed
               <big>
@@ -356,19 +427,6 @@ import moment from 'moment';
             </div>
             <div className="col-md-3">
               <div className="topology-foot-graphs">
-                <div style={{textAlign: "left", marginLeft: '10px'}}>Process Time</div>
-                <div style={{
-                  height: '50px',
-                  textAlign: 'center'
-                }}>
-                  {this.state.loadingRecord ? loader : this.getGraph('ProcessTime', processTimeData, 'step-before')}
-                </div>
-              </div>
-            </div>
-          </div>,
-            <div className="row">
-            <div className="col-md-3">
-              <div className="topology-foot-graphs">
                 <div style={{textAlign: "left", marginLeft: '10px'}}>Queue</div>
                 <div style={{
                   height: '50px',
@@ -380,10 +438,12 @@ import moment from 'moment';
                 </div>
               </div>
             </div>
+          </div>,
+            <div className="row">
             {selectedComponentId == '' || selectedComponent.parentType === 'SOURCE' ?
             <div className="col-md-3">
               <div className="topology-foot-graphs">
-                <div style={{textAlign: "left", marginLeft: '10px'}}>Latency</div>
+                <div style={{textAlign: "left", marginLeft: '10px'}}>{selectedComponent.parentType === 'SOURCE' ? 'Complete Latency' : 'Latency'}</div>
                 <div style={{
                   height: '50px',
                   textAlign: 'center'
@@ -392,11 +452,32 @@ import moment from 'moment';
                 </div>
               </div>
             </div>
-            : ''}
-            <div className="col-md-3">
-              <div className="topology-foot-graphs">
-              </div>
-            </div>
+            :
+            [ <div className="col-md-3">
+                <div className="topology-foot-graphs">
+                  <div style={{textAlign: "left", marginLeft: '10px'}}>Process Latency</div>
+                  <div style={{
+                    height: '50px',
+                    textAlign: 'center'
+                  }}>
+                    {this.state.loadingRecord ? loader : this.getGraph('ProcessTime', processTimeData, 'step-before')}
+                  </div>
+                </div>
+              </div>,
+              <div className="col-md-3">
+                <div className="topology-foot-graphs">
+                  <div className="topology-foot-graphs">
+                  <div style={{textAlign: "left", marginLeft: '10px'}}>Execute Latency</div>
+                  <div style={{
+                    height: '50px',
+                    textAlign: 'center'
+                  }}>
+                    {this.state.loadingRecord ? loader : this.getGraph('ExecuteTime', executeTimeData, 'step-before')}
+                  </div>
+                </div>
+                </div>
+              </div>]
+            }
           </div>]
           : null}
         </Panel>
