@@ -73,6 +73,7 @@ public final class CatalogToLayoutConverter {
 
         componentLayout.setId(component.getId().toString());
         componentLayout.setName(component.getName());
+        componentLayout.setConfig(component.getConfig());
         return componentLayout;
     }
 }
