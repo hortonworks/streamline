@@ -16,6 +16,7 @@
 package com.hortonworks.streamline.streams.metrics.storm.topology;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hortonworks.streamline.common.Config;
 import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
 import com.hortonworks.streamline.streams.layout.component.StreamlineSink;
 import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
@@ -306,8 +307,7 @@ public class StormTopologyTimeSeriesMetricsImplTest {
     }
 
     private TopologyLayout getTopologyLayoutForTest() throws IOException {
-        Map<String, Object> configurations = buildTopologyConfigWithKafkaDataSource(TOPIC_NAME);
-        return new TopologyLayout(1L, "topology", mapper.writeValueAsString(configurations), null);
+        return new TopologyLayout(1L, "topology", mapper.writeValueAsString(Collections.emptyMap()), null);
     }
 
     private Component getSourceLayoutForTest() {
@@ -318,6 +318,9 @@ public class StormTopologyTimeSeriesMetricsImplTest {
         };
         source.setId("11");
         source.setName("device");
+
+        Map<String, String> configurations = buildSourceConfigWithKafkaTopic(TOPIC_NAME);
+        source.setConfig(new Config(configurations));
         return source;
     }
 
@@ -343,18 +346,9 @@ public class StormTopologyTimeSeriesMetricsImplTest {
         return sink;
     }
 
-    private Map<String, Object> buildTopologyConfigWithKafkaDataSource(String topicName) {
-        Map<String, Object> configurations = new HashMap<>();
-
-        Map<String, Object> dataSource = new HashMap<>();
-        dataSource.put(TopologyLayoutConstants.JSON_KEY_UINAME, source.getName());
-        dataSource.put(TopologyLayoutConstants.JSON_KEY_TYPE, "KAFKA");
-
-        Map<String, Object> dataSourceConfig = new HashMap<>();
-        dataSourceConfig.put(TopologyLayoutConstants.JSON_KEY_TOPIC, topicName);
-        dataSource.put(TopologyLayoutConstants.JSON_KEY_CONFIG, dataSourceConfig);
-
-        configurations.put(TopologyLayoutConstants.JSON_KEY_DATA_SOURCES, Collections.singletonList(dataSource));
+    private Map<String, String> buildSourceConfigWithKafkaTopic(String topicName) {
+        Map<String, String> configurations = new HashMap<>();
+        configurations.put(TopologyLayoutConstants.JSON_KEY_TOPIC, topicName);
         return configurations;
     }
 

@@ -19,6 +19,7 @@ import com.hortonworks.streamline.common.util.ParallelStreamUtil;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
 import com.hortonworks.streamline.streams.layout.component.Component;
 import com.hortonworks.streamline.streams.layout.component.Source;
+import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
 import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 import com.hortonworks.streamline.streams.metrics.TimeSeriesQuerier;
 import com.hortonworks.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
@@ -84,7 +85,7 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
         String stormTopologyName = StormTopologyUtil.findOrGenerateTopologyName(client, topology.getId(), topology.getName(), asUser);
         String stormComponentName = getComponentName(component);
 
-        String topicName = findKafkaTopicName(topology, component);
+        String topicName = findKafkaTopicName(component);
         if (topicName == null) {
             throw new IllegalStateException("Cannot find Kafka topic name from source config - topology name: " +
                     topology.getName() + " / source : " + component.getName());
@@ -161,34 +162,17 @@ public class StormTopologyTimeSeriesMetricsImpl implements TopologyTimeSeriesMet
         return component.getId() + "-" + component.getName();
     }
 
-    private String findKafkaTopicName(TopologyLayout topology, Component component) {
-        String kafkaTopicName = null;
+    private String findKafkaTopicName(Component component) {
+        if (!(component instanceof StreamlineSource)) {
+            throw new IllegalStateException("Component must be Source.");
+        }
+
         try {
-            Map<String, Object> topologyConfig = topology.getConfig().getProperties();
-            List<Map<String, Object>> dataSources = (List<Map<String, Object>>) topologyConfig.get(TopologyLayoutConstants.JSON_KEY_DATA_SOURCES);
-
-            for (Map<String, Object> dataSource : dataSources) {
-                // UINAME and TYPE are mandatory fields for dataSource, so skip checking null
-                String uiName = (String) dataSource.get(TopologyLayoutConstants.JSON_KEY_UINAME);
-                String type = (String) dataSource.get(TopologyLayoutConstants.JSON_KEY_TYPE);
-
-                if (!uiName.equals(component.getName())) {
-                    continue;
-                }
-
-                if (!type.equalsIgnoreCase("KAFKA")) {
-                    throw new IllegalStateException("Type of datasource should be KAFKA");
-                }
-
-                // config is a mandatory field for dataSource, so skip checking null
-                Map<String, Object> dataSourceConfig = (Map<String, Object>) dataSource.get(TopologyLayoutConstants.JSON_KEY_CONFIG);
-                kafkaTopicName = (String) dataSourceConfig.get(TopologyLayoutConstants.JSON_KEY_TOPIC);
-            }
+            Map<String, Object> componentConfig = component.getConfig().getProperties();
+            return (String) componentConfig.get(TopologyLayoutConstants.JSON_KEY_TOPIC);
         } catch (RuntimeException e) {
             throw new IllegalStateException("Failed to parse topology configuration.", e);
         }
-
-        return kafkaTopicName;
     }
 
     private Map<Long, Double> queryTopologyMetrics(String stormTopologyName, StormMappedMetric mappedMetric, long from, long to) {
