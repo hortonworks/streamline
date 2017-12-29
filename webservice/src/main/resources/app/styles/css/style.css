@@ -3584,6 +3584,9 @@ a.crossIcon{
 .toast-message {
   display: none;
 }
+.toast-title > div {
+  word-wrap: break-word;
+}
 .list > h4{
   margin-bottom: 1px;
 }
