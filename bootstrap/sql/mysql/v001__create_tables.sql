@@ -275,7 +275,7 @@ CREATE TABLE IF NOT EXISTS topology_rule (
     `sql` TEXT NULL,
     parsedRuleStr TEXT NOT NULL,
     projections TEXT NOT NULL,
-    window TEXT NOT NULL,
+    `window` TEXT NOT NULL,
     actions TEXT NOT NULL,
     PRIMARY KEY (id, versionId),
     FOREIGN KEY (versionId) REFERENCES topology_version(id)
@@ -306,7 +306,7 @@ CREATE TABLE IF NOT EXISTS topology_window (
     outputStreams TEXT NULL,
     `condition` TEXT NULL,
     parsedRuleStr TEXT NOT NULL,
-    window TEXT NOT NULL,
+    `window` TEXT NOT NULL,
     actions TEXT NOT NULL,
     projections TEXT NULL,
     groupbykeys TEXT NULL,
