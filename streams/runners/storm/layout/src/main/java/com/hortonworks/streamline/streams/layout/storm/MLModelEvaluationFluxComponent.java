@@ -37,7 +37,7 @@ public class MLModelEvaluationFluxComponent extends AbstractFluxComponent {
     protected void generateComponent() {
         LOG.debug("Generating [{}]", this.getClass().getSimpleName());
         final String boltId = "PMMLPredictorBolt" + UUID_FOR_COMPONENTS;
-        final String boltClassName = "org.apache.storm.pmml.PMMLPredictorBolt";
+        final String boltClassName = "com.hortonworks.streamline.streams.runtime.storm.bolt.model.StreamlinePMMLPredictorBolt";
         final List<Object> boltConstructorArgs = Lists.newArrayList(
                 getRefYaml(modelRunnerFactory()),
                 getRefYaml(modelOutputs()));
