@@ -30,8 +30,7 @@
         "isOptional": false,
         "tooltip": "Directory to read files from",
         "type": "string",
-        "defaultValue": "/tmp/sourcefiles/",
-        "hint": "schema"
+        "defaultValue": "/tmp/sourcefiles/"
       },
       {
         "uiName": "Schema Name",
@@ -47,9 +46,9 @@
         "fieldName": "schemaVersion",
         "isOptional": false,
         "tooltip": "Version of the given schema",
-        "type": "number",
-        "defaultValue": "-1",
-        "hint": "schema"
+        "type": "enumstring",
+        "options": [],
+        "hint": "dependsOn-schemaName,schemaVersion"
       },
       {
         "uiName": "Archive Dir",
