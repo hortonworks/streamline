@@ -153,7 +153,7 @@ public class HBaseMetadataService implements AutoCloseable {
                     .getAdmin(), securityContext, subject, user, hbaseMaster, hbaseMasterProcesses);
         } else {
             return new HBaseMetadataService(ConnectionFactory.createConnection(hbaseConfig).getAdmin(),
-                    null, null, null, hbaseMaster, hbaseMasterProcesses);
+                    securityContext, subject, null, hbaseMaster, hbaseMasterProcesses);
         }
     }
 
