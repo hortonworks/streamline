@@ -34,6 +34,24 @@
         "hint": "schema"
       },
       {
+        "uiName": "Schema Name",
+        "fieldName": "schemaName",
+        "isOptional": false,
+        "tooltip": "Name of the schema to which messages in the given `Source Dir` adhere to.",
+        "type": "string",
+        "defaultValue": "",
+        "hint": "schema"
+      },
+      {
+        "uiName": "Schema Version",
+        "fieldName": "schemaVersion",
+        "isOptional": false,
+        "tooltip": "Version of the given schema",
+        "type": "number",
+        "defaultValue": "-1",
+        "hint": "schema"
+      },
+      {
         "uiName": "Archive Dir",
         "fieldName": "ArchiveDir",
         "isOptional": false,
