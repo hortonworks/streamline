@@ -30,8 +30,25 @@
         "isOptional": false,
         "tooltip": "Directory to read files from",
         "type": "string",
-        "defaultValue": "/tmp/sourcefiles/",
+        "defaultValue": "/tmp/sourcefiles/"
+      },
+      {
+        "uiName": "Schema Name",
+        "fieldName": "schemaName",
+        "isOptional": false,
+        "tooltip": "Name of the schema to which messages in the given `Source Dir` adhere to.",
+        "type": "string",
+        "defaultValue": "",
         "hint": "schema"
+      },
+      {
+        "uiName": "Schema Version",
+        "fieldName": "schemaVersion",
+        "isOptional": false,
+        "tooltip": "Version of the given schema",
+        "type": "enumstring",
+        "options": [],
+        "hint": "dependsOn-schemaName,schemaVersion"
       },
       {
         "uiName": "Archive Dir",
