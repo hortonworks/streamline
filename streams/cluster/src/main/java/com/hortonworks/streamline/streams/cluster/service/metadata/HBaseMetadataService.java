@@ -20,12 +20,12 @@ import com.google.common.collect.ImmutableList;
 import com.hortonworks.streamline.common.function.SupplierException;
 import com.hortonworks.streamline.streams.cluster.catalog.Component;
 import com.hortonworks.streamline.streams.cluster.catalog.ComponentProcess;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.exception.EntityNotFoundException;
 import com.hortonworks.streamline.streams.cluster.exception.ServiceComponentNotFoundException;
 import com.hortonworks.streamline.streams.cluster.exception.ServiceConfigurationNotFoundException;
 import com.hortonworks.streamline.streams.cluster.exception.ServiceNotFoundException;
-import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
-import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.EnvironmentServiceUtil;
 import com.hortonworks.streamline.streams.cluster.service.metadata.common.OverrideHadoopConfiguration;
@@ -34,7 +34,6 @@ import com.hortonworks.streamline.streams.cluster.service.metadata.json.Keytabs;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.Principals;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.Tables;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
-
 import org.apache.commons.math3.util.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -57,8 +56,8 @@ import java.io.IOException;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -86,10 +85,6 @@ public class HBaseMetadataService implements AutoCloseable {
     private final Component hbaseMaster;
     private final Collection<ComponentProcess> hbaseMasterProcesses;
 
-    public HBaseMetadataService(Admin hBaseAdmin) {
-        this(hBaseAdmin, null, null, null, null, null);
-    }
-
     public HBaseMetadataService(Admin hBaseAdmin, SecurityContext securityContext,
             Subject subject, User user, Component hbaseMaster, Collection<ComponentProcess> hbaseMasterProcesses) {
         this.hBaseAdmin = hBaseAdmin;
@@ -99,25 +94,6 @@ public class HBaseMetadataService implements AutoCloseable {
         this.hbaseMaster = hbaseMaster;
         this.hbaseMasterProcesses = hbaseMasterProcesses;
         LOG.info("Created {}", this);
-    }
-
-    /**
-     * Creates insecure {@link HBaseMetadataService} which delegates to {@link Admin} instantiated with default
-     * {@link HBaseConfiguration} and {@code hbase-site.xml} properties overridden with the config
-     * for the cluster imported in the service pool (either manually or using Ambari)
-     */
-    public static HBaseMetadataService newInstance(EnvironmentService environmentService, Long clusterId)
-            throws IOException, EntityNotFoundException {
-
-        return newInstance(overrideConfig(HBaseConfiguration.create(), environmentService, clusterId));
-    }
-
-    /**
-     * Creates insecure {@link HBaseMetadataService} which delegates to {@link Admin}
-     * instantiated with with the {@link Configuration} provided using the first parameter
-     */
-    public static HBaseMetadataService newInstance(Configuration hbaseConfig) throws IOException, EntityNotFoundException {
-        return new HBaseMetadataService(ConnectionFactory.createConnection(hbaseConfig).getAdmin());
     }
 
     /**
@@ -153,7 +129,8 @@ public class HBaseMetadataService implements AutoCloseable {
             return new HBaseMetadataService(ConnectionFactory.createConnection(hbaseConfig, user)
                     .getAdmin(), securityContext, subject, user, hbaseMaster, hbaseMasterProcesses);
         } else {
-            return newInstance(hbaseConfig);
+            return new HBaseMetadataService(ConnectionFactory.createConnection(hbaseConfig).getAdmin(),
+                    securityContext, subject, null, hbaseMaster, hbaseMasterProcesses);
         }
     }
 

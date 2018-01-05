@@ -159,6 +159,14 @@ export default class ComponentSamplings extends Component{
       } else {
         this.setState({selectedComponentArr : selectedComponents, fetchLoader : false,events : results.events,noOfResults : results.matchedEvents});
       }
+    }).catch((err) => {
+      err.response.then((result) => {
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
+      });
+      this.setState({
+        fetchLoader: false
+      });
     });
   }
 

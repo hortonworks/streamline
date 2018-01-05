@@ -80,7 +80,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware, T
         final Subject subject = (Subject) config.get(Constants.CONFIG_SUBJECT);  // Authorized subject
         MLModelRegistryClient modelRegistryClient = new MLModelRegistryClient(catalogRootUrl, subject);
         final StreamCatalogService streamcatalogService = new StreamCatalogService(storageManager, fileStorage, modelRegistryClient);
-        final EnvironmentService environmentService = new EnvironmentService(storageManager, transactionManager);
+        final EnvironmentService environmentService = new EnvironmentService(storageManager);
         TagClient tagClient = new TagClient(catalogRootUrl);
         final CatalogService catalogService = new CatalogService(storageManager, fileStorage, tagClient);
         final TopologyActionsService topologyActionsService = new TopologyActionsService(streamcatalogService,
