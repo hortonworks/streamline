@@ -1355,7 +1355,12 @@ export default class TopologyGraphComponent extends Component {
           .attr("width" , thisGraph.constants.rectangleWidth)
           .attr("height", 200)
           .attr('x', function(d){return 0;})
-          .attr('y', function(d){return 40;});
+          .attr('y', function(d){return 40;})
+          .on('mousedown', function(d) {
+            thisGraph.rectangleMouseDown.call(thisGraph, parentNode, data[0]);
+          }).on('mouseup', function(d) {
+            thisGraph.rectangleMouseUp.call(thisGraph, parentNode, data[0]);
+          }).call(thisGraph.drag);
           // ReactDOM render methods
           render(<EventLogComponent  eventLog={data[0]} eventPaginationClick={thisGraph.props.handleEventPaginationClick} />, testEvent.node());
         });
