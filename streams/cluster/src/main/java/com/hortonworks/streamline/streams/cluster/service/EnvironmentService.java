@@ -69,9 +69,9 @@ public class EnvironmentService {
     private final List<ContainingNamespaceAwareContainer> containers;
     private final ObjectMapper objectMapper;
 
-    public EnvironmentService(StorageManager storageManager, TransactionManager transactionManager) {
+    public EnvironmentService(StorageManager storageManager) {
         this.dao = storageManager;
-        this.clusterImporter = new ClusterImporter(this, transactionManager);
+        this.clusterImporter = new ClusterImporter(this);
         this.containers = new ArrayList<>();
         this.objectMapper = new ObjectMapper();
     }

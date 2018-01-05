@@ -15,9 +15,6 @@
  **/
 package com.hortonworks.streamline.streams.cluster;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hortonworks.registries.common.transaction.TransactionIsolation;
-import com.hortonworks.registries.storage.StorageManager;
 import com.hortonworks.registries.storage.TransactionManager;
 import com.hortonworks.streamline.common.util.ParallelStreamUtil;
 import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
@@ -30,13 +27,15 @@ import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfig
 import com.hortonworks.streamline.streams.cluster.register.impl.KafkaServiceRegistrar;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaBrokerListeners;
+import org.jooq.lambda.Unchecked;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 
 import static java.util.stream.Collectors.toList;
@@ -46,12 +45,10 @@ public class ClusterImporter {
     private static final int FORK_JOIN_POOL_PARALLELISM = 20;
 
     private final EnvironmentService environmentService;
-    private final TransactionManager transactionManager;
     private final ForkJoinPool forkJoinPool;
 
-    public ClusterImporter(EnvironmentService environmentService, TransactionManager transactionManager) {
+    public ClusterImporter(EnvironmentService environmentService) {
         this.environmentService = environmentService;
-        this.transactionManager = transactionManager;
         this.forkJoinPool = new ForkJoinPool(FORK_JOIN_POOL_PARALLELISM);
     }
 
@@ -59,55 +56,83 @@ public class ClusterImporter {
         // remove all of relevant services and associated components
         removeAllServices(cluster);
 
-        List<String> availableServices = serviceNodeDiscoverer.getServices();
+        // fetching information of services from discoverer concurrently
+        List<ServiceInformation> serviceInformations = fetchServices(serviceNodeDiscoverer, cluster);
 
-        ParallelStreamUtil.execute(
-                () -> handleServices(serviceNodeDiscoverer, cluster, availableServices),
-                forkJoinPool);
+        // storing services and corresponding components, component processes, configurations
+        // this is done in the thread which handles cleanup, so that it can be grouped to same transaction
+        serviceInformations.forEach(this::storeService);
 
         return cluster;
     }
 
-    private Void handleServices(ServiceNodeDiscoverer serviceNodeDiscoverer, Cluster cluster, List<String> availableServices) {
-        availableServices.parallelStream()
+    private List<ServiceInformation> fetchServices(ServiceNodeDiscoverer serviceNodeDiscoverer, Cluster cluster) {
+        List<String> availableServices = serviceNodeDiscoverer.getServices();
+        return availableServices.parallelStream()
                 .filter(ServiceConfigurations::contains)
-                .forEach(serviceName -> {
-                    try {
-                        transactionManager.beginTransaction(TransactionIsolation.DEFAULT);
-                        LOG.debug("service start {}", serviceName);
-
-                        Service service = addService(cluster, serviceName);
-
-                        Map<String, String> flattenConfigurations = new ConcurrentHashMap<>();
-                        Map<String, Map<String, String>> configurations = serviceNodeDiscoverer.getConfigurations(serviceName);
-                        handleConfigurations(serviceNodeDiscoverer, flattenConfigurations, configurations, service);
-
-                        List<String> components = serviceNodeDiscoverer.getComponents(serviceName);
-                        handleComponents(serviceNodeDiscoverer, serviceName, flattenConfigurations, service, components);
-                        transactionManager.commitTransaction();
-                    } catch (Exception e) {
-                        transactionManager.rollbackTransaction();
-                        throw e;
-                    }
-                });
-
-        return null;
+                .map(serviceName -> ParallelStreamUtil.execute(
+                        () -> fetchService(serviceNodeDiscoverer, cluster, serviceName),
+                        forkJoinPool))
+                .collect(toList());
     }
 
-    private void handleComponents(ServiceNodeDiscoverer serviceNodeDiscoverer, String serviceName, Map<String, String> flattenConfigurations, Service service, List<String> components) {
-        components.stream().forEach(componentName -> {
+    private ServiceInformation fetchService(ServiceNodeDiscoverer serviceNodeDiscoverer, Cluster cluster, String serviceName) {
+        LOG.debug("service start {}", serviceName);
+
+        ServiceInformation serviceInformation = createServiceInformation(cluster, serviceName);
+
+        ServiceConfigurationInformation serviceConfigurationInformation = fetchServiceConfigurations(
+                serviceNodeDiscoverer, serviceInformation);
+
+        List<ComponentInformation> components = fetchComponents(serviceNodeDiscoverer, serviceName,
+                serviceConfigurationInformation.getFlattenConfiguration(), serviceInformation);
+
+        serviceInformation.setComponents(components);
+        serviceInformation.setServiceConfigurationInfo(serviceConfigurationInformation);
+
+        return serviceInformation;
+    }
+
+    private List<ComponentInformation> fetchComponents(ServiceNodeDiscoverer serviceNodeDiscoverer, String serviceName,
+                                                       Map<String, String> flatConfiguration, ServiceInformation serviceInformation) {
+        List<String> ambariComponents = serviceNodeDiscoverer.getComponents(serviceName);
+
+        return ambariComponents.stream().map(componentName -> {
             LOG.debug("component start {}", componentName);
 
-            List<String> hosts = serviceNodeDiscoverer.getComponentNodes(serviceName, componentName);
-            addComponent(flattenConfigurations, service, componentName, hosts);
+            Component component = environmentService.createComponent(serviceInformation.getService(), componentName);
+
+            List<ComponentProcess> componentProcesses = fetchComponentProcesses(serviceNodeDiscoverer, serviceName, componentName);
+
+            environmentService.injectProtocolAndPortToComponent(flatConfiguration, component, componentProcesses);
+
+            // workaround for Kafka protocol
+            if (componentName.equals(ServiceConfigurations.KAFKA.name())) {
+                setKafkaProtocol(flatConfiguration, componentProcesses);
+            }
 
             LOG.debug("component end {}", componentName);
-        });
+
+            return new ComponentInformation(component, componentProcesses);
+        })
+        .collect(toList());
     }
 
-    private void handleConfigurations(ServiceNodeDiscoverer serviceNodeDiscoverer, Map<String, String> flattenConfigurations, Map<String, Map<String, String>> configurations, Service service) {
-        configurations.entrySet().stream()
-                .forEach(entry -> {
+    private List<ComponentProcess> fetchComponentProcesses(ServiceNodeDiscoverer serviceNodeDiscoverer, String serviceName, String componentName) {
+        List<String> hosts = serviceNodeDiscoverer.getComponentNodes(serviceName, componentName);
+        return hosts.stream().map(host -> {
+            ComponentProcess cp = new ComponentProcess();
+            cp.setHost(host);
+            return cp;
+        }).collect(toList());
+    }
+
+    private ServiceConfigurationInformation fetchServiceConfigurations(ServiceNodeDiscoverer serviceNodeDiscoverer,
+                                                                       ServiceInformation serviceInformation) {
+        Map<String, Map<String, String>> ambariServiceConfigurations = serviceNodeDiscoverer.getConfigurations(
+                serviceInformation.getService().getName());
+        List<ServiceConfiguration> serviceConfigurations = ambariServiceConfigurations.entrySet().stream()
+                .map(entry -> {
                     try {
                         String confType = entry.getKey();
                         Map<String, String> configuration = entry.getValue();
@@ -116,37 +141,53 @@ public class ClusterImporter {
 
                         String actualFileName = serviceNodeDiscoverer.getOriginalFileName(confType);
 
-                        addServiceConfiguration(service, confType, configuration, actualFileName);
-                        flattenConfigurations.putAll(configuration);
+                        ServiceConfiguration serviceConfiguration = environmentService.createServiceConfiguration(
+                                null, confType, actualFileName, configuration);
 
                         LOG.debug("conf-type end {}", confType);
+
+                        return serviceConfiguration;
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
-                });
+                })
+                .collect(toList());
+
+        return new ServiceConfigurationInformation(serviceConfigurations);
     }
 
-    private void addComponent(Map<String, String> flatConfigurations, Service service, String componentName, List<String> hosts) {
-        Component component = environmentService.createComponent(service, componentName);
+    private ServiceInformation createServiceInformation(Cluster cluster, String serviceName) {
+        Service service = environmentService.createService(cluster, serviceName);
+        return new ServiceInformation(service);
+    }
 
-        List<ComponentProcess> componentProcesses = hosts.stream().map(host -> {
-            ComponentProcess cp = new ComponentProcess();
-            cp.setHost(host);
-            return cp;
-        }).collect(toList());
 
-        environmentService.injectProtocolAndPortToComponent(flatConfigurations, component, componentProcesses);
+    private void storeService(ServiceInformation serviceInformation) {
+        Service service = serviceInformation.getService();
 
-        // workaround for Kafka protocol
-        if (componentName.equals(ServiceConfigurations.KAFKA.name())) {
-            setKafkaProtocol(flatConfigurations, componentProcesses);
-        }
+        Long serviceId = environmentService.addService(service).getId();
 
-        final Component storedComponent = environmentService.addComponent(component);
-        componentProcesses.forEach(cp -> {
-            cp.setComponentId(storedComponent.getId());
-            environmentService.addComponentProcess(cp);
+        serviceInformation.getComponents().forEach(componentInformation -> storeComponent(serviceId, componentInformation));
+
+        ServiceConfigurationInformation scInfo = serviceInformation.getServiceConfigurationInfo();
+        scInfo.getServiceConfigurations().forEach(sc -> storeServiceConfiguration(serviceId, sc));
+    }
+
+    private void storeComponent(Long serviceId, ComponentInformation componentInformation) {
+        Component component = componentInformation.getComponent();
+        component.setServiceId(serviceId);
+
+        Long componentId = environmentService.addComponent(component).getId();
+
+        componentInformation.getComponentProcesses().forEach(componentProcess -> {
+            componentProcess.setComponentId(componentId);
+            environmentService.addComponentProcess(componentProcess);
         });
+    }
+
+    private void storeServiceConfiguration(Long serviceId, ServiceConfiguration sc) {
+        sc.setServiceId(serviceId);
+        environmentService.addServiceConfiguration(sc);
     }
 
     private void setKafkaProtocol(Map<String, String> flatConfigurations, List<ComponentProcess> componentProcesses) {
@@ -161,20 +202,6 @@ public class ClusterImporter {
                     : KafkaBrokerListeners.Protocol.find(componentProcess.getProtocol());
             componentProcess.setProtocol(protocol.name());
         }
-    }
-
-    private void addServiceConfiguration(Service service, String confType, Map<String, String> configuration, String actualFileName) throws JsonProcessingException {
-        ServiceConfiguration serviceConfiguration = environmentService.createServiceConfiguration(service.getId(),
-                confType, actualFileName, configuration);
-
-        environmentService.addServiceConfiguration(serviceConfiguration);
-    }
-
-    private Service addService(Cluster cluster, String serviceName) {
-        Service service = environmentService.createService(cluster, serviceName);
-        environmentService.addService(service);
-        LOG.debug("service added {}", serviceName);
-        return service;
     }
 
     private void removeAllServices(Cluster cluster) {
@@ -196,4 +223,79 @@ public class ClusterImporter {
             environmentService.removeService(service.getId());
         }
     }
+
+    private static class ServiceInformation {
+        private Service service;
+        private List<ComponentInformation> components;
+        private ServiceConfigurationInformation serviceConfigurationInfo;
+
+        ServiceInformation(Service service) {
+            this.service = service;
+            this.components = new ArrayList<>();
+            this.serviceConfigurationInfo = null;
+        }
+
+        void setService(Service service) {
+            this.service = service;
+        }
+
+        void setComponents(List<ComponentInformation> components) {
+            this.components = components;
+        }
+
+        void setServiceConfigurationInfo(ServiceConfigurationInformation serviceConfigurationInfo) {
+            this.serviceConfigurationInfo = serviceConfigurationInfo;
+        }
+
+        Service getService() {
+            return service;
+        }
+
+        List<ComponentInformation> getComponents() {
+            return components;
+        }
+
+        ServiceConfigurationInformation getServiceConfigurationInfo() {
+            return serviceConfigurationInfo;
+        }
+    }
+
+    private static class ServiceConfigurationInformation {
+        private List<ServiceConfiguration> serviceConfigurations;
+        private Map<String, String> flattenConfiguration;
+
+        ServiceConfigurationInformation(List<ServiceConfiguration> serviceConfigurations) {
+            this.serviceConfigurations = serviceConfigurations;
+
+            this.flattenConfiguration = new HashMap<>();
+            serviceConfigurations.forEach(Unchecked.consumer(sc -> flattenConfiguration.putAll(sc.getConfigurationMap())));
+        }
+
+        List<ServiceConfiguration> getServiceConfigurations() {
+            return serviceConfigurations;
+        }
+
+        Map<String, String> getFlattenConfiguration() {
+            return flattenConfiguration;
+        }
+    }
+
+    private static class ComponentInformation {
+        private Component component;
+        private List<ComponentProcess> componentProcesses;
+
+        ComponentInformation(Component component, List<ComponentProcess> componentProcesses) {
+            this.component = component;
+            this.componentProcesses = componentProcesses;
+        }
+
+        Component getComponent() {
+            return component;
+        }
+
+        List<ComponentProcess> getComponentProcesses() {
+            return componentProcesses;
+        }
+    }
+
 }

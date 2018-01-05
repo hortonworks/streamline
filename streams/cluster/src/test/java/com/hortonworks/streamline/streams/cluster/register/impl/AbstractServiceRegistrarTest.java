@@ -49,7 +49,7 @@ public class AbstractServiceRegistrarTest<T extends AbstractServiceRegistrar> {
     protected void resetEnvironmentService() {
         dao = new InMemoryStorageManager();
         transactionManager = new NOOPTransactionManager();
-        environmentService = new EnvironmentService(dao, transactionManager);
+        environmentService = new EnvironmentService(dao);
     }
 
     protected T initializeServiceRegistrar() {

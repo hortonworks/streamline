@@ -171,6 +171,7 @@
         <druid.tranquility.version>0.8.2</druid.tranquility.version>
         <spring.version>4.3.6.RELEASE</spring.version>
         <flyway.version>4.2.0</flyway.version>
+        <jool.version>0.9.12</jool.version>
 
         <!-- Runtime Scope Dependencies -->
         <logback.version>1.1.7</logback.version>
@@ -597,6 +598,11 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-simple</artifactId>
                 <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jooq</groupId>
+                <artifactId>jool</artifactId>
+                <version>${jool.version}</version>
             </dependency>
 
             <!-- Project Artifact Dependencies -->
