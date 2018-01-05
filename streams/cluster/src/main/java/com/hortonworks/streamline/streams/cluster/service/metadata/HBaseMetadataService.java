@@ -85,10 +85,6 @@ public class HBaseMetadataService implements AutoCloseable {
     private final Component hbaseMaster;
     private final Collection<ComponentProcess> hbaseMasterProcesses;
 
-    public HBaseMetadataService(Admin hBaseAdmin) {
-        this(hBaseAdmin, null, null, null, null, null);
-    }
-
     public HBaseMetadataService(Admin hBaseAdmin, SecurityContext securityContext,
             Subject subject, User user, Component hbaseMaster, Collection<ComponentProcess> hbaseMasterProcesses) {
         this.hBaseAdmin = hBaseAdmin;
@@ -98,25 +94,6 @@ public class HBaseMetadataService implements AutoCloseable {
         this.hbaseMaster = hbaseMaster;
         this.hbaseMasterProcesses = hbaseMasterProcesses;
         LOG.info("Created {}", this);
-    }
-
-    /**
-     * Creates insecure {@link HBaseMetadataService} which delegates to {@link Admin} instantiated with default
-     * {@link HBaseConfiguration} and {@code hbase-site.xml} properties overridden with the config
-     * for the cluster imported in the service pool (either manually or using Ambari)
-     */
-    public static HBaseMetadataService newInstance(EnvironmentService environmentService, Long clusterId)
-            throws IOException, EntityNotFoundException {
-
-        return newInstance(overrideConfig(HBaseConfiguration.create(), environmentService, clusterId));
-    }
-
-    /**
-     * Creates insecure {@link HBaseMetadataService} which delegates to {@link Admin}
-     * instantiated with with the {@link Configuration} provided using the first parameter
-     */
-    public static HBaseMetadataService newInstance(Configuration hbaseConfig) throws IOException, EntityNotFoundException {
-        return new HBaseMetadataService(ConnectionFactory.createConnection(hbaseConfig).getAdmin());
     }
 
     /**
