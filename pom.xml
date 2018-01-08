@@ -301,6 +301,13 @@
                 <groupId>com.hortonworks.registries</groupId>
                 <artifactId>registry-common</artifactId>
                 <version>${schema-registry.version}</version>
+                <exclusions>
+                    <!-- This is needed to avoid conflict with email notifier -->
+                    <exclusion>
+                        <groupId>javax.mail</groupId>
+                        <artifactId>mailapi</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.hortonworks.registries</groupId>
