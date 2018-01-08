@@ -96,7 +96,7 @@ function put_topology_component_bundle {
   uri=$1
   data=$2
   subType=$3
-  out=$(curl -s -X GET -H "Content-Type: application/json" -H "Cache-Control: no-cache" "${CATALOG_ROOT_URL}$uri?subType=${subType}&streamingEngine=STORM")
+  out=$(curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -s -X GET -H "Content-Type: application/json" -H "Cache-Control: no-cache" "${CATALOG_ROOT_URL}$uri?subType=${subType}&streamingEngine=STORM")
   bundleId=$(getId $out)
   cmd="curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -sS -X PUT -i -F topologyComponentBundle=@$data ${CATALOG_ROOT_URL}$uri/$bundleId"
   echo "PUT $data"
