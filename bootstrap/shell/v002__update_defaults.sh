@@ -157,7 +157,7 @@ function update_bundles {
     # === Source ===
     put_topology_component_bundle /streams/componentbundles/SOURCE ${component_dir}/sources/kafka-source-topology-component.json KAFKA
     # === Processor ===
-    add_topology_component_bundle /streams/componentbundles/PROCESSOR ${component_dir}/processors/rtjoin-bolt-topology-component.json
+
     # === Sink ===
     put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/hdfs-sink-topology-component.json HDFS
     put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/jdbc-sink-topology-component.json JDBC
