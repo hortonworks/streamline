@@ -15,6 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.actions.topology.state;
 
+import com.hortonworks.streamline.common.exception.IgnoreTransactionRollbackException;
 import com.hortonworks.streamline.streams.actions.TopologyActions;
 import com.hortonworks.streamline.streams.catalog.CatalogToLayoutConverter;
 import com.hortonworks.streamline.streams.catalog.Topology;
@@ -45,7 +46,7 @@ public final class TopologyStates {
             } catch (Exception ex) {
                 context.setState(TOPOLOGY_STATE_DEPLOYMENT_FAILED);
                 context.setCurrentAction("Topology DAG construction failed due to: " + ex);
-                throw ex;
+                throw new IgnoreTransactionRollbackException(ex);
             }
         }
     };
@@ -62,7 +63,7 @@ public final class TopologyStates {
             } catch (Exception ex) {
                 context.setState(TOPOLOGY_STATE_DEPLOYMENT_FAILED);
                 context.setCurrentAction("Topology DAG validation failed due to: " + ex);
-                throw ex;
+                throw new IgnoreTransactionRollbackException(ex);
             }
         }
     };
@@ -81,7 +82,7 @@ public final class TopologyStates {
                 LOG.error("Error while setting up cluster artifacts", ex);
                 context.setState(TOPOLOGY_STATE_DEPLOYMENT_FAILED);
                 context.setCurrentAction("Cluster artifacts set up failed due to: " + ex);
-                throw ex;
+                throw new IgnoreTransactionRollbackException(ex);
             }
         }
     };
@@ -101,7 +102,7 @@ public final class TopologyStates {
                 LOG.error("Error while setting up extra jars", ex);
                 context.setState(TOPOLOGY_STATE_DEPLOYMENT_FAILED);
                 context.setCurrentAction("Extra jars setup failed due to: " + ex);
-                throw ex;
+                throw new IgnoreTransactionRollbackException(ex);
             }
         }
     };
@@ -128,7 +129,7 @@ public final class TopologyStates {
                 killTopologyIfRunning(context, layout);
                 context.setState(TOPOLOGY_STATE_DEPLOYMENT_FAILED);
                 context.setCurrentAction("Topology submission failed due to: " + ex);
-                throw ex;
+                throw new IgnoreTransactionRollbackException(ex);
             }
         }
 
@@ -162,7 +163,7 @@ public final class TopologyStates {
             } catch (Exception ex) {
                 LOG.error("Error while trying to suspend the topology", ex);
                 context.setCurrentAction("Suspending the topology failed due to: " + ex);
-                throw ex;
+                throw new IgnoreTransactionRollbackException(ex);
             }
         }
     };
@@ -185,7 +186,7 @@ public final class TopologyStates {
             } catch (Exception ex) {
                 LOG.error("Error while trying to resume the topology", ex);
                 context.setCurrentAction("Resuming the topology failed due to: " + ex);
-                throw ex;
+                throw new IgnoreTransactionRollbackException(ex);
             }
         }
     };
@@ -213,7 +214,7 @@ public final class TopologyStates {
         } catch (Exception ex) {
             LOG.error("Error while trying to kill the topology", ex);
             context.setCurrentAction("Killing the topology failed due to: " + ex);
-            throw ex;
+            throw new IgnoreTransactionRollbackException(ex);
         }
     }
 

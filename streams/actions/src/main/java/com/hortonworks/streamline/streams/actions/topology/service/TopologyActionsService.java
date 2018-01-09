@@ -42,6 +42,7 @@ import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBund
 import com.hortonworks.streamline.streams.catalog.topology.component.TopologyDagBuilder;
 import com.hortonworks.streamline.streams.cluster.container.ContainingNamespaceAwareContainer;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+import com.hortonworks.streamline.common.exception.IgnoreTransactionRollbackException;
 import com.hortonworks.streamline.streams.layout.component.OutputComponent;
 import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
 import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
@@ -124,15 +125,10 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
         }
         LOG.debug("Deploying topology {}", topology);
         while (ctx.getState() != TopologyStates.TOPOLOGY_STATE_DEPLOYED) {
-            try {
-                transactionManager.beginTransaction(TransactionIsolation.DEFAULT);
-                LOG.debug("Current state {}", ctx.getStateName());
-                ctx.deploy();
-                transactionManager.commitTransaction();
-            } catch (Exception e){
-                transactionManager.rollbackTransaction();
-                throw e;
-            }
+            mutateTopologyContext(topologyContext -> {
+                LOG.debug("Current state {}", topologyContext.getStateName());
+                topologyContext.deploy();
+            }, ctx);
         }
         return null;
     }
@@ -152,15 +148,39 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
     }
 
     public void killTopology(Topology topology, String asUser) throws Exception {
-        getTopologyContext(topology, asUser).kill();
+        mutateTopologyContext(TopologyContext::kill, topology, asUser);
     }
 
     public void suspendTopology(Topology topology, String asUser) throws Exception {
-        getTopologyContext(topology, asUser).suspend();
+        mutateTopologyContext(TopologyContext::suspend, topology, asUser);
     }
 
     public void resumeTopology(Topology topology, String asUser) throws Exception {
-        getTopologyContext(topology, asUser).resume();
+        mutateTopologyContext(TopologyContext::resume, topology, asUser);
+    }
+
+    @FunctionalInterface
+    interface ConsumerWithThrowsException<T> {
+        void accept(T t) throws Exception;
+    }
+
+    private void mutateTopologyContext(ConsumerWithThrowsException<TopologyContext> mutatingFunction,
+                                       TopologyContext topologyContext) throws Exception {
+        try {
+            transactionManager.beginTransaction(TransactionIsolation.DEFAULT);
+            mutatingFunction.accept(topologyContext);
+        } catch (IgnoreTransactionRollbackException e) {
+            transactionManager.commitTransaction();
+            throw convertThrowableToException(e.getCause());
+        } catch (Exception e) {
+            transactionManager.rollbackTransaction();
+            throw e;
+        }
+    }
+
+    private void mutateTopologyContext(ConsumerWithThrowsException<TopologyContext> mutatingFunction,
+                                       Topology topology, String asUser) throws Exception {
+        mutateTopologyContext(mutatingFunction, getTopologyContext(topology, asUser));
     }
 
     public TopologyActions.Status topologyStatus(Topology topology, String asUser) throws Exception {
@@ -353,6 +373,14 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
 
     public StreamCatalogService getCatalogService() {
         return catalogService;
+    }
+
+    private Exception convertThrowableToException(Throwable e) {
+        if (e instanceof Exception) {
+            return (Exception) e;
+        } else {
+            return new RuntimeException(e);
+        }
     }
 
 }
