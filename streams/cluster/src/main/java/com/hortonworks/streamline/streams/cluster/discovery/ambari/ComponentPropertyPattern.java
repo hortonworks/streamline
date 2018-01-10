@@ -48,7 +48,8 @@ public enum ComponentPropertyPattern {
   // KAFKA
   // protocol (plaintext, ssl, kerberos, etc?), host (can be empty), port
   // https://cwiki.apache.org/confluence/display/KAFKA/Multiple+Listeners+for+Kafka+Brokers
-  KAFKA_BROKER("listeners", Pattern.compile("([a-zA-Z]+)://[a-zA-Z0-9_\\-\\\\.]*:([0-9]+)")),
+  // no matching pattern as listeners can contains multiple URIS with different schemes/protocols
+  KAFKA_BROKER("listeners", null),
 
   // AMBARI_METRICS
   METRICS_COLLECTOR("timeline.metrics.service.webapp.address", Pattern.compile("()[a-zA-Z0-9_\\-\\\\.]*:([0-9]+)")),

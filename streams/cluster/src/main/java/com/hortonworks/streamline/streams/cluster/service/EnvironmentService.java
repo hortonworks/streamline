@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A service layer for Namespace(Environment) where we could put our business logic.
@@ -511,44 +512,48 @@ public class EnvironmentService {
     public void injectProtocolAndPortToComponent(Map<String, String> configurations, Component component,
                                                  List<ComponentProcess> componentProcesses) {
         try {
-            ComponentPropertyPattern confMap = ComponentPropertyPattern
-                    .valueOf(component.getName());
-            String value = configurations.get(confMap.getConnectionConfName());
+            ComponentPropertyPattern componentPropertyPattern = ComponentPropertyPattern.valueOf(component.getName());
+            String value = configurations.get(componentPropertyPattern.getConnectionConfName());
             if (value != null) {
-                Matcher matcher = confMap.getParsePattern().matcher(value);
+                Pattern parsePattern = componentPropertyPattern.getParsePattern();
+                LOG.debug("Connection configuration name: [{}], parse pattern: [{}]", value, parsePattern);
 
-                if (matcher.matches()) {
-                    String protocol = matcher.group(1);
-                    String portStr = matcher.group(2);
+                if(parsePattern != null) {
+                    Matcher matcher = parsePattern.matcher(value);
 
-                    if (!protocol.isEmpty()) {
-                        for (ComponentProcess componentProcess : componentProcesses) {
-                            componentProcess.setProtocol(protocol);
-                        }
-                    }
-                    if (!portStr.isEmpty()) {
-                        try {
-                            int port = Integer.parseInt(portStr);
+                    if (matcher.matches()) {
+                        String protocol = matcher.group(1);
+                        String portStr = matcher.group(2);
+
+                        if (!protocol.isEmpty()) {
                             for (ComponentProcess componentProcess : componentProcesses) {
-                                componentProcess.setPort(port);
-                            }
-                        } catch (NumberFormatException e) {
-                            LOG.warn(
-                                    "Protocol/Port information [{}] for component {} has illegal format [{}]."
-                                            + "skip assigning...", value, component.getName(), confMap.getParsePattern());
-
-                            // reset protocol information
-                            for (ComponentProcess componentProcess : componentProcesses) {
-                                componentProcess.setPort(null);
+                                componentProcess.setProtocol(protocol);
                             }
                         }
+                        if (!portStr.isEmpty()) {
+                            try {
+                                int port = Integer.parseInt(portStr);
+                                for (ComponentProcess componentProcess : componentProcesses) {
+                                    componentProcess.setPort(port);
+                                }
+                            } catch (NumberFormatException e) {
+                                LOG.warn(
+                                        "Protocol/Port information [{}] for component {} has illegal format [{}]."
+                                                + "skip assigning...", value, component.getName(), parsePattern);
+
+                                // reset protocol information
+                                for (ComponentProcess componentProcess : componentProcesses) {
+                                    componentProcess.setPort(null);
+                                }
+                            }
+                        }
+                    } else {
+                        LOG.warn("Protocol/Port information [{}] for component {} doesn't seem to known format [{}]. "
+                                + "skipping assignment...", value, component.getName(), parsePattern);
                     }
-                } else {
-                    LOG.warn("Protocol/Port information [{}] for component {} doesn't seem to known format [{}]. "
-                            + "skipping assignment...", value, component.getName(), confMap.getParsePattern());
                 }
             } else {
-                LOG.warn("Protocol/Port related configuration ({}) is not set", confMap.getConnectionConfName());
+                LOG.warn("Protocol/Port related configuration ({}) is not set", componentPropertyPattern.getConnectionConfName());
             }
         } catch (IllegalArgumentException e) {
             // don't know port related configuration
