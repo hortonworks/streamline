@@ -142,7 +142,7 @@ class AddEnvironment extends Component {
                 : hadoopService[o.clusterId].push(sName);
               }
               document.querySelector('[data-id="' + o.clusterId + '@' + o.serviceName + '"]').className = "activeImg";
-              this.mapSelectionHandler(o);
+              this.selectionList[o.clusterId].push(o);
             });
             this.setState({hadoopService});
           }

@@ -204,7 +204,7 @@ function add_roles_and_users {
 }
 
 function skip_migration_if_not_needed {
-    out=$(curl -s -X GET -H "Content-Type: application/json" -H "Cache-Control: no-cache" "${CATALOG_ROOT_URL}/streams/componentbundles/SOURCE?subType=KAFKA")
+    out=$(curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -s -X GET -H "Content-Type: application/json" -H "Cache-Control: no-cache" "${CATALOG_ROOT_URL}/streams/componentbundles/SOURCE?subType=KAFKA")
     bundleId=$(getId $out)
     echo "Existing KAFKA bundle id extracted from SAM : $bundleId"
     if [ "$bundleId" != "" ] ; then
