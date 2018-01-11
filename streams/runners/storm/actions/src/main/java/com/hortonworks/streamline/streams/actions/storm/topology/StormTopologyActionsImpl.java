@@ -261,7 +261,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
             LOG.error("Topology deploy command failed - exit code: {} / output: {}", exitValue, shellProcessResult.stdout);
             String[] lines = shellProcessResult.stdout.split("\\n");
             String errors = Arrays.stream(lines)
-                    .filter(line -> line.startsWith("Exception"))
+                    .filter(line -> line.startsWith("Exception") || line.startsWith("Caused by"))
                     .collect(Collectors.joining(", "));
             Pattern pattern = Pattern.compile("Topology with name `(.*)` already exists on cluster");
             Matcher matcher = pattern.matcher(errors);
