@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hortonworks.streamline.streams.cluster.catalog.Component;
 import com.hortonworks.streamline.streams.cluster.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
+import org.apache.parquet.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,11 +42,8 @@ public class KafkaBrokerListeners {
 
         brokers.forEach(broker -> {
             String protocol = broker.getProtocol();
-            List<String> hostAndPorts = protocolToHostsWithPort.get(Protocol.find(protocol));
-            if (hostAndPorts == null) {
-                hostAndPorts = new ArrayList<>();
-                protocolToHostsWithPort.put(Protocol.find(protocol), hostAndPorts);
-            }
+            LOG.debug("Protocol [{}] for broker [{}]", protocol, broker);
+            List<String> hostAndPorts = protocolToHostsWithPort.computeIfAbsent(Protocol.find(protocol), k -> new ArrayList<>());
             hostAndPorts.add(broker.getHost() + ":" + broker.getPort());
         });
 
@@ -157,6 +155,7 @@ public class KafkaBrokerListeners {
         }
 
         public static Protocol find(final String alias) {
+            Preconditions.checkNotNull(alias, "alias can not be null");
             return Arrays.stream(Protocol.values()).filter((p) -> p.aliases.contains(alias)).findFirst().get();
         }
 
