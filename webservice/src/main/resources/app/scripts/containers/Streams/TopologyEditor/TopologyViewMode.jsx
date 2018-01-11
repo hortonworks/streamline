@@ -46,7 +46,7 @@ class TopologyViewMode extends Component {
       startDate: props.startDate,
       endDate: props.endDate,
       showLogSearchBtn: props.showLogSearchBtn,
-      loading : true
+      loading : false
     };
     this.stormClusterChkID(props.stormClusterId);
     this.logInputNotify = false;
@@ -84,6 +84,7 @@ class TopologyViewMode extends Component {
     });
   }
   getLogLevel() {
+    this.setState({loading: true});
     ViewModeREST.getTopologyLogConfig(this.props.topologyId).then((result)=>{
       if(result.responseMessage == undefined){
         if(moment(result.epoch).diff(moment()) >= 0) {
@@ -285,9 +286,9 @@ class TopologyViewMode extends Component {
             <div>
               <span className="text-muted">Mode: </span>
                 <ToggleButtonGroup type="radio" name="mode-select-options" defaultValue={viewModeData.selectedMode} onChange={this.changeMode}>
-                  <ToggleButton className="mode-select-btn left" disabled={!isAppRunning || loading} value="Overview">OVERVIEW</ToggleButton>
-                  <ToggleButton className="mode-select-btn right" disabled={!isAppRunning || loading} value="Metrics">METRICS</ToggleButton>
-                  <ToggleButton className="mode-select-btn right" disabled={!isAppRunning || loading} value="Sample">SAMPLE</ToggleButton>
+                  <ToggleButton className="mode-select-btn left" disabled={!isAppRunning} value="Overview">OVERVIEW</ToggleButton>
+                  <ToggleButton className="mode-select-btn right" disabled={!isAppRunning} value="Metrics">METRICS</ToggleButton>
+                  <ToggleButton className="mode-select-btn right" disabled={!isAppRunning} value="Sample">SAMPLE</ToggleButton>
               </ToggleButtonGroup>
             </div>
           </div>
