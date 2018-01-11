@@ -15,7 +15,6 @@
  **/
 package com.hortonworks.streamline.streams.cluster;
 
-import com.hortonworks.registries.storage.TransactionManager;
 import com.hortonworks.streamline.common.util.ParallelStreamUtil;
 import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
 import com.hortonworks.streamline.streams.cluster.catalog.Component;
@@ -23,8 +22,8 @@ import com.hortonworks.streamline.streams.cluster.catalog.ComponentProcess;
 import com.hortonworks.streamline.streams.cluster.catalog.Service;
 import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
-import com.hortonworks.streamline.streams.cluster.register.impl.KafkaServiceRegistrar;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaBrokerListeners;
 import org.jooq.lambda.Unchecked;
@@ -105,17 +104,41 @@ public class ClusterImporter {
             List<ComponentProcess> componentProcesses = fetchComponentProcesses(serviceNodeDiscoverer, serviceName, componentName);
 
             environmentService.injectProtocolAndPortToComponent(flatConfiguration, component, componentProcesses);
-
+            ComponentInformation componentInformation;
             // workaround for Kafka protocol
-            if (componentName.equals(ServiceConfigurations.KAFKA.name())) {
-                setKafkaProtocol(flatConfiguration, componentProcesses);
+            if (componentName.equals(ComponentPropertyPattern.KAFKA_BROKER.name())) {
+                List<KafkaBrokerListeners.ListenersPropEntry> parsedProps =
+                        new KafkaBrokerListeners.ListenersPropParsed(flatConfiguration).getParsedProps();
+                List<ComponentProcess> effectiveComponentProcesses =
+                        new ArrayList<>(componentProcesses.size() * parsedProps.size());
+
+                for (ComponentProcess componentProcess : componentProcesses) {
+                    for (KafkaBrokerListeners.ListenersPropEntry listenersPropEntry : parsedProps) {
+                        effectiveComponentProcesses.add(newComponentProcess(componentProcess, listenersPropEntry));
+                    }
+                }
+                LOG.debug("components added for kafka [{}]", effectiveComponentProcesses);
+                componentInformation = new ComponentInformation(component, effectiveComponentProcesses);
+            } else {
+                LOG.debug("components added for non-kafka [{}]", componentProcesses);
+                componentInformation = new ComponentInformation(component, componentProcesses);
             }
 
             LOG.debug("component end {}", componentName);
+            return componentInformation;
+        }).collect(toList());
+    }
 
-            return new ComponentInformation(component, componentProcesses);
-        })
-        .collect(toList());
+    private ComponentProcess newComponentProcess(ComponentProcess componentProcess,
+                                                 KafkaBrokerListeners.ListenersPropEntry listenersPropEntry) {
+        ComponentProcess newComponentProcess = new ComponentProcess();
+        newComponentProcess.setComponentId(componentProcess.getComponentId());
+        newComponentProcess.setHost(componentProcess.getHost());
+        newComponentProcess.setTimestamp(componentProcess.getTimestamp());
+        newComponentProcess.setProtocol(listenersPropEntry.getProtocol().name());
+        newComponentProcess.setPort(listenersPropEntry.getPort());
+
+        return newComponentProcess;
     }
 
     private List<ComponentProcess> fetchComponentProcesses(ServiceNodeDiscoverer serviceNodeDiscoverer, String serviceName, String componentName) {
@@ -188,20 +211,6 @@ public class ClusterImporter {
     private void storeServiceConfiguration(Long serviceId, ServiceConfiguration sc) {
         sc.setServiceId(serviceId);
         environmentService.addServiceConfiguration(sc);
-    }
-
-    private void setKafkaProtocol(Map<String, String> flatConfigurations, List<ComponentProcess> componentProcesses) {
-        final String brokerSecurityProtocol = flatConfigurations.get(KafkaServiceRegistrar.PARAM_SECURITY_INTER_BROKER_PROTOCOL);
-
-        // This workaround is from ListenersPropParsed.
-        // Handle Ambari bug that in the scenario handled bellow sets listeners=PLAINTEXT
-        // when it set it to listeners=PLAINTEXTSASL
-        for (ComponentProcess componentProcess : componentProcesses) {
-            KafkaBrokerListeners.Protocol protocol = KafkaBrokerListeners.Protocol.SASL_PLAINTEXT.hasAlias(brokerSecurityProtocol)
-                    ? KafkaBrokerListeners.Protocol.SASL_PLAINTEXT
-                    : KafkaBrokerListeners.Protocol.find(componentProcess.getProtocol());
-            componentProcess.setProtocol(protocol.name());
-        }
     }
 
     private void removeAllServices(Cluster cluster) {
