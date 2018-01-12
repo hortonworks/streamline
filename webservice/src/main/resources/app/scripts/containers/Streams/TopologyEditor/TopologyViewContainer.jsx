@@ -227,9 +227,11 @@ class TopologyViewContainer extends Component {
             allACL : this.allACL || []
           });
           this.customProcessors = this.getCustomProcessors();
+          if(isAppRunning) {
+            this.fetchCatalogInfoAndMetrics(this.state.startDate.toDate().getTime(), this.state.endDate.toDate().getTime());
+          }
         });
         this.fetchTopologyLevelSampling();
-        this.fetchCatalogInfoAndMetrics(this.state.startDate.toDate().getTime(), this.state.endDate.toDate().getTime());
       }
     });
 
