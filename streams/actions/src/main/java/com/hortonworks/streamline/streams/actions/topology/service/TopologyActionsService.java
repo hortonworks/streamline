@@ -166,15 +166,20 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
 
     private void mutateTopologyContext(ConsumerWithThrowsException<TopologyContext> mutatingFunction,
                                        TopologyContext topologyContext) throws Exception {
+        boolean rolledBackTransaction = false;
         try {
             transactionManager.beginTransaction(TransactionIsolation.DEFAULT);
             mutatingFunction.accept(topologyContext);
         } catch (IgnoreTransactionRollbackException e) {
-            transactionManager.commitTransaction();
             throw convertThrowableToException(e.getCause());
-        } catch (Exception e) {
+        } catch (Throwable e) {
             transactionManager.rollbackTransaction();
-            throw e;
+            rolledBackTransaction = true;
+            throw convertThrowableToException(e);
+        } finally {
+            if (!rolledBackTransaction) {
+                transactionManager.commitTransaction();
+            }
         }
     }
 
