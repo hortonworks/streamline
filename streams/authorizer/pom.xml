@@ -25,6 +25,10 @@
             <artifactId>streamline-common</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.hortonworks.streamline</groupId>
+            <artifactId>streamline-catalog</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-core</artifactId>
         </dependency>

@@ -21,6 +21,7 @@ import com.hortonworks.streamline.common.util.Utils;
 import com.hortonworks.registries.storage.StorableKey;
 import com.hortonworks.registries.storage.StorageManager;
 import com.hortonworks.registries.storage.util.StorageUtils;
+import com.hortonworks.streamline.streams.catalog.TopologyEditorToolbar;
 import com.hortonworks.streamline.streams.security.Permission;
 import com.hortonworks.streamline.streams.security.catalog.AclEntry;
 import com.hortonworks.streamline.streams.security.catalog.Role;
@@ -42,7 +43,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.hortonworks.streamline.streams.security.catalog.AclEntry.SidType.ROLE;
 import static com.hortonworks.streamline.streams.security.catalog.AclEntry.SidType.USER;
@@ -202,6 +202,9 @@ public class SecurityCatalogService {
     public User removeUser(Long userId) {
         User userToRemove = getUser(userId);
         if (userToRemove != null) {
+            TopologyEditorToolbar topologyEditorToolbar = new TopologyEditorToolbar();
+            topologyEditorToolbar.setUserId(userToRemove.getId());
+            this.dao.remove(new StorableKey(TopologyEditorToolbar.NAMESPACE, topologyEditorToolbar.getPrimaryKey()));
             if (userToRemove.getRoles() != null) {
                 userToRemove.getRoles().forEach(roleName -> {
                     Optional<Role> r = getRole(roleName);
