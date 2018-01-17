@@ -99,6 +99,11 @@ public class StormTopologyActionsImpl implements TopologyActions {
     private static final String DEFAULT_THRIFT_TRANSPORT_PLUGIN = "org.apache.storm.security.auth.SimpleTransportPlugin";
     private static final String DEFAULT_PRINCIPAL_TO_LOCAL = "org.apache.storm.security.auth.DefaultPrincipalToLocal";
 
+    private static final String NON_SECURED_THRIFT_TRANSPORT_PLUGIN = "org.apache.storm.security.auth.SimpleTransportPlugin";
+    private static final String NON_SECURED_PRINCIPAL_TO_LOCAL = "org.apache.storm.security.auth.DefaultPrincipalToLocal";
+    private static final String NON_SECURED_NIMBUS_AUTHORIZER = "org.apache.storm.security.auth.authorizer.NoopAuthorizer";
+    private static final String NON_SECURED_NIMBUS_IMPERSONATION_AUTHORIZER = "org.apache.storm.security.auth.authorizer.NoopAuthorizer";
+
     private static final String NIMBUS_SEEDS = "nimbus.seeds";
     private static final String NIMBUS_PORT = "nimbus.port";
 
@@ -298,6 +303,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
         commands.addAll(getExtraJarsArg(testTopology));
         commands.addAll(getMavenArtifactsRelatedArgs(mavenArtifacts));
         commands.addAll(getNimbusConf());
+        commands.addAll(getForceNonSecuredClusterConf());
         commands.addAll(getTempWorkerArtifactArgs());
         commands.add("org.apache.storm.flux.Flux");
         commands.add("--local");
@@ -524,6 +530,24 @@ public class StormTopologyActionsImpl implements TopologyActions {
         }
 
         return args;
+    }
+
+    private List<String> getForceNonSecuredClusterConf() {
+        List<String> args = new ArrayList<>();
+        args.add("-c");
+        args.add("storm.thrift.transport=" + NON_SECURED_THRIFT_TRANSPORT_PLUGIN);
+
+        args.add("-c");
+        args.add("storm.principal.tolocal=" + NON_SECURED_PRINCIPAL_TO_LOCAL);
+
+        args.add("-c");
+        args.add("nimbus.authorizer=" + NON_SECURED_NIMBUS_AUTHORIZER);
+
+        args.add("-c");
+        args.add("nimbus.impersonation.authorizer=" + NON_SECURED_NIMBUS_IMPERSONATION_AUTHORIZER);
+
+        return args;
+
     }
 
     private List<String> getTempWorkerArtifactArgs() throws IOException {
