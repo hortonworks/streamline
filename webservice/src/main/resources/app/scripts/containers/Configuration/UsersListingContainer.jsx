@@ -168,22 +168,27 @@ export default class UsersListingContainer extends Component {
   handleDeleteUser = (id) => {
     let BaseContainer = this.props.callbackHandler();
     BaseContainer.refs.Confirm.show({title: 'Are you sure you want to delete this user?'}).then((confirmBox) => {
-      UserRoleREST.deleteUser(id).then((user) => {
-        this.setState({showUserForm: false, editData: {}});
-        this.fetchData();
-        confirmBox.cancel();
-        if (user.responseMessage !== undefined) {
+      UserRoleREST.removeTopologyEditorToolbar(id).then((toolbar) => {
+        if(toolbar.responseMessage !== undefined){
+          const message = `Not able to delete user   ${toolbar.responseMessage}`;
           FSReactToastr.error(
-            <CommonNotification flag="error" content={user.responseMessage}/>, '', toastOpt);
+            <CommonNotification flag="error" content={message}/>, '', toastOpt);
         } else {
-          FSReactToastr.success(
-            <strong>User deleted successfully</strong>
-          );
+          UserRoleREST.deleteUser(id).then((user) => {
+            if(user.responseMessage !== undefined){
+              FSReactToastr.error(
+                <CommonNotification flag="error" content={user.responseMessage}/>, '', toastOpt);
+            } else {
+              this.setState({showUserForm: false, editData: {}});
+              this.fetchData();
+              FSReactToastr.success(
+                <strong>User deleted successfully</strong>
+              );
+            }
+          });
         }
-      }).catch((err) => {
-        FSReactToastr.error(
-          <CommonNotification flag="error" content={err}/>, '', toastOpt);
       });
+      confirmBox.cancel();
     }, (Modal) => {});
   }
 

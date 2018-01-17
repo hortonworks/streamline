@@ -267,6 +267,23 @@ const UserRoleREST = {
       .then((response) => {
         return response.json();
       });
+  },
+  removeTopologyEditorToolbar(userId,options) {
+    options = options || {};
+    options.method = options.method || 'DELETE';
+    options.headers = options.headers || {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    options.credentials = 'same-origin';
+    let url = 'system/topologyeditortoolbar';
+    if(userId){
+      url += '/'+userId;
+    }
+    return fetch(baseUrl + url, options)
+      .then((response) => {
+        return response.json();
+      });
   }
 };
 
