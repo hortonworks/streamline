@@ -28,19 +28,17 @@ const ViewModeREST = {
     options = options || {};
     options.method = options.method || 'GET';
     options.credentials = 'same-origin';
-    return fetch(baseUrl + 'topologies/' + id + '/metrics?from='+fromTime+'&to='+toTime, options)
-    .then((response) => {
-      return response.json();
-    });
+    const url = baseUrl + 'topologies/' + id + '/metrics?from='+fromTime+'&to='+toTime;
+    return fetch(url, options)
+      .then(Utils.checkStatus);
   },
   getComponentMetrics(id, compType, fromTime, toTime, options) {
     options = options || {};
     options.method = options.method || 'GET';
     options.credentials = 'same-origin';
-    return fetch(baseUrl + 'topologies/' + id + '/'+compType+'/metrics?from='+fromTime+'&to='+toTime, options)
-    .then((response) => {
-      return response.json();
-    });
+    const url = baseUrl + 'topologies/' + id + '/'+compType+'/metrics?from='+fromTime+'&to='+toTime;
+    return fetch(url, options)
+      .then(Utils.checkStatus);
   },
   getTopologyLogConfig(id,options) {
     options = options || {};
