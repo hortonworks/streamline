@@ -216,14 +216,15 @@ const createEdge = function(mouseDownNode, d, paths, edges, internalFlags, callb
       }
       return d.source === newEdge.source && d.target === newEdge.target;
     });
-    if (d.currentType.toLowerCase() === 'rule' || d.currentType.toLowerCase() === 'window' || d.currentType.toLowerCase() === 'projection' || d.currentType.toLowerCase() === 'pmml' || d.currentType.toLowerCase() === 'branch' || d.currentType.toLowerCase() === 'custom') {
+    if (d.currentType.toLowerCase() === 'rule' || d.currentType.toLowerCase() === 'window' || d.currentType.toLowerCase() === 'projection' || d.currentType.toLowerCase() === 'pmml' || d.currentType.toLowerCase() === 'branch' || d.currentType.toLowerCase() === 'custom' || d.parentType.toLowerCase() === 'sink') {
       let filtEdges = paths.filter(function(d) {
         return newEdge.target === d.target;
       });
       if (filtEdges[0].length > 0) {
         drawLine.classed("hidden", true);
+        const name = d.parentType.toLowerCase() === "sink" ? d.uiname+' SINK' : d.uiname;
         FSReactToastr.info(
-          <CommonNotification flag="error" content={"Cannot connect more than one edge to " + d.uiname}/>, '', toastOpt);
+          <CommonNotification flag="error" content={"Cannot connect more than one edge to " +  name}/>, '', toastOpt);
         return;
       }
     }

@@ -470,7 +470,7 @@ export default class SinkNodeForm extends Component {
       inputStreamArr
     } = this.state;
 
-    let fields = Utils.genFields(uiSpecification, [], formData, inputStreamArr, securityType, hasSecurity);
+    let fields = Utils.genFields(uiSpecification, [], formData, inputStreamArr, securityType, hasSecurity,'sink');
     const disabledFields = this.props.testRunActivated ? true : !this.props.editMode;
     const form = fetchLoader
       ? <div className="col-sm-12">
