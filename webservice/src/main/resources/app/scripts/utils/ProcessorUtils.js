@@ -425,8 +425,9 @@ const getNestedKeyFromGroup = function(str){
 };
 
 export class Streams {
-  constructor(streams){
+  constructor(streams,type){
     this.streams = streams;
+    this.nodeType = type || '';
   }
   setParent(streams){
     const setParentOfChild = (stream, parent) => {
@@ -495,7 +496,7 @@ export class Streams {
         } else {
           const tempKeyArr = _.clone(keyArr);
           tempKeyArr.push(f.name);
-          f.uniqueID = _streamId + ':' + tempKeyArr.join('.');
+          f.uniqueID = this.nodeType !== '' ? tempKeyArr.join('.') : _streamId + ':' + tempKeyArr.join('.');
         }
 
         options.push(f);
