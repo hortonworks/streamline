@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
     public StreamlineHiveMapper(List<String> fields, List<String> partitionFields) {
         Objects.requireNonNull(fields, "Empty fields");
         Objects.requireNonNull(partitionFields, "Empty partitionFields");
-        this.fields = new ArrayList<>(fields);
-        this.partitionFields = new ArrayList<>(partitionFields);
+        this.fields = fields.stream().map(field -> field.substring(field.indexOf(":") + 1)).collect(Collectors.toList());
+        this.partitionFields = partitionFields.stream().map(field -> field.substring(field.indexOf(":") + 1)).collect(Collectors.toList());
     }
 
     @Override
