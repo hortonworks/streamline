@@ -33,6 +33,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -114,6 +115,19 @@ public class TopologyEditorToolbarResource {
                     return WSUtils.respondEntity(toolbar, OK);
                 })
                 .orElseThrow(() -> EntityNotFoundException.byId(String.valueOf(userId)));
+    }
+
+    @DELETE
+    @Path("/system/topologyeditortoolbar/{id}")
+    @Timed
+    public Response removeTopologyEditorToolbar(@PathParam("id") Long userIdToBeDeleted, @Context SecurityContext securityContext) {
+        SecurityUtil.checkPermissions(authorizer, securityContext, TopologyEditorToolbar.NAMESPACE, userIdToBeDeleted, Permission.DELETE);
+        return catalogService.removeTopologyEditorToolbar(userIdToBeDeleted)
+                .map(toolbar -> {
+                    SecurityUtil.removeAcl(authorizer, securityContext, TopologyEditorToolbar.NAMESPACE, userIdToBeDeleted);
+                    return WSUtils.respondEntity(toolbar, OK);
+                })
+                .orElseThrow(() -> EntityNotFoundException.byId(String.valueOf(userIdToBeDeleted)));
     }
 
     @PUT
