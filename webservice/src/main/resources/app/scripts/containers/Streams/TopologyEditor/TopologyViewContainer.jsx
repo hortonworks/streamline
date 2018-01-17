@@ -380,14 +380,17 @@ class TopologyViewContainer extends Component {
     this.setState({fetchMetrics: true});
     Promise.all(promiseArr).then((responseArr)=>{
       let {viewModeData} = this.state;
-      viewModeData.topologyMetrics = responseArr[0];
-      viewModeData.sourceMetrics = responseArr[1].entities;
-      viewModeData.processorMetrics = responseArr[2].entities;
-      viewModeData.sinkMetrics = responseArr[3].entities;
+      viewModeData.topologyMetrics = responseArr[0] || {};
+      viewModeData.sourceMetrics = responseArr[1].entities || [];
+      viewModeData.processorMetrics = responseArr[2].entities || [];
+      viewModeData.sinkMetrics = responseArr[3].entities || [];
       this.setState({viewModeData: viewModeData, fetchMetrics: false}, ()=>{this.syncComponentData();});
       if(this.refs.metricsPanelRef){
         this.refs.metricsPanelRef.setState({loadingRecord: false});
       }
+    }).catch((err) => {
+      FSReactToastr.error(
+        <CommonNotification flag="error" content={err.message}/>, '', toastOpt);
     });
   }
   syncComponentData() {
