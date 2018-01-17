@@ -327,7 +327,7 @@ export default class SourceNodeForm extends Component {
     const {configJSON, fetchLoader, securityType, hasSecurity, activeTabKey, formErrors} = this.state;
     let formData = this.state.formData;
 
-    let fields = Utils.genFields(configJSON, [], formData,[], securityType, hasSecurity);
+    let fields = Utils.genFields(configJSON, [], formData,[], securityType, hasSecurity,'');
     const disabledFields = this.props.testRunActivated ? true : !this.props.editMode;
     const form = fetchLoader
       ? <div className="col-sm-12">
