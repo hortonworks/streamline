@@ -231,13 +231,9 @@ const getTimeDiffInMinutes = function(end, start) {
   return  moment.duration(end.diff(start, 'minutes')).asMinutes();
 };
 
-const inputFieldsData = function(inputFields, noNestedFields) {
-  /*const inputFieldsArr = inputFields.map(v => {
-    return {fieldName: v.name, uiName: v.name, fieldType: v.type};
-  });
-  return inputFieldsArr;*/
+const inputFieldsData = function(inputFields,nodeType, noNestedFields) {
   let options = [];
-  const streams = new Streams(inputFields);
+  const streams = new Streams(inputFields,nodeType);
   const streamsArr = streams.cloneStreams();
   if(noNestedFields){
     options = streams.toNoNestedSelectOption(streamsArr);
@@ -252,7 +248,7 @@ const inputFieldsData = function(inputFields, noNestedFields) {
   return options;
 };
 
-const checkNestedInputFields = function(inputObj, fieldsData, securityType, hasSecurity) {
+const checkNestedInputFields = function(inputObj, fieldsData, securityType, hasSecurity,nodeType) {
   // if the inputObj doesn't have options and hint the inputObj return it self
   if (!inputObj.options && inputObj.hint === undefined) {
     return inputObj;
@@ -273,9 +269,9 @@ const checkNestedInputFields = function(inputObj, fieldsData, securityType, hasS
       if (obj.options && obj.hint !== undefined) {
         if (obj.hint.toLowerCase().indexOf("inputfields") !== -1 && !obj.options.length) {
           if(obj.hint.toLowerCase().indexOf("nonestedfields") !== -1){
-            obj.options = inputFieldsData(fieldsData, true);
+            obj.options = inputFieldsData(fieldsData,nodeType, true);
           }else{
-            obj.options = inputFieldsData(fieldsData, false);
+            obj.options = inputFieldsData(fieldsData,nodeType, false);
           }
         } else if (obj.hint.toLowerCase().indexOf("eventtime") !== -1 && (obj.options.length === 0 || obj.options[0].uiName === "processingTime")) {
           obj.options = eventTimeData(fieldsData);
@@ -300,10 +296,10 @@ const checkNestedInputFields = function(inputObj, fieldsData, securityType, hasS
   return populateFields(JSON.parse(JSON.stringify(inputObj)));
 };
 
-const genFields = function(fieldsJSON, _fieldName = [], FormData = {}, inputFields = [], securityType, hasSecurity) {
+const genFields = function(fieldsJSON, _fieldName = [], FormData = {}, inputFields = [], securityType, hasSecurity,nodeType = '') {
   const fields = [];
   fieldsJSON.forEach((d, i) => {
-    d = checkNestedInputFields(d, inputFields, securityType, hasSecurity);
+    d = checkNestedInputFields(d, inputFields, securityType, hasSecurity,nodeType);
     const Comp = Fields[d.type.split('.').join('')] || null;
     let _name = [
       ..._fieldName,
