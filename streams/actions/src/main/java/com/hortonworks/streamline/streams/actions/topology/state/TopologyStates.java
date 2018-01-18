@@ -15,7 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.actions.topology.state;
 
-import com.hortonworks.streamline.common.exception.IgnoreTransactionRollbackException;
+import com.hortonworks.registries.storage.exception.IgnoreTransactionRollbackException;
 import com.hortonworks.streamline.streams.actions.TopologyActions;
 import com.hortonworks.streamline.streams.catalog.CatalogToLayoutConverter;
 import com.hortonworks.streamline.streams.catalog.Topology;
