@@ -217,7 +217,7 @@ class TopologyViewMode extends Component {
         stormViewUrl = stormViewUrl + '/topology.html?id=' + topologyMetric.runtimeTopologyId;
       } else {
         //Storm view requires the path to be encoded
-        stormViewUrl = stormViewUrl + '?viewpath=%23!%2Ftopology%2F' + encodeURIComponent(topologyMetric.runtimeTopologyId);
+        stormViewUrl = stormViewUrl + '?viewpath=%23%2Ftopology%2F' + encodeURIComponent(topologyMetric.runtimeTopologyId);
       }
     }
     const userInfo = app_state.user_profile !== undefined ? app_state.user_profile.admin : false;
