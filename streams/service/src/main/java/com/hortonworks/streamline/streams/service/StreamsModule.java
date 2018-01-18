@@ -20,6 +20,7 @@ import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
 import com.hortonworks.registries.storage.StorageManagerAware;
 import com.hortonworks.registries.storage.TransactionManager;
 import com.hortonworks.registries.storage.TransactionManagerAware;
+import com.hortonworks.registries.storage.transaction.ManagedTransaction;
 import com.hortonworks.streamline.common.Constants;
 import com.hortonworks.streamline.common.FileEventHandler;
 import com.hortonworks.streamline.common.FileWatcher;
@@ -217,22 +218,24 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware, T
     private void setupPlaceholderTopologyVersionInfo(StreamCatalogService catalogService) {
         if (transactionManager == null)
             throw new RuntimeException("TransactionManager is not initialized");
+
+        // it's one time setup hence just use it as local variable
+        ManagedTransaction mt = new ManagedTransaction(transactionManager, TransactionIsolation.DEFAULT);
         try {
-            transactionManager.beginTransaction(TransactionIsolation.DEFAULT);
-            TopologyVersion versionInfo = catalogService.getTopologyVersionInfo(StreamCatalogService.PLACEHOLDER_ID);
-            if (versionInfo == null) {
-                TopologyVersion topologyVersion = new TopologyVersion();
-                topologyVersion.setId(StreamCatalogService.PLACEHOLDER_ID);
-                topologyVersion.setTopologyId(StreamCatalogService.PLACEHOLDER_ID);
-                topologyVersion.setName("PLACEHOLDER_VERSIONINFO");
-                topologyVersion.setDescription("PLACEHOLDER_VERSIONINFO");
-                topologyVersion.setTimestamp(System.currentTimeMillis());
-                catalogService.addOrUpdateTopologyVersionInfo(StreamCatalogService.PLACEHOLDER_ID, topologyVersion);
-            }
-            transactionManager.commitTransaction();
+            mt.executeConsumer(() -> {
+                TopologyVersion versionInfo = catalogService.getTopologyVersionInfo(StreamCatalogService.PLACEHOLDER_ID);
+                if (versionInfo == null) {
+                    TopologyVersion topologyVersion = new TopologyVersion();
+                    topologyVersion.setId(StreamCatalogService.PLACEHOLDER_ID);
+                    topologyVersion.setTopologyId(StreamCatalogService.PLACEHOLDER_ID);
+                    topologyVersion.setName("PLACEHOLDER_VERSIONINFO");
+                    topologyVersion.setDescription("PLACEHOLDER_VERSIONINFO");
+                    topologyVersion.setTimestamp(System.currentTimeMillis());
+                    catalogService.addOrUpdateTopologyVersionInfo(StreamCatalogService.PLACEHOLDER_ID, topologyVersion);
+                }
+            });
         } catch (Exception e) {
-            transactionManager.rollbackTransaction();
-            throw e;
+            throw new RuntimeException(e);
         }
     }
 
