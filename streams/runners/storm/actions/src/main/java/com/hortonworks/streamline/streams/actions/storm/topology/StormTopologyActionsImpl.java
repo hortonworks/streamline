@@ -497,10 +497,9 @@ public class StormTopologyActionsImpl implements TopologyActions {
     private List<String> getNimbusConf() {
         List<String> args = new ArrayList<>();
 
-        // FIXME: Can't find how to pass list to nimbus.seeds for Storm CLI
-        // Maybe we need to fix Storm to parse string when expected parameter type is list
         args.add("-c");
-        args.add("nimbus.host=" + nimbusSeeds.split(",")[0]);
+        // See method documentation for getNimbusSeedsForCommandLine
+        args.add(NIMBUS_SEEDS + "=" + getNimbusSeedsForCommandLine());
 
         args.add("-c");
         args.add("nimbus.port=" + String.valueOf(nimbusPort));
@@ -941,4 +940,21 @@ public class StormTopologyActionsImpl implements TopologyActions {
         return LogLevelInformation.enabled(LogLevel.valueOf(resp.getTargetLevel()), resp.getTimeoutEpoch());
     }
 
+    //storm.py expects each -c config option to be in json since StormSubmitter eventually uses a json parser for converting it to java object
+    //nimbus.seeds is expected to be a list of strings or List<String> in java. Json representation of that is ["a", "b"]
+    //note that you need double quotes in above json representation and single quotes are not valid
+    //Furthermore shell removes any double quotes from command line arguments when it passes to python.
+    //More on that at http://teaching.idallen.com/cst8207/12w/notes/280_quotes.txt
+    //As a result we need to pass something like [\"a\", \"b\"] to the command line. Without escaping the double quotes python will get arguments as [a,b] and
+    //that will fail the json parsing in storm submitter java code. Escaping of double quote for command line argument is taken care by java
+    private String getNimbusSeedsForCommandLine() {
+        StringBuilder nimbusSeedsJsonString = new StringBuilder("[");
+        if ((nimbusSeeds != null) && !nimbusSeeds.isEmpty()) {
+            String[] seeds = nimbusSeeds.split(",");
+            for (String seed: seeds) {
+                nimbusSeedsJsonString.append("\"").append(seed).append("\"").append(",");
+            }
+        }
+        return nimbusSeedsJsonString.append("]").toString();
+    }
 }
