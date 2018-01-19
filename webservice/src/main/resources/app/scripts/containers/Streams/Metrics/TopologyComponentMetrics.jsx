@@ -18,6 +18,7 @@ import TimeSeriesChart from '../../../components/TimeSeriesChart';
 import d3 from 'd3';
 import MetricsREST from '../../../rest/MetricsREST';
 import Utils from '../../../utils/Utils';
+import ContentScrollableComponent from '../../../components/ContentScrollableComponent';
 
 class TopologyComponentMetrics extends Component {
 
@@ -155,18 +156,18 @@ class TopologyComponentMetrics extends Component {
       const sampleObj =  _.find(componentLevelActionDetails.samplings, (sample) => sample.componentId === compData.nodeId);
       samplingVal = sampleObj !== undefined && sampleObj.enabled ? sampleObj.duration : 0;
     }
-
+    const dynWidth =  compData.parentType == 'SOURCE' ? 22 : 17;
     return (
-      <div>
+      <div style={{width : '100%'}}>
       <div className="metric-bg top"></div>
-      <div className="component-metric-top">
-        <div className="component-metric-widget">
+      <div className="component-metric-top" style={{width : '100%'}}>
+        <div className="component-metric-widget" style={{width : dynWidth+"%"}}>
             <h6>Emitted</h6>
             <h6>&nbsp;</h6>
             <h4>{emitted}
             <small>{emittedMetric.suffix}</small></h4>
           </div>
-          <div className="component-metric-widget">
+          <div className="component-metric-widget" style={{width : dynWidth+"%"}}>
             {compData.parentType == 'SOURCE' ?
             [ <h6 key={1.1}>Complete</h6>,
               <h6 key={1.2}>Latency</h6>
@@ -181,7 +182,7 @@ class TopologyComponentMetrics extends Component {
             : <h4>{processTime}<small>{processTimeSuffix}</small></h4>
             }
           </div>
-          <div className="component-metric-widget">
+          <div className="component-metric-widget" style={{width : dynWidth+"%"}}>
             {compData.parentType != 'SOURCE' ?
             [ <h6 key={2.1}>Execute</h6>,
               <h6 key={2.2}>Latency</h6>
@@ -192,12 +193,12 @@ class TopologyComponentMetrics extends Component {
             : ''
             }
           </div>
-          <div className="component-metric-widget">
+          <div className="component-metric-widget" style={{width : dynWidth+"%"}}>
             <h6>Failed</h6>
             <h6>&nbsp;</h6>
             <h4>{failed}</h4>
           </div>
-          <div className="component-metric-widget">
+          <div className="component-metric-widget" style={{width : dynWidth+"%"}}>
             <h6>Acked</h6>
             <h6>&nbsp;</h6>
             <h4>{acked}
@@ -206,38 +207,40 @@ class TopologyComponentMetrics extends Component {
       </div>
       {showMetrics ?
       (
-      <div className="metric-graphs-container">
-        <div className="component-metric-graph">
-          <div style={{textAlign: "left"}}>INPUT/OUTPUT</div>
-          <div style={{
-            height: '25px',
-            textAlign: 'center',
-            backgroundColor: '#f2f3f2'
-          }}>
-            {this.state.loadingRecord ? loader : this.getGraph('inputOutput', inputOutputData, 'bundle', showMetrics)}
+      <ContentScrollableComponent contentHeight={127}>
+        <div className="metric-graphs-container">
+          <div className="component-metric-graph">
+            <div style={{textAlign: "left"}}>INPUT/OUTPUT</div>
+            <div style={{
+              height: '25px',
+              textAlign: 'center',
+              backgroundColor: '#f2f3f2'
+            }}>
+              {this.state.loadingRecord ? loader : this.getGraph('inputOutput', inputOutputData, 'bundle', showMetrics)}
+            </div>
+          </div>
+          <div className="component-metric-graph">
+            <div style={{textAlign: "left"}}>ACKED</div>
+            <div style={{
+              height: '25px',
+              textAlign: 'center',
+              backgroundColor: '#f2f3f2'
+            }}>
+              {this.state.loadingRecord ? loader : this.getGraph('ackedTuples', ackedData, 'step-before', showMetrics)}
+            </div>
+          </div>
+          <div className="component-metric-graph">
+            <div style={{textAlign: "left"}}>QUEUE</div>
+            <div style={{
+              height: '25px',
+              textAlign: 'center',
+              backgroundColor: '#f2f3f2'
+            }}>
+              {this.state.loadingRecord ? loader : this.getGraph('Queue', queueData, 'step-before', showMetrics)}
+            </div>
           </div>
         </div>
-        <div className="component-metric-graph">
-          <div style={{textAlign: "left"}}>ACKED</div>
-          <div style={{
-            height: '25px',
-            textAlign: 'center',
-            backgroundColor: '#f2f3f2'
-          }}>
-            {this.state.loadingRecord ? loader : this.getGraph('ackedTuples', ackedData, 'step-before', showMetrics)}
-          </div>
-        </div>
-        <div className="component-metric-graph">
-          <div style={{textAlign: "left"}}>QUEUE</div>
-          <div style={{
-            height: '25px',
-            textAlign: 'center',
-            backgroundColor: '#f2f3f2'
-          }}>
-            {this.state.loadingRecord ? loader : this.getGraph('Queue', queueData, 'step-before', showMetrics)}
-          </div>
-        </div>
-      </div>
+      </ContentScrollableComponent>
       )
       : ''
       }
