@@ -58,6 +58,10 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
     public static final String DEFAULT_APP_ID = "nimbus";
     public static final String WILDCARD_ALL_COMPONENTS = "%";
 
+    enum Precision {
+        SECONDS, MINUTES, HOURS, DAYS
+    }
+
     private Client client;
     private URI collectorApiUri;
     private String appId;
@@ -161,10 +165,13 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
             uriBuilder = uriBuilder.queryParam(pair.getKey(), pair.getValue());
         }
 
-        // force replacing values for metricNames, startTime, endTime with parameters
+        Precision precision = determinePrecision(from, to);
+
+        // force replacing values for metricNames, startTime, endTime, precision with parameters
         return uriBuilder.replaceQueryParam("metricNames", metricName)
                 .replaceQueryParam("startTime", String.valueOf(from))
                 .replaceQueryParam("endTime", String.valueOf(to))
+                .queryParam("precision", precision.name())
                 .build();
     }
 
@@ -172,6 +179,7 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
                                        long from, long to) {
         String actualMetricName = buildMetricName(topologyName, componentId, metricName);
         JerseyUriBuilder uriBuilder = new JerseyUriBuilder();
+        Precision precision = determinePrecision(from, to);
         return uriBuilder.uri(collectorApiUri)
                 .queryParam("appId", DEFAULT_APP_ID)
                 .queryParam("hostname", "")
@@ -179,7 +187,25 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
                 .queryParam("startTime", String.valueOf(from))
                 .queryParam("endTime", String.valueOf(to))
                 .queryParam("seriesAggregateFunction", aggrFunction.name())
+                .queryParam("precision", precision.name())
                 .build();
+    }
+
+    private Precision determinePrecision(long from, long to) {
+        long timeDiff = to - from;
+
+        // don't support time range smaller than 1 minute
+        if (timeDiff < 1000 * 60) {
+            throw new IllegalArgumentException("Time range should be greater than 1 minute.");
+        } else if (timeDiff < (1000L * 60 * 60 * 24 * 7)) {
+            // precision to minute for 1 min ~ 7 days
+            return Precision.MINUTES;
+        } else if (timeDiff < (1000L * 60 * 60 * 24 * 30)) {
+            // precision to minute for 7 min ~ 30 days
+            return Precision.HOURS;
+        }
+
+        return Precision.DAYS;
     }
 
     private String buildMetricName(String topologyName, String componentId, String metricName) {
