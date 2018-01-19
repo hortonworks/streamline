@@ -4140,7 +4140,7 @@ ul.custom-pagination li.active{
 .component-metric-top {
   padding: 5px 0px 5px 0px;
   display: inline-block;
-  margin-left: 10px;
+  margin-left: 5px;
 }
 .component-metric-top > div {
   float: left;

@@ -150,7 +150,7 @@ export default class TopologyGraphComponent extends Component {
     TAB_KEY: 9,
     ENTER_KEY: 13,
     rectangleWidth: 184,
-    newMetricsRectangleWidth: 225,
+    newMetricsRectangleWidth: 248,
     rectangleHeight: 40,
     testDataRectHeight: 210,
     testNoDataRectHeight: 75,
@@ -866,7 +866,7 @@ export default class TopologyGraphComponent extends Component {
 
   calculateWidth = (d) => {
     const thisGraph = this;
-    let num = thisGraph.constants.rectangleWidth;
+    let num = thisGraph.constants.rectangleWidth+20;
     if(!thisGraph.editMode && thisGraph.props.isAppRunning === true && d.parentType !== 'SOURCE'){
       num = thisGraph.constants.newMetricsRectangleWidth;
     }
