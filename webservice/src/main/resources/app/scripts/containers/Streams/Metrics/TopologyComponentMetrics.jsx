@@ -18,6 +18,7 @@ import TimeSeriesChart from '../../../components/TimeSeriesChart';
 import d3 from 'd3';
 import MetricsREST from '../../../rest/MetricsREST';
 import Utils from '../../../utils/Utils';
+import ContentScrollableComponent from '../../../components/ContentScrollableComponent';
 
 class TopologyComponentMetrics extends Component {
 
@@ -206,38 +207,40 @@ class TopologyComponentMetrics extends Component {
       </div>
       {showMetrics ?
       (
-      <div className="metric-graphs-container">
-        <div className="component-metric-graph">
-          <div style={{textAlign: "left"}}>INPUT/OUTPUT</div>
-          <div style={{
-            height: '25px',
-            textAlign: 'center',
-            backgroundColor: '#f2f3f2'
-          }}>
-            {this.state.loadingRecord ? loader : this.getGraph('inputOutput', inputOutputData, 'bundle', showMetrics)}
+      <ContentScrollableComponent contentHeight={127}>
+        <div className="metric-graphs-container">
+          <div className="component-metric-graph">
+            <div style={{textAlign: "left"}}>INPUT/OUTPUT</div>
+            <div style={{
+              height: '25px',
+              textAlign: 'center',
+              backgroundColor: '#f2f3f2'
+            }}>
+              {this.state.loadingRecord ? loader : this.getGraph('inputOutput', inputOutputData, 'bundle', showMetrics)}
+            </div>
+          </div>
+          <div className="component-metric-graph">
+            <div style={{textAlign: "left"}}>ACKED</div>
+            <div style={{
+              height: '25px',
+              textAlign: 'center',
+              backgroundColor: '#f2f3f2'
+            }}>
+              {this.state.loadingRecord ? loader : this.getGraph('ackedTuples', ackedData, 'step-before', showMetrics)}
+            </div>
+          </div>
+          <div className="component-metric-graph">
+            <div style={{textAlign: "left"}}>QUEUE</div>
+            <div style={{
+              height: '25px',
+              textAlign: 'center',
+              backgroundColor: '#f2f3f2'
+            }}>
+              {this.state.loadingRecord ? loader : this.getGraph('Queue', queueData, 'step-before', showMetrics)}
+            </div>
           </div>
         </div>
-        <div className="component-metric-graph">
-          <div style={{textAlign: "left"}}>ACKED</div>
-          <div style={{
-            height: '25px',
-            textAlign: 'center',
-            backgroundColor: '#f2f3f2'
-          }}>
-            {this.state.loadingRecord ? loader : this.getGraph('ackedTuples', ackedData, 'step-before', showMetrics)}
-          </div>
-        </div>
-        <div className="component-metric-graph">
-          <div style={{textAlign: "left"}}>QUEUE</div>
-          <div style={{
-            height: '25px',
-            textAlign: 'center',
-            backgroundColor: '#f2f3f2'
-          }}>
-            {this.state.loadingRecord ? loader : this.getGraph('Queue', queueData, 'step-before', showMetrics)}
-          </div>
-        </div>
-      </div>
+      </ContentScrollableComponent>
       )
       : ''
       }
