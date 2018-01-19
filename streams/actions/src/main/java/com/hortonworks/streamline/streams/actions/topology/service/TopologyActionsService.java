@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.registries.common.transaction.TransactionIsolation;
 import com.hortonworks.registries.common.util.FileStorage;
 import com.hortonworks.registries.storage.TransactionManager;
+import com.hortonworks.registries.storage.transaction.ManagedTransaction;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
 import com.hortonworks.streamline.streams.actions.TopologyActions;
 import com.hortonworks.streamline.streams.actions.container.TopologyActionsContainer;
@@ -42,7 +43,6 @@ import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBund
 import com.hortonworks.streamline.streams.catalog.topology.component.TopologyDagBuilder;
 import com.hortonworks.streamline.streams.cluster.container.ContainingNamespaceAwareContainer;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
-import com.hortonworks.streamline.common.exception.IgnoreTransactionRollbackException;
 import com.hortonworks.streamline.streams.layout.component.OutputComponent;
 import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
 import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
@@ -81,7 +81,7 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
     private final TopologyActionsContainer topologyActionsContainer;
     private final TopologyStateFactory stateFactory;
     private final TopologyTestRunner topologyTestRunner;
-    private final TransactionManager transactionManager;
+    private final ManagedTransaction managedTransaction;
 
     public TopologyActionsService(StreamCatalogService catalogService, EnvironmentService environmentService,
                                   FileStorage fileStorage, MLModelRegistryClient modelRegistryClient,
@@ -110,26 +110,20 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
         this.topologyActionsContainer = new TopologyActionsContainer(environmentService, conf, subject);
         this.stateFactory = TopologyStateFactory.getInstance();
         this.topologyTestRunner = new TopologyTestRunner(catalogService, this, topologyTestRunResultDir);
-        this.transactionManager = transactionManager;
+        this.managedTransaction = new ManagedTransaction(transactionManager, TransactionIsolation.DEFAULT);
     }
 
     public Void deployTopology(Topology topology, String asUser) throws Exception {
-        TopologyContext ctx;
-        try {
-            transactionManager.beginTransaction(TransactionIsolation.DEFAULT);
-            ctx = getTopologyContext(topology, asUser);
-            transactionManager.commitTransaction();
-        } catch (Exception e){
-            transactionManager.rollbackTransaction();
-            throw e;
-        }
+        TopologyContext ctx = managedTransaction.executeFunction(() -> getTopologyContext(topology, asUser));
+
         LOG.debug("Deploying topology {}", topology);
         while (ctx.getState() != TopologyStates.TOPOLOGY_STATE_DEPLOYED) {
-            mutateTopologyContext(topologyContext -> {
+            managedTransaction.executeConsumer((topologyContext) -> {
                 LOG.debug("Current state {}", topologyContext.getStateName());
                 topologyContext.deploy();
             }, ctx);
         }
+
         return null;
     }
 
@@ -148,44 +142,15 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
     }
 
     public void killTopology(Topology topology, String asUser) throws Exception {
-        mutateTopologyContext(TopologyContext::kill, topology, asUser);
+        managedTransaction.executeConsumer(TopologyContext::kill, getTopologyContext(topology, asUser));
     }
 
     public void suspendTopology(Topology topology, String asUser) throws Exception {
-        mutateTopologyContext(TopologyContext::suspend, topology, asUser);
+        managedTransaction.executeConsumer(TopologyContext::suspend, getTopologyContext(topology, asUser));
     }
 
     public void resumeTopology(Topology topology, String asUser) throws Exception {
-        mutateTopologyContext(TopologyContext::resume, topology, asUser);
-    }
-
-    @FunctionalInterface
-    interface ConsumerWithThrowsException<T> {
-        void accept(T t) throws Exception;
-    }
-
-    private void mutateTopologyContext(ConsumerWithThrowsException<TopologyContext> mutatingFunction,
-                                       TopologyContext topologyContext) throws Exception {
-        boolean rolledBackTransaction = false;
-        try {
-            transactionManager.beginTransaction(TransactionIsolation.DEFAULT);
-            mutatingFunction.accept(topologyContext);
-        } catch (IgnoreTransactionRollbackException e) {
-            throw convertThrowableToException(e.getCause());
-        } catch (Throwable e) {
-            transactionManager.rollbackTransaction();
-            rolledBackTransaction = true;
-            throw convertThrowableToException(e);
-        } finally {
-            if (!rolledBackTransaction) {
-                transactionManager.commitTransaction();
-            }
-        }
-    }
-
-    private void mutateTopologyContext(ConsumerWithThrowsException<TopologyContext> mutatingFunction,
-                                       Topology topology, String asUser) throws Exception {
-        mutateTopologyContext(mutatingFunction, getTopologyContext(topology, asUser));
+        managedTransaction.executeConsumer(TopologyContext::resume, getTopologyContext(topology, asUser));
     }
 
     public TopologyActions.Status topologyStatus(Topology topology, String asUser) throws Exception {
@@ -378,14 +343,6 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
 
     public StreamCatalogService getCatalogService() {
         return catalogService;
-    }
-
-    private Exception convertThrowableToException(Throwable e) {
-        if (e instanceof Exception) {
-            return (Exception) e;
-        } else {
-            return new RuntimeException(e);
-        }
     }
 
 }

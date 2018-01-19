@@ -4,6 +4,7 @@ import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Stopwatch;
 import com.hortonworks.registries.common.transaction.TransactionIsolation;
 import com.hortonworks.registries.storage.TransactionManager;
+import com.hortonworks.registries.storage.transaction.ManagedTransaction;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.ParallelStreamUtil;
 import com.hortonworks.streamline.common.util.WSUtils;
@@ -15,6 +16,7 @@ import com.hortonworks.streamline.streams.metrics.topology.service.TopologyMetri
 import com.hortonworks.streamline.streams.security.Roles;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
+import org.jooq.lambda.Unchecked;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +56,7 @@ public class TopologyDashboardResource {
     private final EnvironmentService environmentService;
     private final TopologyActionsService actionsService;
     private final TopologyMetricsService metricsService;
-    private final TransactionManager transactionManager;
+    private final ManagedTransaction managedTransaction;
 
     public TopologyDashboardResource(StreamlineAuthorizer authorizer, StreamCatalogService catalogService,
                                      EnvironmentService environmentService, TopologyActionsService actionsService,
@@ -64,7 +66,7 @@ public class TopologyDashboardResource {
         this.environmentService = environmentService;
         this.actionsService = actionsService;
         this.metricsService = metricsService;
-        this.transactionManager = transactionManager;
+        this.managedTransaction = new ManagedTransaction(transactionManager, TransactionIsolation.DEFAULT);
     }
 
     @GET
@@ -156,19 +158,10 @@ public class TopologyDashboardResource {
         try {
             List<CatalogResourceUtil.TopologyDashboardResponse> responses = ParallelStreamUtil.execute(() ->
                     topologies.parallelStream()
-                            .map(t -> {
-                                try {
-                                    transactionManager.beginTransaction(TransactionIsolation.DEFAULT);
-                                    CatalogResourceUtil.TopologyDashboardResponse topologyDashboardResponse =
+                            .map(Unchecked.function(t ->
+                                    managedTransaction.executeFunction(() ->
                                             CatalogResourceUtil.enrichTopology(t, asUser, latencyTopN,
-                                            environmentService, actionsService, metricsService, catalogService);
-                                    transactionManager.commitTransaction();
-                                    return topologyDashboardResponse;
-                                } catch (Exception e) {
-                                    transactionManager.rollbackTransaction();
-                                    throw e;
-                                }
-                            })
+                                                    environmentService, actionsService, metricsService, catalogService))))
                             .sorted((c1, c2) -> {
                                 int compared;
 
