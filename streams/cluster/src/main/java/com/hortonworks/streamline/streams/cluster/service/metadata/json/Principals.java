@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,11 +62,17 @@ public class Principals {
                                 String key = e.getKey().split("principal")[0];
                                 return key.substring(0, key.length() - 1);          // remove _ at the end
                             },
-                            (e) ->  hosts.stream()   // get hosts for service component (e.g nimbus, storm_ui, kafka broker)
-                                    .map((host) -> host == null || host.isEmpty()
-                                            ? UserPrincipal.fromPrincipal(e.getValue())
-                                            : ServicePrincipal.forHost(e.getValue(), host))
-                                    .collect(toList())));
+                            (e) -> {
+                                if (hosts == null || hosts.isEmpty()) {
+                                    return Collections.singletonList(UserPrincipal.fromPrincipal(e.getValue()));
+                                } else {
+                                    return hosts.stream()   // get hosts for service component (e.g nimbus, storm_ui, kafka broker)
+                                            .map((host) -> host == null || host.isEmpty()
+                                                    ? UserPrincipal.fromPrincipal(e.getValue())
+                                                    : ServicePrincipal.forHost(e.getValue(), host))
+                                            .collect(toList());
+                                }
+                            }));
 
             LOG.debug("Processed {}", princs);
             allPrincs.putAll(princs);
