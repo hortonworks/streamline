@@ -177,7 +177,7 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
 
     private URI composeQueryParameters(String topologyName, String componentId, String metricName, AggregateFunction aggrFunction,
                                        long from, long to) {
-        String actualMetricName = buildMetricName(topologyName, componentId, metricName);
+        String actualMetricName = buildMetricName(topologyName, componentId, metricName, aggrFunction);
         JerseyUriBuilder uriBuilder = new JerseyUriBuilder();
         Precision precision = determinePrecision(from, to);
         return uriBuilder.uri(collectorApiUri)
@@ -208,7 +208,7 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
         return Precision.DAYS;
     }
 
-    private String buildMetricName(String topologyName, String componentId, String metricName) {
+    private String buildMetricName(String topologyName, String componentId, String metricName, AggregateFunction aggrFunction) {
         String actualMetricName;
 
         if (metricName.startsWith(METRIC_NAME_PREFIX_KAFKA_OFFSET)) {
@@ -222,7 +222,24 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
         }
 
         // since '._' is treat as special character (separator) so it should be replaced
-        return actualMetricName.replace('_', '-');
+        actualMetricName = actualMetricName.replace('_', '-');
+
+        switch (aggrFunction) {
+            case MIN:
+                actualMetricName = actualMetricName + "._min";
+                break;
+            case MAX:
+                actualMetricName = actualMetricName + "._max";
+                break;
+            case SUM:
+                actualMetricName = actualMetricName + "._sum";
+                break;
+            case AVG:
+                actualMetricName = actualMetricName + "._avg";
+                break;
+        }
+
+        return actualMetricName;
     }
 
     private String createKafkaOffsetMetricName(String topologyName, String kafkaOffsetMetricName) {

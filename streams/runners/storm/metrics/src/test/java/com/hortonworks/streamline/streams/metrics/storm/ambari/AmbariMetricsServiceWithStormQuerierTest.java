@@ -78,7 +78,7 @@ public class AmbariMetricsServiceWithStormQuerierTest {
         verify(getRequestedFor(urlPathEqualTo(TEST_COLLECTOR_API_PATH))
                 .withQueryParam("appId", equalTo(DEFAULT_APP_ID))
                 .withQueryParam("hostname", equalTo(""))
-                .withQueryParam("metricNames", equalTo("topology.testTopology.testComponent.%.--test.metric.name"))
+                .withQueryParam("metricNames", equalTo("topology.testTopology.testComponent.%.--test.metric.name._sum"))
                 .withQueryParam("startTime", equalTo(String.valueOf(from)))
                 .withQueryParam("endTime", equalTo(String.valueOf(to)))
                 .withQueryParam("precision", equalTo(AmbariMetricsServiceWithStormQuerier.Precision.MINUTES.name()))
@@ -94,7 +94,7 @@ public class AmbariMetricsServiceWithStormQuerierTest {
         verify(getRequestedFor(urlPathEqualTo(TEST_COLLECTOR_API_PATH))
                 .withQueryParam("appId", equalTo(DEFAULT_APP_ID))
                 .withQueryParam("hostname", equalTo(""))
-                .withQueryParam("metricNames", equalTo("topology.testTopology.testComponent.%.--test.metric.name"))
+                .withQueryParam("metricNames", equalTo("topology.testTopology.testComponent.%.--test.metric.name._sum"))
                 .withQueryParam("startTime", equalTo(String.valueOf(from)))
                 .withQueryParam("endTime", equalTo(String.valueOf(to)))
                 .withQueryParam("precision", equalTo(AmbariMetricsServiceWithStormQuerier.Precision.HOURS.name()))
@@ -110,7 +110,7 @@ public class AmbariMetricsServiceWithStormQuerierTest {
         verify(getRequestedFor(urlPathEqualTo(TEST_COLLECTOR_API_PATH))
                 .withQueryParam("appId", equalTo(DEFAULT_APP_ID))
                 .withQueryParam("hostname", equalTo(""))
-                .withQueryParam("metricNames", equalTo("topology.testTopology.testComponent.%.--test.metric.name"))
+                .withQueryParam("metricNames", equalTo("topology.testTopology.testComponent.%.--test.metric.name._sum"))
                 .withQueryParam("startTime", equalTo(String.valueOf(from)))
                 .withQueryParam("endTime", equalTo(String.valueOf(to)))
                 .withQueryParam("precision", equalTo(AmbariMetricsServiceWithStormQuerier.Precision.DAYS.name()))
@@ -126,8 +126,10 @@ public class AmbariMetricsServiceWithStormQuerierTest {
         // this is one of metric which needs stream aggregation
         String metricName = "__complete-latency";
         TimeSeriesQuerier.AggregateFunction aggrFunction = TimeSeriesQuerier.AggregateFunction.AVG;
-        long from = 1234L * 10 * 60;
-        long to = 5678L * 10 * 60;
+
+        // 10 mins: > 1 min but < 7 days
+        long from = 0;
+        long to = 10 * 60 * 1000;
 
         Map<Long, Double> metrics = querier.getMetrics(topologyName, componentId, metricName, aggrFunction, from, to);
         assertResult(metrics);
@@ -135,11 +137,45 @@ public class AmbariMetricsServiceWithStormQuerierTest {
         verify(getRequestedFor(urlPathEqualTo(TEST_COLLECTOR_API_PATH))
                 .withQueryParam("appId", equalTo(DEFAULT_APP_ID))
                 .withQueryParam("hostname", equalTo(""))
-                .withQueryParam("metricNames", equalTo("topology.testTopology.testComponent.%.--complete-latency.%"))
+                .withQueryParam("metricNames", equalTo("topology.testTopology.testComponent.%.--complete-latency.%._avg"))
                 .withQueryParam("startTime", equalTo(String.valueOf(from)))
                 .withQueryParam("endTime", equalTo(String.valueOf(to)))
                 .withQueryParam("precision", equalTo(AmbariMetricsServiceWithStormQuerier.Precision.MINUTES.name()))
                 .withQueryParam("seriesAggregateFunction", equalTo("AVG")));
+
+        // 10 days: > 7 days but < 30 days
+        from = 0;
+        to = 10 * 24 * 60 * 60 * 1000;
+        aggrFunction = TimeSeriesQuerier.AggregateFunction.MAX;
+
+        metrics = querier.getMetrics(topologyName, componentId, metricName, aggrFunction, from, to);
+        assertResult(metrics);
+
+        verify(getRequestedFor(urlPathEqualTo(TEST_COLLECTOR_API_PATH))
+                .withQueryParam("appId", equalTo(DEFAULT_APP_ID))
+                .withQueryParam("hostname", equalTo(""))
+                .withQueryParam("metricNames", equalTo("topology.testTopology.testComponent.%.--complete-latency.%._max"))
+                .withQueryParam("startTime", equalTo(String.valueOf(from)))
+                .withQueryParam("endTime", equalTo(String.valueOf(to)))
+                .withQueryParam("precision", equalTo(AmbariMetricsServiceWithStormQuerier.Precision.HOURS.name()))
+                .withQueryParam("seriesAggregateFunction", equalTo("MAX")));
+
+        // 40 days: > 30 days
+        from = 0;
+        to = 40L * 24 * 60 * 60 * 1000;
+        aggrFunction = TimeSeriesQuerier.AggregateFunction.MIN;
+
+        metrics = querier.getMetrics(topologyName, componentId, metricName, aggrFunction, from, to);
+        assertResult(metrics);
+
+        verify(getRequestedFor(urlPathEqualTo(TEST_COLLECTOR_API_PATH))
+                .withQueryParam("appId", equalTo(DEFAULT_APP_ID))
+                .withQueryParam("hostname", equalTo(""))
+                .withQueryParam("metricNames", equalTo("topology.testTopology.testComponent.%.--complete-latency.%._min"))
+                .withQueryParam("startTime", equalTo(String.valueOf(from)))
+                .withQueryParam("endTime", equalTo(String.valueOf(to)))
+                .withQueryParam("precision", equalTo(AmbariMetricsServiceWithStormQuerier.Precision.DAYS.name()))
+                .withQueryParam("seriesAggregateFunction", equalTo("MIN")));
     }
 
     @Test
