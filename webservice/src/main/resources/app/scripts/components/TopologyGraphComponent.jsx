@@ -154,8 +154,10 @@ export default class TopologyGraphComponent extends Component {
     rectangleHeight: 40,
     testDataRectHeight: 210,
     testNoDataRectHeight: 75,
-    metricsRectHeight: 112,
-    metricsGraphRectHeight: 247
+    // metricsRectHeight: 112, //to display component metrics
+    metricsRectHeight: 61,
+    // metricsGraphRectHeight: 247
+    metricsGraphRectHeight: 205
   };
 
   componentDidUpdate() {
@@ -1252,9 +1254,11 @@ export default class TopologyGraphComponent extends Component {
         this.logActions.attr('x', x - 50)
           .attr('y', function(){
             if(selectedMode === 'Overview' || selectedMode === 'Sample'){
-              return y + 113;
+              // return y + 113;
+              return y + 63;
             } else {
-              return y + 248;
+              // return y + 248;
+              return y + 206;
             }
           })
           .style("display", "block");

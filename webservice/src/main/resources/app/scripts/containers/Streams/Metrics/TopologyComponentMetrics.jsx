@@ -160,7 +160,7 @@ class TopologyComponentMetrics extends Component {
     return (
       <div style={{width : '100%'}}>
       <div className="metric-bg top"></div>
-      <div className="component-metric-top" style={{width : '100%'}}>
+      {/*<div className="component-metric-top" style={{width : '100%'}}>
         <div className="component-metric-widget" style={{width : dynWidth+"%"}}>
             <h6>Emitted</h6>
             <h6>&nbsp;</h6>
@@ -204,7 +204,7 @@ class TopologyComponentMetrics extends Component {
             <h4>{acked}
             <small>{ackedMetric.suffix}</small></h4>
           </div>
-      </div>
+      </div>*/}
       {showMetrics ?
       (
       <ContentScrollableComponent contentHeight={127}>
