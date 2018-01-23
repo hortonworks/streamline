@@ -93,7 +93,9 @@ export default class TopologyConfigContainer extends Component {
               if(c.clusterId) {
                 c.id = c.clusterId;
                 let clusterObj = clusters.find((o)=>{return o.id === c.clusterId;});
-                c.clusterId = clusterObj.uiName;
+                if(clusterObj !== undefined){
+                  c.clusterId = clusterObj.uiName;
+                }
               }
             });
           }
