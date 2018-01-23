@@ -263,7 +263,7 @@ import moment from 'moment';
             </div>
           </div>
           </div>
-          {/*<div className="topology-foot-widget">
+          <div className="topology-foot-widget">
               <h6>Emitted
                 <big>
                   {prevEmitted !== null ?
@@ -363,17 +363,15 @@ import moment from 'moment';
                   : ''}
               </big></h6>
               <h4>{failed} <small>{failedDifference}</small></h4>
-          </div>*/}
-          {selectedComponentId == '' ?
-          [<div className="topology-foot-widget">
+          </div>
+          <div className="topology-foot-widget">
               <h6>Workers <big>&nbsp;</big></h6>
               <h4>{workersTotal} </h4>
-            </div>,
-            <div className="topology-foot-widget">
+          </div>
+          <div className="topology-foot-widget">
               <h6>Executors <big>&nbsp;</big></h6>
               <h4>{executorsTotal} </h4>
-            </div>]
-          : ''}
+          </div>
           <div className="topology-foot-action" onClick={()=>{this.setState({showMetrics: !this.state.showMetrics});}}>
             {this.state.showMetrics ?
               <span>Hide Metrics <i className="fa fa-chevron-down"></i></span>
