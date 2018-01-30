@@ -152,7 +152,7 @@ public class StormTopologyDependenciesHandler extends TopologyDagVisitor {
         if (TopologyComponentBundle.TopologyComponentType.PROCESSOR.equals(topologyComponentBundle.getType()) && ComponentTypes.CUSTOM.equals
                 (topologyComponentBundle.getSubType())) {
             try {
-                extraJars.add(new CustomProcessorInfo().fromTopologyComponentBundle(topologyComponentBundle).getJarFileName());
+                extraJars.add(CustomProcessorInfo.fromTopologyComponentBundle(topologyComponentBundle).getJarFileName());
             } catch (IOException e) {
                 LOG.warn("IOException while getting jar file name for custom processor from bundle", topologyComponentBundle);
                 throw new RuntimeException(e);
