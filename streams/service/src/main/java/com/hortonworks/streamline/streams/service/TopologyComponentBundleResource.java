@@ -168,7 +168,7 @@ public class TopologyComponentBundleResource {
     /**
      * Add a new topology component bundle.
      * <p>
-     * curl -sS -X POST -i -F topologyComponentBundle=@kafka-topology-bundle -F bundleJar=@/Users/pshah/dev/IoTaS/streams/runners/storm/layout/target/streams-layout-storm-0.1.0-SNAPSHOT.jar  http://localhost:8080/api/v1/catalog/streams/componentbundles/SOURCE/
+     * curl -sS -X POST -i -F topologyComponentBundle=@kafka-topology-bundle -F bundleJar=@/Users/pshah/dev/IoTaS/streams/runners/storm/layout/target/streams-layout-storm-0.6.0.jar  http://localhost:8080/api/v1/catalog/streams/componentbundles/SOURCE/
      * </p>
      */
     @POST
@@ -229,7 +229,7 @@ public class TopologyComponentBundleResource {
     /**
      * Update a topology component bundle by id.
      * <p>
-     * curl -sS -X PUT -i -F topologyComponentBundle=@kafka-topology-bundle -F bundleJar=@/Users/pshah/dev/IoTaS/streams/runners/storm/layout/target/streams-layout-storm-0.1.0-SNAPSHOT.jar  http://localhost:8080/api/v1/catalog/streams/componentbundles/SOURCE/1
+     * curl -sS -X PUT -i -F topologyComponentBundle=@kafka-topology-bundle -F bundleJar=@/Users/pshah/dev/IoTaS/streams/runners/storm/layout/target/streams-layout-storm-0.6.0.jar  http://localhost:8080/api/v1/catalog/streams/componentbundles/SOURCE/1
      * </p>
      */
     @PUT
@@ -278,7 +278,7 @@ public class TopologyComponentBundleResource {
     /**
      * Update a topology component bundle by trying to find id using type, sub type and streaming engine.
      * <p>
-     * curl -sS -X PUT -i -F topologyComponentBundle=@kafka-topology-bundle -F bundleJar=@/Users/pshah/dev/IoTaS/streams/runners/storm/layout/target/streams-layout-storm-0.1.0-SNAPSHOT.jar  http://localhost:8080/api/v1/catalog/streams/componentbundles/SOURCE/
+     * curl -sS -X PUT -i -F topologyComponentBundle=@kafka-topology-bundle -F bundleJar=@/Users/pshah/dev/IoTaS/streams/runners/storm/layout/target/streams-layout-storm-0.6.0.jar  http://localhost:8080/api/v1/catalog/streams/componentbundles/SOURCE/
      * </p>
      */
     @PUT
