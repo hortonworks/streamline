@@ -22,27 +22,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.common.test.IntegrationTest;
+import com.hortonworks.streamline.examples.processors.ConsoleCustomProcessor;
 import com.hortonworks.streamline.registries.tag.dto.TagDto;
-import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
-import com.hortonworks.streamline.streams.cluster.catalog.Component;
 import com.hortonworks.streamline.streams.catalog.File;
-import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
-import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMap;
 import com.hortonworks.streamline.streams.catalog.Notifier;
-import com.hortonworks.streamline.streams.cluster.catalog.Service;
-import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyEditorMetadata;
 import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
+import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
+import com.hortonworks.streamline.streams.cluster.catalog.*;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
-import com.hortonworks.streamline.examples.processors.ConsoleCustomProcessor;
-import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
+import com.hortonworks.streamline.streams.service.TopologyComponentBundleResource;
 import com.hortonworks.streamline.webservice.configurations.StreamlineConfiguration;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import org.apache.commons.io.IOUtils;
-import com.hortonworks.streamline.streams.service.TopologyComponentBundleResource;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.BodyPart;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -64,20 +59,11 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -898,7 +884,7 @@ public class RestIntegrationTest {
         return notifier;
     }
 
-   private TopologyComponentBundle createTopologyComponent (Long id, String name, TopologyComponentBundle.TopologyComponentType topologyComponentType,
+    private TopologyComponentBundle createTopologyComponent (Long id, String name, TopologyComponentBundle.TopologyComponentType topologyComponentType,
                                                                  String subType) {
         TopologyComponentBundle topologyComponentBundle = new TopologyComponentBundle();
         topologyComponentBundle.setId(id);
@@ -935,16 +921,16 @@ public class RestIntegrationTest {
         return topologyEditorMetadata;
     }
 
-    private CustomProcessorInfo createCustomProcessorInfo () {
-        CustomProcessorInfo customProcessorInfo = new CustomProcessorInfo();
-        customProcessorInfo.setName("ConsoleCustomProcessor");
-        customProcessorInfo.setDescription("Console Custom Processor");
-        customProcessorInfo.setJarFileName("streamline-core.jar");
-        customProcessorInfo.setCustomProcessorImpl(ConsoleCustomProcessor.class.getCanonicalName());
-        customProcessorInfo.setStreamingEngine(TopologyLayoutConstants.STORM_STREAMING_ENGINE);
-        customProcessorInfo.setInputSchema(getSchema());
-        customProcessorInfo.setOutputSchema(getSchema());
-        return customProcessorInfo;
+    private CustomProcessorInfo createCustomProcessorInfo() {
+        return new CustomProcessorInfo("ConsoleCustomProcessor",
+                "Console Custom Processor",
+                TopologyLayoutConstants.STORM_STREAMING_ENGINE,
+                "streamline-core.jar",
+                ConsoleCustomProcessor.class.getCanonicalName(),
+                getSchema(),
+                getSchema(),
+                null,
+                null);
     }
 
     private Namespace createNamespace(long id, String name) {
