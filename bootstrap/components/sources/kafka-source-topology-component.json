@@ -26,7 +26,7 @@
         "hint": "dependsOn-securityProtocol"
       },
       {
-        "uiName": "Kafka topic",
+        "uiName": "Kafka Topic",
         "fieldName": "topic",
         "isOptional": false,
         "tooltip": "Kafka topic to read data from",
@@ -35,13 +35,23 @@
         "hint": "schema,override"
       },
       {
-        "uiName": "Reader schema version",
+        "uiName": "Reader Schema Branch",
+        "fieldName": "schemaBranch",
+        "isOptional": true,
+        "tooltip": "Schema branch to be used fetching for reader schema versions. Default branch is MASTER",
+        "type": "enumstring",
+        "options": [],
+        "hint": "schema,override",
+        "defaultValue": "MASTER"
+      },
+      {
+        "uiName": "Reader Schema Version",
         "fieldName": "readerSchemaVersion",
         "isOptional": false,
         "tooltip": "Version of schema for topic to use for deserializing the message. Default is version used by kafka producer to write the message",
         "type": "enumstring",
         "options": [],
-        "hint": "dependsOn-topic,schemaVersion"
+        "hint": "dependsOn-topic,dependsOn-schemaBranch,schemaVersion"
       },
       {
         "uiName": "Consumer Group Id",
