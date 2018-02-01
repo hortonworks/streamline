@@ -109,52 +109,6 @@ public class SchemaResource {
         return WSUtils.respondEntity(schemaIdVersion, OK);
     }
 
-    // This API would change once we consider other sources. Currently supports kafka sources for the given topic names.
-    @GET
-    @Path("/{topicName}")
-    @Timed
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getKafkaSourceSchema(@PathParam("topicName") String topicName,
-                                         @Context SecurityContext securityContext) throws JsonProcessingException {
-        return doGetKafkaSourceSchemaForBranch(topicName, null);
-    }
-
-    private Response doGetKafkaSourceSchemaForBranch(@PathParam("topicName") String topicName, String branchName) throws JsonProcessingException {
-        try {
-            LOG.info("Received path: [{}]", topicName);
-            // for now, takes care of kafka for topic values. We will enhance to work this to get schema for different
-            // sources based on given properties.
-            final String schemaName = topicName;
-            SchemaVersionInfo schemaVersionInfo = schemaRegistryClient.getLatestSchemaVersionInfo(effectiveBranchName(branchName), schemaName);
-
-            String schema = schemaVersionInfo != null ? schemaVersionInfo.getSchemaText() : null;
-            LOG.debug("Received schema from schema registry: ", schema);
-            if (schema != null && !schema.isEmpty()) {
-                schema = AvroStreamlineSchemaConverter.convertAvroSchemaToStreamlineSchema(schema);
-            }
-            LOG.debug("Converted schema: [{}]", schema);
-            return WSUtils.respondEntity(schema, OK);
-        } catch (SchemaNotFoundException e) {
-            LOG.error("Schema not found for topic: [{}]", topicName, e);
-            throw EntityNotFoundException.byId(topicName);
-        } catch (JsonProcessingException ex) {
-            LOG.error("Error occurred while retrieving schema with name [{}]", topicName, ex);
-            throw ex;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @GET
-    @Path("/{topicName}/{branchName}")
-    @Timed
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getKafkaSourceSchemaForBranch(@PathParam("topicName") String topicName,
-                                                  @PathParam("branchName") String branchName,
-                                                  @Context SecurityContext securityContext) throws JsonProcessingException {
-        return doGetKafkaSourceSchemaForBranch(topicName, branchName);
-    }
-
     @GET
     @Path("/{schemaName}/versions")
     @Timed

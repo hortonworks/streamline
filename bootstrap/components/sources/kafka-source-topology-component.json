@@ -37,11 +37,10 @@
       {
         "uiName": "Reader Schema Branch",
         "fieldName": "schemaBranch",
-        "isOptional": true,
         "tooltip": "Schema branch to be used fetching for reader schema versions. Default branch is MASTER",
         "type": "enumstring",
         "options": [],
-        "hint": "schema,override",
+        "hint": "dependsOn-Topic,schemaBranch",
         "defaultValue": "MASTER"
       },
       {
@@ -51,7 +50,7 @@
         "tooltip": "Version of schema for topic to use for deserializing the message. Default is version used by kafka producer to write the message",
         "type": "enumstring",
         "options": [],
-        "hint": "dependsOn-topic,dependsOn-schemaBranch,schemaVersion"
+        "hint": "dependsOn-schemaBranch,schemaVersion"
       },
       {
         "uiName": "Consumer Group Id",
