@@ -77,8 +77,11 @@ fi
 opt="$1"
 
 case "${opt}" in
-create | drop | migrate | info | validate | repair | check-connection )
+create | drop | info | validate | repair | check-connection )
     execute "${opt}"
+    ;;
+migrate )
+    execute "${opt} --disable-validate-on-migrate"
     ;;
 drop-create )
     execute "drop" && execute "create"
