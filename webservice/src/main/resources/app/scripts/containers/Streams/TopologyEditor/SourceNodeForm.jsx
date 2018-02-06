@@ -111,6 +111,10 @@ export default class SourceNodeForm extends Component {
       }
       stateObj.formData = this.nodeData.config.properties;
       if(!_.isEmpty(stateObj.formData) && !!stateObj.formData.topic){
+        this.fetchSchemaBranches(stateObj.formData);
+        if(!stateObj.formData.schemaBranch && !!stateObj.formData.readerSchemaVersion) {
+          stateObj.formData.schemaBranch = 'MASTER';
+        }
         this.fetchSchemaVersions(stateObj.formData);
       }
       stateObj.description = this.nodeData.description;
@@ -130,10 +134,29 @@ export default class SourceNodeForm extends Component {
   }
 
   fetchSchemaVersions = (data) => {
-    TopologyREST.getSchemaForKafka(data.topic).then((results) => {
+    TopologyREST.getSchemaVersionsForKafka(data.topic, data.schemaBranch).then((results) => {
       const {configJSON} = this.state;
       let tempConfigJson =  Utils.populateSchemaVersionOptions(results,configJSON);
       this.setState({configJSON : tempConfigJson});
+    });
+  }
+
+  fetchSchemaBranches = (data) => {
+    TopologyREST.getSchemaBranchesForKafka(data.topic).then((results) => {
+      const {configJSON} = this.state;
+      if(results.responseMessage !== undefined) {
+        _.map(configJSON, (config) => {
+          if(config.fieldName.indexOf('topic') !== -1){
+            this.refs.Form.state.Errors["topic"] = 'Schema Not Found';
+            this.refs.Form.state.FormData.schemaBranch = '';
+            this.refs.Form.state.FormData.readerSchemaVersion = '';
+            this.refs.Form.setState(this.refs.Form.state);
+          }
+        });
+      } else {
+        let tempConfigJson =  Utils.populateSchemaBranchOptions(results,configJSON);
+        this.setState({configJSON : tempConfigJson});
+      }
     });
   }
 
@@ -275,6 +298,22 @@ export default class SourceNodeForm extends Component {
     this.setState({streamObj : this.streamObj, configJSON : tempConfigJson,formData:tempFormData});
   }
 
+  showSchemaBranches(resultArr) {
+    let tempConfigJson = _.cloneDeep(this.state.configJSON);
+    let tempFormData = Utils.deepmerge(this.state.formData,this.refs.Form.state.FormData);
+    tempFormData.schemaBranch = 'MASTER';
+    this.fetchSchemaVersions(tempFormData);
+    this.streamObj.fields = [];
+    tempFormData.readerSchemaVersion = '';
+    _.map(tempConfigJson, (config) => {
+      if(config.hint !== undefined && config.hint.indexOf('schemaVersion') !== -1){
+        config.options = [];
+      }
+    });
+    tempConfigJson = Utils.populateSchemaBranchOptions(resultArr,tempConfigJson);
+    this.setState({configJSON : tempConfigJson,formData:tempFormData});
+  }
+
   updateStreamObj = (resultArr) => {
     return {
       streamId: this.props.configData.subType.toLowerCase() + '_stream_' + this.nodeData.id,
@@ -341,7 +380,7 @@ export default class SourceNodeForm extends Component {
         <Scrollbars autoHide renderThumbHorizontal={props => <div {...props} style={{
           display: "none"
         }}/>}>
-          <Form ref="Form" readOnly={disabledFields} showRequired={this.state.showRequired} showSecurity={this.state.showSecurity} className="customFormClass" FormData={formData} Errors={formErrors} populateClusterFields={this.populateClusterFields.bind(this)} callback={this.showOutputStream.bind(this)} handleSecurityProtocol={this.handleSecurityProtocol.bind(this)}>
+          <Form ref="Form" readOnly={disabledFields} showRequired={this.state.showRequired} showSecurity={this.state.showSecurity} className="customFormClass" FormData={formData} Errors={formErrors} populateClusterFields={this.populateClusterFields.bind(this)} callback={this.showOutputStream.bind(this)} schemaBranchesCallback={this.showSchemaBranches.bind(this)} handleSecurityProtocol={this.handleSecurityProtocol.bind(this)}>
             {fields}
           </Form>
         </Scrollbars>

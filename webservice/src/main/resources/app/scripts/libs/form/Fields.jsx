@@ -327,34 +327,77 @@ export class enumstring extends BaseField {
     const {Form} = this.context;
     Form.setState(Form.state, () => {
       if (this.validate() && (this.props.fieldJson !== undefined && this.props.fieldJson.hint !== undefined && Utils.matchStringInArr(this.props.fieldJson.hint, 'schema'))) {
-        this.getSchema(this.props.data[this.props.value],null,false);
+        this.getSchemaBranches(this.props.data[this.props.value]);
       } else if (this.props.fieldJson.fieldName === "securityProtocol"){
         if(Form.props.handleSecurityProtocol){
           Form.props.handleSecurityProtocol(val.value);
         }
-      } else if (this.validate() && (this.props.fieldJson !== undefined && this.props.fieldJson.hint !== undefined  && Utils.matchStringInArr(this.props.fieldJson.hint, "schemaVersion"))) {
+      } else if (this.validate() && (this.props.fieldJson !== undefined && this.props.fieldJson.hint !== undefined  && Utils.matchStringInArr(this.props.fieldJson.hint, "schemaBranch"))) {
         let fieldName = this.props.fieldJson.hint.split(',')
                           .filter((h)=>{return h.indexOf('dependsOn') !== -1;})[0]
                           .split('-')[1];
         const topicName = this.props.data[fieldName];
-        this.getSchema(topicName,this.props.data[this.props.value],true);
+        this.getSchema(topicName, this.props.data[this.props.value], false);
+      } else if (this.validate() && (this.props.fieldJson !== undefined && this.props.fieldJson.hint !== undefined  && Utils.matchStringInArr(this.props.fieldJson.hint, "schemaVersion"))) {
+        let branchName = this.props.fieldJson.hint.split(',')
+                          .filter((h)=>{return h.indexOf('dependsOn') !== -1;})[0]
+                          .split('-')[1];
+        const branch = this.props.data[branchName];
+        const topic = this.props.data["topic"];
+        this.getSchema(topic, branch, true, this.props.data[this.props.value]);
       }
     });
   }
 
-  getSchema(val,id,flag) {
-    if (val != '') {
+  getSchema(topic, branch, flag, id) {
+    if (branch != '') {
       clearTimeout(this.topicTimer);
       this.topicTimer = setTimeout(() => {
-        this.getSchemaFromName(val,id,flag);
+        this.getSchemaFromName(topic,branch,id,flag);
       }, 700);
     }
   }
 
-  getSchemaFromName(topicName,id,flag) {
+  getSchemaFromName(topicName, branch, id, flag) {
     let resultArr = [];
     let versionsId = flag ? id : '';
-    TopologyREST.getSchemaForKafka(topicName,versionsId).then(result => {
+    let promiseArr = [];
+    if(flag) {
+      promiseArr.push(TopologyREST.getSchemaForKafka(topicName, versionsId));
+    } else {
+      promiseArr.push(TopologyREST.getSchemaVersionsForKafka(topicName, branch));
+    }
+    Promise.all(promiseArr).then(result => {
+      if (result[0].responseMessage !== undefined) {
+        this.refs.select2.className = "form-control invalidInput";
+        this.context.Form.state.Errors[this.props.valuePath] = flag ? 'Schema Not Found': 'Branch Not Found';
+        this.context.Form.setState(this.context.Form.state);
+      } else {
+        this.refs.select2.className = "form-control";
+        resultArr = result[0];
+        if (typeof resultArr === 'string') {
+          resultArr = JSON.parse(resultArr);
+        }
+        this.context.Form.state.Errors[this.props.valuePath] =  resultArr.length === 0 ? (flag ? 'Schema Not Found' : 'Branch Not Found') : '';
+        this.context.Form.setState(this.context.Form.state);
+      }
+      if (this.context.Form.props.callback) {
+        this.context.Form.props.callback(resultArr,flag);
+      }
+    });
+  }
+
+  getSchemaBranches(val) {
+    if (val != '') {
+      clearTimeout(this.branchTimer);
+      this.branchTimer = setTimeout(() => {
+        this.getSchemaBranchesFromName(val);
+      }, 700);
+    }
+  }
+  getSchemaBranchesFromName(topicName) {
+    let resultArr = [];
+    TopologyREST.getSchemaBranchesForKafka(topicName).then(result => {
       if (result.responseMessage !== undefined) {
         this.refs.select2.className = "form-control invalidInput";
         this.context.Form.state.Errors[this.props.valuePath] = 'Schema Not Found';
@@ -368,8 +411,8 @@ export class enumstring extends BaseField {
         this.context.Form.state.Errors[this.props.valuePath] =  resultArr.length === 0 ? 'Schema Not Found' : '';
         this.context.Form.setState(this.context.Form.state);
       }
-      if (this.context.Form.props.callback) {
-        this.context.Form.props.callback(resultArr,flag);
+      if (this.context.Form.props.schemaBranchesCallback) {
+        this.context.Form.props.schemaBranchesCallback(resultArr);
       }
     });
   }
@@ -502,23 +545,22 @@ export class creatableField extends BaseField {
       : '';
     Form.setState(Form.state, () => {
       if (this.validate() && (this.props.fieldJson.hint !== undefined && this.props.fieldJson.hint.toLowerCase().indexOf("schema") !== -1)) {
-        this.getSchema(this.props.data[this.props.value],false);
+        this.getSchemaBranches(this.props.data[this.props.value]);
       }
     });
   }
-  getSchema(val,flag) {
+
+  getSchemaBranches(val) {
     if (val != '') {
-      clearTimeout(this.topicTimer);
-      this.topicTimer = setTimeout(() => {
-        this.getSchemaFromName(val,flag);
+      clearTimeout(this.branchTimer);
+      this.branchTimer = setTimeout(() => {
+        this.getSchemaBranchesFromName(val);
       }, 700);
     }
   }
-
-  getSchemaFromName(topicName,flag) {
+  getSchemaBranchesFromName(topicName) {
     let resultArr = [];
-    let versionsId = '';
-    TopologyREST.getSchemaForKafka(topicName,versionsId).then(result => {
+    TopologyREST.getSchemaBranchesForKafka(topicName).then(result => {
       if (result.responseMessage !== undefined) {
         this.refs.CustomCreatable.className = "form-control invalidInput";
         this.context.Form.state.Errors[this.props.valuePath] = 'Schema Not Found';
@@ -532,11 +574,12 @@ export class creatableField extends BaseField {
         this.context.Form.state.Errors[this.props.valuePath] =  resultArr.length === 0 ? 'Schema Not Found' : '';
         this.context.Form.setState(this.context.Form.state);
       }
-      if (this.context.Form.props.callback) {
-        this.context.Form.props.callback(resultArr,flag);
+      if (this.context.Form.props.schemaBranchesCallback) {
+        this.context.Form.props.schemaBranchesCallback(resultArr);
       }
     });
   }
+
   validate() {
     return super.validate(this.props.data[this.props.value]);
   }
