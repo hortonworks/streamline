@@ -12,6 +12,10 @@
 -- See the License for the specific language governing permissions and;
 -- limitations under the License.;
 
+DELETE FROM "service" WHERE "clusterId" NOT IN (SELECT "id" FROM "cluster");
+DELETE FROM "service_configuration" WHERE "serviceId" NOT IN (SELECT "id" FROM "service");
+DELETE FROM "component" WHERE "serviceId" NOT IN (SELECT "id" FROM "service");
+
 ALTER TABLE "service" ADD CONSTRAINT "service_fk_cluster" FOREIGN KEY ("clusterId") REFERENCES "cluster" ("id");
 ALTER TABLE "service_configuration" ADD CONSTRAINT service_configuration_fk_srv FOREIGN KEY ("serviceId") REFERENCES "service" ("id");
 ALTER TABLE "component" ADD CONSTRAINT component_fk_service FOREIGN KEY ("serviceId") REFERENCES "service" ("id");
