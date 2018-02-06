@@ -1,0 +1,123 @@
+{
+  "outputStreams": [
+    {
+      "id": "outputstream",
+      "schema": {
+        "fields": [
+          {
+            "name": "body",
+            "type": "STRING",
+            "optional": true
+          }
+        ]
+      }
+    }
+  ],
+  "rules": [
+    {
+      "id": 1,
+      "name": "test",
+      "description": "test",
+      "ruleProcessorName": "test",
+      "streams": [
+        "inputstream"
+      ],
+      "projection": {
+        "expressions": [
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {
+                "name": "PERSON",
+                "className": "com.hortonworks.streamline.streams.runtime.udf.PersonArrayFn",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "person",
+                    "type": "ARRAY",
+                    "optional": false,
+                    "members": [
+                      {
+                        "name": "details",
+                        "type": "NESTED",
+                        "optional": true,
+                        "fields": [
+                          {
+                            "name": "name",
+                            "type": "INTEGER",
+                            "optional": false
+                          },
+                          {
+                            "name": "age",
+                            "type": "INTEGER",
+                            "optional": false
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "alias": "PERSON"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {
+                "name": "SQUARE",
+                "className": "com.hortonworks.streamline.streams.runtime.udf.SquaresFn",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "squares",
+                    "type": "NESTED",
+                    "fields": [
+                      {
+                        "name" : "key",
+                        "type" : "INTEGER",
+                        "optional": "false"
+                      },
+                      {
+                        "name" : "val",
+                        "type" : "INTEGER",
+                        "optional": "false"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.Literal",
+                  "value": "3"
+                }
+              ]
+            },
+            "alias": "SQUARE"
+          }
+        ]
+      },
+      "groupBy": null,
+      "having": null,
+      "window": null,
+      "actions": [
+        {
+          "name": "notificationsink",
+          "outputFieldsAndDefaults": {
+            "body": "PERSON ${PERSON} SQUARE ${SQUARE}"
+          },
+          "outputStreams": ["outputstream"],
+          "notifierName": "email_notifier",
+          "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction"
+        }
+      ]
+    }
+  ]
+}
