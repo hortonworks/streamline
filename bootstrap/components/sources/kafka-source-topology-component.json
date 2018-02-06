@@ -37,10 +37,11 @@
       {
         "uiName": "Reader Schema Branch",
         "fieldName": "schemaBranch",
+        "isOptional": false,
         "tooltip": "Schema branch to be used fetching for reader schema versions. Default branch is MASTER",
         "type": "enumstring",
         "options": [],
-        "hint": "dependsOn-Topic,schemaBranch",
+        "hint": "dependsOn-topic,schemaBranch",
         "defaultValue": "MASTER"
       },
       {

@@ -37,7 +37,7 @@
       {
         "uiName": "Writer Schema Branch",
         "fieldName": "schemaBranch",
-        "isOptional": true,
+        "isOptional": false,
         "tooltip": "Schema branch to be used fetching for writer schema versions. Default branch is MASTER",
         "type": "enumstring",
         "options": [],
