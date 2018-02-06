@@ -5,7 +5,7 @@
     <parent>
         <artifactId>streamline-multilang</artifactId>
         <groupId>com.hortonworks.streamline</groupId>
-        <version>0.6.0</version>
+        <version>0.6.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>streamline-python</artifactId>
