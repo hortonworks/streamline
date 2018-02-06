@@ -43,7 +43,7 @@ BEGIN
     DECLARE endpos INTEGER;
     DECLARE maxlen INTEGER;
     DECLARE item VARCHAR(255);
-    DECLARE mod_hosts VARCHAR(255);
+    DECLARE mod_hosts TEXT;
     DECLARE delim VARCHAR(1);
 
     DECLARE cursor_component_process CURSOR FOR SELECT id, REPLACE( REPLACE( REPLACE(hosts,'[','' ),']','' ),'"','' ), protocol, port, timestamp FROM component;
