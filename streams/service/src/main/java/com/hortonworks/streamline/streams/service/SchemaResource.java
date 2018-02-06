@@ -121,16 +121,14 @@ public class SchemaResource {
     private Response doGetAllSchemaVersionForBranch(String schemaName, String branchName) {
         try {
             LOG.info("Get all versions for schema : {}", schemaName);
-            List<Byte> states = Collections.singletonList(SchemaVersionLifecycleStates.ENABLED.getId());
-            Collection<SchemaVersionInfo> schemaVersionInfos = schemaRegistryClient.getAllVersions(effectiveBranchName(branchName), schemaName, states);
-            Collection<String> schemaVersions = new ArrayList<>();
+            Collection<SchemaVersionInfo> schemaVersionInfos = schemaRegistryClient.getAllVersions(effectiveBranchName(branchName), schemaName);
+            LOG.debug("Received schema versions [{}] from schema registry for schema: {}", schemaVersionInfos, schemaName);
+
             if (schemaVersionInfos != null && !schemaVersionInfos.isEmpty()) {
-                LOG.debug("Received schema versions from schema registry: {}", schemaVersionInfos);
-                schemaVersions = schemaVersionInfos.stream().map(x -> x.getVersion().toString()).collect(Collectors.toList());
+                List<String> schemaVersions = schemaVersionInfos.stream().map(x -> x.getVersion().toString()).collect(Collectors.toList());
                 return WSUtils.respondEntities(schemaVersions, OK);
             } else {
-                LOG.debug("Received null response for schema versions from schema registry for schema: {}", schemaName);
-                return WSUtils.respondEntity(schemaVersions, NOT_FOUND);
+                return WSUtils.respondEntity(Collections.EMPTY_LIST, NOT_FOUND);
             }
         } catch (SchemaNotFoundException e) {
             LOG.error("Schema not found: [{}]", schemaName, e);
