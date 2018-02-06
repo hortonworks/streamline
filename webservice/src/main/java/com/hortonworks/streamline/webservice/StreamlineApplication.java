@@ -17,27 +17,20 @@
 
 package com.hortonworks.streamline.webservice;
 
-import com.google.common.cache.CacheBuilder;
 import com.hortonworks.registries.auth.Login;
 import com.hortonworks.registries.common.ServletFilterConfiguration;
-import com.hortonworks.registries.cache.Cache;
-import com.hortonworks.registries.storage.NOOPTransactionManager;
-import com.hortonworks.registries.storage.TransactionManager;
-import com.hortonworks.registries.storage.TransactionManagerAware;
-import com.hortonworks.streamline.common.Constants;
-import com.hortonworks.streamline.common.ModuleRegistration;
 import com.hortonworks.registries.common.util.FileStorage;
-import com.hortonworks.streamline.common.util.ReflectionHelper;
-import com.hortonworks.registries.storage.transaction.TransactionEventListener;
-import com.hortonworks.registries.storage.CacheBackedStorageManager;
+import com.hortonworks.registries.storage.NOOPTransactionManager;
 import com.hortonworks.registries.storage.Storable;
-import com.hortonworks.registries.storage.StorableKey;
 import com.hortonworks.registries.storage.StorageManager;
 import com.hortonworks.registries.storage.StorageManagerAware;
-import com.hortonworks.registries.storage.cache.impl.GuavaCache;
-import com.hortonworks.registries.storage.cache.writer.StorageWriteThrough;
-import com.hortonworks.registries.storage.cache.writer.StorageWriter;
+import com.hortonworks.registries.storage.TransactionManager;
+import com.hortonworks.registries.storage.TransactionManagerAware;
+import com.hortonworks.registries.storage.transaction.TransactionEventListener;
+import com.hortonworks.streamline.common.Constants;
+import com.hortonworks.streamline.common.ModuleRegistration;
 import com.hortonworks.streamline.common.exception.ConfigException;
+import com.hortonworks.streamline.common.util.ReflectionHelper;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import com.hortonworks.streamline.streams.security.authentication.StreamlineKerberosRequestFilter;
 import com.hortonworks.streamline.streams.security.impl.DefaultStreamlineAuthorizer;
@@ -45,9 +38,9 @@ import com.hortonworks.streamline.streams.security.service.SecurityCatalogServic
 import com.hortonworks.streamline.streams.service.GenericExceptionMapper;
 import com.hortonworks.streamline.webservice.configurations.AuthorizerConfiguration;
 import com.hortonworks.streamline.webservice.configurations.LoginConfiguration;
+import com.hortonworks.streamline.webservice.configurations.ModuleConfiguration;
 import com.hortonworks.streamline.webservice.configurations.StorageProviderConfiguration;
 import com.hortonworks.streamline.webservice.configurations.StreamlineConfiguration;
-import com.hortonworks.streamline.webservice.configurations.ModuleConfiguration;
 import com.hortonworks.streamline.webservice.resources.StreamlineConfigurationResource;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
@@ -69,14 +62,13 @@ import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.ws.rs.core.Response;
-
 
 import static com.hortonworks.registries.storage.util.StorageUtils.getStorableEntities;
 
@@ -186,14 +178,9 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
         cors.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, urls);
     }
 
-    private StorageManager getCacheBackedDao(StreamlineConfiguration configuration) {
+    private StorageManager getDao(StreamlineConfiguration configuration) {
         StorageProviderConfiguration storageProviderConfiguration = configuration.getStorageProviderConfiguration();
-        final StorageManager dao = getStorageManager(storageProviderConfiguration);
-        final CacheBuilder cacheBuilder = getGuavaCacheBuilder();
-        final Cache<StorableKey, Storable> cache = getCache(dao, cacheBuilder);
-        final StorageWriter storageWriter = getStorageWriter(dao);
-
-        return doGetCacheBackedDao(cache, storageWriter);
+        return getStorageManager(storageProviderConfiguration);
     }
 
     private StorageManager getStorageManager(StorageProviderConfiguration storageProviderConfiguration) {
@@ -207,23 +194,6 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
         storageManager.init(storageProviderConfiguration.getProperties());
 
         return storageManager;
-    }
-
-    private StorageWriter getStorageWriter(StorageManager dao) {
-        return new StorageWriteThrough(dao);
-    }
-
-    private StorageManager doGetCacheBackedDao(Cache<StorableKey, Storable> cache, StorageWriter writer) {
-        return new CacheBackedStorageManager(cache, writer);
-    }
-
-    private Cache<StorableKey, Storable> getCache(StorageManager dao, CacheBuilder guavaCacheBuilder) {
-        return new GuavaCache(dao, guavaCacheBuilder);
-    }
-
-    private CacheBuilder getGuavaCacheBuilder() {
-        final long maxSize = 1000;
-        return CacheBuilder.newBuilder().maximumSize(maxSize);
     }
 
     private FileStorage getJarStorage (StreamlineConfiguration configuration, StorageManager storageManager) {
@@ -242,12 +212,10 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
 
     private void registerResources(StreamlineConfiguration configuration, Environment environment, Subject subject) throws ConfigException,
             ClassNotFoundException, IllegalAccessException, InstantiationException {
-        StorageManager storageManager = getCacheBackedDao(configuration);
-        StorageManager effectiveStorageManager = storageManager instanceof CacheBackedStorageManager ?
-                ((CacheBackedStorageManager) storageManager).getStorageManager() : storageManager;
+        StorageManager storageManager = getDao(configuration);
         TransactionManager transactionManager;
-        if (effectiveStorageManager instanceof TransactionManager) {
-            transactionManager = (TransactionManager) effectiveStorageManager;
+        if (storageManager instanceof TransactionManager) {
+            transactionManager = (TransactionManager) storageManager;
         } else {
             transactionManager = new NOOPTransactionManager();
         }
