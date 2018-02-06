@@ -13,7 +13,7 @@ All the files needed to build, register and run are present in this module.
 4. Run the below curl command to register it as a SAM source. Before doing that, make sure you replace sam_host and sam_port with values for your environment
  and that bundleJar form parameter points to the jar file that you build in step 1. 
 
-`curl -sS -X POST -i -F topologyComponentBundle=@$data  -F bundleJar=@/tmp/custom_source_example/streamline-examples-sources-0.1.0-SNAPSHOT.jar http://<sam_host>:<sam_port>/api/v1/catalog/streams/componentbundles/SOURCE`
+`curl -sS -X POST -i -F topologyComponentBundle=@$data  -F bundleJar=@/tmp/custom_source_example/streamline-examples-sources-0.6.0-SNAPSHOT.jar http://<sam_host>:<sam_port>/api/v1/catalog/streams/componentbundles/SOURCE`
 
 5. At this point, you are ready to drag and drop this source on to a SAM app. Note that this source reads from a file on local filesystem and it expects the 
 file to be in a certain format. Sample file provided in this module names.csv under resources directory can be used. Please make sure that the value for path 
@@ -25,4 +25,4 @@ The jar file containing the spout and all its dependencies should be available a
 streamline yaml configuration. If its not present at a remote repository, you will need to install the jar in local m2 directory for the user running SAM server
 on SAM server using the command below. Please make sure to change the groupId, artifactId, version and the file arguments as per your pom file and mavenDeps
 
-`mvn install:install-file -DgroupId=com.hortonworks.streamline -DartifactId=streamline-examples-sources -Dpackaging=jar -Dversion=0.1.0-SNAPSHOT -Dfile=/tmp/streamline-examples-sources-0.1.0-SNAPSHOT.jar -DgeneratePom=true`
+`mvn install:install-file -DgroupId=com.hortonworks.streamline -DartifactId=streamline-examples-sources -Dpackaging=jar -Dversion=0.6.0-SNAPSHOT -Dfile=/tmp/streamline-examples-sources-0.6.0-SNAPSHOT.jar -DgeneratePom=true`

@@ -1,6 +1,5 @@
 package com.hortonworks.streamline.streams.runtime.storm.bolt.rules;
 
-import com.google.common.collect.ImmutableMap;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import com.hortonworks.streamline.streams.runtime.processor.RuleProcessorRuntime;
@@ -23,6 +22,7 @@ import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +61,22 @@ public class FunctionsTest {
                 mockCollector.emit(streamId = withCapture(), anchor = withCapture(), withCapture(tuples));
                 Assert.assertEquals(1, tuples.size());
                 Assert.assertEquals("CONCAT helloworld IDENTITY hello UPPER HELLO LOWER hello INITCAP Hello CHAR_LENGTH 5",
+                        ((StreamlineEvent)(tuples.get(0).get(0))).get("body"));
+            }
+        };
+    }
+
+    @Test
+    public void testUDFArrayAndNested() throws Exception {
+        doTest(readFile("/streamline-udf-nested-array.json"), getTupleNestedAndArray());
+        new Verifications() {
+            {
+                String streamId;
+                Tuple anchor;
+                List<List<Object>> tuples = new ArrayList<>();
+                mockCollector.emit(streamId = withCapture(), anchor = withCapture(), withCapture(tuples));
+                Assert.assertEquals(1, tuples.size());
+                Assert.assertEquals("PERSON [{a, 1}, {b, 2}] SQUARE 9",
                         ((StreamlineEvent)(tuples.get(0).get(0))).get("body"));
             }
         };
@@ -167,6 +183,33 @@ public class FunctionsTest {
 
     private String readFile(String fn) throws IOException {
         return IOUtils.toString(getClass().getResourceAsStream(fn));
+    }
+
+    public static class Person {
+        public final String name;
+        public final int age;
+        Person(String name, int age) {
+            this.name = name;
+            this.age = age;
+        }
+
+        @Override
+        public String toString() {
+            return "{" + name + ", " + age + "}";
+        }
+    }
+
+    private Tuple getTupleNestedAndArray() {
+        Map<String, Object> map = new HashMap<>();
+        List<Person> person = Arrays.asList(new Person("a", 1), new Person("b", 2));
+        Map<Integer, Integer> squares = new HashMap<>();
+        squares.put(1, 1);
+        squares.put(2, 4);
+        squares.put(3, 9);
+        map.put("person", person);
+        map.put("squares", squares);
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(map).dataSourceId("dsrcid").build();
+        return new TupleImpl(mockContext, new Values(event), 1, "inputstream");
     }
 
     private Tuple getTuple() {
