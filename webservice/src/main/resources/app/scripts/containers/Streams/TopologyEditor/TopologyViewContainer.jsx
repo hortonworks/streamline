@@ -41,6 +41,7 @@ import app_state from '../../../app_state';
 import UserRoleREST from '../../../rest/UserRoleREST';
 import TopologyViewModeMetrics from './TopologyViewModeMetrics';
 import EditorGraph from '../../../components/EditorGraph';
+import MetricsREST from '../../../rest/MetricsREST';
 
 @observer
 class TopologyViewContainer extends Component {
@@ -384,7 +385,13 @@ class TopologyViewContainer extends Component {
       viewModeData.sourceMetrics = responseArr[1].entities || [];
       viewModeData.processorMetrics = responseArr[2].entities || [];
       viewModeData.sinkMetrics = responseArr[3].entities || [];
-      this.setState({viewModeData: viewModeData, fetchMetrics: false}, ()=>{this.syncComponentData();});
+      this.setState({viewModeData: viewModeData, fetchMetrics: false}, ()=>{
+        const {graphData} = this;
+        const kafkaSource = _.filter(graphData.nodes, (node) => {
+          return node.parentType === "SOURCE" && node.currentType === "Kafka";
+        });
+        kafkaSource.length > 0 ? this.fetchKafkaOffset(kafkaSource): this.syncComponentData();
+      });
       if(this.refs.metricsPanelRef){
         this.refs.metricsPanelRef.setState({loadingRecord: false});
       }
@@ -393,6 +400,31 @@ class TopologyViewContainer extends Component {
         <CommonNotification flag="error" content={err.message}/>, '', toastOpt);
     });
   }
+
+  fetchKafkaOffset(kafkaSourceArr) {
+    let promiseArr=[];
+    _.map(kafkaSourceArr, (kSource) => {
+      promiseArr.push(MetricsREST.getKafkaTopicOffsetMetrics(this.topologyId,kSource.nodeId,this.state.startDate.toDate().getTime(),this.state.endDate.toDate().getTime()));
+    });
+
+    Promise.all(promiseArr).then((results) => {
+      _.map(results, (result) => {
+        if(result.responseMessage !== undefined){
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={result.responseMessage}/>, '', toastOpt);
+        }
+      });
+      let tempViewModeData = this.state.viewModeData;
+      _.map(kafkaSourceArr, (kSource,i) => {
+        const index = _.findIndex(tempViewModeData.sourceMetrics, (sMetric) => sMetric.component.id === kSource.nodeId);
+        if(index !== -1){
+          tempViewModeData.sourceMetrics[index].timeSeriesMetrics.kafkaLagOffset = results[i];
+        }
+      });
+      this.setState({viewModeData : tempViewModeData}, () => {this.syncComponentData();});
+    });
+  }
+
   syncComponentData() {
     let {viewModeData, fetchMetrics} = this.state;
     let {selectedComponentId, selectedComponent} = viewModeData;
