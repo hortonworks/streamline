@@ -27,6 +27,7 @@ public class LogSearchCriteria {
     private long to;
     private Integer start;
     private Integer limit;
+    private Boolean ascending;
 
     public String getAppId() {
         return appId;
@@ -60,8 +61,12 @@ public class LogSearchCriteria {
         return limit;
     }
 
+    public Boolean getAscending() {
+        return ascending;
+    }
+
     public LogSearchCriteria(String appId, String componentName, String logLevel, String searchString,
-                             long from, long to, Integer start, Integer limit) {
+                             long from, long to, Integer start, Integer limit, Boolean ascending) {
         this.appId = appId;
         this.componentNames = Collections.singletonList(componentName);
         this.logLevels = Collections.singletonList(logLevel);
@@ -70,10 +75,11 @@ public class LogSearchCriteria {
         this.to = to;
         this.start = start;
         this.limit = limit;
+        this.ascending = ascending;
     }
 
     public LogSearchCriteria(String appId, List<String> componentNames, List<String> logLevels, String searchString,
-                             long from, long to, Integer start, Integer limit) {
+                             long from, long to, Integer start, Integer limit, Boolean ascending) {
         this.appId = appId;
         this.componentNames = componentNames;
         this.logLevels = logLevels;
@@ -82,6 +88,7 @@ public class LogSearchCriteria {
         this.to = to;
         this.start = start;
         this.limit = limit;
+        this.ascending = ascending;
     }
 
     public static class Builder {
@@ -93,6 +100,7 @@ public class LogSearchCriteria {
         private long to;
         private Integer start;
         private Integer limit;
+        private Boolean ascending;
 
         public Builder(String appId, long from, long to) {
             this.appId = appId;
@@ -125,8 +133,14 @@ public class LogSearchCriteria {
             return this;
         }
 
+        public Builder setAscending(Boolean ascending) {
+            this.ascending = ascending;
+            return this;
+        }
+
         public LogSearchCriteria build() {
-            return new LogSearchCriteria(appId, componentNames, logLevels, searchString, from, to, start, limit);
+            return new LogSearchCriteria(appId, componentNames, logLevels, searchString, from, to,
+                    start, limit, ascending);
         }
     }
 }
