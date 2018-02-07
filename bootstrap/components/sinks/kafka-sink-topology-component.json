@@ -35,13 +35,22 @@
         "hint": "schema,override"
       },
       {
-        "uiName": "Writer schema version",
+        "uiName": "Writer Schema Branch",
+        "fieldName": "schemaBranch",
+        "isOptional": false,
+        "tooltip": "Schema branch to be used fetching for writer schema versions. Default branch is MASTER",
+        "type": "enumstring",
+        "options": [],
+        "hint": "dependsOn-topic,schemaBranch"
+      },
+      {
+        "uiName": "Writer Schema Version",
         "fieldName": "writerSchemaVersion",
         "isOptional": false,
         "tooltip": "Version of schema for topic to use for serializing the message. Default is the latest version for the schema",
         "type": "enumstring",
         "options": [],
-        "hint": "dependsOn-topic,schemaVersion"
+        "hint": "dependsOn-schemaBranch,schemaVersion"
       },
       {
         "uiName": "Security Protocol",
