@@ -41,8 +41,7 @@
         "tooltip": "Schema branch to be used fetching for writer schema versions. Default branch is MASTER",
         "type": "enumstring",
         "options": [],
-        "hint": "dependOn-topic,schemaBranch",
-        "defaultValue": "MASTER"
+        "hint": "dependsOn-topic,schemaBranch"
       },
       {
         "uiName": "Writer Schema Version",

@@ -41,8 +41,7 @@
         "tooltip": "Schema branch to be used fetching for reader schema versions. Default branch is MASTER",
         "type": "enumstring",
         "options": [],
-        "hint": "dependsOn-topic,schemaBranch",
-        "defaultValue": "MASTER"
+        "hint": "dependsOn-topic,schemaBranch"
       },
       {
         "uiName": "Reader Schema Version",
