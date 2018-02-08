@@ -141,6 +141,7 @@ public class AmbariInfraWithStormLogSearchTest {
             .setComponentNames(testComponentNames)
             .setStart(testStart)
             .setLimit(testLimit)
+            .setAscending(false)
             .build();
 
         LogSearchResult result = logSearch.search(logSearchCriteria);
@@ -175,7 +176,7 @@ public class AmbariInfraWithStormLogSearchTest {
         assertTrue(fqParam.containsValue(dateRangeValue));
 
         QueryParameter sortParam = request.queryParameter("sort");
-        assertTrue(sortParam.containsValue(COLUMN_NAME_LOG_TIME + "+asc"));
+        assertTrue(sortParam.containsValue(COLUMN_NAME_LOG_TIME + "+desc"));
 
         QueryParameter startParam = request.queryParameter("start");
         assertTrue(startParam.containsValue(String.valueOf(testStart)));
