@@ -14,7 +14,9 @@
   * limitations under the License.
  **/
 package com.hortonworks.streamline.streams.layout.component.rule.expression;
+
 import com.hortonworks.registries.common.Schema;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,8 +41,12 @@ public abstract class ExpressionTranslator implements ExpressionVisitor {
 
     @Override
     public void visit(FieldExpression fieldExpression) {
-        builder.append(fieldExpression.getValue().getName());
-        fields.add(fieldExpression.getValue());
+        Schema.Field field = fieldExpression.getValue();
+        if (!getTable().isEmpty()) {
+            builder.append(getTable()).append(".");
+        }
+        builder.append(getQuote()).append(field.getName()).append(getQuote());
+        fields.add(field);
     }
 
     @Override
@@ -80,6 +86,17 @@ public abstract class ExpressionTranslator implements ExpressionVisitor {
 
     public String getTranslatedExpression() {
         return builder.toString();
+    }
+
+    public String getUnquotedTranslatedExpression() {
+        String res = builder.toString();
+        if (!getTable().isEmpty()) {
+            res = res.replaceAll(getTable() + "\\.", "");
+        }
+        if (!getQuote().isEmpty()) {
+            res = res.replaceAll(getQuote(), "");
+        }
+        return res;
     }
 
     public List<Schema.Field> getFields() {
@@ -133,4 +150,12 @@ public abstract class ExpressionTranslator implements ExpressionVisitor {
      * language.
      */
     protected abstract String getOperator(Operator operator);
+
+    protected String getQuote() {
+        return StringUtils.EMPTY;
+    }
+
+    protected String getTable() {
+        return StringUtils.EMPTY;
+    }
 }
