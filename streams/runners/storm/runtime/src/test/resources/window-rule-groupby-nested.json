@@ -1,0 +1,159 @@
+{
+  "outputStreams": [
+    {
+      "id": "outputstream",
+      "schema": {
+        "fields": [
+          {
+            "name": "user",
+            "type": "NESTED",
+            "optional": false,
+            "fields": [
+              {
+                "name": "screen_name",
+                "type": "STRING",
+                "optional": false
+              }
+            ]
+          },
+          {
+            "name": "retweeted_COUNT",
+            "type": "LONG",
+            "optional": false
+          }
+        ]
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "rule_1",
+      "id": 1,
+      "ruleProcessorName": "rule_processsor_1",
+      "streams": [
+        "inputstream"
+      ],
+      "actions": [
+        {
+          "name": "notificationsink",
+          "outputFieldsAndDefaults": {
+            "body": "count is ${retweeted_COUNT}"
+          },
+          "outputStreams": ["outputstream"],
+          "notifierName": "email_notifier",
+          "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction"
+        }
+      ],
+      "description": "rule_1_desc",
+      "projection": {
+        "expressions": [
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.AggregateFunctionExpression",
+              "function": {
+                "name": "COUNT_FN",
+                "className": "com.hortonworks.streamline.streams.udaf.LongCount",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "retweeted",
+                    "type": "BOOLEAN",
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            "alias": "retweeted_COUNT"
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.MapFieldExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+              "value": {
+                "name": "user",
+                "type": "NESTED",
+                "optional": true,
+                "fields": [
+                  {
+                    "name": "name",
+                    "type": "STRING",
+                    "optional": false
+                  },
+                  {
+                    "name": "screen_name",
+                    "type": "STRING",
+                    "optional": false
+                  }
+                ]
+              }
+            },
+            "key": "screen_name"
+          }
+        ]
+      },
+      "condition": {
+        "expression": {
+          "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.BinaryExpression",
+          "operator": "GREATER_THAN_EQUALS_TO",
+          "first": {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+            "value": {
+              "name": "id",
+              "type": "INTEGER",
+              "optional": false
+            }
+          },
+          "second": {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.Literal",
+            "value": "0"
+          }
+        }
+      },
+      "groupBy": {
+        "expressions": [
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.MapFieldExpression",
+            "expression": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+              "value": {
+                "name": "user",
+                "type": "NESTED",
+                "optional": true,
+                "fields": [
+                  {
+                    "name": "name",
+                    "type": "STRING",
+                    "optional": false
+                  },
+                  {
+                    "name": "screen_name",
+                    "type": "STRING",
+                    "optional": false
+                  }
+                ]
+              }
+            },
+            "key": "screen_name"
+          }
+        ]
+      },
+      "having": null,
+      "window": {
+        "windowLength": {
+          "class": ".Window$Count",
+          "count": 20
+        },
+        "slidingInterval": {
+          "class": ".Window$Count",
+          "count": 20
+        },
+        "tsField": null,
+        "lagMs": 0
+      }
+    }
+  ]
+}

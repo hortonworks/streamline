@@ -21,6 +21,7 @@ import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.common.StreamlineEventImpl;
 import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.rule.expression.Window;
+import com.hortonworks.streamline.streams.runtime.processor.RuleProcessorRuntime;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;
@@ -34,7 +35,6 @@ import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.TupleImpl;
 import org.apache.storm.tuple.Values;
 import org.apache.storm.windowing.TupleWindow;
-import com.hortonworks.streamline.streams.runtime.processor.RuleProcessorRuntime;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,6 +43,7 @@ import org.junit.runner.RunWith;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -104,6 +105,24 @@ public class WindowRulesBoltTest {
                 Assert.assertEquals("min salary is 30, max salary is 100", fieldsAndValues1.get("body"));
                 Map<String, Object> fieldsAndValues2 = ((StreamlineEvent) tuples.get(1).get(0));
                 Assert.assertEquals("min salary is 110, max salary is 200", fieldsAndValues2.get("body"));
+            }
+        };
+    }
+
+    @Test
+    public void testGroupByNested() throws Exception {
+        Assert.assertTrue(doTest(readFile("/window-rule-groupby-nested.json"), 1, this::getNestedTuple));
+        new Verifications() {
+            {
+                String streamId;
+                Collection<Tuple> anchors;
+                List<List<Object>> tuples = new ArrayList<>();
+                mockCollector.emit(streamId = withCapture(), anchors = withCapture(), withCapture(tuples));
+                Assert.assertEquals("outputstream", streamId);
+                Map<String, Object> fieldsAndValues1 = ((StreamlineEvent) tuples.get(0).get(0));
+                Assert.assertEquals("count is 10", fieldsAndValues1.get("body"));
+                Map<String, Object> fieldsAndValues2 = ((StreamlineEvent) tuples.get(1).get(0));
+                Assert.assertEquals("count is 10", fieldsAndValues2.get("body"));
             }
         };
     }
@@ -271,6 +290,15 @@ public class WindowRulesBoltTest {
         StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(
                 ImmutableMap.of("id", 1, "intField", i, "longField", (long) i, "doubleField", (double)i)
         ).dataSourceId("dsrcid").build();
+        return new TupleImpl(mockContext, new Values(event), 1, "inputstream");
+    }
+
+    private Tuple getNestedTuple(int i) {
+        StreamlineEvent event = StreamlineEventImpl.builder().fieldsAndValues(
+                ImmutableMap.of("user", Collections.singletonMap("screen_name", "a" + i % 2), "id", i,
+                        "retweeted", true)
+        ).dataSourceId("dsrcid").build();
+
         return new TupleImpl(mockContext, new Values(event), 1, "inputstream");
     }
 }
