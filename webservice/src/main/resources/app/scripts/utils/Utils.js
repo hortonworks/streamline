@@ -728,6 +728,21 @@ const populateSchemaVersionOptions = function(resultArr,tempConfig){
   return tempConfig;
 };
 
+const populateSchemaBranchOptions = function(resultArr,tempConfig){
+  const branchOptions = _.map(resultArr.entities, (result) => {
+    return {
+      fieldName : result,
+      uiName : result
+    };
+  });
+  _.map(tempConfig, (config) => {
+    if(config.hint !== undefined && config.hint.indexOf('dependsOn-topic') !== -1){
+      config.options = branchOptions;
+    }
+  });
+  return tempConfig;
+};
+
 const validateReconfigFlag = function(arr){
   let errorArr=[];
   _.map(arr,(r) => {
@@ -812,6 +827,7 @@ export default {
   clusterField,
   matchStringInArr,
   populateSchemaVersionOptions,
+  populateSchemaBranchOptions,
   validateReconfigFlag,
   noSpecialCharString,
   getTimeDiffInMinutes,
