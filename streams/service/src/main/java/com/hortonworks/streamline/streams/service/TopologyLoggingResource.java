@@ -128,6 +128,7 @@ public class TopologyLoggingResource {
                                        @QueryParam("to") Long to,
                                        @QueryParam("start") Integer start,
                                        @QueryParam("limit") Integer limit,
+                                       @QueryParam("ascending") Boolean ascending,
                                        @Context SecurityContext securityContext) {
 
         SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
@@ -142,7 +143,7 @@ public class TopologyLoggingResource {
             }
 
             LogSearchCriteria criteria = new LogSearchCriteria(String.valueOf(topologyId),
-                    componentNames, logLevels, searchString, from, to, start, limit);
+                    componentNames, logLevels, searchString, from, to, start, limit, ascending);
 
             return WSUtils.respondEntity(logSearchService.search(topology, criteria), OK);
         }
