@@ -83,7 +83,8 @@ class LogSearch extends Component {
         host: Utils.getItemFromLocalStorage("logsearch:host") !== '' ? true : false,
         port: Utils.getItemFromLocalStorage("logsearch:port") !== '' ? true : false,
         logMessage: true
-      }
+      },
+      sort: Utils.getItemFromLocalStorage("logs:sort") !== '' ? Utils.getItemFromLocalStorage("logs:sort") : "asc"
     };
   }
   componentDidMount(){
@@ -129,6 +130,9 @@ class LogSearch extends Component {
         if(componentId !== ''){
           stateObj.selectedComponents = this.getSelectedViewModeComponent(componentId,nodes);
         }
+        stateObj.logLevels = _.filter(this.state.logLevelOptions, (log) => {
+          return (log.value === "INFO" || log.value === "WARN" || log.value === "ERROR");
+        });
         stateObj.topologyData = data;
         stateObj.components = nodes;
         this.setState(stateObj, () => {
@@ -145,14 +149,16 @@ class LogSearch extends Component {
       pageSize,
       activePage,
       selectedComponents,
-      searchString
+      searchString,
+      sort
     } = this.state;
     const id = this.props.routeParams.id;
     const queryParams = {
       from: startDate.valueOf(),
       to: endDate.valueOf(),
       start: (activePage-1)*pageSize,
-      limit: pageSize
+      limit: pageSize,
+      ascending: sort === "asc" ? true : false
     };
     if(logLevels.length > 0){
       queryParams['logLevel'] = logLevels.map((level) => {
@@ -262,9 +268,29 @@ class LogSearch extends Component {
       </span>
     </div>;
   }
+  onSortSelect = (eventKey) => {
+    let {sort} = this.state;
+    sort = eventKey;
+    localStorage.setItem("logs:sort", eventKey);
+    this.setState({loading : true, sort}, () => this.fetchLogs());
+  }
   getTableHeaderContent(){
-    const {showColumn} = this.state;
+    const {showColumn,sort} = this.state;
     const content = [];
+    const sortButton = <DropdownButton
+                          id="sort-select"
+                          title={<i className={sort==="asc" ? "fa fa-sort-amount-asc" : "fa fa-sort-amount-desc"} aria-hidden="true"></i>}
+                          pullRight={true}
+                          bsStyle="link"
+                          onSelect={this.onSortSelect}
+                          style={{"marginRight": "30px"}}>
+                          <MenuItem eventKey="asc">
+                            {sort === "asc" ? <i className="fa fa-check" aria-hidden="true"></i> : <i className="fa" aria-hidden="true"></i>} Ascending
+                          </MenuItem>
+                          <MenuItem eventKey="desc">
+                            {sort === "desc" ? <i className="fa fa-check" aria-hidden="true"></i> : <i className="fa" aria-hidden="true"></i>} Descending
+                          </MenuItem>
+                        </DropdownButton>;
     const columnSelectButton = (
       <DropdownButton
         id="column-select"
@@ -305,7 +331,7 @@ class LogSearch extends Component {
     showColumn.componentName ? content.push(<Th key="componentName" column="componentName">Component Name</Th>) : null;
     showColumn.host ? content.push(<Th key="host" column="host">Host</Th>) : null;
     showColumn.port ? content.push(<Th key="port" column="port">Port</Th>) : null;
-    showColumn.logMessage ? content.push(<Th key="logMessage" column="logMessage">Log Message<div className="pull-right">{columnSelectButton}</div></Th>) : null;
+    showColumn.logMessage ? content.push(<Th key="logMessage" column="logMessage">Log Message<div className="pull-right">{sortButton}{columnSelectButton}</div></Th>) : null;
     return content;
   }
   getRowContent(log,i){

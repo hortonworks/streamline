@@ -62,10 +62,12 @@ class TopologyViewMode extends Component {
     if(this.props.isAppRunning){
       this.getLogLevel();
     }
+    this.compUnMountFlag = false;
   }
   componentWillUnmount() {
     const container = document.querySelector('.content-wrapper');
     container.setAttribute("class", "content-wrapper");
+    this.compUnMountFlag = true;
   }
   componentWillReceiveProps(props) {
     if (props.stormClusterId) {
@@ -145,7 +147,7 @@ class TopologyViewMode extends Component {
         this.props.topologyLevelDetailsFunc('LOGS','None');
         this.props.topologyLevelDetailsFunc('DURATIONS',0);
       }
-      this.setState({displayTime: minutes+':'+seconds});
+      !this.compUnMountFlag ? this.setState({displayTime: minutes+':'+seconds}) : null;
     }.bind(this), interval);
   }
   changeMode = (value) => {
