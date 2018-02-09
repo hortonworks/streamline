@@ -21,12 +21,27 @@ package com.hortonworks.streamline.streams.sql;
 import com.hortonworks.streamline.streams.sql.parser.StreamlineParser;
 import com.hortonworks.streamline.streams.sql.parser.impl.ParseException;
 import org.apache.calcite.sql.SqlNode;
+import org.apache.calcite.tools.FrameworkConfig;
+import org.apache.calcite.tools.Frameworks;
+import org.apache.calcite.tools.Planner;
 import org.junit.Test;
 
 public class TestSqlParser {
   @Test
   public void testCreateTable() throws Exception {
     String sql = "CREATE EXTERNAL TABLE foo (bar INT) LOCATION 'kafka:///foo'";
+    parse(sql);
+  }
+
+  @Test
+  public void testCreateTableKeyword1() throws Exception {
+    String sql = "CREATE EXTERNAL TABLE foo (\"user\" INT) LOCATION 'kafka:///foo'";
+    parse(sql);
+  }
+
+  @Test
+  public void testCreateTableKeyword2() throws Exception {
+    String sql = "CREATE EXTERNAL TABLE \"user\" (bar INT) LOCATION 'kafka:///foo'";
     parse(sql);
   }
 
@@ -47,6 +62,19 @@ public class TestSqlParser {
     String sql = "CREATE FUNCTION foo AS 'com.hortonworks.streamline.stream.sql.MyUDF'";
     parse(sql);
   }
+
+  @Test
+  public void testSelectKeyword() throws Exception {
+    String sql = "SELECT STREAM \"from\", \"to\" from graph";
+    parse(sql);
+  }
+
+  @Test
+  public void testSelectKeyword2() throws Exception {
+    String sql = "SELECT STREAM COUNT_FN(RULETABLE.retweeted), RULETABLE.\"user\"['screen_name'] FROM RULETABLE  GROUP BY RULETABLE.windowid, RULETABLE.\"user\"['screen_name']";
+    parse(sql);
+  }
+
 
   private static SqlNode parse(String sql) throws Exception {
     StreamlineParser parser = new StreamlineParser(sql);

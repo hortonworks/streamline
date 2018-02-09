@@ -42,7 +42,6 @@ import java.util.List;
 
 import static com.hortonworks.streamline.streams.common.StreamlineEventImpl.GROUP_BY_TRIGGER_EVENT;
 import static com.hortonworks.streamline.streams.runtime.rule.condition.expression.StormSqlExpression.RULE_SCHEMA;
-import static com.hortonworks.streamline.streams.runtime.rule.condition.expression.StormSqlExpression.RULE_TABLE;
 
 /**
  * Evaluates the {@link ExpressionRuntime} for each {@code Input} using the provided {@code Storm} SQL Engine
@@ -93,9 +92,9 @@ public class SqlScript extends Script<StreamlineEvent, Collection<StreamlineEven
 
     private List<String> createQuery(StormSqlExpression expression) {
         final List<String> statements = new ArrayList<>(2);
-        statements.add(expression.createTable(RULE_SCHEMA, RULE_TABLE));
+        statements.add(expression.createTable(RULE_SCHEMA));
         statements.addAll(expression.createFunctions());
-        statements.add(expression.select(RULE_TABLE));
+        statements.add(expression.select());
         return statements;
     }
 
