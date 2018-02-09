@@ -50,10 +50,10 @@ public class StormSqlExpressionTest {
         Expression expression = new BinaryExpression(Operator.GREATER_THAN, function, new Literal("100"));
         condition.setExpression(expression);
         stormSqlExpression = new StormSqlExpression(condition);
-        assertEquals("CREATE EXTERNAL TABLE table (x INTEGER, y INTEGER) LOCATION 'schema:///table'",
-                     stormSqlExpression.createTable("schema", "table"));
-        assertEquals("SELECT STREAM x, y FROM table WHERE SUM(x, y) > 100",
-                     stormSqlExpression.select("table"));
+        assertEquals("CREATE EXTERNAL TABLE RULETABLE (\"x\" INTEGER, \"y\" INTEGER) LOCATION 'schema:///RULETABLE'",
+                     stormSqlExpression.createTable("schema"));
+        assertEquals("SELECT STREAM \"x\", \"y\" FROM RULETABLE WHERE SUM(RULETABLE.\"x\", RULETABLE.\"y\") > 100",
+                     stormSqlExpression.select());
         assertEquals(Arrays.asList("CREATE FUNCTION SUM AS 'com.hortonworks.streamline.MyPlus'"),
                      stormSqlExpression.createFunctions());
     }
@@ -68,10 +68,10 @@ public class StormSqlExpressionTest {
         Expression expression = new BinaryExpression(Operator.AND, expression1, expression2);
         condition.setExpression(expression);
         stormSqlExpression = new StormSqlExpression(condition);
-        assertEquals("CREATE EXTERNAL TABLE table (x INTEGER) LOCATION 'schema:///table'",
-                     stormSqlExpression.createTable("schema", "table"));
-        assertEquals("SELECT STREAM x FROM table WHERE x > 100 AND x > 50",
-                     stormSqlExpression.select("table"));
+        assertEquals("CREATE EXTERNAL TABLE RULETABLE (\"x\" INTEGER) LOCATION 'schema:///RULETABLE'",
+                     stormSqlExpression.createTable("schema"));
+        assertEquals("SELECT STREAM \"x\" FROM RULETABLE WHERE RULETABLE.\"x\" > 100 AND RULETABLE.\"x\" > 50",
+                     stormSqlExpression.select());
     }
 
     @Test
@@ -107,10 +107,10 @@ public class StormSqlExpressionTest {
         condition.setExpression(x_gt_100);
 
         stormSqlExpression = new StormSqlExpression(condition, projection);
-        assertEquals("CREATE EXTERNAL TABLE table (y INTEGER, x INTEGER) LOCATION 'schema:///table'",
-                     stormSqlExpression.createTable("schema", "table"));
-        assertEquals("SELECT STREAM y FROM table WHERE x > 100",
-                     stormSqlExpression.select("table"));
+        assertEquals("CREATE EXTERNAL TABLE RULETABLE (\"y\" INTEGER, \"x\" INTEGER) LOCATION 'schema:///RULETABLE'",
+                     stormSqlExpression.createTable("schema"));
+        assertEquals("SELECT STREAM RULETABLE.\"y\" FROM RULETABLE WHERE RULETABLE.\"x\" > 100",
+                     stormSqlExpression.select());
 
     }
 
@@ -130,10 +130,10 @@ public class StormSqlExpressionTest {
         Projection projection = new Projection();
         projection.setExpressions(ImmutableList.<Expression>of(function));
         stormSqlExpression = new StormSqlExpression(condition, projection);
-        assertEquals("CREATE EXTERNAL TABLE table (x INTEGER, y INTEGER, z INTEGER) LOCATION 'schema:///table'",
-                     stormSqlExpression.createTable("schema", "table"));
-        assertEquals("SELECT STREAM SUM(x, y) FROM table WHERE z > 100",
-                     stormSqlExpression.select("table"));
+        assertEquals("CREATE EXTERNAL TABLE RULETABLE (\"x\" INTEGER, \"y\" INTEGER, \"z\" INTEGER) LOCATION 'schema:///RULETABLE'",
+                     stormSqlExpression.createTable("schema"));
+        assertEquals("SELECT STREAM SUM(RULETABLE.\"x\", RULETABLE.\"y\") FROM RULETABLE WHERE RULETABLE.\"z\" > 100",
+                     stormSqlExpression.select());
         assertEquals(Arrays.asList("CREATE FUNCTION SUM AS 'com.hortonworks.streamline.MyPlus'"),
                      stormSqlExpression.createFunctions());
     }
@@ -168,10 +168,10 @@ public class StormSqlExpressionTest {
         projection.setExpressions(ImmutableList.<Expression>of(id, min_salary));
         stormSqlExpression = new StormSqlExpression(condition, projection, groupBy_id, having_id_gt_2);
 
-        assertEquals("CREATE EXTERNAL TABLE table (id INTEGER PRIMARY KEY, salary INTEGER) LOCATION 'schema:///table'",
-                     stormSqlExpression.createTable("schema", "table"));
-        assertEquals("SELECT STREAM id, MIN(salary) FROM table WHERE id > 0 GROUP BY id HAVING id > 2 AND MAX(salary) > 5",
-                     stormSqlExpression.select("table"));
+        assertEquals("CREATE EXTERNAL TABLE RULETABLE (\"id\" INTEGER PRIMARY KEY, \"salary\" INTEGER) LOCATION 'schema:///RULETABLE'",
+                     stormSqlExpression.createTable("schema"));
+        assertEquals("SELECT STREAM RULETABLE.\"id\", MIN(RULETABLE.\"salary\") FROM RULETABLE WHERE RULETABLE.\"id\" > 0 GROUP BY RULETABLE.\"id\" HAVING RULETABLE.\"id\" > 2 AND MAX(RULETABLE.\"salary\") > 5",
+                     stormSqlExpression.select());
 
     }
 
@@ -195,11 +195,11 @@ public class StormSqlExpressionTest {
         projection.setExpressions(ImmutableList.<Expression>of(min_salary));
         stormSqlExpression = new StormSqlExpression(condition, projection, groupBy, null);
 
-        assertEquals("CREATE EXTERNAL TABLE table (salary INTEGER, id INTEGER, deptid INTEGER PRIMARY KEY, " +
-                             "empid INTEGER) LOCATION 'schema:///table'",
-                     stormSqlExpression.createTable("schema", "table"));
-        assertEquals("SELECT STREAM MIN(salary) FROM table WHERE id > 0 GROUP BY deptid,empid",
-                     stormSqlExpression.select("table"));
+        assertEquals("CREATE EXTERNAL TABLE RULETABLE (\"salary\" INTEGER, \"id\" INTEGER, \"deptid\" INTEGER PRIMARY KEY, " +
+                             "\"empid\" INTEGER) LOCATION 'schema:///RULETABLE'",
+                     stormSqlExpression.createTable("schema"));
+        assertEquals("SELECT STREAM MIN(RULETABLE.\"salary\") FROM RULETABLE WHERE RULETABLE.\"id\" > 0 GROUP BY RULETABLE.\"deptid\",RULETABLE.\"empid\"",
+                     stormSqlExpression.select());
 
     }
 }

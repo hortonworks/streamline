@@ -43,7 +43,7 @@ import java.util.Set;
 public class StormSqlExpression extends ExpressionRuntime {
     private static final Logger LOG = LoggerFactory.getLogger(StormSqlExpression.class);
     public static final String RULE_SCHEMA = "RULESCHEMA";  // _ underscores not supported by Storm SQL framework
-    public static final String RULE_TABLE = "RULETABLE";
+    private static final String RULE_TABLE = "RULETABLE";
     private static final String CREATE_EXTERNAL_TABLE = "CREATE EXTERNAL TABLE ";
     private static final String CREATE_FUNCTION = "CREATE FUNCTION ";
     private static final String SELECT_STREAM = "SELECT STREAM ";
@@ -53,6 +53,7 @@ public class StormSqlExpression extends ExpressionRuntime {
     private static final String HAVING = "HAVING ";
     private static final String LOCATION = "LOCATION";
     private static final String AS = "AS";
+    private static final String QUOTE = "\"";
     private final LinkedHashSet<Schema.Field> stormSqlFields = new LinkedHashSet<>();
     private final List<Schema.Field> groupByFields = new ArrayList<>();
     private final LinkedHashSet<FunctionExpression.Function> functions = new LinkedHashSet<>();
@@ -87,7 +88,7 @@ public class StormSqlExpression extends ExpressionRuntime {
                 if (!translator.getAliases().isEmpty()) {
                     outputFields.add(translator.getAliases().get(0));
                 } else {
-                    outputFields.add(translator.getTranslatedExpression());
+                    outputFields.add(translator.getUnquotedTranslatedExpression());
                 }
             }
         }
@@ -161,16 +162,16 @@ public class StormSqlExpression extends ExpressionRuntime {
      RTS - Rules Table Schema
      RT - Rules Table
     */
-    public String createTable(String schemaName, String tableName) {
-        return CREATE_EXTERNAL_TABLE + tableName + " (" + buildCreateDefinition() + ") " +
-                LOCATION + " '" + schemaName + ":///" + tableName + "'";
+    public String createTable(String schemaName) {
+        return CREATE_EXTERNAL_TABLE + RULE_TABLE + " (" + buildCreateDefinition() + ") " +
+                LOCATION + " '" + schemaName + ":///" + RULE_TABLE + "'";
     }
 
     // "SELECT F1, F2, F3 FROM RT WHERE F1 < 2 AND F2 < 3 AND F3 < 4"
-    public String select(String tableName) {
+    public String select() {
         StringBuilder select = new StringBuilder(SELECT_STREAM);
         select.append(buildSelectExpression()).append(" ")
-                .append(FROM).append(tableName).append(" ");
+                .append(FROM).append(RULE_TABLE).append(" ");
         if (!StringUtils.isEmpty(expression)) {
             select.append(WHERE).append(asString());
         }
@@ -193,7 +194,7 @@ public class StormSqlExpression extends ExpressionRuntime {
             if (++count > 1) {
                 builder.append(", ");
             }
-            builder.append(fieldName).append(" ")
+            builder.append(QUOTE).append(fieldName).append(QUOTE).append(" ")
                     .append(getType(field));
             if (!groupByFields.isEmpty() && groupByFields.get(0).equals(field)) {
                 /* for monotonicity of group by field, make the first group by field a "primary key"
@@ -212,7 +213,7 @@ public class StormSqlExpression extends ExpressionRuntime {
         } else {
             List<String> fields = new ArrayList<>();
             for (Schema.Field field : stormSqlFields) {
-                fields.add(field.getName());
+                fields.add(QUOTE + field.getName() + QUOTE);
             }
             result = Joiner.on(", ").join(fields);
         }
@@ -243,6 +244,16 @@ public class StormSqlExpression extends ExpressionRuntime {
                             String.format("Operator [%s] not supported. List of supported operators: %s",
                                           operator, Arrays.toString(Operator.values())));
             }
+        }
+
+        @Override
+        protected String getQuote() {
+            return QUOTE;
+        }
+
+        @Override
+        protected String getTable() {
+            return RULE_TABLE;
         }
     }
 
