@@ -316,6 +316,8 @@ public class TopologyViewModeResource {
         private static final String METRIC_NAME_COMPLETE_LATENCY = "completeLatency";
         private static final String METRIC_NAME_EXECUTE_LATENCY = "executeLatency";
 
+        private static final double EPSILON = 0.0000001d;
+
         private final Long emitted;
         private final Long acked;
         private final Long failed;
@@ -496,17 +498,20 @@ public class TopologyViewModeResource {
         }
 
         private static double aggregateProcessLatency(TopologyTimeSeriesMetrics.TimeSeriesComponentMetric metrics) {
-            return metrics.getProcessedTime().values().stream().mapToDouble(v -> v).average().orElse(0.0d);
+            return metrics.getProcessedTime().values().stream()
+                    .filter(ComponentMetricSummary::doubleNotEqualsToZero).mapToDouble(v -> v).average().orElse(0.0d);
         }
 
         private static double aggregateExecuteLatency(TopologyTimeSeriesMetrics.TimeSeriesComponentMetric metrics) {
             return metrics.getMisc().getOrDefault(StormMappedMetric.executeTime.name(), Collections.emptyMap())
-                    .values().stream().mapToDouble(v -> v).average().orElse(0.0d);
+                    .values().stream()
+                    .filter(ComponentMetricSummary::doubleNotEqualsToZero).mapToDouble(v -> v).average().orElse(0.0d);
         }
 
         private static double aggregateCompleteLatency(TopologyTimeSeriesMetrics.TimeSeriesComponentMetric metrics) {
             return metrics.getMisc().getOrDefault(StormMappedMetric.completeLatency.name(), Collections.emptyMap())
-                    .values().stream().mapToDouble(v -> v).average().orElse(0.0d);
+                    .values().stream()
+                    .filter(ComponentMetricSummary::doubleNotEqualsToZero).mapToDouble(v -> v).average().orElse(0.0d);
         }
 
         private static long aggregateEmitted(TopologyTimeSeriesMetrics.TimeSeriesComponentMetric metrics) {
@@ -516,6 +521,10 @@ public class TopologyViewModeResource {
         private static long aggregatedAcked(TopologyTimeSeriesMetrics.TimeSeriesComponentMetric metrics) {
             return metrics.getMisc().getOrDefault(METRIC_NAME_ACK_COUNT, Collections.emptyMap())
                     .values().stream().mapToLong(Double::longValue).sum();
+        }
+
+        private static boolean doubleNotEqualsToZero(Double v) {
+            return v != null && Math.abs(v - 0) >= EPSILON;
         }
     }
 
