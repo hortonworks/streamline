@@ -13,393 +13,505 @@
 **/
 
 import React, {Component} from 'react';
-import ReactCodemirror from 'react-codemirror';
-import CodeMirror from 'codemirror';
-import 'codemirror/mode/sql/sql';
 import {Select2 as Select,Creatable} from '../../../utils/SelectUtils';
-import {Panel, Radio, OverlayTrigger, Popover} from 'react-bootstrap';
+import {Panel, Radio, OverlayTrigger, Popover,Alert} from 'react-bootstrap';
 import TopologyREST from '../../../rest/TopologyREST';
 import FSReactToastr from '../../../components/FSReactToastr';
 import CommonNotification from '../../../utils/CommonNotification';
-import {toastOpt} from '../../../utils/Constants';
+import {toastOpt,sqlKeywords} from '../../../utils/Constants';
 import _ from 'lodash';
 import ProcessorUtils from '../../../utils/ProcessorUtils';
+import CommonCodeMirror from '../../../components/CommonCodeMirror';
+import Utils from '../../../utils/Utils';
 
 class RuleFormula extends Component {
   constructor(props) {
     super(props);
-    this.operators = [
-      {
-        label: "EQUALS",
-        name: "="
-      }, {
-        label: "NOT_EQUAL",
-        name: "<>"
-      }, {
-        label: "GREATER_THAN",
-        name: ">"
-      }, {
-        label: "LESS_THAN",
-        name: "<"
-      }, {
-        label: "GREATER_THAN_EQUALS_TO",
-        name: ">="
-      }, {
-        label: "LESS_THAN_EQUALS_TO",
-        name: "<="
-      }
-    ];
-    this.logicalOperator = [
-      {
-        name: "AND"
-      }, {
-        name: "OR"
-      }
-    ];
-    let data = [
-      {
-        field1: null,
-        operator: null,
-        field2: null,
-        keyPath1: null,
-        keyPath2: null
-      }
-    ];
-    let fields = [];
+    // this.operators = [
+    //   {
+    //     label: "EQUALS",
+    //     name: "="
+    //   }, {
+    //     label: "NOT_EQUAL",
+    //     name: "<>"
+    //   }, {
+    //     label: "GREATER_THAN",
+    //     name: ">"
+    //   }, {
+    //     label: "LESS_THAN",
+    //     name: "<"
+    //   }, {
+    //     label: "GREATER_THAN_EQUALS_TO",
+    //     name: ">="
+    //   }, {
+    //     label: "LESS_THAN_EQUALS_TO",
+    //     name: "<="
+    //   }
+    // ];
+    // this.logicalOperator = [
+    //   {
+    //     name: "AND"
+    //   }, {
+    //     name: "OR"
+    //   }
+    // ];
+    // let data = [
+    //   {
+    //     field1: null,
+    //     operator: null,
+    //     field2: null,
+    //     keyPath1: null,
+    //     keyPath2: null
+    //   }
+    // ];
+    this.fields = [];
     props.fields.map((f) => {
-      fields = [
-        ...fields,
+      this.fields = [
         ...f.fields
       ];
     });
-    this.fieldsArr = [];
-    this.getSchemaFields(fields, 0);
+    // this.fieldsArr = [];
+    // this.getSchemaFields(fields, 0);
+    // this.state = {
+    //   data: data,
+    //   fields: this.fieldsArr,
+    //   fields2Arr: JSON.parse(JSON.stringify(this.fieldsArr)),
+    //   sqlStr: props.sql,
+    //   show: false
+    // };
+    // this.state = {
+    //   data: data,
+    //   fields: this.fieldsArr,
+    //   fields2Arr: JSON.parse(JSON.stringify(this.fieldsArr)),
+    //   sqlStr: props.sql,
+    //   show: false
+    // };
     this.state = {
-      data: data,
-      fields: this.fieldsArr,
-      fields2Arr: JSON.parse(JSON.stringify(this.fieldsArr)),
-      sqlStr: props.sql,
+      data: '',
+      errorMsg: '',
       show: false
     };
+    this.populateCodeMirrorHintOptions(this.fields);
   }
+
+  populateCodeMirrorHintOptions(fields){
+    const {udfList} = this.props;
+    this.hintOptions=[];
+    // Predefined Sql keywords from CONSTRANT for hints...
+    Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(sqlKeywords,"SQL"));
+    // FUNCTION from UDFLIST for hints...
+    Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(udfList,"FUNCTION"));
+    // arguments from field list for hints...
+    Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(fields,"ARGS"));
+  }
+
   componentDidMount() {
     if (this.props.sql) {
-      this.prepareFormula(this.props.sql, this.props.condition);
+      this.prepopulate();
+      // this.prepareFormula(this.props.sql, this.props.condition);
     }
   }
 
-  getSchemaFields(fields, level, keyPath = []) {
-    fields.map((field) => {
-      let obj = {
-        name: field.name,
-        optional: field.optional,
-        type: field.type,
-        level: level,
-        keyPath: ''
-      };
-
-      if (field.type === 'NESTED') {
-        obj.disabled = true;
-        let _keypath = keyPath.slice();
-        _keypath.push(field.name);
-        this.fieldsArr.push(obj);
-        this.getSchemaFields(field.fields, level + 1, _keypath);
-      } else {
-        obj.disabled = false;
-        obj.keyPath = keyPath.join('.');
-        this.fieldsArr.push(obj);
-      }
-
-    });
+  prepopulate = () => {
+    const {condition} = this.props;
+    this.setState({data : condition});
   }
 
-  renderFieldOption(node) {
-    let styleObj = {
-      paddingLeft: (10 * node.level) + "px"
-    };
-    if (node.disabled) {
-      styleObj.fontWeight = "bold";
-    }
-    return (
-      <span style={styleObj}>{node.name}</span>
-    );
-  }
+  // getSchemaFields(fields, level, keyPath = []) {
+  //   fields.map((field) => {
+  //     let obj = {
+  //       name: field.name,
+  //       optional: field.optional,
+  //       type: field.type,
+  //       level: level,
+  //       keyPath: ''
+  //     };
+  //
+  //     if (field.type === 'NESTED') {
+  //       obj.disabled = true;
+  //       let _keypath = keyPath.slice();
+  //       _keypath.push(field.name);
+  //       this.fieldsArr.push(obj);
+  //       this.getSchemaFields(field.fields, level + 1, _keypath);
+  //     } else {
+  //       obj.disabled = false;
+  //       obj.keyPath = keyPath.join('.');
+  //       this.fieldsArr.push(obj);
+  //     }
+  //
+  //   });
+  // }
 
-  prepareFormula(sqlStr, conditionStr) {
-    let arr = [];
-    let t = [];
-    if (conditionStr) {
-      arr = conditionStr.split(' ');
-      arr.map((d) => {
-        if (d !== '') {
-          t.push(d);
-        }
-      });
-    } else {
-      arr = sqlStr.split(' ');
-      let index = arr.findIndex(function(d) {
-        return d.toLowerCase().indexOf('where') !== -1;
-      });
-      arr.map((d, i) => {
-        if (i > index) {
-          if (d !== '') {
-            if (isNaN(parseInt(d, 10))) {
-              let names = d.split('.');
-              if (names.length > 1) {
-                t.push(names[names.length - 1]);
-              } else {
-                t.push(d);
-              }
-            } else {
-              t.push(d);
-            }
-          }
-        }
-      });
-    }
-    let dummyArr = ['field1', 'operator', 'field2', 'logicalOp'];
-    let j = 0;
-    let result = [];
-    let obj = {};
-    for (let i = 0; i < t.length; i++) {
-      obj[dummyArr[j]] = t[i];
-      if (j == 2) {
-        result.push(obj);
-        obj = {};
-        j += 1;
-      } else if (j == 3) {
-        obj[dummyArr[j]] = t[i];
-        j = 0;
-      } else {
-        j += 1;
-      }
-    }
-    let fields = this.state.fields2Arr;
-    result.map((f) => {
-      if (fields.indexOf((field) => {
-        return field.field2 === f.field2;
-      }) === -1) {
-        fields.push({name: f.field2});
-      }
-    });
-    this.setState({data: result, show: true, fields2Arr: fields});
-  }
-  addRuleRow(d, i) {
-    let {fields, fields2Arr} = this.state;
-    return (
-      <div key={i + 1} className="row form-group">
-        <div className="col-sm-2">
-          <Select placeholder="Logical operators" value={d.logicalOp} options={this.logicalOperator} onChange={this.handleChange.bind(this, 'logicalOp', i)} labelKey="name" valueKey="name"/>
-        </div>
-        <div className="col-sm-3">
-          <Select placeholder="Select field name" value={ProcessorUtils.getNestedKeyFromGroup(d.field1)} options={fields} onChange={this.handleChange.bind(this, 'field1', i)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
-        </div>
-        <div className="col-sm-3">
-          <Select placeholder="Select operations" value={d.operator} options={this.operators} onChange={this.handleChange.bind(this, 'operator', i)} labelKey="label" valueKey="name"/>
-        </div>
-        <div className="col-sm-3">
-          <Creatable placeholder="Select field name" value={ProcessorUtils.getNestedKeyFromGroup(d.field2)} options={fields2Arr} onChange={this.handleChange.bind(this, 'field2', i)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
-       </div>
-        <div className="col-sm-1">
-          <button className="btn btn-danger btn-sm" type="button" onClick={this.handleRowDelete.bind(this, i)}>
-            <i className="fa fa-times"></i>
-          </button>
-        </div>
-      </div>
-    );
-  }
-  firstRow(d) {
-    let {fields, fields2Arr} = this.state;
-    return (
-      <div key={1} className="row form-group">
-        <div className="col-sm-2">
-          <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Create Query</Popover>}>
-            <label>Create Query
-              <span className="text-danger">*</span>
-            </label>
-          </OverlayTrigger>
-        </div>
-        <div className="col-sm-3">
-          <Select placeholder="Select field name" value={d.field1} options={fields} onChange={this.handleChange.bind(this, 'field1', 0)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
-        </div>
-        <div className="col-sm-3">
-         <Select placeholder="Select operations" value={d.operator} options={this.operators} onChange={this.handleChange.bind(this, 'operator', 0)} labelKey="label" valueKey="name"/>
-        </div>
-        <div className="col-sm-3">
-          <Creatable placeholder="Select field name" value={d.field2} options={fields2Arr} onChange={this.handleChange.bind(this, 'field2', 0)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
-        </div>
-        <div className="col-sm-1">
-          <button className="btn btn-success btn-sm" type="button" onClick={this.handleRowAdd.bind(this)}>
-            <i className="fa fa-plus"></i>
-          </button>
-        </div>
-      </div>
-    );
-  }
-  handleRowDelete(i) {
-    let {data} = this.state;
-    data.splice(i, 1);
-    this.setState({data: data});
-  }
-  handleRowAdd() {
-    let {data} = this.state;
-    data.push({
-      field1: null,
-      operator: null,
-      field2: null,
-      logicalOp: null,
-      keyPath1: null,
-      keyPath2: null
-    });
-    this.setState({data: data});
-  }
-  handleChange(name, index, obj) {
-    let {data} = this.state;
-    data[index][name] = obj
-      ? obj.name
-      : null;
-    if (name == 'field1') {
-      data[index]['keyPath1'] = obj
-        ? obj.keyPath
-        : null;
-    } else if (name == 'field2') {
-      data[index]['keyPath2'] = obj
-        ? obj.keyPath
-        : null;
-    }
-    this.setState({data: data, show: true});
-  }
-  getOp(op) {
-    switch (op) {
-    case 'EQUALS':
-      return '=';
-      break;
-    case 'NOT_EQUAL':
-      return '<>';
-      break;
-    case 'GREATER_THAN':
-      return '>';
-      break;
-    case 'LESS_THAN':
-      return '<';
-      break;
-    case 'GREATER_THAN_EQUALS_TO':
-      return '>=';
-      break;
-    case 'LESS_THAN_EQUALS_TO':
-      return '<=';
-      break;
-    case 'AND':
-      return 'AND';
-      break;
-    case 'OR':
-      return 'OR';
-      break;
-    }
-  }
-  previewQuery() {
-    let {data, fields, fields2Arr} = this.state;
+  // renderFieldOption(node) {
+  //   let styleObj = {
+  //     paddingLeft: (10 * node.level) + "px"
+  //   };
+  //   if (node.disabled) {
+  //     styleObj.fontWeight = "bold";
+  //   }
+  //   return (
+  //     <span style={styleObj}>{node.name}</span>
+  //   );
+  // }
+
+  // prepareFormula(sqlStr, conditionStr) {
+  //   let arr = [];
+  //   let t = [];
+  //   if (conditionStr) {
+  //     arr = conditionStr.split(' ');
+  //     arr.map((d) => {
+  //       if (d !== '') {
+  //         t.push(d);
+  //       }
+  //     });
+  //   } else {
+  //     arr = sqlStr.split(' ');
+  //     let index = arr.findIndex(function(d) {
+  //       return d.toLowerCase().indexOf('where') !== -1;
+  //     });
+  //     arr.map((d, i) => {
+  //       if (i > index) {
+  //         if (d !== '') {
+  //           if (isNaN(parseInt(d, 10))) {
+  //             let names = d.split('.');
+  //             if (names.length > 1) {
+  //               t.push(names[names.length - 1]);
+  //             } else {
+  //               t.push(d);
+  //             }
+  //           } else {
+  //             t.push(d);
+  //           }
+  //         }
+  //       }
+  //     });
+  //   }
+  //   let dummyArr = ['field1', 'operator', 'field2', 'logicalOp'];
+  //   let j = 0;
+  //   let result = [];
+  //   let obj = {};
+  //   for (let i = 0; i < t.length; i++) {
+  //     obj[dummyArr[j]] = t[i];
+  //     if (j == 2) {
+  //       result.push(obj);
+  //       obj = {};
+  //       j += 1;
+  //     } else if (j == 3) {
+  //       obj[dummyArr[j]] = t[i];
+  //       j = 0;
+  //     } else {
+  //       j += 1;
+  //     }
+  //   }
+  //   let fields = this.state.fields2Arr;
+  //   result.map((f) => {
+  //     if (fields.indexOf((field) => {
+  //       return field.field2 === f.field2;
+  //     }) === -1) {
+  //       fields.push({name: f.field2});
+  //     }
+  //   });
+  //   this.setState({data: result, show: true, fields2Arr: fields});
+  // }
+  // addRuleRow(d, i) {
+  //   let {fields, fields2Arr} = this.state;
+  //   return (
+  //     <div key={i + 1} className="row form-group">
+  //       <div className="col-sm-2">
+  //         <Select placeholder="Logical operators" value={d.logicalOp} options={this.logicalOperator} onChange={this.handleChange.bind(this, 'logicalOp', i)} labelKey="name" valueKey="name"/>
+  //       </div>
+  //       <div className="col-sm-3">
+  //         <Select placeholder="Select field name" value={ProcessorUtils.getNestedKeyFromGroup(d.field1)} options={fields} onChange={this.handleChange.bind(this, 'field1', i)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+  //       </div>
+  //       <div className="col-sm-3">
+  //         <Select placeholder="Select operations" value={d.operator} options={this.operators} onChange={this.handleChange.bind(this, 'operator', i)} labelKey="label" valueKey="name"/>
+  //       </div>
+  //       <div className="col-sm-3">
+  //         <Creatable placeholder="Select field name" value={ProcessorUtils.getNestedKeyFromGroup(d.field2)} options={fields2Arr} onChange={this.handleChange.bind(this, 'field2', i)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+  //      </div>
+  //       <div className="col-sm-1">
+  //         <button className="btn btn-danger btn-sm" type="button" onClick={this.handleRowDelete.bind(this, i)}>
+  //           <i className="fa fa-times"></i>
+  //         </button>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+  // firstRow(d) {
+  //   let {fields, fields2Arr} = this.state;
+  //   return (
+  //     <div key={1} className="row form-group">
+  //       <div className="col-sm-2">
+  //         <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Create Query</Popover>}>
+  //           <label>Create Query
+  //             <span className="text-danger">*</span>
+  //           </label>
+  //         </OverlayTrigger>
+  //       </div>
+  //       <div className="col-sm-3">
+  //         <Select placeholder="Select field name" value={d.field1} options={fields} onChange={this.handleChange.bind(this, 'field1', 0)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+  //       </div>
+  //       <div className="col-sm-3">
+  //        <Select placeholder="Select operations" value={d.operator} options={this.operators} onChange={this.handleChange.bind(this, 'operator', 0)} labelKey="label" valueKey="name"/>
+  //       </div>
+  //       <div className="col-sm-3">
+  //         <Creatable placeholder="Select field name" value={d.field2} options={fields2Arr} onChange={this.handleChange.bind(this, 'field2', 0)} labelKey="name" valueKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+  //       </div>
+  //       <div className="col-sm-1">
+  //         <button className="btn btn-success btn-sm" type="button" onClick={this.handleRowAdd.bind(this)}>
+  //           <i className="fa fa-plus"></i>
+  //         </button>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+  // handleRowDelete(i) {
+  //   let {data} = this.state;
+  //   data.splice(i, 1);
+  //   this.setState({data: data});
+  // }
+  // handleRowAdd() {
+  //   let {data} = this.state;
+  //   data.push({
+  //     field1: null,
+  //     operator: null,
+  //     field2: null,
+  //     logicalOp: null,
+  //     keyPath1: null,
+  //     keyPath2: null
+  //   });
+  //   this.setState({data: data});
+  // }
+  // handleChange(name, index, obj) {
+  //   let {data} = this.state;
+  //   data[index][name] = obj
+  //     ? obj.name
+  //     : null;
+  //   if (name == 'field1') {
+  //     data[index]['keyPath1'] = obj
+  //       ? obj.keyPath
+  //       : null;
+  //   } else if (name == 'field2') {
+  //     data[index]['keyPath2'] = obj
+  //       ? obj.keyPath
+  //       : null;
+  //   }
+  //   this.setState({data: data, show: true});
+  // }
+  // getOp(op) {
+  //   switch (op) {
+  //   case 'EQUALS':
+  //     return '=';
+  //     break;
+  //   case 'NOT_EQUAL':
+  //     return '<>';
+  //     break;
+  //   case 'GREATER_THAN':
+  //     return '>';
+  //     break;
+  //   case 'LESS_THAN':
+  //     return '<';
+  //     break;
+  //   case 'GREATER_THAN_EQUALS_TO':
+  //     return '>=';
+  //     break;
+  //   case 'LESS_THAN_EQUALS_TO':
+  //     return '<=';
+  //     break;
+  //   case 'AND':
+  //     return 'AND';
+  //     break;
+  //   case 'OR':
+  //     return 'OR';
+  //     break;
+  //   }
+  // }
+  // previewQuery() {
+  //   let {data, fields, fields2Arr} = this.state;
+  //   let streamName = this.props.fields[0].streamId;
+  //   this.sqlStrQuery = "select * from " + streamName + " where ";
+  //   this.conditionStr = '';
+  //   this.ruleCondition = '';
+  //   this.validSQL = true;
+  //   return (
+  //     <pre className="query-preview" key={1}>
+	// 		{
+  //         data.map((d,i)=>{
+  //           let field1_name = '';
+  //           let field2_name = '';
+  //           if(d.keyPath1 && d.keyPath1.length > 0) {
+  //             var keysArr1 = d.keyPath1.split(".");
+  //             if(keysArr1.length > 0) {
+  //               keysArr1.map((k, n)=>{
+  //                 if(n === 0) {
+  //                   field1_name += k;
+  //                 } else {
+  //                   field1_name += "['" + k + "']";
+  //                 }
+  //               });
+  //               field1_name += "['" + d.field1 + "']";
+  //             } else {
+  //               field1_name += d.keyPath1 + "['" + d.field1 + "']";
+  //             }
+  //           } else {
+  //             field1_name += d.field1 == null ? '' : d.field1;
+  //           }
+  //           if(d.keyPath2 && d.keyPath2.length > 0) {
+  //             var keysArr2 = d.keyPath2.split(".");
+  //             if(keysArr2.length > 0) {
+  //               keysArr2.map((k, n)=>{
+  //                 if(n === 0) {
+  //                   field2_name += k;
+  //                 } else {
+  //                   field2_name += "['" + k + "']";
+  //                 }
+  //               });
+  //               field2_name += "['" + d.field2 + "']";
+  //             } else {
+  //               field2_name += d.keyPath2 + "['" + d.field2 + "']";
+  //             }
+  //           } else {
+  //             field2_name += d.field2 == null ? '' : d.field2;
+  //           }
+  //           let field1 = d.keyPath1 && d.keyPath1.length > 0 ? (d.keyPath1 + '.' + d.field1) : d.field1;
+  //           let field2 = d.keyPath2 && d.keyPath2.length > 0 ? (d.keyPath2 + '.' + d.field2) : d.field2;
+  //           if(d.hasOwnProperty('logicalOp')){
+  //             this.sqlStrQuery += ' ' + d.logicalOp + ' ' + field1 + ' ' + d.operator + ' ' + field2;
+  //             this.conditionStr += ' ' + d.logicalOp + ' ' + field1 + ' ' + d.operator + ' ' + field2;
+  //             this.ruleCondition += ' ' + d.logicalOp + ' ' + field1_name + ' ' + d.operator + ' ' + field2_name;
+  //             return[
+  //               this.renderOperator(d.logicalOp, i+'.1'),
+  //               this.renderFieldName(field1_name, i),
+  //               this.renderOperator(d.operator, i),
+  //               this.renderFieldName(field2_name, i)
+  //             ];
+  //           } else {
+  //             this.sqlStrQuery += field1 + ' ' + d.operator + ' ' + field2;
+  //             this.conditionStr += field1 + ' ' + d.operator + ' ' + field2;
+  //             this.ruleCondition += field1_name + ' ' + d.operator + ' ' + field2_name;
+  //             return[
+  //               this.renderFieldName(field1_name, i),
+  //               this.renderOperator(d.operator, i),
+  //               this.renderFieldName(field2_name, i)
+  //             ];
+  //           }
+  //         })
+  //       }
+	// 		</pre>
+  //   );
+  // }
+  // renderFieldName(name, index) {
+  //   if (!name) {
+  //     return this.renderMissing(name, index + '.2', 'Field');
+  //   }
+  //   return (
+  //     <span className="text-primary">
+  //       {name} </span>
+  //   );
+  // }
+  // renderOperator(name, index) {
+  //   if (!name) {
+  //     return this.renderMissing(name, index + '.3', 'Operator');
+  //   }
+  //   return (
+  //     <span className="text-danger">
+  //       {name} </span>
+  //   );
+  // }
+  // renderMissing(name, index, type) {
+  //   this.validSQL = false;
+  //   return (
+  //     <span className="text-muted">
+  //       Missing {type} </span>
+  //   );
+  // }
+
+  // validate(funcs, arg, string){
+  // 	const defaults = {
+  // 		BOOLEAN: true,
+  // 		BYTE: 0,
+  // 		SHORT: 0,
+  // 		INTEGER: 0,
+  // 		LONG: 0,
+  // 		FLOAT: 0,
+  // 		DOUBLE: 0,
+  // 		STRING: 'a',
+  // 		BINARY: '',
+  // 		NESTED: {
+  // 			type: 'NESTED'
+  // 		},
+  // 		ARRAY: [],
+  // 		BLOB: ''
+  // 	};
+  //
+  // 	for(let i = 0; i < funcs.length;i++){
+  // 		const fd = funcs[i];
+  // 		eval('var '+fd.displayName+' = function(){ checkForArgs(arguments, fd.displayName); }');
+  // 	}
+  // 	for(let i = 0; i < arg.length;i++){
+  // 		const argd = arg[i];
+  // 		eval('var '+argd.name+' = defaults[argd.name]');
+  // 	}
+  //
+  // 	function checkForArgs(arg, fname){
+  // 		var argLength = arg.length;
+  // 		const func_def = _.find(funcs, (f) => {
+  // 			return f.displayName == fname && f.argTypes.length == argLength;
+  // 		});
+  // 		if(!func_def){
+  // 			throw new Error(fname +'() arguments mismatch');
+  // 		}
+  // 		for(let i = 0; i < argLength; i++){
+  // 			/*const _arg = arg[i];
+  // 			const ex_arg = func_def.argTypes[i];
+  // 			if(ex_arg.indexOf(_arg.type) < 0){
+  // 				throw new Error(fname +'() argument type mismatch');
+  // 			}*/
+  // 		}
+  // 	}
+  //
+  // 	try {
+  // 		eval('('+ string +')');
+  // 		return true;
+  // 	}catch(e){
+  // 	  return e;
+  // 	}
+  // }
+
+  validSQL = () => {
+    let flag = true; // change this to false after you integrate validation..
+    const {data} = this.state;
+    const {udfList} = this.props;
     let streamName = this.props.fields[0].streamId;
     this.sqlStrQuery = "select * from " + streamName + " where ";
-    this.conditionStr = '';
-    this.ruleCondition = '';
-    this.validSQL = true;
-    return (
-      <pre className="query-preview" key={1}>
-			{
-          data.map((d,i)=>{
-            let field1_name = '';
-            let field2_name = '';
-            if(d.keyPath1 && d.keyPath1.length > 0) {
-              var keysArr1 = d.keyPath1.split(".");
-              if(keysArr1.length > 0) {
-                keysArr1.map((k, n)=>{
-                  if(n === 0) {
-                    field1_name += k;
-                  } else {
-                    field1_name += "['" + k + "']";
-                  }
-                });
-                field1_name += "['" + d.field1 + "']";
-              } else {
-                field1_name += d.keyPath1 + "['" + d.field1 + "']";
-              }
-            } else {
-              field1_name += d.field1 == null ? '' : d.field1;
-            }
-            if(d.keyPath2 && d.keyPath2.length > 0) {
-              var keysArr2 = d.keyPath2.split(".");
-              if(keysArr2.length > 0) {
-                keysArr2.map((k, n)=>{
-                  if(n === 0) {
-                    field2_name += k;
-                  } else {
-                    field2_name += "['" + k + "']";
-                  }
-                });
-                field2_name += "['" + d.field2 + "']";
-              } else {
-                field2_name += d.keyPath2 + "['" + d.field2 + "']";
-              }
-            } else {
-              field2_name += d.field2 == null ? '' : d.field2;
-            }
-            let field1 = d.keyPath1 && d.keyPath1.length > 0 ? (d.keyPath1 + '.' + d.field1) : d.field1;
-            let field2 = d.keyPath2 && d.keyPath2.length > 0 ? (d.keyPath2 + '.' + d.field2) : d.field2;
-            if(d.hasOwnProperty('logicalOp')){
-              this.sqlStrQuery += ' ' + d.logicalOp + ' ' + field1 + ' ' + d.operator + ' ' + field2;
-              this.conditionStr += ' ' + d.logicalOp + ' ' + field1 + ' ' + d.operator + ' ' + field2;
-              this.ruleCondition += ' ' + d.logicalOp + ' ' + field1_name + ' ' + d.operator + ' ' + field2_name;
-              return[
-                this.renderOperator(d.logicalOp, i+'.1'),
-                this.renderFieldName(field1_name, i),
-                this.renderOperator(d.operator, i),
-                this.renderFieldName(field2_name, i)
-              ];
-            } else {
-              this.sqlStrQuery += field1 + ' ' + d.operator + ' ' + field2;
-              this.conditionStr += field1 + ' ' + d.operator + ' ' + field2;
-              this.ruleCondition += field1_name + ' ' + d.operator + ' ' + field2_name;
-              return[
-                this.renderFieldName(field1_name, i),
-                this.renderOperator(d.operator, i),
-                this.renderFieldName(field2_name, i)
-              ];
-            }
-          })
-        }
-			</pre>
-    );
+    this.ruleCondition = data;
+    this.sqlStrQuery += data;
+    // const t = this.validate(udfList,this.fields,data);
+    // flag = (typeof t === "object") ? false : true;
+    // this.setState({show : !flag ? true : false, errorMsg : !flag ? t.message : '' });
+    return flag;
   }
-  renderFieldName(name, index) {
-    if (!name) {
-      return this.renderMissing(name, index + '.2', 'Field');
-    }
-    return (
-      <span className="text-primary">
-        {name} </span>
-    );
+
+  handleChangeQuery(val) {
+    this.setState({data : val});
   }
-  renderOperator(name, index) {
-    if (!name) {
-      return this.renderMissing(name, index + '.3', 'Operator');
-    }
-    return (
-      <span className="text-danger">
-        {name} </span>
-    );
-  }
-  renderMissing(name, index, type) {
-    this.validSQL = false;
-    return (
-      <span className="text-muted">
-        Missing {type} </span>
-    );
-  }
+
   render() {
-    let {data} = this.state;
+    let {data,errorMsg,show} = this.state;
     return (
       <div>
+        {show
+          ? <Alert bsStyle="danger">{errorMsg}</Alert>
+          : null}
+        <div className="form-group">
+          <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Create Query</Popover>}>
+            <label>Create Query:</label>
+          </OverlayTrigger>
+          <div>
+            <CommonCodeMirror modeType="sql" hintOptions={this.hintOptions} value={data} placeHolder="Sql query goes here..." callBack={this.handleChangeQuery.bind(this)} />
+          </div>
+        </div>
+      {/*<div>
         {data.map((d, i) => {
           if (i === 0) {
             return this.firstRow(d);
@@ -417,6 +529,8 @@ class RuleFormula extends Component {
               </div>
             </div>
           : null}
+      </div>
+      */}
       </div>
     );
   }
@@ -507,7 +621,7 @@ export default class RulesForm extends Component {
     let {name, description, ruleType, sql} = this.state;
     if (ruleType) {
       //if general rule, than take from RuleFormula
-      sql = this.refs.RuleFormula.validSQL
+      sql = this.refs.RuleFormula.validSQL()
         ? this.refs.RuleFormula.sqlStrQuery
         : '';
     }
@@ -556,14 +670,19 @@ export default class RulesForm extends Component {
       //if general rule, than take from RuleFormula
       condition = this.refs.RuleFormula.ruleCondition;
       //get selected fields
-      let conditionData = this.refs.RuleFormula.state.data;
-      conditionData.map((o) => {
-        if (this.selectedFields.indexOf(o.field1) === -1){
-          this.selectedFields.push(o.field1);
+      let conditionData =  Utils.removeSpecialCharToSpace(this.refs.RuleFormula.state.data);
+      conditionData.split(' ').map((o) => {
+        // only first stream has been selected for rules
+        const index = _.findIndex(parsedStreams[0].fields,{name : o});
+        if(index !== -1 && this.selectedFields.indexOf(o) === -1){
+          this.selectedFields.push(o);
         }
-        if (this.selectedFields.indexOf(o.field2) === -1){
-          this.selectedFields.push(o.field2);
-        }
+        // if (this.selectedFields.indexOf(o.field1) === -1){
+        //   this.selectedFields.push(o.field1);
+        // }
+        // if (this.selectedFields.indexOf(o.field2) === -1){
+        //   this.selectedFields.push(o.field2);
+        // }
       });
       //Adding stream names
       parsedStreams.map((stream) => {
@@ -670,6 +789,7 @@ export default class RulesForm extends Component {
     });
   }
   render() {
+    const {udfList} = this.props;
     let sqloptions = {
       lineNumbers: true,
       mode: "text/x-sql"
@@ -721,7 +841,7 @@ export default class RulesForm extends Component {
                                 					</div>
                                                                 </div>*/}
         {this.state.ruleType
-          ? <RuleFormula ref="RuleFormula" fields={this.props.parsedStreams} sql={this.state.sql} condition={this.state.condition}/>
+          ? <RuleFormula ref="RuleFormula" udfList={udfList} fields={this.props.parsedStreams} sql={this.state.sql} condition={this.state.condition}/>
           : <div className="form-group">
             <label>SQL Query
               <span className="text-danger">*</span>

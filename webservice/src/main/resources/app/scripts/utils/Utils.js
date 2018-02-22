@@ -790,6 +790,10 @@ const getItemFromLocalStorage = (name) => {
   return x;
 };
 
+const removeSpecialCharToSpace = (str) => {
+  return str.replace(/[`~!@#$%^&*0-9()_|+\-=÷¿?;:'",.<>\{\}\[\]\\\/]/gi, ' ');
+};
+
 export default {
   sortArray,
   numberToMilliseconds,
@@ -835,5 +839,6 @@ export default {
   formatLatency,
   setTimoutFunc,
   populateEventFields,
-  getItemFromLocalStorage
+  getItemFromLocalStorage,
+  removeSpecialCharToSpace
 };
