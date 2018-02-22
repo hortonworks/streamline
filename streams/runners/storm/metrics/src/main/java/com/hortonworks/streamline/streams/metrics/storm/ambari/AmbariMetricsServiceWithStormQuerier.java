@@ -15,6 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.metrics.storm.ambari;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.JsonClientUtil;
 import com.hortonworks.streamline.common.exception.ConfigException;
@@ -28,10 +29,15 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.DoubleStream;
+
+import static java.util.stream.Collectors.toMap;
 
 /**
  * Implementation of TimeSeriesQuerier for Ambari Metric Service (AMS) with Storm.
@@ -51,12 +57,17 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
     static final String APP_ID = "appId";
 
     // these metrics need '.%' as postfix to aggregate values for each stream
-    private static final List<String> METRICS_NEED_AGGREGATION_ON_STREAMS = Lists.newArrayList(
+    private static final List<String> METRICS_NEED_AGGREGATION_ON_STREAMS = ImmutableList.<String>builder().add(
             "__complete-latency", "__emit-count", "__ack-count", "__fail-count",
             "__process-latency", "__execute-count", "__execute-latency"
-    );
-    public static final String DEFAULT_APP_ID = "nimbus";
-    public static final String WILDCARD_ALL_COMPONENTS = "%";
+    ).build();
+
+    // they're actually prefixed by '__' but in metric name, '__' is replaced to '--'
+    private static final List<String> SYSTEM_STREAM_PREFIX = ImmutableList.<String>builder()
+            .add("--metric", "--ack-init", "--ack-ack", "--ack-fail", "--ack-reset-timeout", "--system").build();
+
+    static final String DEFAULT_APP_ID = "nimbus";
+    private static final String WILDCARD_ALL_COMPONENTS = "%";
 
     private Client client;
     private URI collectorApiUri;
@@ -96,7 +107,7 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
     @Override
     public Map<Long, Double> getMetrics(String topologyName, String componentId, String metricName, AggregateFunction aggrFunction,
                                           long from, long to) {
-        URI targetUri = composeQueryParameters(topologyName, componentId, metricName, aggrFunction, from, to);
+        URI targetUri = composeQueryParameters(topologyName, componentId, metricName, from, to);
 
         log.debug("Calling {} for querying metric", targetUri.toString());
 
@@ -104,17 +115,54 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
         List<Map<String, ?>> metrics = (List<Map<String, ?>>) responseMap.get("metrics");
 
         if (metrics.size() > 0) {
-            Map<String, Number> points = (Map<String, Number>) metrics.get(0).get("metrics");
-            Map<Long, Double> ret = new HashMap<>(points.size());
+            Map<Long, List<Double>> ret = new HashMap<>();
 
-            for (Map.Entry<String, Number> timestampToValue : points.entrySet()) {
-                ret.put(Long.valueOf(timestampToValue.getKey()), timestampToValue.getValue().doubleValue());
+            for (Map<String, ?> metric : metrics) {
+                String retrievedMetricName = (String) metric.get("metricname");
+
+                // exclude system streams
+                if (!isMetricFromSystemStream(retrievedMetricName)) {
+                    Map<String, Number> points = (Map<String, Number>) metric.get("metrics");
+                    for (Map.Entry<String, Number> timestampToValue : points.entrySet()) {
+                        Long timestamp = Long.valueOf(timestampToValue.getKey());
+                        List<Double> values = ret.getOrDefault(timestamp, new ArrayList<>());
+                        if (values.isEmpty()) {
+                            ret.put(timestamp, values);
+                        }
+
+                        values.add(timestampToValue.getValue().doubleValue());
+                    }
+                }
             }
 
-            return ret;
+            return ret.entrySet().stream()
+                    .collect(toMap(e -> e.getKey(), e -> {
+                        DoubleStream valueStream = e.getValue().stream().mapToDouble(d -> d);
+                        switch (aggrFunction) {
+                            case SUM:
+                                return valueStream.sum();
+
+                            case AVG:
+                                return valueStream.average().orElse(0.0d);
+
+                            case MAX:
+                                return valueStream.max().orElse(0.0d);
+
+                            case MIN:
+                                return valueStream.min().orElse(0.0d);
+
+                            default:
+                                throw new IllegalArgumentException("Not supported aggregated function.");
+
+                        }
+                    }));
         } else {
             return Collections.emptyMap();
         }
+    }
+
+    private boolean isMetricFromSystemStream(String metricName) {
+        return SYSTEM_STREAM_PREFIX.stream().anyMatch(metricName::contains);
     }
 
     /**
@@ -168,7 +216,7 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
                 .build();
     }
 
-    private URI composeQueryParameters(String topologyName, String componentId, String metricName, AggregateFunction aggrFunction,
+    private URI composeQueryParameters(String topologyName, String componentId, String metricName,
                                        long from, long to) {
         String actualMetricName = buildMetricName(topologyName, componentId, metricName);
         JerseyUriBuilder uriBuilder = new JerseyUriBuilder();
@@ -178,7 +226,6 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
                 .queryParam("metricNames", actualMetricName)
                 .queryParam("startTime", String.valueOf(from))
                 .queryParam("endTime", String.valueOf(to))
-                .queryParam("seriesAggregateFunction", aggrFunction.name())
                 .build();
     }
 
