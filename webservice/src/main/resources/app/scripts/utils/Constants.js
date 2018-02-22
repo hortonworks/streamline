@@ -99,6 +99,8 @@ const unknownAccessCode = {
 
 const schemaDataType = ["STRING", "INTEGER", "FLOAT", "LONG", "DOUBLE", "BOOLEAN", "BYTE", "SHORT"];
 
+const sqlKeywords = ["AND","OR","LIKE","AS","BETWEEN","ISNULL","AT","ALL","BOTH","BEGIN","BY","IF","ELSEIF","ELSE","HAVING","INTO","IGNORE","LAST","NO","TO","THEN"];
+
 export {
   baseUrl,
   pageSize,
@@ -114,5 +116,6 @@ export {
   menuName,
   accessCapabilities,
   unknownAccessCode,
-  schemaDataType
+  schemaDataType,
+  sqlKeywords
 };
