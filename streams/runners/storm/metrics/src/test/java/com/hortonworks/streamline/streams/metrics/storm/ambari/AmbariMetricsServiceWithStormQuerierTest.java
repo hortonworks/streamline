@@ -15,6 +15,8 @@
  **/
 package com.hortonworks.streamline.streams.metrics.storm.ambari;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.hortonworks.streamline.streams.metrics.TimeSeriesQuerier;
 import org.junit.After;
@@ -22,7 +24,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -71,15 +75,14 @@ public class AmbariMetricsServiceWithStormQuerierTest {
         long to = 5678L;
 
         Map<Long, Double> metrics = querier.getMetrics(topologyName, componentId, metricName, aggrFunction, from, to);
-        assertResult(metrics);
+        assertResult(metrics, aggrFunction);
 
         verify(getRequestedFor(urlPathEqualTo(TEST_COLLECTOR_API_PATH))
                 .withQueryParam("appId", equalTo(DEFAULT_APP_ID))
                 .withQueryParam("hostname", equalTo(""))
                 .withQueryParam("metricNames", equalTo("topology.testTopology.testComponent.%.--test.metric.name"))
                 .withQueryParam("startTime", equalTo("1234"))
-                .withQueryParam("endTime", equalTo("5678"))
-                .withQueryParam("seriesAggregateFunction", equalTo("SUM")));
+                .withQueryParam("endTime", equalTo("5678")));
     }
 
     @Test
@@ -95,20 +98,19 @@ public class AmbariMetricsServiceWithStormQuerierTest {
         long to = 5678L;
 
         Map<Long, Double> metrics = querier.getMetrics(topologyName, componentId, metricName, aggrFunction, from, to);
-        assertResult(metrics);
+        assertResult(metrics, aggrFunction);
 
         verify(getRequestedFor(urlPathEqualTo(TEST_COLLECTOR_API_PATH))
                 .withQueryParam("appId", equalTo(DEFAULT_APP_ID))
                 .withQueryParam("hostname", equalTo(""))
                 .withQueryParam("metricNames", equalTo("topology.testTopology.testComponent.%.--complete-latency.%"))
                 .withQueryParam("startTime", equalTo("1234"))
-                .withQueryParam("endTime", equalTo("5678"))
-                .withQueryParam("seriesAggregateFunction", equalTo("AVG")));
+                .withQueryParam("endTime", equalTo("5678")));
     }
 
     @Test
     public void getRawMetrics() throws Exception {
-        stubMetricUrl();
+        stubMetricUrlForRawMetric();
 
         String metricName = "metric";
         String parameters = "precision=seconds,appId=appId";
@@ -116,7 +118,7 @@ public class AmbariMetricsServiceWithStormQuerierTest {
         long to = 5678L;
 
         Map<String, Map<Long, Double>> metrics = querier.getRawMetrics(metricName, parameters, from, to);
-        assertResult(metrics.get("metric"));
+        assertRawMetricResult(metrics.get("metric"));
 
         verify(getRequestedFor(urlPathEqualTo(TEST_COLLECTOR_API_PATH))
                 .withQueryParam("appId", equalTo("appId"))
@@ -125,8 +127,61 @@ public class AmbariMetricsServiceWithStormQuerierTest {
                 .withQueryParam("endTime", equalTo("5678")));
     }
 
+    private void stubMetricUrl() throws JsonProcessingException {
+        Map<String, List<Map<String, ?>>> stubBodyMap = new HashMap<>();
 
-    private void stubMetricUrl() {
+        List<Map<String, ?>> metrics = new ArrayList<>();
+
+        // system stream
+        Map<String, Object> metric1 = new HashMap<>();
+        metric1.put("metricname", "topology.streamline-1-Topology.1-RULE.host1.6700.-1.--emit-count.--ack-ack");
+        metric1.put("metrics", getTestTimestampToValueMap());
+        metrics.add(metric1);
+
+        // system stream
+        Map<String, Object> metric2 = new HashMap<>();
+        metric2.put("metricname", "topology.streamline-1-Topology.1-RULE.host1.6700.-1.--emit-count.--system");
+        metric2.put("metrics", getTestTimestampToValueMap());
+        metrics.add(metric2);
+
+        // system stream
+        Map<String, Object> metric3 = new HashMap<>();
+        metric3.put("metricname", "topology.streamline-1-Topology.1-RULE.host1.6700.-1.--emit-count.--ack-init");
+        metric3.put("metrics", getTestTimestampToValueMap());
+        metrics.add(metric3);
+
+        // system stream
+        Map<String, Object> metric4 = new HashMap<>();
+        metric4.put("metricname", "topology.streamline-1-Topology.1-RULE.host1.6700.-1.--emit-count.--metric");
+        metric4.put("metrics", getTestTimestampToValueMap());
+        metrics.add(metric4);
+
+        // non-system stream
+        Map<String, Object> metric5 = new HashMap<>();
+        metric5.put("metricname", "topology.streamline-1-Topology.1-RULE.host1.6700.-1.--emit-count.stream1");
+        metric5.put("metrics", getTestTimestampToValueMap());
+        metrics.add(metric5);
+
+        // non-system stream
+        Map<String, Object> metric6 = new HashMap<>();
+        metric6.put("metricname", "topology.streamline-1-Topology.1-RULE.host1.6700.-1.--emit-count.stream2");
+        metric6.put("metrics", getTestTimestampToValueMap());
+        metrics.add(metric6);
+
+        stubBodyMap.put("metrics", metrics);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String body = objectMapper.writeValueAsString(stubBodyMap);
+
+        stubFor(get(urlPathEqualTo(TEST_COLLECTOR_API_PATH))
+                .withHeader("Accept", equalTo("application/json"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(body)));
+    }
+
+    private void stubMetricUrlForRawMetric() {
         stubFor(get(urlPathEqualTo(TEST_COLLECTOR_API_PATH))
                 .withHeader("Accept", equalTo("application/json"))
                 .willReturn(aResponse()
@@ -135,10 +190,41 @@ public class AmbariMetricsServiceWithStormQuerierTest {
                         .withBody("{\"metrics\": [ {\"metricname\": \"metric\", \"metrics\": { \"123456\": 456.789, \"567890\": 890.123 } } ] }")));
     }
 
-    private void assertResult(Map<Long, Double> metrics) {
+    private void assertRawMetricResult(Map<Long, Double> metrics) {
         assertTrue(metrics.containsKey(123456L));
+        assertTrue(metrics.containsKey(567890L));
         assertEquals(456.789, metrics.get(123456L), 0.00001);
         assertEquals(890.123, metrics.get(567890L), 0.00001);
+    }
+
+    private void assertResult(Map<Long, Double> metrics, TimeSeriesQuerier.AggregateFunction aggrFunction) {
+        assertTrue(metrics.containsKey(123456L));
+        assertTrue(metrics.containsKey(567890L));
+
+        switch (aggrFunction) {
+            case SUM:
+                assertEquals(123.456 * 2, metrics.get(123456L), 0.00001);
+                assertEquals(456.789 * 2, metrics.get(567890L), 0.00001);
+                break;
+
+            case AVG:
+            case MAX:
+            case MIN:
+                assertEquals(123.456, metrics.get(123456L), 0.00001);
+                assertEquals(456.789, metrics.get(567890L), 0.00001);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Not supported aggregated function.");
+
+        }
+    }
+
+    private Map<String, Double> getTestTimestampToValueMap() {
+        Map<String, Double> timestampToValueMap1 = new HashMap<>();
+        timestampToValueMap1.put("123456", 123.456);
+        timestampToValueMap1.put("567890", 456.789);
+        return timestampToValueMap1;
     }
 
 }
