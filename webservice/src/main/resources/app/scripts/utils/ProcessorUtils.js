@@ -580,6 +580,131 @@ const filterOptions = function(selected, outputFieldsList){ //Filter out childre
   return options;
 };
 
+const generateCodeMirrorOptions = (array,type) => {
+  let arr=[];
+  const nestedFields = (arrayList,type,level,oldObj) => {
+    _.map(arrayList, (a) => {
+      let obj = {
+        text : a.displayName || a.name || a,
+        displayText : a.displayName || a.name || a,
+        className : type === "FUNCTION"
+                    ? "codemirror-func"
+                    : type === "SQL"
+                      ? "codemirror-sql"
+                      :  type === "BINARY-OPERATORS"
+                          ? "codemirror-Operators"
+                          : "codemirror-field"
+      };
+      obj[type === "FUNCTION" ?  "returnType" : "type"] = type === "FUNCTION"
+                                                          ?  a.returnType
+                                                          : type === "SQL"
+                                                            ? 'SQL'
+                                                            : type === "BINARY-OPERATORS"
+                                                              ? "Binary Operators"
+                                                              : a.type;
+      if(type === "FUNCTION"){
+        obj.argsType = a.argTypes.toString();
+        obj.description =  a.description ? `Description: ${a.description}` : undefined;
+      }
+      obj.render = (el, cm, data) => {
+        codeMirrorOptionsTemplate(el,data);
+      };
+
+      if(oldObj === undefined){
+        arr.push(obj);
+      } else {
+        const index = _.findIndex(arr, (n) => n.displayText === oldObj.displayText);
+        if(index !== -1){
+          const name = obj.displayText;
+          obj.displayText = oldObj.displayText+'.'+name;
+          obj.text = oldObj.text+'.'+name;
+          if(arr[index].fields){
+            arr[index].fields.push(obj);
+          } else {
+            arr[index].fields = [];
+            arr[index].fields.push(obj);
+          }
+        } else {
+          const indexPath = getNestedObjPathFromList(arr,oldObj);
+          if(indexPath.length){
+            pushNestedObjectInArray(indexPath,obj,arr);
+          }
+        }
+      }
+      if(a.fields){
+        nestedFields(a.fields, type,level+1,obj);
+      }
+    });
+    return arr;
+  };
+  return nestedFields(array,type,0);
+};
+
+const pushNestedObjectInArray = (pathArr,obj,targetList) => {
+  const rollOverFields = (target) => {
+    _.map(target, (list) => {
+      if(pathArr === list.displayText){
+        obj.displayText = pathArr+'.'+obj.displayText;
+        obj.text = pathArr+'.'+obj.text;
+        if(list.fields){
+          list.fields.push(obj);
+        } else {
+          list.fields = [];
+          list.fields.push(obj);
+        }
+      } else {
+        if(list.fields){
+          rollOverFields(list.fields);
+        }
+      }
+    });
+  };
+  rollOverFields(targetList);
+};
+
+const getNestedObjPathFromList = (list,obj) => {
+  let str = [];
+  const recursiveFunc = (arr,level) => {
+    _.map(arr,(a) => {
+      if(a.fields){
+        str.push(a.displayText);
+        recursiveFunc(a.fields,level+1);
+      } else {
+        if(obj.displayText === a.displayText){
+          str.push(a.displayText);
+        }
+      }
+    });
+    return _.findLast(str);
+  };
+  return recursiveFunc(list,0);
+};
+
+const codeMirrorOptionsTemplate = (el,data) => {
+  const text = document.createElement('div');
+  const fNameSpan = document.createElement('span');
+  fNameSpan.setAttribute('class','funcText');
+  fNameSpan.innerHTML = data.displayText;
+
+  // data.argsType is only for UDF Function
+  if(data.argsType && data.argsType.length){
+    const paramSpan = document.createElement('span');
+    paramSpan.innerHTML = '('+data.argsType+')';
+    fNameSpan.appendChild(paramSpan);
+  }
+  text.appendChild(fNameSpan);
+  el.appendChild(text);
+
+  // data.returnType is for UDF Function ||  data.type is for Fields
+  if(data.returnType || data.type){
+    const returnTypetxt = document.createElement('div');
+    returnTypetxt.setAttribute('class','fieldText');
+    const content = data.returnType ? 'Return Type: '+data.returnType : 'Type: '+data.type;
+    returnTypetxt.innerHTML = content;
+    el.appendChild(returnTypetxt);
+  }
+};
+
 export default {
   getSchemaFields,
   createSelectedKeysHierarchy,
@@ -597,5 +722,7 @@ export default {
   getNestedKeyFromGroup,
   removeChildren,
   addChildren,
-  filterOptions
+  filterOptions,
+  generateCodeMirrorOptions,
+  codeMirrorOptionsTemplate
 };

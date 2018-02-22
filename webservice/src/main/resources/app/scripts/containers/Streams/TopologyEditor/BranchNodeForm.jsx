@@ -34,6 +34,8 @@ import {Scrollbars} from 'react-custom-scrollbars';
 import {toastOpt} from '../../../utils/Constants';
 import CommonNotification from '../../../utils/CommonNotification';
 import Utils from '../../../utils/Utils';
+import AggregateUdfREST from '../../../rest/AggregateUdfREST';
+import ProcessorUtils from '../../../utils/ProcessorUtils';
 
 export default class BranchNodeForm extends Component {
   static propTypes = {
@@ -63,6 +65,7 @@ export default class BranchNodeForm extends Component {
       modalTitle: ''
     };
     this.fetchData();
+    this.fetchUDFList();
     this.hideErrorMsg = true;
   }
 
@@ -72,6 +75,18 @@ export default class BranchNodeForm extends Component {
     }
   }
 
+  fetchUDFList() {
+    AggregateUdfREST.getAllUdfs().then((udfResult) => {
+      if(udfResult.responseMessage !== undefined){
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={results.responseMessage}/>, '', toastOpt);
+      } else {
+        //Gather all "FUNCTION" functions only
+        this.udfList = ProcessorUtils.populateFieldsArr(udfResult.entities , "FUNCTION");
+      }
+    });
+  }
+
   fetchData() {
     let {topologyId, versionId, nodeType, nodeData} = this.props;
     let promiseArr = [
@@ -79,24 +94,28 @@ export default class BranchNodeForm extends Component {
       TopologyREST.getAllNodes(topologyId, versionId, 'edges'),
       TopologyREST.getAllNodes(topologyId, versionId, 'streams')
     ];
-
+    const that = this;
     Promise.all(promiseArr).then((results) => {
-      this.context.ParentForm.setState({processorNode: results[0]});
+      that.context.ParentForm.setState({processorNode: results[0]});
       //Found the edge connected to current node
       let allEdges = results[1].entities;
-      this.allEdges = allEdges;
+      that.allEdges = allEdges;
 
       let allStreams = results[2].entities;
-      this.allStreams = allStreams;
+      that.allStreams = allStreams;
 
       //find the input stream from connected edge
-      this.edgeToNode = allEdges.filter((e) => {
+      that.edgeToNode = allEdges.filter((e) => {
         return e.toId === nodeData.nodeId;
       });
-      this.parsedStream = '';
-      this.parsedStream = _.find(allStreams, {id: this.edgeToNode[0].streamGroupings[0].streamId});
-      if(this.context.ParentForm.state.inputStreamOptions.length){
-        this.getDataFromParentFormContext();
+      that.parsedStreams = [];
+      that.edgeToNode.map((e) => {
+        e.streamGroupings.map((g) => {
+          that.parsedStreams.push(_.find(allStreams, {id: g.streamId}));
+        });
+      });
+      if(that.context.ParentForm.state.inputStreamOptions.length){
+        that.getDataFromParentFormContext();
       }
     });
   }
@@ -368,7 +387,7 @@ export default class BranchNodeForm extends Component {
           </div>
         </Scrollbars>
         <Modal ref="BranchRuleModal" dialogClassName="rule-modal-fixed-height" bsSize="large" data-title={this.state.modalTitle} onKeyPress={this.handleKeyPress} data-resolve={this.handleSaveRule.bind(this)}>
-          <BranchRulesForm ref="RuleForm" topologyId={topologyId} versionId={versionId} ruleObj={this.state.ruleObj} nodeData={this.nodeData} nodeType={nodeType} parsedStream={this.parsedStream} rules={rules}/>
+          <BranchRulesForm ref="RuleForm" topologyId={topologyId} versionId={versionId} ruleObj={this.state.ruleObj} nodeData={this.nodeData} nodeType={nodeType} parsedStream={this.parsedStreams} rules={rules} udfList={this.udfList}/>
         </Modal>
         <Confirm ref="Confirm"/>
       </div>
