@@ -15,11 +15,13 @@
  **/
 package com.hortonworks.streamline.streams.metrics.storm.ambari;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.hortonworks.streamline.common.JsonClientUtil;
 import com.hortonworks.streamline.common.exception.ConfigException;
+import com.hortonworks.streamline.common.util.DoubleUtils;
 import com.hortonworks.streamline.streams.metrics.AbstractTimeSeriesQuerier;
+import org.apache.commons.lang3.tuple.Pair;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.uri.internal.JerseyUriBuilder;
 import org.slf4j.Logger;
@@ -37,6 +39,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.DoubleStream;
 
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -61,6 +64,12 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
             "__complete-latency", "__emit-count", "__ack-count", "__fail-count",
             "__process-latency", "__execute-count", "__execute-latency"
     ).build();
+
+    private static final List<Pair<String, String>> METRICS_APPLY_WEIGHTED_AVERAGE_PAIR =
+            ImmutableList.<Pair<String, String>>builder().add(
+            Pair.of("--complete-latency", "--ack-count"),
+            Pair.of("--process-latency", "--execute-count"),
+            Pair.of("--execute-latency", "--execute-count")).build();
 
     // they're actually prefixed by '__' but in metric name, '__' is replaced to '--'
     private static final List<String> SYSTEM_STREAM_PREFIX = ImmutableList.<String>builder()
@@ -105,64 +114,20 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
      * {@inheritDoc}
      */
     @Override
-    public Map<Long, Double> getMetrics(String topologyName, String componentId, String metricName, AggregateFunction aggrFunction,
-                                          long from, long to) {
-        URI targetUri = composeQueryParameters(topologyName, componentId, metricName, from, to);
+    public Map<Long, Double> getMetrics(String topologyName, String componentId, String metricName,
+                                        AggregateFunction aggrFunction, long from, long to) {
 
-        log.debug("Calling {} for querying metric", targetUri.toString());
+        Optional<Pair<String, String>> weightedPair = findWeightedPair(metricName);
 
-        Map<String, ?> responseMap = JsonClientUtil.getEntity(client.target(targetUri), Map.class);
-        List<Map<String, ?>> metrics = (List<Map<String, ?>>) responseMap.get("metrics");
-
-        if (metrics.size() > 0) {
-            Map<Long, List<Double>> ret = new HashMap<>();
-
-            for (Map<String, ?> metric : metrics) {
-                String retrievedMetricName = (String) metric.get("metricname");
-
-                // exclude system streams
-                if (!isMetricFromSystemStream(retrievedMetricName)) {
-                    Map<String, Number> points = (Map<String, Number>) metric.get("metrics");
-                    for (Map.Entry<String, Number> timestampToValue : points.entrySet()) {
-                        Long timestamp = Long.valueOf(timestampToValue.getKey());
-                        List<Double> values = ret.getOrDefault(timestamp, new ArrayList<>());
-                        if (values.isEmpty()) {
-                            ret.put(timestamp, values);
-                        }
-
-                        values.add(timestampToValue.getValue().doubleValue());
-                    }
-                }
-            }
-
-            return ret.entrySet().stream()
-                    .collect(toMap(e -> e.getKey(), e -> {
-                        DoubleStream valueStream = e.getValue().stream().mapToDouble(d -> d);
-                        switch (aggrFunction) {
-                            case SUM:
-                                return valueStream.sum();
-
-                            case AVG:
-                                return valueStream.average().orElse(0.0d);
-
-                            case MAX:
-                                return valueStream.max().orElse(0.0d);
-
-                            case MIN:
-                                return valueStream.min().orElse(0.0d);
-
-                            default:
-                                throw new IllegalArgumentException("Not supported aggregated function.");
-
-                        }
-                    }));
+        if (weightedPair.isPresent()) {
+            Map<Long, List<Pair<String, Double>>> keyMetric = getMetricsStreamToValueMap(topologyName, componentId, metricName, from, to);
+            Map<Long, List<Pair<String, Double>>> weightMetric = getMetricsStreamToValueMap(topologyName, componentId,
+                    weightedPair.get().getRight(), from, to);
+            return aggregateWithApplyingWeightedAverage(keyMetric, weightMetric);
         } else {
-            return Collections.emptyMap();
+            Map<Long, List<Pair<String, Double>>> ret = getMetricsStreamToValueMap(topologyName, componentId, metricName, from, to);
+            return aggregateStreamsForMetricsValues(ret, aggrFunction);
         }
-    }
-
-    private boolean isMetricFromSystemStream(String metricName) {
-        return SYSTEM_STREAM_PREFIX.stream().anyMatch(metricName::contains);
     }
 
     /**
@@ -269,5 +234,114 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
         }
 
         return metricName;
+    }
+
+    @VisibleForTesting
+    Map<Long, Double> aggregateWithApplyingWeightedAverage(Map<Long, List<Pair<String, Double>>> keyMetric,
+                                                                   Map<Long, List<Pair<String, Double>>> weightMetric) {
+        Map<Long, Double> ret = new HashMap<>();
+        for (Map.Entry<Long, List<Pair<String, Double>>> keyMetricEntry : keyMetric.entrySet()) {
+            long timestamp = keyMetricEntry.getKey();
+            List<Pair<String, Double>> keyStreamToValueList = keyMetricEntry.getValue();
+            List<Pair<String, Double>> weightStreamToValueList = weightMetric.get(timestamp);
+
+            if (weightStreamToValueList == null || weightStreamToValueList.isEmpty()) {
+                // weight information not found
+                ret.put(timestamp, 0.0d);
+                continue;
+            }
+
+            Double totalWeight = weightStreamToValueList.stream().mapToDouble(p -> p.getRight()).sum();
+            if (DoubleUtils.equalsToZero(totalWeight)) {
+                // total weight is zero
+                ret.put(timestamp, 0.0d);
+                continue;
+            }
+
+            double weightedSum = keyStreamToValueList.stream().map(pair -> {
+                String stream = pair.getLeft();
+                Double value = pair.getRight();
+                Double weightForStream = weightStreamToValueList.stream()
+                        .filter(p -> p.getLeft().equals(stream)).findAny().map(op -> op.getRight()).orElse(0.0);
+                Double weight = weightForStream / totalWeight;
+                return value * weight;
+            }).mapToDouble(d -> d).sum();
+
+            ret.put(timestamp, weightedSum);
+        }
+
+        return ret;
+    }
+
+    private Optional<Pair<String, String>> findWeightedPair(String metricName) {
+        for (Pair<String, String> keyToWeight : METRICS_APPLY_WEIGHTED_AVERAGE_PAIR) {
+            if (keyToWeight.getLeft().equals(metricName)) {
+                return Optional.of(keyToWeight);
+            }
+        }
+        return Optional.empty();
+    }
+
+    private Map<Long, Double> aggregateStreamsForMetricsValues(Map<Long, List<Pair<String, Double>>> ret, AggregateFunction aggrFunction) {
+        return ret.entrySet().stream()
+                .collect(toMap(e -> e.getKey(), e -> {
+                    DoubleStream valueStream = e.getValue().stream().mapToDouble(d -> d.getRight());
+                    switch (aggrFunction) {
+                        case SUM:
+                            return valueStream.sum();
+
+                        case AVG:
+                            return valueStream.average().orElse(0.0d);
+
+                        case MAX:
+                            return valueStream.max().orElse(0.0d);
+
+                        case MIN:
+                            return valueStream.min().orElse(0.0d);
+
+                        default:
+                            throw new IllegalArgumentException("Not supported aggregated function.");
+
+                    }
+                }));
+    }
+
+    private Map<Long, List<Pair<String, Double>>> getMetricsStreamToValueMap(String topologyName, String componentId,
+                                                                             String metricName, long from, long to) {
+        List<Map<String, ?>> metrics = getMetricsMap(topologyName, componentId, metricName, from, to);
+        Map<Long, List<Pair<String, Double>>> ret = new HashMap<>();
+        if (metrics.size() > 0) {
+            for (Map<String, ?> metric : metrics) {
+                String retrievedMetricName = (String) metric.get("metricname");
+
+                // exclude system streams
+                if (!isMetricFromSystemStream(retrievedMetricName)) {
+                    Map<String, Number> points = (Map<String, Number>) metric.get("metrics");
+                    for (Map.Entry<String, Number> timestampToValue : points.entrySet()) {
+                        Long timestamp = Long.valueOf(timestampToValue.getKey());
+                        List<Pair<String, Double>> values = ret.getOrDefault(timestamp, new ArrayList<>());
+                        if (values.isEmpty()) {
+                            ret.put(timestamp, values);
+                        }
+
+                        values.add(Pair.of(retrievedMetricName, timestampToValue.getValue().doubleValue()));
+                    }
+                }
+            }
+        }
+        return ret;
+    }
+
+    private List<Map<String, ?>> getMetricsMap(String topologyName, String componentId, String metricName, long from, long to) {
+        URI targetUri = composeQueryParameters(topologyName, componentId, metricName, from, to);
+
+        log.debug("Calling {} for querying metric", targetUri.toString());
+
+        Map<String, ?> responseMap = JsonClientUtil.getEntity(client.target(targetUri), Map.class);
+        return (List<Map<String, ?>>) responseMap.get("metrics");
+    }
+
+    private boolean isMetricFromSystemStream(String metricName) {
+        return SYSTEM_STREAM_PREFIX.stream().anyMatch(metricName::contains);
     }
 }
