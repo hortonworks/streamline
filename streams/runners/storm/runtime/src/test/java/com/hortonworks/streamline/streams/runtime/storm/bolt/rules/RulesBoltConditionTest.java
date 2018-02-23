@@ -162,6 +162,8 @@ public class RulesBoltConditionTest {
         };
     }
 
+    // select temperature, humidity, city from inputstream where temperature + humidity > 100 OR TRIM(city) = 'SFO'
+    // city = SFO, temperature = 0, humidity = 0
     @Test
     public void testComplex1() throws Exception {
         doTest(readFile("/streamline-complex-condition.json"), getWeather("SFO", 0, 0));
@@ -177,6 +179,8 @@ public class RulesBoltConditionTest {
         };
     }
 
+    // select temperature, humidity, city from inputstream where temperature + humidity > 100 OR TRIM(city) = 'SFO'
+    // city = FOO, temperature = 50, humidity = 60
     @Test
     public void testComplex2() throws Exception {
         doTest(readFile("/streamline-complex-condition.json"), getWeather("FOO", 50, 60));
@@ -192,6 +196,8 @@ public class RulesBoltConditionTest {
         };
     }
 
+    // select temperature, humidity, city from inputstream where temperature + humidity > 100 OR TRIM(city) = 'SFO'
+    // city = FOO, temperature = 10, humidity = 10
     @Test
     public void testComplex3() throws Exception {
         doTest(readFile("/streamline-complex-condition.json"), getWeather("FOO", 10, 10));

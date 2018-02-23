@@ -49,7 +49,7 @@ public class BinaryOperatorTable {
                 .put(SqlStdOperatorTable.MULTIPLY, Operator.MULTIPLY)
                 .put(SqlStdOperatorTable.DIVIDE, Operator.DIVIDE)
                 .put(SqlStdOperatorTable.PLUS, Operator.PLUS)
-                .put(SqlStdOperatorTable.MINUS, Operator.DIVIDE)
+                .put(SqlStdOperatorTable.MINUS, Operator.MINUS)
                 .build();
     }
 }
