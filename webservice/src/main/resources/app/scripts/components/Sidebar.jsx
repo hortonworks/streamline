@@ -66,16 +66,7 @@ export default class Sidebar extends Component {
     app_state.sidebar_activeKey = key;
   }
   handleClickOnDashboard(key, e) {
-    if (this.props.routes[this.props.routes.length - 1].name === "Application Editor") {
-      this.refs.leaveEditable.show();
-    } else {
-      this.navigateToDashboard();
-      app_state.sidebar_activeKey = key;
-    }
-  }
-  navigateToDashboard() {
-    let config = app_state.streamline_config;
-    window.location = config.dashboard.url;
+    app_state.sidebar_activeKey = key;
   }
   confirmLeave(flag) {
     if (flag) {
@@ -112,7 +103,7 @@ export default class Sidebar extends Component {
               <li className={app_state.sidebar_activeKey === 4
                 ? 'active'
                 : ''} onClick={this.handleClickOnDashboard.bind(this, 4)}>
-                <a href="javascript:void(0);">
+                <a href={config.dashboard.url} target="_blank">
                   <i className="fa fa-dashboard"></i>
                   <span>Dashboard</span>
                 </a>
