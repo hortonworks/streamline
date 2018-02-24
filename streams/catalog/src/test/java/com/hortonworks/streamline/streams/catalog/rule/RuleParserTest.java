@@ -240,4 +240,47 @@ public class RuleParserTest {
         assertNull(ruleParser.getHaving());
 
     }
+
+    @Test
+    public void testParseComplex1() throws Exception {
+        final UDF myFunc = new UDF();
+        myFunc.setClassName("foo.class.name");
+        myFunc.setDescription("My function");
+        myFunc.setId(Math.abs(new Random().nextLong()));
+        myFunc.setJarStoragePath("/udfstorage/");
+        myFunc.setName("UPPER");
+        myFunc.setType(Udf.Type.FUNCTION);
+
+        new Expectations() {{
+            mockCatalogService.listStreamInfos(withAny(new ArrayList<QueryParam>()));
+            result= mockTopologyStream;
+            mockCatalogService.listUDFs();
+            result= Collections.singleton(myFunc);
+            mockTopologyStream.getStreamId();
+            result="teststream";
+            mockTopologyStream.getFields();
+            result= Arrays.asList(Schema.Field.of("temperature", Schema.Type.LONG),
+                    Schema.Field.of("humidity", Schema.Type.LONG),
+                    Schema.Field.of("city", Schema.Type.STRING)
+                    );
+        }};
+
+        TopologyRule topologyRule = new TopologyRule();
+        topologyRule.setId(1L);
+        topologyRule.setName("Test");
+        topologyRule.setDescription("test rule");
+        topologyRule.setTopologyId(1L);
+        topologyRule.setVersionId(1L);
+        topologyRule.setSql("select temperature, humidity, city from teststream where temperature + humidity > 100 OR UPPER(city) = 'SFO'");
+        RuleParser ruleParser = new RuleParser(mockCatalogService, topologyRule.getSql(), topologyRule.getTopologyId(), topologyRule.getVersionId());
+        ruleParser.parse();
+
+        LOG.info("Projection: [{}]", ruleParser.getProjection());
+        assertNotNull(ruleParser.getProjection());
+        assertNotNull(ruleParser.getCondition());
+        assertEquals(1, ruleParser.getStreams().size());
+        assertNull(ruleParser.getGroupBy());
+        assertNull(ruleParser.getHaving());
+
+    }
 }

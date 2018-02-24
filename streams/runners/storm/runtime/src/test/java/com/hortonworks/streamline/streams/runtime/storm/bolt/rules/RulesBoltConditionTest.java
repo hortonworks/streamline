@@ -31,6 +31,7 @@ import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.TupleImpl;
 import org.apache.storm.tuple.Values;
 import com.hortonworks.streamline.streams.runtime.processor.RuleProcessorRuntime;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -161,6 +162,56 @@ public class RulesBoltConditionTest {
         };
     }
 
+    // select temperature, humidity, city from inputstream where temperature + humidity > 100 OR TRIM(city) = 'SFO'
+    // city = SFO, temperature = 0, humidity = 0
+    @Test
+    public void testComplex1() throws Exception {
+        doTest(readFile("/streamline-complex-condition.json"), getWeather("SFO", 0, 0));
+        new Verifications() {
+            {
+                String streamId;
+                Tuple anchor;
+                List<List<Object>> tuples = new ArrayList<>();
+                mockCollector.emit(streamId = withCapture(), anchor = withCapture(), withCapture(tuples));
+                Assert.assertEquals("outputstream", streamId);
+                Assert.assertEquals("CITY SFO TEMPERATURE 0 HUMIDITY 0", ((StreamlineEvent)tuples.get(0).get(0)).get("body"));
+            }
+        };
+    }
+
+    // select temperature, humidity, city from inputstream where temperature + humidity > 100 OR TRIM(city) = 'SFO'
+    // city = FOO, temperature = 50, humidity = 60
+    @Test
+    public void testComplex2() throws Exception {
+        doTest(readFile("/streamline-complex-condition.json"), getWeather("FOO", 50, 60));
+        new Verifications() {
+            {
+                String streamId;
+                Tuple anchor;
+                List<List<Object>> tuples = new ArrayList<>();
+                mockCollector.emit(streamId = withCapture(), anchor = withCapture(), withCapture(tuples));
+                Assert.assertEquals("outputstream", streamId);
+                Assert.assertEquals("CITY FOO TEMPERATURE 50 HUMIDITY 60", ((StreamlineEvent)tuples.get(0).get(0)).get("body"));
+            }
+        };
+    }
+
+    // select temperature, humidity, city from inputstream where temperature + humidity > 100 OR TRIM(city) = 'SFO'
+    // city = FOO, temperature = 10, humidity = 10
+    @Test
+    public void testComplex3() throws Exception {
+        doTest(readFile("/streamline-complex-condition.json"), getWeather("FOO", 10, 10));
+        new Verifications() {
+            {
+                String streamId;
+                Tuple anchor;
+                List<List<Object>> tuples = new ArrayList<>();
+                mockCollector.emit(streamId = withCapture(), anchor = withCapture(), withCapture(tuples));
+                times=0;
+            }
+        };
+    }
+
     private void doTest(String rulesJson, Tuple tuple) throws Exception {
         RulesBolt rulesBolt = new RulesBolt(rulesJson, RuleProcessorRuntime.ScriptType.SQL) {
             @Override
@@ -179,6 +230,16 @@ public class RulesBoltConditionTest {
     private Tuple getTuple(int i) {
         StreamlineEvent event = StreamlineEventImpl.builder()
                 .fieldsAndValues(ImmutableMap.of("foo", i, "bar", 100, "baz", 200))
+                .dataSourceId("dsrcid")
+                .build();
+        return new TupleImpl(mockContext, new Values(event), 1, "inputstream");
+    }
+
+    private Tuple getWeather(String city, long temperature, long humidity) {
+        StreamlineEvent event = StreamlineEventImpl.builder()
+                .fieldsAndValues(ImmutableMap.of("city", city,
+                        "temperature", temperature,
+                        "humidity", humidity))
                 .dataSourceId("dsrcid")
                 .build();
         return new TupleImpl(mockContext, new Values(event), 1, "inputstream");

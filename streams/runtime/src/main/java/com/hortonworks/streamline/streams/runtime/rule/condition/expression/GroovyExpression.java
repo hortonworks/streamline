@@ -65,6 +65,14 @@ public class GroovyExpression extends ExpressionRuntime {
                     return " >= ";
                 case LESS_THAN_EQUALS_TO:
                     return " <= ";
+                case MULTIPLY:
+                    return " * ";
+                case DIVIDE:
+                    return " / ";
+                case PLUS:
+                    return " + ";
+                case MINUS:
+                    return " - ";
                 default:
                     throw new UnsupportedOperationException(
                             String.format("Operator [%s] not supported. List of supported operators: %s",

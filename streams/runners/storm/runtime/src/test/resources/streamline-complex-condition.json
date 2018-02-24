@@ -1,0 +1,139 @@
+{
+  "outputStreams": [
+    {
+      "id": "outputstream",
+      "schema": {
+        "fields": [
+          {
+            "name": "temperature",
+            "type": "LONG",
+            "optional": true
+          },
+          {
+            "name": "humidity",
+            "type": "LONG",
+            "optional": false
+          },
+          {
+            "name": "city",
+            "type": "STRING",
+            "optional": false
+          }
+        ]
+      }
+    }
+  ],
+  "rules": [
+    {
+      "id": 1,
+      "name": "test",
+      "description": "test",
+      "ruleProcessorName": "test",
+      "streams": [
+        "inputstream"
+      ],
+      "projection": {
+        "expressions": [
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+            "value": {
+              "name": "temperature",
+              "type": "LONG",
+              "optional": false
+            }
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+            "value": {
+              "name": "humidity",
+              "type": "LONG",
+              "optional": false
+            }
+          },
+          {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+            "value": {
+              "name": "city",
+              "type": "STRING",
+              "optional": false
+            }
+          }
+        ]
+      },
+      "groupBy": null,
+      "having": null,
+      "window": null,
+      "condition": {
+        "expression": {
+          "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.BinaryExpression",
+          "operator": "OR",
+          "first": {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.BinaryExpression",
+            "operator": "GREATER_THAN",
+            "first": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.BinaryExpression",
+              "operator": "PLUS",
+              "first": {
+                "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                "value": {
+                  "name": "temperature",
+                  "type": "LONG",
+                  "optional": false
+                }
+              },
+              "second": {
+                "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                "value": {
+                  "name": "humidity",
+                  "type": "LONG",
+                  "optional": false
+                }
+              }
+            },
+            "second": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.Literal",
+              "value": "100"
+            }
+          },
+          "second": {
+            "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.BinaryExpression",
+            "operator": "EQUALS",
+            "first": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FunctionExpression",
+              "function": {
+                "name": "TRIM_FN",
+                "className": "com.hortonworks.streamline.streams.udf.Trim",
+                "udf": true
+              },
+              "operands": [
+                {
+                  "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression",
+                  "value": {
+                    "name": "city",
+                    "type": "STRING",
+                    "optional": false
+                  }
+                }
+              ]
+            },
+            "second": {
+              "class": "com.hortonworks.streamline.streams.layout.component.rule.expression.Literal",
+              "value": "'SFO'"
+            }
+          }
+        }
+      },
+      "actions": [
+        {
+          "name": "notificationsink",
+          "outputFieldsAndDefaults": {
+            "body": "CITY ${city} TEMPERATURE ${temperature} HUMIDITY ${humidity}"
+          },
+          "outputStreams": ["outputstream"],
+          "notifierName": "email_notifier",
+          "__type": "com.hortonworks.streamline.streams.layout.component.rule.action.NotifierAction"
+        }
+      ]
+    }
+  ]
+}
