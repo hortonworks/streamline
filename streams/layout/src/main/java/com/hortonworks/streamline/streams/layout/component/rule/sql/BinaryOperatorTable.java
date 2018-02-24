@@ -38,14 +38,18 @@ public class BinaryOperatorTable {
 
     private static ImmutableMap<SqlBinaryOperator, Operator> buildTable() {
         return ImmutableMap.<SqlBinaryOperator, Operator>builder()
-        .put(SqlStdOperatorTable.GREATER_THAN, Operator.GREATER_THAN)
-        .put(SqlStdOperatorTable.LESS_THAN, Operator.LESS_THAN)
-        .put(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, Operator.GREATER_THAN_EQUALS_TO)
-        .put(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, Operator.LESS_THAN_EQUALS_TO)
-        .put(SqlStdOperatorTable.EQUALS, Operator.EQUALS)
-        .put(SqlStdOperatorTable.NOT_EQUALS, Operator.NOT_EQUAL)
-        .put(SqlStdOperatorTable.AND, Operator.AND)
-        .put(SqlStdOperatorTable.OR, Operator.OR)
-        .build();
+                .put(SqlStdOperatorTable.GREATER_THAN, Operator.GREATER_THAN)
+                .put(SqlStdOperatorTable.LESS_THAN, Operator.LESS_THAN)
+                .put(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, Operator.GREATER_THAN_EQUALS_TO)
+                .put(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, Operator.LESS_THAN_EQUALS_TO)
+                .put(SqlStdOperatorTable.EQUALS, Operator.EQUALS)
+                .put(SqlStdOperatorTable.NOT_EQUALS, Operator.NOT_EQUAL)
+                .put(SqlStdOperatorTable.AND, Operator.AND)
+                .put(SqlStdOperatorTable.OR, Operator.OR)
+                .put(SqlStdOperatorTable.MULTIPLY, Operator.MULTIPLY)
+                .put(SqlStdOperatorTable.DIVIDE, Operator.DIVIDE)
+                .put(SqlStdOperatorTable.PLUS, Operator.PLUS)
+                .put(SqlStdOperatorTable.MINUS, Operator.MINUS)
+                .build();
     }
 }
