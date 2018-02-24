@@ -19,7 +19,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.hortonworks.streamline.streams.metrics.TimeSeriesQuerier;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -92,8 +94,8 @@ public class AmbariMetricsServiceWithStormQuerierTest {
         String topologyName = "testTopology";
         String componentId = "testComponent";
         // this is one of metric which needs stream aggregation
-        String metricName = "__complete-latency";
-        TimeSeriesQuerier.AggregateFunction aggrFunction = TimeSeriesQuerier.AggregateFunction.AVG;
+        String metricName = "__emit-count";
+        TimeSeriesQuerier.AggregateFunction aggrFunction = TimeSeriesQuerier.AggregateFunction.SUM;
         long from = 1234L;
         long to = 5678L;
 
@@ -103,9 +105,100 @@ public class AmbariMetricsServiceWithStormQuerierTest {
         verify(getRequestedFor(urlPathEqualTo(TEST_COLLECTOR_API_PATH))
                 .withQueryParam("appId", equalTo(DEFAULT_APP_ID))
                 .withQueryParam("hostname", equalTo(""))
-                .withQueryParam("metricNames", equalTo("topology.testTopology.testComponent.%.--complete-latency.%"))
+                .withQueryParam("metricNames", equalTo("topology.testTopology.testComponent.%.--emit-count.%"))
                 .withQueryParam("startTime", equalTo("1234"))
                 .withQueryParam("endTime", equalTo("5678")));
+    }
+
+    @Test
+    public void testAggregateWithWeightedAverage() {
+        Map<Long, List<Pair<String, Double>>> keyMetric = new HashMap<>();
+
+        List<Pair<String, Double>> keyPoints1 = new ArrayList<>();
+        keyPoints1.add(Pair.of("stream1", 10.0));
+        keyPoints1.add(Pair.of("stream2", 20.0));
+        keyMetric.put(1L, keyPoints1);
+
+        List<Pair<String, Double>> keyPoints2 = new ArrayList<>();
+        keyPoints2.add(Pair.of("stream1", 10.0));
+        keyPoints2.add(Pair.of("stream2", 20.0));
+        keyMetric.put(2L, keyPoints2);
+
+        Map<Long, List<Pair<String, Double>>> weightMetric = new HashMap<>();
+
+        List<Pair<String, Double>> weightPoints1 = new ArrayList<>();
+        weightPoints1.add(Pair.of("stream1", 10.0));
+        weightPoints1.add(Pair.of("stream2", 5.0));
+        weightMetric.put(1L, weightPoints1);
+
+        List<Pair<String, Double>> weightPoints2 = new ArrayList<>();
+        weightPoints2.add(Pair.of("stream1", 5.0));
+        weightPoints2.add(Pair.of("stream2", 10.0));
+        weightMetric.put(2L, weightPoints2);
+
+        Map<Long, Double> ret = querier.aggregateWithApplyingWeightedAverage(keyMetric, weightMetric);
+        Assert.assertEquals(2, ret.size());
+
+        Double aggregated = ret.get(1L);
+        Assert.assertNotNull(aggregated);
+        Double expected = 10.0 * 10.0 / (10.0 + 5.0) + 20.0 * 5.0 / (10.0 + 5.0);
+        Assert.assertEquals(expected, aggregated, 0.00001d);
+
+        aggregated = ret.get(2L);
+        Assert.assertNotNull(aggregated);
+        expected = 10.0 * 5.0 / (5.0 + 10.0) + 20.0 * 10.0 / (5.0 + 10.0);
+        Assert.assertEquals(expected, aggregated, 0.00001d);
+    }
+
+    @Test
+    public void testAggregateWithWeightedAverageLacksWeightInformation() {
+        Map<Long, List<Pair<String, Double>>> keyMetric = new HashMap<>();
+
+        List<Pair<String, Double>> keyPoints1 = new ArrayList<>();
+        keyPoints1.add(Pair.of("stream1", 10.0));
+        keyPoints1.add(Pair.of("stream2", 20.0));
+        keyMetric.put(1L, keyPoints1);
+
+        List<Pair<String, Double>> keyPoints2 = new ArrayList<>();
+        keyPoints2.add(Pair.of("stream1", 10.0));
+        keyPoints2.add(Pair.of("stream2", 20.0));
+        keyMetric.put(2L, keyPoints2);
+
+        List<Pair<String, Double>> keyPoints3 = new ArrayList<>();
+        keyPoints3.add(Pair.of("stream1", 10.0));
+        keyPoints3.add(Pair.of("stream2", 20.0));
+        keyMetric.put(3L, keyPoints3);
+
+        Map<Long, List<Pair<String, Double>>> weightMetric = new HashMap<>();
+
+        // no weight for 1L
+
+        // total weight is zero for 2L
+        List<Pair<String, Double>> weightPoints2 = new ArrayList<>();
+        weightPoints2.add(Pair.of("stream1", 0.0));
+        weightPoints2.add(Pair.of("stream2", 0.0));
+        weightMetric.put(2L, weightPoints2);
+
+        // no weight for 3L - stream2
+        List<Pair<String, Double>> weightPoints3 = new ArrayList<>();
+        weightPoints3.add(Pair.of("stream1", 10.0));
+        weightMetric.put(3L, weightPoints3);
+
+        Map<Long, Double> ret = querier.aggregateWithApplyingWeightedAverage(keyMetric, weightMetric);
+        Assert.assertEquals(3, ret.size());
+
+        Double aggregated = ret.get(1L);
+        Assert.assertNotNull(aggregated);
+        Assert.assertEquals(0.0d, aggregated, 0.00001d);
+
+        aggregated = ret.get(2L);
+        Assert.assertNotNull(aggregated);
+        Assert.assertEquals(0.0d, aggregated, 0.00001d);
+
+        aggregated = ret.get(3L);
+        Assert.assertNotNull(aggregated);
+        // only weight and value for stream1 is considered
+        Assert.assertEquals(10.0d, aggregated, 0.00001d);
     }
 
     @Test
