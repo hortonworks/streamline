@@ -17,6 +17,7 @@ package com.hortonworks.streamline.streams.metrics.storm.ambari;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.hortonworks.streamline.common.JsonClientUtil;
 import com.hortonworks.streamline.common.exception.ConfigException;
 import com.hortonworks.streamline.common.util.DoubleUtils;
@@ -39,7 +40,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.DoubleStream;
 
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -65,11 +65,12 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
             "__process-latency", "__execute-count", "__execute-latency"
     ).build();
 
-    private static final List<Pair<String, String>> METRICS_APPLY_WEIGHTED_AVERAGE_PAIR =
-            ImmutableList.<Pair<String, String>>builder().add(
-            Pair.of("--complete-latency", "--ack-count"),
-            Pair.of("--process-latency", "--execute-count"),
-            Pair.of("--execute-latency", "--execute-count")).build();
+    private static final Map<String, String> METRICS_APPLY_WEIGHTED_AVERAGE_PAIR =
+            ImmutableMap.<String, String>builder()
+                    .put("--complete-latency", "--ack-count")
+                    .put("--process-latency", "--execute-count")
+                    .put("--execute-latency", "--execute-count")
+                    .build();
 
     // they're actually prefixed by '__' but in metric name, '__' is replaced to '--'
     private static final List<String> SYSTEM_STREAM_PREFIX = ImmutableList.<String>builder()
@@ -117,13 +118,14 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
     public Map<Long, Double> getMetrics(String topologyName, String componentId, String metricName,
                                         AggregateFunction aggrFunction, long from, long to) {
 
-        Optional<Pair<String, String>> weightedPair = findWeightedPair(metricName);
+        Optional<String> weightMetric = findWeightMetric(metricName);
 
-        if (weightedPair.isPresent()) {
-            Map<Long, List<Pair<String, Double>>> keyMetric = getMetricsStreamToValueMap(topologyName, componentId, metricName, from, to);
-            Map<Long, List<Pair<String, Double>>> weightMetric = getMetricsStreamToValueMap(topologyName, componentId,
-                    weightedPair.get().getRight(), from, to);
-            return aggregateWithApplyingWeightedAverage(keyMetric, weightMetric);
+        if (weightMetric.isPresent()) {
+            Map<Long, List<Pair<String, Double>>> keyMetrics = getMetricsStreamToValueMap(topologyName, componentId,
+                    metricName, from, to);
+            Map<Long, List<Pair<String, Double>>> weightMetrics = getMetricsStreamToValueMap(topologyName, componentId,
+                    weightMetric.get(), from, to);
+            return aggregateWithApplyingWeightedAverage(keyMetrics, weightMetrics);
         } else {
             Map<Long, List<Pair<String, Double>>> ret = getMetricsStreamToValueMap(topologyName, componentId, metricName, from, to);
             return aggregateStreamsForMetricsValues(ret, aggrFunction);
@@ -273,13 +275,9 @@ public class AmbariMetricsServiceWithStormQuerier extends AbstractTimeSeriesQuer
         return ret;
     }
 
-    private Optional<Pair<String, String>> findWeightedPair(String metricName) {
-        for (Pair<String, String> keyToWeight : METRICS_APPLY_WEIGHTED_AVERAGE_PAIR) {
-            if (keyToWeight.getLeft().equals(metricName)) {
-                return Optional.of(keyToWeight);
-            }
-        }
-        return Optional.empty();
+    private Optional<String> findWeightMetric(String metricName) {
+        String weightMetric = METRICS_APPLY_WEIGHTED_AVERAGE_PAIR.get(metricName);
+        return Optional.ofNullable(weightMetric);
     }
 
     private Map<Long, Double> aggregateStreamsForMetricsValues(Map<Long, List<Pair<String, Double>>> ret, AggregateFunction aggrFunction) {
