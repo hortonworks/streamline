@@ -272,10 +272,12 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
             initConfig.put(Constants.CONFIG_AUTHORIZER, authorizer);
             initConfig.put(Constants.CONFIG_SECURITY_CATALOG_SERVICE, securityCatalogService);
             initConfig.put(Constants.CONFIG_SUBJECT, subject);
-            if (configuration.getHttpProxyUrl() == null || configuration.getHttpProxyUrl().isEmpty()) {
-                LOG.warn("No http proxy configuration found. If SAM server is behind an http proxy, please move proxyUrl, proxyUsername and " +
-                        "proxyPassword configuration properties under streams module to httpProxyUrl, httpProxyUsername and httpProxyPassword respectively at" +
-                        " top level in your streamline.yaml");
+            if ((initConfig.get("proxyUrl") != null) && (configuration.getHttpProxyUrl() == null || configuration.getHttpProxyUrl().isEmpty())) {
+                LOG.warn("Please move proxyUrl, proxyUsername and proxyPassword configuration properties under streams module to httpProxyUrl, " +
+                        "httpProxyUsername and httpProxyPassword respectively at top level in your streamline.yaml");
+                configuration.setHttpProxyUrl((String) initConfig.get("proxyUrl"));
+                configuration.setHttpProxyUsername((String) initConfig.get("proxyUsername"));
+                configuration.setHttpProxyPassword((String) initConfig.get("proxyPassword"));
             }
             // pass http proxy information from top level config to each module. Up to them how they want to use it. Currently used in StreamsModule
             initConfig.put(Constants.CONFIG_HTTP_PROXY_URL, configuration.getHttpProxyUrl());
