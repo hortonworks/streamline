@@ -225,7 +225,7 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
         LOG.info("Registered streamline entities {}", streamlineEntities);
         FileStorage fileStorage = this.getJarStorage(configuration, storageManager);
         int appPort = ((HttpConnectorFactory) ((DefaultServerFactory) configuration.getServerFactory()).getApplicationConnectors().get(0)).getPort();
-        String catalogRootUrl = configuration.getCatalogRootUrl().replaceFirst("8080", appPort +"");
+        String catalogRootUrl = configuration.getCatalogRootUrl().replaceFirst("8080", appPort + "");
         List<ModuleConfiguration> modules = configuration.getModules();
         List<Object> resourcesToRegister = new ArrayList<>();
 
@@ -272,6 +272,17 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
             initConfig.put(Constants.CONFIG_AUTHORIZER, authorizer);
             initConfig.put(Constants.CONFIG_SECURITY_CATALOG_SERVICE, securityCatalogService);
             initConfig.put(Constants.CONFIG_SUBJECT, subject);
+            if ((initConfig.get("proxyUrl") != null) && (configuration.getHttpProxyUrl() == null || configuration.getHttpProxyUrl().isEmpty())) {
+                LOG.warn("Please move proxyUrl, proxyUsername and proxyPassword configuration properties under streams module to httpProxyUrl, " +
+                        "httpProxyUsername and httpProxyPassword respectively at top level in your streamline.yaml");
+                configuration.setHttpProxyUrl((String) initConfig.get("proxyUrl"));
+                configuration.setHttpProxyUsername((String) initConfig.get("proxyUsername"));
+                configuration.setHttpProxyPassword((String) initConfig.get("proxyPassword"));
+            }
+            // pass http proxy information from top level config to each module. Up to them how they want to use it. Currently used in StreamsModule
+            initConfig.put(Constants.CONFIG_HTTP_PROXY_URL, configuration.getHttpProxyUrl());
+            initConfig.put(Constants.CONFIG_HTTP_PROXY_USERNAME, configuration.getHttpProxyUsername());
+            initConfig.put(Constants.CONFIG_HTTP_PROXY_PASSWORD, configuration.getHttpProxyPassword());
             moduleRegistration.init(initConfig, fileStorage);
             if (moduleRegistration instanceof StorageManagerAware) {
                 LOG.info("Module [{}] is StorageManagerAware and setting StorageManager.", moduleName);

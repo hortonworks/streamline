@@ -136,6 +136,11 @@ logging:
 #      timeZone: UTC
 #      maxFileSize: 10MB
 
+#Set below 3 properties if server needs a proxy to connect. Useful to download mysql jar/maven artifacts for storm topology submission
+#httpProxyUrl: "http://proxyHost:port"
+#httpProxyUsername: "username"
+#httpProxyPassword: "password"
+
 #jerseyClient:
 #  minThreads: 1
 #  maxThreads: 16

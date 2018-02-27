@@ -31,6 +31,9 @@ public class Constants {
     public static final String CONFIG_SCHEMA_REGISTRY_URL = "schemaRegistryUrl";
     public static final String CONFIG_STREAMS_MODULE = "streams";
     public static final String CONFIG_SUBJECT = "subject";
+    public static final String CONFIG_HTTP_PROXY_URL = "httpProxyUrl";
+    public static final String CONFIG_HTTP_PROXY_USERNAME = "httpProxyUsername";
+    public static final String CONFIG_HTTP_PROXY_PASSWORD = "httpProxyPassword";
 
     public static final String JAAS_STREAMLINE_APP_CONFIG_ENTRY_NAME = "StreamlineServer";
 }
