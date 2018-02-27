@@ -52,16 +52,6 @@ public class StreamlineConfiguration extends Configuration {
 
 
     @JsonProperty
-    public StorageProviderConfiguration getStorageProviderConfiguration() {
-        return storageProviderConfiguration;
-    }
-
-    @JsonProperty
-    public void setStorageProviderConfiguration(StorageProviderConfiguration storageProviderConfiguration) {
-        this.storageProviderConfiguration = storageProviderConfiguration;
-    }
-
-    @JsonProperty
     private boolean enableCors;
 
     @JsonProperty
@@ -77,7 +67,21 @@ public class StreamlineConfiguration extends Configuration {
 
     private LoginConfiguration loginConfiguration;
 
-    public String getCatalogRootUrl() {
+    private String httpProxyUrl;
+    private String httpProxyUsername;
+    private String httpProxyPassword;
+
+    @JsonProperty
+    public StorageProviderConfiguration getStorageProviderConfiguration() {
+        return storageProviderConfiguration;
+    }
+
+    @JsonProperty
+    public void setStorageProviderConfiguration(StorageProviderConfiguration storageProviderConfiguration) {
+        this.storageProviderConfiguration = storageProviderConfiguration;
+    }
+
+   public String getCatalogRootUrl() {
         return catalogRootUrl;
     }
 
@@ -165,5 +169,31 @@ public class StreamlineConfiguration extends Configuration {
     public void setLoginConfiguration(LoginConfiguration loginConfiguration) {
         this.loginConfiguration = loginConfiguration;
     }
+
+    public String getHttpProxyUrl() {
+        return httpProxyUrl;
+    }
+
+    public void setHttpProxyUrl(String httpProxyUrl) {
+        this.httpProxyUrl = httpProxyUrl;
+    }
+
+    public String getHttpProxyUsername() {
+        return httpProxyUsername;
+    }
+
+    public void setHttpProxyUsername(String httpProxyUsername) {
+        this.httpProxyUsername = httpProxyUsername;
+    }
+
+    public String getHttpProxyPassword() {
+        return httpProxyPassword;
+    }
+
+    public void setHttpProxyPassword(String httpProxyPassword) {
+        this.httpProxyPassword = httpProxyPassword;
+    }
+
+
 
 }
