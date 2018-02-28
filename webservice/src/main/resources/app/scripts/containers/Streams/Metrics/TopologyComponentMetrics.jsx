@@ -16,7 +16,6 @@ import React,{Component} from 'react';
 import _ from 'lodash';
 import TimeSeriesChart from '../../../components/TimeSeriesChart';
 import d3 from 'd3';
-import MetricsREST from '../../../rest/MetricsREST';
 import Utils from '../../../utils/Utils';
 import ContentScrollableComponent from '../../../components/ContentScrollableComponent';
 
@@ -106,6 +105,7 @@ class TopologyComponentMetrics extends Component {
     const queueData = [];
     const processTimeData = [];
     const completeLatency = [];
+    const kafkaLagOffsetData=[];
 
     if(timeSeriesMetrics) {
       const {
@@ -114,7 +114,8 @@ class TopologyComponentMetrics extends Component {
         recordsInWaitQueue,
         failedRecords,
         misc,
-        processedTime
+        processedTime,
+        kafkaLagOffset
       } = timeSeriesMetrics;
       for(const key in outputRecords) {
         inputOutputData.push({
@@ -142,6 +143,12 @@ class TopologyComponentMetrics extends Component {
           completeLatency.push({
             date: new Date(parseInt(key)),
             Latency: misc.completeLatency[key] || 0
+          });
+        }
+        if(kafkaLagOffset){
+          kafkaLagOffsetData.push({
+            date: new Date(parseInt(key)),
+            lag : kafkaLagOffset.lag[key] || 0
           });
         }
       }
@@ -239,6 +246,20 @@ class TopologyComponentMetrics extends Component {
               {this.state.loadingRecord ? loader : this.getGraph('Queue', queueData, 'step-before', showMetrics)}
             </div>
           </div>
+          {
+            compData.parentType === 'SOURCE' && compData.currentType === "Kafka"
+            ? <div className="component-metric-graph">
+                <div style={{textAlign: "left"}}>Kafka Offset Lag</div>
+                <div style={{
+                  height: '25px',
+                  textAlign: 'center',
+                  backgroundColor: '#f2f3f2'
+                }}>
+                  {this.state.loadingRecord ? loader : this.getGraph('kafkaLagOffset', kafkaLagOffsetData, 'step-before', showMetrics)}
+                </div>
+              </div>
+            : null
+          }
         </div>
       </ContentScrollableComponent>
       )

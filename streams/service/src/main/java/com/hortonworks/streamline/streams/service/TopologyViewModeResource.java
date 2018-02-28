@@ -1,13 +1,11 @@
 package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.catalog.*;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
-import com.hortonworks.streamline.streams.metrics.storm.topology.StormMappedMetric;
 import com.hortonworks.streamline.streams.metrics.topology.TopologyTimeSeriesMetrics;
 import com.hortonworks.streamline.streams.metrics.topology.service.TopologyMetricsService;
 import com.hortonworks.streamline.streams.security.Roles;
@@ -27,7 +25,6 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -305,217 +302,6 @@ public class TopologyViewModeResource {
         }
         if (to == null) {
             throw BadRequestException.missingParameter("to");
-        }
-    }
-
-    /**
-     * Note: Given that UI of view mode is tied to Apache Storm, using the term of Storm.
-     */
-    private static class ComponentMetricSummary {
-        private static final String METRIC_NAME_ACK_COUNT = "ackedRecords";
-        private static final String METRIC_NAME_COMPLETE_LATENCY = "completeLatency";
-        private static final String METRIC_NAME_EXECUTE_LATENCY = "executeLatency";
-
-        private final Long emitted;
-        private final Long acked;
-        private final Long failed;
-        private final Double latency;
-        private final Double completeLatency;
-        private final Double processTime;
-        private final Double executeTime;
-
-        private final Long prevEmitted;
-        private final Long prevAcked;
-        private final Long prevFailed;
-        private final Double prevLatency;
-        private final Double prevCompleteLatency;
-        private final Double prevProcessTime;
-        private final Double prevExecuteTime;
-
-        public ComponentMetricSummary(Long emitted, Long acked, Long failed, Double latency, Double completeLatency,
-                                      Double processTime, Double executeTime,
-                                      Long prevEmitted, Long prevAcked, Long prevFailed, Double prevLatency,
-                                      Double prevCompleteLatency, Double prevProcessTime, Double prevExecuteTime) {
-            this.emitted = emitted;
-            this.acked = acked;
-            this.failed = failed;
-            this.latency = latency;
-            this.completeLatency = completeLatency;
-            this.processTime = processTime;
-            this.executeTime = executeTime;
-            this.prevEmitted = prevEmitted;
-            this.prevAcked = prevAcked;
-            this.prevFailed = prevFailed;
-            this.prevLatency = prevLatency;
-            this.prevCompleteLatency = prevCompleteLatency;
-            this.prevProcessTime = prevProcessTime;
-            this.prevExecuteTime = prevExecuteTime;
-        }
-
-        public Long getEmitted() {
-            return emitted;
-        }
-
-        public Long getAcked() {
-            return acked;
-        }
-
-        public Long getFailed() {
-            return failed;
-        }
-
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        public Double getLatency() {
-            return latency;
-        }
-
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        public Double getCompleteLatency() {
-            return completeLatency;
-        }
-
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        public Double getProcessTime() {
-            return processTime;
-        }
-
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        public Double getExecuteTime() {
-            return executeTime;
-        }
-
-        public Long getPrevEmitted() {
-            return prevEmitted;
-        }
-
-        public Long getPrevAcked() {
-            return prevAcked;
-        }
-
-        public Long getPrevFailed() {
-            return prevFailed;
-        }
-
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        public Double getPrevLatency() {
-            return prevLatency;
-        }
-
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        public Double getPrevCompleteLatency() {
-            return prevCompleteLatency;
-        }
-
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        public Double getPrevProcessTime() {
-            return prevProcessTime;
-        }
-
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        public Double getPrevExecuteTime() {
-            return prevExecuteTime;
-        }
-
-        public static ComponentMetricSummary convertTopologyMetric(TopologyTimeSeriesMetrics.TimeSeriesComponentMetric metrics,
-                                                                   TopologyTimeSeriesMetrics.TimeSeriesComponentMetric prevMetrics) {
-            Long emitted = aggregateEmitted(metrics);
-            Long acked = aggregatedAcked(metrics);
-            Double latency = aggregateCompleteLatency(metrics);
-            Long failed = aggregateFailed(metrics);
-
-            Long prevEmitted = null;
-            Long prevAcked = null;
-            Double prevLatency = null;
-            Long prevFailed = null;
-
-            // aggregate the value only if it is available
-            if (prevMetrics != null) {
-                prevEmitted = aggregateEmitted(prevMetrics);
-                prevAcked = aggregatedAcked(prevMetrics);
-                prevLatency = aggregateCompleteLatency(prevMetrics);
-                prevFailed = aggregateFailed(prevMetrics);
-            }
-
-            return new ComponentMetricSummary(emitted, acked, failed, latency, null, null, null,
-                    prevEmitted, prevAcked, prevFailed, prevLatency, null, null, null);
-        }
-
-        public static ComponentMetricSummary convertSourceMetric(TopologyTimeSeriesMetrics.TimeSeriesComponentMetric metrics,
-                                                                 TopologyTimeSeriesMetrics.TimeSeriesComponentMetric prevMetrics) {
-            Long emitted = aggregateEmitted(metrics);
-            Long acked = aggregatedAcked(metrics);
-            Double completeLatency = aggregateCompleteLatency(metrics);
-            Long failed = aggregateFailed(metrics);
-
-            Long prevEmitted = null;
-            Long prevAcked = null;
-            Double prevCompleteLatency = null;
-            Long prevFailed = null;
-
-            // aggregate the value only if it is available
-            if (prevMetrics != null) {
-                prevEmitted = aggregateEmitted(prevMetrics);
-                prevAcked = aggregatedAcked(prevMetrics);
-                prevCompleteLatency = aggregateCompleteLatency(prevMetrics);
-                prevFailed = aggregateFailed(prevMetrics);
-            }
-
-            return new ComponentMetricSummary(emitted, acked, failed, null, completeLatency, null, null,
-                    prevEmitted, prevAcked, prevFailed, null, prevCompleteLatency, null, null);
-        }
-
-        public static ComponentMetricSummary convertNonSourceMetric(TopologyTimeSeriesMetrics.TimeSeriesComponentMetric metrics,
-                                                                    TopologyTimeSeriesMetrics.TimeSeriesComponentMetric prevMetrics) {
-            Long emitted = aggregateEmitted(metrics);
-            Long acked = aggregatedAcked(metrics);
-            Double processLatency = aggregateProcessLatency(metrics);
-            Double executeLatency = aggregateExecuteLatency(metrics);
-            Long failed = aggregateFailed(metrics);
-
-            Long prevEmitted = null;
-            Long prevAcked = null;
-            Double prevProcessLatency = null;
-            Double prevExecuteLatency = null;
-            Long prevFailed = null;
-
-            // aggregate the value only if it is available
-            if (prevMetrics != null) {
-                prevEmitted = aggregateEmitted(prevMetrics);
-                prevAcked = aggregatedAcked(prevMetrics);
-                prevProcessLatency = aggregateProcessLatency(prevMetrics);
-                prevExecuteLatency = aggregateExecuteLatency(prevMetrics);
-                prevFailed = aggregateFailed(prevMetrics);
-            }
-
-            return new ComponentMetricSummary(emitted, acked, failed, null, null, processLatency, executeLatency,
-                    prevEmitted, prevAcked, prevFailed, null, null, prevProcessLatency, prevExecuteLatency);
-        }
-
-        private static long aggregateFailed(TopologyTimeSeriesMetrics.TimeSeriesComponentMetric metrics) {
-            return metrics.getFailedRecords().values().stream().mapToLong(Double::longValue).sum();
-        }
-
-        private static double aggregateProcessLatency(TopologyTimeSeriesMetrics.TimeSeriesComponentMetric metrics) {
-            return metrics.getProcessedTime().values().stream().mapToDouble(v -> v).average().orElse(0.0d);
-        }
-
-        private static double aggregateExecuteLatency(TopologyTimeSeriesMetrics.TimeSeriesComponentMetric metrics) {
-            return metrics.getMisc().getOrDefault(StormMappedMetric.executeTime.name(), Collections.emptyMap())
-                    .values().stream().mapToDouble(v -> v).average().orElse(0.0d);
-        }
-
-        private static double aggregateCompleteLatency(TopologyTimeSeriesMetrics.TimeSeriesComponentMetric metrics) {
-            return metrics.getMisc().getOrDefault(StormMappedMetric.completeLatency.name(), Collections.emptyMap())
-                    .values().stream().mapToDouble(v -> v).average().orElse(0.0d);
-        }
-
-        private static long aggregateEmitted(TopologyTimeSeriesMetrics.TimeSeriesComponentMetric metrics) {
-            return metrics.getOutputRecords().values().stream().mapToLong(Double::longValue).sum();
-        }
-
-        private static long aggregatedAcked(TopologyTimeSeriesMetrics.TimeSeriesComponentMetric metrics) {
-            return metrics.getMisc().getOrDefault(METRIC_NAME_ACK_COUNT, Collections.emptyMap())
-                    .values().stream().mapToLong(Double::longValue).sum();
         }
     }
 

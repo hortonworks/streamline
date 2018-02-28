@@ -16,7 +16,6 @@ import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import {observer} from 'mobx-react';
 import {Button, PanelGroup, Panel, DropdownButton, MenuItem} from 'react-bootstrap';
-import MetricsREST from '../../../rest/MetricsREST';
 import TimeSeriesChart from '../../../components/TimeSeriesChart';
 import FSReactToastr from '../../../components/FSReactToastr';
 import CommonNotification from '../../../utils/CommonNotification';
@@ -73,7 +72,7 @@ import moment from 'moment';
       return d3.svg.axis().orient("left").tickFormat("");
     }} showTooltip={function(d) {
       const index = this.props.data.indexOf(d);
-      const {inputOutput, ackedTuples, FailedTuples, Latency, ProcessTime, Queue, ExecuteTime} = self.refs;
+      const {inputOutput, ackedTuples, FailedTuples, Latency, ProcessTime, Queue, ExecuteTime, KafkaLagOffset} = self.refs;
       if (inputOutput && inputOutput.props.data[index] !== undefined && self.state.showMetrics) {
         TimeSeriesChart.defaultProps.showTooltip.call(inputOutput, inputOutput.props.data[index]);
       }
@@ -95,8 +94,11 @@ import moment from 'moment';
       if (Queue && Queue.props.data[index] !== undefined && self.state.showMetrics) {
         TimeSeriesChart.defaultProps.showTooltip.call(Queue, Queue.props.data[index]);
       }
+      if (KafkaLagOffset && KafkaLagOffset.props.data[index] !== undefined && self.state.showMetrics) {
+        TimeSeriesChart.defaultProps.showTooltip.call(KafkaLagOffset, KafkaLagOffset.props.data[index]);
+      }
     }} hideTooltip={function() {
-      const {inputOutput, ackedTuples, FailedTuples, Latency, ProcessTime, ExecuteTime, Queue} = self.refs;
+      const {inputOutput, ackedTuples, FailedTuples, Latency, ProcessTime, ExecuteTime, Queue, KafkaLagOffset} = self.refs;
       if (inputOutput) {
         TimeSeriesChart.defaultProps.hideTooltip.call(inputOutput);
       }
@@ -117,6 +119,9 @@ import moment from 'moment';
       }
       if (Queue) {
         TimeSeriesChart.defaultProps.hideTooltip.call(Queue);
+      }
+      if (KafkaLagOffset){
+        TimeSeriesChart.defaultProps.hideTooltip.call(KafkaLagOffset);
       }
     }} onBrushEnd={function() {
       if (!this.brush.empty()) {
@@ -190,13 +195,15 @@ import moment from 'moment';
     const processTimeData = [];
     const executeTimeData = [];
     const completeLatency = [];
+    const kafkaLagOffsetData = [];
     const {
       outputRecords,
       inputRecords,
       recordsInWaitQueue,
       failedRecords,
       misc,
-      processedTime
+      processedTime,
+      kafkaLagOffset
     } = timeSeriesMetrics;
     for(const key in outputRecords) {
       inputOutputData.push({
@@ -230,6 +237,12 @@ import moment from 'moment';
         executeTimeData.push({
           date: new Date(parseInt(key)),
           ExecuteTime: misc.executeTime[key] || 0
+        });
+      }
+      if(kafkaLagOffset){
+        kafkaLagOffsetData.push({
+          date: new Date(parseInt(key)),
+          lag : kafkaLagOffset.lag[key] || 0
         });
       }
     }
@@ -381,6 +394,38 @@ import moment from 'moment';
         </div>
       </div>
     );
+    const sourceGraphDivContent = function(){
+      let content=[];
+      content.push(
+        <div className="col-md-3" key={33}>
+          <div className="topology-foot-graphs">
+            <div style={{textAlign: "left", marginLeft: '10px'}}>{selectedComponent.parentType === 'SOURCE' ? 'Complete Latency' : 'Latency'}</div>
+            <div style={{
+              height: '50px',
+              textAlign: 'center'
+            }}>
+              {this.state.loadingRecord ? loader : this.getGraph('Latency', completeLatency, 'step-before')}
+            </div>
+          </div>
+        </div>
+      );
+      if(selectedComponent.currentType === "Kafka"){
+        content.push(
+          <div className="col-md-3" key={34}>
+            <div className="topology-foot-graphs">
+              <div style={{textAlign: "left", marginLeft: '10px'}}>Kafka Offset Lag</div>
+              <div style={{
+                height: '50px',
+                textAlign: 'center'
+              }}>
+                {this.state.loadingRecord ? loader : this.getGraph('KafkaLagOffset', kafkaLagOffsetData, 'step-before')}
+              </div>
+            </div>
+          </div>
+        );
+      }
+      return content;
+    };
     return (
       <div className="topology-metrics-container" style={app_state.sidebar_isCollapsed ? {} : {paddingLeft: '230px'}}>
         <Panel
@@ -441,17 +486,7 @@ import moment from 'moment';
           </div>,
             <div className="row">
             {selectedComponentId == '' || selectedComponent.parentType === 'SOURCE' ?
-            <div className="col-md-3">
-              <div className="topology-foot-graphs">
-                <div style={{textAlign: "left", marginLeft: '10px'}}>{selectedComponent.parentType === 'SOURCE' ? 'Complete Latency' : 'Latency'}</div>
-                <div style={{
-                  height: '50px',
-                  textAlign: 'center'
-                }}>
-                  {this.state.loadingRecord ? loader : this.getGraph('Latency', completeLatency, 'step-before')}
-                </div>
-              </div>
-            </div>
+              sourceGraphDivContent.call(this)
             :
             [ <div className="col-md-3">
                 <div className="topology-foot-graphs">

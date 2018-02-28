@@ -19,10 +19,12 @@ package com.hortonworks.streamline.streams.layout.component.rule.expression;
  * Supported operators
  */
 public enum Operator {
-    GREATER_THAN(1), LESS_THAN(1), GREATER_THAN_EQUALS_TO(1), LESS_THAN_EQUALS_TO(1),
-    EQUALS(2), NOT_EQUAL(2),
-    AND(3),
-    OR(4);
+    MULTIPLY(1), DIVIDE(1),
+    PLUS(2), MINUS(2),
+    GREATER_THAN(3), LESS_THAN(3), GREATER_THAN_EQUALS_TO(3), LESS_THAN_EQUALS_TO(3),
+    EQUALS(4), NOT_EQUAL(4),
+    AND(5),
+    OR(6);
 
     private final int precedence;
 

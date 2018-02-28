@@ -118,7 +118,11 @@ public class AmbariInfraWithStormLogSearch implements TopologyLogSearch {
         }
         query.addFilterQuery(buildColumnAndValue(COLUMN_NAME_LOG_LEVEL, buildORValues(logLevels)));
 
-        query.addSort(COLUMN_NAME_LOG_TIME, SolrQuery.ORDER.asc);
+        if (logSearchCriteria.getAscending() == null || logSearchCriteria.getAscending()) {
+            query.addSort(COLUMN_NAME_LOG_TIME, SolrQuery.ORDER.asc);
+        } else {
+            query.addSort(COLUMN_NAME_LOG_TIME, SolrQuery.ORDER.desc);
+        }
 
         if (logSearchCriteria.getStart() != null) {
             query.setStart(logSearchCriteria.getStart());

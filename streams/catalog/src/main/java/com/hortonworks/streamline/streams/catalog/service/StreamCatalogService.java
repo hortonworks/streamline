@@ -988,8 +988,7 @@ public class StreamCatalogService {
         Collection<TopologyComponentBundle> customProcessors = this.listCustomProcessorBundlesWithFilter(params);
         Collection<CustomProcessorInfo> result = new ArrayList<>();
         for (TopologyComponentBundle cp : customProcessors) {
-            CustomProcessorInfo customProcessorInfo = new CustomProcessorInfo();
-            result.add(customProcessorInfo.fromTopologyComponentBundle(cp));
+            result.add(CustomProcessorInfo.fromTopologyComponentBundle(cp));
         }
         return result;
     }
@@ -1107,7 +1106,7 @@ public class StreamCatalogService {
             }
         }
         this.removeTopologyComponentBundle(customProcessorBundle.getId());
-        return new CustomProcessorInfo().fromTopologyComponentBundle(customProcessorBundle);
+        return CustomProcessorInfo.fromTopologyComponentBundle(customProcessorBundle);
     }
 
     public Optional<TopologyEditorToolbar> getTopologyEditorToolbar(long userId) {

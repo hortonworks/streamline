@@ -7,7 +7,7 @@ modules:
     className: com.hortonworks.streamline.streams.service.StreamsModule
     config:
       #change the below to the path on your local machine
-      streamlineStormJar: /tmp/streamline-runtime-storm-0.1.0-SNAPSHOT.jar
+      streamlineStormJar: /tmp/streamline-runtime-storm-0.6.0-SNAPSHOT.jar
       stormHomeDir: /usr/local/Cellar/storm/0.10.0/
       # directory to store the results of topology test run
       topologyTestRunResultDir: /tmp
@@ -135,6 +135,11 @@ logging:
 #      archivedFileCount: 7
 #      timeZone: UTC
 #      maxFileSize: 10MB
+
+#Set below 3 properties if server needs a proxy to connect. Useful to download mysql jar/maven artifacts for storm topology submission
+#httpProxyUrl: "http://proxyHost:port"
+#httpProxyUsername: "username"
+#httpProxyPassword: "password"
 
 #jerseyClient:
 #  minThreads: 1

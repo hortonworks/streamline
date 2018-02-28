@@ -21,13 +21,13 @@
     <parent>
         <artifactId>streamline</artifactId>
         <groupId>com.hortonworks.streamline</groupId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.6.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>hortonworks-streamline-bin</artifactId>
     <packaging>pom</packaging>
-    <name>Apache Streamline Binary Distribution</name>
-    <description>Apache Streamline binary distribution</description>
+    <name>Hortonworks Streamline Binary Distribution</name>
+    <description>Hortonworks Streamline binary distribution</description>
 
     <scm>
         <connection>scm:git:git@github.com:hortonworks/streamline</connection>
@@ -214,11 +214,7 @@
                     <doUpdate>false</doUpdate>
                     <outputDirectory>${project.basedir}</outputDirectory>
                     <outputName>VERSION</outputName>
-                    <revisiononscmfailure>
-                        <items>
-                            <item>version=${project.version}</item>
-                        </items>
-                    </revisiononscmfailure>
+                    <revisionOnScmFailure>unknown</revisionOnScmFailure>
                 </configuration>
                 <executions>
                     <execution>

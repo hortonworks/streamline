@@ -316,15 +316,34 @@ const TopologyREST = {
         return response.json();
       });
   },
-  getSchemaForKafka(topicName,versionsId, options) {
+  getSchemaVersionsForKafka(topicName, branchName, options) {
     options = options || {};
     options.method = options.method || 'GET';
     options.credentials = 'same-origin';
     topicName = encodeURIComponent(topicName);
-    let url = "/api/v1/schemas/" + topicName+"/versions";
-    if(!!versionsId){
-      url+="/"+versionsId;
-    }
+    let url = "/api/v1/schemas/" + topicName +"/" + branchName + "/versions";
+    return fetch(url, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  getSchemaForKafka(topicName, versionsId, options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    topicName = encodeURIComponent(topicName);
+    let url = "/api/v1/schemas/" + topicName + "/versions/"+ versionsId;
+    return fetch(url, options)
+      .then((response) => {
+        return response.json();
+      });
+  },
+  getSchemaBranchesForKafka(topicName, options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    topicName = encodeURIComponent(topicName);
+    let url = "/api/v1/schemas/" + topicName+"/branches";
     return fetch(url, options)
       .then((response) => {
         return response.json();
