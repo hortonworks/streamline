@@ -26,6 +26,7 @@ import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Tested;
 import mockit.integration.junit4.JMockit;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -35,6 +36,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -160,5 +162,40 @@ public class StreamCatalogServiceTest {
         projections = Collections.singletonList(new Projection(null, "foo", Arrays.asList("a.b", "kafka_stream_1.c.d"), "res"));
         sql = streamCatalogService.getSqlString(streams, projections, "f1.a.b = kafka_stream_1.g.h", gbk);
         assertEquals("SELECT foo(a['b'],kafka_stream_1.c['d']) AS \"res\" FROM kafka_stream_1 WHERE f1['a']['b'] = kafka_stream_1.g['h'] GROUP BY a['b']['c']", sql);
+    }
+
+    @Test
+    public void testtranslateFunctionsProjection() {
+        String result;
+        Map<String, String> table = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        table.put("FOO", "FOO_FN");
+        table.put("foo2", "foo2_fn");
+
+        result = streamCatalogService.translateFunctions("select foo(arg1), FOO(arg2), FOO (arg3) from stream",
+                table);
+        Assert.assertEquals("select FOO_FN(arg1), FOO_FN(arg2), FOO_FN (arg3) from stream", result);
+
+        result = streamCatalogService.translateFunctions("select foo2(arg1, arg2), bar(arg2), BAZ(arg3, arg4) from stream",
+                table);
+        Assert.assertEquals("select foo2_fn(arg1, arg2), bar(arg2), BAZ(arg3, arg4) from stream", result);
+
+    }
+
+    @Test
+    public void testtranslateFunctionsCondition() {
+        String result;
+        Map<String, String> table = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        table.put("FOO", "FOO_FN");
+        table.put("foo2", "foo2_fn");
+        table.put("UPPER", "UPPER");
+
+        result = streamCatalogService.translateFunctions("select foo, foo1, foo2 from stream where FOO(a, b) = 'c'",
+                table);
+        Assert.assertEquals("select foo, foo1, foo2 from stream where FOO_FN(a, b) = 'c'", result);
+
+        result = streamCatalogService.translateFunctions("select * from stream where FOO(a) = 'b' AND UPPER(a) = 'C'",
+                table);
+        Assert.assertEquals("select * from stream where FOO_FN(a) = 'b' AND UPPER(a) = 'C'", result);
+
     }
 }
