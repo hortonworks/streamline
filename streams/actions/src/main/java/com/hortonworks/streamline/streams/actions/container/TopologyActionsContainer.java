@@ -98,7 +98,7 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
         // Assuming that a namespace has one mapping of streaming engine except test environment
         Service streamingEngineService = getFirstOccurenceServiceForNamespace(namespace, streamingEngine);
         if (streamingEngineService == null) {
-            if (!namespace.getReadonly()) {
+            if (!namespace.getInternal()) {
                 throw new RuntimeException("Streaming Engine " + streamingEngine + " is not associated to the namespace " +
                         namespace.getName() + "(" + namespace.getId() + ")");
             } else {

@@ -34,7 +34,6 @@ import com.hortonworks.streamline.streams.actions.topology.service.TopologyActio
 import com.hortonworks.streamline.streams.catalog.TopologyVersion;
 import com.hortonworks.streamline.streams.catalog.service.CatalogService;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
-import com.hortonworks.streamline.streams.cluster.catalog.Cluster;
 import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
 import com.hortonworks.streamline.streams.cluster.resource.ClusterCatalogResource;
 import com.hortonworks.streamline.streams.cluster.resource.ComponentCatalogResource;
@@ -236,7 +235,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware, T
                     testNamespace.setStreamingEngine(MappedTopologyActionsImpl.STORM.name());
                     // no metric service, no log search service
                     testNamespace.setDescription("Empty environment to test the topology which doesn't require external service.");
-                    testNamespace.setReadonly(true);
+                    testNamespace.setInternal(true);
                     testNamespace.setTimestamp(System.currentTimeMillis());
                     environmentService.addOrUpdateNamespace(EnvironmentService.PLACEHOLDER_ID, testNamespace);
                 }

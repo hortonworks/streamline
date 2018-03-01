@@ -38,7 +38,7 @@ public class Namespace extends AbstractStorable {
   public static final String TIME_SERIES_DB = "timeSeriesDB";
   public static final String LOG_SEARCH_SERVICE = "logSearchService";
   public static final String DESCRIPTION = "description";
-  public static final String READONLY = "readonly";
+  public static final String INTERNAL = "internal";
   public static final String TIMESTAMP = "timestamp";
 
   private Long id;
@@ -50,7 +50,7 @@ public class Namespace extends AbstractStorable {
   private String logSearchService;
   @SearchableField
   private String description = "";
-  private Boolean readonly = false;
+  private Boolean internal = false;
   private Long timestamp;
 
   @JsonIgnore
@@ -77,7 +77,7 @@ public class Namespace extends AbstractStorable {
             Schema.Field.of(TIME_SERIES_DB, Schema.Type.STRING),
             Schema.Field.of(LOG_SEARCH_SERVICE, Schema.Type.STRING),
             Schema.Field.of(DESCRIPTION, Schema.Type.STRING),
-            Schema.Field.of(READONLY, Schema.Type.BOOLEAN),
+            Schema.Field.of(INTERNAL, Schema.Type.BOOLEAN),
             Schema.Field.of(TIMESTAMP, Schema.Type.LONG)
     );
   }
@@ -158,12 +158,12 @@ public class Namespace extends AbstractStorable {
     this.timestamp = timestamp;
   }
 
-  public Boolean getReadonly() {
-    return readonly;
+  public Boolean getInternal() {
+    return internal;
   }
 
-  public void setReadonly(Boolean readonly) {
-    this.readonly = readonly;
+  public void setInternal(Boolean internal) {
+    this.internal = internal;
   }
 
   @Override
@@ -183,7 +183,7 @@ public class Namespace extends AbstractStorable {
       return false;
     if (getDescription() != null ? !getDescription().equals(namespace.getDescription()) : namespace.getDescription() != null)
       return false;
-    if (getReadonly() != null ? !getReadonly().equals(namespace.getReadonly()) : namespace.getReadonly() != null)
+    if (getInternal() != null ? !getInternal().equals(namespace.getInternal()) : namespace.getInternal() != null)
       return false;
     return getTimestamp() != null ? getTimestamp().equals(namespace.getTimestamp()) : namespace.getTimestamp() == null;
   }
@@ -196,7 +196,7 @@ public class Namespace extends AbstractStorable {
     result = 31 * result + (getTimeSeriesDB() != null ? getTimeSeriesDB().hashCode() : 0);
     result = 31 * result + (getLogSearchService() != null ? getLogSearchService().hashCode() : 0);
     result = 31 * result + (getDescription() != null ? getDescription().hashCode() : 0);
-    result = 31 * result + (getReadonly() != null ? getReadonly().hashCode() : 0);
+    result = 31 * result + (getInternal() != null ? getInternal().hashCode() : 0);
     result = 31 * result + (getTimestamp() != null ? getTimestamp().hashCode() : 0);
     return result;
   }
@@ -210,7 +210,7 @@ public class Namespace extends AbstractStorable {
             ", timeSeriesDB='" + timeSeriesDB + '\'' +
             ", logSearchService='" + logSearchService + '\'' +
             ", description='" + description + '\'' +
-            ", readonly=" + readonly +
+            ", internal=" + internal +
             ", timestamp=" + timestamp +
             '}';
   }

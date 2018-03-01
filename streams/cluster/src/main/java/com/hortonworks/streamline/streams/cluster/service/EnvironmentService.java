@@ -458,7 +458,7 @@ public class EnvironmentService {
     }
 
     public Namespace removeNamespace(Long namespaceId) {
-        assertEnvironmentIsNotReadonly(namespaceId);
+        assertEnvironmentIsNotInternal(namespaceId);
 
         Namespace namespace = new Namespace();
         namespace.setId(namespaceId);
@@ -501,7 +501,7 @@ public class EnvironmentService {
     }
 
     public NamespaceServiceClusterMap removeServiceClusterMapping(Long namespaceId, String serviceName, Long clusterId) {
-        assertEnvironmentIsNotReadonly(namespaceId);
+        assertEnvironmentIsNotInternal(namespaceId);
 
         StorableKey key = getStorableKeyForNamespaceServiceClusterMapping(namespaceId, serviceName, clusterId);
         NamespaceServiceClusterMap ret = this.dao.remove(key);
@@ -511,7 +511,7 @@ public class EnvironmentService {
 
     public NamespaceServiceClusterMap addOrUpdateServiceClusterMapping(
             NamespaceServiceClusterMap newMapping) {
-        assertEnvironmentIsNotReadonly(newMapping.getNamespaceId());
+        assertEnvironmentIsNotInternal(newMapping.getNamespaceId());
 
         this.dao.addOrUpdate(newMapping);
         invalidateTopologyActionsMetricsInstances(newMapping.getNamespaceId());
@@ -634,15 +634,15 @@ public class EnvironmentService {
         this.containers.forEach(c -> c.invalidateInstance(namespaceId));
     }
 
-    private void assertEnvironmentIsNotReadonly(Long namespaceId) {
+    private void assertEnvironmentIsNotInternal(Long namespaceId) {
         Namespace namespace = getNamespace(namespaceId);
 
         if (namespace == null) {
             throw new IllegalArgumentException("Environment not found: " + namespaceId);
         }
 
-        if (namespace.getReadonly()) {
-            throw new IllegalArgumentException("Environment is read only!");
+        if (namespace.getInternal()) {
+            throw new IllegalArgumentException("Internal environment is read only!");
         }
     }
 
