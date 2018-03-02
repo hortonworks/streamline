@@ -154,7 +154,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware, T
                 new BranchRuleCatalogResource(authorizer, streamcatalogService),
                 new WindowCatalogResource(authorizer, streamcatalogService),
                 new TopologyEditorToolbarResource(authorizer, streamcatalogService, securityCatalogService),
-                new TopologyTestRunResource(streamcatalogService, actionsService),
+                new TopologyTestRunResource(authorizer, streamcatalogService, actionsService),
                 new TopologyEventSamplingResource(authorizer,
                         new TopologySamplingService(environmentService, subject), streamcatalogService),
                 new TopologyLoggingResource(authorizer, streamcatalogService, actionsService, logSearchService)
