@@ -95,11 +95,16 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
     }
 
     private Map<String, Object> buildStormTopologyActionsConfigMap(Namespace namespace, String streamingEngine, Subject subject) {
-        // Assuming that a namespace has one mapping of streaming engine
+        // Assuming that a namespace has one mapping of streaming engine except test environment
         Service streamingEngineService = getFirstOccurenceServiceForNamespace(namespace, streamingEngine);
         if (streamingEngineService == null) {
-            throw new RuntimeException("Streaming Engine " + streamingEngine + " is not associated to the namespace " +
-                    namespace.getName() + "(" + namespace.getId() + ")");
+            if (!namespace.getInternal()) {
+                throw new RuntimeException("Streaming Engine " + streamingEngine + " is not associated to the namespace " +
+                        namespace.getName() + "(" + namespace.getId() + ")");
+            } else {
+                // the namespace is purposed for test run
+                return buildStormTopologyActionsConfigMapForTestRun(namespace, subject);
+            }
         }
 
         Component uiServer = getComponent(streamingEngineService, COMPONENT_NAME_STORM_UI_SERVER)
@@ -152,6 +157,40 @@ public class TopologyActionsContainer extends NamespaceAwareContainer<TopologyAc
         conf.put(TopologyLayoutConstants.SUBJECT_OBJECT, subject);
 
         putStormConfigurations(streamingEngineService, conf);
+
+        // Topology during run-time will require few critical configs such as schemaRegistryUrl and catalogRootUrl
+        // Hence its important to pass StreamlineConfig to TopologyConfig
+        conf.putAll(streamlineConf);
+
+        // TopologyActionImpl needs 'EnvironmentService' and namespace ID to load service configurations
+        // for specific cluster associated to the namespace
+        conf.put(TopologyLayoutConstants.ENVIRONMENT_SERVICE_OBJECT, environmentService);
+        conf.put(TopologyLayoutConstants.NAMESPACE_ID, namespace.getId());
+
+        return conf;
+    }
+
+    private Map<String, Object> buildStormTopologyActionsConfigMapForTestRun(Namespace namespace, Subject subject) {
+        Map<String, Object> conf = new HashMap<>();
+
+        // We need to have some local configurations anyway because topology submission can't be done with REST API.
+        String stormJarLocation = streamlineConf.get(STREAMLINE_STORM_JAR);
+        if (stormJarLocation == null) {
+            String jarFindDir = applyReservedPaths(DEFAULT_STORM_JAR_LOCATION_DIR);
+            stormJarLocation = findFirstMatchingJarLocation(jarFindDir);
+        } else {
+            stormJarLocation = applyReservedPaths(stormJarLocation);
+        }
+
+        conf.put(STREAMLINE_STORM_JAR, stormJarLocation);
+        conf.put(STORM_HOME_DIR, streamlineConf.get(STORM_HOME_DIR));
+
+        // Since we're loading the class dynamically so we can't rely on any enums or constants from there
+        // belows are all dummy value which is not used for test topology run
+        conf.put(NIMBUS_SEEDS, "localhost");
+        conf.put(NIMBUS_PORT, "6627");
+        conf.put(TopologyLayoutConstants.STORM_API_ROOT_URL_KEY, "http://localhost:8080");
+        conf.put(TopologyLayoutConstants.SUBJECT_OBJECT, subject);
 
         // Topology during run-time will require few critical configs such as schemaRegistryUrl and catalogRootUrl
         // Hence its important to pass StreamlineConfig to TopologyConfig

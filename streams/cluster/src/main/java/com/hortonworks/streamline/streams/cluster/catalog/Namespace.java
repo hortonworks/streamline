@@ -32,6 +32,15 @@ import java.util.Map;
 public class Namespace extends AbstractStorable {
   public static final String NAMESPACE = "namespace";
 
+  public static final String ID = "id";
+  public static final String NAME = "name";
+  public static final String STREAMING_ENGINE = "streamingEngine";
+  public static final String TIME_SERIES_DB = "timeSeriesDB";
+  public static final String LOG_SEARCH_SERVICE = "logSearchService";
+  public static final String DESCRIPTION = "description";
+  public static final String INTERNAL = "internal";
+  public static final String TIMESTAMP = "timestamp";
+
   private Long id;
   @SearchableField
   private String name;
@@ -41,6 +50,7 @@ public class Namespace extends AbstractStorable {
   private String logSearchService;
   @SearchableField
   private String description = "";
+  private Boolean internal = false;
   private Long timestamp;
 
   @JsonIgnore
@@ -55,6 +65,21 @@ public class Namespace extends AbstractStorable {
     Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
     fieldToObjectMap.put(new Schema.Field("id", Schema.Type.LONG), this.id);
     return new PrimaryKey(fieldToObjectMap);
+  }
+
+  @JsonIgnore
+  @Override
+  public Schema getSchema() {
+    return Schema.of(
+            Schema.Field.of(ID, Schema.Type.LONG),
+            Schema.Field.of(NAME, Schema.Type.STRING),
+            Schema.Field.of(STREAMING_ENGINE, Schema.Type.STRING),
+            Schema.Field.of(TIME_SERIES_DB, Schema.Type.STRING),
+            Schema.Field.of(LOG_SEARCH_SERVICE, Schema.Type.STRING),
+            Schema.Field.of(DESCRIPTION, Schema.Type.STRING),
+            Schema.Field.of(INTERNAL, Schema.Type.BOOLEAN),
+            Schema.Field.of(TIMESTAMP, Schema.Type.LONG)
+    );
   }
 
   /**
@@ -133,6 +158,14 @@ public class Namespace extends AbstractStorable {
     this.timestamp = timestamp;
   }
 
+  public Boolean getInternal() {
+    return internal;
+  }
+
+  public void setInternal(Boolean internal) {
+    this.internal = internal;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -150,6 +183,8 @@ public class Namespace extends AbstractStorable {
       return false;
     if (getDescription() != null ? !getDescription().equals(namespace.getDescription()) : namespace.getDescription() != null)
       return false;
+    if (getInternal() != null ? !getInternal().equals(namespace.getInternal()) : namespace.getInternal() != null)
+      return false;
     return getTimestamp() != null ? getTimestamp().equals(namespace.getTimestamp()) : namespace.getTimestamp() == null;
   }
 
@@ -161,6 +196,7 @@ public class Namespace extends AbstractStorable {
     result = 31 * result + (getTimeSeriesDB() != null ? getTimeSeriesDB().hashCode() : 0);
     result = 31 * result + (getLogSearchService() != null ? getLogSearchService().hashCode() : 0);
     result = 31 * result + (getDescription() != null ? getDescription().hashCode() : 0);
+    result = 31 * result + (getInternal() != null ? getInternal().hashCode() : 0);
     result = 31 * result + (getTimestamp() != null ? getTimestamp().hashCode() : 0);
     return result;
   }
@@ -174,6 +210,7 @@ public class Namespace extends AbstractStorable {
             ", timeSeriesDB='" + timeSeriesDB + '\'' +
             ", logSearchService='" + logSearchService + '\'' +
             ", description='" + description + '\'' +
+            ", internal=" + internal +
             ", timestamp=" + timestamp +
             '}';
   }
