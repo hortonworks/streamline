@@ -21,6 +21,8 @@ import com.hortonworks.registries.common.transaction.TransactionIsolation;
 import com.hortonworks.registries.common.util.FileStorage;
 import com.hortonworks.registries.storage.TransactionManager;
 import com.hortonworks.registries.storage.transaction.ManagedTransaction;
+import com.hortonworks.streamline.common.configuration.ConfigFileType;
+import com.hortonworks.streamline.common.configuration.ConfigFileWriter;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
 import com.hortonworks.streamline.streams.actions.TopologyActions;
 import com.hortonworks.streamline.streams.actions.container.TopologyActionsContainer;
@@ -29,20 +31,19 @@ import com.hortonworks.streamline.streams.actions.topology.state.TopologyState;
 import com.hortonworks.streamline.streams.actions.topology.state.TopologyStateFactory;
 import com.hortonworks.streamline.streams.actions.topology.state.TopologyStates;
 import com.hortonworks.streamline.streams.catalog.CatalogToLayoutConverter;
+import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyTestRunCase;
+import com.hortonworks.streamline.streams.catalog.TopologyTestRunHistory;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
+import com.hortonworks.streamline.streams.catalog.topology.component.TopologyDagBuilder;
 import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
 import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMap;
 import com.hortonworks.streamline.streams.cluster.catalog.Service;
 import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
-import com.hortonworks.streamline.streams.catalog.Topology;
-import com.hortonworks.streamline.streams.catalog.TopologyTestRunHistory;
-import com.hortonworks.streamline.common.configuration.ConfigFileType;
-import com.hortonworks.streamline.common.configuration.ConfigFileWriter;
-import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
-import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
-import com.hortonworks.streamline.streams.catalog.topology.component.TopologyDagBuilder;
 import com.hortonworks.streamline.streams.cluster.container.ContainingNamespaceAwareContainer;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
+import com.hortonworks.streamline.streams.layout.component.Edge;
 import com.hortonworks.streamline.streams.layout.component.OutputComponent;
 import com.hortonworks.streamline.streams.layout.component.StreamlineProcessor;
 import com.hortonworks.streamline.streams.layout.component.StreamlineSource;
@@ -64,6 +65,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static com.hortonworks.streamline.streams.actions.topology.state.TopologyStates.TOPOLOGY_STATE_INITIAL;
@@ -203,6 +205,15 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
             if (!sourceWithOutgoingEdge.isPresent()) {
                 throw new IllegalStateException("Topology does not contain a processor or a source with an outgoing edge");
             }
+        }
+
+        Optional<Edge> edge = dag.getAllEdges().stream()
+                .filter(e -> e.getStreamGroupings().stream().anyMatch(g -> !g.isValid()))
+                .findFirst();
+        if (edge.isPresent()) {
+            throw new IllegalStateException("Topology edge between "
+                    + edge.get().getFrom().getName() + " and " + edge.get().getTo().getName()
+                    + " has invalid stream grouping.");
         }
     }
 
