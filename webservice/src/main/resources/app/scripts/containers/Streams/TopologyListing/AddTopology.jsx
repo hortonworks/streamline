@@ -35,8 +35,8 @@ class AddTopology extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      topologyName: '',
-      namespaceId: '',
+      topologyName: props.topologyData ? props.topologyData.topology.name : '',
+      namespaceId: props.topologyData ? props.topologyData.topology.namespaceId : '',
       namespaceOptions: [],
       validInput: true,
       validSelect: true,
@@ -122,7 +122,11 @@ class AddTopology extends Component {
       namespaceId: namespaceId,
       config: JSON.stringify(configData)
     };
-    return TopologyREST.postTopology({body: JSON.stringify(data)});
+    if(this.props.topologyData) {
+      return TopologyREST.putTopology(this.props.topologyData.topology.id, this.props.topologyData.topology.versionId, {body: JSON.stringify(data)});
+    } else {
+      return TopologyREST.postTopology({body: JSON.stringify(data)});
+    }
   }
   saveMetadata = (id) => {
     let metaData = {
@@ -148,6 +152,7 @@ class AddTopology extends Component {
       formField,
       validInput,
       showRequired,
+      topologyName,
       namespaceId,
       namespaceOptions,
       validSelect
@@ -162,9 +167,9 @@ class AddTopology extends Component {
             <span className="text-danger">*</span>
           </label>
           <div>
-            <input type="text" ref={(ref) => this.nameRef = ref} name="topologyName" placeholder="Application name" required="true" className={validInput
+            <input type="text" ref={(ref) => this.nameRef = ref} name="topologyName" defaultValue={topologyName} placeholder="Application name" required="true" className={validInput
               ? "form-control"
-              : "form-control invalidInput"} onKeyUp={this.handleOnChange} autoFocus="true"/>
+              : "form-control invalidInput"} onKeyUp={this.handleOnChange} autoFocus="true" disabled={!!this.props.topologyData} />
           </div>
         </div>
         <div className="form-group">

@@ -223,7 +223,7 @@ class TopologyEditorContainer extends Component {
           let defaultTimeSecVal = this.getDefaultTimeSec(this.topologyConfigData);
 
           Utils.sortArray(versions, 'name', true);
-          this.graphData.nodes = TopologyUtils.syncNodeData(sourcesNode, processorsNode, sinksNode, this.graphData.metaInfo, this.sourceConfigArr, this.processorConfigArr, this.sinkConfigArr);
+          this.graphData.nodes = TopologyUtils.syncNodeData(sourcesNode, processorsNode, sinksNode, this.graphData.metaInfo, this.sourceConfigArr, this.processorConfigArr, this.sinkConfigArr, this.notifyReconfigureCallback);
 
           this.graphData.uinamesList = [];
           this.graphData.nodes.map(node => {
@@ -928,9 +928,13 @@ class TopologyEditorContainer extends Component {
     });
     this.updateGraphMethod();
     if(errorMsg.length){
-      FSReactToastr.warning(
-        <CommonNotification flag="warning" content={"Re-evaluate the configuration for the nodes marked in \"Yellow\""}/>, '', toastOpt);
+      this.notifyReconfigureCallback();
     }
+  }
+
+  notifyReconfigureCallback(){
+    FSReactToastr.warning(
+      <CommonNotification flag="warning" content={"Re-evaluate the configuration for the nodes marked in \"Yellow\""}/>, '', toastOpt);
   }
 
   showEdgeConfigModal(topologyId, versionId, newEdge, edges, callback, node, streamName, grouping, groupingFields) {

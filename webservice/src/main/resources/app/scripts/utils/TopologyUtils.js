@@ -927,11 +927,15 @@ const setShuffleOptions = function(linkConfigArr) {
   return options;
 };
 
-const syncNodeData = function(sources, processors, sinks, metadata, sourcesBundle, processorsBundle, sinksBundle) {
+const syncNodeData = function(sources, processors, sinks, metadata, sourcesBundle, processorsBundle, sinksBundle, notifyReconfigureCallback) {
   let nodeArr = [];
-  this.generateNodeData(sources, sourcesBundle, metadata.sources, nodeArr);
-  this.generateNodeData(processors, processorsBundle, metadata.processors, nodeArr);
-  this.generateNodeData(sinks, sinksBundle, metadata.sinks, nodeArr);
+  let reconfigureNodes = {reconfigure: false};
+  this.generateNodeData(sources, sourcesBundle, metadata.sources, nodeArr, reconfigureNodes);
+  this.generateNodeData(processors, processorsBundle, metadata.processors, nodeArr, reconfigureNodes);
+  this.generateNodeData(sinks, sinksBundle, metadata.sinks, nodeArr, reconfigureNodes);
+  if(reconfigureNodes.reconfigure && notifyReconfigureCallback !== undefined){
+    notifyReconfigureCallback();
+  }
   return nodeArr;
 };
 
@@ -940,7 +944,7 @@ const capitalizeFirstLetter = function(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
-const generateNodeData = function(nodes, componentBundle, metadata, resultArr) {
+const generateNodeData = function(nodes, componentBundle, metadata, resultArr, reconfigureNodes) {
   for (let i = 0; i < nodes.length; i++) {
     let componentObj = componentBundle.filter(c => {
       return c.id === nodes[i].topologyComponentBundleId;
@@ -989,6 +993,9 @@ const generateNodeData = function(nodes, componentBundle, metadata, resultArr) {
 
     if(!_.isEmpty(componentObj.eventLogData) && componentObj.eventLogData !== undefined){
       obj.eventLogData =  componentObj.eventLogData;
+    }
+    if(nodes[i].reconfigure) {
+      reconfigureNodes.reconfigure = true;
     }
     resultArr.push(obj);
   }
