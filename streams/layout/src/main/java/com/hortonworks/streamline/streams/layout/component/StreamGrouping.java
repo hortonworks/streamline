@@ -46,6 +46,15 @@ public class StreamGrouping implements Serializable {
         return fields;
     }
 
+    public boolean isValid() {
+        if (grouping == Stream.Grouping.FIELDS) {
+            if (fields == null || fields.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

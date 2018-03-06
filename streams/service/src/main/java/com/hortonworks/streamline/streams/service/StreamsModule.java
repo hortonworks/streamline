@@ -29,10 +29,12 @@ import com.hortonworks.registries.common.util.FileStorage;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
 import com.hortonworks.streamline.registries.tag.client.TagClient;
 import com.hortonworks.registries.storage.StorageManager;
+import com.hortonworks.streamline.streams.actions.container.mapping.MappedTopologyActionsImpl;
 import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
 import com.hortonworks.streamline.streams.catalog.TopologyVersion;
 import com.hortonworks.streamline.streams.catalog.service.CatalogService;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
+import com.hortonworks.streamline.streams.cluster.catalog.Namespace;
 import com.hortonworks.streamline.streams.cluster.resource.ClusterCatalogResource;
 import com.hortonworks.streamline.streams.cluster.resource.ComponentCatalogResource;
 import com.hortonworks.streamline.streams.cluster.resource.ServiceBundleResource;
@@ -115,7 +117,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware, T
         result.add(new SearchCatalogResource(authorizer, streamcatalogService, environmentService,
                 topologyActionsService, topologyMetricsService));
         watchFiles(streamcatalogService);
-        setupPlaceholderEntities(streamcatalogService);
+        setupPlaceholderEntities(streamcatalogService, environmentService);
         return result;
     }
 
@@ -154,7 +156,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware, T
                 new BranchRuleCatalogResource(authorizer, streamcatalogService),
                 new WindowCatalogResource(authorizer, streamcatalogService),
                 new TopologyEditorToolbarResource(authorizer, streamcatalogService, securityCatalogService),
-                new TopologyTestRunResource(streamcatalogService, actionsService),
+                new TopologyTestRunResource(authorizer, streamcatalogService, actionsService),
                 new TopologyEventSamplingResource(authorizer,
                         new TopologySamplingService(environmentService, subject), streamcatalogService),
                 new TopologyLoggingResource(authorizer, streamcatalogService, actionsService, logSearchService)
@@ -211,8 +213,36 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware, T
         thread.start();
     }
 
-    private void setupPlaceholderEntities(StreamCatalogService catalogService) {
+    private void setupPlaceholderEntities(StreamCatalogService catalogService, EnvironmentService environmentService) {
         setupPlaceholderTopologyVersionInfo(catalogService);
+        setupPlaceholderTestNamespace(environmentService);
+    }
+
+    private void setupPlaceholderTestNamespace(EnvironmentService environmentService) {
+        if (transactionManager == null) {
+            throw new RuntimeException("TransactionManager is not initialized");
+        }
+
+        // it's one time setup hence just use it as local variable
+        ManagedTransaction mt = new ManagedTransaction(transactionManager, TransactionIsolation.DEFAULT);
+        try {
+            mt.executeConsumer(() -> {
+                Namespace testNamespace = environmentService.getNamespace(EnvironmentService.PLACEHOLDER_ID);
+                if (testNamespace == null) {
+                    testNamespace = new Namespace();
+                    testNamespace.setId(EnvironmentService.PLACEHOLDER_ID);
+                    testNamespace.setName("Test Environment");
+                    testNamespace.setStreamingEngine(MappedTopologyActionsImpl.STORM.name());
+                    // no metric service, no log search service
+                    testNamespace.setDescription("Empty environment to test the topology which doesn't require external service.");
+                    testNamespace.setInternal(true);
+                    testNamespace.setTimestamp(System.currentTimeMillis());
+                    environmentService.addOrUpdateNamespace(EnvironmentService.PLACEHOLDER_ID, testNamespace);
+                }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void setupPlaceholderTopologyVersionInfo(StreamCatalogService catalogService) {
