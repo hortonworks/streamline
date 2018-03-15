@@ -580,53 +580,6 @@ const filterOptions = function(selected, outputFieldsList){ //Filter out childre
   return options;
 };
 
-const generateCodeMirrorOptions = (array,type) => {
-  let arr=[];
-  _.map(array, (a) => {
-    if(a.fields === undefined){
-      let obj = {
-        text : a.name || a,
-        displayText : a.displayName || a.name || a,
-        className : type === "FUNCTION" ? "codemirror-func" : type === "SQL" ? "codemirror-sql" :  "codemirror-field"
-      };
-      obj[type === "FUNCTION" ?  "returnType" : "type"] = type === "FUNCTION" ?  a.returnType : type === "SQL" ? 'SQL' : a.type;
-      if(type === "FUNCTION"){
-        obj.argsType = a.argTypes[0];
-      }
-      obj.render = (el, cm, data) => {
-        codeMirrorOptionsTemplate(el,data);
-      };
-      arr.push(obj);
-    }
-  });
-  return arr;
-};
-
-const codeMirrorOptionsTemplate = (el,data) => {
-  const text = document.createElement('div');
-  const fNameSpan = document.createElement('span');
-  fNameSpan.setAttribute('class','funcText');
-  fNameSpan.innerText = data.displayText;
-
-  // data.argsType is only for UDF Function
-  if(data.argsType && data.argsType.length){
-    const paramSpan = document.createElement('span');
-    paramSpan.innerText = '('+data.argsType+')';
-    fNameSpan.append(paramSpan);
-  }
-  text.append(fNameSpan);
-  el.appendChild(text);
-
-  // data.returnType is for UDF Function ||  data.type is for Fields
-  if(data.returnType || data.type){
-    const returnTypetxt = document.createElement('div');
-    returnTypetxt.setAttribute('class','fieldText');
-    const content = data.returnType ? 'Return Type: '+data.returnType : 'Type: '+data.type;
-    returnTypetxt.innerText = content;
-    el.appendChild(returnTypetxt);
-  }
-};
-
 export default {
   getSchemaFields,
   createSelectedKeysHierarchy,
@@ -644,7 +597,5 @@ export default {
   getNestedKeyFromGroup,
   removeChildren,
   addChildren,
-  filterOptions,
-  generateCodeMirrorOptions,
-  codeMirrorOptionsTemplate
+  filterOptions
 };

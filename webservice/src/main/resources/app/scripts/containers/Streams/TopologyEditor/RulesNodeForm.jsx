@@ -36,8 +36,6 @@ import {Scrollbars} from 'react-custom-scrollbars';
 import {toastOpt} from '../../../utils/Constants';
 import CommonNotification from '../../../utils/CommonNotification';
 import Utils from '../../../utils/Utils';
-import AggregateUdfREST from '../../../rest/AggregateUdfREST';
-import ProcessorUtils from '../../../utils/ProcessorUtils';
 
 export default class RulesNodeForm extends Component {
   static propTypes = {
@@ -66,7 +64,6 @@ export default class RulesNodeForm extends Component {
       showLoading : true
     };
     this.fetchData();
-    this.fetchUDFList();
     this.hideErrorMsg = true;
   }
 
@@ -74,18 +71,6 @@ export default class RulesNodeForm extends Component {
     if(this.context.ParentForm.state.inputStreamOptions.length > 0 && !(this.fetchDataAgain)){
       this.setParentContextOutputStream();
     }
-  }
-
-  fetchUDFList() {
-    AggregateUdfREST.getAllUdfs().then((udfResult) => {
-      if(udfResult.responseMessage !== undefined){
-        FSReactToastr.error(
-          <CommonNotification flag="error" content={results.responseMessage}/>, '', toastOpt);
-      } else {
-        //Gather all "FUNCTION" functions only
-        this.udfList = ProcessorUtils.populateFieldsArr(udfResult.entities , "FUNCTION");
-      }
-    });
   }
 
   setParentContextOutputStream() {
@@ -397,7 +382,7 @@ export default class RulesNodeForm extends Component {
           </Scrollbars>
         </div>
         <Modal ref="RuleModal" onKeyPress={this.handleKeyPress} dialogClassName="rule-modal-fixed-height" bsSize="large" data-title={this.state.modalTitle} data-resolve={this.handleSaveRule.bind(this)}>
-          <RulesForm ref="RuleForm" topologyId={topologyId} versionId={versionId} ruleObj={this.state.ruleObj} nodeData={this.nodeData} nodeType={nodeType} parsedStreams={this.parsedStreams} rules={rules} udfList={this.udfList}/>
+          <RulesForm ref="RuleForm" topologyId={topologyId} versionId={versionId} ruleObj={this.state.ruleObj} nodeData={this.nodeData} nodeType={nodeType} parsedStreams={this.parsedStreams} rules={rules}/>
         </Modal>
         <Confirm ref="Confirm"/>
       </div>

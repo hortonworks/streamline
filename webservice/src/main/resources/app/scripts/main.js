@@ -29,7 +29,6 @@ import 'react-bootstrap-switch/dist/css/bootstrap3/react-bootstrap-switch.min.cs
 import '../styles/css/toastr.min.css';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/addon/lint/lint.css';
-import 'codemirror/addon/hint/show-hint.css';
 import '../styles/css/customScroll.css';
 import '../styles/css/paper-bootstrap-wizard.css';
 import '../styles/css/style.css';
