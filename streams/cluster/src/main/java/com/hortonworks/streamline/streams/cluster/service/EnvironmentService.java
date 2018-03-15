@@ -19,7 +19,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.hortonworks.registries.common.QueryParam;
-import com.hortonworks.registries.storage.TransactionManager;
 import com.hortonworks.streamline.common.exception.ComponentConfigException;
 import com.hortonworks.registries.storage.StorableKey;
 import com.hortonworks.registries.storage.StorageManager;
@@ -64,6 +63,8 @@ public class EnvironmentService {
     private static final String NAMESPACE_SERVICE_CLUSTER_MAPPING_NAMESPACE = new NamespaceServiceClusterMap().getNameSpace();
     private static final String SERVICE_BUNDLE_NAMESPACE = new ServiceBundle().getNameSpace();
     private static final String NAMESPACE_COMPONENT_PROCESS = new ComponentProcess().getNameSpace();
+
+    public static final long PLACEHOLDER_ID = -1L;
 
     private final StorageManager dao;
     private final ClusterImporter clusterImporter;
@@ -448,6 +449,7 @@ public class EnvironmentService {
         if (namespace.getId() == null) {
             namespace.setId(this.dao.nextId(NAMESPACE_NAMESPACE));
         }
+
         if (namespace.getTimestamp() == null) {
             namespace.setTimestamp(System.currentTimeMillis());
         }
@@ -456,6 +458,8 @@ public class EnvironmentService {
     }
 
     public Namespace removeNamespace(Long namespaceId) {
+        assertEnvironmentIsNotInternal(namespaceId);
+
         Namespace namespace = new Namespace();
         namespace.setId(namespaceId);
         Namespace ret = this.dao.remove(new StorableKey(NAMESPACE_NAMESPACE, namespace.getPrimaryKey()));
@@ -467,6 +471,7 @@ public class EnvironmentService {
         if (namespace.getId() == null) {
             namespace.setId(namespaceId);
         }
+
         if (namespace.getTimestamp() == null) {
             namespace.setTimestamp(System.currentTimeMillis());
         }
@@ -496,6 +501,8 @@ public class EnvironmentService {
     }
 
     public NamespaceServiceClusterMap removeServiceClusterMapping(Long namespaceId, String serviceName, Long clusterId) {
+        assertEnvironmentIsNotInternal(namespaceId);
+
         StorableKey key = getStorableKeyForNamespaceServiceClusterMapping(namespaceId, serviceName, clusterId);
         NamespaceServiceClusterMap ret = this.dao.remove(key);
         invalidateTopologyActionsMetricsInstances(namespaceId);
@@ -504,6 +511,8 @@ public class EnvironmentService {
 
     public NamespaceServiceClusterMap addOrUpdateServiceClusterMapping(
             NamespaceServiceClusterMap newMapping) {
+        assertEnvironmentIsNotInternal(newMapping.getNamespaceId());
+
         this.dao.addOrUpdate(newMapping);
         invalidateTopologyActionsMetricsInstances(newMapping.getNamespaceId());
         return newMapping;
@@ -623,6 +632,18 @@ public class EnvironmentService {
 
     private void invalidateTopologyActionsMetricsInstances(Long namespaceId) {
         this.containers.forEach(c -> c.invalidateInstance(namespaceId));
+    }
+
+    private void assertEnvironmentIsNotInternal(Long namespaceId) {
+        Namespace namespace = getNamespace(namespaceId);
+
+        if (namespace == null) {
+            throw new IllegalArgumentException("Environment not found: " + namespaceId);
+        }
+
+        if (namespace.getInternal()) {
+            throw new IllegalArgumentException("Internal environment is read only!");
+        }
     }
 
 }

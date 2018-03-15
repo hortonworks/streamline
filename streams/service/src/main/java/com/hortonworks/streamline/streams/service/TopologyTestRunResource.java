@@ -43,6 +43,9 @@ import com.hortonworks.streamline.streams.common.event.correlation.CorrelatedEve
 import com.hortonworks.streamline.streams.common.event.correlation.GroupedCorrelationEvents;
 import com.hortonworks.streamline.streams.common.event.tree.EventInformationTreeBuilder;
 import com.hortonworks.streamline.streams.common.event.tree.EventInformationTreeNode;
+import com.hortonworks.streamline.streams.security.Roles;
+import com.hortonworks.streamline.streams.security.SecurityUtil;
+import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.datanucleus.util.StringUtils;
@@ -60,6 +63,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -75,6 +79,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.hortonworks.streamline.streams.security.Permission.EXECUTE;
+import static com.hortonworks.streamline.streams.security.Permission.READ;
+import static com.hortonworks.streamline.streams.security.Permission.WRITE;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -86,12 +93,15 @@ public class TopologyTestRunResource {
 
     private static final Integer DEFAULT_LIST_ENTITIES_COUNT = 5;
 
+    private final StreamlineAuthorizer authorizer;
     private final StreamCatalogService catalogService;
     private final TopologyActionsService actionsService;
     private final EventLogFileReader eventLogFileReader;
     private final ObjectMapper objectMapper;
 
-    public TopologyTestRunResource(StreamCatalogService catalogService, TopologyActionsService actionsService) {
+    public TopologyTestRunResource(StreamlineAuthorizer authorizer, StreamCatalogService catalogService,
+                                   TopologyActionsService actionsService) {
+        this.authorizer = authorizer;
         this.catalogService = catalogService;
         this.actionsService = actionsService;
         this.eventLogFileReader = new EventLogFileReader();
@@ -126,7 +136,11 @@ public class TopologyTestRunResource {
     @Timed
     public Response testRunTopology (@Context UriInfo urlInfo,
                                      @PathParam("topologyId") Long topologyId,
-                                     TopologyTestRunParam topologyTestRunParam) throws Exception {
+                                     TopologyTestRunParam topologyTestRunParam,
+                                     @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, EXECUTE);
+
         Topology result = catalogService.getTopology(topologyId);
         if (result != null) {
             Long testCaseId = topologyTestRunParam.getTestCaseId();
@@ -163,7 +177,11 @@ public class TopologyTestRunResource {
     @Timed
     public Response killTestRunTopology(@Context UriInfo urlInfo,
                                         @PathParam("topologyId") Long topologyId,
-                                        @PathParam("historyId") Long historyId) throws Exception {
+                                        @PathParam("historyId") Long historyId,
+                                        @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, EXECUTE);
+
         Topology topology = catalogService.getTopology(topologyId);
         TopologyTestRunHistory history = catalogService.getTopologyTestRunHistory(historyId);
 
@@ -182,7 +200,11 @@ public class TopologyTestRunResource {
     @Timed
     public Response getHistoriesOfTestRunTopology (@Context UriInfo urlInfo,
                                                    @PathParam("topologyId") Long topologyId,
-                                                   @QueryParam("limit") Integer limit) throws Exception {
+                                                   @QueryParam("limit") Integer limit,
+                                                   @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
+
         Collection<TopologyTestRunHistory> histories = catalogService.listTopologyTestRunHistory(topologyId);
         if (histories == null) {
             throw EntityNotFoundException.byFilter("topology id " + topologyId);
@@ -198,7 +220,11 @@ public class TopologyTestRunResource {
     public Response getHistoriesOfTestRunTopology (@Context UriInfo urlInfo,
                                                    @PathParam("topologyId") Long topologyId,
                                                    @PathParam("versionId") Long versionId,
-                                                   @QueryParam("limit") Integer limit) throws Exception {
+                                                   @QueryParam("limit") Integer limit,
+                                                   @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
+
         Collection<TopologyTestRunHistory> histories = catalogService.listTopologyTestRunHistory(topologyId, versionId);
         if (histories == null) {
             throw EntityNotFoundException.byFilter("topology id " + topologyId);
@@ -214,7 +240,11 @@ public class TopologyTestRunResource {
     public Response getHistoryOfTestRunTopology (@Context UriInfo urlInfo,
                                                  @PathParam("topologyId") Long topologyId,
                                                  @PathParam("historyId") Long historyId,
-                                                 @QueryParam("simplify") Boolean simplify) throws Exception {
+                                                 @QueryParam("simplify") Boolean simplify,
+                                                 @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
+
         TopologyTestRunHistory history = catalogService.getTopologyTestRunHistory(historyId);
 
         if (history == null) {
@@ -236,7 +266,11 @@ public class TopologyTestRunResource {
     @Path("/topologies/{topologyId}/testhistories/{historyId}/events/root")
     public Response getRootEventsOfTestRunTopologyHistory(@Context UriInfo urlInfo,
                                                           @PathParam("topologyId") Long topologyId,
-                                                          @PathParam("historyId") Long historyId) throws Exception {
+                                                          @PathParam("historyId") Long historyId,
+                                                          @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
+
         File eventLogFile = getEventLogFile(topologyId, historyId);
         List<EventInformation> events = eventLogFileReader.loadEventLogFile(eventLogFile);
         List<com.hortonworks.registries.common.QueryParam> qps = com.hortonworks.registries.common.QueryParam.params(
@@ -253,7 +287,11 @@ public class TopologyTestRunResource {
     public Response getGroupedCorrelatedEventsOfTestRunTopologyHistory(@Context UriInfo urlInfo,
                                                                        @PathParam("topologyId") Long topologyId,
                                                                        @PathParam("historyId") Long historyId,
-                                                                       @PathParam("rootEventId") String rootEventId) throws Exception {
+                                                                       @PathParam("rootEventId") String rootEventId,
+                                                                       @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
+
         File eventLogFile = getEventLogFile(topologyId, historyId);
         List<EventInformation> events = eventLogFileReader.loadEventLogFile(eventLogFile);
 
@@ -269,7 +307,11 @@ public class TopologyTestRunResource {
     public Response getEventTreeOfTestRunTopologyHistory(@Context UriInfo urlInfo,
                                                           @PathParam("topologyId") Long topologyId,
                                                           @PathParam("historyId") Long historyId,
-                                                          @PathParam("rootEventId") String rootEventId) throws Exception {
+                                                          @PathParam("rootEventId") String rootEventId,
+                                                          @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
+
         File eventLogFile = getEventLogFile(topologyId, historyId);
         List<EventInformation> events = eventLogFileReader.loadEventLogFile(eventLogFile);
 
@@ -287,7 +329,11 @@ public class TopologyTestRunResource {
                                                             @PathParam("topologyId") Long topologyId,
                                                             @PathParam("historyId") Long historyId,
                                                             @PathParam("rootEventId") String rootEventId,
-                                                            @PathParam("subRootEventId") String subRootEventId) throws Exception {
+                                                            @PathParam("subRootEventId") String subRootEventId,
+                                                            @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
+
         File eventLogFile = getEventLogFile(topologyId, historyId);
         List<EventInformation> events = eventLogFileReader.loadEventLogFile(eventLogFile);
 
@@ -303,8 +349,9 @@ public class TopologyTestRunResource {
     @Path("/topologies/{topologyId}/testhistories/{historyId}/events")
     public Response getEventsOfTestRunTopologyHistory(@Context UriInfo urlInfo,
                                                       @PathParam("topologyId") Long topologyId,
-                                                      @PathParam("historyId") Long historyId) throws Exception {
-        return getEventsOfTestRunTopologyHistory(topologyId, historyId, null);
+                                                      @PathParam("historyId") Long historyId,
+                                                      @Context SecurityContext securityContext) throws Exception {
+        return getEventsOfTestRunTopologyHistory(topologyId, historyId, null, securityContext);
     }
 
     @GET
@@ -312,8 +359,9 @@ public class TopologyTestRunResource {
     public Response getEventsOfTestRunTopologyHistory(@Context UriInfo urlInfo,
                                                       @PathParam("topologyId") Long topologyId,
                                                       @PathParam("historyId") Long historyId,
-                                                      @PathParam("componentName") String componentName) throws Exception {
-        return getEventsOfTestRunTopologyHistory(topologyId, historyId, componentName);
+                                                      @PathParam("componentName") String componentName,
+                                                      @Context SecurityContext securityContext) throws Exception {
+        return getEventsOfTestRunTopologyHistory(topologyId, historyId, componentName, securityContext);
     }
 
     @GET
@@ -321,7 +369,11 @@ public class TopologyTestRunResource {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response downloadEventsOfTestRunTopologyHistory(@Context UriInfo urlInfo,
                                                            @PathParam("topologyId") Long topologyId,
-                                                           @PathParam("historyId") Long historyId) throws Exception {
+                                                           @PathParam("historyId") Long historyId,
+                                                           @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
+
         File eventLogFile = getEventLogFile(topologyId, historyId);
         String content = FileUtils.readFileToString(eventLogFile, StandardCharsets.UTF_8);
 
@@ -333,7 +385,11 @@ public class TopologyTestRunResource {
             .build();
     }
 
-    private Response getEventsOfTestRunTopologyHistory(Long topologyId, Long historyId, String componentName) throws IOException {
+    private Response getEventsOfTestRunTopologyHistory(Long topologyId, Long historyId, String componentName,
+                                                       SecurityContext securityContext) throws IOException {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
+
         File eventLogFile = getEventLogFile(topologyId, historyId);
         Stream<EventInformation> eventsStream = eventLogFileReader.loadEventLogFileAsStream(eventLogFile);
 
@@ -382,7 +438,11 @@ public class TopologyTestRunResource {
     @POST
     @Path("/topologies/{topologyId}/testcases")
     public Response addTestRunCase(@PathParam("topologyId") Long topologyId,
-                                      TopologyTestRunCase testRunCase) {
+                                   TopologyTestRunCase testRunCase,
+                                   @Context SecurityContext securityContext) {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, WRITE);
+
         testRunCase.setTopologyId(topologyId);
         Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
         testRunCase.setVersionId(currentVersionId);
@@ -394,7 +454,11 @@ public class TopologyTestRunResource {
     @Path("/topologies/{topologyId}/versions/{versionId}/testcases")
     public Response addTestRunCase(@PathParam("topologyId") Long topologyId,
                                    @PathParam("versionId") Long versionId,
-                                   TopologyTestRunCase testRunCase) {
+                                   TopologyTestRunCase testRunCase,
+                                   @Context SecurityContext securityContext) {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, WRITE);
+
         testRunCase.setTopologyId(topologyId);
         testRunCase.setVersionId(versionId);
         TopologyTestRunCase addedCase = catalogService.addTopologyTestRunCase(testRunCase);
@@ -405,7 +469,11 @@ public class TopologyTestRunResource {
     @Path("/topologies/{topologyId}/testcases/{testCaseId}")
     public Response addOrUpdateTestRunCase(@PathParam("topologyId") Long topologyId,
                                            @PathParam("testCaseId") Long testCaseId,
-                                           TopologyTestRunCase testRunCase) {
+                                           TopologyTestRunCase testRunCase,
+                                           @Context SecurityContext securityContext) {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, WRITE);
+
         testRunCase.setTopologyId(topologyId);
         testRunCase.setId(testCaseId);
         TopologyTestRunCase updatedCase = catalogService.addOrUpdateTopologyTestRunCase(topologyId, testRunCase);
@@ -415,7 +483,11 @@ public class TopologyTestRunResource {
     @GET
     @Path("/topologies/{topologyId}/testcases/{testCaseId}")
     public Response getTestRunCase(@PathParam("topologyId") Long topologyId,
-                                   @PathParam("testCaseId") Long testCaseId) {
+                                   @PathParam("testCaseId") Long testCaseId,
+                                   @Context SecurityContext securityContext) {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
+
         TopologyTestRunCase testcase = catalogService.getTopologyTestRunCase(topologyId, testCaseId);
         if (testcase == null) {
             throw EntityNotFoundException.byId(Long.toString(testCaseId));
@@ -429,7 +501,11 @@ public class TopologyTestRunResource {
     @Timed
     public Response listTestRunCases(@Context UriInfo urlInfo,
                                      @PathParam("topologyId") Long topologyId,
-                                     @QueryParam("limit") Integer limit) throws Exception {
+                                     @QueryParam("limit") Integer limit,
+                                     @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
+
         Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
 
         Collection<TopologyTestRunCase> cases = catalogService.listTopologyTestRunCase(topologyId, currentVersionId);
@@ -447,7 +523,11 @@ public class TopologyTestRunResource {
     public Response listTestRunCases(@Context UriInfo urlInfo,
                                      @PathParam("topologyId") Long topologyId,
                                      @PathParam("versionId") Long versionId,
-                                     @QueryParam("limit") Integer limit) throws Exception {
+                                     @QueryParam("limit") Integer limit,
+                                     @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
+
         Collection<TopologyTestRunCase> cases = catalogService.listTopologyTestRunCase(topologyId, versionId);
         if (cases == null) {
             throw EntityNotFoundException.byFilter("topology id " + topologyId);
@@ -460,7 +540,10 @@ public class TopologyTestRunResource {
     @DELETE
     @Path("/topologies/{topologyId}/testcases/{testCaseId}")
     public Response removeTestRunCase(@PathParam("topologyId") Long topologyId,
-                                      @PathParam("testCaseId") Long testCaseId) {
+                                      @PathParam("testCaseId") Long testCaseId,
+                                      @Context SecurityContext securityContext) {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, WRITE);
 
         Collection<TopologyTestRunCaseSource> sources = catalogService.listTopologyTestRunCaseSource(testCaseId);
         if (sources != null) {
@@ -497,7 +580,11 @@ public class TopologyTestRunResource {
     @Timed
     public Response validateTestRunCaseSource(@PathParam("topologyId") Long topologyId,
                                               @PathParam("testCaseId") Long testCaseId,
-                                              TopologyTestRunCaseSource testRunCaseSource) throws IOException {
+                                              TopologyTestRunCaseSource testRunCaseSource,
+                                              @Context SecurityContext securityContext) throws IOException {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
+
         try {
             doValidationForTestRunCaseSource(topologyId, testCaseId, testRunCaseSource);
             return WSUtils.respondEntity(Collections.singletonMap("status", "valid"), OK);
@@ -511,7 +598,11 @@ public class TopologyTestRunResource {
     @Timed
     public Response validateTestRunCaseSource(@PathParam("topologyId") Long topologyId,
                                               @PathParam("testCaseId") Long testCaseId,
-                                              @PathParam("id") Long id) throws IOException {
+                                              @PathParam("id") Long id,
+                                              @Context SecurityContext securityContext) throws IOException {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
+
         TopologyTestRunCaseSource testCaseSource = catalogService.getTopologyTestRunCaseSource(testCaseId, id);
         if (testCaseSource == null) {
             throw EntityNotFoundException.byId(Long.toString(id));
@@ -570,7 +661,11 @@ public class TopologyTestRunResource {
     @Path("/topologies/{topologyId}/testcases/{testCaseId}/sources")
     public Response addTestRunCaseSource(@PathParam("topologyId") Long topologyId,
                                          @PathParam("testCaseId") Long testCaseId,
-                                         TopologyTestRunCaseSource testRunCaseSource) {
+                                         TopologyTestRunCaseSource testRunCaseSource,
+                                         @Context SecurityContext securityContext) {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, WRITE);
+
         TopologySource topologySource = getAssociatedTopologySource(topologyId, testCaseId, testRunCaseSource.getSourceId());
         testRunCaseSource.setVersionId(topologySource.getVersionId());
 
@@ -583,7 +678,11 @@ public class TopologyTestRunResource {
     public Response addOrUpdateTestRunCaseSource(@PathParam("topologyId") Long topologyId,
                                            @PathParam("testCaseId") Long testCaseId,
                                            @PathParam("id") Long id,
-                                           TopologyTestRunCaseSource testRunCaseSource) {
+                                           TopologyTestRunCaseSource testRunCaseSource,
+                                           @Context SecurityContext securityContext) {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, WRITE);
+
         testRunCaseSource.setId(id);
         testRunCaseSource.setTestCaseId(testCaseId);
 
@@ -619,7 +718,11 @@ public class TopologyTestRunResource {
     @Path("/topologies/{topologyId}/testcases/{testcaseId}/sources/{id}")
     public Response getTestRunCaseSource(@PathParam("topologyId") Long topologyId,
                                          @PathParam("testcaseId") Long testcaseId,
-                                         @PathParam("id") Long id) {
+                                         @PathParam("id") Long id,
+                                         @Context SecurityContext securityContext) {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
+
         TopologyTestRunCaseSource testCaseSource = catalogService.getTopologyTestRunCaseSource(testcaseId, id);
         if (testCaseSource == null) {
             throw EntityNotFoundException.byId(Long.toString(id));
@@ -632,7 +735,11 @@ public class TopologyTestRunResource {
     @Path("/topologies/{topologyId}/testcases/{testCaseId}/sources/topologysource/{sourceId}")
     public Response getTestRunCaseSourceByTopologySource(@PathParam("topologyId") Long topologyId,
                                                          @PathParam("testCaseId") Long testCaseId,
-                                                         @PathParam("sourceId") Long sourceId) {
+                                                         @PathParam("sourceId") Long sourceId,
+                                                         @Context SecurityContext securityContext) {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
+
         TopologyTestRunCaseSource testCaseSource = catalogService.getTopologyTestRunCaseSourceBySourceId(testCaseId, sourceId);
         if (testCaseSource == null) {
             throw EntityNotFoundException.byId("test case id: " + testCaseId + " , topology source id: " + sourceId);
@@ -644,7 +751,11 @@ public class TopologyTestRunResource {
     @GET
     @Path("/topologies/{topologyId}/testcases/{testCaseId}/sources")
     public Response listTestRunCaseSource(@PathParam("topologyId") Long topologyId,
-                                          @PathParam("testCaseId") Long testCaseId) {
+                                          @PathParam("testCaseId") Long testCaseId,
+                                          @Context SecurityContext securityContext) {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
+
         Collection<TopologyTestRunCaseSource> sources = catalogService.listTopologyTestRunCaseSource(testCaseId);
         if (sources == null) {
             throw EntityNotFoundException.byFilter("topologyId: " + topologyId + " / testCaseId: " + testCaseId);
@@ -656,8 +767,12 @@ public class TopologyTestRunResource {
     @POST
     @Path("/topologies/{topologyId}/testcases/{testCaseId}/sinks")
     public Response addTestRunCaseSink(@PathParam("topologyId") Long topologyId,
-                                         @PathParam("testCaseId") Long testCaseId,
-                                         TopologyTestRunCaseSink testRunCaseSink) {
+                                       @PathParam("testCaseId") Long testCaseId,
+                                       TopologyTestRunCaseSink testRunCaseSink,
+                                       @Context SecurityContext securityContext) {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, WRITE);
+
         TopologySink topologySink = getAssociatedTopologySink(topologyId, testCaseId, testRunCaseSink.getSinkId());
         testRunCaseSink.setVersionId(topologySink.getVersionId());
 
@@ -668,9 +783,13 @@ public class TopologyTestRunResource {
     @PUT
     @Path("/topologies/{topologyId}/testcases/{testCaseId}/sinks/{id}")
     public Response addOrUpdateTestRunCaseSink(@PathParam("topologyId") Long topologyId,
-                                           @PathParam("testCaseId") Long testCaseId,
-                                           @PathParam("id") Long id,
-                                           TopologyTestRunCaseSink testRunCaseSink) {
+                                               @PathParam("testCaseId") Long testCaseId,
+                                               @PathParam("id") Long id,
+                                               TopologyTestRunCaseSink testRunCaseSink,
+                                               @Context SecurityContext securityContext) {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, WRITE);
+
         testRunCaseSink.setId(id);
         testRunCaseSink.setTestCaseId(testCaseId);
 
@@ -705,8 +824,12 @@ public class TopologyTestRunResource {
     @GET
     @Path("/topologies/{topologyId}/testcases/{testcaseId}/sinks/{id}")
     public Response getTestRunCaseSink(@PathParam("topologyId") Long topologyId,
-                                         @PathParam("testcaseId") Long testcaseId,
-                                         @PathParam("id") Long id) {
+                                       @PathParam("testcaseId") Long testcaseId,
+                                       @PathParam("id") Long id,
+                                       @Context SecurityContext securityContext) {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
+
         TopologyTestRunCaseSink testCaseSink = catalogService.getTopologyTestRunCaseSink(testcaseId, id);
         if (testCaseSink == null) {
             throw EntityNotFoundException.byId(Long.toString(id));
@@ -718,8 +841,12 @@ public class TopologyTestRunResource {
     @GET
     @Path("/topologies/{topologyId}/testcases/{testCaseId}/sinks/topologysink/{sinkId}")
     public Response getTestRunCaseSinkByTopologySink(@PathParam("topologyId") Long topologyId,
-                                                         @PathParam("testCaseId") Long testCaseId,
-                                                         @PathParam("sinkId") Long sinkId) {
+                                                     @PathParam("testCaseId") Long testCaseId,
+                                                     @PathParam("sinkId") Long sinkId,
+                                                     @Context SecurityContext securityContext) {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
+
         TopologyTestRunCaseSink testCaseSink = catalogService.getTopologyTestRunCaseSinkBySinkId(testCaseId, sinkId);
         if (testCaseSink == null) {
             throw EntityNotFoundException.byId("test case id: " + testCaseId + " , topology source id: " + sinkId);
@@ -731,7 +858,11 @@ public class TopologyTestRunResource {
     @GET
     @Path("/topologies/{topologyId}/testcases/{testCaseId}/sinks")
     public Response listTestRunCaseSink(@PathParam("topologyId") Long topologyId,
-                                          @PathParam("testCaseId") Long testCaseId) {
+                                        @PathParam("testCaseId") Long testCaseId,
+                                        @Context SecurityContext securityContext) {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                Topology.NAMESPACE, topologyId, READ);
+
         Collection<TopologyTestRunCaseSink> sinks = catalogService.listTopologyTestRunCaseSink(testCaseId);
         if (sinks == null) {
             throw EntityNotFoundException.byFilter("topologyId: " + topologyId + " / testCaseId: " + testCaseId);

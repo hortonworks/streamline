@@ -19,6 +19,7 @@ package com.hortonworks.streamline.streams.catalog.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -27,21 +28,21 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.hortonworks.registries.common.QueryParam;
 import com.hortonworks.registries.common.Schema;
+import com.hortonworks.registries.common.util.FileStorage;
+import com.hortonworks.registries.storage.StorableKey;
+import com.hortonworks.registries.storage.StorageManager;
+import com.hortonworks.registries.storage.exception.StorageException;
+import com.hortonworks.registries.storage.util.StorageUtils;
 import com.hortonworks.streamline.common.ComponentTypes;
 import com.hortonworks.streamline.common.ComponentUISpecification;
-import com.hortonworks.registries.common.QueryParam;
 import com.hortonworks.streamline.common.exception.ComponentConfigException;
-import com.hortonworks.registries.common.util.FileStorage;
 import com.hortonworks.streamline.common.util.FileUtil;
 import com.hortonworks.streamline.common.util.ProxyUtil;
 import com.hortonworks.streamline.common.util.Utils;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
-import com.hortonworks.registries.storage.StorableKey;
-import com.hortonworks.registries.storage.StorageManager;
-import com.hortonworks.registries.storage.exception.StorageException;
-import com.hortonworks.registries.storage.util.StorageUtils;
 import com.hortonworks.streamline.streams.StreamlineEvent;
 import com.hortonworks.streamline.streams.catalog.BaseTopologyRule;
 import com.hortonworks.streamline.streams.catalog.File;
@@ -112,6 +113,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
@@ -2469,7 +2471,31 @@ public class StreamCatalogService {
         SQL += join(" FROM ", getTable(streams)).get();
         SQL += join(" WHERE ", convertNested(streams, condition)).orElse("");
         SQL += join(" GROUP BY ", convertNested(streams, groupByKeys)).orElse("");
-        return SQL;
+        return translateFunctions(SQL, getUdfInternalNames());
+    }
+
+    private Map<String, String> getUdfInternalNames() {
+        Map<String, String> internalNames = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        for (UDF udf : listUDFs()) {
+            internalNames.put(udf.getDisplayName(), udf.getName());
+        }
+        return internalNames;
+    }
+
+    @VisibleForTesting
+    String translateFunctions(String sql, Map<String, String> udfInternalNames) {
+        StringBuffer sb = new StringBuffer();
+        Pattern pattern = Pattern.compile("(\\w+)( *\\()");
+        Matcher matcher = pattern.matcher(sql);
+        while (matcher.find()) {
+            String displayName = matcher.group(1);
+            String name = udfInternalNames.get(displayName);
+            if (name != null && !name.equalsIgnoreCase(displayName)) {
+                matcher.appendReplacement(sb, name + matcher.group(2));
+            }
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
     }
 
     /*
