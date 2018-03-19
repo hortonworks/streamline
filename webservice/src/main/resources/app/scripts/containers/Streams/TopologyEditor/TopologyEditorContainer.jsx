@@ -806,6 +806,7 @@ class TopologyEditorContainer extends Component {
   }
   handleSaveNodeName(editable) {
     if (this.validateNodeName(this.modalTitle)) {
+      this.saveTopologyName(this);
       editable.hideEditor();
     }
   }
@@ -1100,7 +1101,7 @@ class TopologyEditorContainer extends Component {
   }
   handleKeyPress(event) {
     const that = this;
-    if(event.key === "Enter" && event.target.nodeName.toLowerCase() === "input"){
+    if(event.key === "Enter" && event.target.nodeName.toLowerCase() === "input" && this.refs.TopologyNameSpace.state.show){
       this.saveTopologyName(this);
     }else if (event.key === "Enter" && event.target.nodeName.toLowerCase() != "textarea" && event.target.nodeName.toLowerCase() != 'button') {
       this.refs.TopologyConfigModal.state.show

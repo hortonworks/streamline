@@ -69,6 +69,9 @@ export default class SinkNodeForm extends Component {
     this.fetchNotifier().then(() => {
       this.fetchData();
     });
+    this.schemaTopicKeyName = '';
+    this.schemaVersionKeyName = '';
+    this.schemaBranchKeyName = '';
   }
 
   getChildContext() {
@@ -147,10 +150,13 @@ export default class SinkNodeForm extends Component {
       stateObj.securityType = stateObj.formData.securityProtocol || '';
       stateObj.hasSecurity = hasSecurity;
       stateObj.validSchema = true;
-      if(!_.isEmpty(stateObj.formData) && !!stateObj.formData.topic){
+      this.schemaTopicKeyName = Utils.getSchemaKeyName(stateObj.uiSpecification,'schema');
+      this.schemaBranchKeyName = Utils.getSchemaKeyName(stateObj.uiSpecification,'schemaBranch');
+      this.schemaVersionKeyName = Utils.getSchemaKeyName(stateObj.uiSpecification,'schemaVersion');
+      if(!_.isEmpty(stateObj.formData) && !!stateObj.formData[this.schemaTopicKeyName]){
         this.fetchSchemaBranches(stateObj.formData);
-        if(!stateObj.formData.schemaBranch && !!stateObj.formData.writerSchemaVersion) {
-          stateObj.formData.schemaBranch = 'MASTER';
+        if(!stateObj.formData[this.schemaBranchKeyName] && !!stateObj.formData[this.schemaVersionKeyName]) {
+          stateObj.formData[this.schemaBranchKeyName] = stateObj.formData[this.schemaBranchKeyName] || 'MASTER';
         }
         this.fetchSchemaVersions(stateObj.formData);
       }
@@ -216,7 +222,7 @@ export default class SinkNodeForm extends Component {
   }
 
   fetchSchemaVersions = (data) => {
-    TopologyREST.getSchemaVersionsForKafka(data.topic, data.schemaBranch).then((results) => {
+    TopologyREST.getSchemaVersionsForKafka(data[this.schemaTopicKeyName], data[this.schemaBranchKeyName]).then((results) => {
       const {uiSpecification} = this.state;
       let tempConfigJson =  Utils.populateSchemaVersionOptions(results,uiSpecification);
       this.setState({uiSpecification : tempConfigJson});
@@ -224,19 +230,19 @@ export default class SinkNodeForm extends Component {
   }
 
   fetchSchemaBranches = (data) => {
-    TopologyREST.getSchemaBranchesForKafka(data.topic).then((results) => {
+    TopologyREST.getSchemaBranchesForKafka(data[this.schemaTopicKeyName]).then((results) => {
       const {uiSpecification} = this.state;
       if(results.responseMessage !== undefined) {
         _.map(uiSpecification, (config) => {
-          if(config.fieldName.indexOf('topic') !== -1){
-            this.refs.Form.state.Errors["topic"] = 'Schema Not Found';
-            this.refs.Form.state.FormData.schemaBranch = '';
-            this.refs.Form.state.FormData.writerSchemaVersion = '';
+          if(config.fieldName.indexOf(this.schemaTopicKeyName) !== -1){
+            this.refs.Form.state.Errors[this.schemaTopicKeyName] = 'Schema Not Found';
+            this.refs.Form.state.FormData[this.schemaBranchKeyName] = '';
+            this.refs.Form.state.FormData[this.schemaVersionKeyName] = '';
             this.refs.Form.setState(this.refs.Form.state);
           }
         });
       } else {
-        let tempConfigJson =  Utils.populateSchemaBranchOptions(results,uiSpecification);
+        let tempConfigJson =  Utils.populateSchemaBranchOptions(results,uiSpecification,this.schemaTopicKeyName);
         this.setState({uiSpecification : tempConfigJson});
       }
     });
@@ -461,7 +467,7 @@ export default class SinkNodeForm extends Component {
       configJSON =  Utils.populateSchemaVersionOptions(resultArr,configJSON);
       let validate =  false;
       validate = _.isEmpty(resultArr) ? false : true;
-      tempFormData.writerSchemaVersion = '';
+      tempFormData[this.schemaVersionKeyName] = '';
       this.setState({validSchema: validate,uiSpecification :configJSON,formData :tempFormData });
     }
   }
@@ -470,16 +476,16 @@ export default class SinkNodeForm extends Component {
     let configJSON = _.cloneDeep(this.state.uiSpecification);
     let tempFormData = Utils.deepmerge(this.state.formData,this.refs.Form.state.FormData);
     _.map(configJSON, (config) => {
-      if(config.hint !== undefined && config.hint.indexOf('schemaVersion') !== -1){
+      if(config.hint !== undefined && config.hint.indexOf(this.schemaVersionKeyName) !== -1){
         config.options = [];
       }
     });
-    configJSON = Utils.populateSchemaBranchOptions(resultArr,configJSON);
+    configJSON = Utils.populateSchemaBranchOptions(resultArr,configJSON,this.schemaTopicKeyName);
     let validate =  false;
     validate = _.isEmpty(resultArr) ? false : true;
-    tempFormData.schemaBranch = 'MASTER';
+    tempFormData[this.schemaBranchKeyName] = tempFormData[this.schemaBranchKeyName] || 'MASTER';
     this.fetchSchemaVersions(tempFormData);
-    tempFormData.writerSchemaVersion = '';
+    tempFormData[this.schemaVersionKeyName] = '';
     this.setState({validSchema: validate,uiSpecification : configJSON,formData:tempFormData});
   }
 
