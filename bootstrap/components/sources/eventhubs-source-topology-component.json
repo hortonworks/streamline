@@ -5,7 +5,7 @@
   "streamingEngine": "STORM",
   "builtin": true,
   "transformationClass": "com.hortonworks.streamline.streams.layout.storm.EventHubSpoutFluxComponent",
-  "fieldHintProviderClass": "com.hortonworks.streamline.streams.catalog.topology.component.bundle.impl.EventHubsSourceHintProvider",
+  "fieldHintProviderClass": "com.hortonworks.streamline.streams.cluster.bundle.impl.EventHubsSourceHintProvider",
   "mavenDeps": "org.apache.storm:storm-eventhubs:STORM_VERSION^org.slf4j:slf4j-log4j12",
   "topologyComponentUISpecification": {
     "fields": [
@@ -38,6 +38,24 @@
         "tooltip": "The Event Hubs entity path",
         "type": "string",
         "hint": "schema"
+      },
+      {
+        "uiName": "Schema Branch",
+        "fieldName": "schemaBranch",
+        "isOptional": false,
+        "tooltip": "Schema branch to be used for fetching schema versions for entity path. Default branch is MASTER",
+        "type": "enumstring",
+        "options": [],
+        "hint": "dependsOn-entityPath,schemaBranch"
+      },
+      {
+        "uiName": "Schema Version",
+        "fieldName": "schemaVersion",
+        "isOptional": false,
+        "tooltip": "Version of the given schema",
+        "type": "enumstring",
+        "options": [],
+        "hint": "dependsOn-schemaBranch,schemaVersion"
       },
       {
         "uiName": "Partition count",

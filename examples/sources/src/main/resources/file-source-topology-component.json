@@ -17,13 +17,22 @@
         "hint": "schema,override"
       },
       {
+        "uiName": "File Schema Branch",
+        "fieldName": "schemaBranch",
+        "isOptional": false,
+        "tooltip": "Schema branch to be used for fetching file schema versions. Default branch is MASTER",
+        "type": "enumstring",
+        "options": [],
+        "hint": "dependsOn-fileSchema,schemaBranch"
+      },
+      {
         "uiName": "File schema version",
         "fieldName": "fileSchemaVersion",
         "isOptional": false,
         "tooltip": "Version of schema of file source",
         "type": "enumstring",
         "options": [],
-        "hint": "dependsOn-fileSchema,schemaVersion"
+        "hint": "dependsOn-schemaBranch,schemaVersion"
       },
       {
         "uiName": "Source file path",

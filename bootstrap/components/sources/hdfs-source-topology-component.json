@@ -42,13 +42,22 @@
         "hint": "schema"
       },
       {
+        "uiName": "Schema Branch",
+        "fieldName": "schemaBranch",
+        "isOptional": false,
+        "tooltip": "Schema branch to be used for fetching schema versions. Default branch is MASTER",
+        "type": "enumstring",
+        "options": [],
+        "hint": "dependsOn-schemaName,schemaBranch"
+      },
+      {
         "uiName": "Schema Version",
         "fieldName": "schemaVersion",
         "isOptional": false,
         "tooltip": "Version of the given schema",
         "type": "enumstring",
         "options": [],
-        "hint": "dependsOn-schemaName,schemaVersion"
+        "hint": "dependsOn-schemaBranch,schemaVersion"
       },
       {
         "uiName": "Archive Dir",
