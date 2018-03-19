@@ -55,6 +55,9 @@ export default class SourceNodeForm extends Component {
       fetchLoader: true,
       securityType : ''
     };
+    this.schemaTopicKeyName = '';
+    this.schemaVersionKeyName = '';
+    this.schemaBranchKeyName = '';
   }
 
   fetchData() {
@@ -109,11 +112,14 @@ export default class SourceNodeForm extends Component {
       if (!_.isEmpty(stateObj.clusterArr) && _.keys(stateObj.clusterArr).length > 0) {
         stateObj.configJSON = this.pushClusterFields(tempArr, stateObj.configJSON);
       }
+      this.schemaVersionKeyName = Utils.getSchemaKeyName(stateObj.configJSON,'schemaVersion');
+      this.schemaTopicKeyName = Utils.getSchemaKeyName(stateObj.configJSON,'schema');
+      this.schemaBranchKeyName = Utils.getSchemaKeyName(stateObj.configJSON,'schemaBranch');
       stateObj.formData = this.nodeData.config.properties;
-      if(!_.isEmpty(stateObj.formData) && !!stateObj.formData.topic){
+      if(!_.isEmpty(stateObj.formData) && !!stateObj.formData[this.schemaTopicKeyName]){
         this.fetchSchemaBranches(stateObj.formData);
-        if(!stateObj.formData.schemaBranch && !!stateObj.formData.readerSchemaVersion) {
-          stateObj.formData.schemaBranch = 'MASTER';
+        if(!stateObj.formData[this.schemaBranchKeyName] && !!stateObj.formData[this.schemaVersionKeyName]) {
+          stateObj.formData[this.schemaBranchKeyName] = stateObj.formData[this.schemaBranchKeyName] || 'MASTER';
         }
         this.fetchSchemaVersions(stateObj.formData);
       }
@@ -134,7 +140,7 @@ export default class SourceNodeForm extends Component {
   }
 
   fetchSchemaVersions = (data) => {
-    TopologyREST.getSchemaVersionsForKafka(data.topic, data.schemaBranch).then((results) => {
+    TopologyREST.getSchemaVersionsForKafka(data[this.schemaTopicKeyName], data[this.schemaBranchKeyName]).then((results) => {
       const {configJSON} = this.state;
       let tempConfigJson =  Utils.populateSchemaVersionOptions(results,configJSON);
       this.setState({configJSON : tempConfigJson});
@@ -142,19 +148,19 @@ export default class SourceNodeForm extends Component {
   }
 
   fetchSchemaBranches = (data) => {
-    TopologyREST.getSchemaBranchesForKafka(data.topic).then((results) => {
+    TopologyREST.getSchemaBranchesForKafka(data[this.schemaTopicKeyName]).then((results) => {
       const {configJSON} = this.state;
       if(results.responseMessage !== undefined) {
         _.map(configJSON, (config) => {
-          if(config.fieldName.indexOf('topic') !== -1){
-            this.refs.Form.state.Errors["topic"] = 'Schema Not Found';
-            this.refs.Form.state.FormData.schemaBranch = '';
-            this.refs.Form.state.FormData.readerSchemaVersion = '';
+          if(config.fieldName.indexOf(this.schemaTopicKeyName) !== -1 ){
+            this.refs.Form.state.FormData[this.schemaVersionKeyName] = '';
+            this.refs.Form.state.Errors[this.schemaTopicKeyName] = 'Schema Not Found';
+            this.refs.Form.state.FormData[this.schemaBranchKeyName] = '';
             this.refs.Form.setState(this.refs.Form.state);
           }
         });
       } else {
-        let tempConfigJson =  Utils.populateSchemaBranchOptions(results,configJSON);
+        let tempConfigJson =  Utils.populateSchemaBranchOptions(results,configJSON,this.schemaTopicKeyName);
         this.setState({configJSON : tempConfigJson});
       }
     });
@@ -292,7 +298,8 @@ export default class SourceNodeForm extends Component {
       this.streamObj = this.updateStreamObj(resultArr);
     } else {
       this.streamObj.fields = [];
-      tempFormData.readerSchemaVersion = '';
+
+      tempFormData[this.schemaVersionKeyName] = '';
       tempConfigJson = Utils.populateSchemaVersionOptions(resultArr,tempConfigJson);
     }
     this.setState({streamObj : this.streamObj, configJSON : tempConfigJson,formData:tempFormData});
@@ -301,16 +308,16 @@ export default class SourceNodeForm extends Component {
   showSchemaBranches(resultArr) {
     let tempConfigJson = _.cloneDeep(this.state.configJSON);
     let tempFormData = Utils.deepmerge(this.state.formData,this.refs.Form.state.FormData);
-    tempFormData.schemaBranch = 'MASTER';
+    tempFormData[this.schemaBranchKeyName] =  tempFormData[this.schemaBranchKeyName] || 'MASTER';
     this.fetchSchemaVersions(tempFormData);
     this.streamObj.fields = [];
-    tempFormData.readerSchemaVersion = '';
+    tempFormData[this.schemaVersionKeyName] = '';
     _.map(tempConfigJson, (config) => {
-      if(config.hint !== undefined && config.hint.indexOf('schemaVersion') !== -1){
+      if(config.hint !== undefined && config.hint.indexOf(this.schemaVersionKeyName) !== -1){
         config.options = [];
       }
     });
-    tempConfigJson = Utils.populateSchemaBranchOptions(resultArr,tempConfigJson);
+    tempConfigJson = Utils.populateSchemaBranchOptions(resultArr,tempConfigJson,this.schemaTopicKeyName);
     this.setState({configJSON : tempConfigJson,formData:tempFormData});
   }
 
