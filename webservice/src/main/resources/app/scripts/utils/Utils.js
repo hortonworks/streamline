@@ -728,7 +728,7 @@ const populateSchemaVersionOptions = function(resultArr,tempConfig){
   return tempConfig;
 };
 
-const populateSchemaBranchOptions = function(resultArr,tempConfig){
+const populateSchemaBranchOptions = function(resultArr,tempConfig,keyName){
   const branchOptions = _.map(resultArr.entities, (result) => {
     return {
       fieldName : result,
@@ -736,7 +736,7 @@ const populateSchemaBranchOptions = function(resultArr,tempConfig){
     };
   });
   _.map(tempConfig, (config) => {
-    if(config.hint !== undefined && config.hint.indexOf('dependsOn-topic') !== -1){
+    if(config.hint !== undefined && config.hint.indexOf(`dependsOn-${keyName}`) !== -1 ){
       config.options = branchOptions;
     }
   });
@@ -790,6 +790,20 @@ const getItemFromLocalStorage = (name) => {
   return x;
 };
 
+const   getSchemaKeyName = (arr,keyname) => {
+  let keyName = '';
+  _.map(arr, (a) => {
+    if(a.hint !== undefined){
+      const key =  a.hint.split(',');
+      const index = _.findIndex(key, (k) => k === keyname);
+      if(index !== -1){
+        keyName = a.fieldName;
+      }
+    }
+  });
+  return keyName;
+};
+
 export default {
   sortArray,
   numberToMilliseconds,
@@ -835,5 +849,6 @@ export default {
   formatLatency,
   setTimoutFunc,
   populateEventFields,
-  getItemFromLocalStorage
+  getItemFromLocalStorage,
+  getSchemaKeyName
 };
