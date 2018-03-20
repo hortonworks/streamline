@@ -1925,6 +1925,26 @@ public class StreamCatalogService {
         }
     }
 
+    public void setReconfigureOnAllComponentsInTopology(Topology topology) {
+        List<TopologyComponent> topologyComponents = new ArrayList<>();
+        List<com.hortonworks.registries.common.QueryParam> queryParams = new ArrayList<>();
+        queryParams.add(new com.hortonworks.registries.common.QueryParam("topologyId", String.valueOf(topology.getId())));
+        queryParams.add(new com.hortonworks.registries.common.QueryParam("versionId", String.valueOf(topology.getVersionId())));
+
+        topologyComponents.addAll(listTopologySources(queryParams));
+        topologyComponents.addAll(listTopologyProcessors(queryParams));
+        topologyComponents.addAll(listTopologySinks(queryParams));
+
+        for (TopologyComponent topologyComponent : topologyComponents) {
+            setReconfigureOnTopologyComponent(topologyComponent);
+        }
+    }
+
+    private void setReconfigureOnTopologyComponent(TopologyComponent component) {
+        component.setReconfigure(true);
+        dao.addOrUpdate(component);
+    }
+
     private void setReconfigureTarget(TopologyEdge edge) {
         setReconfigureTarget(edge, null);
     }

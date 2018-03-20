@@ -22,15 +22,16 @@ import com.hortonworks.streamline.common.exception.service.exception.request.Bad
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.exception.service.exception.server.StreamingEngineNotReachableException;
 import com.hortonworks.streamline.common.util.WSUtils;
-import com.hortonworks.streamline.streams.actions.TopologyActions;
 import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
 import com.hortonworks.streamline.streams.catalog.Topology;
+import com.hortonworks.streamline.streams.catalog.TopologyComponent;
+import com.hortonworks.streamline.streams.catalog.TopologyProcessor;
+import com.hortonworks.streamline.streams.catalog.TopologySink;
+import com.hortonworks.streamline.streams.catalog.TopologySource;
 import com.hortonworks.streamline.streams.catalog.TopologyVersion;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyData;
 import com.hortonworks.streamline.streams.exception.TopologyNotAliveException;
-import com.hortonworks.streamline.streams.logsearch.LogSearchCriteria;
-import com.hortonworks.streamline.streams.logsearch.topology.service.TopologyLogSearchService;
 import com.hortonworks.streamline.streams.security.Permission;
 import com.hortonworks.streamline.streams.security.Roles;
 import com.hortonworks.streamline.streams.security.SecurityUtil;
@@ -58,6 +59,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -260,7 +262,21 @@ public class TopologyCatalogResource {
         if (StringUtils.isEmpty(topology.getConfig())) {
             throw BadRequestException.missingParameter(Topology.CONFIG);
         }
+        if (topology.getNamespaceId() == null) {
+            throw BadRequestException.missingParameter(Topology.NAMESPACE_ID);
+        }
+
+        Topology existingTopology = catalogService.getTopology(topologyId);
         Topology result = catalogService.addOrUpdateTopology(topologyId, topology);
+
+        if (existingTopology != null) {
+            Long prevNamespaceId = existingTopology.getNamespaceId();
+            if (!result.getNamespaceId().equals(prevNamespaceId)) {
+                LOG.info("Determined namespace change on topology: " + topologyId);
+                // environment has changed: it should set 'reconfigure' to all components
+                catalogService.setReconfigureOnAllComponentsInTopology(result);
+            }
+        }
         return WSUtils.respondEntity(result, OK);
     }
 
