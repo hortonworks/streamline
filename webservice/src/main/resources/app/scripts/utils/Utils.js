@@ -804,6 +804,10 @@ const   getSchemaKeyName = (arr,keyname) => {
   return keyName;
 };
 
+const removeSpecialCharToSpace = (str) => {
+  return str.replace(/[`~!@#$%^&*0-9()|+\-=÷¿?;:'",.<>\{\}\[\]\\\/]/gi, ' ');
+};
+
 export default {
   sortArray,
   numberToMilliseconds,
@@ -850,5 +854,6 @@ export default {
   setTimoutFunc,
   populateEventFields,
   getItemFromLocalStorage,
-  getSchemaKeyName
+  getSchemaKeyName,
+  removeSpecialCharToSpace
 };
