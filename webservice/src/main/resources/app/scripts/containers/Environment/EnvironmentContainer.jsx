@@ -664,7 +664,9 @@ class EnvironmentContainer extends Component {
                 ? <NoData imgName={"applications"} searchVal={filterValue}/>
                 : entities.length !== 0
                   ? splitData[pageIndex].map((nameSpaceList, i) => {
-                    return <EnvironmentCards key={i} nameSpaceList={nameSpaceList} nameSpaceClicked={this.nameSpaceClicked} clusterDetails={clusterDetails} refIdArr={refIdArr} loader={loader} allACL={allACL}/>;
+                    if(!nameSpaceList.namespace.internal) {
+                      return <EnvironmentCards key={i} nameSpaceList={nameSpaceList} nameSpaceClicked={this.nameSpaceClicked} clusterDetails={clusterDetails} refIdArr={refIdArr} loader={loader} allACL={allACL}/>;
+                    }
                   })
                   : !this.initialFetch && entities.length === 0
                     ? <NoData imgName={"environments"} serviceFlag={checkServices}/>
