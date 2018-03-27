@@ -241,6 +241,13 @@ class TopologyItems extends Component {
                     <i className="fa fa-share-square-o"></i>
                     &nbsp;Export
                   </MenuItem>
+                  {metricWrap.status !== 'ACTIVE' && metricWrap.status !== 'INACTIVE' ?
+                  <MenuItem title="Update Environment" disabled={!permission} onClick={this.onActionClick.bind(this, "update/" + topology.id)}>
+                    <i className="fa fa-wrench"></i>
+                    &nbsp;Update Environment
+                  </MenuItem>
+                  : null
+                  }
                   <MenuItem title="Delete" disabled={!permission} onClick={this.onActionClick.bind(this, "delete/" + topology.id)}>
                     <i className="fa fa-trash"></i>
                     &nbsp;Delete
@@ -376,6 +383,7 @@ class TopologyListingContainer extends Component {
       pageIndex: 0,
       pageSize: 9,
       cloneFromId: null,
+      topologyData: null,
       checkEnvironment: false,
       sourceCheck: false,
       searchLoader : false,
@@ -583,9 +591,21 @@ class TopologyListingContainer extends Component {
     case "share":
       this.shareSingleTopology(id,obj);
       break;
+    case "update":
+      this.updateEnvironment(id);
+      break;
     default:
       break;
     }
+  }
+
+  updateEnvironment = (id) => {
+    let obj = this.state.entities.find((e)=>{return e.topology.id == id;});
+    this.setState({
+      topologyData: obj
+    }, () => {
+      this.AddTopologyModelRef.show();
+    });
   }
 
   shareSingleTopology = (id,obj) => {
@@ -669,6 +689,12 @@ class TopologyListingContainer extends Component {
     });
   }
   handleSaveClicked = () => {
+    if(this.addTopologyRef.state.namespaceId === this.state.topologyData.topology.namespaceId) {
+      FSReactToastr.info(
+        <CommonNotification flag="info" content={"Same environment selected"} />, '', toastOpt);
+      this.AddTopologyModelRef.hide();
+      return;
+    }
     if (this.addTopologyRef.validate()) {
       this.addTopologyRef.handleSave().then((topology) => {
         if (topology.responseMessage !== undefined) {
@@ -678,12 +704,19 @@ class TopologyListingContainer extends Component {
           FSReactToastr.error(
             <CommonNotification flag="error" content={errorMag}/>, '', toastOpt);
         } else {
-          this.addTopologyRef.saveMetadata(topology.id).then(() => {
+          if(this.state.topologyData) { // Updated namespace
             FSReactToastr.success(
-              <strong>Application added successfully</strong>
-            );
+                <strong>Application's environment updated successfully</strong>
+              );
             this.context.router.push('applications/' + topology.id + '/edit');
-          });
+          } else {
+            this.addTopologyRef.saveMetadata(topology.id).then(() => {
+              FSReactToastr.success(
+                <strong>Application added successfully</strong>
+              );
+              this.context.router.push('applications/' + topology.id + '/edit');
+            });
+          }
         }
       });
     }
@@ -782,7 +815,8 @@ class TopologyListingContainer extends Component {
       refIdArr,
       searchLoader,
       allACL,
-      shareObj
+      shareObj,
+      topologyData
     } = this.state;
     const splitData = _.chunk(entities, pageSize) || [];
     const btnIcon = <i className="fa fa-plus"></i>;
@@ -857,8 +891,8 @@ class TopologyListingContainer extends Component {
           ? <Paginate len={entities.length} splitData={splitData} pagesize={pageSize} pagePosition={this.pagePosition}/>
           : ''
 }
-        <Modal ref={(ref) => this.AddTopologyModelRef = ref} data-title="Add Application" onKeyPress={this.handleKeyPress} data-resolve={this.handleSaveClicked}>
-          <AddTopology ref={(ref) => this.addTopologyRef = ref}/>
+        <Modal ref={(ref) => this.AddTopologyModelRef = ref} data-title={topologyData ? "Update Environment" : "Add Application"} onKeyPress={this.handleKeyPress} data-resolve={this.handleSaveClicked} data-reject={()=>{this.setState({topologyData: null});this.AddTopologyModelRef.hide();}}>
+          <AddTopology ref={(ref) => this.addTopologyRef = ref} topologyData={topologyData} />
         </Modal>
         <Modal ref={(ref) => this.ImportTopologyModelRef = ref} data-title="Import Application" onKeyPress={this.handleKeyPress} data-resolve={this.handleImportSave}>
           <ImportTopology ref={(ref) => this.importTopologyRef = ref}/>
