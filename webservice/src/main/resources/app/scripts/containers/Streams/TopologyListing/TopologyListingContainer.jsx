@@ -689,9 +689,10 @@ class TopologyListingContainer extends Component {
     });
   }
   handleSaveClicked = () => {
-    if(this.addTopologyRef.state.namespaceId === this.state.topologyData.topology.namespaceId) {
+    if(this.state.topologyData != null && this.addTopologyRef.state.namespaceId === this.state.topologyData.topology.namespaceId) {
       FSReactToastr.info(
         <CommonNotification flag="info" content={"Same environment selected"} />, '', toastOpt);
+      this.setState({topologyData: null});
       this.AddTopologyModelRef.hide();
       return;
     }
