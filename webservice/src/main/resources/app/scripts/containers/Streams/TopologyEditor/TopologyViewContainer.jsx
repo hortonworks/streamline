@@ -175,7 +175,7 @@ class TopologyViewContainer extends Component {
                 this.stormClusterId = mapObj.clusterId;
               }
               let infraObj = namespaceData.mappings.find((m) => {
-                return m.serviceName.toLowerCase() === 'ambari_infra';
+                return m.serviceName.toLowerCase() === 'ambari_infra_solr';
               });
               if (infraObj) {
                 this.showLogSearch = true;
