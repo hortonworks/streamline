@@ -219,9 +219,9 @@ class AddEnvironment extends Component {
         obj['timeSeriesDB'] = 'AMBARI_METRICS';
       }
       if (tempData.find((o) => {
-        return o.serviceName.toLowerCase() == 'ambari_infra';
+        return o.serviceName.toLowerCase() == 'ambari_infra_solr';
       })) {
-        obj['logSearchService'] = 'AMBARI_INFRA';
+        obj['logSearchService'] = 'AMBARI_INFRA_SOLR';
       }
       return {obj, tempData};
     }
