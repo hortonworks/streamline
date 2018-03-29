@@ -49,7 +49,9 @@ export default class CommonCodeMirror extends Component{
         lineNumbers: true,
         mode: "javascript",
         styleActiveLine: true,
-        lint: true
+        lint: true,
+        matchBrackets : true,
+        extraKeys : {"'@'": "autocomplete"}
       },
       json : {
         lineNumbers: true,
@@ -74,7 +76,7 @@ export default class CommonCodeMirror extends Component{
   }
 
   componentWillReceiveProps(newProps) {
-    if (this.props.editMode && this.initialFlag) {
+    if (newProps.editMode && this.initialFlag) {
       this.setState({textValue : newProps.value}, () => {
         this.codeWrapper.setValue(newProps.value);
         this.initialFlag= false;
@@ -186,11 +188,11 @@ export default class CommonCodeMirror extends Component{
   }
 
   getNestedFieldHints = (string) => {
-    const {hintOptions} = this.props;
+    const {hintOptions,modeType} = this.props;
     let arr=[];
     const nestedFunction = (hints) => {
       _.map(hints, (h) => {
-        if(!!string && string.includes(h.displayText) && h.fields){
+        if(!!string && string.includes(h.filterText || h.displayText) && h.fields){
           arr = this.filterByName(h.fields, string,'nested');
         }
         if(h.fields){
@@ -254,7 +256,7 @@ export default class CommonCodeMirror extends Component{
     }
     const expression = !!type ? filterValue :  /[*+-\/]/ig.test(filterValue) ?  "^[" + filterValue + "].*$" :  filterValue;
     let matchFilter = new RegExp(expression, 'i');
-    return entities.filter(filteredList => !filterValue || matchFilter.test(filteredList.displayText));
+    return entities.filter(filteredList => !filterValue || matchFilter.test(filteredList.filterText || filteredList.displayText));
   };
 
   mergeModeTypeAndOptions = (type,options) => {

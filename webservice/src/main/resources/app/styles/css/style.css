@@ -4183,7 +4183,7 @@ ul.custom-pagination li.active{
   margin: 10px 10px 10px 10px;
 }
 .metric-graphs-container {
-  height: 125px;
+  max-height: 200px;
 }
 .component-log-actions-container {
   background-color: #fff;
@@ -4341,6 +4341,11 @@ div.actions-list > div > ul > li > span.logsearchLink{
   transform: rotate(180deg);
 }
 
+.overviewDiv{
+  width: 100%;
+  height: auto;
+}
+
 /* CSS For CodeMirror Start Here  */
 .CodeMirror pre.CodeMirror-placeholder {
   color: #999;
@@ -4360,8 +4365,16 @@ div.actions-list > div > ul > li > span.logsearchLink{
 }
 
 div.CodeMirror-scroll{
-        min-height: 60px;
-        max-height: 400px;
+  min-height: 60px;
+  max-height: 400px;
+}
+
+.projection-codemirror > .CodeMirror{
+  min-height: 30px;
+}
+
+.projection-codemirror > .CodeMirror > div.CodeMirror-scroll{
+  min-height: 30px;
 }
 
 li.CodeMirror-hint {
@@ -4488,5 +4501,9 @@ div.hint-tooltip{
   border-bottom: none;
   font-family: monospace;
   font-weight: bold;
+}
+.invalid-codemirror{
+  border: 1px solid red;
+  border-radius: 3px;
 }
 /* CSS For CodeMirror Ends Here */

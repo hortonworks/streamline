@@ -790,7 +790,7 @@ const getItemFromLocalStorage = (name) => {
   return x;
 };
 
-const   getSchemaKeyName = (arr,keyname) => {
+const getSchemaKeyName = (arr,keyname) => {
   let keyName = '';
   _.map(arr, (a) => {
     if(a.hint !== undefined){
@@ -806,6 +806,14 @@ const   getSchemaKeyName = (arr,keyname) => {
 
 const removeSpecialCharToSpace = (str) => {
   return str.replace(/[`~!@#$%^&*0-9()|+\-=÷¿?;:'",.<>\{\}\[\]\\\/]/gi, ' ');
+};
+
+const isPromise = function (object) {
+  if(Promise && Promise.resolve){
+    return Promise.resolve(object) == object;
+  }else{
+    throw "Promise not supported in your environment";
+  }
 };
 
 export default {
@@ -855,5 +863,6 @@ export default {
   populateEventFields,
   getItemFromLocalStorage,
   getSchemaKeyName,
-  removeSpecialCharToSpace
+  removeSpecialCharToSpace,
+  isPromise
 };
