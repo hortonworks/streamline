@@ -35,7 +35,7 @@ import java.util.Map;
 
 public class TopologyLogSearchContainer extends NamespaceAwareContainer<TopologyLogSearch> {
     public static final String COMPONENT_NAME_INFRA_SOLR = ComponentPropertyPattern.INFRA_SOLR.name();
-    public static final String SERVICE_CONFIGURATION_NAME_INFRA_SOLR = ServiceConfigurations.AMBARI_INFRA.getConfNames()[0];
+    public static final String SERVICE_CONFIGURATION_NAME_INFRA_SOLR = ServiceConfigurations.AMBARI_INFRA_SOLR.getConfNames()[0];
     public static final String SOLR_API_URL_KEY = "solrApiUrl";
     public static final String SECURED_CLUSTER_KEY = "secured";
     public static final String AMBARI_INFRA_SOLR_KERBEROS_PRINCIPAL = "infra_solr_kerberos_principal";

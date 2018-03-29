@@ -16,7 +16,7 @@
 package com.hortonworks.streamline.streams.logsearch.container.mapping;
 
 public enum MappedTopologyLogSearchImpl {
-    STORM_AMBARI_INFRA("com.hortonworks.streamline.streams.logsearch.storm.ambari.AmbariInfraWithStormLogSearch");
+    STORM_AMBARI_INFRA_SOLR("com.hortonworks.streamline.streams.logsearch.storm.ambari.AmbariInfraWithStormLogSearch");
 
     private final String className;
 

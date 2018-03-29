@@ -54,7 +54,7 @@ public enum ComponentPropertyPattern {
   // AMBARI_METRICS
   METRICS_COLLECTOR("timeline.metrics.service.webapp.address", Pattern.compile("()[a-zA-Z0-9_\\-\\\\.]*:([0-9]+)")),
 
-  // AMBARI_INFRA
+  // AMBARI_INFRA_SOLR
   INFRA_SOLR("infra_solr_port");
 
   private final String connectionConfName;
