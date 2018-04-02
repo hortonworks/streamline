@@ -170,7 +170,7 @@ export default class ProjectionProcessorContainer extends Component {
       functionListArr: this.udfList,
       showLoading : false
     };
-    this.populateCodeMirrorDefaultHintOptions();
+    this.populateCodeMirrorDefaultHintOptions(this.fieldsHintArr);
     if(this.projectionRuleId){
       this.fetchRulesNode(this.projectionRuleId).then((ruleNode) => {
         this.projectionRulesNode = ruleNode;
@@ -206,9 +206,13 @@ export default class ProjectionProcessorContainer extends Component {
     });
   }
 
-  populateCodeMirrorDefaultHintOptions(){
+  populateCodeMirrorDefaultHintOptions(fields){
     const {udfList} = this;
     this.hintOptions=[];
+    // arguments from field list for hints...
+    // Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(fields,"ARGS"));
+    // // Predefined Binary Operators from CONSTRANT for hints...
+    // Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(binaryOperators,"BINARY-OPERATORS"));
     // FUNCTION from UDFLIST for hints...
     Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(udfList,"FUNCTION"));
   }
@@ -653,7 +657,7 @@ export default class ProjectionProcessorContainer extends Component {
 
       let fieldsArr = this.state.outputFieldsArr;
       fieldsArr.push({conditions: '', outputFieldName: '',prefetchData: false});
-      this.populateCodeMirrorDefaultHintOptions();
+      this.populateCodeMirrorDefaultHintOptions(this.fieldsHintArr);
       this.setState({outputFieldsArr: fieldsArr});
     }
   }
@@ -694,16 +698,91 @@ export default class ProjectionProcessorContainer extends Component {
 
   getReturnTypeFromCodemirror = (value,functionArr,fieldsArr) => {
     let returnType='DOUBLE',error='';
+
+    const funcOverLoading = (fObj) => {
+      const {functionArr,o} = fObj;
+      const tFunc = _.filter(functionArr, (func) => func.displayName === o.displayName);
+      if(tFunc.length > 1){
+        return _.findLast(tFunc);
+      } else {
+        return o;
+      }
+    };
+
+    // Nested Function to check comma... ','
+    const expressionContainsComma = (tObj) => {
+      const {val,level,oldObj,obj,functionArr} = tObj;
+      const trimVal = val.endsWith(')') ? val.replace(/[)]/gi,'') : val;
+      let args = trimVal.split(',');
+      let o = level > 0 ? oldObj : obj;
+      if(/[)]/.test(val)){
+        const openB = value.split('(').splice(0,(value.split('(').length-1));
+        const closeB = val.split(')').splice(0,(val.split(')').length-1));
+        let ObjName='';
+        const openL = openB.length, closeL = closeB.length;
+        if(openB.length > 1){
+          ObjName = openB[closeL > 1 ? ((openL === closeL || openL < closeL) ? 0 : (closeL-1)) : closeL];
+        } else {
+          ObjName= openB[0];
+        }
+        o = _.find(functionArr, (func) => func.displayName === ObjName);
+        args = _.compact(val.split(')').map(function(a) {return a.replace(/[,]/gi,' ');}));
+        if(openL === closeL || openL < closeL){
+          args = args.splice(0,o.argTypes.length);
+        }
+      }
+      if(args.length > o.argTypes.length){
+        o = funcOverLoading({functionArr,o});
+      }
+      if(args.length <= o.argTypes.length){
+        _.map(args, (a,i) => {
+          const fields = this.findNestedObj(fieldsArr,a);
+          if(!_.isEmpty(fields) && _.isNaN(parseInt(a))){
+            const argObj = this.checkReturnTypeSupport(o,fields,'type');
+            if(!!argObj.returnType){
+              returnType = argObj.returnType;
+            }
+            error = argObj.error || (argObj.returnType !== o.argTypes[i]) ? `Function doesn't support the arguments return type.` : null;
+          }
+        });
+      } else {
+        error = `Function doesn't support more arguments .`;
+      }
+    };
+
+    // Expression contains no parent function... (driverId
+    const noParentFunctionInExpression = (val) => {
+      const tVal = val.split(' ');
+      tVal.map((v,i) => {
+        if(!/[`~!@#$%^&0-9-+*<>=()_|\¿?;:,\{\}\/[\]\\]/.test(v)){
+          const fields = this.findNestedObj(fieldsArr,v);
+          if(!_.isEmpty(fields) && _.isNaN(parseInt(v))){
+            if(!!returnType && i > 0){
+              if(returnType.toLowerCase() !== fields.type.toLowerCase()){
+                error = 'miss match arguments returnType.';
+              }
+            } else {
+              returnType = fields.type;
+            }
+          }
+        }
+      });
+    };
+
     const ind =  this.checkBracketInString(value);
     if(ind !== -1){
-      this.pushAdditionalHints(this.fieldsHintArr) ;
+      this.pushAdditionalHints(this.fieldsHintArr);
       const {f_val, s_val} = this.stringSpliter(value,ind);
       const obj = _.find(functionArr, (func) => func.displayName === f_val);
       if(obj){
         returnType = obj.returnType;
       }
+      // expression start with bracket...
+      if(f_val === ''){
+        // noParentFunctionInExpression(s_val);
+      }
       // s_val is the string after the function bracket.. and recursive call
-      if(!!s_val){
+      if(!!s_val && !!f_val){
         const nestedFunction = (val,level,oldObj) => {
           const b_index = this.checkBracketInString(val);
           if(b_index !== -1){
@@ -732,39 +811,7 @@ export default class ProjectionProcessorContainer extends Component {
               error = argResultObj.error;
             } else {
               if(/[,]/.test(val)){
-                const trimVal = val.endsWith(')') ? val.replace(/[)]/gi,'') : val;
-                let args = trimVal.split(',');
-                let o = level > 0 ? oldObj : obj;
-                if(/[)]/.test(val)){
-                  const openB = value.split('(').splice(0,(value.split('(').length-1));
-                  const closeB = val.split(')').splice(0,(val.split(')').length-1));
-                  let ObjName='';
-                  const openL = openB.length, closeL = closeB.length;
-                  if(openB.length > 1){
-                    ObjName = openB[closeL > 1 ? ((openL === closeL || openL < closeL) ? 0 : (closeL-1)) : closeL];
-                  } else {
-                    ObjName= openB[0];
-                  }
-                  o = _.find(functionArr, (func) => func.displayName === ObjName);
-                  args = _.compact(val.split(')').map(function(a) {return a.replace(/[,]/gi,'');}));
-                  if(openL === closeL || openL < closeL){
-                    args = args.splice(0,o.argTypes.length);
-                  }
-                }
-                if(args.length <= o.argTypes.length){
-                  _.map(args, (a,i) => {
-                    const fields = this.findNestedObj(fieldsArr,a);
-                    if(!_.isEmpty(fields) && _.isNaN(parseInt(a))){
-                      const argObj = this.checkReturnTypeSupport(o,fields,'type');
-                      if(!!argObj.returnType){
-                        returnType = argObj.returnType;
-                      }
-                      error = argObj.error || (argObj.returnType !== o.argTypes[i]) ? `Function doesn't support the arguments return type.` : null;
-                    }
-                  });
-                } else {
-                  error = `Function doesn't support more arguments .`;
-                }
+                expressionContainsComma({val,level,oldObj,obj,functionArr});
               } else if(/[']/.test(val)){
               }else {
                 if(!this.checkValueTypeToReturnType(trimVal,returnType).flag){
@@ -779,7 +826,9 @@ export default class ProjectionProcessorContainer extends Component {
 
     } else {
       this.populateCodeMirrorDefaultHintOptions();
+      // noParentFunctionInExpression(value);
     }
+
     return {returnType,error};
   }
 
@@ -1019,7 +1068,7 @@ export default class ProjectionProcessorContainer extends Component {
                 <div className="row">
                   <div className="col-sm-7 outputCaption">
                     <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Projection Conditions</Popover>}>
-                    <label>Projection Conditions</label>
+                    <label>Projection Expression</label>
                     </OverlayTrigger>
                   </div>
                   <div className="col-sm-3 outputCaption">
@@ -1049,7 +1098,7 @@ export default class ProjectionProcessorContainer extends Component {
                       }
                       <div className="col-sm-7">
                         <div className={functionClass.join(' ')}>
-                          <CommonCodeMirror editMode={obj.prefetchData} modeType="javascript" hintOptions={this.hintOptions} value={obj.conditions} placeHolder="Conditions goes here..." callBack={this.handleScriptChange.bind(this,i)} />
+                          <CommonCodeMirror editMode={obj.prefetchData} modeType="javascript" hintOptions={this.hintOptions} value={obj.conditions} placeHolder="Expression goes here..." callBack={this.handleScriptChange.bind(this,i)} />
                         </div>
                       </div>
                       <div className="col-sm-3">
