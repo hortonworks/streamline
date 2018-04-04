@@ -24,6 +24,8 @@ import com.hortonworks.streamline.streams.actions.TopologyActionContext;
 import com.hortonworks.streamline.streams.actions.TopologyActions;
 import com.hortonworks.streamline.streams.catalog.TopologyTestRunHistory;
 import com.hortonworks.streamline.streams.cluster.Constants;
+import com.hortonworks.streamline.streams.cluster.catalog.NamespaceServiceClusterMap;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.exception.TopologyNotAliveException;
 import com.hortonworks.streamline.streams.layout.TopologyLayoutConstants;
@@ -71,13 +73,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -125,14 +127,18 @@ public class StormTopologyActionsImpl implements TopologyActions {
     public static final String TOPOLOGY_CONFIG_KEY_HDFS_CREDENTIALS_CONFIG_KEYS = "hdfsCredentialsConfigKeys";
     public static final String TOPOLOGY_CONFIG_KEY_HBASE_CREDENTIALS_CONFIG_KEYS = "hbaseCredentialsConfigKeys";
     public static final String TOPOLOGY_CONFIG_KEY_HIVE_CREDENTIALS_CONFIG_KEYS = "hiveCredentialsConfigKeys";
+    public static final String TOPOLOGY_CONFIG_KEY_NOTIFIER_PLUGIN = "storm.topology.submission.notifier.plugin.class";
     public static final String TOPOLOGY_AUTO_CREDENTIAL_CLASSNAME_HDFS = "org.apache.storm.hdfs.security.AutoHDFS";
     public static final String TOPOLOGY_AUTO_CREDENTIAL_CLASSNAME_HBASE = "org.apache.storm.hbase.security.AutoHBase";
     public static final String TOPOLOGY_AUTO_CREDENTIAL_CLASSNAME_HIVE = "org.apache.storm.hive.security.AutoHive";
+    public static final String TOPOLOGY_NOTIFIER_PLUGIN_CLASSNAME_ATLAS = "org.apache.atlas.storm.hook.StormAtlasHook";
 
     private static final Long DEFAULT_NIMBUS_THRIFT_MAX_BUFFER_SIZE = 1048576L;
 
     public static final String TOPOLOGY_EVENTLOGGER_REGISTER = "topology.event.logger.register";
     public static final String TOPOLOGY_EVENTLOGGER_CLASSNAME_STREAMLINE = "com.hortonworks.streamline.streams.runtime.storm.event.sample.StreamlineEventLogger";
+
+
 
     private String stormArtifactsLocation = "/tmp/storm-artifacts/";
     private String stormCliPath = "storm";
@@ -151,6 +157,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
 
     private AutoCredsServiceConfigurationReader serviceConfigurationReader;
     private final ConcurrentHashMap<Long, Boolean> forceKillRequests = new ConcurrentHashMap<>();
+    private Set<String> environmentServiceNames;
 
     public StormTopologyActionsImpl() {
     }
@@ -204,6 +211,10 @@ public class StormTopologyActionsImpl implements TopologyActions {
             Number namespaceId = (Number) conf.get(TopologyLayoutConstants.NAMESPACE_ID);
             this.serviceConfigurationReader = new AutoCredsServiceConfigurationReader(environmentService,
                     namespaceId.longValue());
+            this.environmentServiceNames = environmentService.listServiceClusterMapping(namespaceId.longValue())
+                    .stream()
+                    .map(NamespaceServiceClusterMap::getServiceName)
+                    .collect(Collectors.toSet());
         }
         File f = new File (stormArtifactsLocation);
         if (!f.exists() && !f.mkdirs()) {
@@ -642,7 +653,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
             Config topologyConfig = fluxGenerator.getTopologyConfig();
             putAutoTokenDelegationConfig(topologyConfig, topologyDag);
             registerEventLogger(topologyConfig);
-
+            maybeAddNotifierPlugin(topologyConfig);
             Map<String, Object> properties = topologyConfig.getProperties();
             if (!deploy) {
                 LOG.debug("Disabling topology event logger for test mode...");
@@ -664,6 +675,12 @@ public class StormTopologyActionsImpl implements TopologyActions {
             if (fileWriter != null) {
                 fileWriter.close();
             }
+        }
+    }
+
+    private void maybeAddNotifierPlugin(Config topologyConfig) {
+        if (environmentServiceNames.contains(ServiceConfigurations.ATLAS.name())) {
+            topologyConfig.put(TOPOLOGY_CONFIG_KEY_NOTIFIER_PLUGIN, TOPOLOGY_NOTIFIER_PLUGIN_CLASSNAME_ATLAS);
         }
     }
 

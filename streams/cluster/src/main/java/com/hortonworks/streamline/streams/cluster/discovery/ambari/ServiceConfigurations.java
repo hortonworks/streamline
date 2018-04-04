@@ -35,7 +35,8 @@ public enum ServiceConfigurations {
       "hiveserver2-site","hive-site"),
   AMBARI_METRICS("ams-env", "ams-site"),
   DRUID("druid-common", "druid-overlord"),
-  AMBARI_INFRA_SOLR("infra-solr-env");
+  AMBARI_INFRA_SOLR("infra-solr-env"),
+  ATLAS("application-properties");
 
   private final String[] confNames;
 

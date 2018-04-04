@@ -23,7 +23,8 @@ public enum ConfigFilePattern {
   CORE_SITE("core-site", "core-site.xml"),
   HDFS_SITE("hdfs-site", "hdfs-site.xml"),
   HIVE_SITE("hive-site", "hive-site.xml"),
-  HBASE_SITE("hbase-site", "hbase-site.xml");
+  HBASE_SITE("hbase-site", "hbase-site.xml"),
+  APPLICATION_PROPERTIES("application-properties", "atlas-application.properties");
 
   private final String confType;
   private final String originFileName;
