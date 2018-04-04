@@ -210,19 +210,11 @@ export default class ProjectionProcessorContainer extends Component {
     const {udfList} = this;
     this.hintOptions=[];
     // arguments from field list for hints...
-    // Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(fields,"ARGS"));
+    Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(fields,"ARGS"));
     // // Predefined Binary Operators from CONSTRANT for hints...
-    // Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(binaryOperators,"BINARY-OPERATORS"));
+    Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(binaryOperators,"BINARY-OPERATORS"));
     // FUNCTION from UDFLIST for hints...
     Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(udfList,"FUNCTION"));
-  }
-
-  pushAdditionalHints = (fields) => {;
-    this.hintOptions=[];
-    // arguments from field list for hints...
-    Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(fields,"ARGS"));
-    // FUNCTION from UDFLIST for hints...
-    Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(this.udfList,"FUNCTION"));
   }
 
   /*
@@ -697,8 +689,39 @@ export default class ProjectionProcessorContainer extends Component {
   }
 
   getReturnTypeFromCodemirror = (value,functionArr,fieldsArr) => {
-    let returnType='DOUBLE',error='';
+    let returnType='DOUBLE',error='',boolType=false;
+    const enumValue = {"SHORT": 1,"INTEGER": 2,"FLOAT": 3,"DOUBLE":4,"LONG":5};
 
+    const getReturnTypeFromNumbers = (cValue) => {
+      let type = '';
+      const c_value = parseFloat(cValue);
+      if(cValue.includes('.') && !/[a-zA-Z]/.test(cValue)){
+        const dArr = cValue.split('.');
+        if(dArr.length > 2){
+          error = "invalid number.";
+        } else {
+          type = dArr[1].length <= 7 ? "FLOAT" : "DOUBLE";
+        }
+      } else {
+        if(/[a-zA-Z]/.test(cValue)){
+          error = "invalid number.";
+        } else {
+          type = cValue <= 2147483647 ? "INTEGER" : "LONG";
+        }
+      }
+      return type;
+    };
+
+    // override return type for ["SHORT","INTERGER","FLOAT","DOUBLE",LONG]
+    const overRideIntReturnType = (newType,oldType) => {
+      let type = oldType;
+      if(enumValue[oldType] < enumValue[newType]){
+        type = newType;
+      }
+      return type;
+    };
+
+    // Overloading function
     const funcOverLoading = (fObj) => {
       const {functionArr,o} = fObj;
       const tFunc = _.filter(functionArr, (func) => func.displayName === o.displayName);
@@ -752,34 +775,61 @@ export default class ProjectionProcessorContainer extends Component {
 
     // Expression contains no parent function... (driverId
     const noParentFunctionInExpression = (val) => {
-      const tVal = val.split(' ');
-      tVal.map((v,i) => {
-        if(!/[`~!@#$%^&0-9-+*<>=()_|\¿?;:,\{\}\/[\]\\]/.test(v)){
-          const fields = this.findNestedObj(fieldsArr,v);
-          if(!_.isEmpty(fields) && _.isNaN(parseInt(v))){
-            if(!!returnType && i > 0){
-              if(returnType.toLowerCase() !== fields.type.toLowerCase()){
-                error = 'miss match arguments returnType.';
+      const tVal = val.split(' ') ;
+      const recursiveCall = (value) => {
+        value.forEach((v,i) => {
+          if(!/[`~!@#$%^&0-9()_|\¿?;:,\{\}\[\]\\]/.test(v)){
+            const fields = this.findNestedObj(fieldsArr,v);
+            if(!_.isEmpty(fields) && _.isNaN(parseInt(v)) && !boolType){
+              if(!!returnType && i > 0){
+                if(_.keys(enumValue).toString().includes(fields.type)){
+                  returnType = overRideIntReturnType(returnType , fields.type);
+
+                }else if(returnType.toLowerCase() !== fields.type.toLowerCase()){
+                  error = 'miss match arguments returnType.';
+                }
+              } else {
+                returnType = fields.type;
               }
+            } else if(/[<>]/.test(v)){
+              boolType = true;
+              returnType = "BOOLEAN";
+            }
+          } else {
+            if(/[-+*<>=()]/.test(v)){
+              const tValue = _.compact(v.replace(/[-+*=()]/gi,' ').split(' '));
+              recursiveCall(tValue);
             } else {
-              returnType = fields.type;
+              returnType = getReturnTypeFromNumbers(v);
             }
           }
-        }
-      });
+        });
+        return returnType;
+      };
+      return recursiveCall(tVal);
     };
 
     const ind =  this.checkBracketInString(value);
     if(ind !== -1){
-      this.pushAdditionalHints(this.fieldsHintArr);
       const {f_val, s_val} = this.stringSpliter(value,ind);
-      const obj = _.find(functionArr, (func) => func.displayName === f_val);
+      let tF_val =  f_val.replace(/[-+*=()\/]/gi,' ').split(' ');
+      if(tF_val.length > 1){
+        const comValue = _.compact(tF_val);
+        const popValue = comValue.length > 1 ? comValue.pop(comValue.length-1).toString() : comValue[0];
+        returnType = noParentFunctionInExpression(comValue.join(' '));
+        tF_val = popValue;
+      } else {
+        tF_val=tF_val[0];
+      }
+      const obj = _.find(functionArr, (func) => func.displayName === tF_val);
       if(obj){
-        returnType = obj.returnType;
+        if(!boolType){
+          returnType = obj.returnType;
+        }
       }
       // expression start with bracket...
       if(f_val === ''){
-        // noParentFunctionInExpression(s_val);
+        returnType = noParentFunctionInExpression(s_val);
       }
       // s_val is the string after the function bracket.. and recursive call
       if(!!s_val && !!f_val){
@@ -791,7 +841,9 @@ export default class ProjectionProcessorContainer extends Component {
             if(innerObj){
               const funcResultObj = this.checkReturnTypeSupport(obj,innerObj,'returnType');
               if(!!funcResultObj.returnType){
-                returnType = funcResultObj.returnType;
+                if(!boolType){
+                  returnType = funcResultObj.returnType;
+                }
               }
               error = funcResultObj.error;
               if(!!s_val){
@@ -805,7 +857,7 @@ export default class ProjectionProcessorContainer extends Component {
             const inner_Args = this.findNestedObj(fieldsArr,trimVal);
             if(!_.isEmpty(inner_Args)){
               const argResultObj = this.checkReturnTypeSupport(obj,inner_Args,'type');
-              if(!!argResultObj.returnType){
+              if(!!argResultObj.returnType && !boolType){
                 returnType = argResultObj.returnType;
               }
               error = argResultObj.error;
@@ -825,8 +877,7 @@ export default class ProjectionProcessorContainer extends Component {
       }
 
     } else {
-      this.populateCodeMirrorDefaultHintOptions();
-      // noParentFunctionInExpression(value);
+      returnType = noParentFunctionInExpression(value);
     }
 
     return {returnType,error};
