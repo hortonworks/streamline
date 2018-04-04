@@ -169,7 +169,7 @@ public class HiveMetadataService implements AutoCloseable {
     /**
      * @return The names of all databases in the MetaStore.
      */
-    public HiveDatabases getHiveDatabases() throws MetaException, PrivilegedActionException, IOException, InterruptedException {
+    public HiveDatabases getHiveDatabases() throws Exception {
         final HiveDatabases databases = HiveDatabases.newInstance(
                 executeSecure(metaStoreClient::getAllDatabases), securityContext, getPrincipals(), getKeytabs());
         LOG.debug("Hive databases {}", databases.list());
