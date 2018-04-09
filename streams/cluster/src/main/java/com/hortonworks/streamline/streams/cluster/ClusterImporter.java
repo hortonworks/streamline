@@ -23,6 +23,8 @@ import com.hortonworks.streamline.streams.cluster.catalog.Service;
 import com.hortonworks.streamline.streams.cluster.catalog.ServiceConfiguration;
 import com.hortonworks.streamline.streams.cluster.discovery.ServiceNodeDiscoverer;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ComponentPropertyPattern;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.SerivceConfigurationFilter;
+import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurationFilters;
 import com.hortonworks.streamline.streams.cluster.discovery.ambari.ServiceConfigurations;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.cluster.service.metadata.json.KafkaBrokerListeners;
@@ -80,7 +82,7 @@ public class ClusterImporter {
 
         ServiceInformation serviceInformation = createServiceInformation(cluster, serviceName);
 
-        ServiceConfigurationInformation serviceConfigurationInformation = fetchServiceConfigurations(
+        ServiceConfigurationInformation serviceConfigurationInformation = fetchServiceConfigurations(cluster,
                 serviceNodeDiscoverer, serviceInformation);
 
         List<ComponentInformation> components = fetchComponents(serviceNodeDiscoverer, serviceName,
@@ -150,7 +152,8 @@ public class ClusterImporter {
         }).collect(toList());
     }
 
-    private ServiceConfigurationInformation fetchServiceConfigurations(ServiceNodeDiscoverer serviceNodeDiscoverer,
+    private ServiceConfigurationInformation fetchServiceConfigurations(Cluster cluster,
+                                                                       ServiceNodeDiscoverer serviceNodeDiscoverer,
                                                                        ServiceInformation serviceInformation) {
         Map<String, Map<String, String>> ambariServiceConfigurations = serviceNodeDiscoverer.getConfigurations(
                 serviceInformation.getService().getName());
@@ -158,7 +161,8 @@ public class ClusterImporter {
                 .map(entry -> {
                     try {
                         String confType = entry.getKey();
-                        Map<String, String> configuration = entry.getValue();
+                        SerivceConfigurationFilter filter = ServiceConfigurationFilters.get(cluster, confType);
+                        Map<String, String> configuration = filter.filter(entry.getValue());
 
                         LOG.debug("conf-type start {}", confType);
 
