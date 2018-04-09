@@ -17,6 +17,7 @@
 package com.hortonworks.streamline.streams.catalog;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Joiner;
 import org.apache.commons.lang3.StringUtils;
 
@@ -45,8 +46,12 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Projection {
     private String expr;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String functionName;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<String> args;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String outputFieldName;
 
     // for jackson
@@ -72,7 +77,10 @@ public class Projection {
     }
 
     public String getExpr() {
-        return expr;
+        if (expr != null) {
+            return expr;
+        }
+        return toExpr(false);
     }
 
     public String getFunctionName() {
@@ -91,16 +99,32 @@ public class Projection {
     public String toString() {
         String str;
         if (!StringUtils.isEmpty(functionName)) {
-            str = functionName + "(" + Joiner.on(",").join(args) + ")";
+            str = toExpr(true);
         } else if (!StringUtils.isEmpty(expr)) {
             str = expr;
         } else {
             throw new IllegalArgumentException("expr or functionName should be specified");
         }
+        return str;
+    }
+
+    private String toExpr(boolean quote) {
+        String str = removeSuffix(functionName) + "(" + Joiner.on(",").join(args) + ")";
         if (!StringUtils.isEmpty(outputFieldName)) {
-            str += " AS \"" + outputFieldName + "\"";
+            if (quote) {
+                str += " AS \"" + outputFieldName + "\"";
+            } else {
+                str += " AS " + outputFieldName;
+            }
         }
         return str;
+    }
+
+    private String removeSuffix(String fn) {
+        if (fn.endsWith("_FN")) {
+            return fn.replaceFirst("_FN$", "");
+        }
+        return fn;
     }
 }
 
