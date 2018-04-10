@@ -1056,13 +1056,14 @@ const createLineOnUI = function(edge, constants) {
   return this.defineLinePath(arr[0], arr[1], isFailedTupleflag);
 };
 
-const getNodeRectClass = function(data) {
+const getNodeRectClass = function(data,str) {
+  const uniqRect = !!str ? data.uiname+"_"+data.nodeId : '';
   if (data.parentType === 'SOURCE') {
-    return 'source';
+    return uniqRect === '' ? 'source' : uniqRect+' source';
   } else if (data.parentType === 'PROCESSOR') {
-    return 'processor';
+    return uniqRect === '' ? 'processor' : uniqRect+' processor';
   } else if (data.parentType === 'SINK') {
-    return 'datasink';
+    return uniqRect === '' ? 'datasink' : uniqRect+' datasink';
   }
 };
 

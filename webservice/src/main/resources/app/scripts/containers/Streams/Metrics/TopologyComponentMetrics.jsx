@@ -163,18 +163,22 @@ class TopologyComponentMetrics extends Component {
       const sampleObj =  _.find(componentLevelActionDetails.samplings, (sample) => sample.componentId === compData.nodeId);
       samplingVal = sampleObj !== undefined && sampleObj.enabled ? sampleObj.duration : 0;
     }
-    const dynWidth =  compData.parentType == 'SOURCE' ? 22 : 17;
+    const colTimeWidth =  60, colStaticWidth = 40;
+    // increase the parent with multiple the number of columns..
+    const parentWidth = compData.parentType == 'SOURCE'
+                        ? ((colTimeWidth * 1) + (colStaticWidth*3)) + (4*7.5)
+                        : ((colTimeWidth * 2) + (colStaticWidth*3)) + (5*7.5);
     return (
-      <div style={{width : '100%'}}>
+      <div className="overviewDiv" style={{width : parentWidth+'px'}}>
       <div className="metric-bg top"></div>
-      <div className="component-metric-top" style={{width : '100%'}}>
-        <div className="component-metric-widget" style={{width : dynWidth+"%"}}>
+      <div className="component-metric-top">
+        <div className="component-metric-widget" style={{width : colStaticWidth+"px"}}>
             <h6>Emitted</h6>
             <h6>&nbsp;</h6>
             <h4>{emitted}
             <small>{emittedMetric.suffix}</small></h4>
           </div>
-          <div className="component-metric-widget" style={{width : dynWidth+"%"}}>
+          <div className="component-metric-widget" style={{width : colTimeWidth+"px"}}>
             {compData.parentType == 'SOURCE' ?
             [ <h6 key={1.1}>Complete</h6>,
               <h6 key={1.2}>Latency</h6>
@@ -189,23 +193,24 @@ class TopologyComponentMetrics extends Component {
             : <h4>{processTime}<small>{processTimeSuffix}</small></h4>
             }
           </div>
-          <div className="component-metric-widget" style={{width : dynWidth+"%"}}>
-            {compData.parentType != 'SOURCE' ?
-            [ <h6 key={2.1}>Execute</h6>,
-              <h6 key={2.2}>Latency</h6>
-            ] : ''
-            }
-            {compData.parentType != 'SOURCE' ?
-            <h4>{executeTime}<small>{executeTimeSuffix}</small></h4>
-            : ''
-            }
-          </div>
-          <div className="component-metric-widget" style={{width : dynWidth+"%"}}>
+          {
+            compData.parentType !== 'SOURCE'
+            ? <div className="component-metric-widget" style={{width : colTimeWidth+"px"}}>
+              {
+              [ <h6 key={2.1}>Execute</h6>,
+                <h6 key={2.2}>Latency</h6>,
+                <h4 key={2.3}>{executeTime}<small>{executeTimeSuffix}</small></h4>
+              ]
+              }
+              </div>
+            : null
+          }
+          <div className="component-metric-widget" style={{width : colStaticWidth+"px"}}>
             <h6>Failed</h6>
             <h6>&nbsp;</h6>
             <h4>{failed}</h4>
           </div>
-          <div className="component-metric-widget" style={{width : dynWidth+"%"}}>
+          <div className="component-metric-widget" style={{width : colStaticWidth+"px"}}>
             <h6>Acked</h6>
             <h6>&nbsp;</h6>
             <h4>{acked}
@@ -214,7 +219,7 @@ class TopologyComponentMetrics extends Component {
       </div>
       {showMetrics ?
       (
-      <ContentScrollableComponent contentHeight={127}>
+      <ContentScrollableComponent>
         <div className="metric-graphs-container">
           <div className="component-metric-graph">
             <div style={{textAlign: "left"}}>INPUT/OUTPUT</div>

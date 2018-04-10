@@ -839,68 +839,98 @@ class TopologyEditorContainer extends Component {
     this.setState({topologyName: this.topologyName});
     editable.hideEditor();
   }
+  getValidationData(){
+    const promiseObj = this.refs.ConfigModal.validateData();
+    if(Utils.isPromise(promiseObj)){
+      promiseObj.then((res) => {
+        let flag=false;
+        if(res){
+          this.handleNodeModalSaveCallBack();
+        }
+      });
+    } else {
+      return promiseObj;
+    }
+  }
   handleSaveNodeModal() {
     if (!this.viewMode) {
-      if (this.refs.ConfigModal.validateData()) {
-        //Make the save request
-        this.refs.ConfigModal.handleSave(this.modalTitle).then((savedNode) => {
-          if (savedNode instanceof Array) {
-            if (this.node.currentType.toLowerCase() === 'window' || this.node.currentType.toLowerCase() === 'join' || this.node.currentType.toLowerCase() === 'rt-join') {
-              let updatedEdges = [];
-              savedNode.map((n, i) => {
-                if (i > 0 && n.streamGroupings) {
-                  updatedEdges.push(n);
-                }
-              });
-              TopologyUtils.updateGraphEdges(this.graphData.edges, updatedEdges);
-            }
-            this.processorSlideInterval(savedNode);
-            savedNode = savedNode[0];
-          }
-          if (savedNode.responseMessage !== undefined) {
-            let msg = savedNode.responseMessage;
-            if (savedNode.responseMessage.indexOf("Stream with empty fields") !== -1) {
-              msg = "Output stream fields cannot be blank.";
-            }
-            FSReactToastr.error(
-              <CommonNotification flag="error" content={msg}/>, '', toastOpt);
-          } else {
-            this.lastUpdatedTime = new Date(savedNode.timestamp);
-            this.setState({
-              altFlag: !this.state.altFlag
-            });
-            if (_.keys(savedNode.config.properties).length > 0) {
-              this.node.isConfigured = true;
-              const index = _.findIndex(this.tempGraphNode,(t) => { return t.nodeId === this.node.nodeId;});
-              if(index !== -1){
-                this.tempGraphNode[index].reconfigure = false;
-              }
-            }
-            let i = this.graphData.uinamesList.indexOf(this.node.uiname);
-            if (this.node.currentType === 'Custom') {
-              let obj = _.find(this.graphData.metaInfo.customNames, {uiname: this.node.uiname});
-              obj.uiname = savedNode.name;
-              this.node.uiname = savedNode.name;
-              TopologyUtils.updateMetaInfo(this.topologyId, this.versionId, this.node, this.graphData.metaInfo);
-            }
-            this.node.uiname = savedNode.name;
-            this.node.parallelismCount = savedNode.config.properties.parallelism || 1;
-            if (i > -1) {
-              this.graphData.uinamesList[i] = this.node.uiname;
-            }
-
-            //Show notifications from the view
-            FSReactToastr.success(
-              <strong>{this.node.uiname} updated successfully.</strong>
-            );
-            //render graph again
-            this.reconfigurationNode();
-          }
-        });
+      const validator = this.getValidationData();
+      const validBoolean = _.isBoolean(validator) ? validator : false;
+      if (validBoolean) {
+        this.handleNodeModalSaveCallBack();
       }
     } else {
       this.refs.NodeModal.hide();
     }
+  }
+
+  handleNodeModalSaveCallBack() {
+    //Make the save request
+    this.refs.ConfigModal.handleSave(this.modalTitle).then((savedNode) => {
+      let errorMsg='';
+      if (savedNode instanceof Array) {
+        if (this.node.currentType.toLowerCase() === 'window' || this.node.currentType.toLowerCase() === 'join' || this.node.currentType.toLowerCase() === 'rt-join') {
+          let updatedEdges = [];
+          savedNode.map((n, i) => {
+            if (i > 0 && n.streamGroupings) {
+              updatedEdges.push(n);
+            }
+          });
+          TopologyUtils.updateGraphEdges(this.graphData.edges, updatedEdges);
+        }
+        this.processorSlideInterval(savedNode);
+        _.map(savedNode, (node) => {
+          if(node.responseMessage !== undefined){
+            errorMsg = node.responseMessage;
+          }
+        });
+        savedNode = savedNode[0];
+      }
+      if (savedNode.responseMessage !== undefined) {
+        let msg = savedNode.responseMessage;
+        if (savedNode.responseMessage.indexOf("Stream with empty fields") !== -1) {
+          msg = "Output stream fields cannot be blank.";
+        }
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={msg}/>, '', toastOpt);
+      } else {
+        this.lastUpdatedTime = new Date(savedNode.timestamp);
+        this.setState({
+          altFlag: !this.state.altFlag
+        });
+        if (_.keys(savedNode.config.properties).length > 0) {
+          this.node.isConfigured = true;
+          const index = _.findIndex(this.tempGraphNode,(t) => { return t.nodeId === this.node.nodeId;});
+          if(index !== -1){
+            this.tempGraphNode[index].reconfigure = false;
+          }
+        }
+        let i = this.graphData.uinamesList.indexOf(this.node.uiname);
+        if (this.node.currentType === 'Custom') {
+          let obj = _.find(this.graphData.metaInfo.customNames, {uiname: this.node.uiname});
+          obj.uiname = savedNode.name;
+          this.node.uiname = savedNode.name;
+          TopologyUtils.updateMetaInfo(this.topologyId, this.versionId, this.node, this.graphData.metaInfo);
+        }
+        this.node.uiname = savedNode.name;
+        this.node.parallelismCount = savedNode.config.properties.parallelism || 1;
+        if (i > -1) {
+          this.graphData.uinamesList[i] = this.node.uiname;
+        }
+
+        if(errorMsg === ''){
+          //Show notifications from the view
+          FSReactToastr.success(
+            <strong>{this.node.uiname} updated successfully.</strong>
+          );
+          //render graph again
+          this.reconfigurationNode();
+        } else {
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={errorMsg}/>, '', toastOpt);
+        }
+      }
+    });
   }
 
   reconfigurationNode(){
