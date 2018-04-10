@@ -311,8 +311,8 @@ export default class ProjectionProcessorContainer extends Component {
   getScriptConditionAndFieldsForServer = (data,fieldList) => {
     let conditionsArr=[],fieldKeyArr=[];
     _.map(data, (d) => {
-      if(d.expr.includes('As')){
-        const obj = d.expr.split('As');
+      if(d.expr.includes('AS')){
+        const obj = d.expr.split('AS');
         conditionsArr.push({
           conditions : obj[0].trim(),
           outputFieldName : obj[1].trim(),
@@ -457,7 +457,7 @@ export default class ProjectionProcessorContainer extends Component {
       // });
       _.map(outputFieldsArr, (field) => {
         tempArr.push({
-          expr : `${field.conditions} As ${field.outputFieldName}`
+          expr : `${field.conditions} AS ${field.outputFieldName}`
         });
       });
       const exprObj = projectionGroupByKeys.map((field) => {return {expr: field};});
@@ -778,7 +778,7 @@ export default class ProjectionProcessorContainer extends Component {
       const tVal = val.split(' ') ;
       const recursiveCall = (value) => {
         value.forEach((v,i) => {
-          if(!/[`~!@#$%^&0-9()_|\¿?;:,\{\}\[\]\\]/.test(v)){
+          if(!/[`~!@#$%^&0-9()|\¿?;:,\{\}\[\]\\]/.test(v)){
             const fields = this.findNestedObj(fieldsArr,v);
             if(!_.isEmpty(fields) && _.isNaN(parseInt(v)) && !boolType){
               if(!!returnType && i > 0){
