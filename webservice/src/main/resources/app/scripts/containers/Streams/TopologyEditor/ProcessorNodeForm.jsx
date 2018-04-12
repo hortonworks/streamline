@@ -91,11 +91,11 @@ export default class ProcessorNodeForm extends Component {
   }
 
   validateData() {
-    let validDataFlag = true;
-    if (!this.refs.ProcessorChildElement.validateData()) {
-      validDataFlag = false;
-    }
-    return validDataFlag;
+    // let validDataFlag = true;
+    // if (!this.refs.ProcessorChildElement.validateData()) {
+    //   validDataFlag = false;
+    // }
+    return this.refs.ProcessorChildElement.validateData() || false;
   }
 
   handleSave(name) {
