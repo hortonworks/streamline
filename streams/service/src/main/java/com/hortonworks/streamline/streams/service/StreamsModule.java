@@ -227,17 +227,17 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware, T
         ManagedTransaction mt = new ManagedTransaction(transactionManager, TransactionIsolation.DEFAULT);
         try {
             mt.executeConsumer(() -> {
-                Namespace testNamespace = environmentService.getNamespace(EnvironmentService.PLACEHOLDER_ID);
+                Namespace testNamespace = environmentService.getNamespace(EnvironmentService.TEST_ENVIRONMENT_ID);
                 if (testNamespace == null) {
                     testNamespace = new Namespace();
-                    testNamespace.setId(EnvironmentService.PLACEHOLDER_ID);
+                    testNamespace.setId(EnvironmentService.TEST_ENVIRONMENT_ID);
                     testNamespace.setName("Test Environment");
                     testNamespace.setStreamingEngine(MappedTopologyActionsImpl.STORM.name());
                     // no metric service, no log search service
                     testNamespace.setDescription("Empty environment to test the topology which doesn't require external service.");
                     testNamespace.setInternal(true);
                     testNamespace.setTimestamp(System.currentTimeMillis());
-                    environmentService.addOrUpdateNamespace(EnvironmentService.PLACEHOLDER_ID, testNamespace);
+                    environmentService.addOrUpdateNamespace(EnvironmentService.TEST_ENVIRONMENT_ID, testNamespace);
                 }
             });
         } catch (Exception e) {

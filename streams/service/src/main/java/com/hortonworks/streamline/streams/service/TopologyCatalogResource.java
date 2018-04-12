@@ -31,6 +31,7 @@ import com.hortonworks.streamline.streams.catalog.TopologySource;
 import com.hortonworks.streamline.streams.catalog.TopologyVersion;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyData;
+import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
 import com.hortonworks.streamline.streams.exception.TopologyNotAliveException;
 import com.hortonworks.streamline.streams.security.Permission;
 import com.hortonworks.streamline.streams.security.Roles;
@@ -190,11 +191,12 @@ public class TopologyCatalogResource {
         SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
                 NAMESPACE, topologyId, DELETE);
 
-        if (!force) {
-            Topology result = catalogService.getTopology(topologyId);
-            if (result == null) {
-                throw EntityNotFoundException.byId(topologyId.toString());
-            }
+        Topology result = catalogService.getTopology(topologyId);
+        if (result == null) {
+            throw EntityNotFoundException.byId(topologyId.toString());
+        }
+
+        if (!force && !result.getNamespaceId().equals(EnvironmentService.TEST_ENVIRONMENT_ID)) {
             String asUser = WSUtils.getUserFromSecurityContext(securityContext);
             try {
                 String runtimeTopologyId = actionsService.getRuntimeTopologyId(result, asUser);
