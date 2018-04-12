@@ -492,6 +492,8 @@ class TopologyViewContainer extends Component {
             topologyName : this.state.topologyName
           }
         });
+      } else {
+        this.triggerUpdateGraph();
       }
     });
   }

@@ -64,7 +64,7 @@ public class EnvironmentService {
     private static final String SERVICE_BUNDLE_NAMESPACE = new ServiceBundle().getNameSpace();
     private static final String NAMESPACE_COMPONENT_PROCESS = new ComponentProcess().getNameSpace();
 
-    public static final long PLACEHOLDER_ID = -1L;
+    public static final long TEST_ENVIRONMENT_ID = -1L;
 
     private final StorageManager dao;
     private final ClusterImporter clusterImporter;

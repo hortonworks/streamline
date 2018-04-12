@@ -41,13 +41,13 @@ export default class RuleFormula extends Component{
     const {udfList} = this.props;
     this.hintOptions=[];
     // arguments from field list for hints...
-    Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(fields,"ARGS"));
+    Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(fields,"ARGS",'sql'));
     // Predefined Sql keywords from CONSTRANT for hints...
-    Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(sqlKeywords,"SQL"));
+    Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(sqlKeywords,"SQL",'sql'));
     // Predefined Binary Operators from CONSTRANT for hints...
-    Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(binaryOperators,"BINARY-OPERATORS"));
+    Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(binaryOperators,"BINARY-OPERATORS",'sql'));
     // FUNCTION from UDFLIST for hints...
-    Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(udfList,"FUNCTION"));
+    Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(udfList,"FUNCTION",'sql'));
   }
 
   componentDidMount() {

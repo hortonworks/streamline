@@ -339,7 +339,7 @@ import moment from 'moment';
             </div>
           : null}
           {selectedComponent && (selectedComponent.parentType === "PROCESSOR" || selectedComponent.parentType === "SINK")
-            ? [<div className="topology-foot-widget">
+            ? [<div className="topology-foot-widget" key={1.1}>
                   <h6>Process Latency
                     <big>
                       {prevProcessTime !== null ?
@@ -353,7 +353,7 @@ import moment from 'moment';
                     </small>
                   </h4>
               </div>,
-              <div className="topology-foot-widget">
+              <div className="topology-foot-widget" key={1.2}>
                   <h6>Execute Latency
                     <big>
                       {prevExecuteTime !== null ?
@@ -436,7 +436,7 @@ import moment from 'moment';
           onEntered={()=>{this.setState({loadingRecord: false});}}
         >
           {this.state.showMetrics ?
-          [<div className="row">
+          [<div className="row" key={1}>
             <div className="col-md-3">
               <div className="topology-foot-graphs">
                 <div style={{textAlign: "left", marginLeft: '10px'}}>Input/Output</div>
@@ -484,11 +484,11 @@ import moment from 'moment';
               </div>
             </div>
           </div>,
-            <div className="row">
+            <div className="row" key={2}>
             {selectedComponentId == '' || selectedComponent.parentType === 'SOURCE' ?
               sourceGraphDivContent.call(this)
             :
-            [ <div className="col-md-3">
+            [ <div className="col-md-3" key={2.1}>
                 <div className="topology-foot-graphs">
                   <div style={{textAlign: "left", marginLeft: '10px'}}>Process Latency</div>
                   <div style={{
@@ -499,7 +499,7 @@ import moment from 'moment';
                   </div>
                 </div>
               </div>,
-              <div className="col-md-3">
+              <div className="col-md-3" key={2.2}>
                 <div className="topology-foot-graphs">
                   <div className="topology-foot-graphs">
                   <div style={{textAlign: "left", marginLeft: '10px'}}>Execute Latency</div>

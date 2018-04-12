@@ -580,13 +580,14 @@ const filterOptions = function(selected, outputFieldsList){ //Filter out childre
   return options;
 };
 
-const generateCodeMirrorOptions = (array,type) => {
+const generateCodeMirrorOptions = (array,type,modeType) => {
   let arr=[];
   const nestedFields = (arrayList,type,level,oldObj) => {
     _.map(arrayList, (a) => {
       let obj = {
         text : a.displayName || a.name || a,
         displayText : a.displayName || a.name || a,
+        filterText : !!oldObj ? oldObj.filterText+'.'+(a.displayName || a.name || a)  :  a.displayName || a.name || a,
         className : type === "FUNCTION"
                     ? "codemirror-func"
                     : type === "SQL"
@@ -613,11 +614,17 @@ const generateCodeMirrorOptions = (array,type) => {
       if(oldObj === undefined){
         arr.push(obj);
       } else {
-        const index = _.findIndex(arr, (n) => n.displayText === oldObj.displayText);
+        const index = _.findIndex(arr, (n) => n.filterText === oldObj.filterText);
         if(index !== -1){
           const name = obj.displayText;
-          obj.displayText = oldObj.displayText+'.'+name;
-          obj.text = oldObj.text+'.'+name;
+          if(modeType === 'sql'){
+            obj.displayText = oldObj.displayText+'.'+name;
+            obj.text = oldObj.text+'.'+name;
+          }else{
+            obj.displayText = name;
+            obj.text = name;
+          }
+          obj.filterText = oldObj.text+'.'+name;
           if(arr[index].fields){
             arr[index].fields.push(obj);
           } else {
@@ -627,7 +634,7 @@ const generateCodeMirrorOptions = (array,type) => {
         } else {
           const indexPath = getNestedObjPathFromList(arr,oldObj);
           if(indexPath.length){
-            pushNestedObjectInArray(indexPath,obj,arr);
+            pushNestedObjectInArray(indexPath,obj,arr,modeType);
           }
         }
       }
@@ -640,12 +647,18 @@ const generateCodeMirrorOptions = (array,type) => {
   return nestedFields(array,type,0);
 };
 
-const pushNestedObjectInArray = (pathArr,obj,targetList) => {
+const pushNestedObjectInArray = (pathArr,obj,targetList,modeType) => {
   const rollOverFields = (target) => {
     _.map(target, (list) => {
-      if(pathArr === list.displayText){
-        obj.displayText = pathArr+'.'+obj.displayText;
-        obj.text = pathArr+'.'+obj.text;
+      if(pathArr === list.filterText){
+        if(modeType === 'sql'){
+          obj.displayText = pathArr+'.'+obj.displayText;
+          obj.text = pathArr+'.'+obj.text;
+        } else {
+          obj.displayText = obj.displayText;
+          obj.text = obj.text;
+        }
+        obj.filterText = pathArr+'.'+obj.text;
         if(list.fields){
           list.fields.push(obj);
         } else {
@@ -667,11 +680,11 @@ const getNestedObjPathFromList = (list,obj) => {
   const recursiveFunc = (arr,level) => {
     _.map(arr,(a) => {
       if(a.fields){
-        str.push(a.displayText);
+        str.push(a.filterText);
         recursiveFunc(a.fields,level+1);
       } else {
-        if(obj.displayText === a.displayText){
-          str.push(a.displayText);
+        if(obj.filterText === a.filterText){
+          str.push(a.filterText);
         }
       }
     });
