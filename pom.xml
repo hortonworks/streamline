@@ -307,6 +307,11 @@
                         <groupId>javax.mail</groupId>
                         <artifactId>mailapi</artifactId>
                     </exclusion>
+                    <!--gpl license-->
+                    <exclusion>
+                        <groupId>org.mozilla</groupId>
+                        <artifactId>rhino</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
