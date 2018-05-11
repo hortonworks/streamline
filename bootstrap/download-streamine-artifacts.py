@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Utility for downloading all maven artifacts which are transitive dependencies on Streamline.
-#   usage: ./download_streamline_artifacts.py [streamline config file] [output file]
+#   usage: ./download_streamline_artifacts.py [streamline config file] [maven local repository directory] [output file]
 #
 # This script has a non-built-in dependency 'pureyaml', so users need to install the dependency via pip or so.
 # 'pip install pureyaml'
@@ -33,10 +33,11 @@ COMPONENT_BUNDLES_KIND_URL_POSTFIX = "/streams/componentbundles"
 
 
 class ConfigStruct:
-	def __init__(self, catalog_root_url, storm_home_dir, maven_repo_url):
+	def __init__(self, catalog_root_url, storm_home_dir, maven_repo_url, maven_local_repository_directory):
 		self.catalog_root_url = catalog_root_url
 		self.storm_home_dir = storm_home_dir
 		self.maven_repo_url = maven_repo_url
+		self.maven_local_repository_directory = maven_local_repository_directory
 		self.http_proxy_url = None
 		self.http_proxy_username = None
 		self.http_proxy_password = None
@@ -58,16 +59,14 @@ class ConfigStruct:
 		return self.get_component_bundles_kind_url() + "/" + component
 
 	def build_storm_submit_tool_command(self, artifacts):
-		# fake path is to prevent storm submit tool to download artifacts to '.m2' directory
-		fake_path = "/tmp/%s" % uuid.uuid4()
 		submit_tool_cmd_list = ["java", "-cp", self.get_storm_submit_tool_classpath()]
-		submit_tool_cmd_list.extend(["-Duser.home=%s" % fake_path, "org.apache.storm.submit.command.DependencyResolverMain"])
 		submit_tool_cmd_list.extend(["--artifactRepositories", self.maven_repo_url])
 		submit_tool_cmd_list.extend(["--artifacts", artifacts])
+		submit_tool_cmd_list.extend(["--mavenLocalRepositoryDirectory", self.maven_local_repository_directory])
 		return submit_tool_cmd_list
 
 
-def load_config(config_file):
+def load_config(config_file, maven_local_repository_directory):
 	with open(config_file, 'r') as fr:
 		content = fr.read()
 		config = pureyaml.load(content)
@@ -85,12 +84,12 @@ def load_config(config_file):
 			http_proxy_url = streams_config['httpProxyUrl']
 
 		if 'httpProxyUsername' in streams_config:
-			http_proxy_username = streams_config['httpProxyUsername'] 
+			http_proxy_username = streams_config['httpProxyUsername']
 
 		if 'httpProxyPassword' in streams_config:
 			http_proxy_password = streams_config['httpProxyPassword']
 
-		config_struct = ConfigStruct(catalog_root_url, storm_home_dir, maven_repo_url)
+		config_struct = ConfigStruct(catalog_root_url, storm_home_dir, maven_repo_url, maven_local_repository_directory)
 		if http_proxy_url is not None:
 			config_struct(http_proxy_url, http_proxy_username, http_proxy_password)
 
@@ -122,17 +121,19 @@ def write_downloaded_information_to_output_file(output_file, downloaded_artifact
 
 
 def main():
-	if len(sys.argv) < 3:
-		print("USAGE: [python] %s [streamline config file] [output file]" % sys.argv[0])
+	if len(sys.argv) < 4:
+		print("USAGE: [python] %s [streamline config file] [maven local repository directory] [output file]" % sys.argv[0])
 		sys.exit(1)
 
 	config_file = sys.argv[1]
-	output_file = sys.argv[2]
+	maven_local_repository_directory = sys.argv[2]
+	output_file = sys.argv[3]
 
 	print("> CONFIG FILE: %s" % config_file)
+	print("> MAVEN LOCAL REPOSITORY DIRECTORY: %s" % maven_local_repository_directory)
 	print("> OUTPUT FILE: %s" % output_file)
 
-	config_struct = load_config(config_file)
+	config_struct = load_config(config_file, maven_local_repository_directory)
 
 	print("================ CONFIG ==================")
 	print("CATALOG ROOT URL: %s" % config_struct.catalog_root_url)
@@ -165,19 +166,19 @@ def main():
 			stdout = stdout.decode('utf-8')
 		ret_json = json.loads(stdout)
 		downloaded_artifacts.update(ret_json)
-	
+
 	print("============== Writing downloaded information to file: %s" % output_file)
 	write_downloaded_information_to_output_file(output_file, downloaded_artifacts)
 
 	print("DONE!")
 
 	print("Please follow below steps:")
-	print("1. archive 'local-repo' in current directory which downloaded artifacts are placed.")
+	print("1. archive maven local repository directory which downloaded artifacts are placed.")
 	print("2. send archived file to the machines which streamline is installed and don't have access to internet.")
-	print("3. extract file to 'local-repo' in root directory of streamline installation.")
-	print("Please ensure the directory and contents in directory are accessible with streamline account.")
-	print("Please also ensure streamline account doesn't have '.m2' directory in home directory.")
-	
+	print("3. extract file to specific directory which streamline and storm account can read and write directory and jars.")
+	print("4. set configuration for maven local repository directory to the place from 3. in streamline configuration.")
+	print("5. restart streamline to take effect.")
+
 
 if __name__ == "__main__":
 	main()
