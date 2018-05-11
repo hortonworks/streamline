@@ -465,6 +465,12 @@ public class StormTopologyActionsImpl implements TopologyActions {
             args.add("--artifactRepositories");
             args.add((String) conf.get("mavenRepoUrl"));
 
+            String mavenLocalReposDir = (String) conf.get("mavenLocalRepositoryDirectory");
+            if (StringUtils.isNotEmpty(mavenLocalReposDir)) {
+                args.add("--mavenLocalRepositoryDirectory");
+                args.add(mavenLocalReposDir);
+            }
+
             String proxyUrl = (String) conf.get(com.hortonworks.streamline.common.Constants.CONFIG_HTTP_PROXY_URL);
             if (StringUtils.isNotEmpty(proxyUrl)) {
                 args.add("--proxyUrl");
