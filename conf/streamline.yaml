@@ -18,6 +18,9 @@ modules:
       #customProcessorUploadFailPath: "/tmp/failed"
       #customProcessorUploadSuccessPath: "/tmp/uploaded"
       mavenRepoUrl: "hwx-public^http://repo.hortonworks.com/content/groups/public/,hwx-private^http://nexus-private.hortonworks.com/nexus/content/groups/public/"
+      # directory (absolute path) to use for maven local repository (optional)
+      # in practice it should not under "/tmp" and the account which runs 'streamline' should have read/write permission
+      # mavenLocalRepositoryDirectory: "/tmp/local-repo"
 
 catalogRootUrl: "http://localhost:8080/api/v1/catalog"
 
