@@ -37,6 +37,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
@@ -201,32 +202,33 @@ public class CustomProcessorBolt extends AbstractProcessorBolt {
     }
 
     @Override
-    protected void process (Tuple input, StreamlineEvent event) {
+    protected void process (Tuple tuple, StreamlineEvent input) {
         try {
             Map<String, Object> mappedEvent = new HashMap<>();
-            if (!inputSchemaMap.containsKey(input.getSourceStreamId()))
+            if (!inputSchemaMap.containsKey(tuple.getSourceStreamId()))
                 throw new RuntimeException("Received an event on an input stream that does not have mapping for input schema fields");
             // Create a new mapped event based on mapping to pass it to CP implementation
-            for (Map.Entry<String, String> entry: inputSchemaMap.get(input.getSourceStreamId()).entrySet()) {
-                if (event.get(entry.getValue()) != null) {
-                    mappedEvent.put(entry.getKey(), event.get(entry.getValue()));
-                }
+            for (Map.Entry<String, String> entry: inputSchemaMap.get(tuple.getSourceStreamId()).entrySet()) {
+                String lookupKey = entry.getValue();
+                String insertKey = entry.getKey();
+                findValue(lookupKey, input).ifPresent(value -> mappedEvent.put(insertKey, value));
             }
-            List<StreamlineEvent> results = customProcessorRuntime.process(new StreamlineEventImpl(mappedEvent, event.getDataSourceId(), event
-                    .getId(), event.getHeader(), input.getSourceStreamId(), event.getAuxiliaryFieldsAndValues()));
+            List<StreamlineEvent> results = customProcessorRuntime.process(new StreamlineEventImpl(mappedEvent, input.getDataSourceId(), input
+                    .getId(), input.getHeader(), tuple.getSourceStreamId(), input.getAuxiliaryFieldsAndValues()));
             if (results != null) {
-                for (StreamlineEvent e : results) {
+                for (StreamlineEvent result : results) {
                     Map<String, Object> newFieldsAndValues = new HashMap<>();
                     // below output schema is at SAM application level. Fields in the schema are a union of subsets of original input schema of incoming
                     // event and CP defined output schema. UI will make sure that the fields are from one of the two sets.
                     Schema schema = outputSchema.values().iterator().next();
                     for (Schema.Field field: schema.getFields()) {
-                        //value has to be present either in the input event
-                        newFieldsAndValues.put(field.getName(), e.containsKey(field.getName()) ? e.get(field.getName()) : event.get(field.getName()));
+                        // value has to be present either in the result or the input event
+                        String key = field.getName();
+                        findValue(key, result, input).ifPresent(value -> newFieldsAndValues.put(key, value));
                     }
-                    StreamlineEvent toEmit = new StreamlineEventImpl(newFieldsAndValues, e.getDataSourceId(), e.getId(), e.getHeader(), e.getSourceStream(),
-                            e.getAuxiliaryFieldsAndValues());
-                    collector.emit(outputSchema.keySet().iterator().next(), input, new Values(toEmit));
+                    StreamlineEvent toEmit = new StreamlineEventImpl(newFieldsAndValues, result.getDataSourceId(), result.getId(), result.getHeader(), result.getSourceStream(),
+                            result.getAuxiliaryFieldsAndValues());
+                    collector.emit(outputSchema.keySet().iterator().next(), tuple, new Values(toEmit));
                 }
             }
         } catch (ProcessingException e) {
@@ -243,6 +245,17 @@ public class CustomProcessorBolt extends AbstractProcessorBolt {
     @Override
     public void cleanup () {
         customProcessorRuntime.cleanup();
+    }
+
+    // finds value for key in any of the events
+    private Optional<?> findValue(String key, StreamlineEvent... events) {
+        for (StreamlineEvent event : events) {
+            Object val = event.get(key);
+            if (val != null) {
+                return Optional.of(val);
+            }
+        }
+        return Optional.empty();
     }
 
     private CustomProcessorRuntime getCustomProcessorRuntime() {
