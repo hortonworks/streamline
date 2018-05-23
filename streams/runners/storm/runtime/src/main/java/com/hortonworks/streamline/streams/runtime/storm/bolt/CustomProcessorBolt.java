@@ -37,6 +37,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
@@ -177,9 +178,9 @@ public class CustomProcessorBolt extends AbstractProcessorBolt {
                 // Create a new mapped event based on mapping to pass it to CP implementation
                 Map<String, Object> mappedEventMap = new HashMap<>();
                 for (Map.Entry<String, String> entry: inputSchemaMap.get(input.getSourceStreamId()).entrySet()) {
-                    if (event.get(entry.getValue()) != null) {
-                        mappedEventMap.put(entry.getKey(), event.get(entry.getValue()));
-                    }
+                    String lookupKey = entry.getValue();
+                    String insertKey = entry.getKey();
+                    findValue(lookupKey, event).ifPresent(value -> mappedEventMap.put(insertKey, value));
                 }
                 toProcess = StreamlineEventImpl.builder()
                         .from(event)
@@ -197,8 +198,9 @@ public class CustomProcessorBolt extends AbstractProcessorBolt {
                     // below output schema is at SAM application level. Fields in the schema are a union of subsets of original input schema of incoming
                     // event and CP defined output schema. UI will make sure that the fields are from one of the two sets.
                     for (Schema.Field field: schema.getFields()) {
-                        //value has to be present either in the input event
-                        newFieldsAndValues.put(field.getName(), e.containsKey(field.getName()) ? e.get(field.getName()) : event.get(field.getName()));
+                        // value has to be present either in the result or the input event
+                        String key = field.getName();
+                        findValue(key, e, event).ifPresent(value -> newFieldsAndValues.put(key, value));
                     }
                     StreamlineEvent toEmit = StreamlineEventImpl.builder()
                             .from(e)
@@ -222,6 +224,17 @@ public class CustomProcessorBolt extends AbstractProcessorBolt {
     @Override
     public void cleanup () {
         customProcessorRuntime.cleanup();
+    }
+
+    // finds value for key in any of the events
+    private Optional<?> findValue(String key, StreamlineEvent... events) {
+        for (StreamlineEvent event : events) {
+            Object val = event.get(key);
+            if (val != null) {
+                return Optional.of(val);
+            }
+        }
+        return Optional.empty();
     }
 
     private CustomProcessorRuntime getCustomProcessorRuntime() {
