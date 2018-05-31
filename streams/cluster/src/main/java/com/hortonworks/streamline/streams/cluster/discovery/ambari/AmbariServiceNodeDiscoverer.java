@@ -228,36 +228,41 @@ import static java.util.stream.Collectors.toList;
     return ConfigFilePattern.getOriginFileName(configType);
   }
 
-  public String getStormViewUrl() {
-    String targetUrl = findRootUrlForView(apiRootUrl) + AMBARI_VIEWS_STORM_MONITORING_URL;
+  public Optional<String> getStormViewUrl() {
+    try {
+      String targetUrl = findRootUrlForView(apiRootUrl) + AMBARI_VIEWS_STORM_MONITORING_URL;
 
-    LOG.debug("storm view URI: {}", targetUrl);
+      LOG.debug("storm view URI: {}", targetUrl);
 
-    Map<String, ?> responseMap = JsonClientUtil.getEntity(client.target(targetUrl), AMBARI_REST_API_MEDIA_TYPE, Map.class);
-    List<Map<String, ?>> items = (List<Map<String, ?>>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_VERSIONS);
+      Map<String, ?> responseMap = JsonClientUtil.getEntity(client.target(targetUrl), AMBARI_REST_API_MEDIA_TYPE, Map.class);
+      List<Map<String, ?>> items = (List<Map<String, ?>>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_VERSIONS);
 
-    if (items.size() == 0) {
-      return null;
+      if (items.size() == 0) {
+        return Optional.empty();
+      }
+
+      String versionUrl = (String) items.get(0).get("href");
+
+      responseMap = JsonClientUtil.getEntity(client.target(versionUrl), AMBARI_REST_API_MEDIA_TYPE, Map.class);
+      items = (List<Map<String, ?>>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_INSTANCES);
+
+      if (items.size() == 0) {
+        return Optional.empty();
+      }
+
+      String instancesUrl = (String) items.get(0).get("href");
+
+      responseMap = JsonClientUtil.getEntity(client.target(instancesUrl), AMBARI_REST_API_MEDIA_TYPE, Map.class);
+
+      Map<String, ?> responseMap2 = (Map<String, ?>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_VIEW_INSTANCE_INFO);
+      String contextPath = (String) responseMap2.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_CONTEXT_PATH);
+
+      // page doesn't open without hash path from Ambari 2.4, not sure for other version
+      return Optional.of(findSiteUrl(apiRootUrl) + "/#/main" + contextPath);
+    } catch (Exception ex) {
+      LOG.warn("Error getting storm view URL from Ambari", ex);
+      return Optional.empty();
     }
-
-    String versionUrl = (String) items.get(0).get("href");
-
-    responseMap = JsonClientUtil.getEntity(client.target(versionUrl), AMBARI_REST_API_MEDIA_TYPE, Map.class);
-    items = (List<Map<String, ?>>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_INSTANCES);
-
-    if (items.size() == 0) {
-      return null;
-    }
-
-    String instancesUrl = (String) items.get(0).get("href");
-
-    responseMap = JsonClientUtil.getEntity(client.target(instancesUrl), AMBARI_REST_API_MEDIA_TYPE, Map.class);
-
-    Map<String, ?> responseMap2 = (Map<String, ?>) responseMap.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_COMMON_VIEW_INSTANCE_INFO);
-    String contextPath = (String) responseMap2.get(AmbariRestAPIConstants.AMBARI_JSON_SCHEMA_CONTEXT_PATH);
-
-    // page doesn't open without hash path from Ambari 2.4, not sure for other version
-    return findSiteUrl(apiRootUrl) + "/#/main" + contextPath;
   }
 
   private String findRootUrlForView(String apiRootUrl) {

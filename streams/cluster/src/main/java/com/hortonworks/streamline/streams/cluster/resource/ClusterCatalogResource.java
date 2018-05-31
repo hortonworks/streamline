@@ -320,8 +320,7 @@ public class ClusterCatalogResource {
         Service stormService = environmentService.getServiceByName(clusterId, ServiceConfigurations.STORM.name());
         if (stormService != null) {
             // hack: find Storm View and inject to one of ServiceConfiguration for Storm service if available
-            String stormViewURL = discoverer.getStormViewUrl();
-            if (StringUtils.isNotEmpty(stormViewURL)) {
+            discoverer.getStormViewUrl().ifPresent(stormViewURL -> {
                 ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
                 serviceConfiguration.setServiceId(stormService.getId());
                 serviceConfiguration.setName(StormMetadataService.SERVICE_STORM_VIEW);
@@ -330,7 +329,7 @@ public class ClusterCatalogResource {
                 serviceConfiguration.setDescription("a hack to store Storm View URL");
 
                 environmentService.addServiceConfiguration(serviceConfiguration);
-            }
+            });
         }
     }
 
