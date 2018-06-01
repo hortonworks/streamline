@@ -15,6 +15,9 @@
  **/
 package com.hortonworks.streamline.streams.runtime.storm.bolt;
 
+import com.hortonworks.streamline.common.exception.ConfigException;
+import com.hortonworks.streamline.streams.runtime.CustomProcessorRuntime;
+import com.hortonworks.streamline.streams.runtime.SimpleCustomProcessorRuntime;
 import mockit.Mocked;
 import com.hortonworks.registries.common.Schema;
 import com.hortonworks.streamline.streams.StreamlineEvent;
@@ -25,9 +28,11 @@ import com.hortonworks.streamline.examples.processors.ConsoleCustomProcessor;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Tested;
+import mockit.Verifications;
 import mockit.VerificationsInOrder;
 import mockit.integration.junit4.JMockit;
 import org.apache.storm.task.OutputCollector;
+import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
@@ -41,15 +46,18 @@ import org.junit.runner.RunWith;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(JMockit.class)
 public class CustomProcessorBoltTest {
-    private Schema outputSchema = new Schema.SchemaBuilder().field(new Schema.Field("A", Schema.Type.INTEGER)).build();
+    private Schema outputSchema = schema("A");
     private String outputStream = "stream";
     private Map<String, Schema> outputStreamToSchema = new HashMap<>();
     private final Fields OUTPUT_FIELDS = new Fields(StreamlineEvent.STREAMLINE_EVENT);
@@ -66,6 +74,9 @@ public class CustomProcessorBoltTest {
     OutputFieldsDeclarer mockOutputDeclarer;
     private @Injectable
     Tuple tuple;
+    private @Injectable
+    TopologyContext mockTopologyContext;
+
 
     @Before
     public void setup() throws Exception {
@@ -102,6 +113,40 @@ public class CustomProcessorBoltTest {
     }
 
     @Test
+    public void testExecuteNull() throws ProcessingException {
+        customProcessorBolt.outputSchema(map(outputStream, schema("A", "B")));
+        customProcessorBolt.inputSchemaMap(map("stream", map("A", "longfieldname")));
+        customProcessorBolt.customProcessorImpl(TestCP.class.getName());
+        customProcessorBolt.prepare(Collections.emptyMap(), mockTopologyContext, mockOutputCollector);
+        StreamlineEvent event = StreamlineEventImpl.builder()
+                .fieldsAndValues(map("longfieldname", "val"))
+                .dataSourceId("dsrcid")
+                .build();
+        new Expectations() {{
+            tuple.getSourceComponent();
+            returns("datasource");
+            tuple.getSourceStreamId();
+            returns("stream");
+            tuple.getValueByField(StreamlineEvent.STREAMLINE_EVENT);
+            returns(event);
+            mockTopologyContext.getThisComponentId();
+            returns("foo-bar");
+        }};
+        customProcessorBolt.execute(tuple);
+        new Verifications() {{
+            Values actualValues;
+            mockOutputCollector.emit(outputStream, tuple, actualValues = withCapture());
+            times = 1;
+            assertEquals(1, actualValues.size());
+            assertTrue(actualValues.get(0) instanceof StreamlineEvent);
+            StreamlineEvent output = (StreamlineEvent) actualValues.get(0);
+            assertEquals(1, output.size());
+            assertEquals("val", output.get("A"));
+        }};
+
+    }
+
+    @Test
     public void testPrepare () throws ClassNotFoundException, MalformedURLException, InstantiationException, IllegalAccessException {
         customProcessorBolt.customProcessorImpl(ConsoleCustomProcessor.class.getCanonicalName());
         final Map<String, Object> config = new HashMap<>();
@@ -131,6 +176,25 @@ public class CustomProcessorBoltTest {
     @Ignore
     public void testExecuteWithProcessingException () throws ProcessingException, ClassNotFoundException, MalformedURLException, InstantiationException, IllegalAccessException {
         testExecute(false);
+    }
+
+    private static Schema schema(String... fields) {
+        Schema.SchemaBuilder sb = new Schema.SchemaBuilder();
+        return sb.fields(Arrays.stream(fields)
+                .map(f -> new Schema.Field(f, Schema.Type.INTEGER))
+                .collect(Collectors.toList()))
+                .build();
+    }
+
+    public static class TestCP extends SimpleCustomProcessorRuntime {
+        @Override
+        public List<StreamlineEvent> process(StreamlineEvent event) throws ProcessingException {
+            return Collections.singletonList(event);
+        }
+    }
+
+    private <K, V> Map<K, V> map(K key, V val) {
+        return Collections.singletonMap(key, val);
     }
 
     private void testExecute (boolean isSuccess) throws ProcessingException, ClassNotFoundException, MalformedURLException, InstantiationException, IllegalAccessException {
