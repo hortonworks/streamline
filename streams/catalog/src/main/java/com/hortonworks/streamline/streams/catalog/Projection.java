@@ -23,6 +23,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A Projection can be either an expression or a function with zero or more args.
@@ -101,17 +103,28 @@ public class Projection {
         if (!StringUtils.isEmpty(functionName)) {
             str = toExpr(true);
         } else if (!StringUtils.isEmpty(expr)) {
-            str = expr;
+            str = quoteAlias(expr);
         } else {
             throw new IllegalArgumentException("expr or functionName should be specified");
         }
         return str;
     }
 
-    private String toExpr(boolean quote) {
+    private String quoteAlias(String expr) {
+        Pattern pattern = Pattern.compile("AS (\\w+)");
+        Matcher matcher = pattern.matcher(expr);
+        StringBuffer sb = new StringBuffer();
+        while (matcher.find()) {
+            matcher.appendReplacement(sb, "AS \"" + matcher.group(1) + "\"");
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
+    }
+
+    private String toExpr(boolean quoteAlias) {
         String str = removeSuffix(functionName) + "(" + Joiner.on(",").join(args) + ")";
         if (!StringUtils.isEmpty(outputFieldName)) {
-            if (quote) {
+            if (quoteAlias) {
                 str += " AS \"" + outputFieldName + "\"";
             } else {
                 str += " AS " + outputFieldName;
