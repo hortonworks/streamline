@@ -43,4 +43,25 @@ public class ProjectionTest {
         Assert.assertEquals("{\"expr\":\"TRIM(user_id) AS BB\"}", om.writeValueAsString(projection));
     }
 
+
+    @Test
+    public void testProjectionToString1() throws Exception {
+        Projection projection = new Projection("UPPER(review_id) AS Camel", null, null, null);
+        String str = projection.toString();
+        Assert.assertEquals("UPPER(review_id) AS \"Camel\"", str);
+    }
+
+    @Test
+    public void testProjectionToString2() throws Exception {
+        Projection projection = new Projection("UPPER(review_id) AS \"Camel\"", null, null, null);
+        String str = projection.toString();
+        Assert.assertEquals("UPPER(review_id) AS \"Camel\"", str);
+    }
+
+    @Test
+    public void testProjectionToString3() throws Exception {
+        Projection projection = new Projection(null, "UPPER", Collections.singletonList("review_id"), "Camel");
+        String str = projection.toString();
+        Assert.assertEquals("UPPER(review_id) AS \"Camel\"", str);
+    }
 }
