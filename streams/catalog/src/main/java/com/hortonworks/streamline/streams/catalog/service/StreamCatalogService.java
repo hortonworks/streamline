@@ -81,6 +81,9 @@ import com.hortonworks.streamline.streams.layout.component.Stream;
 import com.hortonworks.streamline.streams.layout.component.TopologyDag;
 import com.hortonworks.streamline.streams.layout.component.impl.RulesProcessor;
 import com.hortonworks.streamline.streams.layout.component.rule.Rule;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.AsExpression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.Expression;
+import com.hortonworks.streamline.streams.layout.component.rule.expression.FieldExpression;
 import com.hortonworks.streamline.streams.layout.storm.FluxComponent;
 import com.hortonworks.streamline.streams.rule.UDAF;
 import com.hortonworks.streamline.streams.rule.UDAF2;
@@ -111,6 +114,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
@@ -2479,8 +2483,33 @@ public class StreamCatalogService {
                 topologyWindow.getCondition(),
                 topologyWindow.getGroupbykeys());
         updateRuleWithSql(rule, sql, topologyWindow.getTopologyId(), topologyWindow.getVersionId());
+        validateProjection(rule.getProjection().getExpressions(), rule.getGroupBy().getExpressions());
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(rule);
+    }
+
+    // check if any of the non-grouped fields are projected
+    private void validateProjection(List<Expression> projections, List<Expression> groupByExpressions) {
+        Set<Expression> groupBy = new HashSet<>(groupByExpressions);
+        projections.stream()
+                .map(expr -> {
+                    if (expr instanceof FieldExpression) {
+                        return (FieldExpression) expr;
+                    } else if (expr instanceof AsExpression) {
+                        Expression inner = ((AsExpression) expr).getExpression();
+                        if (inner instanceof FieldExpression) {
+                            return (FieldExpression) inner;
+                        }
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .forEach(e -> {
+                    if (!groupBy.contains(e)) {
+                        throw new IllegalArgumentException("field: " + e.getValue().getName()
+                                + " is not being grouped");
+                    }
+                });
     }
 
     String getSqlString(List<String> streams,
