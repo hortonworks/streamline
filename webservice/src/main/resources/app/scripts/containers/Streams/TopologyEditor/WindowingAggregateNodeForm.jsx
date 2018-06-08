@@ -26,6 +26,8 @@ import CommonNotification from '../../../utils/CommonNotification';
 import {toastOpt} from '../../../utils/Constants';
 import {Scrollbars} from 'react-custom-scrollbars';
 import ProcessorUtils  from '../../../utils/ProcessorUtils';
+import CommonCodeMirror from '../../../components/CommonCodeMirror';
+import WebWorkers  from '../../../utils/WebWorkers';
 
 export default class WindowingAggregateNodeForm extends Component {
   static propTypes = {
@@ -85,18 +87,20 @@ export default class WindowingAggregateNodeForm extends Component {
       lagMs: '',
       outputFieldsArr: [
         {
-          args: '',
-          functionName: '',
-          outputFieldName: ''
+          conditions : '',
+          outputFieldName: '',
+          prefetchData : false
         }
       ],
       functionListArr: [],
       outputStreamFields: [],
       argumentError: false,
-      outputFieldsGroupKeys :[],
-      showLoading : true
+      showLoading : true,
+      scriptErrors : []
     };
     this.state = obj;
+    this.workersObj={};
+    this.WebWorkers = {};
     this.fetchData();
   }
 
@@ -174,6 +178,7 @@ export default class WindowingAggregateNodeForm extends Component {
       fields.push(...result.fields);
     });
     this.fieldsArr = ProcessorUtils.getSchemaFields(_.unionBy(fields,'name'), 0,false);
+    this.fieldsHintArr = _.unionBy(fields,'name');
     let tsFieldOptions =  this.fieldsArr.filter((f)=>{return f.type === 'LONG';});
     // tsFieldOptions should have a default options of processingTime
     tsFieldOptions.push({name: "processingTime", value: "processingTime"});
@@ -184,7 +189,7 @@ export default class WindowingAggregateNodeForm extends Component {
       functionListArr: this.udfList,
       tsFieldOptions: tsFieldOptions
     };
-
+    this.populateCodeMirrorDefaultHintOptions();
     if(this.windowsRuleId){
       this.fetchRulesNode(this.windowsRuleId).then((ruleNode) => {
         this.windowRulesNode = ruleNode;
@@ -211,7 +216,25 @@ export default class WindowingAggregateNodeForm extends Component {
         this.setState({showLoading : false});
       });
     }
-    this.setState(stateObj);
+    this.setState(stateObj, () => {
+      this.WebWorkers = new WebWorkers(this.initValidatorWorker());
+    });
+  }
+
+  populateCodeMirrorDefaultHintOptions(){
+    const {udfList} = this;
+    this.hintOptions=[];
+    // FUNCTION from UDFLIST for hints...
+    Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(udfList,"FUNCTION"));
+  }
+
+  populateCodeMirrorHintOptions(){
+    const {udfList} = this;
+    this.hintOptions=[];
+    // arguments from field list for hints...
+    Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(this.fieldsHintArr,"ARGS"));
+    // FUNCTION from UDFLIST for hints...
+    Array.prototype.push.apply(this.hintOptions,ProcessorUtils.generateCodeMirrorOptions(udfList,"FUNCTION"));
   }
 
   /*
@@ -226,30 +249,23 @@ export default class WindowingAggregateNodeForm extends Component {
     if(serverWindowObj.projections.length > 0){
       const {keysList} = this.state;
       let argsGroupKeys=[];
-      const windowProjectionData = ProcessorUtils.normalizationProjectionKeys(serverWindowObj.projections,keysList);
-      const {keyArrObj,argsFieldsArrObj} = windowProjectionData;
-
-      // populate argumentFieldGroupKey
-      _.map(argsFieldsArrObj, (obj, index) => {
-        if(_.isArray(obj.args)){
-          let _arr = [],argsVal = obj.args[0];
-          const fieldObj = ProcessorUtils.getKeyList(argsVal,keysList);
-          if(fieldObj){
-            _arr.push(fieldObj);
-          }
-          const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey(_arr);
-          argsGroupKeys[index] = gKeys;
-
-          // convert Array to String for display on UI
-          obj.args = argsVal;
-        }
-      });
+      const windowProjectionData = this.getScriptConditionAndFieldsForServer(serverWindowObj.projections,keysList);
+      const {conditionsArr,fieldKeyArr} = windowProjectionData;
+      const {keyArrObj} = ProcessorUtils.normalizationProjectionKeys(fieldKeyArr,keysList);
 
       const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey(keyArrObj);
       const keyData = ProcessorUtils.createSelectedKeysHierarchy(keyArrObj,keysList);
-      const outputFieldsObj =  this.generateOutputFields(argsFieldsArrObj,0);
 
-      const tempFields = _.concat(keyData,argsFieldsArrObj);
+      const outputFieldsObj = [];
+      _.map(conditionsArr, (cd) => {
+        const obj = ProcessorUtils.getReturnTypeFromCodemirror(cd.conditions,this.state.functionListArr,this.fieldsHintArr, this);
+        outputFieldsObj.push({
+          name : cd.outputFieldName,
+          type : obj.returnType
+        });
+      });
+
+      const tempFields = _.concat(keyData,outputFieldsObj);
       let mainStreamObj = {
         streamId : serverWindowObj.streams[0],
         fields : this.generateOutputFields(tempFields,0)
@@ -258,12 +274,11 @@ export default class WindowingAggregateNodeForm extends Component {
       // stateObj is define and assign some values
       let stateObj = {
         showLoading:false ,
-        outputFieldsArr :argsFieldsArrObj,
+        outputFieldsArr :conditionsArr,
         outputStreamFields: outputFieldsObj,
         selectedKeys:keys,
         windowSelectedKeys:keyData,
-        _groupByKeys : gKeys,
-        outputFieldsGroupKeys :argsGroupKeys
+        _groupByKeys : gKeys
       };
 
       // pre filling serverWindowObj.window values
@@ -300,6 +315,23 @@ export default class WindowingAggregateNodeForm extends Component {
     }
   }
 
+  getScriptConditionAndFieldsForServer = (data,fieldList) => {
+    let conditionsArr=[],fieldKeyArr=[];
+    _.map(data, (d) => {
+      if(d.expr.includes('AS')){
+        const obj = d.expr.split('AS');
+        conditionsArr.push({
+          conditions : obj[0].trim(),
+          outputFieldName : obj[1].trim(),
+          prefetchData : true
+        });
+      } else {
+        fieldKeyArr.push(d);
+      }
+    });
+    return {conditionsArr,fieldKeyArr};
+  }
+
   /*
     fetchRulesNode Method accept the ruleId
     To get the Rules node through API call
@@ -333,21 +365,38 @@ export default class WindowingAggregateNodeForm extends Component {
      selectedKeys, windowNum, argumentError and outputFieldsArr array
   */
   validateData(){
-    let {selectedKeys, windowNum, outputFieldsArr, tsField, lagMs, argumentError} = this.state;
-    let validData = true;
-    if (argumentError) {return false;}
-    if (windowNum === '') {
-      validData = false;
+    let {selectedKeys, windowNum, outputFieldsArr, tsField, lagMs, argumentError,errorString} = this.state;
+    let validData = [],promiseArr=[],flag= false, errorText='';
+    if(argumentError || windowNum === '' || errorString.length){
+      return false;
     }
     if(tsField !== '' && tsField !== 'processingTime' && lagMs === '') {
       validData = false;
     }
-    outputFieldsArr.map((obj) => {
-      if (obj.args === '' || obj.outputFieldName === '') {
-        validData = false;
+    _.map(outputFieldsArr,(field,i) => {
+      // push to worker promiseArr
+      promiseArr.push(this.WebWorkers.startWorkers(field.conditions.trim()));
+
+      if(!((field.conditions.length == 0 && field.outputFieldName.length == 0) || (field.conditions.length > 0 && field.outputFieldName.length > 0))){
+        validData.push(field);
       }
     });
-    return validData;
+
+    return Promise.all(promiseArr).then((res) => {
+      let arr=[];
+      _.map(res, (r) => {
+        if(!r.payload.includes('(')){
+          r.err = "Only arguments are not allowed!  parent function is mandatory";
+        }
+        arr.push(r.err);
+      });
+      if(validData.length === 0 && _.compact(arr).length === 0){
+        arr=[];
+        flag= true;
+      }
+      this.setState({scriptErrors : arr});
+      return flag;
+    });
   }
 
   /*
@@ -430,15 +479,17 @@ export default class WindowingAggregateNodeForm extends Component {
         slidingDurationType,
         intervalType,
         parallelism,
-        outputFieldsGroupKeys,
         tsField,
-        lagMs
+        lagMs,
+        outputFieldsArr
       } = this.state;
-      let tempArr = _.cloneDeep(this.state.outputFieldsArr);
+      let tempArr = [];
       let {topologyId, versionId, nodeType, nodeData} = this.props;
 
-      _.map(tempArr, (temp,index) => {
-        tempArr[index].args = outputFieldsGroupKeys[index];
+      _.map(outputFieldsArr, (field) => {
+        tempArr.push({
+          expr : `${field.conditions} AS ${field.outputFieldName}`
+        });
       });
       const exprObj = _groupByKeys.map((field) => {return {expr: field};});
       const mergeTempArr = _.concat(tempArr,exprObj);
@@ -565,49 +616,6 @@ export default class WindowingAggregateNodeForm extends Component {
     }
   }
 
-  /*
-    handleFieldChange Method accept name,index and obj
-    params@ name = string 'args' Or 'functionName'
-    params@ index = number
-    params@ obj = selected obj
-    it SET the outputFieldsArr[name] to obj.name
-    And SET the outputFieldsArr[outputFieldName] by concating the two value with '_'
-
-    And call setParentContextOutputStream FUNCTION with false.
-  */
-  handleFieldChange(name,index,obj){
-    if(obj){
-      let groupKey = _.cloneDeep(this.state.outputFieldsGroupKeys);
-      let tempArr = _.cloneDeep(this.state.outputFieldsArr);
-      tempArr[index][name] = obj.name;
-      tempArr[index].outputFieldName = tempArr[index].args+"_"+this.getFunctionDisplayName(tempArr[index].functionName);
-      if(name === "args"){
-        const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey([obj]);
-        groupKey[index] = gKeys;
-      }
-      this.setState({outputFieldsArr :tempArr,outputFieldsGroupKeys :groupKey}, () => {
-        this.setParentContextOutputStream(index,false);
-      });
-    }
-  }
-
-  /*
-    handleOutputFieldName Method accept index and event
-    using the value in  event.target.value
-    and SET to the outputFieldName of outputFieldsArr
-
-    And call setParentContextOutputStream FUNCTION with true to override the value.
-  */
-  handleOutputFieldName(index,event){
-    let tempArr = _.cloneDeep(this.state.outputFieldsArr);
-    const outputName = event.target.value.trim();
-    if(outputName !== ''){
-      tempArr[index].outputFieldName = outputName;
-      this.setState({outputFieldsArr : tempArr}, () => {
-        this.setParentContextOutputStream(index,true);
-      });
-    }
-  }
 
   /*
     getReturnType Method accept the params
@@ -625,10 +633,6 @@ export default class WindowingAggregateNodeForm extends Component {
     });
     if (obj) {
       if (obj.argTypes && fieldObj) {
-        let argList = obj.argTypes.toString().includes(fieldObj.type);
-        (argList)
-          ? this.setState({argumentError: false})
-          : this.setState({argumentError: true});
         return obj.returnType || fieldObj.type;
       }
     } else if (fieldObj) {
@@ -662,22 +666,28 @@ export default class WindowingAggregateNodeForm extends Component {
     And Two array is concat to make the outputStreamObj of parentContext
   */
   setParentContextOutputStream(index,outputFlag){
-    let displayName = "";
+    let funcReturnType = "",obj={},error='';
     const {outputFieldsArr,windowSelectedKeys,functionListArr,keysList} = this.state;
     let mainObj = _.cloneDeep(this.state.outputStreamFields);
-    if(outputFieldsArr[index].functionName !== ""){
-      displayName = this.getFunctionDisplayName(outputFieldsArr[index].functionName);
+    if(!!outputFieldsArr[index].conditions){
+      const val = outputFieldsArr[index].conditions;
+      obj = ProcessorUtils.getReturnTypeFromCodemirror(val.trim(),functionListArr,this.fieldsHintArr, this);
+      funcReturnType = obj.returnType;
     }
     mainObj[index] = {
-      name: outputFlag ? outputFieldsArr[index].outputFieldName : (outputFieldsArr[index].args === "" && outputFieldsArr[index].functionName === "") ? "" : outputFieldsArr[index].args+'_'+displayName,
-      type: (outputFieldsArr[index].args !== "" && outputFieldsArr[index].functionName !== "") ? this.getReturnType(outputFieldsArr[index].functionName, ProcessorUtils.getKeyList(outputFieldsArr[index].args,keysList),index) : '',
-      optional : false
+      name: (outputFieldsArr[index].outputFieldName !== undefined && outputFieldsArr[index].outputFieldName !== "") ? outputFieldsArr[index].outputFieldName : "",
+      type:  funcReturnType ? funcReturnType : ""
     };
+    // b_Index is used to restrict the empty fields in streamObj.
+    const b_Index = _.findIndex(outputFieldsArr, (field) => { return field.conditions === '' && field.outputFieldName === '';});
+    if(b_Index !== -1){
+      mainObj.splice(b_Index,1);
+    }
 
     // create this.tempStreamContextData obj to save in ParentForm context
     const tempStreamData = _.concat(windowSelectedKeys,mainObj);
     this.tempStreamContextData = {fields : tempStreamData  , streamId : this.streamIdList[0]};
-    this.setState({outputStreamFields : mainObj});
+    this.setState({outputStreamFields : mainObj, argumentError : !!obj.error ? true : false, errorString : !!obj.error ? obj.error : ''});
     this.context.ParentForm.setState({outputStreamObj: this.tempStreamContextData});
   }
 
@@ -708,7 +718,7 @@ export default class WindowingAggregateNodeForm extends Component {
       Utils.scrollMe(el, (targetHt + 100), 2000);
 
       let fieldsArr = this.state.outputFieldsArr;
-      fieldsArr.push({args: '', functionName: '', outputFieldName: ''});
+      fieldsArr.push({conditions: '', outputFieldName: '',prefetchData: false});
       this.setState({outputFieldsArr: fieldsArr});
     }
   }
@@ -727,8 +737,42 @@ export default class WindowingAggregateNodeForm extends Component {
 
     const tempStreamData = _.concat(windowSelectedKeys,mainOutputFields);
     this.tempStreamContextData.fields = tempStreamData;
+    _.map(fieldsArr, (f,i) => {
+      f.prefetchData = true;
+      this.refs["codeRef-"+i].codeWrapper.setValue(f.conditions);
+    });
     this.setState({outputFieldsArr : fieldsArr,outputStreamFields : mainOutputFields});
     this.context.ParentForm.setState({outputStreamObj: this.tempStreamContextData});
+  }
+
+  initValidatorWorker = () => {
+    const {fieldsHintArr,state} = this;
+    const {functionListArr} = state;
+    return ProcessorUtils.webWorkerValidator(fieldsHintArr, functionListArr);
+  }
+
+  handleScriptChange = (index, val) => {
+    let tempArr = _.cloneDeep(this.state.outputFieldsArr);
+    let showErr = false;
+    if(val === ""){
+      showErr = true;
+    }
+    tempArr[index].conditions = val;
+    this.setState({invalidInput : showErr,outputFieldsArr : tempArr}, () => {
+      this.setParentContextOutputStream(index);
+    });
+  }
+
+  handleFieldNameChange(index,event){
+    let tempArr = _.cloneDeep(this.state.outputFieldsArr);
+    let showErr = false;
+    if(event.target.value === ""){
+      showErr = true;
+    }
+    tempArr[index].outputFieldName = event.target.value;
+    this.setState({invalidInput : showErr,outputFieldsArr : tempArr}, () => {
+      this.setParentContextOutputStream(index);
+    });
   }
 
   render(){
@@ -749,7 +793,9 @@ export default class WindowingAggregateNodeForm extends Component {
       slidingDurationType,
       argumentError,
       outputFieldsArr,
-      functionListArr
+      functionListArr,
+      scriptErrors,
+      errorString
     } = this.state;
     const disabledFields = this.props.testRunActivated ? true : !editMode;
     return(
@@ -846,49 +892,57 @@ export default class WindowingAggregateNodeForm extends Component {
                     : ''}
                   </div>
                 </div>
-                <fieldset className="fieldset-default">
-                  <legend>Output Fields</legend>
-                  {
+                {
                     argumentError
-                      ? <label className="color-error"> The Aggregate Function is not supported by input </label>
+                      ? <label className="color-error"> {errorString} </label>
                       :''
                   }
                   <div className="row">
-                    <div className="col-sm-3 outputCaption">
-                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Input field name</Popover>}>
-                        <label>Input</label>
-                      </OverlayTrigger>
-                    </div>
-                    <div className="col-sm-3 outputCaption">
-                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Function name</Popover>}>
-                        <label>Aggregate Function</label>
+                    <div className="col-sm-7 outputCaption">
+                      <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Projection Conditions</Popover>}>
+                      <label>AGGREGATE Expression</label>
                       </OverlayTrigger>
                     </div>
                     <div className="col-sm-3 outputCaption">
                       <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Output field name</Popover>}>
-                        <label>Output</label>
+                      <label>Fields Name</label>
+                      </OverlayTrigger>
+                      <OverlayTrigger trigger={['hover']} placement="left" overlay={<Popover id="popover-trigger-hover">Type @ to see all the available options</Popover>}>
+                        <i className="fa fa-info-circle pull-right" style={{backgroundColor : "#ffffff" ,color: '#1892c1'}}></i>
                       </OverlayTrigger>
                     </div>
                   </div>
+
                   {outputFieldsArr.map((obj, i) => {
+                    const functionClass = ['projection-codemirror'];
+                    const argumentsClass = [];
+                    const nameClass = ['form-control'];
+
+                    if(obj.conditions.length == 0 && obj.outputFieldName.length > 0){
+                      functionClass.push('invalid-codemirror');
+                    }
+                    if(obj.outputFieldName.length == 0 && obj.conditions.length > 0){
+                      nameClass.push('invalidInput');
+                    }
+
                     return (
                       <div key={i} className="row form-group">
-                        <div className="col-sm-3">
-                          <Select className={outputFieldsArr.length - 1 === i
-                            ? "menu-outer-top"
-                            : ''} value={obj.args} options={keysList} onChange={this.handleFieldChange.bind(this,'args', i)} required={true} disabled={disabledFields} valueKey="name" labelKey="name" clearable={false} optionRenderer={this.renderFieldOption.bind(this)}/>
+                        {
+                          scriptErrors[i]
+                          ? <div><label  className="color-error" style={{fontSize:10}}>{scriptErrors[i]}</label></div>
+                          : null
+                        }
+                        <div className="col-sm-7">
+                          <div className={functionClass.join(' ')}>
+                            <CommonCodeMirror ref={"codeRef-"+i} editMode={obj.prefetchData} modeType="javascript" hintOptions={this.hintOptions} value={obj.conditions} placeHolder="Expression goes here..." callBack={this.handleScriptChange.bind(this,i)} />
+                          </div>
                         </div>
                         <div className="col-sm-3">
-                          <Select className={outputFieldsArr.length - 1 === i
-                            ? "menu-outer-top"
-                            : ''} value={obj.functionName} options={functionListArr} onChange={this.handleFieldChange.bind(this,'functionName', i)} required={true} disabled={disabledFields} valueKey="name" labelKey="displayName"/>
-                        </div>
-                        <div className="col-sm-3">
-                          <input name="outputFieldName" value={obj.outputFieldName} ref="outputFieldName" onChange={this.handleOutputFieldName.bind(this, i)} type="text" className="form-control" required={true} disabled={disabledFields}/>
+                          <input name="outputFieldName" className={nameClass.join(' ')} value={obj.outputFieldName} ref="outputFieldName" onChange={this.handleFieldNameChange.bind(this, i)} type="text" required={true} disabled={disabledFields}/>
                         </div>
                         {editMode
                           ? <div className="col-sm-2">
-                              <button className="btn btn-default btn-sm" disabled={disabledFields} type="button" onClick={this.addOutputFields.bind(this)}>
+                              <button className="btn btn-default btn-sm" type="button" disabled={disabledFields} onClick={this.addOutputFields.bind(this)}>
                                 <i className="fa fa-plus"></i>
                               </button>&nbsp; {i > 0
                                 ? <button className="btn btn-sm btn-danger" type="button" onClick={this.deleteFieldRow.bind(this, i)}>
@@ -900,7 +954,6 @@ export default class WindowingAggregateNodeForm extends Component {
                       </div>
                     );
                   })}
-                </fieldset>
               </form>
             }
         </Scrollbars>

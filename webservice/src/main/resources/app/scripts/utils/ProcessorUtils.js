@@ -718,6 +718,389 @@ const codeMirrorOptionsTemplate = (el,data) => {
   }
 };
 
+const webWorkerValidator = function(fieldsHintArr, functionListArr) {
+  return `data:text/javascript;charset=US-ASCII,
+    let funcs = ${JSON.stringify(functionListArr)};
+    let arg = ${JSON.stringify(fieldsHintArr)};
+
+    self.onmessage = function(msg) {
+      const {id, payload} = msg.data
+      self.validator(payload,function(err,result){
+        const msg = {
+          id,
+          payload: result
+        };
+        if(err){
+          msg.err = err;
+        }
+        self.postMessage(msg);
+      });
+    }
+
+    const obj={};
+    const defaults = {
+      BOOLEAN: new Boolean().valueOf(),
+      BYTE: new Number().valueOf(),
+      SHORT: new Number().valueOf(),
+      INTEGER: new Number().valueOf(),
+      LONG: new Number().valueOf(),
+      FLOAT: new Number().valueOf(),
+      DOUBLE: new Number().valueOf(),
+      STRING: new String().valueOf(),
+      BINARY: new Blob().valueOf(),
+      NESTED: new Object().valueOf(),
+      ARRAY: new Array().valueOf(),
+      BLOB: new Blob().valueOf()
+    };
+
+    for(let i = 0; i < funcs.length;i++){
+      const fd = funcs[i];
+      eval('var '+fd.displayName+' = function(){ checkForArgs(arguments, fd.displayName); return defaults[fd.returnType]}');
+    }
+    /*for(let i = 0; i < arg.length;i++){
+      const argd = arg[i];
+      eval('var '+argd.name+' = [argd.name]]');
+    }*/
+
+    function nestedArguments(arg,level,path = []){
+      for(let i = 0; i < arg.length;i++){
+        if(arg[i].fields){;
+          let _path = path.slice();
+          _path.push(arg[i].name);
+          try{
+            const field = eval(_path.join('.'));
+            if(field == undefined){
+              eval(_path.join('.') + ' = {}');
+            }
+          }catch(e){
+            eval(' ' + arg[i].name + ' = {}');
+          }
+          nestedArguments(arg[i].fields,level+1,_path);
+        }else{
+          let argd = path.length ? path.join('.')+'.'+arg[i].name : arg[i].name ;
+          eval(' '+argd+' = defaults[arg[i].type]');
+        }
+      }
+    };
+    this.nestedArguments(arg,0);
+
+    function checkForArgs(arg, fname){
+      var argLength = arg.length;
+      const func_def = funcs.find((f) => {
+        return f.displayName == fname && f.argTypes.length == argLength;
+      });
+      if(!func_def){
+        throw new Error(fname +'() arguments mismatch');
+      }
+      for(let i = 0; i < argLength; i++){
+        const _arg = arg[i];
+        const ex_arg = func_def.argTypes[i];
+        /*if(ex_arg.indexOf(_arg.type) < 0){
+          throw new Error(fname +'() argument type mismatch');
+        }*/
+        function checkType(types){
+          let includes = false;
+          types.forEach(type => {
+            if(ex_arg.includes(type) && !includes){
+              includes = true;
+            }
+          });
+          if(!includes){
+            throw new Error(fname +'() argument type mismatch');
+          }
+        }
+        if(_arg == undefined){
+          checkType([]);
+        }else if(typeof _arg == "string"){
+          checkType(['STRING']);
+        }else if(typeof _arg == "number"){
+          checkType(['BYTE', 'SHORT', 'INTEGER', 'LONG', 'FLOAT', 'DOUBLE']);
+        }else if(typeof _arg == "boolean"){
+          checkType(['BOOLEAN']);
+        }else if(typeof _arg == "object" && _arg instanceof Object){
+          checkType(['NESTED']);
+        }else if(typeof _arg == "object" && _arg instanceof Array){
+          checkType(['ARRAY']);
+        }else if(typeof _arg == "object" && _arg instanceof Blob){
+          checkType(['BLOB']);
+        }
+      }
+    }
+
+    function validator(data,cb){
+      try{
+        eval('('+ data +')');
+        cb(null, data);
+      }catch(err){
+        cb(err.message, data);
+      }
+    }
+  `;
+};
+
+const getReturnTypeFromCodemirror = function(value,functionArr,fieldsArr,processorState) {
+  let returnType='DOUBLE',error='',boolType=false;
+  const enumValue = {"SHORT": 1,"INTEGER": 2,"FLOAT": 3,"DOUBLE":4,"LONG":5};
+
+  const getReturnTypeFromNumbers = (cValue) => {
+    let type = '';
+    const c_value = parseFloat(cValue);
+    if(cValue.includes('.') && !/[a-zA-Z]/.test(cValue)){
+      const dArr = cValue.split('.');
+      if(dArr.length > 2){
+        error = "invalid number.";
+      } else {
+        type = dArr[1].length <= 7 ? "FLOAT" : "DOUBLE";
+      }
+    } else {
+      if(/[a-zA-Z]/.test(cValue)){
+        error = "invalid number.";
+      } else {
+        type = cValue <= 2147483647 ? "INTEGER" : "LONG";
+      }
+    }
+    return type;
+  };
+
+  // override return type for ["SHORT","INTERGER","FLOAT","DOUBLE",LONG]
+  const overRideIntReturnType = (newType,oldType) => {
+    let type = oldType;
+    if(enumValue[oldType] < enumValue[newType]){
+      type = newType;
+    }
+    return type;
+  };
+
+  // Overloading function
+  const funcOverLoading = (fObj) => {
+    const {functionArr,o} = fObj;
+    const tFunc = _.filter(functionArr, (func) => func.displayName === o.displayName);
+    if(tFunc.length > 1){
+      return _.findLast(tFunc);
+    } else {
+      return o;
+    }
+  };
+
+  // Nested Function to check comma... ','
+  const expressionContainsComma = (tObj) => {
+    const {val,level,oldObj,obj,functionArr} = tObj;
+    const trimVal = val.endsWith(')') ? val.replace(/[)]/gi,'') : val;
+    let args = trimVal.split(',');
+    let o = level > 0 ? oldObj : obj;
+    if(/[)]/.test(val)){
+      const openB = value.split('(').splice(0,(value.split('(').length-1));
+      const closeB = val.split(')').splice(0,(val.split(')').length-1));
+      let ObjName='';
+      const openL = openB.length, closeL = closeB.length;
+      if(openB.length > 1){
+        ObjName = openB[closeL > 1 ? ((openL === closeL || openL < closeL) ? 0 : (closeL-1)) : closeL];
+      } else {
+        ObjName= openB[0];
+      }
+      o = _.find(functionArr, (func) => func.displayName === ObjName);
+      args = _.compact(val.split(')').map(function(a) {return a.replace(/[,]/gi,' ');}));
+      if(openL === closeL || openL < closeL){
+        args = args.splice(0,o.argTypes.length);
+      }
+    }
+    if(args.length > o.argTypes.length){
+      o = funcOverLoading({functionArr,o});
+    }
+    if(args.length <= o.argTypes.length){
+      _.map(args, (a,i) => {
+        const fields = findNestedObject(fieldsArr,a);
+        if(!_.isEmpty(fields) && _.isNaN(parseInt(a))){
+          const argObj = checkReturnTypeSupport(o,fields,'type');
+          if(!!argObj.returnType){
+            returnType = argObj.returnType;
+          }
+          error = argObj.error || (argObj.returnType !== o.argTypes[i]) ? `Function doesn't support the arguments return type.` : null;
+        }
+      });
+    } else {
+      error = `Function doesn't support more arguments .`;
+    }
+  };
+
+  // Expression contains no parent function... (driverId
+  const noParentFunctionInExpression = (val) => {
+    const tVal = val.split(' ') ;
+    const recursiveCall = (value) => {
+      value.forEach((v,i) => {
+        if(!/[`~!@#$%^&0-9()|\¿?;:,\{\}\[\]\\]/.test(v)){
+          const fields = findNestedObject(fieldsArr,v);
+          if(!_.isEmpty(fields) && _.isNaN(parseInt(v)) && !boolType){
+            if(!!returnType && i > 0){
+              if(_.keys(enumValue).toString().includes(fields.type)){
+                returnType = overRideIntReturnType(returnType , fields.type);
+
+              }else if(returnType.toLowerCase() !== fields.type.toLowerCase()){
+                error = 'miss match arguments returnType.';
+              }
+            } else {
+              returnType = fields.type;
+            }
+          } else if(/[<>]/.test(v)){
+            boolType = true;
+            returnType = "BOOLEAN";
+          }
+        } else {
+          if(/[-+*<>=()]/.test(v)){
+            const tValue = _.compact(v.replace(/[-+*=()]/gi,' ').split(' '));
+            recursiveCall(tValue);
+          } else {
+            returnType = getReturnTypeFromNumbers(v);
+          }
+        }
+      });
+      return returnType;
+    };
+    return recursiveCall(tVal);
+  };
+
+  const ind =  checkBracketInString(value);
+  if(ind !== -1){
+    const {f_val, s_val} = stringSpliter(value,ind);
+    let tF_val =  f_val.replace(/[-+*=()\/]/gi,' ').split(' ');
+    if(tF_val.length > 1){
+      const comValue = _.compact(tF_val);
+      const popValue = comValue.length > 1 ? comValue.pop(comValue.length-1).toString() : comValue[0];
+      returnType = noParentFunctionInExpression(comValue.join(' '));
+      tF_val = popValue;
+    } else {
+      tF_val=tF_val[0];
+    }
+    const obj = _.find(functionArr, (func) => func.displayName === tF_val);
+    if(obj){
+      if(!boolType){
+        returnType = obj.returnType;
+      }
+    }
+    // expression start with bracket...
+    if(f_val === ''){
+      if(processorState){
+        processorState.populateCodeMirrorDefaultHintOptions();
+      }
+      returnType = noParentFunctionInExpression(s_val);
+    }
+    // s_val is the string after the function bracket.. and recursive call
+    if(!!s_val && !!f_val){
+      const nestedFunction = (val,level,oldObj) => {
+        const b_index = checkBracketInString(val);
+        if(b_index !== -1){
+          const {f_val, s_val} = stringSpliter(val,b_index);
+          const innerObj = _.find(functionArr, (func) => func.displayName === f_val);
+          if(innerObj){
+            const funcResultObj = checkReturnTypeSupport(obj,innerObj,'returnType');
+            if(!!funcResultObj.returnType){
+              if(!boolType){
+                returnType = funcResultObj.returnType;
+              }
+            }
+            error = funcResultObj.error;
+            if(!!s_val){
+              nestedFunction(s_val,level+1,innerObj);
+            }
+          } else {
+            error = "The function is invalid.";
+          }
+        } else {
+          const trimVal = val.endsWith(')') ? val.replace(/[)]/gi,'') : val;
+          const inner_Args = findNestedObject(fieldsArr,trimVal);
+          if(!_.isEmpty(inner_Args)){
+            const argResultObj = checkReturnTypeSupport(obj,inner_Args,'type');
+            if(!!argResultObj.returnType && !boolType){
+              returnType = argResultObj.returnType;
+            }
+            error = argResultObj.error;
+          } else {
+            if(/[,]/.test(val)){
+              expressionContainsComma({val,level,oldObj,obj,functionArr});
+            } else if(/[']/.test(val)){
+            }else {
+              if(!checkValueTypeToReturnType(trimVal,returnType).flag){
+                error = "The arguments is invalid.";
+              }
+            }
+          }
+        }
+      };
+      if(processorState){
+        processorState.populateCodeMirrorHintOptions();
+      }
+      nestedFunction(s_val,0);
+    }
+
+  } else {
+    if(processorState){
+      processorState.populateCodeMirrorDefaultHintOptions();
+    }
+    returnType = noParentFunctionInExpression(value);
+  }
+
+  return {returnType,error};
+};
+
+const checkValueTypeToReturnType = function(val,returnType) {
+  let flag= false;
+  const returnTyp = !!returnType ? returnType.toLowerCase() : '';
+  let tVal = _.isNaN(parseInt(val)) ? val : parseInt(val);
+  const type = typeof tVal;
+  switch(type){
+  case 'string' : flag = type === returnTyp ? true : false;
+    break;
+  case 'number' : flag = (returnTyp !== 'string') ? true : false;
+    break;
+  default:break;
+  }
+  return {flag,type};
+};
+
+const findNestedObject = function(fieldsArr,string) {
+  let obj={};
+  const recursiveFunc = (arr,s) => {
+    _.map(arr, (a) => {
+      if(a.fields){
+        recursiveFunc(a.fields,s);
+      } else {
+        if(a.name === s){
+          obj = a;
+        }
+      }
+    });
+    return obj;
+  };
+  const str = /[.]/.test(string) ? _.last(string.split('.')) : string;
+  return recursiveFunc(fieldsArr,str);
+};
+
+const checkReturnTypeSupport = function(pObj,innerObj,type) {
+  const obj = {};
+  const returnFlag = pObj.argTypes.toString().includes(innerObj[type]);
+  if(returnFlag){
+    obj.returnType = innerObj[type];
+  } else {
+    if(!_.isEmpty(innerObj)){
+      obj.error = "Function doesn't support the arguments return type." ;
+    }
+  }
+  return obj;
+};
+
+const checkBracketInString = function(value) {
+  return value.indexOf('(');
+};
+
+const stringSpliter = function(val,index) {
+  let f_val = val.slice(0,index);
+  const s_val = val.slice((index+1),val.length);
+  if(/[,]/.test(f_val)){
+    f_val = _.findLast(f_val.split(','));
+  }
+  return {f_val,s_val};
+};
+
 export default {
   getSchemaFields,
   createSelectedKeysHierarchy,
@@ -737,5 +1120,7 @@ export default {
   addChildren,
   filterOptions,
   generateCodeMirrorOptions,
-  codeMirrorOptionsTemplate
+  codeMirrorOptionsTemplate,
+  webWorkerValidator,
+  getReturnTypeFromCodemirror
 };
