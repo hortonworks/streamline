@@ -1,0 +1,4 @@
+nimbus.seeds: ["NIMBUS_HOST"]
+storm.zookeeper.servers:
+  - "TODO_ZOOKEEPER"
+ui.port: 8099

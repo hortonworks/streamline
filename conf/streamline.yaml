@@ -9,6 +9,7 @@ modules:
     className: com.hortonworks.streamline.streams.service.StreamsModule
     config:
       stormHomeDir: /usr/local/Cellar/storm/0.10.0/
+      flinkHomeDir: /usr/local/Cellar/flink/
       # directory to store the results of topology test run
       topologyTestRunResultDir: /tmp
       # schema registry configuration

@@ -1,0 +1,5 @@
+CREATE USER registry_user IDENTIFIED BY password;
+GRANT CONNECT, RESOURCE TO registry_user;
+GRANT UNLIMITED TABLESPACE TO registry_user;
+ALTER USER registry_user QUOTA UNLIMITED ON USERS;
+exit;
