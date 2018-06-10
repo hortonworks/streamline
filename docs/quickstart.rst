@@ -39,7 +39,7 @@ Copy paste the contents like below image for topic `truck_events_stream`
 
 .. figure:: https://raw.githubusercontent.com/harshach/streamline/test-branch/docs/images/registry-add-schema.png
 
-Lets repeat the above step for topic `truck_events_stream`
+Lets repeat the above step for topic `truck_events_output`
 
 
 .. figure:: https://raw.githubusercontent.com/harshach/streamline/test-branch/docs/images/registry-add-schema-output.png
