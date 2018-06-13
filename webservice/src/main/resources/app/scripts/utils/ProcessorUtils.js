@@ -911,7 +911,7 @@ const getReturnTypeFromCodemirror = function(value,functionArr,fieldsArr,process
       _.map(args, (a,i) => {
         const fields = findNestedObject(fieldsArr,a);
         if(!_.isEmpty(fields) && _.isNaN(parseInt(a))){
-          const argObj = checkReturnTypeSupport(o,fields,'type');
+          const argObj = checkReturnTypeSupport(o,fields,'type', processorState);
           if(!!argObj.returnType){
             returnType = argObj.returnType;
           }
@@ -992,7 +992,7 @@ const getReturnTypeFromCodemirror = function(value,functionArr,fieldsArr,process
           const {f_val, s_val} = stringSpliter(val,b_index);
           const innerObj = _.find(functionArr, (func) => func.displayName === f_val);
           if(innerObj){
-            const funcResultObj = checkReturnTypeSupport(obj,innerObj,'returnType');
+            const funcResultObj = checkReturnTypeSupport(obj,innerObj,'returnType', processorState);
             if(!!funcResultObj.returnType){
               if(!boolType){
                 returnType = funcResultObj.returnType;
@@ -1009,7 +1009,7 @@ const getReturnTypeFromCodemirror = function(value,functionArr,fieldsArr,process
           const trimVal = val.endsWith(')') ? val.replace(/[)]/gi,'') : val;
           const inner_Args = findNestedObject(fieldsArr,trimVal);
           if(!_.isEmpty(inner_Args)){
-            const argResultObj = checkReturnTypeSupport(obj,inner_Args,'type');
+            const argResultObj = checkReturnTypeSupport(obj,inner_Args,'type', processorState);
             if(!!argResultObj.returnType && !boolType){
               returnType = argResultObj.returnType;
             }
@@ -1075,11 +1075,17 @@ const findNestedObject = function(fieldsArr,string) {
   return recursiveFunc(fieldsArr,str);
 };
 
-const checkReturnTypeSupport = function(pObj,innerObj,type) {
+const checkReturnTypeSupport = function(pObj,innerObj,type, pState) {
   const obj = {};
   const returnFlag = pObj.argTypes.toString().includes(innerObj[type]);
   if(returnFlag){
-    obj.returnType = innerObj[type];
+    obj.returnType = pState
+                      ? pObj.returnType
+                        ? pObj.returnType
+                        : innerObj[type]
+                          ? innerObj[type]
+                          : 'DOUBLE'
+                      : innerObj[type];
   } else {
     if(!_.isEmpty(innerObj)){
       obj.error = "Function doesn't support the arguments return type." ;
