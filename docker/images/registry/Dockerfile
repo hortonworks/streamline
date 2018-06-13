@@ -26,6 +26,7 @@ ENV REGISTRY_HOME /opt/registry
 COPY start-registry.sh /opt/registry/bin/
 COPY extlibs/* /opt/registry/libs/
 COPY extlibs/* /opt/registry/bootstrap/lib/
+COPY data/* /opt/registry/examples/schema-registry/avro/data/
 
 WORKDIR /opt/registry
 

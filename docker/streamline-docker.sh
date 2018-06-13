@@ -17,6 +17,8 @@ postgres_image="postgres:10"
 kafka_image="apache-kafka:1.0.0"
 storm_image="apache-storm:1.2.2"
 minimal_ubuntu_image="minimal-ubuntu:0.1"
+druid_image="druid:0.9.2"
+superset_image="superset:0.5"
 
 # Container name variables
 mysql_container_name="u-mysql"
@@ -28,6 +30,8 @@ kafka_container_name="u-kafka-"
 storm_nimbus_container_name="u-storm-nimbus"
 storm_supervisor_container_name="u-storm-supervisor"
 storm_ui_container_name="u-storm-ui"
+druid_container_name="u-druid"
+superset_container_name="u-superset"
 
 # Beware before changing the registry container name, it's used in the internal scripts to find out the instance number.
 registry_container_name="u-schema-registry"
@@ -134,7 +138,7 @@ function buildStreamline {
         if [[ "$(docker images -q ${streamline_image}:${sversion} 2> ${std_output})" == "" ]]; then
             echo "Building Streamline distribution from the master branch."
             pushd -- "../" &> ${std_output}
-            mvn clean install -DskipTests
+            mvn clean install -DskipTests -Pdist
             popd &> ${std_output}
             mvn clean package -Pdocker
         else
@@ -179,11 +183,18 @@ function buildDocker {
 
     echo "Pulling official ${postgres_image} image from docker store"
     docker pull ${postgres_image}
+
+    echo "Building Druid Image"
+    docker build -t ${druid_image} images/druid
+
+    echo "Building Superset Image"
+    docker build -t ${superset_image} images/superset
 }
 
 function startDocker {
     local containers=()
-    local is_secured="${1}"
+    local is_druid_deployment="${1}"
+    local is_secured="no"
     shift
     j=0
     for service in "${@}"
@@ -238,6 +249,16 @@ function startDocker {
                 ;;
              "${postgres_container_name}"|postgresql)
                 startPostgres
+                ;;
+             "${druid_container_name}"|druid)
+                 if [[ "${is_druid_deployment}" == "yes" ]]; then
+                     startDruid
+                 fi
+                ;;
+             "${superset_container_name}"|superset)
+                 if [[ "${is_druid_deployment}" == "yes" ]]; then
+                     startSuperset
+                 fi
                 ;;
              "${registry_container_name}")
                  cname=${registry_container_name}
@@ -443,6 +464,39 @@ function startMySQL {
             sleep 2
         fi
     done
+}
+
+function startDruid {
+    isContainerExists ${druid_container_name} "Druid"
+    if [[ $? -eq 1 ]]; then
+        return 0;
+    fi
+    echo "Starting Druid server from image : ${druid_image}"
+    docker run --name ${druid_container_name} \
+           -h ${druid_container_name} \
+           -p 8081:8081 \
+           -p 8082:8082 \
+           -p 8083:8083 \
+           -p 8090:8090 \
+           --network ${network_name} \
+           -d ${druid_image}
+
+    checkStatus $? "Druid"
+}
+
+function startSuperset {
+    isContainerExists ${superset_container_name} "Superset"
+    if [[ $? -eq 1 ]]; then
+        return 0;
+    fi
+    echo "Starting Superset server from image : ${superset_image}"
+    docker run --name ${superset_container_name} \
+           -h ${superset_container_name} \
+           -p 8088:8088 \
+           --network ${network_name} \
+           -d ${superset_image}
+
+    checkStatus $? "superset"
 }
 
 function startOracle {
@@ -782,6 +836,7 @@ function startStreamline {
     SECONDS=0
     echo "Starting Streamline ${sid}"
     echo ${schema_registry_url}
+    echo $(streamlineVersion)
     docker run --name ${container_name} \
         -h ${container_name} \
         -e REGISTRY_URL=${schema_registry_url} \
@@ -852,6 +907,19 @@ ask_cluster_security() {
             2|n|[nN][oO]) echo "no" ;;
             *) echo "Invalid option : ${answer}"; exit 1;;
         esac
+}
+
+ask_druid_deployment() {
+    read -p "Do you want to start Druid & Superset cluster ?
+            1. yes
+            2. no
+        > " answer
+
+    case "${answer}" in
+        1|y|[yY][eE][sS]) echo "yes" ;;
+        2|n|[nN][oO]) echo "no" ;;
+        *) echo "Invalid option : ${answer}"; exit 1;;
+    esac
 }
 
 usage() {
@@ -947,7 +1015,7 @@ case "${option}" in
         startMachine
         ;;
     build)
-        buildDocker
+        buildDocker "$(ask_druid_deployment)"
         ;;
     start)
         mkdir -p "${sasl_secrets_dir}"
@@ -955,7 +1023,7 @@ case "${option}" in
 
         createUserNetwork
         if [[ $# -eq 0 ]]; then
-            startDocker "no" "${kdc_container_name}" "${zk_container_name}" "${kafka_container_name}" "${db_type}" "${registry_container_name}" "${storm_nimbus_container_name}" "${storm_supervisor_container_name}" "${storm_ui_container_name}" "${streamline_container_name}"
+            startDocker "$(ask_druid_deployment)" "${kdc_container_name}" "${zk_container_name}" "${kafka_container_name}" "${db_type}" "${registry_container_name}" "${storm_nimbus_container_name}" "${storm_supervisor_container_name}" "${storm_ui_container_name}" "${streamline_container_name}" "${druid_container_name}" "${superset_container_name}"
         else
             startDocker "no" "${@}"
         fi
