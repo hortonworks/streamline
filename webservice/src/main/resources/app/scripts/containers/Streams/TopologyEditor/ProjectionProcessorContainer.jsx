@@ -229,7 +229,7 @@ export default class ProjectionProcessorContainer extends Component {
     if(serverStreamObj.projections.length > 0){
       const {fieldList} = this.state;
       let argsGroupKeys=[];
-      const projectionData = ProcessorUtils.getScriptConditionAndFieldsForServer(serverStreamObj.projections,fieldList);
+      const projectionData = this.getScriptConditionAndFieldsForServer(serverStreamObj.projections,fieldList);
       const {conditionsArr,fieldKeyArr} = projectionData;
       const {keyArrObj} = ProcessorUtils.normalizationProjectionKeys(fieldKeyArr,fieldList);
 
