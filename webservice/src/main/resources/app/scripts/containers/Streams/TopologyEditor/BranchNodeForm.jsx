@@ -386,7 +386,7 @@ export default class BranchNodeForm extends Component {
             </div>
           </div>
         </Scrollbars>
-        <Modal ref="BranchRuleModal" dialogClassName="rule-modal-fixed-height" bsSize="large" data-title={this.state.modalTitle} onKeyPress={this.handleKeyPress} data-resolve={this.handleSaveRule.bind(this)}>
+        <Modal ref="BranchRuleModal" dialogClassName="rule-modal-fixed-height modal-xl" data-title={this.state.modalTitle} onKeyPress={this.handleKeyPress} data-resolve={this.handleSaveRule.bind(this)}>
           <BranchRulesForm ref="RuleForm" topologyId={topologyId} versionId={versionId} ruleObj={this.state.ruleObj} nodeData={this.nodeData} nodeType={nodeType} parsedStream={this.parsedStreams} rules={rules} udfList={this.udfList}/>
         </Modal>
         <Confirm ref="Confirm"/>
