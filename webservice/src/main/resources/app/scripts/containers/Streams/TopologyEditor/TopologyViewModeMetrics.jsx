@@ -26,12 +26,14 @@ import d3 from 'd3';
 import {Select2 as Select} from '../../../utils/SelectUtils';
 import _ from 'lodash';
 import moment from 'moment';
+import Modal from '../../../components/FSModal';
+import DateTimePickerDropdown from '../../../components/DateTimePickerDropdown';
 
 @observer class TopologyViewModemetrics extends Component {
   constructor(props) {
     super();
     this.state = {
-      showMetrics: false,
+      showMetrics: props.viewModeData.selectedComponentId == '' ? false : true,
       selectedComponentId: '',
       inputOutputData: [],
       ackedData: [],
@@ -40,15 +42,21 @@ import moment from 'moment';
       latency: [],
       processTimeData: [],
       loadingRecord: true,
-      graphHeight: 50
+      graphHeight: 50,
+      graphTitle: '',
+      graphData: [],
+      graphType: '',
+      interpolation: ''
     };
   }
   componentWillReceiveProps(props) {
-
+    if(props.viewModeData.selectedComponentId !== '') {
+      this.setState({showMetrics: true});
+    }
   }
-  getGraph(name, data, interpolation) {
+  getGraph(name, data, interpolation, graphHeight) {
     const self = this;
-    return <TimeSeriesChart color={d3.scale.category20c().range(['#44abc0', '#8b4ea6'])} ref={name} data={data} interpolation={interpolation} height={this.state.graphHeight} setXDomain={function() {
+    return <div style={graphHeight ? {height: graphHeight} : {height: this.state.graphHeight}}><TimeSeriesChart color={d3.scale.category20c().range(['#44abc0', '#8b4ea6'])} ref={name} data={data} interpolation={interpolation} height={graphHeight ? graphHeight : this.state.graphHeight} setXDomain={function() {
       this.x.domain([self.props.startDate.toDate(), self.props.endDate.toDate()]);
     }}    setYDomain={function() {
       const min = d3.min(this.mapedData, (c) => {
@@ -72,33 +80,62 @@ import moment from 'moment';
       return d3.svg.axis().orient("left").tickFormat("");
     }} showTooltip={function(d) {
       const index = this.props.data.indexOf(d);
-      const {inputOutput, ackedTuples, FailedTuples, Latency, ProcessTime, Queue, ExecuteTime, KafkaLagOffset} = self.refs;
-      if (inputOutput && inputOutput.props.data[index] !== undefined && self.state.showMetrics) {
-        TimeSeriesChart.defaultProps.showTooltip.call(inputOutput, inputOutput.props.data[index]);
-      }
-      if (ackedTuples && ackedTuples.props.data[index] !== undefined && self.state.showMetrics) {
-        TimeSeriesChart.defaultProps.showTooltip.call(ackedTuples, ackedTuples.props.data[index]);
-      }
-      if (FailedTuples && FailedTuples.props.data[index] !== undefined && self.state.showMetrics) {
-        TimeSeriesChart.defaultProps.showTooltip.call(FailedTuples, FailedTuples.props.data[index]);
-      }
-      if (Latency && Latency.props.data[index] !== undefined && self.state.showMetrics) {
-        TimeSeriesChart.defaultProps.showTooltip.call(Latency, Latency.props.data[index]);
-      }
-      if (ProcessTime && ProcessTime.props.data[index] !== undefined && self.state.showMetrics) {
-        TimeSeriesChart.defaultProps.showTooltip.call(ProcessTime, ProcessTime.props.data[index]);
-      }
-      if (ExecuteTime && ExecuteTime.props.data[index] !== undefined && self.state.showMetrics) {
-        TimeSeriesChart.defaultProps.showTooltip.call(ExecuteTime, ExecuteTime.props.data[index]);
-      }
-      if (Queue && Queue.props.data[index] !== undefined && self.state.showMetrics) {
-        TimeSeriesChart.defaultProps.showTooltip.call(Queue, Queue.props.data[index]);
-      }
-      if (KafkaLagOffset && KafkaLagOffset.props.data[index] !== undefined && self.state.showMetrics) {
-        TimeSeriesChart.defaultProps.showTooltip.call(KafkaLagOffset, KafkaLagOffset.props.data[index]);
+      const {inputOutput, ackedTuples, FailedTuples, Latency, ProcessTime, Queue, ExecuteTime, KafkaLagOffset,
+        _inputOutput, _ackedTuples, _FailedTuples, _Latency, _ProcessTime, _Queue, _ExecuteTime, _KafkaLagOffset} = self.refs;
+      if(!graphHeight) {
+        if (inputOutput && inputOutput.props.data[index] !== undefined && self.state.showMetrics) {
+          TimeSeriesChart.defaultProps.showTooltip.call(inputOutput, inputOutput.props.data[index]);
+        }
+        if (ackedTuples && ackedTuples.props.data[index] !== undefined && self.state.showMetrics) {
+          TimeSeriesChart.defaultProps.showTooltip.call(ackedTuples, ackedTuples.props.data[index]);
+        }
+        if (FailedTuples && FailedTuples.props.data[index] !== undefined && self.state.showMetrics) {
+          TimeSeriesChart.defaultProps.showTooltip.call(FailedTuples, FailedTuples.props.data[index]);
+        }
+        if (Latency && Latency.props.data[index] !== undefined && self.state.showMetrics) {
+          TimeSeriesChart.defaultProps.showTooltip.call(Latency, Latency.props.data[index]);
+        }
+        if (ProcessTime && ProcessTime.props.data[index] !== undefined && self.state.showMetrics) {
+          TimeSeriesChart.defaultProps.showTooltip.call(ProcessTime, ProcessTime.props.data[index]);
+        }
+        if (ExecuteTime && ExecuteTime.props.data[index] !== undefined && self.state.showMetrics) {
+          TimeSeriesChart.defaultProps.showTooltip.call(ExecuteTime, ExecuteTime.props.data[index]);
+        }
+        if (Queue && Queue.props.data[index] !== undefined && self.state.showMetrics) {
+          TimeSeriesChart.defaultProps.showTooltip.call(Queue, Queue.props.data[index]);
+        }
+        if (KafkaLagOffset && KafkaLagOffset.props.data[index] !== undefined && self.state.showMetrics) {
+          TimeSeriesChart.defaultProps.showTooltip.call(KafkaLagOffset, KafkaLagOffset.props.data[index]);
+        }
+      } else if(graphHeight !== undefined){
+        if (_inputOutput && _inputOutput.props.data[index] !== undefined && self.state.showMetrics) {
+          TimeSeriesChart.defaultProps.showTooltip.call(_inputOutput, _inputOutput.props.data[index]);
+        }
+        if (_ackedTuples && _ackedTuples.props.data[index] !== undefined && self.state.showMetrics) {
+          TimeSeriesChart.defaultProps.showTooltip.call(_ackedTuples, _ackedTuples.props.data[index]);
+        }
+        if (_FailedTuples && _FailedTuples.props.data[index] !== undefined && self.state.showMetrics) {
+          TimeSeriesChart.defaultProps.showTooltip.call(_FailedTuples, _FailedTuples.props.data[index]);
+        }
+        if (_Latency && _Latency.props.data[index] !== undefined && self.state.showMetrics) {
+          TimeSeriesChart.defaultProps.showTooltip.call(_Latency, _Latency.props.data[index]);
+        }
+        if (_ProcessTime && _ProcessTime.props.data[index] !== undefined && self.state.showMetrics) {
+          TimeSeriesChart.defaultProps.showTooltip.call(_ProcessTime, _ProcessTime.props.data[index]);
+        }
+        if (_ExecuteTime && _ExecuteTime.props.data[index] !== undefined && self.state.showMetrics) {
+          TimeSeriesChart.defaultProps.showTooltip.call(_ExecuteTime, _ExecuteTime.props.data[index]);
+        }
+        if (_Queue && _Queue.props.data[index] !== undefined && self.state.showMetrics) {
+          TimeSeriesChart.defaultProps.showTooltip.call(_Queue, _Queue.props.data[index]);
+        }
+        if (_KafkaLagOffset && _KafkaLagOffset.props.data[index] !== undefined && self.state.showMetrics) {
+          TimeSeriesChart.defaultProps.showTooltip.call(_KafkaLagOffset, _KafkaLagOffset.props.data[index]);
+        }
       }
     }} hideTooltip={function() {
-      const {inputOutput, ackedTuples, FailedTuples, Latency, ProcessTime, ExecuteTime, Queue, KafkaLagOffset} = self.refs;
+      const {inputOutput, ackedTuples, FailedTuples, Latency, ProcessTime, ExecuteTime, Queue, KafkaLagOffset,
+        _inputOutput, _ackedTuples, _FailedTuples, _Latency, _ProcessTime, _Queue, _ExecuteTime, _KafkaLagOffset} = self.refs;
       if (inputOutput) {
         TimeSeriesChart.defaultProps.hideTooltip.call(inputOutput);
       }
@@ -123,12 +160,37 @@ import moment from 'moment';
       if (KafkaLagOffset){
         TimeSeriesChart.defaultProps.hideTooltip.call(KafkaLagOffset);
       }
+      //tooltips for graphs in Modal
+      if (_inputOutput) {
+        TimeSeriesChart.defaultProps.hideTooltip.call(_inputOutput);
+      }
+      if (_ackedTuples) {
+        TimeSeriesChart.defaultProps.hideTooltip.call(_ackedTuples);
+      }
+      if (_FailedTuples) {
+        TimeSeriesChart.defaultProps.hideTooltip.call(_FailedTuples);
+      }
+      if (_Latency) {
+        TimeSeriesChart.defaultProps.hideTooltip.call(_Latency);
+      }
+      if (_ProcessTime) {
+        TimeSeriesChart.defaultProps.hideTooltip.call(_ProcessTime);
+      }
+      if (_ExecuteTime) {
+        TimeSeriesChart.defaultProps.hideTooltip.call(_ExecuteTime);
+      }
+      if (_Queue) {
+        TimeSeriesChart.defaultProps.hideTooltip.call(_Queue);
+      }
+      if (_KafkaLagOffset){
+        TimeSeriesChart.defaultProps.hideTooltip.call(_KafkaLagOffset);
+      }
     }} onBrushEnd={function() {
       if (!this.brush.empty()) {
         const newChartXRange = this.brush.extent();
         self.props.datePickerCallback(moment(newChartXRange[0]), moment(newChartXRange[1]));
       }
-    }} />;
+    }} /></div>;
   }
   handleSelectComponent = (key, event) => {
     if (key) {
@@ -138,6 +200,10 @@ import moment from 'moment';
     } else {
       this.props.compSelectCallback('', null);
     }
+  }
+  showGraphInModal = (graphTitle, graphType, graphData, interpolation) => {
+    this.setState({graphType, graphTitle, graphData, interpolation});
+    this.graphModalRef.show();
   }
   render() {
     const {
@@ -205,6 +271,7 @@ import moment from 'moment';
       processedTime,
       kafkaLagOffset
     } = timeSeriesMetrics;
+
     for(const key in outputRecords) {
       inputOutputData.push({
         date: new Date(parseInt(key)),
@@ -246,6 +313,18 @@ import moment from 'moment';
         });
       }
     }
+
+    const locale = {
+      format: 'YYYY-MM-DD',
+      separator: ' - ',
+      applyLabel: 'OK',
+      cancelLabel: 'Cancel',
+      weekLabel: 'W',
+      customRangeLabel: 'Custom Range',
+      daysOfWeek: moment.weekdaysMin(),
+      monthNames: moment.monthsShort(),
+      firstDay: moment.localeData().firstDayOfWeek()
+    };
 
     const selectedComponentId = viewModeData.selectedComponentId;
     let selectedComponent = selectedComponentId !== '' ? components.find((c)=>{return c.nodeId === parseInt(selectedComponentId);}) : {};
@@ -399,7 +478,7 @@ import moment from 'moment';
       content.push(
         <div className="col-md-3" key={33}>
           <div className="topology-foot-graphs">
-            <div style={{textAlign: "left", marginLeft: '10px'}}>{selectedComponent.parentType === 'SOURCE' ? 'Complete Latency' : 'Latency'}</div>
+            <div style={{textAlign: "left", marginLeft: '10px', cursor:'pointer'}} onClick={this.showGraphInModal.bind(this, 'Latency', '_Latency', completeLatency, 'step-before')}>{selectedComponent.parentType === 'SOURCE' ? 'Complete Latency' : 'Latency'}</div>
             <div style={{
               height: '50px',
               textAlign: 'center'
@@ -413,7 +492,7 @@ import moment from 'moment';
         content.push(
           <div className="col-md-3" key={34}>
             <div className="topology-foot-graphs">
-              <div style={{textAlign: "left", marginLeft: '10px'}}>Kafka Offset Lag</div>
+              <div style={{textAlign: "left", marginLeft: '10px', cursor:'pointer'}} onClick={this.showGraphInModal.bind(this, 'Kafka Offset Lag', '_KafkaLagOffset', kafkaLagOffsetData, 'step-before')}>Kafka Offset Lag</div>
               <div style={{
                 height: '50px',
                 textAlign: 'center'
@@ -439,7 +518,7 @@ import moment from 'moment';
           [<div className="row" key={1}>
             <div className="col-md-3">
               <div className="topology-foot-graphs">
-                <div style={{textAlign: "left", marginLeft: '10px'}}>Input/Output</div>
+                <div style={{textAlign: "left", marginLeft: '10px', cursor:'pointer'}} onClick={this.showGraphInModal.bind(this, 'Input/Output', '_inputOutput', inputOutputData, 'bundle')}>Input/Output</div>
                 <div style={{
                   height: '50px',
                   textAlign: 'center'
@@ -450,7 +529,7 @@ import moment from 'moment';
             </div>
             <div className="col-md-3">
               <div className="topology-foot-graphs">
-                <div style={{textAlign: "left", marginLeft: '10px'}}>Acked Tuples</div>
+                <div style={{textAlign: "left", marginLeft: '10px', cursor:'pointer'}} onClick={this.showGraphInModal.bind(this, 'Acked Tuples', '_ackedTuples', ackedData, 'step-before')}>Acked Tuples</div>
                 <div style={{
                   height: '50px',
                   textAlign: 'center'
@@ -461,7 +540,7 @@ import moment from 'moment';
             </div>
             <div className="col-md-3">
               <div className="topology-foot-graphs">
-                <div style={{textAlign: "left", marginLeft: '10px'}}>Failed Tuples</div>
+                <div style={{textAlign: "left", marginLeft: '10px', cursor:'pointer'}} onClick={this.showGraphInModal.bind(this, 'Failed Tuples', '_FailedTuples', failedData, 'bundle')}>Failed Tuples</div>
                 <div style={{
                   height: '50px',
                   textAlign: 'center'
@@ -472,7 +551,7 @@ import moment from 'moment';
             </div>
             <div className="col-md-3">
               <div className="topology-foot-graphs">
-                <div style={{textAlign: "left", marginLeft: '10px'}}>Queue</div>
+                <div style={{textAlign: "left", marginLeft: '10px', cursor:'pointer'}} onClick={this.showGraphInModal.bind(this, 'Queue', '_Queue', queueData, 'step-before')}>Queue</div>
                 <div style={{
                   height: '50px',
                   textAlign: 'center'
@@ -490,7 +569,7 @@ import moment from 'moment';
             :
             [ <div className="col-md-3" key={2.1}>
                 <div className="topology-foot-graphs">
-                  <div style={{textAlign: "left", marginLeft: '10px'}}>Process Latency</div>
+                  <div style={{textAlign: "left", marginLeft: '10px', cursor:'pointer'}} onClick={this.showGraphInModal.bind(this, 'Process Latency', '_ProcessTime', processTimeData, 'step-before')}>Process Latency</div>
                   <div style={{
                     height: '50px',
                     textAlign: 'center'
@@ -502,7 +581,7 @@ import moment from 'moment';
               <div className="col-md-3" key={2.2}>
                 <div className="topology-foot-graphs">
                   <div className="topology-foot-graphs">
-                  <div style={{textAlign: "left", marginLeft: '10px'}}>Execute Latency</div>
+                  <div style={{textAlign: "left", marginLeft: '10px', cursor:'pointer'}} onClick={this.showGraphInModal.bind(this, 'Execute Latency', '_ExecuteTime', executeTimeData, 'step-before')}>Execute Latency</div>
                   <div style={{
                     height: '50px',
                     textAlign: 'center'
@@ -516,6 +595,27 @@ import moment from 'moment';
           </div>]
           : null}
         </Panel>
+        <Modal
+          dialogClassName="modal-xl"
+          ref={(ref) => this.graphModalRef = ref}
+          data-title={this.state.graphTitle}
+          hideOkBtn={true}
+        >
+          <div className="component-graph-modal-container">
+            <div className="pull-right" style={{marginLeft: '15px',marginBottom: '15px'}}>
+              <DateTimePickerDropdown
+                dropdownId="log-search-datepicker-dropdown"
+                startDate={this.props.startDate}
+                endDate={this.props.endDate}
+                locale={locale}
+                isDisabled={false}
+                datePickerCallback={this.props.datePickerCallback} />
+            </div>
+            <div>
+            {this.getGraph(this.state.graphType, this.state.graphData, this.state.interpolation, 400)}
+            </div>
+          </div>
+        </Modal>
       </div>
     );
   }

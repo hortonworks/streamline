@@ -252,7 +252,7 @@ TimeSeriesChart.defaultProps = {
   initTooltip() {
     const self = this;
     this.tooltip = d3.select('body'). //this.svg.append('foreignobject')
-    append('div').style("position", "absolute").classed('graph-tip', true).style({"z-index": "10", visibility: 'hidden', "pointer-events": 'none'});
+    append('div').style("position", "absolute").classed('graph-tip', true).style({"z-index": "1070", visibility: 'hidden', "pointer-events": 'none'});
 
     this.tipcontainer = this.svg.append('g').classed('tip-g', true).attr("transform", "translate(" + 0 + "," + 0 + ")");
 

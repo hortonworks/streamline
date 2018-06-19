@@ -1406,19 +1406,12 @@ export default class TopologyGraphComponent extends Component {
     this.edges = data.edges;
     this.metaInfo = data.metaInfo;
     this.linkShuffleOptions = data.linkShuffleOptions;
-    this.graphTransforms = this.props.viewMode
-      ? {
-        dragCoords: [
-          0, 0
-        ],
-        zoomScale: 0.8
-      }
-      : data.metaInfo.graphTransforms || {
-        dragCoords: [
-          0, 0
-        ],
-        zoomScale: 0.8
-      };
+    this.graphTransforms = data.metaInfo.graphTransforms || {
+      dragCoords: [
+        0, 0
+      ],
+      zoomScale: 0.8
+    };
     this.getModalScope = this.props.getModalScope;
     this.setModalContent = this.props.setModalContent;
     this.getEdgeConfigModal = this.props.getEdgeConfigModal;
