@@ -5,7 +5,7 @@ import com.hortonworks.streamline.streams.rule.UDF;
 public class Exists implements UDF<Integer, Long> {
     @Override
     public Integer evaluate(Long input) {
-        if (input == null) {
+        if (input == null || input == 0) {
             return 0;
         }
         return 1;
