@@ -393,7 +393,7 @@ label {
 
 .source-modal-form {
   margin-left: 10px;
-  width: 865px;
+  width: 300px;
   position: absolute;
   top: 0;
   padding-top: 5px !important;
@@ -401,7 +401,7 @@ label {
 
 .processor-modal-form {
   margin-left: 308px;
-  width: 500px;
+  width: 300px;
   top: 0;
   position: absolute;
   padding-top: 5px !important;
@@ -448,7 +448,7 @@ label {
 .sink-modal-form {
   margin-left: 308px;
   /*margin-right: 10px;*/
-  width: 866px;
+  width: 294px;
   top: 0;
   position: absolute;
   padding-top: 5px !important;

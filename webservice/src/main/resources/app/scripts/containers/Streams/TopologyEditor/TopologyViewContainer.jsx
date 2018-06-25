@@ -743,9 +743,11 @@ class TopologyViewContainer extends Component {
             </div>
 }
         </div>
-        <Modal ref="NodeModal" dialogClassName={"modal-xl"/*this.viewMode && (nodeType.toLowerCase() === 'join' || nodeType.toLowerCase() === 'window')
+        <Modal ref="NodeModal" bsSize={this.processorNode
+          ? "large"
+          : null} dialogClassName={this.viewMode && (nodeType.toLowerCase() === 'join' || nodeType.toLowerCase() === 'window')
           ? "modal-xl"
-          : "modal-fixed-height"*/} data-title={this.modalTitle} data-resolve={this.handleSaveNodeModal.bind(this)}>
+          : "modal-fixed-height"} data-title={this.modalTitle} data-resolve={this.handleSaveNodeModal.bind(this)}>
           {this.modalContent()}
         </Modal>
         {this.state.isAppRunning && this.graphData.nodes.length > 0 && this.versionName.toLowerCase() == 'current' && this.state.availableTimeSeriesDb ?

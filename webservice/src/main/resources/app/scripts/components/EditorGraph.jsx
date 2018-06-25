@@ -100,7 +100,7 @@ class EditorGraph extends Component {
 
   render() {
     const actualHeight = (window.innerHeight - (this.props.viewMode
-      ? 175
+      ? 100
       : 100)) + 'px';
     const {
       versionsArr,
