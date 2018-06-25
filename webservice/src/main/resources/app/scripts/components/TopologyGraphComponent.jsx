@@ -809,7 +809,7 @@ export default class TopologyGraphComponent extends Component {
       internalFlags = thisGraph.internalFlags;
 
     // change every nodes y: value for viewMode
-    if (that.props.viewMode) {
+    /*if (that.props.viewMode) {
       let flag = true;
       thisGraph.nodes.map(x => {
         return x.y > 300
@@ -821,7 +821,7 @@ export default class TopologyGraphComponent extends Component {
           return x.y = (x.y / 3);
         });
       }
-    }
+    }*/
 
     thisGraph.paths = thisGraph.paths.data(thisGraph.edges, function(d) {
       return String(d.source.nodeId) + "+" + String(d.target.nodeId);

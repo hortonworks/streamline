@@ -1440,9 +1440,11 @@ class TopologyEditorContainer extends Component {
           <TopologyConfig ref="topologyConfig" topologyId={this.topologyId} versionId={this.versionId} data={mapTopologyConfig} topologyName={this.state.topologyName} uiConfigFields={this.topologyConfigData} testRunActivated={this.state.testRunActivated} topologyNodes={this.graphData.nodes}/>
         </Modal>
         {/* NodeModal for Development Mode for source*/}
-        <Modal ref="NodeModal" onKeyPress={this.handleKeyPress.bind(this)} dialogClassName={"modal-xl"/*nodeType.toLowerCase() === 'join' || nodeType.toLowerCase() === 'window' || nodeType.toLowerCase() === 'projection' || nodeType.toLowerCase() === 'rt-join'
+        <Modal ref="NodeModal" onKeyPress={this.handleKeyPress.bind(this)} bsSize={this.processorNode && nodeType.toLowerCase() !== 'join'
+          ? "large"
+          : null} dialogClassName={nodeType.toLowerCase() === 'join' || nodeType.toLowerCase() === 'window' || nodeType.toLowerCase() === 'projection' || nodeType.toLowerCase() === 'rt-join'
           ? "modal-xl"
-          : "modal-fixed-height"*/} btnOkDisabled={this.state.testRunActivated} data-title={<Editable ref="editableNodeName" inline={true}
+          : "modal-fixed-height"} btnOkDisabled={this.state.testRunActivated} data-title={<Editable ref="editableNodeName" inline={true}
         resolve={this.handleSaveNodeName.bind(this)}
         reject={this.handleRejectNodeName.bind(this)} enforceFocus={true}>
         <input defaultValue={this.modalTitle} onChange={this.handleNodeNameChange.bind(this)}/></Editable>} data-resolve={this.handleSaveNodeModal.bind(this)}>
@@ -1450,7 +1452,7 @@ class TopologyEditorContainer extends Component {
         </Modal>
 
         {/* TestNodeModel for TestRun Mode for source */}
-        <Modal ref="TestSourceNodeModal" onKeyPress={this.handleKeyPress.bind(this)} dialogClassName="modal-fixed-height modal-xl" data-title={"Test Case"}
+        <Modal ref="TestSourceNodeModal" onKeyPress={this.handleKeyPress.bind(this)} dialogClassName="modal-fixed-height modal-lg" data-title={"Test Case"}
           data-resolve={this.handleSaveTestSourceNodeModal.bind(this)}>
           <TestSourceNodeModal ref="TestSourceNodeContentRef" topologyId={this.topologyId} versionId={this.versionId} nodeData={nodeData} testCaseObj={selectedTestObj || {}}  checkConfigureTestCase={this.checkConfigureTestCase} nodeListArr={nodeListArr} updateTestCaseList={this.updateTestCaseList}/>
         </Modal>
