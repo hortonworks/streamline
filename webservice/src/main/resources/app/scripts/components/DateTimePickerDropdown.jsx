@@ -30,7 +30,7 @@ class DateTimePickerDropdown extends Component {
       showDateRangeSection: false,
       startDate: props.startDate,
       endDate: props.endDate,
-      activeDate : 'Last 30 Minutes',
+      activeDate : props.activeRangeLabel ? props.activeRangeLabel : 'Last 30 Minutes',
       rangesInHoursMins: {
         'Last 5 Minutes':() => {return [
           moment().subtract(5, 'minutes'),
@@ -153,6 +153,19 @@ class DateTimePickerDropdown extends Component {
       }
     };
   }
+  componentWillReceiveProps(props) {
+    let obj = {};
+    if(props.startDate != this.state.startDate) {
+      obj.startDate = props.startDate;
+    }
+    if(props.endDate != this.state.endDate){
+      obj.endDate = props.endDate;
+    }
+    if(props.activeRangeLabel != null && props.activeRangeLabel != this.state.activeDate) {
+      obj.activeDate = props.activeRangeLabel;
+    }
+    this.setState(obj);
+  }
   showHideDateRangePicker = (isOpen, e, source) => {
     this.setState({showDateRangeSection: !this.state.showDateRangeSection});
   }
@@ -172,7 +185,7 @@ class DateTimePickerDropdown extends Component {
         startDate: currentRange[0], endDate: currentRange[1],
         activeDate : e.target.textContent
       }, () => {
-        this.props.datePickerCallback(this.state.startDate, this.state.endDate);
+        this.props.datePickerCallback(this.state.startDate, this.state.endDate, this.state.activeDate);
         this.setState({showDateRangeSection: !this.state.showDateRangeSection});
       });
     }

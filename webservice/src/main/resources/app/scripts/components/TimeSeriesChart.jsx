@@ -28,8 +28,8 @@ export default class TimeSeriesChart extends Component {
   componentDidMount() {
     this.initGraph();
     this.drawChart();
-    // this.props.drawXAxis.call(this);
-    // this.props.drawYAxis.call(this);
+    this.props.drawXAxis.call(this);
+    this.props.drawYAxis.call(this);
     this.props.drawBrush.call(this);
 
     this.props.initTooltip.call(this);
@@ -52,7 +52,10 @@ export default class TimeSeriesChart extends Component {
     this.width = this.props.width || this.refs.svg.parentElement.clientWidth || this.width || 0;
     this.height = this.props.height || this.refs.svg.parentElement.clientHeight || this.width || 0;
 
-    //this.svg.attr("viewBox", "-46 -6 " + (this.width + 82) + " " + (this.height + 27)).attr("preserveAspectRatio", "xMidYMid");
+    const widthViewBoxBuffer = this.width/10;
+    const heightViewBoxBuffer = this.height/5.33;
+
+    this.svg.attr("viewBox", `-${widthViewBoxBuffer/3} -${heightViewBoxBuffer/2} ${this.width + widthViewBoxBuffer} ${this.height + heightViewBoxBuffer}`).attr("preserveAspectRatio", "xMidYMid");
 
     this.pathGrp.attr('width', this.width).attr('height', this.height);
 
@@ -221,6 +224,7 @@ TimeSeriesChart.defaultProps = {
       height = this.height;
 
     container['xAxisEl'] = container.insert("g", ":first-child").attr("class", "x axis").attr("transform", "translate(0," + this.height + ")").call(xAxis);
+    container['xAxisEl'].append('text').text(this.xAttr).attr("text-anchor","end").attr("x", 5).attr("transform", "rotate(-90)").style("letter-spacing", "0.2").style("font-size", "10px");
   },
   updateXAxis() {
     this.container.select(".x.axis").attr("transform", "translate(0," + this.height + ")");

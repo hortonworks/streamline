@@ -78,6 +78,7 @@ class TopologyViewContainer extends Component {
     fetchMetrics: true,
     startDate: moment().subtract(30, 'minutes'),
     endDate: moment(),
+    activeRangeLabel: null,
     viewModeData: {
       topologyMetrics: {},
       sourceMetrics: [],
@@ -467,11 +468,12 @@ class TopologyViewContainer extends Component {
   handleVersionChange(value) {
     this.fetchData(value);
   }
-  datePickerCallback = (startDate, endDate) => {
+  datePickerCallback = (startDate, endDate, activeRangeLabel) => {
     this.refs.metricsPanelRef.setState({loadingRecord: true});
     this.setState({
       startDate: startDate,
-      endDate: endDate
+      endDate: endDate,
+      activeRangeLabel: activeRangeLabel ? activeRangeLabel : null
     }, ()=>{
       this.fetchCatalogInfoAndMetrics(startDate.toDate().getTime(), endDate.toDate().getTime());
     });
