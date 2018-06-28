@@ -4511,3 +4511,6 @@ div.hint-tooltip{
   padding: 10px;
   height: 450px;
 }
+.topology-foot-graphs .tick > text {
+  font-size: 6px;
+}

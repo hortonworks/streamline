@@ -327,6 +327,7 @@ class TopologyViewMode extends Component {
               dropdownId="datepicker-dropdown"
               startDate={startDate}
               endDate={endDate}
+              activeRangeLabel={this.props.activeRangeLabel}
               locale={locale}
               isDisabled={!isAppRunning}
               datePickerCallback={this.props.datePickerCallback} />

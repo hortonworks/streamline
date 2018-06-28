@@ -42,7 +42,7 @@ import DateTimePickerDropdown from '../../../components/DateTimePickerDropdown';
       latency: [],
       processTimeData: [],
       loadingRecord: true,
-      graphHeight: 50,
+      graphHeight: 80,
       graphTitle: '',
       graphData: [],
       graphType: '',
@@ -74,10 +74,24 @@ import DateTimePickerDropdown from '../../../components/DateTimePickerDropdown';
           });
         })
       ]);
-    }} getXAxis={function(){
-      return d3.svg.axis().orient("bottom").tickFormat("");
-    }} getYAxis={function() {
-      return d3.svg.axis().orient("left").tickFormat("");
+    }}
+    getYAxis={function() {
+      return d3.svg.axis().scale(this.y).orient("left").tickSize(-this.width, 0, 0).tickFormat(function(y) {
+        var abs_y = Math.abs(y);
+        if (abs_y >= 1000000000000) {
+          return y / 1000000000000 + "T";
+        } else if (abs_y >= 1000000000) {
+          return y / 1000000000 + "B";
+        } else if (abs_y >= 1000000) {
+          return y / 1000000 + "M";
+        } else if (abs_y >= 1000) {
+          return y / 1000 + "K";
+        } else if (y % 1 != 0) {
+          return y.toFixed(1);
+        } else {
+          return y;
+        }
+      });
     }} showTooltip={function(d) {
       const index = this.props.data.indexOf(d);
       const {inputOutput, ackedTuples, FailedTuples, Latency, ProcessTime, Queue, ExecuteTime, KafkaLagOffset,
@@ -329,7 +343,7 @@ import DateTimePickerDropdown from '../../../components/DateTimePickerDropdown';
     const selectedComponentId = viewModeData.selectedComponentId;
     let selectedComponent = selectedComponentId !== '' ? components.find((c)=>{return c.nodeId === parseInt(selectedComponentId);}) : {};
     const loader = <img src="styles/img/start-loader.gif" alt="loading" style={{
-      width: "50px",
+      width: "80px",
       marginTop: "0px"
     }}/>;
     const topologyFooter = (
@@ -480,7 +494,7 @@ import DateTimePickerDropdown from '../../../components/DateTimePickerDropdown';
           <div className="topology-foot-graphs">
             <div style={{textAlign: "left", marginLeft: '10px', cursor:'pointer'}} onClick={this.showGraphInModal.bind(this, 'Latency', '_Latency', completeLatency, 'step-before')}>{selectedComponent.parentType === 'SOURCE' ? 'Complete Latency' : 'Latency'}</div>
             <div style={{
-              height: '50px',
+              height: '82px',
               textAlign: 'center'
             }}>
               {this.state.loadingRecord ? loader : this.getGraph('Latency', completeLatency, 'step-before')}
@@ -494,7 +508,7 @@ import DateTimePickerDropdown from '../../../components/DateTimePickerDropdown';
             <div className="topology-foot-graphs">
               <div style={{textAlign: "left", marginLeft: '10px', cursor:'pointer'}} onClick={this.showGraphInModal.bind(this, 'Kafka Offset Lag', '_KafkaLagOffset', kafkaLagOffsetData, 'step-before')}>Kafka Offset Lag</div>
               <div style={{
-                height: '50px',
+                height: '82px',
                 textAlign: 'center'
               }}>
                 {this.state.loadingRecord ? loader : this.getGraph('KafkaLagOffset', kafkaLagOffsetData, 'step-before')}
@@ -520,7 +534,7 @@ import DateTimePickerDropdown from '../../../components/DateTimePickerDropdown';
               <div className="topology-foot-graphs">
                 <div style={{textAlign: "left", marginLeft: '10px', cursor:'pointer'}} onClick={this.showGraphInModal.bind(this, 'Input/Output', '_inputOutput', inputOutputData, 'bundle')}>Input/Output</div>
                 <div style={{
-                  height: '50px',
+                  height: '82px',
                   textAlign: 'center'
                 }}>
                   {this.state.loadingRecord ? loader : this.getGraph('inputOutput', inputOutputData, 'bundle')}
@@ -531,7 +545,7 @@ import DateTimePickerDropdown from '../../../components/DateTimePickerDropdown';
               <div className="topology-foot-graphs">
                 <div style={{textAlign: "left", marginLeft: '10px', cursor:'pointer'}} onClick={this.showGraphInModal.bind(this, 'Acked Tuples', '_ackedTuples', ackedData, 'step-before')}>Acked Tuples</div>
                 <div style={{
-                  height: '50px',
+                  height: '82px',
                   textAlign: 'center'
                 }}>
                   {this.state.loadingRecord ? loader : this.getGraph('ackedTuples', ackedData, 'step-before')}
@@ -542,7 +556,7 @@ import DateTimePickerDropdown from '../../../components/DateTimePickerDropdown';
               <div className="topology-foot-graphs">
                 <div style={{textAlign: "left", marginLeft: '10px', cursor:'pointer'}} onClick={this.showGraphInModal.bind(this, 'Failed Tuples', '_FailedTuples', failedData, 'bundle')}>Failed Tuples</div>
                 <div style={{
-                  height: '50px',
+                  height: '82px',
                   textAlign: 'center'
                 }}>
                   {this.state.loadingRecord ? loader : this.getGraph('FailedTuples', failedData, 'bundle')}
@@ -553,7 +567,7 @@ import DateTimePickerDropdown from '../../../components/DateTimePickerDropdown';
               <div className="topology-foot-graphs">
                 <div style={{textAlign: "left", marginLeft: '10px', cursor:'pointer'}} onClick={this.showGraphInModal.bind(this, 'Queue', '_Queue', queueData, 'step-before')}>Queue</div>
                 <div style={{
-                  height: '50px',
+                  height: '82px',
                   textAlign: 'center'
                 }}>
                   {this.state.loadingRecord
@@ -571,7 +585,7 @@ import DateTimePickerDropdown from '../../../components/DateTimePickerDropdown';
                 <div className="topology-foot-graphs">
                   <div style={{textAlign: "left", marginLeft: '10px', cursor:'pointer'}} onClick={this.showGraphInModal.bind(this, 'Process Latency', '_ProcessTime', processTimeData, 'step-before')}>Process Latency</div>
                   <div style={{
-                    height: '50px',
+                    height: '82px',
                     textAlign: 'center'
                   }}>
                     {this.state.loadingRecord ? loader : this.getGraph('ProcessTime', processTimeData, 'step-before')}
@@ -583,7 +597,7 @@ import DateTimePickerDropdown from '../../../components/DateTimePickerDropdown';
                   <div className="topology-foot-graphs">
                   <div style={{textAlign: "left", marginLeft: '10px', cursor:'pointer'}} onClick={this.showGraphInModal.bind(this, 'Execute Latency', '_ExecuteTime', executeTimeData, 'step-before')}>Execute Latency</div>
                   <div style={{
-                    height: '50px',
+                    height: '82px',
                     textAlign: 'center'
                   }}>
                     {this.state.loadingRecord ? loader : this.getGraph('ExecuteTime', executeTimeData, 'step-before')}
@@ -607,6 +621,7 @@ import DateTimePickerDropdown from '../../../components/DateTimePickerDropdown';
                 dropdownId="log-search-datepicker-dropdown"
                 startDate={this.props.startDate}
                 endDate={this.props.endDate}
+                activeRangeLabel={this.props.activeRangeLabel}
                 locale={locale}
                 isDisabled={false}
                 datePickerCallback={this.props.datePickerCallback} />
