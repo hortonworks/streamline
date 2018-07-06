@@ -10,7 +10,6 @@
         <version>0.6.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>hortonworks.hdf.sam.custom.test.udf</groupId>
     <artifactId>custom-udf-microtest</artifactId>
     <packaging>jar</packaging>
 
