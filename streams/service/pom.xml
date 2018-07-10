@@ -137,7 +137,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>hortonworks.hdf.sam.custom.test.udf</groupId>
+                                    <groupId>com.hortonworks.streamline</groupId>
                                     <artifactId>custom-udf-microtest</artifactId>
                                     <classifier>jar-with-dependencies</classifier>
                                     <type>jar</type>
