@@ -84,7 +84,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>hortonworks.hdf.sam.custom.test.udf</groupId>
+            <groupId>com.hortonworks.streamline</groupId>
             <artifactId>custom-udf-microtest</artifactId>
             <version>${project.parent.version}</version>
             <type>jar</type>
