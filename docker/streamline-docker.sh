@@ -139,8 +139,7 @@ function buildStreamline {
             echo "Building Streamline distribution from the master branch."
             pushd -- "../" &> ${std_output}
             mvn clean install -DskipTests -Pdist
-            popd &> ${std_output}
-            mvn clean package -Pdocker
+            cp streamline-dist/target/hortonworks-streamline-${sversion}.tar.gz docker/images/streamline/
         else
             echo "Streamline image ${streamline_image}:${sversion} already available, build skipped" \
                 "If you want to re-build, remove the existing image and build again"
@@ -164,31 +163,31 @@ function buildDocker {
     docker build -t ${minimal_ubuntu_image} images/minimal-ubuntu
 
     echo "Building Schema Registry Image"
-    buildSchemaRegistry
+    #buildSchemaRegistry
 
     echo "Building Streamline Image"
     buildStreamline
 
-    echo "Building Apache Zookeeper and Kafka Image"
-    docker build -t ${kafka_image} images/kafka
+    # echo "Building Apache Zookeeper and Kafka Image"
+    # docker build -t ${kafka_image} images/kafka
 
-    echo "Building Apache Storm Image"
-    docker build -t ${storm_image} images/storm
+    # echo "Building Apache Storm Image"
+    # docker build -t ${storm_image} images/storm
 
-    echo "building mysql image"
-    docker build -t ${mysql_image} images/mysql
+    # echo "building mysql image"
+    # docker build -t ${mysql_image} images/mysql
 
-    echo "Building Oracle image"
-    docker build -t ${oracle_image} images/oracle
+    # echo "Building Oracle image"
+    # docker build -t ${oracle_image} images/oracle
 
-    echo "Pulling official ${postgres_image} image from docker store"
-    docker pull ${postgres_image}
+    # echo "Pulling official ${postgres_image} image from docker store"
+    # docker pull ${postgres_image}
 
-    echo "Building Druid Image"
-    docker build -t ${druid_image} images/druid
+    # echo "Building Druid Image"
+    # docker build -t ${druid_image} images/druid
 
-    echo "Building Superset Image"
-    docker build -t ${superset_image} images/superset
+    # echo "Building Superset Image"
+    # docker build -t ${superset_image} images/superset
 }
 
 function startDocker {
