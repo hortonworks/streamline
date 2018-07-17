@@ -349,7 +349,8 @@ export default class ProjectionProcessorContainer extends Component {
     return fields.map((field, i) => {
       let obj = {
         name: field.name || field.outputFieldName ,
-        type: field.type || this.getReturnType(field.functionName, ProcessorUtils.getKeyList(field.args[0],fieldList), i, fields)
+        type: field.type || this.getReturnType(field.functionName, ProcessorUtils.getKeyList(field.args[0],fieldList), i, fields),
+        optional: field.optional || false
       };
 
       if (field.type === 'NESTED' && field.fields) {

@@ -400,7 +400,7 @@ const generateOutputStreamsArr = function(fieldList,_level,alias){
       let obj = {
         name: !!alias ? field.alias : field.name ,
         type: field.type ,
-        optional : false
+        optional : field.optional || false
       };
 
       if (field.type === 'NESTED' && field.fields) {

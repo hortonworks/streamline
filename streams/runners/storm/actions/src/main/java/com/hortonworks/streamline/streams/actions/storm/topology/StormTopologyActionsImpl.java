@@ -73,6 +73,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -316,6 +317,7 @@ public class StormTopologyActionsImpl implements TopologyActions {
         commands.addAll(getNimbusConf());
         commands.addAll(getForceNonSecuredClusterConf());
         commands.addAll(getTempWorkerArtifactArgs());
+        commands.addAll(getNoMetricConsumerArgs());
         commands.add("org.apache.storm.flux.Flux");
         commands.add("--local");
 
@@ -572,6 +574,17 @@ public class StormTopologyActionsImpl implements TopologyActions {
         Path tempArtifacts = Files.createTempDirectory("worker-artifacts-");
         args.add("-c");
         args.add("storm.workers.artifacts.dir=" + tempArtifacts.toFile().getAbsolutePath());
+
+        return args;
+    }
+
+    private List<String> getNoMetricConsumerArgs() {
+        List<String> args = new ArrayList<>();
+
+        args.add("-c");
+        args.add("topology.metrics.consumer.register=[]");
+        args.add("-c");
+        args.add("storm.cluster.metrics.consumer.register=[]");
 
         return args;
     }

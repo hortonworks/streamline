@@ -553,7 +553,7 @@ export default class WindowingAggregateNodeForm extends Component {
       let obj = {
         name: field.name || field.outputFieldName ,
         type: field.type || this.getReturnType(field.functionName, ProcessorUtils.getKeyList(field.args,keysList)),
-        optional : false
+        optional : field.optional || false
       };
 
       if (field.type === 'NESTED' && field.fields) {
