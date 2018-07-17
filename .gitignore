@@ -123,5 +123,6 @@ crashlytics-build.properties
 node_modules
 public
 logs
+zz
 *.tar.gz
 *.tgz
