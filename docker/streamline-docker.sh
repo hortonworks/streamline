@@ -42,7 +42,7 @@ broker_nodes=${broker_nodes:-1}
 streamline_nodes=${streamline_nodes:-1}
 schema_registry_download_url='https://github.com/hortonworks/registry/releases/download/v0.5.1/hortonworks-registry-0.5.1.tar.gz'
 streamline_download_url=''
-flink_download_url='http://mirror.olnevhost.net/pub/apache/flink/flink-1.5.0/flink-1.5.0-bin-scala_2.11.tgz'
+flink_download_url='http://mirror.olnevhost.net/pub/apache/flink/flink-1.5.1/flink-1.5.1-bin-scala_2.11.tgz'
 storm_download_url='http://www-us.apache.org/dist/storm/apache-storm-1.2.2/apache-storm-1.2.2.tar.gz'
 db_type=""
 sasl_secrets_dir=${sasl_secrets_dir:-"$(pwd)/secrets"}
@@ -140,6 +140,8 @@ function buildStreamline {
             pushd -- "../" &> ${std_output}
             mvn clean install -DskipTests -Pdist
             cp streamline-dist/target/hortonworks-streamline-${sversion}.tar.gz docker/images/streamline/
+            popd
+            docker build -t ${streamline_image}:${sversion} images/streamline --build-arg "STREAMLINE_VERSION=${sversion}" --build-arg "FLINK_FILE=${flinkDownload}"
         else
             echo "Streamline image ${streamline_image}:${sversion} already available, build skipped" \
                 "If you want to re-build, remove the existing image and build again"
@@ -150,7 +152,7 @@ function buildStreamline {
             wget -q --show-progress "${streamline_download_url}"
 	          filename=$(echo ${streamline_download_url} | cut -d '/' -f9)
             mv ${filename} images/streamline/
-            docker build -t ${streamline_image}:${sversion} images/streamline --build-arg "STREALINE_VERSION=${sversion}" --build-arg "FLINK_FILE=${flinkDownload}"
+            docker build -t ${streamline_image}:${sversion} images/streamline --build-arg "STREAMLINE_VERSION=${sversion}" --build-arg "FLINK_FILE=${flinkDownload}"
         else
             echo "Streamline image ${streamline_image}:${sversion} already available, build skipped" \
                 "If you want to re-build, remove the existing image and build again"
@@ -163,19 +165,19 @@ function buildDocker {
     docker build -t ${minimal_ubuntu_image} images/minimal-ubuntu
 
     echo "Building Schema Registry Image"
-    #buildSchemaRegistry
+    buildSchemaRegistry
 
     echo "Building Streamline Image"
     buildStreamline
 
-    # echo "Building Apache Zookeeper and Kafka Image"
-    # docker build -t ${kafka_image} images/kafka
+    echo "Building Apache Zookeeper and Kafka Image"
+    docker build -t ${kafka_image} images/kafka
 
-    # echo "Building Apache Storm Image"
-    # docker build -t ${storm_image} images/storm
+    echo "Building Apache Storm Image"
+    docker build -t ${storm_image} images/storm
 
-    # echo "building mysql image"
-    # docker build -t ${mysql_image} images/mysql
+    echo "building mysql image"
+    docker build -t ${mysql_image} images/mysql
 
     # echo "Building Oracle image"
     # docker build -t ${oracle_image} images/oracle
@@ -765,8 +767,8 @@ function startSchemaRegistry {
         -e DB_URL=${url} \
         -e DB_USER=${user} \
         -e DB_PASSWORD=${pwd} \
-        -p 9010-9020:9090 \
-        -p 9030-9040:9091 \
+        -p 9090:9090 \
+        -p 9091:9091 \
         --network ${network_name} \
         --add-host="${kafka_container_name}0":${kafka_ip} \
         -v ${sasl_secrets_dir}:/etc/registry/secrets \
@@ -846,8 +848,8 @@ function startStreamline {
         -e DB_URL=${url} \
         -e DB_USER=${user} \
         -e DB_PASSWORD=${pwd} \
-        -p 8010-8020:8080 \
-        -p 8030-8040:8081 \
+        -p 8080:8080 \
+        -p 8081:8081 \
         --network ${network_name} \
         --add-host="${kafka_container_name}0":${kafka_ip} \
         --add-host=${storm_nimbus_container_name}:${storm_nimbus_ip} \

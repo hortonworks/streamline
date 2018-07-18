@@ -21,13 +21,13 @@ FROM minimal-ubuntu:0.1
 ARG STREAMLINE_VERSION
 
 ADD hortonworks-streamline-"${STREAMLINE_VERSION}".tar.gz /opt/
-ADD flink-1.5.0-bin-scala_2.11.tgz /opt/
+ADD flink-1.5.1-bin-scala_2.11.tgz /opt/
 ADD apache-storm-1.2.2.tar.gz /opt/
 
 
 RUN apt update -y \
     && ln -s /opt/hortonworks-streamline-"${STREAMLINE_VERSION}" /opt/streamline \
-    && ln -sf /opt/flink-1.5.0-bin-scala_2.11 /opt/flink \
+    && ln -sf /opt/flink-1.5.1-bin-scala_2.11 /opt/flink \
     && ln -sf /opt/apache-storm-1.2.2 /opt/storm \
     && mkdir -p /opt/streamline/logs
 
