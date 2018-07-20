@@ -422,7 +422,7 @@ class TopologyListingContainer extends Component {
       let stateObj = {};
       let resultEntities = Utils.sortArray(results[2].entities.slice(), 'timestamp', false);
       if (sourceLen !== 0) {
-        if (resultEntities.length === 0 && environmentLen !== 0) {
+        if (resultEntities.length === 0 && environmentLen > 1) {
           environmentFlag = true;
         }
       } else {
