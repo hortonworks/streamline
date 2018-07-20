@@ -314,7 +314,7 @@ class EnvironmentContainer extends Component {
       // call for get All nameSpaces
       const resultSet = results[1].entities;
       const mappingList = this.customMapping(resultSet);
-      if (resultSet.length === 0 && serviceLen !== 0) {
+      if (resultSet.length === 1 && serviceLen !== 0) {
         serviceFlag = true;
       }
 
@@ -617,6 +617,9 @@ class EnvironmentContainer extends Component {
       color: "#006ea0"
     }}>&nbsp;{sorted.text}</span>
     </span>;
+    let customEntities = entities.filter((env)=> {
+      return !env.namespace.internal;
+    });
     return (
       <BaseContainer ref="BaseContainer" routes={routes} headerContent={this.getHeaderContent()}>
         {hasEditCapability(accessCapabilities.ENVIRONMENT) ?
@@ -660,23 +663,23 @@ class EnvironmentContainer extends Component {
                 </div>
               {searchLoader
               ? <CommonLoaderSign imgName={"environments"}/>
-              : !searchLoader && entities.length === 0 && filterValue
+              : !searchLoader && customEntities.length === 0 && filterValue
                 ? <NoData imgName={"applications"} searchVal={filterValue}/>
-                : entities.length !== 0
+                : customEntities.length !== 0
                   ? splitData[pageIndex].map((nameSpaceList, i) => {
                     if(!nameSpaceList.namespace.internal) {
                       return <EnvironmentCards key={i} nameSpaceList={nameSpaceList} nameSpaceClicked={this.nameSpaceClicked} clusterDetails={clusterDetails} refIdArr={refIdArr} loader={loader} allACL={allACL}/>;
                     }
                   })
-                  : !this.initialFetch && entities.length === 0
+                  : !this.initialFetch && customEntities.length === 0
                     ? <NoData imgName={"environments"} serviceFlag={checkServices}/>
                     : ''
               }
             </div>
           }
         </div>
-        {(entities.length > pageSize)
-          ? <Paginate len={entities.length} splitData={splitData} pagesize={pageSize} pagePosition={this.pagePosition}/>
+        {(customEntities.length > pageSize)
+          ? <Paginate len={customEntities.length} splitData={splitData} pagesize={pageSize} pagePosition={this.pagePosition}/>
           : ''
         }
         <Modal ref={(ref) => this.addEvtModel = ref} data-title={modelTitle} onKeyPress={this.handleKeyPress} data-resolve={this.addEvtModelSaveClicked} data-reject={this.addEvtModelCancelClicked}>
