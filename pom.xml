@@ -12,7 +12,7 @@
     <description>
       Develop and deploy Streaming Analytics applications visually with bindings for streaming engine and multiple source/sinks, rich set of streaming operators and operational lifecycle management. Streaming Analytics Manager makes it easy to develop, monitor streaming applications and also provides analytics of data thats being processed by streaming application.
     </description>
-    <url>http://github.com/hortonworks/registry</url>
+    <url>http://github.com/hortonworks/streamline</url>
 
     <licenses>
         <license>
@@ -164,7 +164,7 @@
         <phoenix.version>4.7.0.2.5.0.0-1245</phoenix.version>
         <redis.lettuce.version>3.4.2.Final</redis.lettuce.version>
         <scala.version>2.10.5</scala.version>
-        <schema-registry.version>0.5.2</schema-registry.version>
+        <schema-registry.version>0.5.3</schema-registry.version>
         <slf4j.version>1.7.12</slf4j.version>
         <storm.version>1.2.2</storm.version>
         <woodstox-core-asl.version>4.4.1</woodstox-core-asl.version>
@@ -487,6 +487,10 @@
                     <exclusion>
                         <groupId>org.eclipse.jetty.aggregate</groupId>
                         <artifactId>jetty-all</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.servlet</groupId>
+                        <artifactId>jsp-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
