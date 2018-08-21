@@ -279,7 +279,8 @@ export default class TopologyConfigContainer extends Component {
     let dataObj = {
       name: topologyName,
       config: JSON.stringify(data),
-      namespaceId: this.namespaceId
+      namespaceId: this.namespaceId,
+      projectId: this.props.projectId
     };
     return TopologyREST.putTopology(topologyId, versionId, {body: JSON.stringify(dataObj)});
   }

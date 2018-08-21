@@ -22,11 +22,11 @@ import {
 } from '../utils/Overrides';
 
 const TopologyREST = {
-  getAllTopology(sort, options) {
+  getAllTopology(projectId, sort, options) {
     options = options || {};
     options.method = options.method || 'GET';
     options.credentials = 'same-origin';
-    return fetch(baseUrl + 'topologies/dashboard?sort=' + sort + '&latencyTopN=3', options)
+    return fetch(baseUrl + 'projects/'+projectId+'/topologies/dashboard?sort=' + sort + '&latencyTopN=3', options)
       .then((response) => {
         return response.json();
       });
@@ -53,7 +53,7 @@ const TopologyREST = {
         return response.json();
       });
   },
-  postTopology(options) {
+  postTopology(projectId, options) {
     options = options || {};
     options.method = options.method || 'POST';
     options.headers = options.headers || {
@@ -61,7 +61,7 @@ const TopologyREST = {
       'Accept': 'application/json'
     };
     options.credentials = 'same-origin';
-    return fetch(baseUrl + 'topologies', options)
+    return fetch(baseUrl + 'projects/'+projectId+'/topologies', options)
       .then((response) => {
         return response.json();
       });

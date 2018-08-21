@@ -119,10 +119,10 @@ class TopologyItems extends Component {
     }
   }
   streamBoxClick = (id, event) => {
-    const {allACL} = this.props;
+    const {allACL, projectId} = this.props;
     // check whether the element of streamBox is click..
     if ((event.target.nodeName !== 'BUTTON' && event.target.nodeName !== 'I' && event.target.nodeName !== 'A')) {
-      this.context.router.push('applications/' + id + '/view');
+      this.context.router.push('projects/'+projectId+'/applications/' + id + '/view');
     } else if (event.target.title === "Edit") {
       if(app_state.streamline_config.secureMode){
         let permissions = true;
@@ -135,11 +135,11 @@ class TopologyItems extends Component {
           permissions = hasEditCapability("Applications");
         }
         if(permissions){
-          this.context.router.push('applications/' + id + '/edit');
+          this.context.router.push('projects/'+projectId+'/applications/' + id + '/edit');
         }
 
       } else {
-        this.context.router.push('applications/' + id + '/edit');
+        this.context.router.push('projects/'+projectId+'/applications/' + id + '/edit');
       }
     }
   }
@@ -397,11 +397,12 @@ class TopologyListingContainer extends Component {
 
   fetchData() {
     const sortKey = this.state.sorted.key;
+    const projectId = this.props.params.projectId;
     let promiseArr = [
       EnvironmentREST.getAllNameSpaces(),
       TopologyREST.getSourceComponent(),
-      TopologyREST.getAllTopology(sortKey),
-      ProjectREST.getProject(this.props.params.projectId)
+      TopologyREST.getAllTopology(projectId, sortKey),
+      ProjectREST.getProject(projectId)
     ];
     if(app_state.streamline_config.secureMode){
       promiseArr.push(UserRoleREST.getAllACL('topology',app_state.user_profile.id,'USER'));
@@ -698,6 +699,7 @@ class TopologyListingContainer extends Component {
     });
   }
   handleSaveClicked = () => {
+    const {projectId} = this.props.params;
     if(this.state.topologyData != null && this.addTopologyRef.state.namespaceId === this.state.topologyData.topology.namespaceId) {
       FSReactToastr.info(
         <CommonNotification flag="info" content={"Same environment selected"} />, '', toastOpt);
@@ -706,7 +708,7 @@ class TopologyListingContainer extends Component {
       return;
     }
     if (this.addTopologyRef.validate()) {
-      this.addTopologyRef.handleSave().then((topology) => {
+      this.addTopologyRef.handleSave(projectId).then((topology) => {
         if (topology.responseMessage !== undefined) {
           let errorMag = topology.responseMessage.indexOf('already exists') !== -1
             ? "Application with same name already exists. Please choose a unique Application Name"
@@ -718,13 +720,13 @@ class TopologyListingContainer extends Component {
             FSReactToastr.success(
                 <strong>Application's environment updated successfully</strong>
               );
-            this.context.router.push('applications/' + topology.id + '/edit');
+            this.context.router.push('projects/'+projectId+'/applications/' + topology.id + '/edit');
           } else {
             this.addTopologyRef.saveMetadata(topology.id).then(() => {
               FSReactToastr.success(
                 <strong>Application added successfully</strong>
               );
-              this.context.router.push('applications/' + topology.id + '/edit');
+              this.context.router.push('projects/'+projectId+'/applications/' + topology.id + '/edit');
             });
           }
         }
@@ -733,6 +735,7 @@ class TopologyListingContainer extends Component {
   }
 
   handleImportSave = () => {
+    const {projectId} = this.props.params;
     if (this.importTopologyRef.validate()) {
       this.importTopologyRef.handleSave().then((topology) => {
         if (topology.responseMessage !== undefined) {
@@ -745,13 +748,14 @@ class TopologyListingContainer extends Component {
           FSReactToastr.success(
             <strong>Application imported successfully</strong>
           );
-          this.context.router.push('applications/' + topology.id + '/edit');
+          this.context.router.push('projects/'+projectId+'/applications/' + topology.id + '/edit');
         }
       });
     }
   }
 
   handleCloneSave = () => {
+    const {projectId} = this.props.params;
     if (this.cloneTopologyRef.validate()) {
       this.cloneTopologyRef.handleSave().then((topology) => {
         if (topology.responseMessage !== undefined) {
@@ -766,7 +770,7 @@ class TopologyListingContainer extends Component {
           FSReactToastr.success(
             <strong>Application cloned successfully</strong>
           );
-          this.context.router.push('applications/' + topology.id + '/edit');
+          this.context.router.push('projects/'+projectId+'/applications/' + topology.id + '/edit');
         }
       });
     }
@@ -910,7 +914,7 @@ class TopologyListingContainer extends Component {
             : (splitData.length === 0)
               ? <NoData imgName={"default"} searchVal={filterValue} userRoles={app_state.user_profile}/>
               : splitData[pageIndex].map((list) => {
-                return <TopologyItems key={list.topology.id} topologyList={list} topologyAction={this.actionHandler} refIdArr={refIdArr} allACL={allACL}/>;
+                return <TopologyItems key={list.topology.id} projectId={this.props.params.projectId} topologyList={list} topologyAction={this.actionHandler} refIdArr={refIdArr} allACL={allACL}/>;
               })
 }
         </div>

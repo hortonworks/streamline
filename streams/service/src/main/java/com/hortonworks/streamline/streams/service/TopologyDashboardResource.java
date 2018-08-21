@@ -70,13 +70,15 @@ public class TopologyDashboardResource {
     }
 
     @GET
-    @Path("/topologies/dashboard")
+    @Path("/projects/{projectId}/topologies/dashboard")
     @Timed
-    public Response listTopologies(@javax.ws.rs.QueryParam("sort") String sortType,
+    public Response listTopologies(@PathParam("projectId") Long projectId,
+                                  @javax.ws.rs.QueryParam("sort") String sortType,
                                   @javax.ws.rs.QueryParam("ascending") Boolean ascending,
                                   @javax.ws.rs.QueryParam("latencyTopN") Integer latencyTopN,
                                   @Context SecurityContext securityContext) {
-        Collection<Topology> topologies = catalogService.listTopologies();
+        Collection<Topology> topologies = catalogService.listTopologies(
+                com.hortonworks.streamline.common.QueryParam.params(Topology.PROJECTID, projectId.toString()));
         boolean topologyUser = SecurityUtil.hasRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER);
         if (topologyUser) {
             LOG.debug("Returning all topologies since user has role: {}", Roles.ROLE_TOPOLOGY_USER);
