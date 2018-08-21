@@ -19,11 +19,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hortonworks.registries.common.Schema;
-import com.hortonworks.registries.storage.annotation.SearchableField;
-import com.hortonworks.registries.storage.annotation.StorableEntity;
-import com.hortonworks.registries.storage.PrimaryKey;
-import com.hortonworks.registries.storage.Storable;
-import com.hortonworks.registries.storage.StorableKey;
+import com.hortonworks.streamline.storage.annotation.SearchableField;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
+import com.hortonworks.streamline.storage.PrimaryKey;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorableKey;
 import com.hortonworks.streamline.streams.layout.component.TopologyDag;
 
 import java.util.HashMap;
@@ -39,6 +39,7 @@ public class Topology implements Storable {
     public static final String NAMESPACE = "topology";
     public static final String ID = "id";
     public static final String VERSIONID = "versionId";
+    public static final String PROJECTID = "projectId";
     public static final String NAME = "name";
     public static final String NAMESPACE_ID = "namespaceId";
     public static final String CONFIG = "config";
@@ -54,6 +55,12 @@ public class Topology implements Storable {
      * Unique version id identifying a topology. This is the composite primary key column.
      */
     private Long versionId;
+
+    /**
+     * Project this topology belongs to
+     */
+
+    private Long projectId;
 
     /**
      * Human readable topology name; input from user from UI.
@@ -183,6 +190,10 @@ public class Topology implements Storable {
     public void setVersionId(Long versionId) {
         this.versionId = versionId;
     }
+
+    public Long getProjectId() { return projectId; }
+
+    public void setProjectId(Long projectId) { this.projectId = projectId; }
 
     public String getName() {
         return name;

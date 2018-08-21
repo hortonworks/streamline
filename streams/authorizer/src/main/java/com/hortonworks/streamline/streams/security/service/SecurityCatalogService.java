@@ -16,11 +16,11 @@
 package com.hortonworks.streamline.streams.security.service;
 
 import com.google.common.collect.Sets;
-import com.hortonworks.registries.common.QueryParam;
+import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.util.Utils;
-import com.hortonworks.registries.storage.StorableKey;
-import com.hortonworks.registries.storage.StorageManager;
-import com.hortonworks.registries.storage.util.StorageUtils;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.storage.util.StorageUtils;
 import com.hortonworks.streamline.streams.security.Permission;
 import com.hortonworks.streamline.streams.security.catalog.AclEntry;
 import com.hortonworks.streamline.streams.security.catalog.Role;

@@ -116,7 +116,7 @@ public class Utils {
     }
 
     /**
-     * This method takes in a schema represented as a map and returns a {@link Schema}
+     * This method takes in a schema streamline as a map and returns a {@link Schema}
      * @param schemaConfig A map representing {@link Schema}
      * @return schema generated from the map argument
      * @throws IOException
@@ -126,7 +126,7 @@ public class Utils {
         return getSchemaFromConfig(objectMapper.writeValueAsString(schemaConfig));
     }
     /**
-     * This method takes in a schema represented as a json string and returns a {@link Schema}
+     * This method takes in a schema streamline as a json string and returns a {@link Schema}
      * @param schemaConfig A map representing {@link Schema}
      * @return schema generated from the string argument
      * @throws IOException

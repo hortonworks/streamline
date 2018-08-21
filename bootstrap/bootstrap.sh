@@ -28,7 +28,7 @@ else
   JAVA="${JAVA_HOME}/bin/java"
 fi
 
-SHELL_MIGRATION_INITIALIZER_MAIN_CLASS=com.hortonworks.registries.storage.tool.shell.ShellMigrationInitializer
+SHELL_MIGRATION_INITIALIZER_MAIN_CLASS=com.hortonworks.streamline.storage.tool.shell.ShellMigrationInitializer
 for file in "${bootstrap_dir}"/lib/*.jar;
 do
     CLASSPATH="$CLASSPATH":"$file"

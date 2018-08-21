@@ -100,7 +100,7 @@ run_cmd $update_storm_version_command
 # Get catalogRootUrl from configuration file
 #---------------------------------------------
 
-CONF_READER_MAIN_CLASS=com.hortonworks.registries.storage.tool.sql.PropertiesReader
+CONF_READER_MAIN_CLASS=com.hortonworks.streamline.storage.tool.sql.PropertiesReader
 
 for file in "${bootstrap_dir}"/lib/*.jar;
 do

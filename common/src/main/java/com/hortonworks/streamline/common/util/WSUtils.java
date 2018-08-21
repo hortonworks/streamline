@@ -18,7 +18,7 @@ package com.hortonworks.streamline.common.util;
 
 import com.google.common.io.ByteStreams;
 import com.hortonworks.streamline.common.CollectionResponse;
-import com.hortonworks.registries.common.QueryParam;
+import com.hortonworks.streamline.common.QueryParam;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;

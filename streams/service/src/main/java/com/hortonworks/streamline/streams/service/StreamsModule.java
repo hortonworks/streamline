@@ -15,20 +15,20 @@
  **/
 package com.hortonworks.streamline.streams.service;
 
-import com.hortonworks.registries.common.transaction.TransactionIsolation;
+import com.hortonworks.streamline.common.transaction.TransactionIsolation;
 import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
-import com.hortonworks.registries.storage.StorageManagerAware;
-import com.hortonworks.registries.storage.TransactionManager;
-import com.hortonworks.registries.storage.TransactionManagerAware;
-import com.hortonworks.registries.storage.transaction.ManagedTransaction;
+import com.hortonworks.streamline.storage.StorageManagerAware;
+import com.hortonworks.streamline.storage.TransactionManager;
+import com.hortonworks.streamline.storage.TransactionManagerAware;
+import com.hortonworks.streamline.storage.transaction.ManagedTransaction;
 import com.hortonworks.streamline.common.Constants;
 import com.hortonworks.streamline.common.FileEventHandler;
 import com.hortonworks.streamline.common.FileWatcher;
 import com.hortonworks.streamline.common.ModuleRegistration;
-import com.hortonworks.registries.common.util.FileStorage;
+import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
 import com.hortonworks.streamline.registries.tag.client.TagClient;
-import com.hortonworks.registries.storage.StorageManager;
+import com.hortonworks.streamline.storage.StorageManager;
 import com.hortonworks.streamline.streams.actions.container.mapping.MappedTopologyActionsImpl;
 import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
 import com.hortonworks.streamline.streams.catalog.TopologyVersion;

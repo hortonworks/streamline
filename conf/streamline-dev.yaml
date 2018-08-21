@@ -1,4 +1,4 @@
-modules:
+Modules:
   - name: tag-registry
     className: com.hortonworks.streamline.registries.tag.service.TagRegistryModule
   - name: dashboard-registry
@@ -42,7 +42,7 @@ server:
 # Filesystem based file storage - uses local file system to store the uploaded files
 # --
 fileStorageConfiguration:
- className: "com.hortonworks.registries.common.util.LocalFileSystemStorage"
+ className: "com.hortonworks.streamline.common.util.LocalFileSystemStorage"
  properties:
    directory: "/tmp"
 
@@ -50,7 +50,7 @@ fileStorageConfiguration:
 # HDFS file storage - uses HDFS to store the uploaded files
 # --
 #fileStorageConfiguration:
-#  className: com.hortonworks.registries.common.util.HdfsFileStorage
+#  className: com.hortonworks.streamline.common.util.HdfsFileStorage
 #  properties:
 #    directory: /hdf/streamline/jars
 #    fsUrl: hdfs://localhost:9090
@@ -59,7 +59,7 @@ fileStorageConfiguration:
 # DB based file storage - stores the uploaded files as blob in Db
 # --
 #fileStorageConfiguration:
-# className: "com.hortonworks.registries.storage.filestorage.DbFileStorage"
+# className: "com.hortonworks.streamline.storage.filestorage.DbFileStorage"
 
 # ------------------------------------------------
 # Storage provider configuration
@@ -68,13 +68,13 @@ fileStorageConfiguration:
 # In-memory storage provider configuration:
 # --
 storageProviderConfiguration:
-  providerClass: "com.hortonworks.registries.storage.impl.memory.InMemoryStorageManager"
+  providerClass: "com.hortonworks.streamline.storage.impl.memory.InMemoryStorageManager"
 
 # --
 # MySQL based storage provider configuration:
 # --
 #storageProviderConfiguration:
-# providerClass: "com.hortonworks.registries.storage.impl.jdbc.JdbcStorageManager"
+# providerClass: "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager"
 # properties:
 #  db.type: "mysql"
 #  queryTimeoutInSecs: 30
@@ -88,7 +88,7 @@ storageProviderConfiguration:
 # PostgreSQL based storage provider configuration
 # --
 #storageProviderConfiguration:
-# providerClass: "com.hortonworks.registries.storage.impl.jdbc.JdbcStorageManager"
+# providerClass: "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager"
 # properties:
 #   db.type: "postgresql"
 #   queryTimeoutInSecs: 30
@@ -102,7 +102,7 @@ storageProviderConfiguration:
 # Oracle based storage provider configuration
 # --
 #storageProviderConfiguration:
-# providerClass: "com.hortonworks.registries.storage.impl.jdbc.JdbcStorageManager"
+# providerClass: "com.hortonworks.streamline.storage.impl.jdbc.JdbcStorageManager"
 # properties:
 #   db.type: "oracle"
 #   queryTimeoutInSecs: 30
@@ -167,7 +167,7 @@ logging:
 # Authentication configuration
 # ------------------------------------------------
 #loginConfiguration:
-#  className: "com.hortonworks.registries.auth.KerberosLogin"
+#  className: "com.hortonworks.streamline.auth.KerberosLogin"
 #  params:
 #      kinit.cmd: "/usr/local/bin/kinit"
 #      ticket.renew.window.factor: "0.8"

@@ -17,7 +17,7 @@
 package com.hortonworks.streamline.streams.catalog.rule;
 
 import com.google.common.collect.ImmutableList;
-import com.hortonworks.registries.common.QueryParam;
+import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.streams.catalog.TopologyRule;
 import com.hortonworks.streamline.streams.catalog.TopologyStream;
 import com.hortonworks.streamline.streams.catalog.UDF;

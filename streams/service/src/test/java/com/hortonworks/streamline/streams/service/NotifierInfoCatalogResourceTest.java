@@ -16,8 +16,8 @@
 package com.hortonworks.streamline.streams.service;
 
 import com.hortonworks.streamline.common.CollectionResponse;
-import com.hortonworks.registries.common.QueryParam;
-import com.hortonworks.registries.common.util.FileStorage;
+import com.hortonworks.streamline.common.QueryParam;
+import com.hortonworks.streamline.common.util.FileStorage;
 import com.hortonworks.streamline.streams.catalog.Notifier;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;

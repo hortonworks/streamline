@@ -17,9 +17,9 @@
 package com.hortonworks.streamline.registries.model.service;
 
 import com.hortonworks.streamline.common.ModuleRegistration;
-import com.hortonworks.registries.common.util.FileStorage;
-import com.hortonworks.registries.storage.StorageManager;
-import com.hortonworks.registries.storage.StorageManagerAware;
+import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.storage.StorageManagerAware;
 
 import java.util.Collections;
 import java.util.List;

@@ -28,13 +28,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.hortonworks.registries.common.QueryParam;
+import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.registries.common.Schema;
-import com.hortonworks.registries.common.util.FileStorage;
-import com.hortonworks.registries.storage.StorableKey;
-import com.hortonworks.registries.storage.StorageManager;
-import com.hortonworks.registries.storage.exception.StorageException;
-import com.hortonworks.registries.storage.util.StorageUtils;
+import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.streamline.storage.StorableKey;
+import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.storage.exception.StorageException;
+import com.hortonworks.streamline.storage.util.StorageUtils;
 import com.hortonworks.streamline.common.ComponentTypes;
 import com.hortonworks.streamline.common.ComponentUISpecification;
 import com.hortonworks.streamline.common.exception.ComponentConfigException;
@@ -44,31 +44,7 @@ import com.hortonworks.streamline.common.util.Utils;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
 import com.hortonworks.streamline.streams.StreamlineEvent;
-import com.hortonworks.streamline.streams.catalog.BaseTopologyRule;
-import com.hortonworks.streamline.streams.catalog.File;
-import com.hortonworks.streamline.streams.catalog.Notifier;
-import com.hortonworks.streamline.streams.catalog.Projection;
-import com.hortonworks.streamline.streams.catalog.Topology;
-import com.hortonworks.streamline.streams.catalog.TopologyBranchRule;
-import com.hortonworks.streamline.streams.catalog.TopologyComponent;
-import com.hortonworks.streamline.streams.catalog.TopologyEdge;
-import com.hortonworks.streamline.streams.catalog.TopologyEditorMetadata;
-import com.hortonworks.streamline.streams.catalog.TopologyEditorToolbar;
-import com.hortonworks.streamline.streams.catalog.TopologyOutputComponent;
-import com.hortonworks.streamline.streams.catalog.TopologyProcessor;
-import com.hortonworks.streamline.streams.catalog.TopologyProcessorStreamMap;
-import com.hortonworks.streamline.streams.catalog.TopologyRule;
-import com.hortonworks.streamline.streams.catalog.TopologySink;
-import com.hortonworks.streamline.streams.catalog.TopologySource;
-import com.hortonworks.streamline.streams.catalog.TopologySourceStreamMap;
-import com.hortonworks.streamline.streams.catalog.TopologyStream;
-import com.hortonworks.streamline.streams.catalog.TopologyTestRunCase;
-import com.hortonworks.streamline.streams.catalog.TopologyTestRunCaseSink;
-import com.hortonworks.streamline.streams.catalog.TopologyTestRunCaseSource;
-import com.hortonworks.streamline.streams.catalog.TopologyTestRunHistory;
-import com.hortonworks.streamline.streams.catalog.TopologyVersion;
-import com.hortonworks.streamline.streams.catalog.TopologyWindow;
-import com.hortonworks.streamline.streams.catalog.UDF;
+import com.hortonworks.streamline.streams.catalog.*;
 import com.hortonworks.streamline.streams.catalog.processor.CustomProcessorInfo;
 import com.hortonworks.streamline.streams.catalog.rule.RuleParser;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
@@ -141,6 +117,7 @@ public class StreamCatalogService {
     private static final Logger LOG = LoggerFactory.getLogger(StreamCatalogService.class);
 
     // TODO: the namespace and Id generation logic should be moved inside DAO
+    private static final String PROJECT_NAMESPACE = new Project().getNameSpace();
     private static final String NOTIFIER_INFO_NAMESPACE = new Notifier().getNameSpace();
     private static final String TOPOLOGY_NAMESPACE = new Topology().getNameSpace();
     private static final String TOPOLOGY_VERSIONINFO_NAMESPACE = new TopologyVersion().getNameSpace();
@@ -216,6 +193,39 @@ public class StreamCatalogService {
         return notifier;
     }
 
+    public Collection<Project> listAllProjects() {
+        return dao.find(PROJECT_NAMESPACE, null);
+    }
+
+    public Project getProjectInfo(Long projectId) {
+        Project project = new Project();
+        project.setId(projectId);
+        return dao.get(project.getStorableKey());
+    }
+
+    public Project addProject(Project project) {
+        validateProject(project);
+
+        if (project.getId() == null) {
+            project.setId(this.dao.nextId(PROJECT_NAMESPACE));
+            this.dao.add(project);
+            LOG.debug("Added Project {} ", project);
+        }
+
+        long timestamp = System.currentTimeMillis();
+        project.setTimestamp(timestamp);
+        this.dao.addOrUpdate(project);
+        LOG.debug("Added project {}", project);
+        return project;
+    }
+
+    public Project removeProject(Long proejctId) {
+        Project project = new Project();
+        project.setId(proejctId);
+        return dao.remove(new StorableKey(PROJECT_NAMESPACE, project.getPrimaryKey()));
+    }
+
+
     public Collection<TopologyVersion> listCurrentTopologyVersionInfos() {
         return listTopologyVersionInfos(currentVersionQueryParam());
     }
@@ -248,6 +258,7 @@ public class StreamCatalogService {
                     return versionInfo1.getVersionNumber() - versionInfo2.getVersionNumber();
                 });
     }
+
     public TopologyVersion getTopologyVersionInfo(Long versionId) {
         TopologyVersion topologyVersion = new TopologyVersion();
         topologyVersion.setId(versionId);
@@ -298,6 +309,17 @@ public class StreamCatalogService {
         TopologyVersion topologyVersion = new TopologyVersion();
         topologyVersion.setId(versionId);
         return dao.remove(new StorableKey(TOPOLOGY_VERSIONINFO_NAMESPACE, topologyVersion.getPrimaryKey()));
+    }
+
+
+    public Collection<Project> listProjects() {
+        Collection<Project> projects  = this.dao.find(PROJECT_NAMESPACE, null);
+        return projects;
+    }
+
+    public Collection<Project> listProjects(List<QueryParam> queryParams) {
+        Collection<Project> projects = this.dao.find(PROJECT_NAMESPACE, queryParams);
+        return projects;
     }
 
     /**
@@ -1257,6 +1279,11 @@ public class StreamCatalogService {
      *
      * Other checks can be added later.
      */
+    private void validateProject(Project project) {
+        StorageUtils.ensureUnique(project, this::listProjects,
+                QueryParam.params(Project.NAME, project.getName()));
+    }
+
     private void validateTopology(Topology topology) {
         StorageUtils.ensureUnique(topology, this::listTopologies,
                 QueryParam.params(Topology.NAME, topology.getName()));
@@ -1931,9 +1958,9 @@ public class StreamCatalogService {
 
     public void setReconfigureOnAllComponentsInTopology(Topology topology) {
         List<TopologyComponent> topologyComponents = new ArrayList<>();
-        List<com.hortonworks.registries.common.QueryParam> queryParams = new ArrayList<>();
-        queryParams.add(new com.hortonworks.registries.common.QueryParam("topologyId", String.valueOf(topology.getId())));
-        queryParams.add(new com.hortonworks.registries.common.QueryParam("versionId", String.valueOf(topology.getVersionId())));
+        List<com.hortonworks.streamline.common.QueryParam> queryParams = new ArrayList<>();
+        queryParams.add(new com.hortonworks.streamline.common.QueryParam("topologyId", String.valueOf(topology.getId())));
+        queryParams.add(new com.hortonworks.streamline.common.QueryParam("versionId", String.valueOf(topology.getVersionId())));
 
         topologyComponents.addAll(listTopologySources(queryParams));
         topologyComponents.addAll(listTopologyProcessors(queryParams));

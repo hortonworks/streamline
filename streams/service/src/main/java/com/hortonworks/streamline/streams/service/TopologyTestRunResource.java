@@ -273,7 +273,7 @@ public class TopologyTestRunResource {
 
         File eventLogFile = getEventLogFile(topologyId, historyId);
         List<EventInformation> events = eventLogFileReader.loadEventLogFile(eventLogFile);
-        List<com.hortonworks.registries.common.QueryParam> qps = com.hortonworks.registries.common.QueryParam.params(
+        List<com.hortonworks.streamline.common.QueryParam> qps = com.hortonworks.streamline.common.QueryParam.params(
                 TopologySource.TOPOLOGYID, topologyId.toString(),
                 TopologySource.VERSIONID, catalogService.getCurrentVersionId(topologyId).toString());
         Set<String> sourceNames = catalogService.listTopologySources(qps).stream()

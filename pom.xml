@@ -127,6 +127,7 @@
     <modules>
         <module>streamline-findbugs</module>
         <module>common</module>
+        <module>storage</module>
         <module>streams</module>
         <module>registries</module>
         <module>webservice</module>
@@ -172,6 +173,9 @@
         <spring.version>4.3.6.RELEASE</spring.version>
         <flyway.version>4.2.0</flyway.version>
         <jool.version>0.9.12</jool.version>
+        <postgresql.version>9.4.1212</postgresql.version>
+        <hikari.version>2.2.5</hikari.version>
+        <h2database.version>1.4.188</h2database.version>
 
         <!-- Runtime Scope Dependencies -->
         <logback.version>1.1.7</logback.version>
@@ -189,7 +193,7 @@
         <maven-surefire.version>2.18.1</maven-surefire.version>
 
         <!-- This should match the version in streamline-findbugs module -->
-        <streamline-findbugs.version>0.3</streamline-findbugs.version>
+        <streamline-findbugs.version>0.4</streamline-findbugs.version>
     </properties>
 
     <distributionManagement>
@@ -672,14 +676,14 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.hortonworks.registries</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>storage-core</artifactId>
-                <version>${schema-registry.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hortonworks.registries</groupId>
                 <artifactId>storage-tool</artifactId>
-                <version>${schema-registry.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hortonworks.streamline</groupId>

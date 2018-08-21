@@ -16,7 +16,7 @@
 package com.hortonworks.streamline.streams.security.service;
 
 import com.google.common.collect.Sets;
-import com.hortonworks.registries.common.QueryParam;
+import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.streams.security.Permission;
 import com.hortonworks.streamline.streams.security.catalog.AclEntry;
 import com.hortonworks.streamline.streams.security.catalog.Role;

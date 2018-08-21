@@ -17,7 +17,7 @@
 
 package com.hortonworks.streamline.registries.tag;
 
-import com.hortonworks.registries.storage.Storable;
+import com.hortonworks.streamline.storage.Storable;
 
 public class TaggedEntity {
     private String namespace;

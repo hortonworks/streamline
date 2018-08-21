@@ -15,7 +15,7 @@
  **/
 package com.hortonworks.streamline.registries.tag.service;
 
-import com.hortonworks.registries.common.QueryParam;
+import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.registries.tag.Tag;
 import com.hortonworks.streamline.registries.tag.TaggedEntity;
 

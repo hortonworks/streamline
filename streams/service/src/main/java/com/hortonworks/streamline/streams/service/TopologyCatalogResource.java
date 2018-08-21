@@ -23,12 +23,7 @@ import com.hortonworks.streamline.common.exception.service.exception.request.Ent
 import com.hortonworks.streamline.common.exception.service.exception.server.StreamingEngineNotReachableException;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
-import com.hortonworks.streamline.streams.catalog.Topology;
-import com.hortonworks.streamline.streams.catalog.TopologyComponent;
-import com.hortonworks.streamline.streams.catalog.TopologyProcessor;
-import com.hortonworks.streamline.streams.catalog.TopologySink;
-import com.hortonworks.streamline.streams.catalog.TopologySource;
-import com.hortonworks.streamline.streams.catalog.TopologyVersion;
+import com.hortonworks.streamline.streams.catalog.*;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyData;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
@@ -91,6 +86,80 @@ public class TopologyCatalogResource {
         this.authorizer = authorizer;
         this.catalogService = catalogService;
         this.actionsService = actionsService;
+    }
+
+    @GET
+    @Path("/projects")
+    @Timed
+    public Response listProjects (@Context SecurityContext securityContext) {
+        Collection<Project>  projects = catalogService.listProjects();
+        boolean topologyUser = SecurityUtil.hasRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER);
+        if (topologyUser) {
+            LOG.debug("Returning all topologies since user has role: {}", Roles.ROLE_TOPOLOGY_USER);
+        } else {
+            projects = SecurityUtil.filter(authorizer, securityContext, NAMESPACE, projects, READ);
+        }
+        Response response;
+        if (projects != null) {
+            response = WSUtils.respondEntities(projects, OK);
+        } else {
+            response = WSUtils.respondEntities(Collections.emptyList(), OK);
+        }
+
+        return response;
+    }
+
+    @GET
+    @Path("/projects/{projectId}")
+    @Timed
+    public Response getProjectById(@PathParam("projectId") Long projectId,
+                                    @Context SecurityContext securityContext) {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                NAMESPACE, projectId, READ);
+
+        Project result = catalogService.getProjectInfo(projectId);
+        if (result != null) {
+            return WSUtils.respondEntity(result, OK);
+        }
+
+        throw EntityNotFoundException.byId(projectId.toString());
+    }
+
+    @POST
+    @Path("/projects")
+    @Timed
+    public Response addProject(Project project, @Context SecurityContext securityContext) {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_ADMIN);
+        if (StringUtils.isEmpty(project.getName())) {
+            throw BadRequestException.missingParameter(Topology.NAME);
+        }
+
+        Project createdProject = catalogService.addProject(project);
+        SecurityUtil.addAcl(authorizer, securityContext, NAMESPACE, project.getId(),
+                EnumSet.allOf(Permission.class));
+        return WSUtils.respondEntity(createdProject, CREATED);
+    }
+
+    @DELETE
+    @Path("/projects/{projectId}")
+    @Timed
+    public Response removeTopology(@PathParam("projectId") Long projectId,
+                                   @javax.ws.rs.QueryParam("force") boolean force,
+                                   @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
+                NAMESPACE, projectId, DELETE);
+
+        Project result = catalogService.getProjectInfo(projectId);
+        if (result == null) {
+            throw EntityNotFoundException.byId(projectId.toString());
+        }
+
+        Project removedProject = catalogService.removeProject(projectId);
+        if (removedProject != null) {
+            SecurityUtil.removeAcl(authorizer, securityContext, NAMESPACE, projectId);
+            return WSUtils.respondEntity(removedProject, OK); 
+        }
+        throw EntityNotFoundException.byId(projectId.toString());
     }
 
     @GET
