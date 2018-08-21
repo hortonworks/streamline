@@ -82,7 +82,7 @@ public class Engine implements Storable {
     public Engine fromMap (Map<String, Object> map) {
         this.id = (Long) map.get(ID);
         this.name = (String) map.get(NAME);
-        this.displayName = (String) map.get(displayName);
+        this.displayName = (String) map.get(DISPLAYNAME);
         this.config = (String)  map.get(CONFIG);
         return this;
     }
