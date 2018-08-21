@@ -73,6 +73,7 @@ const rolePriorities = [
 ];
 
 const menuName = {
+  PROJECT: 'project',
   APPLICATION: 'topology',
   DASHBOARD: 'dashboard',
   SCHEMA_REGISTRY: 'schemaRegistry',
@@ -86,6 +87,7 @@ const menuName = {
   COMPONENT_DEFINITIONS: 'componentDefinitions'
 };
 const accessCapabilities = {
+  PROJECT: 'Projects',
   APPLICATION: 'Applications',
   SERVICE_POOL: 'Service Pool',
   ENVIRONMENT: 'Environments',

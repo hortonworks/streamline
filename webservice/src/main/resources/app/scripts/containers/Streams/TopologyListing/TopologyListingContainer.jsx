@@ -35,6 +35,7 @@ import FSReactToastr from '../../../components/FSReactToastr';
 import EnvironmentREST from '../../../rest/EnvironmentREST';
 import UserRoleREST from '../../../rest/UserRoleREST';
 import MiscREST from '../../../rest/MiscREST';
+import ProjectREST from '../../../rest/ProjectREST';
 
 /* component import */
 import BaseContainer from '../../BaseContainer';
@@ -369,7 +370,7 @@ TopologyItems.contextTypes = {
 @observer
 class TopologyListingContainer extends Component {
   constructor(props) {
-    super();
+    super(props);
     this.state = {
       entities: [],
       filterValue: '',
@@ -396,7 +397,12 @@ class TopologyListingContainer extends Component {
 
   fetchData() {
     const sortKey = this.state.sorted.key;
-    let promiseArr = [EnvironmentREST.getAllNameSpaces(), TopologyREST.getSourceComponent(), TopologyREST.getAllTopology(sortKey)];
+    let promiseArr = [
+      EnvironmentREST.getAllNameSpaces(),
+      TopologyREST.getSourceComponent(),
+      TopologyREST.getAllTopology(sortKey),
+      ProjectREST.getProject(this.props.params.projectId)
+    ];
     if(app_state.streamline_config.secureMode){
       promiseArr.push(UserRoleREST.getAllACL('topology',app_state.user_profile.id,'USER'));
     }
@@ -435,9 +441,12 @@ class TopologyListingContainer extends Component {
       stateObj.checkEnvironment = environmentFlag;
       stateObj.sourceCheck = sourceFlag ;
       stateObj.searchLoader = false;
-      // If the application is in secure mode result[3]
-      if(results[3]){
-        stateObj.allACL = results[3].entities;
+
+      stateObj.projectData = results[3];
+
+      // If the application is in secure mode result[4]
+      if(results[4]){
+        stateObj.allACL = results[4].entities;
       }
       this.setState(stateObj);
     });
@@ -803,6 +812,23 @@ class TopologyListingContainer extends Component {
     this.refs.CommonShareModalRef.hide();
   }
 
+  getHeaderContent() {
+    const {projectData} = this.state;
+    if(projectData){
+      return (
+        <span>
+          <Link to="/">My Projects</Link>
+          <span className="title-separator">/</span>
+          {projectData.name}
+          <span className="title-separator">/</span>
+          My Applications
+        </span>
+      );
+    } else {
+      return '';
+    }
+  }
+
   render() {
     const {
       entities,
@@ -827,7 +853,7 @@ class TopologyListingContainer extends Component {
     </span>;
 
     return (
-      <BaseContainer ref="BaseContainer" routes={this.props.routes} headerContent={this.props.routes[this.props.routes.length - 1].name}>
+      <BaseContainer ref="BaseContainer" routes={this.props.routes} headerContent={this.getHeaderContent()}>
         {!fetchLoader
           ? <div>
               {hasEditCapability(accessCapabilities.APPLICATION) ?
@@ -846,7 +872,7 @@ class TopologyListingContainer extends Component {
               {((filterValue && splitData.length === 0) || splitData.length !== 0)
                 ? <div className="row">
                     <div className="page-title-box clearfix">
-                      <div className="col-md-3 col-md-offset-6 text-right">
+                      <div className="col-md-3 col-md-offset-5 text-right">
                         <FormGroup>
                           <InputGroup>
                           <FormControl data-stest="searchBox" type="text" placeholder="Search by name" onKeyUp={this.onFilterChange} className="" />
@@ -857,7 +883,7 @@ class TopologyListingContainer extends Component {
                         </FormGroup>
                       </div>
 
-                      <div className="col-md-2 text-center">
+                      <div className="col-md-3 text-center">
                         <DropdownButton title={sortTitle} id="sortDropdown" className="sortDropdown ">
                           <MenuItem active={this.state.sorted.key === "name" ? true : false } onClick={this.onSortByClicked.bind(this, "name")}>
                             &nbsp;Name
@@ -882,7 +908,7 @@ class TopologyListingContainer extends Component {
           {(fetchLoader || searchLoader)
             ? [<div key={"1"} className="loader-overlay"></div>,<CommonLoaderSign key={"2"} imgName={"applications"}/>]
             : (splitData.length === 0)
-              ? <NoData environmentFlag={checkEnvironment} imgName={"applications"} sourceCheck={sourceCheck} searchVal={filterValue} userRoles={app_state.user_profile}/>
+              ? <NoData imgName={"default"} searchVal={filterValue} userRoles={app_state.user_profile}/>
               : splitData[pageIndex].map((list) => {
                 return <TopologyItems key={list.topology.id} topologyList={list} topologyAction={this.actionHandler} refIdArr={refIdArr} allACL={allACL}/>;
               })
