@@ -88,6 +88,45 @@ public class TopologyCatalogResource {
         this.actionsService = actionsService;
     }
 
+
+    @GET
+    @Path("/system/engines")
+    @Timed
+    public Response listEngines(@Context SecurityContext securityContext) {
+        Collection<Engine> engines = catalogService.listEngines();
+        boolean topologyUser = SecurityUtil.hasRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER);
+        if (topologyUser) {
+            LOG.debug("Returning all projects since user has role: {}", Roles.ROLE_TOPOLOGY_USER);
+        } else {
+            engines = SecurityUtil.filter(authorizer, securityContext, NAMESPACE, engines, READ);
+        }
+
+        Response response;
+        if (engines != null) {
+            response = WSUtils.respondEntities(engines, OK);
+        } else {
+            response = WSUtils.respondEntities(Collections.emptyList(), OK);
+        }
+
+        return response;
+    }
+
+
+    @POST
+    @Path("/system/engines")
+    @Timed
+    public Response addEngine(Engine engine, @Context SecurityContext securityContext) {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_ADMIN);
+        if (StringUtils.isEmpty(engine.getName())) {
+            throw BadRequestException.missingParameter(Engine.NAME);
+        }
+        Engine createdEngine = catalogService.addEngine(engine);
+        SecurityUtil.addAcl(authorizer, securityContext, NAMESPACE, engine.getId(),
+                            EnumSet.allOf(Permission.class));
+        return WSUtils.respondEntity(createdEngine, CREATED);
+    }
+
+
     @GET
     @Path("/projects")
     @Timed
@@ -95,7 +134,7 @@ public class TopologyCatalogResource {
         Collection<Project>  projects = catalogService.listProjects();
         boolean topologyUser = SecurityUtil.hasRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER);
         if (topologyUser) {
-            LOG.debug("Returning all topologies since user has role: {}", Roles.ROLE_TOPOLOGY_USER);
+            LOG.debug("Returning all projects since user has role: {}", Roles.ROLE_TOPOLOGY_USER);
         } else {
             projects = SecurityUtil.filter(authorizer, securityContext, NAMESPACE, projects, READ);
         }
@@ -131,7 +170,7 @@ public class TopologyCatalogResource {
     public Response addProject(Project project, @Context SecurityContext securityContext) {
         SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_ADMIN);
         if (StringUtils.isEmpty(project.getName())) {
-            throw BadRequestException.missingParameter(Topology.NAME);
+            throw BadRequestException.missingParameter(Project.NAME);
         }
 
         Project createdProject = catalogService.addProject(project);
@@ -143,7 +182,7 @@ public class TopologyCatalogResource {
     @DELETE
     @Path("/projects/{projectId}")
     @Timed
-    public Response removeTopology(@PathParam("projectId") Long projectId,
+    public Response removeProject(@PathParam("projectId") Long projectId,
                                    @javax.ws.rs.QueryParam("force") boolean force,
                                    @Context SecurityContext securityContext) throws Exception {
         SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
@@ -163,10 +202,12 @@ public class TopologyCatalogResource {
     }
 
     @GET
-    @Path("/topologies")
+    @Path("/projects/{projectId}/topologies")
     @Timed
-    public Response listTopologies (@Context SecurityContext securityContext) {
-        Collection<Topology> topologies = catalogService.listTopologies();
+    public Response listTopologies (@PathParam("projectId") Long projectId,
+                                    @Context SecurityContext securityContext) {
+        Collection<Topology> topologies = catalogService.listTopologies(
+                com.hortonworks.streamline.common.QueryParam.params(Topology.PROJECTID, projectId.toString()));
         boolean topologyUser = SecurityUtil.hasRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER);
         if (topologyUser) {
             LOG.debug("Returning all topologies since user has role: {}", Roles.ROLE_TOPOLOGY_USER);
@@ -234,9 +275,10 @@ public class TopologyCatalogResource {
     }
 
     @POST
-    @Path("/topologies")
+    @Path("/projects/{projectId}/topologies")
     @Timed
-    public Response addTopology(Topology topology, @Context SecurityContext securityContext) {
+    public Response addTopology(@PathParam("projectId") Long projectId, Topology topology,
+                                @Context SecurityContext securityContext) {
         SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_ADMIN);
         if (StringUtils.isEmpty(topology.getName())) {
             throw BadRequestException.missingParameter(Topology.NAME);
@@ -244,6 +286,7 @@ public class TopologyCatalogResource {
         if (StringUtils.isEmpty(topology.getConfig())) {
             throw BadRequestException.missingParameter(Topology.CONFIG);
         }
+        topology.setProjectId(projectId);
         Topology createdTopology = catalogService.addTopology(topology);
         SecurityUtil.addAcl(authorizer, securityContext, NAMESPACE, createdTopology.getId(),
                 EnumSet.allOf(Permission.class));

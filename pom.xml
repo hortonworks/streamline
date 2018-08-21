@@ -127,6 +127,7 @@
     <modules>
         <module>streamline-findbugs</module>
         <module>common</module>
+        <module>cache</module>
         <module>storage</module>
         <module>streams</module>
         <module>registries</module>

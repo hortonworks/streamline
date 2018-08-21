@@ -83,6 +83,15 @@ CREATE TABLE IF NOT EXISTS file (
     UNIQUE KEY `jars_UK_name_version` (name, version)
 );
 
+CREATE TABLE IF NOT EXISTS engine (
+   id BIGINT AUTO_INCREMENT NOT NULL,
+   name VARCHAR(256) NOT NULL,
+   displayName VARCHAR(256) NOT NULL,
+   config TEXT NOT NULL,
+   PRIMARY KEY (id),
+   UNIQUE KEY `engine_UK_name` (name)
+);
+
 CREATE TABLE IF NOT EXISTS namespace (
     id BIGINT AUTO_INCREMENT NOT NULL,
     name VARCHAR(256) NOT NULL,

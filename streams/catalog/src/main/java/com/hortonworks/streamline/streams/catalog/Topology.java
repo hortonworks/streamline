@@ -59,7 +59,7 @@ public class Topology implements Storable {
     /**
      * Project this topology belongs to
      */
-
+    @SearchableField
     private Long projectId;
 
     /**
@@ -105,6 +105,7 @@ public class Topology implements Storable {
             setVersionId(other.getVersionId());
             setName(other.getName());
             setDescription(other.getDescription());
+            setProjectId(other.getProjectId());
             setConfig(other.getConfig());
             setNamespaceId(other.getNamespaceId());
             setVersionTimestamp(other.getVersionTimestamp());
@@ -135,6 +136,7 @@ public class Topology implements Storable {
                 new Schema.Field(VERSIONID, Schema.Type.LONG),
                 new Schema.Field(NAME, Schema.Type.STRING),
                 new Schema.Field(DESCRIPTION, Schema.Type.STRING),
+                new Schema.Field(PROJECTID, Schema.Type.LONG),
                 new Schema.Field(NAMESPACE_ID, Schema.Type.LONG),
                 new Schema.Field(CONFIG, Schema.Type.STRING)
         );
@@ -159,6 +161,7 @@ public class Topology implements Storable {
         map.put(VERSIONID, this.versionId);
         map.put(NAME, this.name);
         map.put(DESCRIPTION, this.description);
+        map.put(PROJECTID, this.projectId);
         map.put(NAMESPACE_ID, this.namespaceId);
         map.put(CONFIG, this.config);
         return map;
@@ -169,6 +172,7 @@ public class Topology implements Storable {
         this.versionId = (Long) map.get(VERSIONID);
         this.name = (String) map.get(NAME);
         this.description = (String) map.get(DESCRIPTION);
+        this.projectId = (Long) map.get(PROJECTID);
         this.namespaceId = (Long) map.get(NAMESPACE_ID);
         this.config = (String)  map.get(CONFIG);
         return this;
@@ -251,6 +255,7 @@ public class Topology implements Storable {
                 ", versionId=" + versionId +
                 ", name='" + name + '\'' +
                 ", namespaceId=" + namespaceId +
+                ", projectId=" + projectId +
                 ", config='" + config + '\'' +
                 ", topologyDag=" + topologyDag +
                 '}';

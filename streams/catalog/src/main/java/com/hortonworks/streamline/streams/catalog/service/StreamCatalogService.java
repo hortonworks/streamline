@@ -117,6 +117,7 @@ public class StreamCatalogService {
     private static final Logger LOG = LoggerFactory.getLogger(StreamCatalogService.class);
 
     // TODO: the namespace and Id generation logic should be moved inside DAO
+    private static final String ENGINE_NAMESPACE = new Engine().getNameSpace();
     private static final String PROJECT_NAMESPACE = new Project().getNameSpace();
     private static final String NOTIFIER_INFO_NAMESPACE = new Notifier().getNameSpace();
     private static final String TOPOLOGY_NAMESPACE = new Topology().getNameSpace();
@@ -191,6 +192,20 @@ public class StreamCatalogService {
         notifier.setTimestamp(System.currentTimeMillis());
         this.dao.addOrUpdate(notifier);
         return notifier;
+    }
+
+    public Collection<Engine> listEngines() { return dao.find(ENGINE_NAMESPACE, null);}
+
+    public Engine addEngine(Engine engine) {
+        if (engine.getId() == null) {
+            engine.setId(this.dao.nextId(ENGINE_NAMESPACE));
+            LOG.info("engine {}", engine);
+            this.dao.add(engine);
+            LOG.debug("Added Engine {}", engine);
+        }
+        this.dao.addOrUpdate(engine);
+        LOG.debug("Added Engine {}", engine);
+        return engine;
     }
 
     public Collection<Project> listAllProjects() {
@@ -371,7 +386,7 @@ public class StreamCatalogService {
 
     public Topology addTopology(Topology topology) {
         validateTopology(topology);
-
+        LOG.info("project Id " + topology.getProjectId());
         boolean storedPlaceholderVersionTopology = false;
         if (topology.getId() == null) {
             topology.setId(this.dao.nextId(TOPOLOGY_NAMESPACE));
@@ -395,7 +410,7 @@ public class StreamCatalogService {
 
         // put actual version id
         topology.setVersionId(versionInfo.getId());
-
+        LOG.info("Project ID " + topology.getProjectId());
         this.dao.addOrUpdate(topology);
         LOG.debug("Added topology {}", topology);
         return topology;

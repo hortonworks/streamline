@@ -29,7 +29,7 @@ public class Project implements Storable {
      * Unique id identifying a project. This is the composite primary key column.
      */
     private Long id;
-
+≈
 
     /**
      * Human readable project name; input from user from UI.
