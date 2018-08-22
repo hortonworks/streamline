@@ -127,6 +127,12 @@ echo "Service bundle Root dir: ${service_dir}"
 echo "User/Role bundle Root dir: ${user_role_dir}"
 
 function add_all_bundles {
+    # === Engine ===
+    post /system/engines ${component_dir}/engines/piper/piper.json
+    post /system/engines ${component_dir}/engines/athenax/athenax.json
+    # === Templates ===
+    post /system/engines/1/templates ${component_dir}/engines/piper/templates/blank.json
+    post /system/engines/2/templates ${component_dir}/engines/athenax/templates/blank.json
     # === Source ===
     add_topology_component_bundle /streams/componentbundles/SOURCE ${component_dir}/storm/sources/kafka-source-topology-component.json
     add_topology_component_bundle /streams/componentbundles/SOURCE ${component_dir}/storm/sources/hdfs-source-topology-component.json

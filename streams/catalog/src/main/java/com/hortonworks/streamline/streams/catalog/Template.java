@@ -11,16 +11,15 @@ import com.hortonworks.streamline.storage.StorableKey;
 import java.util.HashMap;
 import java.util.Map;
 
-
 @StorableEntity
-public class Engine implements Storable {
-    public static final String NAMESPACE = "engine";
-    public static final String ID =  "id";
+public class Template implements Storable {
+    public static final String NAMESPACE = "template";
+    public static final String ID = "id";
     public static final String NAME = "name";
-    public static final String DISPLAYNAME = "displayName";
-    public static final String DEPLOYMENTMODES = "deploymentModes";
-    public static final String COMPONENTTYPES = "componentTypes";
+    public static final String DESCRIPTION = "description";
+    public static final String ENGINEID = "engineId";
     public static final String CONFIG = "config";
+
 
     private Long id;
 
@@ -28,26 +27,24 @@ public class Engine implements Storable {
     private String name;
 
     @SearchableField
-    private String displayName;
+    private String descrption;
 
-    private String deploymentModes;
-
-    private String componentTypes;
+    private Long engineId;
 
     private String  config;
 
-    public Engine() {}
+    public Template() {}
 
-    public Engine(Engine other) {
+    public Template(Template other) {
         if (other != null) {
             setId(other.getId());
             setName(other.getName());
-            setDisplayName(other.getDisplayName());
-            setDeploymentModes(other.getDeploymentModes());
-            setComponentTypes(other.getComponentTypes());
+            setDescription(other.getDescription());
+            setEngineId(other.getEngineId());
             setConfig(other.getConfig());
         }
     }
+
 
     @JsonIgnore
     public String getNameSpace () {
@@ -59,9 +56,8 @@ public class Engine implements Storable {
         return Schema.of(
                 new Schema.Field(ID, Schema.Type.LONG),
                 new Schema.Field(NAME, Schema.Type.STRING),
-                new Schema.Field(DISPLAYNAME, Schema.Type.STRING),
-                new Schema.Field(DEPLOYMENTMODES, Schema.Type.STRING),
-                new Schema.Field(COMPONENTTYPES, Schema.Type.STRING),
+                new Schema.Field(DESCRIPTION, Schema.Type.STRING),
+                new Schema.Field(ENGINEID, Schema.Type.LONG),
                 new Schema.Field(CONFIG, Schema.Type.STRING)
         );
     }
@@ -82,19 +78,17 @@ public class Engine implements Storable {
         Map<String, Object> map = new HashMap<>();
         map.put(ID, this.id);
         map.put(NAME, this.name);
-        map.put(DISPLAYNAME, this.displayName);
-        map.put(DEPLOYMENTMODES, this.deploymentModes);
-        map.put(COMPONENTTYPES, this.componentTypes);
+        map.put(DESCRIPTION, this.descrption);
+        map.put(ENGINEID, this.engineId);
         map.put(CONFIG, this.config);
         return map;
     }
 
-    public Engine fromMap (Map<String, Object> map) {
+    public Template fromMap (Map<String, Object> map) {
         this.id = (Long) map.get(ID);
         this.name = (String) map.get(NAME);
-        this.displayName = (String) map.get(DISPLAYNAME);
-        this.deploymentModes = (String) map.get(DEPLOYMENTMODES);
-        this.componentTypes = (String) map.get(componentTypes);
+        this.descrption = (String) map.get(DESCRIPTION);
+        this.engineId = (Long) map.get(ENGINEID);
         this.config = (String)  map.get(CONFIG);
         return this;
     }
@@ -107,17 +101,13 @@ public class Engine implements Storable {
 
     public void setName(String name) { this.name = name; }
 
-    public String getDisplayName() { return displayName; }
+    public String getDescription() { return descrption; }
 
-    public void setDisplayName(String displayName) { this.displayName = displayName; }
+    public void setDescription(String description) { this.descrption = description; }
 
-    public String getDeploymentModes() { return deploymentModes; }
+    public Long getEngineId() { return engineId; }
 
-    public void setDeploymentModes(String deploymentModes) { this.deploymentModes = deploymentModes; }
-
-    public String getComponentTypes() { return componentTypes; }
-
-    public void setComponentTypes(String componentTypes) { this.componentTypes = componentTypes; }
+    public void setEngineId(Long engineId) { this.engineId = engineId; }
 
     public String getConfig() { return config; }
 

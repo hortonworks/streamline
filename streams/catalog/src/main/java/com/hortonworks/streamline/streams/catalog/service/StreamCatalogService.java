@@ -118,6 +118,7 @@ public class StreamCatalogService {
 
     // TODO: the namespace and Id generation logic should be moved inside DAO
     private static final String ENGINE_NAMESPACE = new Engine().getNameSpace();
+    private static final String TEMPLATE_NAMESPACE = new Template().getNameSpace();
     private static final String PROJECT_NAMESPACE = new Project().getNameSpace();
     private static final String NOTIFIER_INFO_NAMESPACE = new Notifier().getNameSpace();
     private static final String TOPOLOGY_NAMESPACE = new Topology().getNameSpace();
@@ -206,6 +207,20 @@ public class StreamCatalogService {
         this.dao.addOrUpdate(engine);
         LOG.debug("Added Engine {}", engine);
         return engine;
+    }
+
+    public Collection<Template> listTemplates(List<QueryParam> queryParams) { return dao.find(TEMPLATE_NAMESPACE, queryParams);}
+
+    public Template addTemplate(Template template) {
+        if (template.getId() == null) {
+            template.setId(this.dao.nextId(TEMPLATE_NAMESPACE));
+            LOG.info("template {}", template);
+            this.dao.add(template);
+            LOG.debug("Added template {}", template);
+        }
+        this.dao.addOrUpdate(template);
+        LOG.debug("Added template {}", template);
+        return template;
     }
 
     public Collection<Project> listAllProjects() {

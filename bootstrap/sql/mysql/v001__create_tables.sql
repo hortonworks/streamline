@@ -87,9 +87,22 @@ CREATE TABLE IF NOT EXISTS engine (
    id BIGINT AUTO_INCREMENT NOT NULL,
    name VARCHAR(256) NOT NULL,
    displayName VARCHAR(256) NOT NULL,
+   deploymentModes TEXT NOT NULL,
+   componentTypes TEXT NOT NULL,
    config TEXT NOT NULL,
    PRIMARY KEY (id),
    UNIQUE KEY `engine_UK_name` (name)
+);
+
+CREATE TABLE IF NOT EXISTS template (
+   id BIGINT AUTO_INCREMENT NOT NULL,
+   name VARCHAR(256) NOT NULL,
+   description VARCHAR(256) NOT NULL,
+   engineId BIGINT NOT NULL,
+   config TEXT NOT NULL,
+   PRIMARY KEY (id),
+   UNIQUE KEY `template_UK_name` (name, engineId),
+   FOREIGN KEY (engineId) REFERENCES engine(id)
 );
 
 CREATE TABLE IF NOT EXISTS namespace (

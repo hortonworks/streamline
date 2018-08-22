@@ -1,0 +1,6 @@
+{
+    "name":"Blank",
+    "description": "Blank template for AthenaX. This will present default Editor.",
+    "engineId": 2,
+    "config": "{}"
+}

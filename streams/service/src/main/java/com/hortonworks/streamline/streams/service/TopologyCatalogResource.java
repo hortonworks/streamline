@@ -128,6 +128,48 @@ public class TopologyCatalogResource {
 
 
     @GET
+    @Path("/system/engines/{engineId}/templates")
+    @Timed
+    public Response listTemplates(@PathParam("engineId") Long engineId,
+                                @Context SecurityContext securityContext) {
+        Collection<Template> templates = catalogService.listTemplates(
+                com.hortonworks.streamline.common.QueryParam.params(Template.ENGINEID, engineId.toString()));
+        boolean topologyUser = SecurityUtil.hasRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER);
+        if (topologyUser) {
+            LOG.debug("Returning all projects since user has role: {}", Roles.ROLE_TOPOLOGY_USER);
+        } else {
+            templates = SecurityUtil.filter(authorizer, securityContext, NAMESPACE, templates, READ);
+        }
+
+        Response response;
+        if (templates != null) {
+            response = WSUtils.respondEntities(templates, OK);
+        } else {
+            response = WSUtils.respondEntities(Collections.emptyList(), OK);
+        }
+
+        return response;
+    }
+
+    @POST
+    @Path("/system/engines/{engineId}/templates")
+    @Timed
+    public Response addTemplate(@PathParam("engineId") Long engineId,
+                                Template template, @Context SecurityContext securityContext) {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_ADMIN);
+        if (StringUtils.isEmpty(template.getName())) {
+            throw BadRequestException.missingParameter(Template.NAME);
+        }
+        template.setEngineId(engineId);
+        Template createdTemplate = catalogService.addTemplate(template);
+        SecurityUtil.addAcl(authorizer, securityContext, NAMESPACE, createdTemplate.getId(),
+                EnumSet.allOf(Permission.class));
+        return WSUtils.respondEntity(createdTemplate, CREATED);
+
+    }
+
+
+    @GET
     @Path("/projects")
     @Timed
     public Response listProjects (@Context SecurityContext securityContext) {

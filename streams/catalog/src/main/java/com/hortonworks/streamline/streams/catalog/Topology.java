@@ -45,6 +45,8 @@ public class Topology implements Storable {
     public static final String CONFIG = "config";
     public static final String TIMESTAMP = "timestamp";
     public static final String DESCRIPTION = "description";
+    public static final String ENGINEID = "enigneId";
+    public static final String TEMPLATEID = "templateId";
 
     /**
      * Unique id identifying a topology. This is the composite primary key column.
