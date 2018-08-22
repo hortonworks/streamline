@@ -94,7 +94,7 @@ public class Engine implements Storable {
         this.name = (String) map.get(NAME);
         this.displayName = (String) map.get(DISPLAYNAME);
         this.deploymentModes = (String) map.get(DEPLOYMENTMODES);
-        this.componentTypes = (String) map.get(componentTypes);
+        this.componentTypes = (String) map.get(COMPONENTTYPES);
         this.config = (String)  map.get(CONFIG);
         return this;
     }
