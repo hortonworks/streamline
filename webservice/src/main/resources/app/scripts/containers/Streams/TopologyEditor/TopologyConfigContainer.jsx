@@ -257,7 +257,7 @@ export default class TopologyConfigContainer extends Component {
   }
 
   handleSave() {
-    const {topologyName, topologyId, versionId} = this.props;
+    const {topologyName, topologyId, versionId, projectId, topologyData} = this.props;
     const {advancedField} = this.state;
     let data = _.cloneDeep(this.refs.Form.state.FormData);
     // check if advancedField doesn't has empty field and ready to mergeData
@@ -280,7 +280,9 @@ export default class TopologyConfigContainer extends Component {
       name: topologyName,
       config: JSON.stringify(data),
       namespaceId: this.namespaceId,
-      projectId: this.props.projectId
+      projectId: projectId,
+      engineId: topologyData.engineId,
+      templateId: topologyData.templateId
     };
     return TopologyREST.putTopology(topologyId, versionId, {body: JSON.stringify(dataObj)});
   }

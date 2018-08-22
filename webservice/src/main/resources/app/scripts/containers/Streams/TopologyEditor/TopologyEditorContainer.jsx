@@ -244,6 +244,7 @@ class TopologyEditorContainer extends Component {
           }).name;
 
           this.setState({
+            topologyData: data.topology,
             timestamp: data.topology.timestamp,
             topologyName: this.topologyName,
             topologyMetric: this.topologyMetric,
@@ -394,7 +395,9 @@ class TopologyEditorContainer extends Component {
       name: topologyName,
       config: JSON.stringify(this.state.mapTopologyConfig),
       namespaceId: this.namespaceId,
-      projectId: this.projectData.id
+      projectId: this.projectData.id,
+      engineId: this.state.topologyData.engineId,
+      templateId: this.state.topologyData.templateId
     };
     this.setState({
       mapSlideInterval: this.tempIntervalArr
@@ -538,13 +541,15 @@ class TopologyEditorContainer extends Component {
     }
   }
   saveTopologyName() {
-    let {topologyName, mapTopologyConfig} = this.state;
+    let {topologyName, mapTopologyConfig, topologyData} = this.state;
     if (this.validateName(topologyName)) {
       let data = {
         name: topologyName,
         config: JSON.stringify(mapTopologyConfig),
         namespaceId: this.namespaceId,
-        projectId: this.projectData.id
+        projectId: this.projectData.id,
+        engineId: topologyData.engineId,
+        templateId: topologyData.templateId
       };
       TopologyREST.putTopology(this.topologyId, this.versionId, {body: JSON.stringify(data)}).then(topology => {
         if (topology.responseMessage !== undefined) {
@@ -1375,7 +1380,7 @@ class TopologyEditorContainer extends Component {
   }
 
   render() {
-    const {progressCount, progressBarColor, fetchLoader, mapTopologyConfig,deployStatus,testRunActivated,testCaseList,selectedTestObj,testCaseLoader,testRunCurrentEdges,testResult,nodeData,testName,showError,testSinkConfigure,nodeListArr,hideEventLog,eventLogData,testHistory,testCompleted,deployFlag,testRunningMode,abortTestCase,notifyCheck,activePage,activePageList} = this.state;
+    const {progressCount, progressBarColor, fetchLoader, mapTopologyConfig,deployStatus,testRunActivated,testCaseList,selectedTestObj,testCaseLoader,testRunCurrentEdges,testResult,nodeData,testName,showError,testSinkConfigure,nodeListArr,hideEventLog,eventLogData,testHistory,testCompleted,deployFlag,testRunningMode,abortTestCase,notifyCheck,activePage,activePageList, topologyData} = this.state;
     let nodeType = this.node
       ? this.node.currentType
       : '';
@@ -1454,7 +1459,7 @@ class TopologyEditorContainer extends Component {
           </div>
         </div>
         <Modal ref="TopologyConfigModal" data-title={deployFlag ? "Are you sure want to continue with this configuration?" : "Application Configuration"}  onKeyPress={this.handleKeyPress.bind(this)} data-resolve={this.handleSaveConfig.bind(this)} data-reject={this.handleCancelConfig.bind(this)}>
-          <TopologyConfig ref="topologyConfig" projectId={this.projectId} topologyId={this.topologyId} versionId={this.versionId} data={mapTopologyConfig} topologyName={this.state.topologyName} uiConfigFields={this.topologyConfigData} testRunActivated={this.state.testRunActivated} topologyNodes={this.graphData.nodes}/>
+          <TopologyConfig ref="topologyConfig" topologyData={topologyData} projectId={this.projectId} topologyId={this.topologyId} versionId={this.versionId} data={mapTopologyConfig} topologyName={this.state.topologyName} uiConfigFields={this.topologyConfigData} testRunActivated={this.state.testRunActivated} topologyNodes={this.graphData.nodes}/>
         </Modal>
         {/* NodeModal for Development Mode for source*/}
         <Modal ref="NodeModal" onKeyPress={this.handleKeyPress.bind(this)} bsSize={this.processorNode && nodeType.toLowerCase() !== 'join'
