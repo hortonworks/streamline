@@ -146,11 +146,15 @@ CREATE TABLE IF NOT EXISTS topology (
     name VARCHAR(256) NOT NULL,
     description TEXT,
     namespaceId BIGINT NOT NULL,
+    engineId BIGINT NOT NULL,
+    templateId BIGINT NOT NULL,
     config TEXT NOT NULL,
     PRIMARY KEY (id, versionId),
     FOREIGN KEY (versionId) REFERENCES topology_version(id),
     FOREIGN KEY (namespaceId) REFERENCES namespace(id),
-    FOREIGN KEY (projectId) REFERENCES project(id)
+    FOREIGN KEY (projectId) REFERENCES project(id),
+    FOREIGN KEY (engineId) REFERENCES engine(id),
+    FOREIGN KEY (templateId) REFERENCES template(id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_component_bundle (
