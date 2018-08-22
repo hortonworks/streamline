@@ -30,6 +30,15 @@ const EngineREST = {
       .then((response) => {
         return response.json();
       });
+  },
+  getAllTemplates(engineId, options) {
+    options = options || {};
+    options.method = options.method || 'GET';
+    options.credentials = 'same-origin';
+    return fetch(baseUrl + engineBaseURL+"/"+engineId+"/templates", options)
+      .then((response) => {
+        return response.json();
+      });
   }
 };
 

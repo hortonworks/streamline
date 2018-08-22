@@ -243,9 +243,9 @@ class TopologyItems extends Component {
                     &nbsp;Export
                   </MenuItem>
                   {metricWrap.status !== 'ACTIVE' && metricWrap.status !== 'INACTIVE' ?
-                  <MenuItem title="Update Environment" disabled={!permission} onClick={this.onActionClick.bind(this, "update/" + topology.id)}>
+                  <MenuItem title="Update Engine" disabled={!permission} onClick={this.onActionClick.bind(this, "update/" + topology.id)}>
                     <i className="fa fa-wrench"></i>
-                    &nbsp;Update Environment
+                    &nbsp;Update Engine
                   </MenuItem>
                   : null
                   }
@@ -922,7 +922,7 @@ class TopologyListingContainer extends Component {
           ? <Paginate len={entities.length} splitData={splitData} pagesize={pageSize} pagePosition={this.pagePosition}/>
           : ''
 }
-        <Modal ref={(ref) => this.AddTopologyModelRef = ref} data-title={topologyData ? "Update Environment" : "Add Application"} onKeyPress={this.handleKeyPress} data-resolve={this.handleSaveClicked} data-reject={()=>{this.setState({topologyData: null});this.AddTopologyModelRef.hide();}}>
+        <Modal ref={(ref) => this.AddTopologyModelRef = ref} data-title={topologyData ? "Update Engine" : "Add Application"} onKeyPress={this.handleKeyPress} data-resolve={this.handleSaveClicked} data-reject={()=>{this.setState({topologyData: null});this.AddTopologyModelRef.hide();}}>
           <AddTopology ref={(ref) => this.addTopologyRef = ref} topologyData={topologyData} />
         </Modal>
         <Modal ref={(ref) => this.ImportTopologyModelRef = ref} data-title="Import Application" onKeyPress={this.handleKeyPress} data-resolve={this.handleImportSave}>

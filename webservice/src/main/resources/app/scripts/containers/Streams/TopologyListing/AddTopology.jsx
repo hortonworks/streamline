@@ -38,31 +38,46 @@ class AddTopology extends Component {
       topologyName: props.topologyData ? props.topologyData.topology.name : '',
       namespaceId: -1,
       engineId: props.topologyData ? props.topologyData.topology.engineId : '',
+      templateId: props.topologyData ? props.topologyData.topology.templateId : '',
       validInput: true,
       validEngine: true,
+      validTemplate: true,
       formField: {},
-      showRequired: true
+      showRequired: true,
+      engineOptions: [],
+      templateOptions: []
     };
     this.fetchData();
   }
 
   fetchData = () => {
     let promiseArr = [TopologyREST.getTopologyConfig(), EngineREST.getAllEngines()];
+    if(this.props.topologyData){
+      promiseArr.push(EngineREST.getAllTemplates(this.props.topologyData.topology.engineId));
+    }
     Promise.all(promiseArr).then(result => {
       var config = result[0];
+      let stateObj = {};
       if (config.responseMessage !== undefined) {
         FSReactToastr.error(
           <CommonNotification flag="error" content={config.responseMessage}/>, '', toastOpt);
       } else {
         const configFields = config.entities[0].topologyComponentUISpecification;
-        this.setState({formField: configFields});
+        stateObj.formField = configFields;
       }
       if (result[1].responseMessage !== undefined) {
         FSReactToastr.error(
           <CommonNotification flag="error" content={result[1].responseMessage}/>, '', toastOpt);
       } else {
-        this.setState({engineOptions: result[1].entities});
+        stateObj.engineOptions = result[1].entities;
       }
+      if(result[2] && result[2].responseMessage !== undefined) {
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={result[2].responseMessage}/>, '', toastOpt);
+      } else {
+        stateObj.templateOptions = result[2].entities;
+      }
+      this.setState(stateObj);
     }).catch(err => {
       FSReactToastr.error(
         <CommonNotification flag="error" content={err.message}/>, '', toastOpt);
@@ -91,7 +106,7 @@ class AddTopology extends Component {
     return validDataFlag;
   }
   validate() {
-    const {topologyName, engineId} = this.state;
+    const {topologyName, engineId, templateId} = this.state;
     let validDataFlag = true;
     if (!this.validateName()) {
       validDataFlag = false;
@@ -99,9 +114,12 @@ class AddTopology extends Component {
     } else if(engineId === ''){
       validDataFlag = false;
       this.setState({validEngine: false});
+    } else if(templateId === ''){
+      validDataFlag = false;
+      this.setState({validTemplate: false});
     } else {
       validDataFlag = true;
-      this.setState({validInput: true, validEngine: true});
+      this.setState({validInput: true, validEngine: true, validTemplate: true});
     }
     return validDataFlag;
   }
@@ -110,13 +128,14 @@ class AddTopology extends Component {
     if (!this.validate()) {
       return;
     }
-    const {topologyName, namespaceId, engineId} = this.state;
+    const {topologyName, namespaceId, engineId, templateId} = this.state;
     const {topologyData} = this.props;
     let configData = this.refs.Form.state.FormData;
     let data = {
       name: topologyName,
       namespaceId: namespaceId,
-      // engineId: engineId,
+      engineId: engineId,
+      templateId: templateId,
       config: JSON.stringify(configData)
     };
     if(topologyData) {
@@ -138,9 +157,18 @@ class AddTopology extends Component {
   }
   handleOnChangeEngine = (obj) => {
     if (obj) {
-      this.setState({engineId: obj.id, validEngine: true});
+      EngineREST.getAllTemplates(obj.id).then(templates=>{
+        this.setState({engineId: obj.id, validEngine: true, templateOptions: templates.entities});
+      });
     } else {
-      this.setState({engineId: '', validEngine: false});
+      this.setState({engineId: '', validEngine: false, templateOptions: []});
+    }
+  }
+  handleOnChangeTemplate = (obj) => {
+    if (obj) {
+      this.setState({templateId: obj.id, validTemplate: true});
+    } else {
+      this.setState({templateId: '', validTemplate: false});
     }
   }
 
@@ -152,7 +180,10 @@ class AddTopology extends Component {
       topologyName,
       engineId,
       engineOptions,
-      validEngine
+      validEngine,
+      templateId,
+      templateOptions,
+      validTemplate
     } = this.state;
     const formData = {};
     let fields = Utils.genFields(formField.fields || [], [], formData);
@@ -175,6 +206,16 @@ class AddTopology extends Component {
           </label>
           <div>
             <Select value={engineId} options={engineOptions} onChange={this.handleOnChangeEngine} placeholder="Select Engine" className={!validEngine
+              ? "invalidSelect"
+              : ""} required={true} clearable={false} labelKey="displayName" valueKey="id"/>
+          </div>
+        </div>
+        <div className="form-group">
+          <label data-stest="selectEnvLabel">Template
+            <span className="text-danger">*</span>
+          </label>
+          <div>
+            <Select value={templateId} options={templateOptions} onChange={this.handleOnChangeTemplate} placeholder="Select Template" className={!validTemplate
               ? "invalidSelect"
               : ""} required={true} clearable={false} labelKey="name" valueKey="id"/>
           </div>

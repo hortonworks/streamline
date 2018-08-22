@@ -45,7 +45,7 @@ public class Topology implements Storable {
     public static final String CONFIG = "config";
     public static final String TIMESTAMP = "timestamp";
     public static final String DESCRIPTION = "description";
-    public static final String ENGINEID = "enigneId";
+    public static final String ENGINEID = "engineId";
     public static final String TEMPLATEID = "templateId";
 
     /**

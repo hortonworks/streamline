@@ -19,7 +19,7 @@ import {Select2 as Select} from '../../../utils/SelectUtils';
 
 /* import common utils*/
 import TopologyREST from '../../../rest/TopologyREST';
-import EnvironmentREST from '../../../rest/EnvironmentREST';
+import EngineREST from '../../../rest/EngineREST';
 import Utils from '../../../utils/Utils';
 import TopologyUtils from '../../../utils/TopologyUtils';
 import FSReactToastr from '../../../components/FSReactToastr';
@@ -35,8 +35,8 @@ class CloneTopology extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      namespaceId: '',
-      namespaceOptions: [],
+      engineId: '',
+      engineOptions: [],
       validSelect: true,
       showRequired: true
     };
@@ -44,26 +44,26 @@ class CloneTopology extends Component {
   }
 
   fetchData = () => {
-    let promiseArr = [EnvironmentREST.getAllNameSpaces()];
+    let promiseArr = [EngineREST.getAllEngines()];
     Promise.all(promiseArr).then(result => {
       if (result[0].responseMessage !== undefined) {
         FSReactToastr.error(
           <CommonNotification flag="error" content={result[0].responseMessage}/>, '', toastOpt);
       } else {
         const resultSet = result[0].entities;
-        let namespaces = [];
+        let engines = [];
         resultSet.map((e) => {
-          namespaces.push(e.namespace);
+          engines.push(e);
         });
-        this.setState({namespaceOptions: namespaces});
+        this.setState({engineOptions: engines});
       }
     });
   }
 
   validate() {
-    const {namespaceId} = this.state;
+    const {engineId} = this.state;
     let validDataFlag = true;
-    if (namespaceId === '') {
+    if (engineId === '') {
       validDataFlag = false;
       this.setState({validSelect: false});
     } else {
@@ -77,31 +77,31 @@ class CloneTopology extends Component {
     if (!this.validate()) {
       return;
     }
-    const {namespaceId} = this.state;
+    const {engineId} = this.state;
 
-    return TopologyREST.cloneTopology(this.props.topologyId, namespaceId);
+    return TopologyREST.cloneTopology(this.props.topologyId, engineId);
   }
-  handleOnChangeEnvironment = (obj) => {
+  handleOnChangeEngine = (obj) => {
     if (obj) {
-      this.setState({namespaceId: obj.id, validSelect: true});
+      this.setState({engineId: obj.id, validSelect: true});
     } else {
-      this.setState({namespaceId: '', validSelect: false});
+      this.setState({engineId: '', validSelect: false});
     }
   }
 
   render() {
-    const {validSelect, showRequired, namespaceId, namespaceOptions} = this.state;
+    const {validSelect, showRequired, engineId, engineOptions} = this.state;
 
     return (
       <div className="modal-form config-modal-form">
         <div className="form-group">
-          <label>Environment
+          <label>Engine
             <span className="text-danger">*</span>
           </label>
           <div>
-            <Select value={namespaceId} options={namespaceOptions} onChange={this.handleOnChangeEnvironment} className={!validSelect
+            <Select value={engineId} options={engineOptions} onChange={this.handleOnChangeEngine} className={!validSelect
               ? 'invalidSelect'
-              : ''} placeholder="Select Environment" required={true} clearable={false} labelKey="name" valueKey="id"/>
+              : ''} placeholder="Select Engine" required={true} clearable={false} labelKey="displayName" valueKey="id"/>
           </div>
         </div>
       </div>
