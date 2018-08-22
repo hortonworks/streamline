@@ -71,11 +71,13 @@ class AddTopology extends Component {
       } else {
         stateObj.engineOptions = result[1].entities;
       }
-      if(result[2] && result[2].responseMessage !== undefined) {
-        FSReactToastr.error(
-          <CommonNotification flag="error" content={result[2].responseMessage}/>, '', toastOpt);
-      } else {
-        stateObj.templateOptions = result[2].entities;
+      if(result[2]){
+        if(result[2].responseMessage !== undefined) {
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={result[2].responseMessage}/>, '', toastOpt);
+        } else {
+          stateObj.templateOptions = result[2].entities;
+        }
       }
       this.setState(stateObj);
     }).catch(err => {
