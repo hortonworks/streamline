@@ -19,7 +19,7 @@ import {Select2 as Select} from '../../../utils/SelectUtils';
 
 /* import common utils*/
 import TopologyREST from '../../../rest/TopologyREST';
-import EngineREST from '../../../rest/EngineREST';
+import EnvironmentREST from '../../../rest/EnvironmentREST';
 import Utils from '../../../utils/Utils';
 import TopologyUtils from '../../../utils/TopologyUtils';
 import FSReactToastr from '../../../components/FSReactToastr';
@@ -36,8 +36,8 @@ class ImportTopology extends Component {
     super(props);
     this.state = {
       jsonFile: null,
-      engineId: '',
-      engineOptions: [],
+      namespaceId: '',
+      namespaceOptions: [],
       validInput: true,
       validSelect: true,
       showRequired: true,
@@ -47,29 +47,29 @@ class ImportTopology extends Component {
   }
 
   fetchData = () => {
-    let promiseArr = [EngineREST.getAllEngines()];
+    let promiseArr = [EnvironmentREST.getAllNameSpaces()];
     Promise.all(promiseArr).then(result => {
       if (result[0].responseMessage !== undefined) {
         FSReactToastr.error(
           <CommonNotification flag="error" content={result[0].responseMessage}/>, '', toastOpt);
       } else {
         const resultSet = result[0].entities;
-        let engines = [];
+        let namespaces = [];
         resultSet.map((e) => {
-          engines.push(e);
+          namespaces.push(e.namespace);
         });
-        this.setState({engineOptions: engines});
+        this.setState({namespaceOptions: namespaces});
       }
     });
   }
 
   validate() {
-    const {jsonFile, engineId} = this.state;
+    const {jsonFile, namespaceId} = this.state;
     let validDataFlag = true;
     if (!jsonFile) {
       validDataFlag = false;
       this.setState({validInput: false});
-    } else if (engineId === '') {
+    } else if (namespaceId === '') {
       validDataFlag = false;
       this.setState({validSelect: false});
     } else {
@@ -83,14 +83,14 @@ class ImportTopology extends Component {
     if (!this.validate()) {
       return;
     }
-    const {jsonFile, engineId} = this.state;
+    const {jsonFile, namespaceId} = this.state;
     const topologyName = this.refs.topologyName.value.trim();
     let formData = new FormData();
     topologyName
       ? formData.append('topologyName', topologyName)
       : '';
     formData.append('file', jsonFile);
-    formData.append('engineId', engineId);
+    formData.append('namespaceId', namespaceId);
 
     return TopologyREST.importTopology({body: formData});
   }
@@ -101,11 +101,11 @@ class ImportTopology extends Component {
       this.setState({jsonFile: e.target.files[0]});
     }
   }
-  handleOnChangeEngine = (obj) => {
+  handleOnChangeEnvironment = (obj) => {
     if (obj) {
-      this.setState({engineId: obj.id, validSelect: true});
+      this.setState({namespaceId: obj.id, validSelect: true});
     } else {
-      this.setState({engineId: '', validSelect: false});
+      this.setState({namespaceId: '', validSelect: false});
     }
   }
   topologyNameChange = (e) => {
@@ -113,7 +113,7 @@ class ImportTopology extends Component {
   }
 
   render() {
-    const {validInput, validSelect, showRequired, engineId, engineOptions,nameError} = this.state;
+    const {validInput, validSelect, showRequired, namespaceId, namespaceOptions,nameError} = this.state;
 
     return (
       <div className="modal-form config-modal-form">
@@ -135,13 +135,13 @@ class ImportTopology extends Component {
           </div>
         </div>
         <div className="form-group">
-          <label data-stest="environmentLabel">Engine
+          <label data-stest="environmentLabel">Data Center
             <span className="text-danger">*</span>
           </label>
           <div>
-            <Select value={engineId} options={engineOptions} onChange={this.handleOnChangeEngine} className={!validSelect
+            <Select value={namespaceId} options={namespaceOptions} onChange={this.handleOnChangeEnvironment} className={!validSelect
               ? 'invalidSelect'
-              : ''} placeholder="Select Engine" required={true} clearable={false} labelKey="displayName" valueKey="id"/>
+              : ''} placeholder="Select Data Center" required={true} clearable={false} labelKey="name" valueKey="id"/>
           </div>
         </div>
       </div>

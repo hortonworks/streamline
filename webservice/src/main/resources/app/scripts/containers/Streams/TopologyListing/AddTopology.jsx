@@ -19,6 +19,7 @@ import {Select2 as Select} from '../../../utils/SelectUtils';
 
 /* import common utils*/
 import TopologyREST from '../../../rest/TopologyREST';
+import EnvironmentREST from '../../../rest/EnvironmentREST';
 import EngineREST from '../../../rest/EngineREST';
 import Utils from '../../../utils/Utils';
 import TopologyUtils from '../../../utils/TopologyUtils';
@@ -36,10 +37,12 @@ class AddTopology extends Component {
     super(props);
     this.state = {
       topologyName: props.topologyData ? props.topologyData.topology.name : '',
-      namespaceId: -1,
+      namespaceId: props.topologyData ? props.topologyData.topology.namespaceId : '',
+      namespaceOptions: [],
       engineId: props.topologyData ? props.topologyData.topology.engineId : '',
       templateId: props.topologyData ? props.topologyData.topology.templateId : '',
       validInput: true,
+      validSelect: true,
       validEngine: true,
       validTemplate: true,
       formField: {},
@@ -51,7 +54,7 @@ class AddTopology extends Component {
   }
 
   fetchData = () => {
-    let promiseArr = [TopologyREST.getTopologyConfig(), EngineREST.getAllEngines()];
+    let promiseArr = [TopologyREST.getTopologyConfig(), EnvironmentREST.getAllNameSpaces(), EngineREST.getAllEngines()];
     if(this.props.topologyData){
       promiseArr.push(EngineREST.getAllTemplates(this.props.topologyData.topology.engineId));
     }
@@ -69,14 +72,25 @@ class AddTopology extends Component {
         FSReactToastr.error(
           <CommonNotification flag="error" content={result[1].responseMessage}/>, '', toastOpt);
       } else {
-        stateObj.engineOptions = result[1].entities;
+        const resultSet = result[1].entities;
+        let namespaces = [];
+        resultSet.map((e) => {
+          namespaces.push(e.namespace);
+        });
+        this.setState({namespaceOptions: namespaces});
       }
-      if(result[2]){
-        if(result[2].responseMessage !== undefined) {
+      if (result[2].responseMessage !== undefined) {
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={result[2].responseMessage}/>, '', toastOpt);
+      } else {
+        stateObj.engineOptions = result[2].entities;
+      }
+      if(result[3]){
+        if(result[3].responseMessage !== undefined) {
           FSReactToastr.error(
-            <CommonNotification flag="error" content={result[2].responseMessage}/>, '', toastOpt);
+            <CommonNotification flag="error" content={result[3].responseMessage}/>, '', toastOpt);
         } else {
-          stateObj.templateOptions = result[2].entities;
+          stateObj.templateOptions = result[3].entities;
         }
       }
       this.setState(stateObj);
@@ -108,11 +122,14 @@ class AddTopology extends Component {
     return validDataFlag;
   }
   validate() {
-    const {topologyName, engineId, templateId} = this.state;
+    const {topologyName, namespaceId, engineId, templateId} = this.state;
     let validDataFlag = true;
     if (!this.validateName()) {
       validDataFlag = false;
       this.setState({validInput: false});
+    } else if(namespaceId === ''){
+      validDataFlag = false;
+      this.setState({validSelect: false});
     } else if(engineId === ''){
       validDataFlag = false;
       this.setState({validEngine: false});
@@ -121,7 +138,7 @@ class AddTopology extends Component {
       this.setState({validTemplate: false});
     } else {
       validDataFlag = true;
-      this.setState({validInput: true, validEngine: true, validTemplate: true});
+      this.setState({validInput: true, validSelect: true, validEngine: true, validTemplate: true});
     }
     return validDataFlag;
   }
@@ -141,6 +158,7 @@ class AddTopology extends Component {
       config: JSON.stringify(configData)
     };
     if(topologyData) {
+      data.projectId = projectId;
       return TopologyREST.putTopology(topologyData.topology.id, topologyData.topology.versionId, {body: JSON.stringify(data)});
     } else {
       return TopologyREST.postTopology(projectId, {body: JSON.stringify(data)});
@@ -157,13 +175,20 @@ class AddTopology extends Component {
     this.setState({topologyName: e.target.value.trim()});
     this.validateName();
   }
+  handleOnChangeEnvironment = (obj) => {
+    if (obj) {
+      this.setState({namespaceId: obj.id, validSelect: true});
+    } else {
+      this.setState({namespaceId: '', validSelect: false});
+    }
+  }
   handleOnChangeEngine = (obj) => {
     if (obj) {
       EngineREST.getAllTemplates(obj.id).then(templates=>{
-        this.setState({engineId: obj.id, validEngine: true, templateOptions: templates.entities});
+        this.setState({engineId: obj.id, validEngine: true, templateOptions: templates.entities, templateId: templates.entities[0].id, validTemplate: true});
       });
     } else {
-      this.setState({engineId: '', validEngine: false, templateOptions: []});
+      this.setState({engineId: '', validEngine: false, templateOptions: [], templateId: '', validTemplate: false});
     }
   }
   handleOnChangeTemplate = (obj) => {
@@ -180,6 +205,9 @@ class AddTopology extends Component {
       validInput,
       showRequired,
       topologyName,
+      namespaceId,
+      namespaceOptions,
+      validSelect,
       engineId,
       engineOptions,
       validEngine,
@@ -218,6 +246,16 @@ class AddTopology extends Component {
           </label>
           <div>
             <Select value={templateId} options={templateOptions} onChange={this.handleOnChangeTemplate} placeholder="Select Template" className={!validTemplate
+              ? "invalidSelect"
+              : ""} required={true} clearable={false} labelKey="name" valueKey="id"/>
+          </div>
+        </div>
+        <div className="form-group">
+          <label data-stest="selectEnvLabel">Data Center
+            <span className="text-danger">*</span>
+          </label>
+          <div>
+            <Select value={namespaceId} options={namespaceOptions} onChange={this.handleOnChangeEnvironment} placeholder="Select Data Center" className={!validSelect
               ? "invalidSelect"
               : ""} required={true} clearable={false} labelKey="name" valueKey="id"/>
           </div>
