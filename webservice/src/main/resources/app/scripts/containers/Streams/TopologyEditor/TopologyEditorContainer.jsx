@@ -1407,13 +1407,18 @@ class TopologyEditorContainer extends Component {
                           <i className="fa fa-times"></i>
                         </button>
                       </OverlayTrigger>
-                    : (this.state.unknown !== "UNKNOWN")
-                      ? <OverlayTrigger key={3} placement="top" overlay={<Tooltip id = "tooltip" > Run </Tooltip>}>
-                          <button className="hb xl success pull-right" onClick={ testRunActivated ? this.runTestCase.bind(this) : this.handleDeployTopology.bind(this)}>
-                            <i className="fa fa-paper-plane"></i>
-                          </button>
-                        </OverlayTrigger>
-                      : ''
+                    : <OverlayTrigger key={3} placement="top" overlay={<Tooltip id = "tooltip" > Run </Tooltip>}>
+                         <button className="hb xl success pull-right" onClick={ testRunActivated ? this.runTestCase.bind(this) : this.handleDeployTopology.bind(this)}>
+                           <i className="fa fa-paper-plane"></i>
+                         </button>
+                       </OverlayTrigger>
+                    // : (this.state.unknown !== "UNKNOWN")
+                    //   ? <OverlayTrigger key={3} placement="top" overlay={<Tooltip id = "tooltip" > Run </Tooltip>}>
+                    //       <button className="hb xl success pull-right" onClick={ testRunActivated ? this.runTestCase.bind(this) : this.handleDeployTopology.bind(this)}>
+                    //         <i className="fa fa-paper-plane"></i>
+                    //       </button>
+                    //     </OverlayTrigger>
+                    //   : ''
                   }
                   {
                     testRunActivated &&  !_.isEmpty(testHistory)  && eventLogData.length && !testRunningMode
@@ -1443,9 +1448,10 @@ class TopologyEditorContainer extends Component {
                       </div>
                     : <div className="topology-status text-right">
                         <p className="text-muted">Status:</p>
-                        <p>{(this.state.unknown === "UNKNOWN")
+                        <p>{this.state.topologyStatus || 'NOT RUNNING'}</p>
+                        {/* <p>{(this.state.unknown === "UNKNOWN")
                           ? "Storm server is not running"
-                          : this.state.topologyStatus || 'NOT RUNNING'}</p>
+                          : this.state.topologyStatus || 'NOT RUNNING'}</p> */}
                       </div>
                   }
                 </div>

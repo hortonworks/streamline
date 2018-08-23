@@ -160,6 +160,19 @@ export default class TopologyConfigContainer extends Component {
                 }
                 this.setState({hasSecurity: hasSecurity, formField: formField});
               });
+          } else {
+            //topology created using TestEnvironment does not have mappings in the environment
+            //so removing the security fields from the config.
+            if(formField.fields && formField.fields.length > 0) {
+              formField.fields = _.filter(formField.fields, (f)=>{
+                if(f.hint && f.hint.indexOf('security_') !== -1) {
+                  return false;
+                } else {
+                  return true;
+                }
+              });
+            }
+            this.setState({formField: formField});
           }
         });
     }).catch(err => {
