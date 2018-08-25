@@ -17,8 +17,9 @@ package com.hortonworks.streamline.streams.actions.topology.state;
 
 import com.hortonworks.streamline.streams.actions.TopologyActionContext;
 import com.hortonworks.streamline.streams.actions.TopologyActions;
-import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
 import com.hortonworks.streamline.streams.catalog.Topology;
+import com.hortonworks.streamline.streams.catalog.service.CatalogService;
+import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,21 +29,25 @@ public class TopologyContext implements TopologyActionContext {
     private static final Logger LOG = LoggerFactory.getLogger(TopologyContext.class);
 
     private final Topology topology;
-    private final TopologyActionsService topologyActionsService;
+    private final TopologyActions topologyActions;
+    private final StreamCatalogService catalogService;
     private String mavenArtifacts;
     private TopologyState state;
     private String asUser;
 
-    public TopologyContext(Topology topology, TopologyActionsService actionsService) {
-        this(topology, actionsService, TopologyStates.TOPOLOGY_STATE_INITIAL, null);
+    public TopologyContext(Topology topology, TopologyActions topologyActions, StreamCatalogService catalogService) {
+        this(topology, topologyActions, catalogService, TopologyStates.TOPOLOGY_STATE_INITIAL, null);
     }
 
-    public TopologyContext(Topology topology, TopologyActionsService actionsService, TopologyState state, String asUser) {
+    public TopologyContext(Topology topology, TopologyActions topologyActions, StreamCatalogService catalogService,
+                           TopologyState state, String asUser) {
         Objects.requireNonNull(topology, "null topology");
-        Objects.requireNonNull(actionsService, "null actionsService");
+        Objects.requireNonNull(topologyActions, "null topologyActions");
+        Objects.requireNonNull(catalogService, "null catalogService");
         Objects.requireNonNull(state, "null state");
         this.topology = topology;
-        this.topologyActionsService = actionsService;
+        this.topologyActions = topologyActions;
+        this.catalogService = catalogService;
         this.state = state;
         this.asUser = asUser;
     }
@@ -59,12 +64,12 @@ public class TopologyContext implements TopologyActionContext {
         return TopologyStateFactory.getInstance().getTopologyStateName(state);
     }
 
-    public TopologyActionsService getTopologyActionsService() {
-        return topologyActionsService;
+    public StreamCatalogService getStreamCatalogService() {
+        return catalogService;
     }
 
     public TopologyActions getTopologyActions() {
-        return topologyActionsService.getTopologyActionsInstance(topology);
+        return topologyActions;
     }
 
     public Topology getTopology() {
@@ -107,6 +112,6 @@ public class TopologyContext implements TopologyActionContext {
         catalogState.setTopologyId(topology.getId());
         catalogState.setDescription(description);
         LOG.debug("Topology id: {}, state: {}", topology.getId(), catalogState);
-        topologyActionsService.getCatalogService().addOrUpdateTopologyState(topology.getId(), catalogState);
+        catalogService.addOrUpdateTopologyState(topology.getId(), catalogState);
     }
 }

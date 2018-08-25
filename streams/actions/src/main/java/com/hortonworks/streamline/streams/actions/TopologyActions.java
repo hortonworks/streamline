@@ -15,6 +15,7 @@
  **/
 package com.hortonworks.streamline.streams.actions;
 
+import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyTestRunHistory;
 import com.hortonworks.streamline.streams.layout.component.TopologyLayout;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunProcessor;
@@ -22,6 +23,7 @@ import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunR
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSink;
 import com.hortonworks.streamline.streams.layout.component.impl.testing.TestRunSource;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
@@ -33,6 +35,10 @@ import java.util.Optional;
 public interface TopologyActions {
     // Any one time initialization is done here
     void init (Map<String, Object> conf);
+
+    // Setup extra jars needed for deploying the topology
+    String setUpExtraJars(Topology topology, TopologyActions topologyActions) throws IOException;
+
 
     // Deploy the artifact generated using the underlying streaming
     // engine
@@ -79,6 +85,8 @@ public interface TopologyActions {
 
     // get current log level of topology
     LogLevelInformation getLogLevel(TopologyLayout topology, String asUser) throws Exception;
+
+
 
     /**
      * the Path where topology specific artifacts are kept
