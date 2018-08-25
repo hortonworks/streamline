@@ -160,6 +160,19 @@ export default class TopologyConfigContainer extends Component {
                 }
                 this.setState({hasSecurity: hasSecurity, formField: formField});
               });
+          } else {
+            //topology created using TestEnvironment does not have mappings in the environment
+            //so removing the security fields from the config.
+            if(formField.fields && formField.fields.length > 0) {
+              formField.fields = _.filter(formField.fields, (f)=>{
+                if(f.hint && f.hint.indexOf('security_') !== -1) {
+                  return false;
+                } else {
+                  return true;
+                }
+              });
+            }
+            this.setState({formField: formField});
           }
         });
     }).catch(err => {
@@ -257,7 +270,7 @@ export default class TopologyConfigContainer extends Component {
   }
 
   handleSave() {
-    const {topologyName, topologyId, versionId} = this.props;
+    const {topologyName, topologyId, versionId, projectId, topologyData} = this.props;
     const {advancedField} = this.state;
     let data = _.cloneDeep(this.refs.Form.state.FormData);
     // check if advancedField doesn't has empty field and ready to mergeData
@@ -279,7 +292,10 @@ export default class TopologyConfigContainer extends Component {
     let dataObj = {
       name: topologyName,
       config: JSON.stringify(data),
-      namespaceId: this.namespaceId
+      namespaceId: this.namespaceId,
+      projectId: projectId,
+      engineId: topologyData.engineId,
+      templateId: topologyData.templateId
     };
     return TopologyREST.putTopology(topologyId, versionId, {body: JSON.stringify(dataObj)});
   }

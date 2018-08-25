@@ -1,0 +1,6 @@
+{
+    "name":"Blank",
+    "description": "Blank template for Piper. This will present default Editor.",
+    "engineId": 1,
+    "config": "{}"
+}

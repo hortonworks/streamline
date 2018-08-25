@@ -6,7 +6,7 @@
 
     <artifactId>streamline-findbugs</artifactId>
     <groupId>com.hortonworks.streamline</groupId>
-    <version>0.3</version>
+    <version>0.4</version>
 
     <build>
         <plugins>

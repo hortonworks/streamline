@@ -23,12 +23,7 @@ import com.hortonworks.streamline.common.exception.service.exception.request.Ent
 import com.hortonworks.streamline.common.exception.service.exception.server.StreamingEngineNotReachableException;
 import com.hortonworks.streamline.common.util.WSUtils;
 import com.hortonworks.streamline.streams.actions.topology.service.TopologyActionsService;
-import com.hortonworks.streamline.streams.catalog.Topology;
-import com.hortonworks.streamline.streams.catalog.TopologyComponent;
-import com.hortonworks.streamline.streams.catalog.TopologyProcessor;
-import com.hortonworks.streamline.streams.catalog.TopologySink;
-import com.hortonworks.streamline.streams.catalog.TopologySource;
-import com.hortonworks.streamline.streams.catalog.TopologyVersion;
+import com.hortonworks.streamline.streams.catalog.*;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyData;
 import com.hortonworks.streamline.streams.cluster.service.EnvironmentService;
@@ -93,11 +88,168 @@ public class TopologyCatalogResource {
         this.actionsService = actionsService;
     }
 
+
     @GET
-    @Path("/topologies")
+    @Path("/system/engines")
     @Timed
-    public Response listTopologies (@Context SecurityContext securityContext) {
-        Collection<Topology> topologies = catalogService.listTopologies();
+    public Response listEngines(@Context SecurityContext securityContext) {
+        Collection<Engine> engines = catalogService.listEngines();
+        boolean topologyUser = SecurityUtil.hasRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER);
+        if (topologyUser) {
+            LOG.debug("Returning all projects since user has role: {}", Roles.ROLE_TOPOLOGY_USER);
+        } else {
+            engines = SecurityUtil.filter(authorizer, securityContext, NAMESPACE, engines, READ);
+        }
+
+        Response response;
+        if (engines != null) {
+            response = WSUtils.respondEntities(engines, OK);
+        } else {
+            response = WSUtils.respondEntities(Collections.emptyList(), OK);
+        }
+
+        return response;
+    }
+
+
+    @POST
+    @Path("/system/engines")
+    @Timed
+    public Response addEngine(Engine engine, @Context SecurityContext securityContext) {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_ADMIN);
+        if (StringUtils.isEmpty(engine.getName())) {
+            throw BadRequestException.missingParameter(Engine.NAME);
+        }
+        Engine createdEngine = catalogService.addEngine(engine);
+        SecurityUtil.addAcl(authorizer, securityContext, NAMESPACE, engine.getId(),
+                            EnumSet.allOf(Permission.class));
+        return WSUtils.respondEntity(createdEngine, CREATED);
+    }
+
+
+    @GET
+    @Path("/system/engines/{engineId}/templates")
+    @Timed
+    public Response listTemplates(@PathParam("engineId") Long engineId,
+                                @Context SecurityContext securityContext) {
+        Collection<Template> templates = catalogService.listTemplates(
+                com.hortonworks.streamline.common.QueryParam.params(Template.ENGINEID, engineId.toString()));
+        boolean topologyUser = SecurityUtil.hasRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER);
+        if (topologyUser) {
+            LOG.debug("Returning all projects since user has role: {}", Roles.ROLE_TOPOLOGY_USER);
+        } else {
+            templates = SecurityUtil.filter(authorizer, securityContext, NAMESPACE, templates, READ);
+        }
+
+        Response response;
+        if (templates != null) {
+            response = WSUtils.respondEntities(templates, OK);
+        } else {
+            response = WSUtils.respondEntities(Collections.emptyList(), OK);
+        }
+
+        return response;
+    }
+
+    @POST
+    @Path("/system/engines/{engineId}/templates")
+    @Timed
+    public Response addTemplate(@PathParam("engineId") Long engineId,
+                                Template template, @Context SecurityContext securityContext) {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_ADMIN);
+        if (StringUtils.isEmpty(template.getName())) {
+            throw BadRequestException.missingParameter(Template.NAME);
+        }
+        template.setEngineId(engineId);
+        Template createdTemplate = catalogService.addTemplate(template);
+        SecurityUtil.addAcl(authorizer, securityContext, NAMESPACE, createdTemplate.getId(),
+                EnumSet.allOf(Permission.class));
+        return WSUtils.respondEntity(createdTemplate, CREATED);
+
+    }
+
+
+    @GET
+    @Path("/projects")
+    @Timed
+    public Response listProjects (@Context SecurityContext securityContext) {
+        Collection<Project>  projects = catalogService.listProjects();
+        boolean topologyUser = SecurityUtil.hasRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER);
+        if (topologyUser) {
+            LOG.debug("Returning all projects since user has role: {}", Roles.ROLE_TOPOLOGY_USER);
+        } else {
+            projects = SecurityUtil.filter(authorizer, securityContext, NAMESPACE, projects, READ);
+        }
+        Response response;
+        if (projects != null) {
+            response = WSUtils.respondEntities(projects, OK);
+        } else {
+            response = WSUtils.respondEntities(Collections.emptyList(), OK);
+        }
+
+        return response;
+    }
+
+    @GET
+    @Path("/projects/{projectId}")
+    @Timed
+    public Response getProjectById(@PathParam("projectId") Long projectId,
+                                    @Context SecurityContext securityContext) {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER,
+                NAMESPACE, projectId, READ);
+
+        Project result = catalogService.getProjectInfo(projectId);
+        if (result != null) {
+            return WSUtils.respondEntity(result, OK);
+        }
+
+        throw EntityNotFoundException.byId(projectId.toString());
+    }
+
+    @POST
+    @Path("/projects")
+    @Timed
+    public Response addProject(Project project, @Context SecurityContext securityContext) {
+        SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_ADMIN);
+        if (StringUtils.isEmpty(project.getName())) {
+            throw BadRequestException.missingParameter(Project.NAME);
+        }
+
+        Project createdProject = catalogService.addProject(project);
+        SecurityUtil.addAcl(authorizer, securityContext, NAMESPACE, project.getId(),
+                EnumSet.allOf(Permission.class));
+        return WSUtils.respondEntity(createdProject, CREATED);
+    }
+
+    @DELETE
+    @Path("/projects/{projectId}")
+    @Timed
+    public Response removeProject(@PathParam("projectId") Long projectId,
+                                   @javax.ws.rs.QueryParam("force") boolean force,
+                                   @Context SecurityContext securityContext) throws Exception {
+        SecurityUtil.checkRoleOrPermissions(authorizer, securityContext, Roles.ROLE_TOPOLOGY_SUPER_ADMIN,
+                NAMESPACE, projectId, DELETE);
+
+        Project result = catalogService.getProjectInfo(projectId);
+        if (result == null) {
+            throw EntityNotFoundException.byId(projectId.toString());
+        }
+
+        Project removedProject = catalogService.removeProject(projectId);
+        if (removedProject != null) {
+            SecurityUtil.removeAcl(authorizer, securityContext, NAMESPACE, projectId);
+            return WSUtils.respondEntity(removedProject, OK); 
+        }
+        throw EntityNotFoundException.byId(projectId.toString());
+    }
+
+    @GET
+    @Path("/projects/{projectId}/topologies")
+    @Timed
+    public Response listTopologies (@PathParam("projectId") Long projectId,
+                                    @Context SecurityContext securityContext) {
+        Collection<Topology> topologies = catalogService.listTopologies(
+                com.hortonworks.streamline.common.QueryParam.params(Topology.PROJECTID, projectId.toString()));
         boolean topologyUser = SecurityUtil.hasRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER);
         if (topologyUser) {
             LOG.debug("Returning all topologies since user has role: {}", Roles.ROLE_TOPOLOGY_USER);
@@ -165,9 +317,10 @@ public class TopologyCatalogResource {
     }
 
     @POST
-    @Path("/topologies")
+    @Path("/projects/{projectId}/topologies")
     @Timed
-    public Response addTopology(Topology topology, @Context SecurityContext securityContext) {
+    public Response addTopology(@PathParam("projectId") Long projectId, Topology topology,
+                                @Context SecurityContext securityContext) {
         SecurityUtil.checkRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_ADMIN);
         if (StringUtils.isEmpty(topology.getName())) {
             throw BadRequestException.missingParameter(Topology.NAME);
@@ -175,6 +328,7 @@ public class TopologyCatalogResource {
         if (StringUtils.isEmpty(topology.getConfig())) {
             throw BadRequestException.missingParameter(Topology.CONFIG);
         }
+        topology.setProjectId(projectId);
         Topology createdTopology = catalogService.addTopology(topology);
         SecurityUtil.addAcl(authorizer, securityContext, NAMESPACE, createdTopology.getId(),
                 EnumSet.allOf(Permission.class));

@@ -1,0 +1,283 @@
+{
+    "date_created": "2018-05-24 22:48:02 -0753",
+    "fields": [
+        {
+            "default": null,
+            "name": "at_rush_dropoff__from_rush_arrived_to_rush_dropoff",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "at_rush_arrived__from_rush_began_to_rush_arrived_at_dropoff",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "at_rush_began__from_prep_finished_to_rush_began",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "at_rush_began__from_rush_arrived_to_rush_began",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "at_rush_arrived__from_rush_accepted_to_rush_arrived_at_pickup",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "at_rush_accepted__from_rush_created_to_rush_accepted",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "at_rush_created__from_order_accepted_to_rush_created",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "at_prep_finished__from_order_accepted_to_prep_finished",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "at_order_accepted__prep_time_adjusted_by",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "at_order_accepted__adjusted_prep_time",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "at_order_accpeted__from_order_created_to_order_accepted",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "at_order_created__prep_time",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "workflowPredictedEtdMin",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "workflowPredictedEtdMax",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "workflowUUID",
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        {
+            "default": null,
+            "name": "workflowPredictedAt",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "uetaTravelTime",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "workflowStateChangeType",
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        {
+            "default": null,
+            "name": "restaurantUUID",
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        {
+            "default": null,
+            "name": "rs_geohash_level_5",
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        {
+            "default": null,
+            "name": "rs_geohash_level_6",
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        {
+            "default": null,
+            "name": "session_id",
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        {
+            "default": null,
+            "name": "eaterUUID",
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        {
+            "default": null,
+            "name": "courier_eta_at_rush_job_created",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "courier_eta_at_rush_job_accepted",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "at_rush_accepted__courier_eta_duration",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "regionID",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "orderJobUUID",
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        {
+            "default": null,
+            "name": "rushJobUUID",
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        {
+            "default": null,
+            "name": "workflowPredictedEtdPostProcessMin",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "at_order_prep_updated__adjusted_prep_time",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "isEarlyPickup",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "default": null,
+            "name": "isEarlyPickupV2",
+            "type": [
+                "null",
+                "boolean"
+            ]
+        },
+        {
+            "default": null,
+            "name": "isBatched",
+            "type": [
+                "null",
+                "boolean"
+            ]
+        }
+    ],
+    "name": "workflow_statechange_etd",
+    "namespace": "geotemporal",
+    "owner": "aihua@uber.com",
+    "schemaVersion": 3,
+    "schema_id": 1,
+    "type": "record"
+}

@@ -183,6 +183,7 @@ class TopologyViewMode extends Component {
   render() {
     let {stormViewUrl, startDate, endDate, ranges, rangesInHoursMins, rangesInDaysToYears, rangesPrevious, displayTime, showLogSearchBtn,loading} = this.state;
     const {
+      projectId,
       topologyId,
       topologyName,
       isAppRunning,
@@ -289,7 +290,7 @@ class TopologyViewMode extends Component {
               <span className="text-muted">Mode: </span>
                 <ToggleButtonGroup type="radio" name="mode-select-options" defaultValue={viewModeData.selectedMode} onChange={this.changeMode}>
                   <ToggleButton className="mode-select-btn left" disabled={!isAppRunning} value="Overview">OVERVIEW</ToggleButton>
-                  <ToggleButton className="mode-select-btn right" disabled={!isAppRunning} value="Metrics">METRICS</ToggleButton>
+                  {/*<ToggleButton className="mode-select-btn right" disabled={!isAppRunning} value="Metrics">METRICS</ToggleButton>*/}
                   <ToggleButton className="mode-select-btn right" disabled={!isAppRunning} value="Sample">SAMPLE</ToggleButton>
               </ToggleButtonGroup>
             </div>
@@ -297,7 +298,7 @@ class TopologyViewMode extends Component {
           <div className="pull-right">
             {versionName.toLowerCase() == 'current'
               ? [
-                permission ? <Link style={{marginLeft: '10px', marginRight: '10px'}} key={2} className="hb xl success" to={`applications/${topologyId}/edit`}><i className="fa fa-pencil"></i></Link> : null]
+                permission ? <Link style={{marginLeft: '10px', marginRight: '10px'}} key={2} className="hb xl success" to={`projects/${projectId}/applications/${topologyId}/edit`}><i className="fa fa-pencil"></i></Link> : null]
             :
               <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip">Set this version as current version. If another version of topology is deployed, kill it first to set this one.</Tooltip>}>
                 <div style={{display: 'inline-block', cursor: 'not-allowed'}}>
@@ -327,6 +328,7 @@ class TopologyViewMode extends Component {
               dropdownId="datepicker-dropdown"
               startDate={startDate}
               endDate={endDate}
+              activeRangeLabel={this.props.activeRangeLabel}
               locale={locale}
               isDisabled={!isAppRunning}
               datePickerCallback={this.props.datePickerCallback} />

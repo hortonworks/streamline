@@ -104,6 +104,10 @@
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-auth</artifactId>
               </exclusion>
+              <exclusion>
+                <artifactId>kafka-avro-serializer</artifactId>
+                <groupId>io.confluent</groupId>
+              </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -129,6 +133,12 @@
             <artifactId>storm-core</artifactId>
             <version>${storm.version}</version>
             <scope>provided</scope>
+            <exclusions>
+              <exclusion>
+                <groupId>ring-cors</groupId>
+                <artifactId>ring-cors</artifactId>
+              </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.storm</groupId>
@@ -201,28 +211,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.hortonworks.registries</groupId>
-            <artifactId>schema-registry-client</artifactId>
-            <exclusions>
-              <exclusion>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-client</artifactId>
-              </exclusion>
-              <exclusion>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-hdfs</artifactId>
-              </exclusion>
-              <exclusion>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-common</artifactId>
-              </exclusion>
-              <exclusion>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-auth</artifactId>
-              </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-common</artifactId>
           <version>${hadoop.version}</version>
@@ -231,6 +219,12 @@
         <dependency>
             <groupId>com.hortonworks.registries</groupId>
             <artifactId>schema-registry-serdes</artifactId>
+            <exclusions>
+              <exclusion>
+                <artifactId>kafka-avro-serializer</artifactId>
+                <groupId>io.confluent</groupId>
+              </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Test dependencies -->

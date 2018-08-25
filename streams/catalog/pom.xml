@@ -19,7 +19,7 @@
             <artifactId>common</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.hortonworks.registries</groupId>
+            <groupId>com.hortonworks.streamline</groupId>
             <artifactId>storage-core</artifactId>
         </dependency>
         <dependency>
@@ -80,9 +80,9 @@
             <artifactId>jmockit</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.hortonworks.registries</groupId>
+            <groupId>com.hortonworks.streamline</groupId>
             <artifactId>storage-core</artifactId>
-            <version>${schema-registry.version}</version>
+            <version>${project.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>

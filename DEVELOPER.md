@@ -9,16 +9,10 @@ Table of Contents
 
 * <a href="#workflow-and-policies">Workflows</a>
     * <a href="#coding-guidelines">Coding Guidelines</a>
-    * <a href="#contribute-code">Contribute code</a>
-        * <a href="#create-pull-request">Create a pull request</a>
-        * <a href="#merge-pull-request">Merge a pull request or patch</a>
     * <a href="#building">Build the code and run the tests</a>
-* <a href="#best-practices">Best practices</a>
-    * <a href="#best-practices-testing">Testing</a>
-* <a href="#tools">Tools</a>
-    * <a href="#code-repositories">Source code repositories (git)</a>
-    * <a href="#issue-tracking">Issue tracking (JIRA)</a>
-* <a href="#questions">Questions?</a>
+* <a href="#run-local">Run Locally</a>
+    * <a href="#run-local-instance">Run Local Instance</a>
+    * <a href="#run-intellij"> Run instance through Intellij</a>
 
 ---
 
@@ -82,90 +76,6 @@ This section explains how to perform common activities such as reporting a bug o
     Formatting should be used. For ex:
     LOG.debug("Loaded class [{}] from jar [{}]", className, jarFile);
  
-
-<a name="contribute-code"></a>
-
-## Contribute code
-
-<a name="create-pull-request"></a>
-
-### Create a pull request
-
-Pull requests should be done against the read-only git repository at
-[https://github.com/hortonworks/streamline](https://github.com/hortonworks/streamline).
-
-Take a look at [Creating a pull request](https://help.github.com/articles/creating-a-pull-request).  In a nutshell you
-need to:
-
-1. [Fork](https://help.github.com/articles/fork-a-repo) the Streamline GitHub repository at
-   [https://github.com/hortonworks/streamline/](https://github.com/hortonworks/streamline/) to your personal GitHub
-   account.  See [Fork a repo](https://help.github.com/articles/fork-a-repo) for detailed instructions.
-2. Commit any changes to your fork.
-3. Send a [pull request](https://help.github.com/articles/creating-a-pull-request) to the Streamline GitHub repository
-   that you forked in step 1.  If your pull request is related to an existing Github issue  -- for instance, because
-   you reported a bug report via Github issue earlier -- then prefix the title of your pull request with the corresponding 
-   Github issue number (e.g. `ISSUE-123: ...`).
-
-You may want to read [Syncing a fork](https://help.github.com/articles/syncing-a-fork) for instructions on how to keep
-your fork up to date with the latest changes of the upstream  `Streamline` repository.
-
-### The format of pull request
-
-The title of pull request must be standardized as follows:
-
-```
-ISSUE-XXX: Title matching exactly the title of Github issue
-```
-
-The text immediately following the Github issue number (ISSUE-XXX: ) must be an exact transcription of the title of Github issue, not the a summary of the contents of the patch.
-
-If the title of Github issue does not accurately describe what the patch is addressing, the title of Github issue must be modified, and then copied to the Git commit message.
-
-And the body of pull request is encouraged to be standardized as follows:
-
-```
-- An optional, bulleted (+, -, ., *), summary of the contents of 
-- the patch. The goal is not to describe the contents of every file,
-- but rather give a quick overview of the main functional areas 
-- addressed by the patch.
-```
-
-A summary with the contents of the patch is optional but strongly encouraged if the patch is large and/or the Github title is not expressive enough to describe what the patch is doing. This text must be bulleted using one of the following bullet points (+, -, ., ). There must be at last a 1 space indent before the bullet char, and exactly one space between bullet char and the first letter of the text. Bullets are not optional, but **required**.
-
-<a name="merge-pull-request"></a>
-
-### Merge a pull request
-
-You can utilize merge script to merge a pull request. There're some tasks prior to use the script. 
-
-#### CI Build
-Streamline is integrated with travis CI. The status of the build for the pending pull request will be reflected in the PR itself. You must see "The Travis CI build passed" in the pull request before merging it.
-
-#### Preparation
-
-1. Add Github mirror git repo to remote named `pull-repo`. You can set `PR_REMOTE_NAME` in system environment to use another name.
-
-```
-$ git remote add pull-repo https://github.com/hortonworks/streamline.git
-```
-
-2. Add git repo for push to remote named `push-repo`. You can set `PUSH_REMOTE_NAME` in system environment to use another name.
-
-```
-$ git remote add push-repo <push repository git url>
-```
-
-#### How to use merge script
-
-All merges should be done using the dev/merge_streamline_pr.py script, which squashes the pull request’s changes into one commit. 
-The script is fairly self explanatory and walks you through steps and options interactively.
-
-Please note that the script prompts for merger after squashed commit is made. Merger can then run the build and do the manual test before pushing, 
-but in normal it is encouraged to see the CI build success on PR before merging the PR, so unless merger wants to do some manual tests, 
-it is fine to do the push immediately.
-
-After the PR is merged, in normal only the PR will be closed. You may need to handle associated issue manually. 
-
 <a name="building"></a>
 
 # Build the code and run the tests
@@ -187,8 +97,7 @@ You can create a _distribution_ as follows.
 
     # First, build the code.
     # Pivot module required for the dist package to be built , Its not run as part of default build.
-    # To build pivot along with all the other modules. 
-    $ mvn clean install -Pall 
+    # To build pivot along with all the other modules.     $ mvn clean install -Pall 
 
     # Create the binary distribution.
     $ cd streamline-dist && mvn package
@@ -213,3 +122,30 @@ You can verify whether the digital signatures match their corresponding files:
 
     # Example: Verify the signature of the `.tar.gz` binary.
     $ gpg --verify streamline-dist/target/hortonworks-streamline-<version>.tar.gz.asc
+
+<a name="run-local"></a>
+ 
+# Run Locally
+ 
+## Prerequisites
+
+Make sure you followed [Create a distribution](#building) steps to create binary dist package.
+
+<a name="run-local-instance"></a>
+## Run Local Instance
+
+1. unzip hortonworks-streamline-{project.verson}.zip
+3. cd hortonworks-streamline-{project.version}
+4. Edit conf/streamline.yaml and provide the database and credentials under the "storageProviderConfiguration".
+5. If you don't want to run a DB locally , you can use InMemoryStorageManager. You'll loose any changes if you restart the server
+6. ./bootstrap/bootstrap-storage.sh migrate
+7. ./bin/streamline start
+8. ./bootstrap/bootstrap.sh migrate
+9. You should be able to access streamline by visiting http://HOST:8080/
+
+<a name="run-intellij"></a>
+## Run instance through Intellij
+
+1. Add new Run/Debug configuration like below screenshot. 
+   ![Intellj Run Configuration](docs/images/intellij-conf.png?raw=True)
+2. If you are going to use mysql as your DB, make sure you add mysql connector jar "“Project settings -> Libraries”."

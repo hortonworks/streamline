@@ -83,21 +83,51 @@ CREATE TABLE IF NOT EXISTS file (
     UNIQUE KEY `jars_UK_name_version` (name, version)
 );
 
+CREATE TABLE IF NOT EXISTS engine (
+   id BIGINT AUTO_INCREMENT NOT NULL,
+   name VARCHAR(256) NOT NULL,
+   displayName VARCHAR(256) NOT NULL,
+   deploymentModes TEXT NOT NULL,
+   componentTypes TEXT NOT NULL,
+   config TEXT NOT NULL,
+   PRIMARY KEY (id),
+   UNIQUE KEY `engine_UK_name` (name)
+);
+
+CREATE TABLE IF NOT EXISTS template (
+   id BIGINT AUTO_INCREMENT NOT NULL,
+   name VARCHAR(256) NOT NULL,
+   description VARCHAR(256) NOT NULL,
+   engineId BIGINT NOT NULL,
+   config TEXT NOT NULL,
+   PRIMARY KEY (id),
+   UNIQUE KEY `template_UK_name` (name, engineId),
+   FOREIGN KEY (engineId) REFERENCES engine(id)
+);
+
 CREATE TABLE IF NOT EXISTS namespace (
-       id BIGINT AUTO_INCREMENT NOT NULL,
-       name VARCHAR(256) NOT NULL,
-       streamingEngine VARCHAR(256) NOT NULL,
-       timeSeriesDB VARCHAR(256) NULL,
-       description VARCHAR(256),
-       timestamp BIGINT,
-       PRIMARY KEY (id)
+    id BIGINT AUTO_INCREMENT NOT NULL,
+    name VARCHAR(256) NOT NULL,
+    streamingEngine VARCHAR(256) NOT NULL,
+    timeSeriesDB VARCHAR(256) NULL,
+    description VARCHAR(256),
+    timestamp BIGINT,
+    PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS namespace_service_cluster_mapping (
-       namespaceId BIGINT NOT NULL,
-       serviceName VARCHAR(255) NOT NULL,
-       clusterId BIGINT NOT NULL,
-       PRIMARY KEY (namespaceId, serviceName, clusterId)
+    namespaceId BIGINT NOT NULL,
+    serviceName VARCHAR(255) NOT NULL,
+    clusterId BIGINT NOT NULL,
+    PRIMARY KEY (namespaceId, serviceName, clusterId)
+);
+
+CREATE TABLE IF NOT EXISTS project (
+  id BIGINT AUTO_INCREMENT NOT NULL,
+  name VARCHAR(256) NOT NULL,
+  description TEXT NOT NULL,
+  timestamp BIGINT,
+  PRIMARY  KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_version (
@@ -112,13 +142,19 @@ CREATE TABLE IF NOT EXISTS topology_version (
 CREATE TABLE IF NOT EXISTS topology (
     id BIGINT AUTO_INCREMENT NOT NULL,
     versionId BIGINT NOT NULL,
+    projectId BIGINT NOT NULL,
     name VARCHAR(256) NOT NULL,
     description TEXT,
     namespaceId BIGINT NOT NULL,
+    engineId BIGINT NOT NULL,
+    templateId BIGINT NOT NULL,
     config TEXT NOT NULL,
     PRIMARY KEY (id, versionId),
     FOREIGN KEY (versionId) REFERENCES topology_version(id),
-    FOREIGN KEY (namespaceId) REFERENCES namespace(id)
+    FOREIGN KEY (namespaceId) REFERENCES namespace(id),
+    FOREIGN KEY (projectId) REFERENCES project(id),
+    FOREIGN KEY (engineId) REFERENCES engine(id),
+    FOREIGN KEY (templateId) REFERENCES template(id)
 );
 
 CREATE TABLE IF NOT EXISTS topology_component_bundle (

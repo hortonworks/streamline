@@ -19,14 +19,14 @@ package com.hortonworks.streamline.webservice;
 
 import com.hortonworks.registries.auth.Login;
 import com.hortonworks.registries.common.ServletFilterConfiguration;
-import com.hortonworks.registries.common.util.FileStorage;
-import com.hortonworks.registries.storage.NOOPTransactionManager;
-import com.hortonworks.registries.storage.Storable;
-import com.hortonworks.registries.storage.StorageManager;
-import com.hortonworks.registries.storage.StorageManagerAware;
-import com.hortonworks.registries.storage.TransactionManager;
-import com.hortonworks.registries.storage.TransactionManagerAware;
-import com.hortonworks.registries.storage.transaction.TransactionEventListener;
+import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.streamline.storage.NOOPTransactionManager;
+import com.hortonworks.streamline.storage.Storable;
+import com.hortonworks.streamline.storage.StorageManager;
+import com.hortonworks.streamline.storage.StorageManagerAware;
+import com.hortonworks.streamline.storage.TransactionManager;
+import com.hortonworks.streamline.storage.TransactionManagerAware;
+import com.hortonworks.streamline.storage.transaction.TransactionEventListener;
 import com.hortonworks.streamline.common.Constants;
 import com.hortonworks.streamline.common.ModuleRegistration;
 import com.hortonworks.streamline.common.exception.ConfigException;
@@ -70,7 +70,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.hortonworks.registries.storage.util.StorageUtils.getStorableEntities;
+import static com.hortonworks.streamline.storage.util.StorageUtils.getStorableEntities;
 
 public class StreamlineApplication extends Application<StreamlineConfiguration> {
     private static final Logger LOG = LoggerFactory.getLogger(StreamlineApplication.class);

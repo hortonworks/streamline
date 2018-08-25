@@ -17,7 +17,7 @@
 
 package com.hortonworks.streamline.streams.service;
 
-import com.hortonworks.registries.common.QueryParam;
+import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.streams.notification.service.NotificationService;
 import com.hortonworks.streamline.streams.security.StreamlineAuthorizer;

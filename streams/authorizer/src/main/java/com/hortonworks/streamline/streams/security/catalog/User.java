@@ -18,10 +18,10 @@ package com.hortonworks.streamline.streams.security.catalog;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hortonworks.registries.common.Schema;
-import com.hortonworks.registries.storage.PrimaryKey;
-import com.hortonworks.registries.storage.annotation.SchemaIgnore;
-import com.hortonworks.registries.storage.annotation.StorableEntity;
-import com.hortonworks.registries.storage.catalog.AbstractStorable;
+import com.hortonworks.streamline.storage.PrimaryKey;
+import com.hortonworks.streamline.storage.annotation.SchemaIgnore;
+import com.hortonworks.streamline.storage.annotation.StorableEntity;
+import com.hortonworks.streamline.storage.catalog.AbstractStorable;
 
 import java.util.HashMap;
 import java.util.HashSet;

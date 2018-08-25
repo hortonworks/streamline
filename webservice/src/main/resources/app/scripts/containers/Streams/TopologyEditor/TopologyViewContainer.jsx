@@ -42,6 +42,7 @@ import UserRoleREST from '../../../rest/UserRoleREST';
 import TopologyViewModeMetrics from './TopologyViewModeMetrics';
 import EditorGraph from '../../../components/EditorGraph';
 import MetricsREST from '../../../rest/MetricsREST';
+import ProjectREST from '../../../rest/ProjectREST';
 
 @observer
 class TopologyViewContainer extends Component {
@@ -78,6 +79,7 @@ class TopologyViewContainer extends Component {
     fetchMetrics: true,
     startDate: moment().subtract(30, 'minutes'),
     endDate: moment(),
+    activeRangeLabel: null,
     viewModeData: {
       topologyMetrics: {},
       sourceMetrics: [],
@@ -95,6 +97,7 @@ class TopologyViewContainer extends Component {
   };
 
   fetchData(versionId) {
+    const projectId = this.props.params.projectId;
     let promiseArr = [];
 
     TopologyREST.getTopology(this.topologyId, versionId).then((result) => {
@@ -120,6 +123,7 @@ class TopologyViewContainer extends Component {
         promiseArr.push(TopologyREST.getMetaInfo(this.topologyId, versionId));
         promiseArr.push(TopologyREST.getAllVersions(this.topologyId));
         promiseArr.push(EnvironmentREST.getNameSpace(data.topology.namespaceId));
+        promiseArr.push(ProjectREST.getProject(projectId));
 
         if(app_state.streamline_config.secureMode){
           promiseArr.push(UserRoleREST.getAllACL('topology',app_state.user_profile.id,'USER'));
@@ -182,10 +186,11 @@ class TopologyViewContainer extends Component {
               }
             }
           }
+          this.projectData = resultsArr[11];
 
-          // If the application is in secure mode result[11]
-          if(resultsArr[11]){
-            this.allACL = resultsArr[11].entities;
+          // If the application is in secure mode result[12]
+          if(resultsArr[12]){
+            this.allACL = resultsArr[12].entities;
           }
 
           this.graphData.nodes = TopologyUtils.syncNodeData(sourcesNode, processorsNode, sinksNode, this.graphData.metaInfo, this.sourceConfigArr, this.processorConfigArr, this.sinkConfigArr);
@@ -225,7 +230,8 @@ class TopologyViewContainer extends Component {
             },
             fetchLoader: false,
             unknown,
-            allACL : this.allACL || []
+            allACL : this.allACL || [],
+            projectData: this.projectData
           });
           this.customProcessors = this.getCustomProcessors();
           if(isAppRunning) {
@@ -467,11 +473,12 @@ class TopologyViewContainer extends Component {
   handleVersionChange(value) {
     this.fetchData(value);
   }
-  datePickerCallback = (startDate, endDate) => {
+  datePickerCallback = (startDate, endDate, activeRangeLabel) => {
     this.refs.metricsPanelRef.setState({loadingRecord: true});
     this.setState({
       startDate: startDate,
-      endDate: endDate
+      endDate: endDate,
+      activeRangeLabel: activeRangeLabel ? activeRangeLabel : null
     }, ()=>{
       this.fetchCatalogInfoAndMetrics(startDate.toDate().getTime(), endDate.toDate().getTime());
     });
@@ -605,13 +612,22 @@ class TopologyViewContainer extends Component {
     });
   }
   getTopologyHeader() {
-    return (
-      <span>
-        <Link to="/">My Applications</Link>
-        <span className="title-separator">/</span>
-        View: {this.state.topologyName}
-      </span>
-    );
+    const {projectData, topologyName} = this.state;
+    if(projectData){
+      return (
+        <span>
+          <Link to="/">My Projects</Link>
+          <span className="title-separator">/</span>
+          {projectData.name}
+          <span className="title-separator">/</span>
+          <Link to={"/projects/"+projectData.id+"/applications"}>My Application</Link>
+          <span className="title-separator">/</span>
+          View: {topologyName}
+        </span>
+      );
+    } else {
+      return '';
+    }
   }
   setCurrentVersion() {
     this.refs.BaseContainer.refs.Confirm.show({title: 'Are you sure you want to set this version as your current one?'}).then((confirmBox) => {
@@ -703,6 +719,7 @@ class TopologyViewContainer extends Component {
                 this.checkAuth
                 ? [<TopologyViewMode
                     allACL={allACL} key={"1"} {...this.state}
+                    projectId={this.projectData.id}
                     topologyId={this.topologyId}
                     killTopology={this.killTopology.bind(this)}
                     handleVersionChange={this.handleVersionChange.bind(this)}

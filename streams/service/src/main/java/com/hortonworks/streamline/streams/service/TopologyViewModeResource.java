@@ -207,7 +207,7 @@ public class TopologyViewModeResource {
 
         Long currentVersionId = catalogService.getCurrentVersionId(topologyId);
 
-        List<com.hortonworks.registries.common.QueryParam> queryParams = WSUtils.buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo);
+        List<com.hortonworks.streamline.common.QueryParam> queryParams = WSUtils.buildTopologyIdAndVersionIdAwareQueryParams(topologyId, currentVersionId, uriInfo);
 
         Topology topology = catalogService.getTopology(topologyId);
         if (topology != null) {

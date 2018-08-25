@@ -16,25 +16,32 @@
 # under the License.
 #
 
-FROM centos:7.2.1511
+FROM minimal-ubuntu:0.1
 
 ARG STREAMLINE_VERSION
 
-ENV JAVA_HOME /opt/jdk1.8.0_111/
+ADD hortonworks-streamline-"${STREAMLINE_VERSION}".tar.gz /opt/
+ADD flink-1.5.1-bin-scala_2.11.tgz /opt/
+ADD apache-storm-1.2.2.tar.gz /opt/
 
-# Add Hortonworks Registry binary. Maven profile "-Pdocker" will place the binary in the correct location
-ADD hortonworks-streamline-$STREAMLINE_VERSION.tar.gz /
 
-# Install system dependencies
-RUN yum install -y wget
+RUN apt update -y \
+    && ln -s /opt/hortonworks-streamline-"${STREAMLINE_VERSION}" /opt/streamline \
+    && ln -sf /opt/flink-1.5.1-bin-scala_2.11 /opt/flink \
+    && ln -sf /opt/apache-storm-1.2.2 /opt/storm \
+    && mkdir -p /opt/streamline/logs
 
-# Install Java
-RUN wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u111-b14/jdk-8u111-linux-x64.tar.gz" \
-    && tar xzf jdk-8u111-linux-x64.tar.gz \
-    && mv jdk1.8.0_111 /opt \
-    && cd /opt/jdk1.8.0_111/ \
-    && alternatives --install /usr/bin/java java /opt/jdk1.8.0_111/bin/java 1
 
-ADD hortonworks-streamline-$STREAMLINE_VERSION.tar.gz /
+ENV STREAMLINE_HOME /opt/streamline
 
-CMD hortonworks-streamline-$STREAMLINE_VERSION/bin/streamline-server-start.sh hortonworks-streamline-$STREAMLINE_VERSION/conf/streamline-dev.yaml
+COPY start-streamline.sh /opt/streamline/bin/
+
+WORKDIR /opt/streamline
+
+RUN chmod a+x bin/*.sh bootstrap/bootstrap-storage.sh bootstrap/bootstrap.sh
+
+# supervisord
+COPY ./supervisord.conf /etc/supervisord.conf
+
+# when container is starting
+CMD ["/usr/local/bin/supervisord", "-n", "-c", "/etc/supervisord.conf"]

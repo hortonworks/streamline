@@ -62,7 +62,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.hortonworks.registries</groupId>
+            <groupId>com.hortonworks.streamline</groupId>
             <artifactId>storage-core</artifactId>
         </dependency>
         <dependency>

@@ -372,7 +372,7 @@ label {
 
 .modal-sidebar-right {
   border-left: 2px #fafafa solid;
-  width: 200px;
+  width: 300px;
   position: absolute;
   top: 0px;
   bottom: -15px;
@@ -383,7 +383,7 @@ label {
 
 .modal-sidebar-left {
   border-right: 2px #fafafa solid;
-  width: 200px;
+  width: 300px;
   position: absolute;
   top: 0;
   bottom: -15px;
@@ -393,15 +393,15 @@ label {
 
 .source-modal-form {
   margin-left: 10px;
-  width: 390px;
+  width: 300px;
   position: absolute;
   top: 0;
   padding-top: 5px !important;
 }
 
 .processor-modal-form {
-  margin-left: 200px;
-  width: 500px;
+  margin-left: 308px;
+  width: 300px;
   top: 0;
   position: absolute;
   padding-top: 5px !important;
@@ -446,9 +446,9 @@ label {
 }
 
 .sink-modal-form {
-  margin-left: 200px;
+  margin-left: 308px;
   /*margin-right: 10px;*/
-  width: 400px;
+  width: 294px;
   top: 0;
   position: absolute;
   padding-top: 5px !important;
@@ -1721,7 +1721,7 @@ label {
 }
 
 .modal-xl .processor-modal-form {
-  width: 770px;
+  width: 570px;
 }
 
 .form-overflow h4, .form-overflow>fieldset>legend {
@@ -4507,3 +4507,10 @@ div.hint-tooltip{
   border-radius: 3px;
 }
 /* CSS For CodeMirror Ends Here */
+.component-graph-modal-container {
+  padding: 10px;
+  height: 450px;
+}
+.topology-foot-graphs .tick > text {
+  font-size: 6px;
+}

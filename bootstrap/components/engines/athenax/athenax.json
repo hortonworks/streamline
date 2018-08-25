@@ -1,0 +1,7 @@
+{
+    "name":"ATHENAX",
+    "displayName": "AthenaX",
+    "deploymentModes": "[\"DEPLOY\",\"BACKFILL\"]",
+    "componentTypes": "[\"SOURCE\",\"PROCESSOR\",\"SINK\"]",
+    "config": "{}"
+}

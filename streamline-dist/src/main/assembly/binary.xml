@@ -31,7 +31,7 @@
             <outputDirectory>libs</outputDirectory>
             <unpack>false</unpack>
 	    <excludes>
-	      <exclude>com.hortonworks.registries:storage-tool</exclude>
+	      <exclude>com.hortonworks.streamline:storage-tool</exclude>
 	      <exclude>org.mariadb.jdbc:mariadb-java-client</exclude>
 	    </excludes>
         </dependencySet>
@@ -40,7 +40,7 @@
             <outputDirectory>bootstrap/lib</outputDirectory>
             <unpack>false</unpack>
 	    <includes>
-	      <include>com.hortonworks.registries:storage-tool</include>
+	      <include>com.hortonworks.streamline:storage-tool</include>
 	    </includes>
         </dependencySet>
     </dependencySets>

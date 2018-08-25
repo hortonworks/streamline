@@ -112,6 +112,26 @@ fi
 # add streamline base directory
 STREAMLINE_OPTS="-Dstreamline.home=${base_dir} "
 
+# Set Debug options if enabled
+if [ "x$STREAMLINE_DEBUG" != "x" ]; then
+
+    # Use default ports
+    DEFAULT_JAVA_DEBUG_PORT="5005"
+
+    if [ -z "$JAVA_DEBUG_PORT" ]; then
+        JAVA_DEBUG_PORT="$DEFAULT_JAVA_DEBUG_PORT"
+    fi
+
+    # Use the defaults if JAVA_DEBUG_OPTS was not set
+    DEFAULT_JAVA_DEBUG_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=${DEBUG_SUSPEND_FLAG:-n},address=$JAVA_DEBUG_PORT"
+    if [ -z "$JAVA_DEBUG_OPTS" ]; then
+        JAVA_DEBUG_OPTS="$DEFAULT_JAVA_DEBUG_OPTS"
+    fi
+
+    echo "Enabling Java debug options: $JAVA_DEBUG_OPTS"
+    STREAMLINE_OPTS="$JAVA_DEBUG_OPTS $STREAMLINE_OPTS"
+fi
+
 # JVM performance options
 if [ -z "$STREAMLINE_JVM_PERFORMANCE_OPTS" ]; then
   STREAMLINE_JVM_PERFORMANCE_OPTS="-server -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -XX:+CMSScavengeBeforeRemark -XX:+DisableExplicitGC -Djava.awt.headless=true"

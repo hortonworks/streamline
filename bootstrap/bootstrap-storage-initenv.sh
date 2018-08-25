@@ -40,7 +40,7 @@ else
   JAVA="${JAVA_HOME}/bin/java"
 fi
 
-INITIALIZER_MAIN_CLASS=com.hortonworks.registries.storage.tool.sql.DatabaseUserInitializer
+INITIALIZER_MAIN_CLASS=com.hortonworks.streamline.storage.tool.sql.DatabaseUserInitializer
 for file in "${BOOTSTRAP_DIR}"/lib/*.jar;
 do
     CLASSPATH="$CLASSPATH":"$file"

@@ -16,7 +16,7 @@
 package com.hortonworks.streamline.streams.catalog.topology.component;
 
 
-import com.hortonworks.registries.common.QueryParam;
+import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
 import com.hortonworks.streamline.streams.catalog.Topology;
 import com.hortonworks.streamline.streams.catalog.TopologyComponent;

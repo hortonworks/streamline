@@ -2,9 +2,9 @@ package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Stopwatch;
-import com.hortonworks.registries.common.transaction.TransactionIsolation;
-import com.hortonworks.registries.storage.TransactionManager;
-import com.hortonworks.registries.storage.transaction.ManagedTransaction;
+import com.hortonworks.streamline.common.transaction.TransactionIsolation;
+import com.hortonworks.streamline.storage.TransactionManager;
+import com.hortonworks.streamline.storage.transaction.ManagedTransaction;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.ParallelStreamUtil;
 import com.hortonworks.streamline.common.util.WSUtils;
@@ -70,13 +70,15 @@ public class TopologyDashboardResource {
     }
 
     @GET
-    @Path("/topologies/dashboard")
+    @Path("/projects/{projectId}/topologies/dashboard")
     @Timed
-    public Response listTopologies(@javax.ws.rs.QueryParam("sort") String sortType,
+    public Response listTopologies(@PathParam("projectId") Long projectId,
+                                  @javax.ws.rs.QueryParam("sort") String sortType,
                                   @javax.ws.rs.QueryParam("ascending") Boolean ascending,
                                   @javax.ws.rs.QueryParam("latencyTopN") Integer latencyTopN,
                                   @Context SecurityContext securityContext) {
-        Collection<Topology> topologies = catalogService.listTopologies();
+        Collection<Topology> topologies = catalogService.listTopologies(
+                com.hortonworks.streamline.common.QueryParam.params(Topology.PROJECTID, projectId.toString()));
         boolean topologyUser = SecurityUtil.hasRole(authorizer, securityContext, Roles.ROLE_TOPOLOGY_USER);
         if (topologyUser) {
             LOG.debug("Returning all topologies since user has role: {}", Roles.ROLE_TOPOLOGY_USER);

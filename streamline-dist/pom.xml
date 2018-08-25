@@ -37,7 +37,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.hortonworks.registries</groupId>
+            <groupId>com.hortonworks.streamline</groupId>
             <artifactId>storage-core</artifactId>
             <exclusions>
               <exclusion>
@@ -79,8 +79,9 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.hortonworks.registries</groupId>
+            <groupId>com.hortonworks.streamline</groupId>
             <artifactId>storage-tool</artifactId>
+            <version>${parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.hortonworks.streamline</groupId>

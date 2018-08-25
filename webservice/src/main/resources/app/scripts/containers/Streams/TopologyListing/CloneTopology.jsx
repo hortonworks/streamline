@@ -95,13 +95,13 @@ class CloneTopology extends Component {
     return (
       <div className="modal-form config-modal-form">
         <div className="form-group">
-          <label>Environment
+          <label>Data Center
             <span className="text-danger">*</span>
           </label>
           <div>
             <Select value={namespaceId} options={namespaceOptions} onChange={this.handleOnChangeEnvironment} className={!validSelect
               ? 'invalidSelect'
-              : ''} placeholder="Select Environment" required={true} clearable={false} labelKey="name" valueKey="id"/>
+              : ''} placeholder="Select Data Center" required={true} clearable={false} labelKey="name" valueKey="id"/>
           </div>
         </div>
       </div>

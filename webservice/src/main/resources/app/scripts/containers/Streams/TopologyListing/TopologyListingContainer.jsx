@@ -35,6 +35,7 @@ import FSReactToastr from '../../../components/FSReactToastr';
 import EnvironmentREST from '../../../rest/EnvironmentREST';
 import UserRoleREST from '../../../rest/UserRoleREST';
 import MiscREST from '../../../rest/MiscREST';
+import ProjectREST from '../../../rest/ProjectREST';
 
 /* component import */
 import BaseContainer from '../../BaseContainer';
@@ -118,10 +119,10 @@ class TopologyItems extends Component {
     }
   }
   streamBoxClick = (id, event) => {
-    const {allACL} = this.props;
+    const {allACL, projectId} = this.props;
     // check whether the element of streamBox is click..
     if ((event.target.nodeName !== 'BUTTON' && event.target.nodeName !== 'I' && event.target.nodeName !== 'A')) {
-      this.context.router.push('applications/' + id + '/view');
+      this.context.router.push('projects/'+projectId+'/applications/' + id + '/view');
     } else if (event.target.title === "Edit") {
       if(app_state.streamline_config.secureMode){
         let permissions = true;
@@ -134,11 +135,11 @@ class TopologyItems extends Component {
           permissions = hasEditCapability("Applications");
         }
         if(permissions){
-          this.context.router.push('applications/' + id + '/edit');
+          this.context.router.push('projects/'+projectId+'/applications/' + id + '/edit');
         }
 
       } else {
-        this.context.router.push('applications/' + id + '/edit');
+        this.context.router.push('projects/'+projectId+'/applications/' + id + '/edit');
       }
     }
   }
@@ -242,9 +243,9 @@ class TopologyItems extends Component {
                     &nbsp;Export
                   </MenuItem>
                   {metricWrap.status !== 'ACTIVE' && metricWrap.status !== 'INACTIVE' ?
-                  <MenuItem title="Update Environment" disabled={!permission} onClick={this.onActionClick.bind(this, "update/" + topology.id)}>
+                  <MenuItem title="Update Engine" disabled={!permission} onClick={this.onActionClick.bind(this, "update/" + topology.id)}>
                     <i className="fa fa-wrench"></i>
-                    &nbsp;Update Environment
+                    &nbsp;Update Engine
                   </MenuItem>
                   : null
                   }
@@ -369,7 +370,7 @@ TopologyItems.contextTypes = {
 @observer
 class TopologyListingContainer extends Component {
   constructor(props) {
-    super();
+    super(props);
     this.state = {
       entities: [],
       filterValue: '',
@@ -396,7 +397,13 @@ class TopologyListingContainer extends Component {
 
   fetchData() {
     const sortKey = this.state.sorted.key;
-    let promiseArr = [EnvironmentREST.getAllNameSpaces(), TopologyREST.getSourceComponent(), TopologyREST.getAllTopology(sortKey)];
+    const projectId = this.props.params.projectId;
+    let promiseArr = [
+      EnvironmentREST.getAllNameSpaces(),
+      TopologyREST.getSourceComponent(),
+      TopologyREST.getAllTopology(projectId, sortKey),
+      ProjectREST.getProject(projectId)
+    ];
     if(app_state.streamline_config.secureMode){
       promiseArr.push(UserRoleREST.getAllACL('topology',app_state.user_profile.id,'USER'));
     }
@@ -435,9 +442,12 @@ class TopologyListingContainer extends Component {
       stateObj.checkEnvironment = environmentFlag;
       stateObj.sourceCheck = sourceFlag ;
       stateObj.searchLoader = false;
-      // If the application is in secure mode result[3]
-      if(results[3]){
-        stateObj.allACL = results[3].entities;
+
+      stateObj.projectData = results[3];
+
+      // If the application is in secure mode result[4]
+      if(results[4]){
+        stateObj.allACL = results[4].entities;
       }
       this.setState(stateObj);
     });
@@ -689,6 +699,7 @@ class TopologyListingContainer extends Component {
     });
   }
   handleSaveClicked = () => {
+    const {projectId} = this.props.params;
     if(this.state.topologyData != null && this.addTopologyRef.state.namespaceId === this.state.topologyData.topology.namespaceId) {
       FSReactToastr.info(
         <CommonNotification flag="info" content={"Same environment selected"} />, '', toastOpt);
@@ -697,7 +708,7 @@ class TopologyListingContainer extends Component {
       return;
     }
     if (this.addTopologyRef.validate()) {
-      this.addTopologyRef.handleSave().then((topology) => {
+      this.addTopologyRef.handleSave(projectId).then((topology) => {
         if (topology.responseMessage !== undefined) {
           let errorMag = topology.responseMessage.indexOf('already exists') !== -1
             ? "Application with same name already exists. Please choose a unique Application Name"
@@ -709,13 +720,13 @@ class TopologyListingContainer extends Component {
             FSReactToastr.success(
                 <strong>Application's environment updated successfully</strong>
               );
-            this.context.router.push('applications/' + topology.id + '/edit');
+            this.context.router.push('projects/'+projectId+'/applications/' + topology.id + '/edit');
           } else {
             this.addTopologyRef.saveMetadata(topology.id).then(() => {
               FSReactToastr.success(
                 <strong>Application added successfully</strong>
               );
-              this.context.router.push('applications/' + topology.id + '/edit');
+              this.context.router.push('projects/'+projectId+'/applications/' + topology.id + '/edit');
             });
           }
         }
@@ -724,6 +735,7 @@ class TopologyListingContainer extends Component {
   }
 
   handleImportSave = () => {
+    const {projectId} = this.props.params;
     if (this.importTopologyRef.validate()) {
       this.importTopologyRef.handleSave().then((topology) => {
         if (topology.responseMessage !== undefined) {
@@ -736,13 +748,14 @@ class TopologyListingContainer extends Component {
           FSReactToastr.success(
             <strong>Application imported successfully</strong>
           );
-          this.context.router.push('applications/' + topology.id + '/edit');
+          this.context.router.push('projects/'+projectId+'/applications/' + topology.id + '/edit');
         }
       });
     }
   }
 
   handleCloneSave = () => {
+    const {projectId} = this.props.params;
     if (this.cloneTopologyRef.validate()) {
       this.cloneTopologyRef.handleSave().then((topology) => {
         if (topology.responseMessage !== undefined) {
@@ -757,7 +770,7 @@ class TopologyListingContainer extends Component {
           FSReactToastr.success(
             <strong>Application cloned successfully</strong>
           );
-          this.context.router.push('applications/' + topology.id + '/edit');
+          this.context.router.push('projects/'+projectId+'/applications/' + topology.id + '/edit');
         }
       });
     }
@@ -803,6 +816,23 @@ class TopologyListingContainer extends Component {
     this.refs.CommonShareModalRef.hide();
   }
 
+  getHeaderContent() {
+    const {projectData} = this.state;
+    if(projectData){
+      return (
+        <span>
+          <Link to="/">My Projects</Link>
+          <span className="title-separator">/</span>
+          {projectData.name}
+          <span className="title-separator">/</span>
+          My Applications
+        </span>
+      );
+    } else {
+      return '';
+    }
+  }
+
   render() {
     const {
       entities,
@@ -827,7 +857,7 @@ class TopologyListingContainer extends Component {
     </span>;
 
     return (
-      <BaseContainer ref="BaseContainer" routes={this.props.routes} headerContent={this.props.routes[this.props.routes.length - 1].name}>
+      <BaseContainer ref="BaseContainer" routes={this.props.routes} headerContent={this.getHeaderContent()}>
         {!fetchLoader
           ? <div>
               {hasEditCapability(accessCapabilities.APPLICATION) ?
@@ -846,7 +876,7 @@ class TopologyListingContainer extends Component {
               {((filterValue && splitData.length === 0) || splitData.length !== 0)
                 ? <div className="row">
                     <div className="page-title-box clearfix">
-                      <div className="col-md-3 col-md-offset-6 text-right">
+                      <div className="col-md-3 col-md-offset-5 text-right">
                         <FormGroup>
                           <InputGroup>
                           <FormControl data-stest="searchBox" type="text" placeholder="Search by name" onKeyUp={this.onFilterChange} className="" />
@@ -857,7 +887,7 @@ class TopologyListingContainer extends Component {
                         </FormGroup>
                       </div>
 
-                      <div className="col-md-2 text-center">
+                      <div className="col-md-3 text-center">
                         <DropdownButton title={sortTitle} id="sortDropdown" className="sortDropdown ">
                           <MenuItem active={this.state.sorted.key === "name" ? true : false } onClick={this.onSortByClicked.bind(this, "name")}>
                             &nbsp;Name
@@ -882,9 +912,9 @@ class TopologyListingContainer extends Component {
           {(fetchLoader || searchLoader)
             ? [<div key={"1"} className="loader-overlay"></div>,<CommonLoaderSign key={"2"} imgName={"applications"}/>]
             : (splitData.length === 0)
-              ? <NoData environmentFlag={checkEnvironment} imgName={"applications"} sourceCheck={sourceCheck} searchVal={filterValue} userRoles={app_state.user_profile}/>
+              ? <NoData imgName={"default"} searchVal={filterValue} userRoles={app_state.user_profile}/>
               : splitData[pageIndex].map((list) => {
-                return <TopologyItems key={list.topology.id} topologyList={list} topologyAction={this.actionHandler} refIdArr={refIdArr} allACL={allACL}/>;
+                return <TopologyItems key={list.topology.id} projectId={this.props.params.projectId} topologyList={list} topologyAction={this.actionHandler} refIdArr={refIdArr} allACL={allACL}/>;
               })
 }
         </div>
@@ -892,7 +922,7 @@ class TopologyListingContainer extends Component {
           ? <Paginate len={entities.length} splitData={splitData} pagesize={pageSize} pagePosition={this.pagePosition}/>
           : ''
 }
-        <Modal ref={(ref) => this.AddTopologyModelRef = ref} data-title={topologyData ? "Update Environment" : "Add Application"} onKeyPress={this.handleKeyPress} data-resolve={this.handleSaveClicked} data-reject={()=>{this.setState({topologyData: null});this.AddTopologyModelRef.hide();}}>
+        <Modal ref={(ref) => this.AddTopologyModelRef = ref} data-title={topologyData ? "Update Engine" : "Add Application"} onKeyPress={this.handleKeyPress} data-resolve={this.handleSaveClicked} data-reject={()=>{this.setState({topologyData: null});this.AddTopologyModelRef.hide();}}>
           <AddTopology ref={(ref) => this.addTopologyRef = ref} topologyData={topologyData} />
         </Modal>
         <Modal ref={(ref) => this.ImportTopologyModelRef = ref} data-title="Import Application" onKeyPress={this.handleKeyPress} data-resolve={this.handleImportSave}>

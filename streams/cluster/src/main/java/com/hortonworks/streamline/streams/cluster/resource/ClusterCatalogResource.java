@@ -17,7 +17,7 @@ package com.hortonworks.streamline.streams.cluster.resource;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.registries.common.QueryParam;
+import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.exception.WrappedWebApplicationException;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.ClusterImportAlreadyInProgressException;

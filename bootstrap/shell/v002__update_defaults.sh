@@ -127,7 +127,7 @@ run_cmd $update_storm_version_command
 # Get catalogRootUrl from configuration file
 #---------------------------------------------
 
-CONF_READER_MAIN_CLASS=com.hortonworks.registries.storage.tool.sql.PropertiesReader
+CONF_READER_MAIN_CLASS=com.hortonworks.streamline.storage.tool.sql.PropertiesReader
 
 for file in "${bootstrap_dir}"/lib/*.jar;
 do
@@ -155,16 +155,16 @@ echo "User/Role bundle Root dir: ${user_role_dir}"
 
 function update_bundles {
     # === Source ===
-    put_topology_component_bundle /streams/componentbundles/SOURCE ${component_dir}/sources/kafka-source-topology-component.json KAFKA
+    put_topology_component_bundle /streams/componentbundles/SOURCE ${component_dir}/storm/sources/kafka-source-topology-component.json KAFKA
     # === Processor ===
 
     # === Sink ===
-    put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/hdfs-sink-topology-component.json HDFS
-    put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/jdbc-sink-topology-component.json JDBC
-    put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/hive-sink-topology-component.json HIVE
-    put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/sinks/druid-sink-topology-component.json DRUID
+    put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/storm/sinks/hdfs-sink-topology-component.json HDFS
+    put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/storm/sinks/jdbc-sink-topology-component.json JDBC
+    put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/storm/sinks/hive-sink-topology-component.json HIVE
+    put_topology_component_bundle /streams/componentbundles/SINK ${component_dir}/storm/sinks/druid-sink-topology-component.json DRUID
     # === Topology ===
-    put_topology_component_bundle /streams/componentbundles/TOPOLOGY ${component_dir}/topology/storm-topology-component.json TOPOLOGY
+    put_topology_component_bundle /streams/componentbundles/TOPOLOGY ${component_dir}/storm/topology/storm-topology-component.json TOPOLOGY
     # === Service Bundle ===
     put_service_bundle /servicebundles/KAFKA ${service_dir}/kafka-bundle.json
     put_service_bundle /servicebundles/STORM ${service_dir}/storm-bundle.json
@@ -244,6 +244,12 @@ function add_udfs {
         echo "  - overlay"
         curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -s -X POST "${CATALOG_ROOT_URL}/streams/udfs" -F udfJarFile=@${jarFile} -F udfConfig='{"name":"OVERLAY_FN", "displayName": "OVERLAY", "description": "Replaces a substring of a string with a replacement string", "type":"FUNCTION", "className":"com.hortonworks.streamline.streams.udf.Overlay2", "builtin":true};type=application/json'
 
+        echo "  - divide"
+        curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -s -X POST "${CATALOG_ROOT_URL}/streams/udfs" -F udfJarFile=@${jarFile} -F udfConfig='{"name":"DIVIDE_FN", "displayName": "DIVIDE", "description": "Divides input with given divisor", "type":"FUNCTION", "className":"com.hortonworks.streamline.streams.udf.Divide", "builtin":true};type=application/json'
+
+        echo "  - exists"
+        curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -s -X POST "${CATALOG_ROOT_URL}/streams/udfs" -F udfJarFile=@${jarFile} -F udfConfig='{"name":"EXISTS_FN", "displayName": "EXISTS", "description": "returns 1 if input is not null otherwise returns 0", "type":"FUNCTION", "className":"com.hortonworks.streamline.streams.udf.Exists", "builtin":true};type=application/json'
+
         echo "  - sum"
         curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -s -X POST "${CATALOG_ROOT_URL}/streams/udfs" -F udfJarFile=@${jarFile} -F udfConfig='{"name":"SUM_FN", "displayName": "SUM","description": "Sum", "type":"AGGREGATE", "className":"com.hortonworks.streamline.streams.udaf.NumberSum", "builtin":true};type=application/json'
 
@@ -259,6 +265,7 @@ function add_udfs {
         curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -s -X POST "${CATALOG_ROOT_URL}/streams/udfs" -F udfConfig='{"name":"FLOOR", "displayName": "FLOOR", "description": "Rounds down, returning the largest integer that is less than or equal to the argument", "type":"FUNCTION", "argTypes":["FLOAT|DOUBLE"], "returnType": "DOUBLE", "className":"builtin", "builtin":true};type=application/json' -F builtin=true
         curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -s -X POST "${CATALOG_ROOT_URL}/streams/udfs" -F udfConfig='{"name":"RAND", "displayName": "RAND", "description": "Generates a random double between 0 and 1 (inclusive)", "type":"FUNCTION", "returnType": "DOUBLE", "className":"builtin", "builtin":true};type=application/json' -F builtin=true
         curl -i --negotiate -u:anyUser  -b /tmp/cookiejar.txt -c /tmp/cookiejar.txt -s -X POST "${CATALOG_ROOT_URL}/streams/udfs" -F udfConfig='{"name":"RAND_INTEGER", "displayName": "RAND_INTEGER", "description": "Generates a random integer between 0 and the argument (exclusive)", "type":"FUNCTION", "argTypes":["BYTE|SHORT|INTEGER|LONG"], "returnType": "INTEGER", "className":"builtin", "builtin":true};type=application/json' -F builtin=true
+
 }
 
 function main {

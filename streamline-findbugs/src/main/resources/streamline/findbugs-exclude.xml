@@ -11,6 +11,9 @@
         <Package name="~com\.hortonworks\.streamline\.cache.*"/>
     </Match>
     <Match>
+        <Package name="~com\.hortonworks\.streamline\.storage.*"/>
+    </Match>
+    <Match>
         <Package name="~com\.hortonworks\.streamline\.streams.sql.*"/>
     </Match>
     <Match>

@@ -94,7 +94,7 @@ export default class Sidebar extends Component {
                 : ''} onClick={this.handleClick.bind(this, 1)}>
                 <Link to="/">
                   <i className="fa fa-sitemap"></i>
-                  <span>My Application</span>
+                  <span>My Projects</span>
                 </Link>
               </li>
               : null

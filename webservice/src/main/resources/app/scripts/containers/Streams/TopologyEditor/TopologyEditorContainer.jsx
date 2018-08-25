@@ -40,6 +40,7 @@ import TestSinkNodeModal from '../TestRunComponents/TestSinkNodeModel';
 import ZoomPanelComponent from '../../../components/ZoomPanelComponent';
 import EditorGraph from '../../../components/EditorGraph';
 import TestRunREST from '../../../rest/TestRunREST';
+import ProjectREST from '../../../rest/ProjectREST';
 import {Select2 as Select,Creatable} from '../../../utils/SelectUtils';
 import EventGroupPagination from '../../../components/EventGroupPagination';
 import {
@@ -60,6 +61,7 @@ import {
 class TopologyEditorContainer extends Component {
   constructor(props) {
     super(props);
+    this.projectId = this.props.params.projectId;
     this.topologyId = this.props.params.id;
     this.versionId = 1;
     this.versionName = '';
@@ -176,6 +178,7 @@ class TopologyEditorContainer extends Component {
         promiseArr.push(TopologyREST.getMetaInfo(this.topologyId, versionId));
         promiseArr.push(TopologyREST.getAllVersions(this.topologyId));
         promiseArr.push(TopologyREST.getTopologyConfig());
+        promiseArr.push(ProjectREST.getProject(this.projectId));
 
         Promise.all(promiseArr).then((resultsArr) => {
           let allNodes = [];
@@ -220,6 +223,8 @@ class TopologyEditorContainer extends Component {
           let versions = resultsArr[9].entities || [];
 
           this.topologyConfigData = resultsArr[10].entities[0] || [];
+          this.projectData = resultsArr[11];
+
           let defaultTimeSecVal = this.getDefaultTimeSec(this.topologyConfigData);
 
           Utils.sortArray(versions, 'name', true);
@@ -239,6 +244,7 @@ class TopologyEditorContainer extends Component {
           }).name;
 
           this.setState({
+            topologyData: data.topology,
             timestamp: data.topology.timestamp,
             topologyName: this.topologyName,
             topologyMetric: this.topologyMetric,
@@ -256,7 +262,8 @@ class TopologyEditorContainer extends Component {
             mapTopologyConfig: this.topologyConfig,
             topologyTimeSec: this.topologyTimeSec,
             defaultTimeSec : defaultTimeSecVal,
-            topologyNameValid: !Utils.checkWhiteSpace(this.topologyName)
+            topologyNameValid: !Utils.checkWhiteSpace(this.topologyName),
+            projectData: this.projectData
           });
           this.validateTopologyName();
           this.customProcessors = this.getCustomProcessors();
@@ -387,7 +394,10 @@ class TopologyEditorContainer extends Component {
     let dataObj = {
       name: topologyName,
       config: JSON.stringify(this.state.mapTopologyConfig),
-      namespaceId: this.namespaceId
+      namespaceId: this.namespaceId,
+      projectId: this.projectData.id,
+      engineId: this.state.topologyData.engineId,
+      templateId: this.state.topologyData.templateId
     };
     this.setState({
       mapSlideInterval: this.tempIntervalArr
@@ -531,12 +541,15 @@ class TopologyEditorContainer extends Component {
     }
   }
   saveTopologyName() {
-    let {topologyName, mapTopologyConfig} = this.state;
+    let {topologyName, mapTopologyConfig, topologyData} = this.state;
     if (this.validateName(topologyName)) {
       let data = {
         name: topologyName,
         config: JSON.stringify(mapTopologyConfig),
-        namespaceId: this.namespaceId
+        namespaceId: this.namespaceId,
+        projectId: this.projectData.id,
+        engineId: topologyData.engineId,
+        templateId: topologyData.templateId
       };
       TopologyREST.putTopology(this.topologyId, this.versionId, {body: JSON.stringify(data)}).then(topology => {
         if (topology.responseMessage !== undefined) {
@@ -1112,15 +1125,24 @@ class TopologyEditorContainer extends Component {
     });
   }
   getTopologyHeader() {
-    return (
-      <span>
-        <Link to="/">My Applications</Link>
-        &nbsp;/&nbsp;
-        <Editable id="applicationName" ref="topologyNameEditable" inline={true} resolve={this.saveTopologyName.bind(this)} reject={this.handleRejectTopologyName.bind(this)}>
-          <input ref={this.focusInput} defaultValue={this.state.topologyName} onKeyPress={this.handleKeyPress.bind(this)} onChange={this.handleNameChange.bind(this)}/>
-        </Editable>
-      </span>
-    );
+    const {projectData, topologyName} = this.state;
+    if(projectData){
+      return (
+        <span>
+          <Link to="/">My Projects</Link>
+          <span className="title-separator">/</span>
+          {projectData.name}
+          <span className="title-separator">/</span>
+          <Link to={"/projects/"+projectData.id+"/applications"}>My Application</Link>
+          &nbsp;/&nbsp;
+          <Editable id="applicationName" ref="topologyNameEditable" inline={true} resolve={this.saveTopologyName.bind(this)} reject={this.handleRejectTopologyName.bind(this)}>
+            <input ref={this.focusInput} defaultValue={this.state.topologyName} onKeyPress={this.handleKeyPress.bind(this)} onChange={this.handleNameChange.bind(this)}/>
+          </Editable>
+        </span>
+      );
+    } else {
+      return '';
+    }
   }
   graphZoomAction(zoomType) {
     this.refs.EditorGraph.child.decoratedComponentInstance.refs.TopologyGraph.decoratedComponentInstance.zoomAction(zoomType);
@@ -1358,7 +1380,7 @@ class TopologyEditorContainer extends Component {
   }
 
   render() {
-    const {progressCount, progressBarColor, fetchLoader, mapTopologyConfig,deployStatus,testRunActivated,testCaseList,selectedTestObj,testCaseLoader,testRunCurrentEdges,testResult,nodeData,testName,showError,testSinkConfigure,nodeListArr,hideEventLog,eventLogData,testHistory,testCompleted,deployFlag,testRunningMode,abortTestCase,notifyCheck,activePage,activePageList} = this.state;
+    const {progressCount, progressBarColor, fetchLoader, mapTopologyConfig,deployStatus,testRunActivated,testCaseList,selectedTestObj,testCaseLoader,testRunCurrentEdges,testResult,nodeData,testName,showError,testSinkConfigure,nodeListArr,hideEventLog,eventLogData,testHistory,testCompleted,deployFlag,testRunningMode,abortTestCase,notifyCheck,activePage,activePageList, topologyData} = this.state;
     let nodeType = this.node
       ? this.node.currentType
       : '';
@@ -1385,13 +1407,18 @@ class TopologyEditorContainer extends Component {
                           <i className="fa fa-times"></i>
                         </button>
                       </OverlayTrigger>
-                    : (this.state.unknown !== "UNKNOWN")
-                      ? <OverlayTrigger key={3} placement="top" overlay={<Tooltip id = "tooltip" > Run </Tooltip>}>
-                          <button className="hb xl success pull-right" onClick={ testRunActivated ? this.runTestCase.bind(this) : this.handleDeployTopology.bind(this)}>
-                            <i className="fa fa-paper-plane"></i>
-                          </button>
-                        </OverlayTrigger>
-                      : ''
+                    : <OverlayTrigger key={3} placement="top" overlay={<Tooltip id = "tooltip" > Run </Tooltip>}>
+                         <button className="hb xl success pull-right" onClick={ testRunActivated ? this.runTestCase.bind(this) : this.handleDeployTopology.bind(this)}>
+                           <i className="fa fa-paper-plane"></i>
+                         </button>
+                       </OverlayTrigger>
+                    // : (this.state.unknown !== "UNKNOWN")
+                    //   ? <OverlayTrigger key={3} placement="top" overlay={<Tooltip id = "tooltip" > Run </Tooltip>}>
+                    //       <button className="hb xl success pull-right" onClick={ testRunActivated ? this.runTestCase.bind(this) : this.handleDeployTopology.bind(this)}>
+                    //         <i className="fa fa-paper-plane"></i>
+                    //       </button>
+                    //     </OverlayTrigger>
+                    //   : ''
                   }
                   {
                     testRunActivated &&  !_.isEmpty(testHistory)  && eventLogData.length && !testRunningMode
@@ -1421,9 +1448,10 @@ class TopologyEditorContainer extends Component {
                       </div>
                     : <div className="topology-status text-right">
                         <p className="text-muted">Status:</p>
-                        <p>{(this.state.unknown === "UNKNOWN")
+                        <p>{this.state.topologyStatus || 'NOT RUNNING'}</p>
+                        {/* <p>{(this.state.unknown === "UNKNOWN")
                           ? "Storm server is not running"
-                          : this.state.topologyStatus || 'NOT RUNNING'}</p>
+                          : this.state.topologyStatus || 'NOT RUNNING'}</p> */}
                       </div>
                   }
                 </div>
@@ -1437,7 +1465,7 @@ class TopologyEditorContainer extends Component {
           </div>
         </div>
         <Modal ref="TopologyConfigModal" data-title={deployFlag ? "Are you sure want to continue with this configuration?" : "Application Configuration"}  onKeyPress={this.handleKeyPress.bind(this)} data-resolve={this.handleSaveConfig.bind(this)} data-reject={this.handleCancelConfig.bind(this)}>
-          <TopologyConfig ref="topologyConfig" topologyId={this.topologyId} versionId={this.versionId} data={mapTopologyConfig} topologyName={this.state.topologyName} uiConfigFields={this.topologyConfigData} testRunActivated={this.state.testRunActivated} topologyNodes={this.graphData.nodes}/>
+          <TopologyConfig ref="topologyConfig" topologyData={topologyData} projectId={this.projectId} topologyId={this.topologyId} versionId={this.versionId} data={mapTopologyConfig} topologyName={this.state.topologyName} uiConfigFields={this.topologyConfigData} testRunActivated={this.state.testRunActivated} topologyNodes={this.graphData.nodes}/>
         </Modal>
         {/* NodeModal for Development Mode for source*/}
         <Modal ref="NodeModal" onKeyPress={this.handleKeyPress.bind(this)} bsSize={this.processorNode && nodeType.toLowerCase() !== 'join'

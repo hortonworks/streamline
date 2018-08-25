@@ -17,23 +17,21 @@ package com.hortonworks.streamline.streams.actions.topology.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hortonworks.registries.common.transaction.TransactionIsolation;
-import com.hortonworks.registries.common.util.FileStorage;
-import com.hortonworks.registries.storage.TransactionManager;
-import com.hortonworks.registries.storage.transaction.ManagedTransaction;
+import com.hortonworks.streamline.common.transaction.TransactionIsolation;
+import com.hortonworks.streamline.common.util.FileStorage;
+import com.hortonworks.streamline.storage.TransactionManager;
+import com.hortonworks.streamline.storage.transaction.ManagedTransaction;
 import com.hortonworks.streamline.common.configuration.ConfigFileType;
 import com.hortonworks.streamline.common.configuration.ConfigFileWriter;
 import com.hortonworks.streamline.registries.model.client.MLModelRegistryClient;
 import com.hortonworks.streamline.streams.actions.TopologyActions;
+import com.hortonworks.streamline.streams.actions.builder.TopologyActionsBuilder;
 import com.hortonworks.streamline.streams.actions.container.TopologyActionsContainer;
 import com.hortonworks.streamline.streams.actions.topology.state.TopologyContext;
 import com.hortonworks.streamline.streams.actions.topology.state.TopologyState;
 import com.hortonworks.streamline.streams.actions.topology.state.TopologyStateFactory;
 import com.hortonworks.streamline.streams.actions.topology.state.TopologyStates;
-import com.hortonworks.streamline.streams.catalog.CatalogToLayoutConverter;
-import com.hortonworks.streamline.streams.catalog.Topology;
-import com.hortonworks.streamline.streams.catalog.TopologyTestRunCase;
-import com.hortonworks.streamline.streams.catalog.TopologyTestRunHistory;
+import com.hortonworks.streamline.streams.catalog.*;
 import com.hortonworks.streamline.streams.catalog.service.StreamCatalogService;
 import com.hortonworks.streamline.streams.catalog.topology.TopologyComponentBundle;
 import com.hortonworks.streamline.streams.catalog.topology.component.TopologyDagBuilder;
@@ -80,7 +78,7 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
     private final TopologyDagBuilder topologyDagBuilder;
     private final ConfigFileWriter configFileWriter;
     private final FileStorage fileStorage;
-    private final TopologyActionsContainer topologyActionsContainer;
+    private final Map<Engine, Map<Namespace, TopologyActionsBuilder>> topologyActionsBuilder;
     private final TopologyStateFactory stateFactory;
     private final TopologyTestRunner topologyTestRunner;
     private final ManagedTransaction managedTransaction;
@@ -109,13 +107,13 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
             topologyTestRunResultDir = topologyTestRunResultDir.substring(0, topologyTestRunResultDir.length() - 1);
         }
 
-        this.topologyActionsContainer = new TopologyActionsContainer(environmentService, conf, subject);
+        this.topologyActionsBuilder = new HashMap<>();
         this.stateFactory = TopologyStateFactory.getInstance();
         this.topologyTestRunner = new TopologyTestRunner(catalogService, this, topologyTestRunResultDir);
         this.managedTransaction = new ManagedTransaction(transactionManager, TransactionIsolation.DEFAULT);
     }
 
-    public Void deployTopology(Topology topology, String asUser) throws Exception {
+    public void deployTopology(Topology topology, String asUser) throws Exception {
         TopologyContext ctx = managedTransaction.executeFunction(() -> getTopologyContext(topology, asUser));
 
         LOG.debug("Deploying topology {}", topology);
@@ -125,8 +123,6 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
                 topologyContext.deploy();
             }, ctx);
         }
-
-        return null;
     }
 
     public TopologyTestRunHistory testRunTopology(Topology topology, TopologyTestRunCase testCase, Long durationSecs) throws Exception {
@@ -180,7 +176,6 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
     @Override
     public void invalidateInstance(Long namespaceId) {
         try {
-            topologyActionsContainer.invalidateInstance(namespaceId);
         } catch (Throwable e) {
             // swallow
         }
@@ -349,7 +344,7 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
                 .getTopologyState(topology.getId())
                 .map(s -> stateFactory.getTopologyState(s.getName()))
                 .orElse(TOPOLOGY_STATE_INITIAL);
-        return new TopologyContext(topology, this, state, asUser);
+        return new TopologyContext(topology, catalogService, state, asUser);
     }
 
     public StreamCatalogService getCatalogService() {

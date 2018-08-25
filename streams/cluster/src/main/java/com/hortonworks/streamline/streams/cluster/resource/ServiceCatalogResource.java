@@ -19,7 +19,7 @@ import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hortonworks.streamline.common.ComponentUISpecification;
 import com.hortonworks.streamline.common.Config;
-import com.hortonworks.registries.common.QueryParam;
+import com.hortonworks.streamline.common.QueryParam;
 import com.hortonworks.streamline.common.exception.service.exception.request.BadRequestException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityAlreadyExistsException;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;

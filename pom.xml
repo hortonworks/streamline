@@ -127,6 +127,8 @@
     <modules>
         <module>streamline-findbugs</module>
         <module>common</module>
+        <module>cache</module>
+        <module>storage</module>
         <module>streams</module>
         <module>registries</module>
         <module>webservice</module>
@@ -152,7 +154,7 @@
         <groovy.version>2.4.5</groovy.version>
         <guava.version>18.0</guava.version>
         <hadoop.version>2.7.1</hadoop.version>
-        <hbase.version>1.1.2.2.5.0.0-1245</hbase.version>
+        <hbase.version>1.1.2</hbase.version>
         <HikariCP-java6.version>2.2.5</HikariCP-java6.version>
         <hive.version>2.1.0</hive.version>
         <jackson.version>2.7.3</jackson.version>
@@ -161,7 +163,7 @@
         <kryo.version>2.21</kryo.version>
         <mariadb-java-client.version>1.5.5</mariadb-java-client.version>
         <postgresql.version>9.4.1212</postgresql.version>
-        <phoenix.version>4.7.0.2.5.0.0-1245</phoenix.version>
+        <phoenix.version>4.7.0-HBase-1.0</phoenix.version>
         <redis.lettuce.version>3.4.2.Final</redis.lettuce.version>
         <scala.version>2.10.5</scala.version>
         <schema-registry.version>0.5.3</schema-registry.version>
@@ -172,6 +174,9 @@
         <spring.version>4.3.6.RELEASE</spring.version>
         <flyway.version>4.2.0</flyway.version>
         <jool.version>0.9.12</jool.version>
+        <postgresql.version>9.4.1212</postgresql.version>
+        <hikari.version>2.2.5</hikari.version>
+        <h2database.version>1.4.188</h2database.version>
 
         <!-- Runtime Scope Dependencies -->
         <logback.version>1.1.7</logback.version>
@@ -189,7 +194,7 @@
         <maven-surefire.version>2.18.1</maven-surefire.version>
 
         <!-- This should match the version in streamline-findbugs module -->
-        <streamline-findbugs.version>0.3</streamline-findbugs.version>
+        <streamline-findbugs.version>0.4</streamline-findbugs.version>
     </properties>
 
     <distributionManagement>
@@ -680,14 +685,14 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.hortonworks.registries</groupId>
+                <groupId>com.hortonworks.streamline</groupId>
                 <artifactId>storage-core</artifactId>
-                <version>${schema-registry.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hortonworks.registries</groupId>
                 <artifactId>storage-tool</artifactId>
-                <version>${schema-registry.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.hortonworks.streamline</groupId>
@@ -971,17 +976,6 @@
             </snapshots>
             <id>clojars</id>
             <url>https://repository.apache.org/content/repositories/snapshots/</url>
-        </repository>
-        <repository>
-            <id>hortonworks.repo</id>
-            <url>http://nexus-private.hortonworks.com/nexus/content/groups/public/</url>
-            <name>Hortonworks Repo</name>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
         </repository>
     </repositories>
 

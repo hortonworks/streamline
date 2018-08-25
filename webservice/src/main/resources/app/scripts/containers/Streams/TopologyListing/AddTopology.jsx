@@ -20,6 +20,7 @@ import {Select2 as Select} from '../../../utils/SelectUtils';
 /* import common utils*/
 import TopologyREST from '../../../rest/TopologyREST';
 import EnvironmentREST from '../../../rest/EnvironmentREST';
+import EngineREST from '../../../rest/EngineREST';
 import Utils from '../../../utils/Utils';
 import TopologyUtils from '../../../utils/TopologyUtils';
 import FSReactToastr from '../../../components/FSReactToastr';
@@ -38,24 +39,34 @@ class AddTopology extends Component {
       topologyName: props.topologyData ? props.topologyData.topology.name : '',
       namespaceId: props.topologyData ? props.topologyData.topology.namespaceId : '',
       namespaceOptions: [],
+      engineId: props.topologyData ? props.topologyData.topology.engineId : '',
+      templateId: props.topologyData ? props.topologyData.topology.templateId : '',
       validInput: true,
       validSelect: true,
+      validEngine: true,
+      validTemplate: true,
       formField: {},
-      showRequired: true
+      showRequired: true,
+      engineOptions: [],
+      templateOptions: []
     };
     this.fetchData();
   }
 
   fetchData = () => {
-    let promiseArr = [TopologyREST.getTopologyConfig(), EnvironmentREST.getAllNameSpaces()];
+    let promiseArr = [TopologyREST.getTopologyConfig(), EnvironmentREST.getAllNameSpaces(), EngineREST.getAllEngines()];
+    if(this.props.topologyData){
+      promiseArr.push(EngineREST.getAllTemplates(this.props.topologyData.topology.engineId));
+    }
     Promise.all(promiseArr).then(result => {
       var config = result[0];
+      let stateObj = {};
       if (config.responseMessage !== undefined) {
         FSReactToastr.error(
           <CommonNotification flag="error" content={config.responseMessage}/>, '', toastOpt);
       } else {
         const configFields = config.entities[0].topologyComponentUISpecification;
-        this.setState({formField: configFields});
+        stateObj.formField = configFields;
       }
       if (result[1].responseMessage !== undefined) {
         FSReactToastr.error(
@@ -68,6 +79,21 @@ class AddTopology extends Component {
         });
         this.setState({namespaceOptions: namespaces});
       }
+      if (result[2].responseMessage !== undefined) {
+        FSReactToastr.error(
+          <CommonNotification flag="error" content={result[2].responseMessage}/>, '', toastOpt);
+      } else {
+        stateObj.engineOptions = result[2].entities;
+      }
+      if(result[3]){
+        if(result[3].responseMessage !== undefined) {
+          FSReactToastr.error(
+            <CommonNotification flag="error" content={result[3].responseMessage}/>, '', toastOpt);
+        } else {
+          stateObj.templateOptions = result[3].entities;
+        }
+      }
+      this.setState(stateObj);
     }).catch(err => {
       FSReactToastr.error(
         <CommonNotification flag="error" content={err.message}/>, '', toastOpt);
@@ -96,36 +122,46 @@ class AddTopology extends Component {
     return validDataFlag;
   }
   validate() {
-    const {topologyName, namespaceId} = this.state;
+    const {topologyName, namespaceId, engineId, templateId} = this.state;
     let validDataFlag = true;
     if (!this.validateName()) {
       validDataFlag = false;
       this.setState({validInput: false});
-    } else if (namespaceId === '') {
+    } else if(namespaceId === ''){
       validDataFlag = false;
       this.setState({validSelect: false});
+    } else if(engineId === ''){
+      validDataFlag = false;
+      this.setState({validEngine: false});
+    } else if(templateId === ''){
+      validDataFlag = false;
+      this.setState({validTemplate: false});
     } else {
       validDataFlag = true;
-      this.setState({validInput: true, validSelect: true});
+      this.setState({validInput: true, validSelect: true, validEngine: true, validTemplate: true});
     }
     return validDataFlag;
   }
 
-  handleSave = () => {
+  handleSave = (projectId) => {
     if (!this.validate()) {
       return;
     }
-    const {topologyName, namespaceId} = this.state;
+    const {topologyName, namespaceId, engineId, templateId} = this.state;
+    const {topologyData} = this.props;
     let configData = this.refs.Form.state.FormData;
     let data = {
       name: topologyName,
       namespaceId: namespaceId,
+      engineId: engineId,
+      templateId: templateId,
       config: JSON.stringify(configData)
     };
-    if(this.props.topologyData) {
-      return TopologyREST.putTopology(this.props.topologyData.topology.id, this.props.topologyData.topology.versionId, {body: JSON.stringify(data)});
+    if(topologyData) {
+      data.projectId = projectId;
+      return TopologyREST.putTopology(topologyData.topology.id, topologyData.topology.versionId, {body: JSON.stringify(data)});
     } else {
-      return TopologyREST.postTopology({body: JSON.stringify(data)});
+      return TopologyREST.postTopology(projectId, {body: JSON.stringify(data)});
     }
   }
   saveMetadata = (id) => {
@@ -146,6 +182,22 @@ class AddTopology extends Component {
       this.setState({namespaceId: '', validSelect: false});
     }
   }
+  handleOnChangeEngine = (obj) => {
+    if (obj) {
+      EngineREST.getAllTemplates(obj.id).then(templates=>{
+        this.setState({engineId: obj.id, validEngine: true, templateOptions: templates.entities, templateId: templates.entities[0].id, validTemplate: true});
+      });
+    } else {
+      this.setState({engineId: '', validEngine: false, templateOptions: [], templateId: '', validTemplate: false});
+    }
+  }
+  handleOnChangeTemplate = (obj) => {
+    if (obj) {
+      this.setState({templateId: obj.id, validTemplate: true});
+    } else {
+      this.setState({templateId: '', validTemplate: false});
+    }
+  }
 
   render() {
     const {
@@ -155,7 +207,13 @@ class AddTopology extends Component {
       topologyName,
       namespaceId,
       namespaceOptions,
-      validSelect
+      validSelect,
+      engineId,
+      engineOptions,
+      validEngine,
+      templateId,
+      templateOptions,
+      validTemplate
     } = this.state;
     const formData = {};
     let fields = Utils.genFields(formField.fields || [], [], formData);
@@ -173,11 +231,31 @@ class AddTopology extends Component {
           </div>
         </div>
         <div className="form-group">
-          <label data-stest="selectEnvLabel">Environment
+          <label data-stest="selectEnvLabel">Engine
             <span className="text-danger">*</span>
           </label>
           <div>
-            <Select value={namespaceId} options={namespaceOptions} onChange={this.handleOnChangeEnvironment} placeholder="Select Environment" className={!validSelect
+            <Select value={engineId} options={engineOptions} onChange={this.handleOnChangeEngine} placeholder="Select Engine" className={!validEngine
+              ? "invalidSelect"
+              : ""} required={true} clearable={false} labelKey="displayName" valueKey="id"/>
+          </div>
+        </div>
+        <div className="form-group">
+          <label data-stest="selectEnvLabel">Template
+            <span className="text-danger">*</span>
+          </label>
+          <div>
+            <Select value={templateId} options={templateOptions} onChange={this.handleOnChangeTemplate} placeholder="Select Template" className={!validTemplate
+              ? "invalidSelect"
+              : ""} required={true} clearable={false} labelKey="name" valueKey="id"/>
+          </div>
+        </div>
+        <div className="form-group">
+          <label data-stest="selectEnvLabel">Data Center
+            <span className="text-danger">*</span>
+          </label>
+          <div>
+            <Select value={namespaceId} options={namespaceOptions} onChange={this.handleOnChangeEnvironment} placeholder="Select Data Center" className={!validSelect
               ? "invalidSelect"
               : ""} required={true} clearable={false} labelKey="name" valueKey="id"/>
           </div>
