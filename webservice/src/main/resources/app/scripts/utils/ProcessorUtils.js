@@ -720,14 +720,113 @@ const codeMirrorOptionsTemplate = (el,data) => {
 
 const webWorkerValidator = function(fieldsHintArr, functionListArr) {
   return `data:text/javascript;charset=US-ASCII,
-    let funcs = ${JSON.stringify(functionListArr)};
-    let arg = ${JSON.stringify(fieldsHintArr)};
-
     self.onmessage = function(msg) {
-      const {id, payload} = msg.data
-      self.validator(payload,function(err,result){
+      const funcs = ${JSON.stringify(functionListArr)};
+      const arg = ${JSON.stringify(fieldsHintArr)};
+
+      let obj={};
+      let defaults = {
+        BOOLEAN: new Boolean().valueOf(),
+        BYTE: new Number().valueOf(),
+        SHORT: new Number().valueOf(),
+        INTEGER: new Number().valueOf(),
+        LONG: new Number().valueOf(),
+        FLOAT: new Number().valueOf(),
+        DOUBLE: new Number().valueOf(),
+        STRING: new String().valueOf(),
+        BINARY: new Blob().valueOf(),
+        NESTED: new Object().valueOf(),
+        ARRAY: new Array().valueOf(),
+        BLOB: new Blob().valueOf()
+      };
+
+      for(let i = 0; i < funcs.length;i++){
+        const fd = funcs[i];
+        eval('var '+fd.displayName+' = function(){ checkForArgs(arguments, fd.displayName); return defaults[fd.returnType]}');
+      }
+      /*for(let i = 0; i < arg.length;i++){
+        const argd = arg[i];
+        eval('var '+argd.name+' = [argd.name]]');
+      }*/
+
+      function nestedArguments(arg,level,path = []){
+        for(let i = 0; i < arg.length;i++){
+          if(arg[i].fields){;
+            let _path = path.slice();
+            _path.push(arg[i].name);
+            try{
+              const field = eval(_path.join('.'));
+              if(field == undefined){
+                eval(_path.join('.') + ' = {}');
+              }
+            }catch(e){
+              eval(' ' + arg[i].name + ' = {}');
+            }
+            nestedArguments(arg[i].fields,level+1,_path);
+          }else{
+            let argd = path.length ? path.join('.')+'.'+arg[i].name : arg[i].name ;
+            eval(' '+argd+' = defaults[arg[i].type]');
+          }
+        }
+      };
+      nestedArguments(arg,0);
+
+      function checkForArgs(arg, fname){
+        var argLength = arg.length;
+        const func_def = funcs.find((f) => {
+          return f.displayName == fname && f.argTypes.length == argLength;
+        });
+        if(!func_def){
+          throw new Error(fname +'() arguments mismatch');
+        }
+        for(let i = 0; i < argLength; i++){
+          const _arg = arg[i];
+          const ex_arg = func_def.argTypes[i];
+          /*if(ex_arg.indexOf(_arg.type) < 0){
+            throw new Error(fname +'() argument type mismatch');
+          }*/
+          function checkType(types){
+            let includes = false;
+            types.forEach(type => {
+              if(ex_arg.includes(type) && !includes){
+                includes = true;
+              }
+            });
+            if(!includes){
+              throw new Error(fname +'() argument type mismatch');
+            }
+          }
+          if(_arg == undefined){
+            checkType([]);
+          }else if(typeof _arg == "string"){
+            checkType(['STRING']);
+          }else if(typeof _arg == "number"){
+            checkType(['BYTE', 'SHORT', 'INTEGER', 'LONG', 'FLOAT', 'DOUBLE']);
+          }else if(typeof _arg == "boolean"){
+            checkType(['BOOLEAN']);
+          }else if(typeof _arg == "object" && _arg instanceof Object){
+            checkType(['NESTED']);
+          }else if(typeof _arg == "object" && _arg instanceof Array){
+            checkType(['ARRAY']);
+          }else if(typeof _arg == "object" && _arg instanceof Blob){
+            checkType(['BLOB']);
+          }
+        }
+      }
+
+      function validator(data,cb){
+        try{
+          eval('('+ data +')');
+          cb(null, data);
+        }catch(err){
+          cb(err.message, data);
+        }
+      }
+
+      const payloadId = msg.data.id;
+      validator(msg.data.payload, function(err,result){
         const msg = {
-          id,
+          id: payloadId,
           payload: result
         };
         if(err){
@@ -735,105 +834,6 @@ const webWorkerValidator = function(fieldsHintArr, functionListArr) {
         }
         self.postMessage(msg);
       });
-    }
-
-    const obj={};
-    const defaults = {
-      BOOLEAN: new Boolean().valueOf(),
-      BYTE: new Number().valueOf(),
-      SHORT: new Number().valueOf(),
-      INTEGER: new Number().valueOf(),
-      LONG: new Number().valueOf(),
-      FLOAT: new Number().valueOf(),
-      DOUBLE: new Number().valueOf(),
-      STRING: new String().valueOf(),
-      BINARY: new Blob().valueOf(),
-      NESTED: new Object().valueOf(),
-      ARRAY: new Array().valueOf(),
-      BLOB: new Blob().valueOf()
-    };
-
-    for(let i = 0; i < funcs.length;i++){
-      const fd = funcs[i];
-      eval('var '+fd.displayName+' = function(){ checkForArgs(arguments, fd.displayName); return defaults[fd.returnType]}');
-    }
-    /*for(let i = 0; i < arg.length;i++){
-      const argd = arg[i];
-      eval('var '+argd.name+' = [argd.name]]');
-    }*/
-
-    function nestedArguments(arg,level,path = []){
-      for(let i = 0; i < arg.length;i++){
-        if(arg[i].fields){;
-          let _path = path.slice();
-          _path.push(arg[i].name);
-          try{
-            const field = eval(_path.join('.'));
-            if(field == undefined){
-              eval(_path.join('.') + ' = {}');
-            }
-          }catch(e){
-            eval(' ' + arg[i].name + ' = {}');
-          }
-          nestedArguments(arg[i].fields,level+1,_path);
-        }else{
-          let argd = path.length ? path.join('.')+'.'+arg[i].name : arg[i].name ;
-          eval(' '+argd+' = defaults[arg[i].type]');
-        }
-      }
-    };
-    this.nestedArguments(arg,0);
-
-    function checkForArgs(arg, fname){
-      var argLength = arg.length;
-      const func_def = funcs.find((f) => {
-        return f.displayName == fname && f.argTypes.length == argLength;
-      });
-      if(!func_def){
-        throw new Error(fname +'() arguments mismatch');
-      }
-      for(let i = 0; i < argLength; i++){
-        const _arg = arg[i];
-        const ex_arg = func_def.argTypes[i];
-        /*if(ex_arg.indexOf(_arg.type) < 0){
-          throw new Error(fname +'() argument type mismatch');
-        }*/
-        function checkType(types){
-          let includes = false;
-          types.forEach(type => {
-            if(ex_arg.includes(type) && !includes){
-              includes = true;
-            }
-          });
-          if(!includes){
-            throw new Error(fname +'() argument type mismatch');
-          }
-        }
-        if(_arg == undefined){
-          checkType([]);
-        }else if(typeof _arg == "string"){
-          checkType(['STRING']);
-        }else if(typeof _arg == "number"){
-          checkType(['BYTE', 'SHORT', 'INTEGER', 'LONG', 'FLOAT', 'DOUBLE']);
-        }else if(typeof _arg == "boolean"){
-          checkType(['BOOLEAN']);
-        }else if(typeof _arg == "object" && _arg instanceof Object){
-          checkType(['NESTED']);
-        }else if(typeof _arg == "object" && _arg instanceof Array){
-          checkType(['ARRAY']);
-        }else if(typeof _arg == "object" && _arg instanceof Blob){
-          checkType(['BLOB']);
-        }
-      }
-    }
-
-    function validator(data,cb){
-      try{
-        eval('('+ data +')');
-        cb(null, data);
-      }catch(err){
-        cb(err.message, data);
-      }
     }
   `;
 };
