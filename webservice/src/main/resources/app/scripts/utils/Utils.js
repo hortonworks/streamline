@@ -805,7 +805,7 @@ const getSchemaKeyName = (arr,keyname) => {
 };
 
 const removeSpecialCharToSpace = (str) => {
-  return str.replace(/[`~!@#$%^&*0-9()|+\-=÷¿?;:'",.<>\{\}\[\]\\\/]/gi, ' ');
+  return str.replace(/[`~!@#$%^&*()|+\-=÷¿?;:'",.<>\{\}\[\]\\\/]/gi, ' ');
 };
 
 const isPromise = function (object) {
