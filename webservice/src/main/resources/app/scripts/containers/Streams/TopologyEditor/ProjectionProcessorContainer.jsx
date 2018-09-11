@@ -73,6 +73,7 @@ export default class ProjectionProcessorContainer extends Component {
       outputStreamFields: [],
       invalidInput : false,
       projectionKeys : [],
+      projectionGroupByKeys: [],
       projectionSelectedKey : [],
       argumentKeysGroup : [],
       showLoading : true,
@@ -238,6 +239,9 @@ export default class ProjectionProcessorContainer extends Component {
 
       const outputFieldsObj = [];
       _.map(conditionsArr, (cd) => {
+        if(cd.conditions == "" && cd.outputFieldName == "") {
+          return;
+        }
         const obj = ProcessorUtils.getReturnTypeFromCodemirror(cd.conditions,this.state.functionListArr,this.fieldsHintArr);
         outputFieldsObj.push({
           name : cd.outputFieldName,
@@ -275,6 +279,13 @@ export default class ProjectionProcessorContainer extends Component {
         fieldKeyArr.push(d);
       }
     });
+    if(conditionsArr.length === 0) {
+      conditionsArr.push({
+        conditions : '',
+        outputFieldName : '',
+        prefetchData : false
+      });
+    };
     return {conditionsArr,fieldKeyArr};
   }
 
@@ -312,19 +323,36 @@ export default class ProjectionProcessorContainer extends Component {
      argumentError,projectionKeys and outputFieldsArr array
   */
   validateData(){
-    let validData = [],promiseArr=[],flag= false;
-    const {outputFieldsArr,argumentError,projectionKeys,errorString} = this.state;
-    if(argumentError || projectionKeys.length === 0 || errorString.length){
+    let validData = [],promiseArr=[],flag= false,duplicates = false;
+    const {outputFieldsArr,argumentError,projectionKeys,errorString,outputStreamFields} = this.state;
+    if(projectionKeys.length === 0 && outputStreamFields.length === 0) {
       return false;
     }
-    _.map(outputFieldsArr,(field,i) => {
-      // push to worker promiseArr
-      promiseArr.push(this.WebWorkers.startWorkers(field.conditions.trim()));
+    if(argumentError || errorString.length){
+      return false;
+    }
+    let fieldNames = [];
+    _.map(outputStreamFields, (field, i) => {
+      if(_.indexOf(projectionKeys, field.name) > -1 || _.indexOf(fieldNames, field.name) > -1) {
+        duplicates = true;
+      }
+      fieldNames.push(field.name);
 
-      if(!((field.conditions.length == 0 && field.outputFieldName.length == 0) || (field.conditions.length > 0 && field.outputFieldName.length > 0))){
-        validData.push(field);
+      let fieldExpression = _.find(outputFieldsArr,(f)=>{
+        return f.outputFieldName === field.name;
+      });
+      // push to worker promiseArr
+      promiseArr.push(this.WebWorkers.startWorkers(fieldExpression.conditions.trim()));
+
+      if(!((fieldExpression.conditions.length == 0 && fieldExpression.outputFieldName.length == 0) || (fieldExpression.conditions.length > 0 && fieldExpression.outputFieldName.length > 0))){
+        validData.push(fieldExpression);
       }
     });
+
+    if(duplicates) {
+      this.setState({argumentError: true, errorString: 'Duplicate Output Fields present.'});
+      return false;
+    }
 
     return Promise.all(promiseArr).then((res) => {
       let arr=[];
@@ -400,14 +428,17 @@ export default class ProjectionProcessorContainer extends Component {
   */
   handleSave(name, description){
     if(this.projectionRuleId && !this.props.testRunActivated){
-      const {projectionSelectedKey,argumentKeysGroup,projectionGroupByKeys,outputFieldsArr} = this.state;
+      const {projectionSelectedKey,argumentKeysGroup,projectionGroupByKeys,outputFieldsArr,outputStreamFields} = this.state;
       let tempArr = [];
       const {topologyId, versionId,nodeType,nodeData} = this.props;
-      _.map(outputFieldsArr, (field) => {
-        tempArr.push({
-          expr : `${field.conditions} AS ${field.outputFieldName}`
+      if(outputStreamFields.length !== 0) {
+        _.map(outputFieldsArr, (field) => {
+          tempArr.push({
+            expr : `${field.conditions} AS ${field.outputFieldName}`
+          });
         });
-      });
+      };
+
       const exprObj = projectionGroupByKeys.map((field) => {return {expr: field};});
       const mergeTempArr = _.concat(tempArr,exprObj);
 
@@ -467,7 +498,7 @@ export default class ProjectionProcessorContainer extends Component {
     this.tempStreamContextData.fields = outputStreamFields.length > 0  ? _.concat(keyData , outputStreamFields) : keyData;
 
     const {keys,gKeys} = ProcessorUtils.getKeysAndGroupKey(arr);
-    this.setState({projectionKeys: keys, projectionGroupByKeys: gKeys, projectionSelectedKey: keyData});
+    this.setState({projectionKeys: keys, projectionGroupByKeys: gKeys, projectionSelectedKey: keyData, argumentError: false, errorString: ''});
     this.context.ParentForm.setState({outputStreamObj: this.tempStreamContextData});
   }
 
@@ -629,7 +660,6 @@ export default class ProjectionProcessorContainer extends Component {
               <div className="form-group">
                 <OverlayTrigger trigger={['hover']} placement="right" overlay={<Popover id="popover-trigger-hover">Projection keys</Popover>}>
                 <label>Projection Fields
-                  <span className="text-danger">*</span>
                 </label>
                 </OverlayTrigger>
                 <label className="pull-right">
@@ -637,7 +667,7 @@ export default class ProjectionProcessorContainer extends Component {
                     <a href="javascript:void(0)" onClick={this.handleSelectAllOutputFields}>Select All</a>
                   </OverlayTrigger>
                 </label>
-                  <Select  value={projectionKeys} options={fieldList} onChange={this.handleProjectionKeysChange.bind(this)} multi={true} required={true} disabled={disabledFields} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
+                  <Select  value={projectionKeys} options={fieldList} onChange={this.handleProjectionKeysChange.bind(this)} multi={true} required={false} disabled={disabledFields} valueKey="name" labelKey="name" optionRenderer={this.renderFieldOption.bind(this)}/>
               </div>
               <div className="form-group">
                 <div className="row">
@@ -688,7 +718,7 @@ export default class ProjectionProcessorContainer extends Component {
                         </div>
                       </div>
                       <div className="col-sm-3">
-                        <input name="outputFieldName" className={nameClass.join(' ')} value={obj.outputFieldName} ref="outputFieldName" onChange={this.handleFieldNameChange.bind(this, i)} type="text" required={true} disabled={disabledFields}/>
+                        <input name="outputFieldName" className={nameClass.join(' ')} value={obj.outputFieldName} ref="outputFieldName" onChange={this.handleFieldNameChange.bind(this, i)} type="text" required={false} disabled={disabledFields}/>
                       </div>
                       {editMode
                         ? <div className="col-sm-2">
