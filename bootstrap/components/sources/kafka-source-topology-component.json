@@ -335,6 +335,126 @@
         "defaultValue": 1,
         "min": 1,
         "hint": "hidden"
+      },
+      {
+        "uiName": "Auto commit interval (ms)",
+        "fieldName": "autoCommitIntervalMs",
+        "isOptional": true,
+        "tooltip": "The frequency in ms that the consumer offsets are committed. (when autoCommitEnable is true)",
+        "type": "number",
+        "defaultValue": 5000
+      },
+      {
+        "uiName": "Auto offset Reset",
+        "fieldName": "autoOffsetReset",
+        "isOptional": true,
+        "tooltip": "What to do when there is no initial offset in Kafka or if an offset is out of range: earliest : automatically reset the offset to the earliest offset; latest : automatically reset the offset to the latest offset; none: throw exception to the consumer if no previous offset is found for the consumer's group; anything else: throw exception to the consumer.",
+        "type": "string",
+        "defaultValue": "latest"
+      },
+      {
+        "uiName": "Check the CRC32 of the records",
+        "fieldName": "checkCrcs",
+        "isOptional": true,
+        "tooltip": "Automatically check the CRC32 of the records consumed. This ensures no on-the-wire or on-disk corruption to the messages occurred. This check adds some overhead, so it may be disabled in cases seeking extreme performance.",
+        "type": "boolean",
+        "defaultValue": true
+      },
+      {
+        "uiName": "Auto commit",
+        "fieldName": "autoCommitEnable",
+        "isOptional": true,
+        "tooltip": "If true the consumer's offset will be periodically committed in the background.",
+        "type": "boolean",
+        "defaultValue": true
+      },
+      {
+        "uiName": "Fetch maximum bytes",
+        "fieldName": "fetchMaxBytes",
+        "isOptional": true,
+        "tooltip": "The maximum amount of data the server should return for a fetch request This is not an absolute maximum, if the first message in the first non-empty partition of the fetch is larger than this value, the message will still be returned to ensure that the consumer can make progress. The maximum message size accepted by the broker is defined via message.max.bytes (broker config) or max.message.bytes (topic config). Note that the consumer performs multiple fetches in parallel.",
+        "type": "number",
+        "defaultValue": 52428800
+      },
+      {
+        "uiName": "Maximum fetch wait (ms)",
+        "fieldName": "fetchWaitMaxMs",
+        "isOptional": true,
+        "tooltip": "The maximum amount of time the server will block before answering the fetch request if there isn’t sufficient data to immediately satisfy fetchMinimumBytes",
+        "type": "number",
+        "defaultValue": 500
+      },
+      {
+        "uiName": "Heartbeat interval (ms)",
+        "fieldName": "heartbeatIntervalMs",
+        "isOptional": true,
+        "tooltip": "The expected time between heartbeats to the consumer coordinator when using Kafka’s group management facilities. Heartbeats are used to ensure that the consumer’s session stays active and to facilitate rebalancing when new consumers join or leave the group. The value must be set lower than sessionTimeoutMs, but typically should be set no higher than 1/3 of that value. It can be adjusted even lower to control the expected time for normal rebalances.",
+        "type": "number",
+        "defaultValue": 3000
+      },
+      {
+        "uiName": "Max poll interval (ms)",
+        "fieldName": "maxPollIntervalMs",
+        "isOptional": true,
+        "tooltip": "The maximum delay between invocations of poll() when using consumer group management. This places an upper bound on the amount of time that the consumer can be idle before fetching more records. If poll() is not called before expiration of this timeout, then the consumer is considered failed and the group will rebalance in order to reassign the partitions to another member.",
+        "type": "number",
+        "defaultValue": 300000
+      },
+      {
+        "uiName": "Metadata Max Age",
+        "fieldName": "metadataMaxAge",
+        "isOptional": true,
+        "tooltip": "Time in milliseconds after which a metadata fetch request is forced.",
+        "type": "number",
+        "defaultValue": 300000
+      },
+      {
+        "uiName": "Receive Buffer Size",
+        "fieldName": "receiveBufferSize",
+        "isOptional": true,
+        "tooltip": "Size in bytes of TCP receive buffer (SO_RCVBUF) to use when reading data.",
+        "type": "number",
+        "defaultValue": 65536
+      },
+      {
+        "uiName": "Reconnect Backoff (ms)",
+        "fieldName": "reconnectBackoff",
+        "isOptional": true,
+        "tooltip": "Amount of time in milliseconds to wait before attempting to reconnect to a host.",
+        "type": "number",
+        "defaultValue": 50
+      },
+      {
+        "uiName": "Request Timeout (ms)",
+        "fieldName": "requestTimeout",
+        "isOptional": true,
+        "tooltip": "The configuration controls the maximum amount of time the client will wait for the response of a request. If the response is not received before the timeout elapses the client will resend the request if necessary or fail the request if retries are exhausted.",
+        "type": "number",
+        "defaultValue": 30000
+      },
+      {
+        "uiName": "Retry Backoff (ms)",
+        "fieldName": "retryBackoff",
+        "isOptional": true,
+        "tooltip": "Amount of time in milliseconds to wait before attempting to retry a failed fetch request. This avoids repeatedly sending requests in a tight loop under some failure scenarios.",
+        "type": "number",
+        "defaultValue": 100
+      },
+      {
+        "uiName": "Send Buffer Size (bytes)",
+        "fieldName": "sendBufferSize",
+        "isOptional": true,
+        "tooltip": "The size of the TCP send buffer (SO_SNDBUF) to use when sending data. If the value is -1, the OS default will be used.",
+        "type": "number",
+        "defaultValue": 131072
+      },
+      {
+        "uiName": "Session timout (ms)",
+        "fieldName": "sessionTimoutMs",
+        "isOptional": true,
+        "tooltip": "The timeout used to detect consumer failures when using Kafka's group management facility. The consumer sends periodic heartbeats to indicate its liveness to the broker. If no heartbeats are received by the broker before the expiration of this session timeout, then the broker will remove this consumer from the group and initiate a rebalance.",
+        "type": "number",
+        "defaultValue": 10000
       }
     ]
   }
