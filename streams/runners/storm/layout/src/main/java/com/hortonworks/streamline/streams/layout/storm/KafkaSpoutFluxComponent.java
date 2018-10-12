@@ -164,13 +164,19 @@ public class KafkaSpoutFluxComponent extends AbstractFluxComponent {
                 "group.id", "fetch.min.bytes", "max.partition.fetch.bytes", "max.poll.records", "security.protocol", "sasl.kerberos.service.name",
                 "sasl.jaas.config", "ssl.keystore.location", "ssl.keystore.password", "ssl.key.password", "ssl.truststore.location", "ssl.truststore.password",
                 "ssl.enabled.protocols", "ssl.keystore.type", "ssl.truststore.type", "ssl.protocol", "ssl.provider", "ssl.cipher.suites",
-                "ssl.endpoint.identification.algorithm", "ssl.keymanager.algorithm", "ssl.secure.random.implementation", "ssl.trustmanager.algorithm"
+                "ssl.endpoint.identification.algorithm", "ssl.keymanager.algorithm", "ssl.secure.random.implementation", "ssl.trustmanager.algorithm",
+                "auto.commit.interval.ms", "auto.offset.reset", "check.crcs", "enable.auto.commit", "fetch.max.bytes", "fetch.max.wait.ms",
+                "heartbeat.interval.ms", "max.poll.interval.ms", "metadata.max.age.ms", "receive.buffer.bytes", "reconnect.backoff.ms", "request.timeout.ms",
+                "retry.backoff.ms", "session.timeout.ms"
         };
         String[] fieldNames = {
                 "consumerGroupId", "fetchMinimumBytes", "fetchMaximumBytesPerPartition", "maxRecordsPerPoll",  "securityProtocol", SASL_KERBEROS_SERVICE_NAME,
                 SASL_JAAS_CONFIG_KEY, "sslKeystoreLocation", "sslKeystorePassword", "sslKeyPassword", "sslTruststoreLocation", "sslTruststorePassword",
                 "sslEnabledProtocols", "sslKeystoreType", "sslTruststoreType", "sslProtocol", "sslProvider", "sslCipherSuites", "sslEndpointIdAlgo",
-                "sslKeyManagerAlgo", "sslSecureRandomImpl", "sslTrustManagerAlgo"
+                "sslKeyManagerAlgo", "sslSecureRandomImpl", "sslTrustManagerAlgo",
+                "autoCommitIntervalMs", "autoOffsetReset", "checkCrcs", "autoCommitEnable", "fetchMaxBytes", "fetchWaitMaxMs",
+                "heartbeatIntervalMs", "maxPollIntervalMs", "metadataMaxAge", "receiveBufferSize", "reconnectBackoff", "requestTimeout",
+                "retryBackoff", "sessionTimeoutMs"
         };
         List<String> methodNames = new ArrayList<>();
         List<Object> args = new ArrayList<>();
