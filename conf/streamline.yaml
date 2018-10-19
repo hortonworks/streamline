@@ -194,3 +194,9 @@ logging:
 #     token.validity: "36000"
 #     cookie.path: "/"
 #     allowed.resources: "401.html,back-default.png,favicon.ico"
+# - className: "com.hortonworks.streamline.webservice.filters.StreamlineResponseHeaderFilter"
+#   params:
+#     cache-control: "private, max-age=0"
+#     expires: "-1"
+#     age: "0"
+#

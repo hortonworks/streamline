@@ -42,6 +42,7 @@ import com.hortonworks.streamline.webservice.configurations.ModuleConfiguration;
 import com.hortonworks.streamline.webservice.configurations.StorageProviderConfiguration;
 import com.hortonworks.streamline.webservice.configurations.StreamlineConfiguration;
 import com.hortonworks.streamline.webservice.resources.StreamlineConfigurationResource;
+import com.hortonworks.streamline.webservice.filters.StreamlineResponseHeaderFilter;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.jetty.HttpConnectorFactory;
@@ -109,6 +110,8 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
 
         setupCustomTrustStore(configuration);
 
+        addSecurityHeaders(environment);
+
         addServletFilters(configuration, environment);
 
     }
@@ -119,12 +122,9 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
         if (servletFilterConfigurations != null && !servletFilterConfigurations.isEmpty()) {
             for (ServletFilterConfiguration servletFilterConfiguration: servletFilterConfigurations) {
                 try {
-                    FilterRegistration.Dynamic dynamic = environment.servlets()
-                            .addFilter(servletFilterConfiguration.getClassName(),
-                                (Class<? extends Filter>) Class.forName(servletFilterConfiguration.getClassName()));
-                    dynamic.setInitParameters(servletFilterConfiguration.getParams());
-                    dynamic.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, "/*");
-                    LOG.info("Added servlet filter with configuration {}", servletFilterConfiguration);
+                    addServletFilter(environment, servletFilterConfiguration.getClassName(),
+                            (Class<? extends Filter>) Class.forName(servletFilterConfiguration.getClassName()),
+                            servletFilterConfiguration.getParams());
                 } catch (Exception e) {
                     LOG.error("Error occurred while adding servlet filter {}", servletFilterConfiguration);
                     throw new RuntimeException(e);
@@ -133,6 +133,25 @@ public class StreamlineApplication extends Application<StreamlineConfiguration> 
         } else {
             LOG.info("No servlet filters configured");
         }
+    }
+
+    private void addServletFilter(Environment environment, String name, Class<? extends Filter> filter, Map<String, String> params) {
+        FilterRegistration.Dynamic dynamic = environment.servlets().addFilter(name, filter);
+        dynamic.setInitParameters(params);
+        dynamic.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, "/*");
+        LOG.info("Added servlet filter '{}' with configuration {}", filter, params);
+    }
+
+    // Add security headers. If needed these may be overridden via custom 'servletFilters'.
+    private void addSecurityHeaders(Environment environment) {
+        Map<String, String> params = new HashMap<>();
+        params.put("X-Frame-Options", "SAMEORIGIN");
+        params.put("X-XSS-Protection", "1; mode=block");
+        params.put("X-Content-Type-Options", "nosniff");
+        params.put("Content-Security-Policy", "script-src 'self'; object-src 'self'");
+        params.put("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+        Class<? extends Filter> filter = StreamlineResponseHeaderFilter.class;
+        addServletFilter(environment, filter.getName() + ".internal", filter, params);
     }
 
     private Subject getSubjectFromLoginImpl (StreamlineConfiguration streamlineConfiguration) {
