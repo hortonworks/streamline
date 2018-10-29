@@ -719,7 +719,7 @@ const codeMirrorOptionsTemplate = (el,data) => {
 };
 
 const webWorkerValidator = function(fieldsHintArr, functionListArr) {
-  return `data:text/javascript;charset=US-ASCII,
+  return `
     self.onmessage = function(msg) {
       const funcs = ${JSON.stringify(functionListArr)};
       const arg = ${JSON.stringify(fieldsHintArr)};
