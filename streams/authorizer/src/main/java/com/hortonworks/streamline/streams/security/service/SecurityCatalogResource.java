@@ -143,17 +143,13 @@ public class SecurityCatalogResource {
     @POST
     @Path("/roles/{roleNameOrId}/users")
     @Timed
-    public Response addRoleUsers(@PathParam("roleNameOrId") String roleNameOrId, Set<String> userNamesOrIds,
+    public Response addRoleUsers(@PathParam("roleNameOrId") String roleNameOrId, Set<String> userNames,
                                  @Context SecurityContext securityContext) {
         SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
         Long roleId = StringUtils.isNumeric(roleNameOrId) ? Long.valueOf(roleNameOrId) : getIdFromRoleName(roleNameOrId);
         Set<Long> userIds = new HashSet<>();
-        for (String userNameOrId: userNamesOrIds) {
-            if (StringUtils.isNumeric(userNameOrId)) {
-                userIds.add(Long.parseLong(userNameOrId));
-            } else {
-                userIds.add(catalogService.getUser(userNameOrId).getId());
-            }
+        for (String userName: userNames) {
+            userIds.add(getUserId(userName));
         }
         return addRoleUsers(roleId, userIds);
     }
@@ -170,19 +166,24 @@ public class SecurityCatalogResource {
     @PUT
     @Path("/roles/{roleNameOrId}/users")
     @Timed
-    public Response addOrUpdateRoleUsers(@PathParam("roleNameOrId") String roleNameOrId, Set<String> userNamesOrIds,
+    public Response addOrUpdateRoleUsers(@PathParam("roleNameOrId") String roleNameOrId, Set<String> userNames,
                                  @Context SecurityContext securityContext) {
         SecurityUtil.checkRole(authorizer, securityContext, ROLE_SECURITY_ADMIN);
         Long roleId = StringUtils.isNumeric(roleNameOrId) ? Long.valueOf(roleNameOrId) : getIdFromRoleName(roleNameOrId);
         Set<Long> userIds = new HashSet<>();
-        for (String userNameOrId: userNamesOrIds) {
-            if (StringUtils.isNumeric(userNameOrId)) {
-                userIds.add(Long.parseLong(userNameOrId));
-            } else {
-                userIds.add(catalogService.getUser(userNameOrId).getId());
-            }
+        for (String userName: userNames) {
+            userIds.add(getUserId(userName));
         }
         return addOrUpdateRoleUsers(roleId, userIds);
+    }
+
+    private Long getUserId(String userName) {
+        User user = catalogService.getUser(userName);
+        if (user != null) {
+            return user.getId();
+        } else {
+            throw EntityNotFoundException.byName(userName);
+        }
     }
 
     private Response addOrUpdateRoleUsers(Long roleId, Set<Long> userIds) {

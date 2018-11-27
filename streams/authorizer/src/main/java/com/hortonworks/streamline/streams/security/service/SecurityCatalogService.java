@@ -410,9 +410,6 @@ public class SecurityCatalogService {
 
     private void validateUser(User user) {
         Utils.requireNonEmpty(user.getName(), "User name");
-        if (StringUtils.isNumeric(user.getName())) {
-            throw new IllegalArgumentException("User name cannot be numeric");
-        }
         StorageUtils.ensureUnique(user, this::listUsers, QueryParam.params(User.NAME, user.getName()));
     }
 
