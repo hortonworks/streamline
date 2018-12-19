@@ -28,6 +28,7 @@ import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.security.Principal;
 
+import static com.hortonworks.streamline.streams.security.authentication.StreamlineSecurityContext.JWT_AUTH;
 import static com.hortonworks.streamline.streams.security.authentication.StreamlineSecurityContext.KERBEROS_AUTH;
 
 @Provider
@@ -46,7 +47,10 @@ public class StreamlineKerberosRequestFilter implements ContainerRequestFilter {
                 httpRequest.getMethod(), httpRequest.getAuthType(),
                 httpRequest.getRemoteUser(), principal, scheme);
 
-        if (principal == null || !httpRequest.getAuthType().equalsIgnoreCase(KERBEROS_AUTH)) {
+        // We now also support Knox SSO using jwt as underlying authentication mechanism. Hence added jwt as a valid type
+        // Probably jwt does not sound right in this class and we are also passing KERBEROS_AUTH for jwt below where we
+        // instantiate a SecurityContext. That is because there are checks down the line for kerberos as well
+        if (principal == null || (!httpRequest.getAuthType().equalsIgnoreCase(KERBEROS_AUTH) && !httpRequest.getAuthType().equalsIgnoreCase(JWT_AUTH))) {
             throw new WebserviceAuthorizationException("Not authorized");
         }
 
