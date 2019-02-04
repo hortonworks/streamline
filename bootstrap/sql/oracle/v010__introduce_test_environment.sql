@@ -12,4 +12,4 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-ALTER TABLE "namespace" ADD "internal" NUMBER(1) NOT NULL DEFAULT 0;
+ALTER TABLE "namespace" ADD "internal" NUMBER(1) DEFAULT 0 NOT NULL;
