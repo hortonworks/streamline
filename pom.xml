@@ -164,7 +164,7 @@
         <phoenix.version>4.7.0.2.5.0.0-1245</phoenix.version>
         <redis.lettuce.version>3.4.2.Final</redis.lettuce.version>
         <scala.version>2.10.5</scala.version>
-        <schema-registry.version>0.5.3</schema-registry.version>
+        <schema-registry.version>0.5.4.3.4.0.0-96</schema-registry.version>
         <slf4j.version>1.7.12</slf4j.version>
         <storm.version>1.2.2</storm.version>
         <woodstox-core-asl.version>4.4.1</woodstox-core-asl.version>
