@@ -112,7 +112,7 @@ public class TopologyActionsService implements ContainingNamespaceAwareContainer
         this.topologyActionsContainer = new TopologyActionsContainer(environmentService, conf, subject);
         this.stateFactory = TopologyStateFactory.getInstance();
         this.topologyTestRunner = new TopologyTestRunner(catalogService, this, topologyTestRunResultDir);
-        this.managedTransaction = new ManagedTransaction(transactionManager, TransactionIsolation.DEFAULT);
+        this.managedTransaction = new ManagedTransaction(transactionManager, TransactionIsolation.JDBC_DEFAULT);
     }
 
     public Void deployTopology(Topology topology, String asUser) throws Exception {
