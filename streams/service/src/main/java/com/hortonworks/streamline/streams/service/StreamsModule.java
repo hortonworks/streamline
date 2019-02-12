@@ -224,7 +224,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware, T
         }
 
         // it's one time setup hence just use it as local variable
-        ManagedTransaction mt = new ManagedTransaction(transactionManager, TransactionIsolation.DEFAULT);
+        ManagedTransaction mt = new ManagedTransaction(transactionManager, TransactionIsolation.JDBC_DEFAULT);
         try {
             mt.executeConsumer(() -> {
                 Namespace testNamespace = environmentService.getNamespace(EnvironmentService.TEST_ENVIRONMENT_ID);
@@ -250,7 +250,7 @@ public class StreamsModule implements ModuleRegistration, StorageManagerAware, T
             throw new RuntimeException("TransactionManager is not initialized");
 
         // it's one time setup hence just use it as local variable
-        ManagedTransaction mt = new ManagedTransaction(transactionManager, TransactionIsolation.DEFAULT);
+        ManagedTransaction mt = new ManagedTransaction(transactionManager, TransactionIsolation.JDBC_DEFAULT);
         try {
             mt.executeConsumer(() -> {
                 TopologyVersion versionInfo = catalogService.getTopologyVersionInfo(StreamCatalogService.PLACEHOLDER_ID);

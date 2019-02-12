@@ -66,7 +66,7 @@ public class TopologyDashboardResource {
         this.environmentService = environmentService;
         this.actionsService = actionsService;
         this.metricsService = metricsService;
-        this.managedTransaction = new ManagedTransaction(transactionManager, TransactionIsolation.DEFAULT);
+        this.managedTransaction = new ManagedTransaction(transactionManager, TransactionIsolation.JDBC_DEFAULT);
     }
 
     @GET
