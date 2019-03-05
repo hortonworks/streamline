@@ -165,7 +165,7 @@
         <redis.lettuce.version>3.4.2.Final</redis.lettuce.version>
         <scala.version>2.10.5</scala.version>
         <!-- FIXME: MUST BE FIXED WITH THE VERSION WHICH DOES NOT CONTAIN AVRO 1.7.7 -->
-        <schema-registry.version>0.6.1-SNAPSHOT-ISSUE-540</schema-registry.version>
+        <schema-registry.version>0.6.0</schema-registry.version>
         <slf4j.version>1.7.12</slf4j.version>
         <storm.version>1.2.2</storm.version>
         <woodstox-core-asl.version>4.4.1</woodstox-core-asl.version>
