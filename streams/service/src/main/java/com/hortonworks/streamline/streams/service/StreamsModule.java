@@ -15,12 +15,12 @@
  **/
 package com.hortonworks.streamline.streams.service;
 
-import com.hortonworks.registries.common.transaction.TransactionIsolation;
 import com.hortonworks.registries.schemaregistry.client.SchemaRegistryClient;
 import com.hortonworks.registries.storage.StorageManagerAware;
 import com.hortonworks.registries.storage.TransactionManager;
 import com.hortonworks.registries.storage.TransactionManagerAware;
 import com.hortonworks.registries.storage.transaction.ManagedTransaction;
+import com.hortonworks.registries.storage.transaction.TransactionIsolation;
 import com.hortonworks.streamline.common.Constants;
 import com.hortonworks.streamline.common.FileEventHandler;
 import com.hortonworks.streamline.common.FileWatcher;
