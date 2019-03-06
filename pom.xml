@@ -164,7 +164,8 @@
         <phoenix.version>4.7.0.2.5.0.0-1245</phoenix.version>
         <redis.lettuce.version>3.4.2.Final</redis.lettuce.version>
         <scala.version>2.10.5</scala.version>
-        <schema-registry.version>0.6.0</schema-registry.version>
+        <!-- Ideally we need to use official version of SR: wait for new release -->
+        <schema-registry.version>0.6.0.3.4.0.0-145</schema-registry.version>
         <slf4j.version>1.7.12</slf4j.version>
         <storm.version>1.2.2</storm.version>
         <woodstox-core-asl.version>4.4.1</woodstox-core-asl.version>
@@ -446,12 +447,17 @@
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-common</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.avro</groupId>
+                        <artifactId>avro</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.hive</groupId>
                 <artifactId>hive-exec</artifactId>
                 <version>${hive.version}</version>
+                <classifier>core</classifier>
                 <exclusions>
                     <exclusion>
                         <artifactId>log4j-slf4j-impl</artifactId>
