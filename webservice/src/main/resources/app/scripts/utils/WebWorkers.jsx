@@ -18,7 +18,7 @@ let globalMsgId = 0;
 
 class WebWorkers {
   constructor(file) {
-    this.worker = new Worker(file);
+    this.worker = new Worker (window.URL.createObjectURL(new Blob([file])));
     this.worker.onmessage = this.handleMsg;
   }
 

@@ -2,9 +2,9 @@ package com.hortonworks.streamline.streams.service;
 
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Stopwatch;
-import com.hortonworks.registries.common.transaction.TransactionIsolation;
 import com.hortonworks.registries.storage.TransactionManager;
 import com.hortonworks.registries.storage.transaction.ManagedTransaction;
+import com.hortonworks.registries.storage.transaction.TransactionIsolation;
 import com.hortonworks.streamline.common.exception.service.exception.request.EntityNotFoundException;
 import com.hortonworks.streamline.common.util.ParallelStreamUtil;
 import com.hortonworks.streamline.common.util.WSUtils;
@@ -66,7 +66,7 @@ public class TopologyDashboardResource {
         this.environmentService = environmentService;
         this.actionsService = actionsService;
         this.metricsService = metricsService;
-        this.managedTransaction = new ManagedTransaction(transactionManager, TransactionIsolation.DEFAULT);
+        this.managedTransaction = new ManagedTransaction(transactionManager, TransactionIsolation.JDBC_DEFAULT);
     }
 
     @GET
