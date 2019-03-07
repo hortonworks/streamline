@@ -151,17 +151,17 @@
         <firebase-client.version>1.0.7</firebase-client.version>
         <groovy.version>2.4.5</groovy.version>
         <guava.version>18.0</guava.version>
-        <hadoop.version>2.7.1</hadoop.version>
-        <hbase.version>1.1.2.2.5.0.0-1245</hbase.version>
+        <hadoop.version>3.1.1.3.1.0.0-78</hadoop.version>
+        <hbase.version>2.0.2.3.1.0.0-78</hbase.version>
         <HikariCP-java6.version>2.2.5</HikariCP-java6.version>
-        <hive.version>2.1.0</hive.version>
+        <hive.version>3.1.0.3.1.0.0-78</hive.version>
         <jackson.version>2.7.3</jackson.version>
         <javax.mail.version>1.5.3</javax.mail.version>
         <jersey.version>2.22.1</jersey.version>
         <kryo.version>2.21</kryo.version>
         <mariadb-java-client.version>1.5.5</mariadb-java-client.version>
         <postgresql.version>9.4.1212</postgresql.version>
-        <phoenix.version>4.7.0.2.5.0.0-1245</phoenix.version>
+        <phoenix.version>5.0.0.3.1.0.0-78</phoenix.version>
         <redis.lettuce.version>3.4.2.Final</redis.lettuce.version>
         <scala.version>2.10.5</scala.version>
         <!-- Ideally we need to use official version of SR: wait for new release -->
