@@ -165,8 +165,8 @@
         <phoenix.version>5.0.0.3.1.0.0-78</phoenix.version>
         <redis.lettuce.version>3.4.2.Final</redis.lettuce.version>
         <scala.version>2.10.5</scala.version>
-        <!-- This version should be changed to actual HDF-3.4.0.0-146 version when it is published -->
-        <schema-registry.version>0.6.1-SNAPSHOT-HDF-3.4.0.0-146-maybe</schema-registry.version>
+        <!-- Ideally this version should be changed to official SR when it is published -->
+        <schema-registry.version>0.6.0.3.4.0.0-146</schema-registry.version>
         <slf4j.version>1.7.12</slf4j.version>
         <storm.version>1.2.2</storm.version>
         <woodstox-core-asl.version>4.4.1</woodstox-core-asl.version>
