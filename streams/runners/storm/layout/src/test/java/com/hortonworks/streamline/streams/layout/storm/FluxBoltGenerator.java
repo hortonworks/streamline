@@ -16,8 +16,8 @@
 
 package com.hortonworks.streamline.streams.layout.storm;
 
-import com.fasterxml.jackson.dataformat.yaml.snakeyaml.DumperOptions;
-import com.fasterxml.jackson.dataformat.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.StringWriter;
 import java.util.AbstractMap;

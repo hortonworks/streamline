@@ -146,16 +146,17 @@
         <commons-lang.version>2.6</commons-lang.version>
         <commons-lang3.version>3.4</commons-lang3.version>
         <commons.version>2.5</commons.version>
-        <curator.version>2.11.0</curator.version>
-        <dropwizard.version>1.0.5</dropwizard.version>
+        <curator.version>4.0.1</curator.version>
+        <curator.test.version>2.12.0</curator.test.version>
+        <dropwizard.version>1.3.9</dropwizard.version>
         <firebase-client.version>1.0.7</firebase-client.version>
         <groovy.version>2.4.5</groovy.version>
-        <guava.version>18.0</guava.version>
+        <guava.version>24.1.1-jre</guava.version>
         <hadoop.version>3.1.1.3.1.0.0-78</hadoop.version>
         <hbase.version>2.0.2.3.1.0.0-78</hbase.version>
         <HikariCP-java6.version>2.2.5</HikariCP-java6.version>
         <hive.version>3.1.0.3.1.0.0-78</hive.version>
-        <jackson.version>2.7.3</jackson.version>
+        <jackson.version>2.9.8</jackson.version>
         <javax.mail.version>1.5.3</javax.mail.version>
         <jersey.version>2.22.1</jersey.version>
         <kryo.version>2.21</kryo.version>
@@ -164,15 +165,16 @@
         <phoenix.version>5.0.0.3.1.0.0-78</phoenix.version>
         <redis.lettuce.version>3.4.2.Final</redis.lettuce.version>
         <scala.version>2.10.5</scala.version>
-        <!-- Ideally we need to use official version of SR: wait for new release -->
-        <schema-registry.version>0.6.0.3.4.0.0-145</schema-registry.version>
+        <!-- This version should be changed to actual HDF-3.4.0.0-146 version when it is published -->
+        <schema-registry.version>0.6.1-SNAPSHOT-HDF-3.4.0.0-146-maybe</schema-registry.version>
         <slf4j.version>1.7.12</slf4j.version>
         <storm.version>1.2.2</storm.version>
         <woodstox-core-asl.version>4.4.1</woodstox-core-asl.version>
         <druid.tranquility.version>0.8.2</druid.tranquility.version>
-        <spring.version>4.3.6.RELEASE</spring.version>
+        <spring.version>5.0.6.RELEASE</spring.version>
         <flyway.version>4.2.0</flyway.version>
         <jool.version>0.9.12</jool.version>
+        <snakeyaml.version>1.23</snakeyaml.version>
 
         <!-- Runtime Scope Dependencies -->
         <logback.version>1.1.7</logback.version>
@@ -316,6 +318,10 @@
                     <exclusion>
                         <groupId>com.sun.jersey</groupId>
                         <artifactId>jersey-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>org.apache.zookeeper</artifactId>
+                        <groupId>zookeeper</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -930,7 +936,7 @@
             <dependency>
                 <groupId>org.apache.curator</groupId>
                 <artifactId>curator-test</artifactId>
-                <version>${curator.version}</version>
+                <version>${curator.test.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
