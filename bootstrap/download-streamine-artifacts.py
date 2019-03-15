@@ -60,6 +60,7 @@ class ConfigStruct:
 
     def build_storm_submit_tool_command(self, artifacts):
         submit_tool_cmd_list = ["java", "-cp", self.get_storm_submit_tool_classpath()]
+        submit_tool_cmd_list.extend(["org.apache.storm.submit.command.DependencyResolverMain"])
         submit_tool_cmd_list.extend(["--artifactRepositories", self.maven_repo_url])
         submit_tool_cmd_list.extend(["--artifacts", artifacts])
         submit_tool_cmd_list.extend(["--mavenLocalRepositoryDirectory", self.maven_local_repository_directory])
