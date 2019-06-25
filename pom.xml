@@ -966,7 +966,7 @@
                 <enabled>false</enabled>
             </snapshots>
             <id>central</id>
-            <url>http://repo1.maven.org/maven2/</url>
+            <url>https://repo1.maven.org/maven2/</url>
         </repository>
         <repository>
             <releases>
@@ -980,7 +980,7 @@
         </repository>
         <repository>
             <id>hortonworks.repo</id>
-            <url>http://nexus-private.hortonworks.com/nexus/content/groups/public/</url>
+            <url>https://nexus-private.hortonworks.com/nexus/content/groups/public/</url>
             <name>Hortonworks Repo</name>
             <releases>
                 <enabled>true</enabled>
