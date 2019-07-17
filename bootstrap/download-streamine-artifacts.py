@@ -29,6 +29,23 @@ except ImportError:
     print("You can install 'pureyaml' via 'pip install pureyaml'.")
     sys.exit(1)
 
+
+def ensure_kerberos_modules():
+  try:
+    import kerberos as test_kerberos
+  except ImportError:
+    print("ERROR: 'kerberos' doesn't seem to be installed. Please ensure the module is installed.")
+    print("You can install 'kerberos' via 'pip install kerberos'.")
+    print("You may need to run 'yum install gcc krb5-devel python-devel' before installing kerberos.")
+    sys.exit(1)
+  try:
+    import urllib_kerberos
+    urllib2.install_opener(urllib2.build_opener(urllib_kerberos.HTTPKerberosAuthHandler()))
+  except ImportError:
+    print("ERROR: 'urllib_kerberos' doesn't seem to be installed. Please ensure the module is installed.")
+    print("You can install 'urllib_kerberos' via 'pip install urllib_kerberos'.")
+    sys.exit(1)
+
 COMPONENT_BUNDLES_KIND_URL_POSTFIX = "/streams/componentbundles"
 
 
@@ -60,6 +77,7 @@ class ConfigStruct:
 
     def build_storm_submit_tool_command(self, artifacts):
         submit_tool_cmd_list = ["java", "-cp", self.get_storm_submit_tool_classpath()]
+        submit_tool_cmd_list.extend(["org.apache.storm.submit.command.DependencyResolverMain"])
         submit_tool_cmd_list.extend(["--artifactRepositories", self.maven_repo_url])
         submit_tool_cmd_list.extend(["--artifacts", artifacts])
         submit_tool_cmd_list.extend(["--mavenLocalRepositoryDirectory", self.maven_local_repository_directory])
@@ -68,8 +86,17 @@ class ConfigStruct:
 
 def load_config(config_file, maven_local_repository_directory):
     with open(config_file, 'r') as fr:
-        content = fr.read()
+        content = ""
+
+        # Strip trailing spaces since pureyaml throws parse error with this
+        for line in fr:
+          content += line.rstrip() + '\n'
+
         config = pureyaml.load(content)
+
+	# Ensure kerberos modules if kerberos config is present
+        if 'loginConfiguration' in config and config['loginConfiguration']['className'] == "com.hortonworks.registries.auth.KerberosLogin":
+          ensure_kerberos_modules()
 
         catalog_root_url = config['catalogRootUrl']
         streams_config = filter(lambda x: x['name'] == 'streams', config['modules'])[0]['config']
