@@ -29,6 +29,7 @@ public class StreamlineSecurityContext implements SecurityContext {
     private static final Logger LOG = LoggerFactory.getLogger(StreamlineSecurityContext.class);
 
     public static final String KERBEROS_AUTH = "kerberos";
+    public static final String JWT_AUTH = "jwt";
     public static final String AUTHENTICATION_SCHEME_NOT_KERBEROS = "NOT_KERBEROS";     // useful for tests
 
     private final Principal principal;
