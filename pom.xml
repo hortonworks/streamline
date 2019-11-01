@@ -155,7 +155,7 @@
         <hbase.version>2.0.2.3.1.0.0-78</hbase.version>
         <HikariCP-java6.version>2.2.5</HikariCP-java6.version>
         <hive.version>3.1.0.3.1.0.0-78</hive.version>
-        <jackson.version>2.7.3</jackson.version>
+        <jackson.version>2.10.0</jackson.version>
         <javax.mail.version>1.5.3</javax.mail.version>
         <jersey.version>2.22.1</jersey.version>
         <kryo.version>2.21</kryo.version>
