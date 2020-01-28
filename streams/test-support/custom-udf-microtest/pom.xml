@@ -14,7 +14,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <maven-shade-plugin.version>2.4.1</maven-shade-plugin.version>
+        <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
     </properties>
 
     <dependencies>
