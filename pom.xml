@@ -139,7 +139,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Compile Scope Dependencies -->
-        <calcite.version>1.11.0</calcite.version>
+        <calcite.version>1.26.0</calcite.version>
         <calcite-avatica.version>1.9.0</calcite-avatica.version>
         <commons-cli.version>1.3.1</commons-cli.version>
         <commons-io.version>2.5</commons-io.version>
