@@ -174,7 +174,7 @@
         <jool.version>0.9.12</jool.version>
 
         <!-- Runtime Scope Dependencies -->
-        <logback.version>1.1.7</logback.version>
+        <logback.version>1.2.0</logback.version>
 
         <!-- Test Scope Dependencies -->
         <h2.version>1.4.188</h2.version>
