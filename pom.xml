@@ -160,7 +160,7 @@
         <jersey.version>2.22.1</jersey.version>
         <kryo.version>2.21</kryo.version>
         <mariadb-java-client.version>1.5.5</mariadb-java-client.version>
-        <postgresql.version>9.4.1212</postgresql.version>
+        <postgresql.version>42.3.7</postgresql.version>
         <phoenix.version>5.0.0.3.1.0.0-78</phoenix.version>
         <redis.lettuce.version>3.4.2.Final</redis.lettuce.version>
         <scala.version>2.10.5</scala.version>
